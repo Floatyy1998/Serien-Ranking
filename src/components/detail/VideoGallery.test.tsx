@@ -99,12 +99,13 @@ describe('VideoGallery', () => {
     expect(await screen.findByText('Trailer')).toBeInTheDocument();
   });
 
-  it('opens the modal and shows the video grid when clicked', async () => {
+  it('opens the modal and autoplays the first video when clicked', async () => {
     render(<VideoGallery tmdbId={100} mediaType="tv" />);
     const btn = await screen.findByText('Trailer');
     fireEvent.click(btn);
     expect(await screen.findByText('Videos')).toBeInTheDocument();
-    expect(screen.getByText('Trailer (1)')).toBeInTheDocument();
+    // Erstes Video wird sofort in den Player geladen (iframe title = Videoname).
+    expect(screen.getByTitle('Official Trailer')).toBeInTheDocument();
   });
 
   it('renders nothing when there are no videos', async () => {

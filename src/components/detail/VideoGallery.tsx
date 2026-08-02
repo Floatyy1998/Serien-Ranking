@@ -1,9 +1,10 @@
-import { Close, PlayArrow, PlayCircle, Theaters } from '@mui/icons-material';
+import { Close, PlayCircle, Theaters } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getOptimalTextColor } from '../../theme/colorUtils';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { tmdbFetch } from '../../services/tmdbClient';
 import { t } from '../../services/i18n';
@@ -30,6 +31,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
   buttonStyle = 'desktop',
 }) => {
   const { currentTheme } = useTheme();
+  const { isMobile } = useDeviceType();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -80,12 +82,39 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
     }
   }, [tmdbId, mediaType]);
 
+  // Esc schließt den Dialog (vor dem Early-Return — Hooks laufen unbedingt).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        setSelectedVideo(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen]);
+
   const trailers = videos.filter((v) => ['Trailer', 'Teaser'].includes(v.type));
   const behindTheScenes = videos.filter((v) =>
     ['Featurette', 'Behind the Scenes', 'Clip'].includes(v.type)
   );
   const currentVideos = activeTab === 'trailers' ? trailers : behindTheScenes;
   const mainVideo = videos[0];
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedVideo(null);
+  };
+
+  const openModal = () => {
+    // Erstes Video sofort abspielen — der Player ist der Held des Dialogs,
+    // nicht ein Kachel-Grid, das erst einen weiteren Tap verlangt.
+    const first = videos[0] || null;
+    setActiveTab(first && ['Trailer', 'Teaser'].includes(first.type) ? 'trailers' : 'bts');
+    setSelectedVideo(first);
+    setIsOpen(true);
+  };
 
   // Don't render if no videos
   if (loading || videos.length === 0) {
@@ -111,12 +140,128 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
         ? 'Trailer'
         : mainVideo?.type;
 
+  // Desktop mit mehreren Videos: Player links, Liste als Sidebar rechts
+  // (YouTube-Muster). Mobil bleibt der vertikale Stapel mit Quer-Leiste.
+  const hasSidebar = !isMobile && videos.length > 1;
+
+  const tabsEl =
+    trailers.length > 0 && behindTheScenes.length > 0 ? (
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {(
+          [
+            ['trailers', `Trailer (${trailers.length})`],
+            ['bts', `Behind the Scenes (${behindTheScenes.length})`],
+          ] as const
+        ).map(([tab, label]) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              const list = tab === 'trailers' ? trailers : behindTheScenes;
+              if (list[0]) setSelectedVideo(list[0]);
+            }}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '999px',
+              border:
+                activeTab === tab
+                  ? `1px solid ${currentTheme.primary}55`
+                  : '1px solid var(--glass-border-subtle)',
+              background: activeTab === tab ? `${currentTheme.primary}1f` : 'transparent',
+              color: activeTab === tab ? currentTheme.primary : currentTheme.text.muted,
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
+  const renderVideoTile = (video: Video, layout: 'rail' | 'row') => {
+    const isActive = selectedVideo?.id === video.id;
+    return (
+      <motion.div
+        key={video.id}
+        whileTap={tapScaleSmall}
+        onClick={() => setSelectedVideo(video)}
+        role="button"
+        tabIndex={0}
+        aria-label={t('{name} abspielen', { name: video.name })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setSelectedVideo(video);
+          }
+        }}
+        style={
+          layout === 'row'
+            ? { cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'center' }
+            : { cursor: 'pointer', flex: '0 0 168px', width: '168px' }
+        }
+      >
+        <div
+          style={{
+            aspectRatio: '16/9',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            border: isActive ? `2px solid ${currentTheme.primary}` : '2px solid transparent',
+            opacity: isActive ? 1 : 0.75,
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            ...(layout === 'row' ? { width: '128px', flexShrink: 0 } : {}),
+          }}
+        >
+          <img
+            src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
+            alt={video.name}
+            loading="lazy"
+            decoding="async"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = `https://img.youtube.com/vi/${video.key}/hqdefault.jpg`;
+            }}
+          />
+        </div>
+        <div style={layout === 'row' ? { minWidth: 0 } : undefined}>
+          <p
+            style={{
+              margin: layout === 'row' ? 0 : '6px 0 0',
+              fontSize: '12px',
+              fontWeight: 500,
+              color: isActive ? currentTheme.text.primary : currentTheme.text.secondary,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: layout === 'row' ? 'normal' : 'nowrap',
+              ...(layout === 'row'
+                ? {
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical' as const,
+                  }
+                : {}),
+            }}
+          >
+            {video.name}
+          </p>
+          <p style={{ margin: 0, fontSize: '11px', color: currentTheme.text.muted }}>
+            {getVideoTypeLabel(video.type)}
+            {video.official ? ` · ${t('Offiziell')}` : ''}
+          </p>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <>
       {/* Button */}
       <motion.button
         whileTap={tapScale}
-        onClick={() => setIsOpen(true)}
+        onClick={openModal}
         aria-label={t('Videos ansehen')}
         style={
           buttonStyle === 'icon'
@@ -197,311 +342,219 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
         {buttonStyle !== 'icon' && buttonText}
       </motion.button>
 
-      {/* Modal */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => {
-              setIsOpen(false);
-              setSelectedVideo(null);
-            }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.95)',
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              padding: '20px',
-              paddingTop: '60px',
-              overflowY: 'auto',
-            }}
-          >
-            {/* Close Button */}
-            <Tooltip title={t('Schließen')} arrow>
-              <button
-                aria-label={t('Schließen')}
-                onClick={() => {
-                  setIsOpen(false);
-                  setSelectedVideo(null);
-                }}
-                style={{
-                  position: 'fixed',
-                  top: '16px',
-                  right: '16px',
-                  background: 'rgba(255,255,255,0.1)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '44px',
-                  height: '44px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: currentTheme.text.secondary,
-                  zIndex: 10001,
-                }}
-              >
-                <Close />
-              </button>
-            </Tooltip>
-
+      {/* Modal per Portal an document.body: position:fixed wird sonst von
+          transformierten Ancestors (Hero-Animationen) eingefangen und der
+          Dialog klebt als Mini-Box im Hero statt das Viewport zu füllen. */}
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeModal}
               style={{
-                width: '100%',
-                maxWidth: '1000px',
-                margin: '0 auto',
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(8, 6, 10, 0.85)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding:
+                  'calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom))',
+                overflowY: 'auto',
               }}
             >
-              {/* Header */}
-              <div style={{ marginBottom: '20px' }}>
-                <h2
-                  style={{
-                    margin: 0,
-                    fontSize: '24px',
-                    fontWeight: 700,
-                    fontFamily: 'var(--font-display)',
-                    color: currentTheme.text.secondary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
-                  <Theaters style={{ color: currentTheme.primary }} />
-                  Videos
-                </h2>
-              </div>
-
-              {/* Video Player Area */}
-              {selectedVideo && (
-                <div
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16/9',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    marginBottom: '24px',
-                    background: currentTheme.background.default,
-                  }}
-                >
-                  <iframe
-                    src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1`}
-                    title={selectedVideo.name}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Tabs */}
-              {(trailers.length > 0 || behindTheScenes.length > 0) && (
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '8px',
-                    marginBottom: '16px',
-                  }}
-                >
-                  {trailers.length > 0 && (
-                    <button
-                      onClick={() => setActiveTab('trailers')}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '20px',
-                        border: 'none',
-                        background:
-                          activeTab === 'trailers' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color:
-                          activeTab === 'trailers'
-                            ? getOptimalTextColor(currentTheme.primary)
-                            : currentTheme.text.secondary,
-                        fontSize: '15px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }}
-                    >
-                      Trailer ({trailers.length})
-                    </button>
-                  )}
-                  {behindTheScenes.length > 0 && (
-                    <button
-                      onClick={() => setActiveTab('bts')}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '20px',
-                        border: 'none',
-                        background:
-                          activeTab === 'bts' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color:
-                          activeTab === 'bts'
-                            ? getOptimalTextColor(currentTheme.primary)
-                            : currentTheme.text.secondary,
-                        fontSize: '15px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }}
-                    >
-                      Behind the Scenes ({behindTheScenes.length})
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Video Grid */}
-              <div
+              <motion.div
+                initial={{ scale: 0.96, opacity: 0, y: 12 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.96, opacity: 0, y: 12 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Videos"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '16px',
+                  width: '100%',
+                  maxWidth: hasSidebar ? '1160px' : '960px',
+                  margin: 'auto',
+                  // Deckende Basis unter dem Glas-Verlauf — Blur ist unter dem
+                  // framer-Fade nicht verlässlich (Opacity-Ancestor-Gotcha).
+                  background: `linear-gradient(150deg, var(--glass-light) 0%, var(--glass-subtle) 60%), ${currentTheme.background.default}`,
+                  border: '1px solid var(--glass-border-subtle)',
+                  borderRadius: '20px',
+                  boxShadow:
+                    '0 24px 80px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  overflow: 'hidden',
                 }}
               >
-                {currentVideos.map((video) => (
-                  <motion.div
-                    key={video.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={tapScaleSmall}
-                    onClick={() => {
-                      setSelectedVideo(video);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('{name} abspielen', { name: video.name })}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedVideo(video);
-                      }
-                    }}
+                {/* Kopfzeile */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 20px',
+                    borderBottom: '1px solid var(--glass-border-subtle)',
+                  }}
+                >
+                  <h2
                     style={{
-                      cursor: 'pointer',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      background: 'rgba(255,255,255,0.05)',
-                      border:
-                        selectedVideo?.id === video.id
-                          ? `2px solid ${currentTheme.primary}`
-                          : '2px solid transparent',
+                      margin: 0,
+                      fontSize: '17px',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-display)',
+                      color: currentTheme.text.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
                     }}
                   >
-                    {/* Thumbnail */}
-                    <div style={{ position: 'relative', aspectRatio: '16/9' }}>
-                      <img
-                        src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
-                        alt={video.name}
-                        loading="lazy"
-                        decoding="async"
+                    <Theaters style={{ color: currentTheme.primary, fontSize: '20px' }} />
+                    Videos
+                    {videos.length > 1 && (
+                      <span
                         style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://img.youtube.com/vi/${video.key}/hqdefault.jpg`;
-                        }}
-                      />
-                      {/* Play Button Overlay */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'rgba(0,0,0,0.4)',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                          color: currentTheme.text.muted,
+                          fontFamily: 'inherit',
                         }}
                       >
+                        {videos.length}
+                      </span>
+                    )}
+                  </h2>
+                  <Tooltip title={t('Schließen')} arrow>
+                    <button
+                      aria-label={t('Schließen')}
+                      onClick={closeModal}
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid var(--glass-border-subtle)',
+                        borderRadius: '50%',
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: currentTheme.text.secondary,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Close style={{ fontSize: '20px' }} />
+                    </button>
+                  </Tooltip>
+                </div>
+
+                <div
+                  style={{
+                    padding: '16px 20px 20px',
+                    ...(hasSidebar
+                      ? { display: 'flex', gap: '20px', alignItems: 'flex-start' }
+                      : {}),
+                  }}
+                >
+                  {/* Player-Spalte */}
+                  <div style={hasSidebar ? { flex: 1, minWidth: 0 } : undefined}>
+                    {selectedVideo && (
+                      <>
                         <div
                           style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '50%',
-                            background: currentTheme.primary,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            width: '100%',
+                            aspectRatio: '16/9',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            background: '#000',
+                            border: '1px solid var(--glass-border-subtle)',
                           }}
                         >
-                          <PlayArrow
+                          <iframe
+                            src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1`}
+                            title={selectedVideo.name}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
                             style={{
-                              fontSize: '28px',
-                              color: getOptimalTextColor(currentTheme.primary),
+                              width: '100%',
+                              height: '100%',
+                              border: 'none',
+                              display: 'block',
                             }}
                           />
                         </div>
-                      </div>
-                      {/* Category Badge */}
+                        <div style={{ marginTop: '10px', marginBottom: '4px' }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: currentTheme.text.primary,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {selectedVideo.name}
+                          </p>
+                          <p
+                            style={{
+                              margin: '2px 0 0',
+                              fontSize: '12px',
+                              color: currentTheme.text.muted,
+                            }}
+                          >
+                            {getVideoTypeLabel(selectedVideo.type)}
+                            {selectedVideo.official ? ` · ${t('Offiziell')}` : ''}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Mobil/ein-spaltig: Tabs + Quer-Leiste unter dem Player */}
+                    {!hasSidebar && tabsEl && <div style={{ marginTop: '12px' }}>{tabsEl}</div>}
+                    {!hasSidebar && currentVideos.length > 1 && (
                       <div
                         style={{
-                          position: 'absolute',
-                          top: '8px',
-                          left: '8px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          background: 'rgba(0,0,0,0.7)',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          color: currentTheme.text.secondary,
+                          display: 'flex',
+                          gap: '10px',
+                          marginTop: '14px',
+                          overflowX: 'auto',
+                          paddingBottom: '4px',
+                          WebkitOverflowScrolling: 'touch',
                         }}
                       >
-                        {getVideoTypeLabel(video.type)}
+                        {currentVideos.map((video) => renderVideoTile(video, 'rail'))}
                       </div>
-                      {/* Official Badge */}
-                      {video.official && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            background: currentTheme.primary,
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            color: getOptimalTextColor(currentTheme.primary),
-                          }}
-                        >
-                          {t('Offiziell')}
-                        </div>
-                      )}
-                    </div>
-                    {/* Title */}
-                    <div style={{ padding: '12px' }}>
-                      <p
+                    )}
+                  </div>
+
+                  {/* Desktop: Sidebar mit Tabs + vertikaler Videoliste */}
+                  {hasSidebar && (
+                    <div style={{ width: '300px', flexShrink: 0 }}>
+                      {tabsEl && <div style={{ marginBottom: '12px' }}>{tabsEl}</div>}
+                      <div
                         style={{
-                          margin: 0,
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: currentTheme.text.secondary,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                          maxHeight: '56vh',
+                          overflowY: 'auto',
+                          paddingRight: '4px',
                         }}
                       >
-                        {video.name}
-                      </p>
+                        {currentVideos.map((video) => renderVideoTile(video, 'row'))}
+                      </div>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
+                  )}
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };
