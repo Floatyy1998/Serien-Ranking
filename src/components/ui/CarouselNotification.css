@@ -591,22 +591,16 @@
 }
 
 /* ─── Tab-Bar (NotificationHub) ─────────────────────────────────────── */
-/* Hub schwebt FIXED über dem Header — drückt keinen Content weg. Wenn der User
- * sie schließt oder snooz't, ist die Karte weg, der Content darunter bleibt wo
- * er war (kein Layout-Sprung). */
+/* Hub liegt IM Seitenfluss (oben auf der HomePage) — die frühere fixed-
+ * Variante schwebte über Header/Content und hat nach längerer Abwesenheit
+ * (viele Kategorien, hohe Karte) den halben Screen überdeckt. In-flow kann
+ * per Definition nichts überlappen; gegen den großen Platzbedarf startet der
+ * Hub bei Rückstau als Mini-Banner (siehe .notif-hub-mini). */
 .notif-hub {
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  max-width: 440px;
-  width: calc(100% - 20px);
-  pointer-events: none; /* nur die Karte selbst soll Pointer-Events bekommen */
-}
-
-.notif-hub > * {
-  pointer-events: auto;
+  position: relative;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto 16px;
 }
 
 .notif-hub-tabs {
@@ -717,6 +711,8 @@
 
 .notif-hub-mini-text {
   flex: 1;
+  min-width: 0;
+  text-align: left;
   font-size: 0.85rem;
   font-weight: 600;
   font-family: var(--font-display);

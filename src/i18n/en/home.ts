@@ -207,6 +207,8 @@ const dict: Record<string, string> = {
   'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.':
     'Want to test the Android app? Open a feature ticket with your Play Store email — you will get a personal invite to the test.',
   'Hinweis ausblenden': 'Dismiss note',
+  '1 Hinweis zu deinen Serien': '1 update about your shows',
+  '{n} Hinweise zu deinen Serien': '{n} updates about your shows',
   'Feature-Ticket öffnen': 'Open feature ticket',
 
   // DailySpinCard

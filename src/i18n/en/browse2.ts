@@ -147,6 +147,7 @@ const dict: Record<string, string> = {
   'Alle als {n}x gesehen': 'Mark all as watched {n}x',
   'Alle als ungesehen': 'Mark all as unwatched',
   'Alle als gesehen markieren': 'Mark all as watched',
+  'Noch keine Folgen dieser Staffel veröffentlicht': 'No episodes of this season have aired yet',
   'Ich bin bei...': "I'm at...",
   'Folge {n}: {name}, {status}': 'Episode {n}: {name}, {status}',
   gesehen: 'watched',

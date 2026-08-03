@@ -6,6 +6,7 @@ import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
+import { formatDateTimeLabel, formatExactDateTime } from '../../../utils/timeLabels';
 
 const autoResize = (el: HTMLTextAreaElement) => {
   el.style.height = 'auto';
@@ -146,7 +147,9 @@ export function TicketCard({
               gap: '8px',
             }}
           >
-            <span>{new Date(ticket.createdAt).toLocaleDateString('de-DE')}</span>
+            <span title={formatExactDateTime(ticket.createdAt)}>
+              {formatDateTimeLabel(ticket.createdAt)}
+            </span>
             {comments.length > 0 && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                 <ChatBubbleOutline style={{ fontSize: 12 }} />

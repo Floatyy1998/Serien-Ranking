@@ -6,6 +6,11 @@ import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/
 import { Badge, Section } from './ticketHelpers';
 import { copyTextToClipboard } from '../../../../utils/clipboard';
 import {
+  formatAgoLabel,
+  formatDateTimeLabel,
+  formatExactDateTime,
+} from '../../../../utils/timeLabels';
+import {
   actionBtnStyle,
   autoResize,
   contentBox,
@@ -105,11 +110,8 @@ export function AdminTicketCard({
   };
 
   const [now] = useState(() => Date.now());
-  const age = Math.floor((now - new Date(ticket.createdAt).getTime()) / 86400000);
-  const ageStr = age === 0 ? 'Heute' : age === 1 ? 'Gestern' : `vor ${age}d`;
-  const updatedAge = Math.floor((now - new Date(ticket.updatedAt).getTime()) / 86400000);
-  const updatedStr =
-    updatedAge === 0 ? 'Heute' : updatedAge === 1 ? 'Gestern' : `vor ${updatedAge}d`;
+  const createdStr = formatDateTimeLabel(ticket.createdAt, now);
+  const updatedStr = formatAgoLabel(ticket.updatedAt, now);
 
   return (
     <div
@@ -180,9 +182,9 @@ export function AdminTicketCard({
           >
             <span style={{ fontWeight: 500 }}>{ticket.createdByName}</span>
             <span style={{ opacity: 0.4 }}>|</span>
-            <span>Erstellt {ageStr}</span>
+            <span title={formatExactDateTime(ticket.createdAt)}>Erstellt {createdStr}</span>
             <span style={{ opacity: 0.4 }}>|</span>
-            <span>Update {updatedStr}</span>
+            <span title={formatExactDateTime(ticket.updatedAt)}>Update {updatedStr}</span>
             {comments.length > 0 && (
               <>
                 <span style={{ opacity: 0.4 }}>|</span>

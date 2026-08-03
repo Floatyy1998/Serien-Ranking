@@ -345,6 +345,149 @@ describe('useEpisodeManagement', () => {
     expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12']).toBeNull();
   });
 
+  it('handleSeasonToggle (watch): lässt noch nicht veröffentlichte Folgen aus', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [ep({ id: 11 }), ep({ id: 12, air_date: '2099-01-01' })],
+          },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'watch');
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11/w']).toBe(1);
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12/w']).toBeUndefined();
+  });
+
+  it('handleSeasonToggle (watch): überspringt datumslose Platzhalter am Staffelende', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [ep({ id: 11 }), ep({ id: 12, air_date: '' })],
+          },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'watch');
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11/w']).toBe(1);
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12/w']).toBeUndefined();
+  });
+
+  it('handleSeasonToggle (unwatch): entfernt auch einzeln markierte Zukunfts-Folgen', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [
+              ep({ id: 11, watched: true, watchCount: 1 }),
+              ep({ id: 12, air_date: '2099-01-01', watched: true, watchCount: 1 }),
+            ],
+          },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'unwatch');
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11']).toBeNull();
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12']).toBeNull();
+  });
+
+  it('handleSeasonToggle: komplett unveröffentlichte Staffel schreibt nichts', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [{ seasonNumber: 0, episodes: [ep({ id: 11, air_date: '2099-01-01' })] }],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'watch');
+    });
+
+    expect(applyUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('handleCatchUp: markiert keine unveröffentlichten Folgen', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [ep({ id: 11 }), ep({ id: 12, air_date: '2099-01-01' })],
+          },
+          { seasonNumber: 1, episodes: [ep({ id: 21 })] },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleCatchUp(1, 0);
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11/w']).toBe(1);
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12/w']).toBeUndefined();
+  });
+
+  it('seasonProgress: unveröffentlichte Folgen zählen nicht mit', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [
+              ep({ id: 11, watched: true, watchCount: 1 }),
+              ep({ id: 12, air_date: '2099-01-01' }),
+            ],
+          },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    expect(result.current.seasonProgress).toMatchObject({
+      watchedCount: 1,
+      totalCount: 1,
+      allWatched: true,
+      progress: 100,
+    });
+  });
+
   it('season navigation clamps at both ends', () => {
     ctx.allSeriesList = [makeSeries({ seasons: twoSeasons() })];
     const { result } = renderHook(() => useEpisodeManagement());

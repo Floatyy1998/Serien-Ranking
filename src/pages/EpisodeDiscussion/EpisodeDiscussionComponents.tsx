@@ -343,9 +343,12 @@ export const HeroSection = memo(
             onClick={() => setSpoilerRevealed(true)}
             style={{
               position: 'absolute',
-              top: '30%',
+              // Unter der Topbar (16px + safe-area + 40px Button) verankern,
+              // sonst überdeckt die Pille Zurück- und Serien-Button.
+              top: 'calc(env(safe-area-inset-top, 0px) + 72px)',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              transform: 'translateX(-50%)',
+              maxWidth: 'calc(100% - 32px)',
               display: 'flex',
               alignItems: 'center',
               gap: 8,

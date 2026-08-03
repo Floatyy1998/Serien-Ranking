@@ -1,16 +1,19 @@
 /**
  * SeriesNotificationHub — Aggregator für alle Serien-bezogenen Notification-Karten.
  *
- * Ersetzt die alte Prio-Queue auf der HomePage (eine Karte zur Zeit, andere versteckt).
- * Stattdessen Tab-Bar: User sieht alle aktiven Kategorien gleichzeitig, kann wechseln.
- * Karte ist `position: fixed` (siehe CSS) — schwebt über dem Header, schiebt nichts
- * im Page-Flow weg. Schließen via X-Button.
+ * Liegt IM Seitenfluss (kein position:fixed mehr — die schwebende Karte hat
+ * nach längerer Abwesenheit den halben Homescreen überdeckt). Bei kleinem
+ * Rückstau (1 Kategorie, ≤3 Einträge) erscheint direkt die Karte; sonst
+ * startet der Hub als schmales Mini-Banner und expandiert erst auf Tap zur
+ * Tab-Karte. So überlappt nie etwas und der Rückstau frisst nur eine Zeile.
  */
 
 import {
   AccessTime,
   AutoStories,
   CheckCircle,
+  ExpandLess,
+  ExpandMore,
   MenuBook,
   NewReleases,
   StarOutline,
@@ -165,7 +168,18 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   // asynchron nachladende Detections tauschen die Karte nicht mehr aus.
   const [shownKey, setShownKey] = useState<CategoryKey | null>(null);
 
+  // null = automatisch: kleiner Rückstau klappt direkt auf, großer startet
+  // als Mini-Banner (v.a. beim Öffnen nach längerer Abwesenheit).
+  const [expanded, setExpanded] = useState<boolean | null>(null);
+
   if (activeCategories.length === 0) return null;
+
+  const totalCount = activeCategories.reduce((sum, c) => sum + (categoryCounts[c.key] || 0), 0);
+  const autoExpand = activeCategories.length === 1 && totalCount <= 3;
+  const isExpanded = expanded ?? autoExpand;
+  // Aus dem Mini-Banner expandiert → Collapse-Weg zurück anbieten (in der
+  // Tab-Zeile, die dann auch bei nur einer Kategorie erscheint).
+  const startedMini = !autoExpand;
 
   const currentKey =
     shownKey && activeCategories.some((c) => c.key === shownKey)
@@ -246,10 +260,43 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     }
   };
 
+  if (!isExpanded) {
+    return (
+      <div className="notif-hub">
+        <motion.button
+          type="button"
+          className="notif-hub-mini"
+          onClick={() => setExpanded(true)}
+          aria-expanded={false}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          style={{ width: '100%', color: currentTheme.text.primary }}
+        >
+          <span className="notif-hub-mini-dots" aria-hidden>
+            {activeCategories.slice(0, 5).map((c) => (
+              <span
+                key={c.key}
+                className="notif-hub-mini-dot"
+                style={{ background: c.color(currentTheme) }}
+              />
+            ))}
+          </span>
+          <span className="notif-hub-mini-text">
+            {totalCount === 1
+              ? t('1 Hinweis zu deinen Serien')
+              : t('{n} Hinweise zu deinen Serien', { n: totalCount })}
+          </span>
+          <ExpandMore style={{ fontSize: 18, opacity: 0.6, flexShrink: 0 }} />
+        </motion.button>
+      </div>
+    );
+  }
+
   return (
     <div className="notif-hub">
-      {/* Tab-Bar — nur wenn mehr als 1 Kategorie aktiv */}
-      {activeCategories.length > 1 && (
+      {/* Tab-Bar — bei mehreren Kategorien oder als Rückweg zum Mini-Banner */}
+      {(activeCategories.length > 1 || startedMini) && (
         <div
           className="notif-hub-tabs"
           role="tablist"
@@ -280,6 +327,16 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
               </button>
             );
           })}
+          {startedMini && (
+            <button
+              className="notif-hub-tab notif-hub-tab--collapse"
+              aria-label={t('Einklappen')}
+              onClick={() => setExpanded(false)}
+              style={{ marginLeft: 'auto', color: currentTheme.text.primary }}
+            >
+              <ExpandLess />
+            </button>
+          )}
         </div>
       )}
 

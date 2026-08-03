@@ -10,6 +10,7 @@ import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { filterBulkMarkable } from '../../lib/episode/releaseState';
 import type { Series } from '../../types/Series';
 import {
   trackEpisodeWatched,
@@ -156,11 +157,14 @@ export const useEpisodeManagement = () => {
 
   // Season progress
   const seasonProgress: SeasonProgress = (() => {
-    const watchedCount = currentSeason?.episodes?.filter((ep) => ep.watched).length || 0;
-    const totalCount = currentSeason?.episodes?.length || 0;
+    // Nur abhakbare Folgen zählen: unveröffentlichte bleiben aus Fortschritt und
+    // Bulk-Buttons raus, es sei denn sie wurden einzeln schon markiert.
+    const markableEps = filterBulkMarkable(currentSeason?.episodes ?? []);
+    const watchedCount = markableEps.filter((ep) => ep.watched).length;
+    const totalCount = markableEps.length;
     const allWatched = watchedCount === totalCount && totalCount > 0;
     const seasonMinWatchCount = allWatched
-      ? Math.min(...(currentSeason?.episodes?.map((ep) => ep.watchCount || 1) || [1]))
+      ? Math.min(...markableEps.map((ep) => ep.watchCount || 1))
       : 0;
     const progress = totalCount > 0 ? (watchedCount / totalCount) * 100 : 0;
     return { watchedCount, totalCount, allWatched, seasonMinWatchCount, progress };
@@ -449,9 +453,12 @@ export const useEpisodeManagement = () => {
             ? (Object.values(season.episodes) as typeof season.episodes)
             : [];
 
+        const markable = new Set(filterBulkMarkable(eps));
+
         eps.forEach((ep, eIdx) => {
           if (ep.watched) return;
           if (!ep.id) return;
+          if (!markable.has(ep)) return;
           const shouldMark =
             sIdx < targetSeasonIndex || (sIdx === targetSeasonIndex && eIdx < targetEpisodeIndex);
           if (!shouldMark) return;
@@ -511,12 +518,19 @@ export const useEpisodeManagement = () => {
     if (!requireTracked()) return;
 
     const season = series.seasons[seasonIndex];
-    const allWatched = season.episodes?.every((ep) => ep.watched);
+    const allEps = season.episodes ?? [];
+    // Bulk markiert nie unveröffentlichte Folgen — einzeln bleibt das erlaubt.
+    // Ausnahme: bereits markierte Folgen bleiben in Rewatch/Unwatch drin.
+    const seasonEps = mode === 'unwatch' ? allEps : filterBulkMarkable(allEps);
+    const allWatched = seasonEps.length > 0 && seasonEps.every((ep) => ep.watched);
+    if (seasonEps.length === 0) {
+      showToast(t('Noch keine Folgen dieser Staffel veröffentlicht'), 2500, 'info');
+      return;
+    }
     const willAutoAddToWatchlist = mode !== 'unwatch' && shouldAutoEnableWatchlist(series);
 
     // Massen-Abhaken zählt nicht für Mystery-Boxen (kein Box-Schwall beim
     // Eintragen bereits geschauter Serien). Delta = Änderung der Unique-Watched.
-    const seasonEps = season.episodes ?? [];
     let bulkDelta = 0;
     if (mode === 'watch') {
       bulkDelta = allWatched
@@ -533,7 +547,7 @@ export const useEpisodeManagement = () => {
         ...(willAutoAddToWatchlist ? autoWatchlistUpdates(user.uid, series) : {}),
       };
 
-      (season.episodes ?? []).forEach((ep) => {
+      seasonEps.forEach((ep) => {
         if (!ep.id) return;
         const epBase = `${seasonPath}/eps/${ep.id}`;
         if (mode === 'unwatch') {
@@ -567,7 +581,7 @@ export const useEpisodeManagement = () => {
         firstUnix: number;
         lastUnix: number;
       };
-      const prevEpisodes: PrevEpisodeState[] = (season.episodes ?? [])
+      const prevEpisodes: PrevEpisodeState[] = seasonEps
         .filter((ep) => ep.id)
         .map((ep) => ({
           epId: ep.id as number,
@@ -593,7 +607,7 @@ export const useEpisodeManagement = () => {
       // Quick-Rate: letzte Staffel komplett markiert.
       // F4 — nicht blockierend (siehe handleEpisodeToggle): wegwischbarer
       // Hinweis statt Auto-Modal; öffnet die Schnellbewertung erst auf Tap.
-      if (mode !== 'unwatch') {
+      if (mode !== 'unwatch' && seasonEps.length === allEps.length) {
         const lastSeasonIndex = series.seasons.length - 1;
         if (seasonIndex === lastSeasonIndex) {
           const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
