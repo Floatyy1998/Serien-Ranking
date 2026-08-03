@@ -219,6 +219,21 @@ export const HeroSection = memo(
 
         {/* Episode Info Overlay */}
         <div className="ed-hero-info">
+          {/* Reveal-Pille hängt im freien Streifen über den Badges, außerhalb
+              des Flusses — beim Aufdecken springt so kein Text. */}
+          {blurActive && (
+            <div className="ed-spoiler-reveal-slot">
+              <motion.button
+                whileTap={tapScale}
+                onClick={() => setSpoilerRevealed(true)}
+                className="ed-spoiler-reveal"
+              >
+                <VisibilityOff className="ed-spoiler-reveal-icon" />
+                {t('Spoiler-Schutz — tippen zum Anzeigen')}
+              </motion.button>
+            </div>
+          )}
+
           {/* Season & Episode Badges */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -337,36 +352,6 @@ export const HeroSection = memo(
             )}
           </motion.div>
         </div>
-
-        {blurActive && (
-          <button
-            onClick={() => setSpoilerRevealed(true)}
-            style={{
-              position: 'absolute',
-              // Unter der Topbar (16px + safe-area + 40px Button) verankern,
-              // sonst überdeckt die Pille Zurück- und Serien-Button.
-              top: 'calc(env(safe-area-inset-top, 0px) + 72px)',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              maxWidth: 'calc(100% - 32px)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '9px 16px',
-              borderRadius: 999,
-              border: '1px solid rgba(255,255,255,0.25)',
-              background: 'rgba(0,0,0,0.45)',
-              color: '#fff',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-              zIndex: 2,
-            }}
-          >
-            <VisibilityOff style={{ fontSize: 18 }} />
-            {t('Spoiler-Schutz — tippen zum Anzeigen')}
-          </button>
-        )}
       </div>
     );
   }

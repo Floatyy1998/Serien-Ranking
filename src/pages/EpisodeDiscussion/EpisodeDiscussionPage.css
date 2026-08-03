@@ -155,6 +155,45 @@
   z-index: 1;
 }
 
+/* Die Reveal-Pille hängt aus dem Fluss im freien Streifen über den Badges —
+   so verschiebt das Ein-/Ausblenden keinen Text. Bottom-aligned, damit sie
+   bei umbrechendem Text nach oben statt in die Badges wächst. */
+.ed-spoiler-reveal-slot {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 168px;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+/* Zwei Klassen, damit die globale `.mobile-app button`-Regel (44px +
+   zentriert) die Pille nicht auf volle Breite zieht. */
+.ed-hero .ed-spoiler-reveal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  padding: 9px 16px;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ed-spoiler-reveal-icon {
+  font-size: 18px !important;
+  flex-shrink: 0;
+}
+
 /* Season/Episode badges row */
 .ed-badges-row {
   display: flex;
