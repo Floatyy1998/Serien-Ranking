@@ -37,12 +37,6 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-const theme = {
-  primary: '#ef6f8a',
-  text: { primary: '#fff', muted: '#888' },
-  background: { paper: '#111' },
-};
-
 const report = (over: Partial<ErrorReport>): ErrorReport =>
   ({
     id: 'a',
@@ -73,7 +67,7 @@ afterEach(cleanup);
 
 describe('ClientErrorsTab', () => {
   it('zeigt einen Leerzustand ohne Fehler', () => {
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
     expect(screen.getByText(/Keine Fehler/)).toBeInTheDocument();
   });
 
@@ -83,16 +77,18 @@ describe('ClientErrorsTab', () => {
       report({ id: 'b', uid: 'u2' }),
       report({ id: 'c', fingerprint: 'fp2', message: 'anderer Fehler' }),
     ]);
-    render(<ClientErrorsTab theme={theme} />);
+    const { container } = render(<ClientErrorsTab />);
 
     expect(screen.getByText(/x is not a function/)).toBeInTheDocument();
-    expect(screen.getByText(/4 Auftreten · 2 Nutzer/)).toBeInTheDocument();
+    const meta = container.querySelector('.adm-row__meta')?.textContent ?? '';
+    expect(meta).toContain('4 Auftreten');
+    expect(meta).toContain('2 Nutzer');
     expect(screen.getByText(/anderer Fehler/)).toBeInTheDocument();
   });
 
   it('blendet erledigte Gruppen aus, bis der Filter aus ist', () => {
     seed([report({ id: 'a', status: 'resolved' })]);
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
     expect(screen.getByText(/Keine Fehler/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('nur offene'));
@@ -104,26 +100,28 @@ describe('ClientErrorsTab', () => {
       report({ id: 'a', kind: 'error' }),
       report({ id: 'b', fingerprint: 'fp2', kind: 'render', message: 'Render kaputt' }),
     ]);
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
 
-    fireEvent.click(screen.getByText('Render'));
+    fireEvent.click(screen.getByRole('button', { name: 'Render' }));
     expect(screen.getByText(/Render kaputt/)).toBeInTheDocument();
     expect(screen.queryByText(/x is not a function/)).not.toBeInTheDocument();
   });
 
   it('zeigt Umgebung und Verlauf beim Aufklappen', () => {
     seed([report({ id: 'a' })]);
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
 
     fireEvent.click(screen.getByText(/x is not a function/));
     expect(screen.getByText(/Verlauf vor dem Fehler/)).toBeInTheDocument();
     expect(screen.getByText(/button#save/)).toBeInTheDocument();
-    expect(screen.getByText('route:')).toBeInTheDocument();
+    expect(screen.getByText('Route')).toBeInTheDocument();
+    expect(screen.getAllByText('/home').length).toBeGreaterThan(0);
+    expect(screen.getByText('Klick')).toBeInTheDocument();
   });
 
   it('markiert eine Gruppe als erledigt', () => {
     seed([report({ id: 'a' }), report({ id: 'b' })]);
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
 
     fireEvent.click(screen.getByTitle('Als erledigt markieren'));
     expect(fb.updates[0]).toEqual({
@@ -134,7 +132,7 @@ describe('ClientErrorsTab', () => {
 
   it('loescht eine Gruppe', () => {
     seed([report({ id: 'a' })]);
-    render(<ClientErrorsTab theme={theme} />);
+    render(<ClientErrorsTab />);
 
     fireEvent.click(screen.getByTitle('Gruppe löschen'));
     expect(fb.updates[0]).toEqual({ 'clientErrors/a': null });

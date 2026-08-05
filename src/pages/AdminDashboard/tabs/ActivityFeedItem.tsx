@@ -22,7 +22,7 @@ interface ActivityFeedProps {
 }
 
 export const ActivityFeed = React.memo<ActivityFeedProps>(
-  ({ groupedEvents, filteredEvents, userProfiles, range, cardBg, borderColor, theme, loading }) => {
+  ({ groupedEvents, filteredEvents, userProfiles, range, borderColor, theme, loading }) => {
     if (loading) {
       return (
         <div style={{ textAlign: 'center', padding: 60, color: theme.text.muted }}>
@@ -35,12 +35,8 @@ export const ActivityFeed = React.memo<ActivityFeedProps>(
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="adm-card"
         style={{
-          background: cardBg,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
           padding: '8px 0',
           maxHeight: 650,
           overflowY: 'auto',
@@ -73,9 +69,7 @@ export const ActivityFeed = React.memo<ActivityFeedProps>(
                     borderBottom: `1px solid ${borderColor}20`,
                     position: 'sticky',
                     top: 0,
-                    background: cardBg,
-                    backdropFilter: 'var(--blur-lg)',
-                    WebkitBackdropFilter: 'var(--blur-lg)',
+                    background: 'var(--adm-card)',
                     zIndex: 1,
                   }}
                 >

@@ -62,15 +62,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
 
   if (loading) return <p style={{ color: theme.text.muted }}>Laden...</p>;
 
-  const inputStyle = {
-    background: theme.background.default,
-    color: theme.text.secondary,
-    border: `1px solid ${theme.text.muted}30`,
-    borderRadius: '8px',
-    padding: '8px 12px',
-    fontSize: '14px',
-    width: '100px',
-  };
+  const inputStyle = { width: '100px' };
 
   const labelStyle = {
     color: theme.text.secondary,
@@ -94,14 +86,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
         Pet Accessory Drops
       </h3>
 
-      <div
-        style={{
-          background: theme.background.surface,
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '16px',
-        }}
-      >
+      <div className="adm-card" style={{ marginBottom: 16 }}>
         <h4 style={{ color: theme.text.secondary, margin: '0 0 16px', fontSize: '15px' }}>
           Drop-Chance pro Episode
         </h4>
@@ -116,6 +101,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
             onChange={(e) =>
               setConfig((p) => ({ ...p, dropChance: parseFloat(e.target.value) || 0 }))
             }
+            className="adm-input"
             style={inputStyle}
           />
           <span style={{ color: theme.text.muted, fontSize: '13px' }}>
@@ -124,14 +110,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
         </div>
       </div>
 
-      <div
-        style={{
-          background: theme.background.surface,
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '20px',
-        }}
-      >
+      <div className="adm-card" style={{ marginBottom: 20 }}>
         <h4 style={{ color: theme.text.secondary, margin: '0 0 16px', fontSize: '15px' }}>
           Rarity Weights
         </h4>
@@ -152,6 +131,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
               max="100"
               value={config.rarityWeights[key]}
               onChange={(e) => updateWeight(key, parseInt(e.target.value) || 0)}
+              className="adm-input"
               style={inputStyle}
             />
             <span style={{ color: theme.text.muted, fontSize: '13px' }}>
@@ -163,18 +143,19 @@ export function ConfigTab({ theme }: ConfigTabProps) {
 
       <button
         onClick={handleSave}
+        className={`adm-btn ${saved ? '' : 'adm-btn--primary'}`}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: 8,
           padding: '10px 24px',
-          borderRadius: '10px',
-          border: 'none',
-          background: saved ? theme.status.success : theme.primary,
-          color: '#fff',
-          fontSize: '14px',
-          fontWeight: 700,
-          cursor: 'pointer',
+          ...(saved
+            ? {
+                background: 'color-mix(in srgb, var(--adm-ok) 16%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--adm-ok) 45%, transparent)',
+                color: 'var(--adm-ok)',
+              }
+            : {}),
         }}
       >
         <Save style={{ fontSize: 18 }} />

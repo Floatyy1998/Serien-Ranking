@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Speed, Timer, Storage, Cloud, CleaningServices } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
@@ -104,7 +105,7 @@ export function PerformanceTab({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Copy button */}
       {actions.length > 0 && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -126,38 +127,22 @@ export function PerformanceTab({
         </div>
       )}
       {/* Overview cards */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <div className="adm-stats">
         {actions.map(([action, perf]) => {
           const color = ACTION_COLORS[action] || theme.primary;
           return (
             <div
               key={action}
-              style={{
-                flex: '1 1 150px',
-                padding: 16,
-                borderRadius: 12,
-                background: theme.background.paper,
-                textAlign: 'center',
-              }}
+              className="adm-stat"
+              style={{ '--adm-tone': color, minWidth: 176 } as CSSProperties}
             >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color,
-                  background: `${color}20`,
-                  display: 'inline-block',
-                  padding: '2px 10px',
-                  borderRadius: 10,
-                  marginBottom: 8,
-                }}
-              >
+              <div className="adm-tag" style={{ marginBottom: 6, display: 'inline-block' }}>
                 {action}
               </div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
+              <div className="adm-stat__value" style={{ fontSize: 22 }}>
                 {perf.totalDurationFormatted}
               </div>
-              <div style={{ fontSize: 11, color: theme.text.muted, marginTop: 2 }}>
+              <div className="adm-stat__label">
                 {perf.timestamp ? new Date(perf.timestamp).toLocaleString('de-DE') : '—'}
               </div>
             </div>
@@ -172,10 +157,7 @@ export function PerformanceTab({
         const totalMs = perf.totalDurationMs || 1;
 
         return (
-          <div
-            key={action}
-            style={{ borderRadius: 12, background: theme.background.paper, overflow: 'hidden' }}
-          >
+          <div key={action} className="adm-row">
             {/* Header */}
             <div
               style={{

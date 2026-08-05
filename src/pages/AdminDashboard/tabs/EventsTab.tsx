@@ -12,7 +12,6 @@ interface EventsTabProps {
 }
 
 export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
-  const cardBg = `${theme.background.surface}cc`;
   const borderColor = theme.border.default;
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -52,100 +51,42 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
   }, [selectedEvent, data.dailyStats]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Event Selector */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
-          padding: 20,
-        }}
+        className="adm-card"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <FilterList style={{ fontSize: 18, color: theme.primary }} />
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: theme.text.primary }}>
+        <div className="adm-card__head">
+          <h3 className="adm-card__title">
+            <FilterList style={{ fontSize: 18 }} />
             Event Explorer
           </h3>
-          <span style={{ fontSize: 12, color: theme.text.muted, marginLeft: 'auto' }}>
-            {allEventNames.length} Events
-          </span>
+          <span className="adm-card__meta">{allEventNames.length} Events</span>
         </div>
 
-        {/* Search */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 12px',
-            borderRadius: 10,
-            background: `${theme.background.default}80`,
-            border: `1px solid ${borderColor}`,
-            marginBottom: 12,
-          }}
-        >
-          <Search style={{ fontSize: 16, color: theme.text.muted }} />
+        <div className="adm-search">
+          <Search style={{ fontSize: 16 }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Event suchen..."
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: theme.text.primary,
-              fontSize: 13,
-              outline: 'none',
-              width: '100%',
-            }}
           />
         </div>
 
-        {/* Event pills */}
-        <div
-          style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 200, overflowY: 'auto' }}
-        >
+        <div className="adm-chips adm-chips--scroll">
           {filteredEvents.map((name) => {
             const isSelected = selectedEvent === name;
             const todayCount = (data.dailyStats[0]?.events[name] as number) || 0;
             return (
               <button
                 key={name}
+                className={`adm-chip ${isSelected ? 'adm-chip--on' : ''}`}
                 onClick={() => setSelectedEvent(isSelected ? null : name)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '4px 10px',
-                  borderRadius: 8,
-                  border: `1px solid ${isSelected ? theme.primary : borderColor}`,
-                  background: isSelected ? `${theme.primary}20` : 'transparent',
-                  color: isSelected ? theme.primary : theme.text.secondary,
-                  fontSize: 12,
-                  fontWeight: isSelected ? 700 : 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
               >
                 {name}
-                {todayCount > 0 && (
-                  <span
-                    style={{
-                      padding: '0 5px',
-                      borderRadius: 4,
-                      background: `${theme.primary}20`,
-                      color: theme.primary,
-                      fontSize: 10,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {todayCount}
-                  </span>
-                )}
+                {todayCount > 0 && <span className="adm-chip__count">{todayCount}</span>}
               </button>
             );
           })}
@@ -157,28 +98,12 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: theme.text.primary }}>
-              {selectedEvent}
-            </h3>
-            <span style={{ fontSize: 13, color: theme.text.muted }}>
-              Gesamt (30d): <strong style={{ color: theme.primary }}>{eventTotal}</strong>
+          <div className="adm-card__head">
+            <h3 className="adm-card__title">{selectedEvent}</h3>
+            <span className="adm-card__meta">
+              Gesamt (30d): <strong>{eventTotal}</strong>
             </span>
           </div>
 

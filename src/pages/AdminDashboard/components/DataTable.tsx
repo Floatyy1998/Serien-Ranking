@@ -15,7 +15,8 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   searchKeys?: (item: T) => string;
   onRowClick?: (item: T) => void;
-  theme: ReturnType<typeof useTheme>['currentTheme'];
+  /** @deprecated Farben kommen aus adminKit.css — Prop nur noch für Altaufrufe. */
+  theme?: ReturnType<typeof useTheme>['currentTheme'];
   maxRows?: number;
 }
 
@@ -24,7 +25,6 @@ function DataTableInner<T>({
   columns,
   searchKeys,
   onRowClick,
-  theme,
   maxRows = 50,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
@@ -64,62 +64,26 @@ function DataTableInner<T>({
   return (
     <div>
       {searchKeys && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 12px',
-            borderRadius: 10,
-            background: `${theme.background.default}80`,
-            border: `1px solid ${theme.border.default}`,
-            marginBottom: 12,
-          }}
-        >
-          <Search style={{ fontSize: 18, color: theme.text.muted }} />
+        <div className="adm-search">
+          <Search style={{ fontSize: 18 }} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Suchen..."
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: theme.text.primary,
-              fontSize: 14,
-              outline: 'none',
-              width: '100%',
-            }}
           />
         </div>
       )}
 
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: 13,
-          }}
-        >
+      <div className="adm-table__wrap">
+        <table className={`adm-table ${onRowClick ? 'adm-table--clickable' : ''}`}>
           <thead>
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
+                  data-sortable={col.sortValue ? '1' : undefined}
                   onClick={() => col.sortValue && handleSort(col.key)}
-                  style={{
-                    textAlign: 'left',
-                    padding: '8px 12px',
-                    color: theme.text.muted,
-                    fontWeight: 600,
-                    fontSize: 11,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    borderBottom: `1px solid ${theme.border.default}`,
-                    cursor: col.sortValue ? 'pointer' : 'default',
-                    width: col.width,
-                    whiteSpace: 'nowrap',
-                  }}
+                  style={col.width ? { width: col.width } : undefined}
                 >
                   {col.label}
                   {sortCol === col.key && (sortDir === 'asc' ? ' ↑' : ' ↓')}
@@ -129,48 +93,15 @@ function DataTableInner<T>({
           </thead>
           <tbody>
             {filtered.map((item, i) => (
-              <tr
-                key={i}
-                onClick={() => onRowClick?.(item)}
-                style={{
-                  cursor: onRowClick ? 'pointer' : 'default',
-                  borderBottom: `1px solid ${theme.border.default}40`,
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background =
-                    `${theme.background.surface}80`;
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
-                }}
-              >
+              <tr key={i} onClick={() => onRowClick?.(item)}>
                 {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    style={{
-                      padding: '10px 12px',
-                      color: theme.text.primary,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {col.render(item)}
-                  </td>
+                  <td key={col.key}>{col.render(item)}</td>
                 ))}
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  style={{
-                    padding: 24,
-                    textAlign: 'center',
-                    color: theme.text.muted,
-                  }}
-                >
-                  Keine Daten
-                </td>
+              <tr className="adm-table__empty">
+                <td colSpan={columns.length}>Keine Daten</td>
               </tr>
             )}
           </tbody>

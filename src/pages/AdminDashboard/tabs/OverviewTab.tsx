@@ -20,11 +20,10 @@ const CHART_COLORS = {
 };
 
 export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
-  const cardBg = `${theme.background.surface}cc`;
   const borderColor = theme.border.default;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Realtime Strip */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <LivePulse
@@ -35,16 +34,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
         {data.realtimeUsers.length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {data.realtimeUsers.slice(0, 5).map((u) => (
-              <span
-                key={u.uid}
-                style={{
-                  fontSize: 11,
-                  padding: '3px 8px',
-                  borderRadius: 6,
-                  background: `${theme.background.surface}80`,
-                  color: theme.text.secondary,
-                }}
-              >
+              <span key={u.uid} className="adm-pill">
                 {u.page}
               </span>
             ))}
@@ -53,13 +43,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
       </div>
 
       {/* KPI Scorecards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: 12,
-        }}
-      >
+      <div className="adm-grid">
         <KpiScorecard
           title="DAU"
           value={data.dauToday}
@@ -103,25 +87,9 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
-          padding: 20,
-        }}
+        className="adm-card"
       >
-        <h3
-          style={{
-            margin: '0 0 16px',
-            fontSize: 15,
-            fontWeight: 700,
-            color: theme.text.primary,
-          }}
-        >
-          Aktivitaet (letzte 30 Tage)
-        </h3>
+        <h3 className="adm-card__title">Aktivitaet (letzte 30 Tage)</h3>
         <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={260}>
           <AreaChart data={data.activityChartData}>
             <defs>
@@ -189,37 +157,15 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
       </motion.div>
 
       {/* Top Events + Top Pages */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 12,
-        }}
-      >
+      <div className="adm-grid">
         {/* Top Events */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <h3
-            style={{
-              margin: '0 0 16px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.text.primary,
-            }}
-          >
-            Top Events heute
-          </h3>
+          <h3 className="adm-card__title">Top Events heute</h3>
           <SafeResponsiveContainer
             minWidth={0}
             minHeight={0}
@@ -267,25 +213,9 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <h3
-            style={{
-              margin: '0 0 16px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.text.primary,
-            }}
-          >
-            Top Seiten heute
-          </h3>
+          <h3 className="adm-card__title">Top Seiten heute</h3>
           {data.topPages.length > 0 ? (
             <SafeResponsiveContainer
               minWidth={0}

@@ -41,41 +41,19 @@ interface ExtensionChartsProps {
 }
 
 export const ExtensionCharts = React.memo<ExtensionChartsProps>(
-  ({ platformPieData, seriesBarData, hourlyData, cardBg, borderColor, theme }) => {
+  ({ platformPieData, seriesBarData, hourlyData, borderColor, theme }) => {
     return (
       <>
         {/* Charts Row */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: 12,
-          }}
-        >
+        <div className="adm-grid">
           {/* Platform Distribution */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            style={{
-              background: cardBg,
-              backdropFilter: 'var(--blur-lg)',
-              WebkitBackdropFilter: 'var(--blur-lg)',
-              border: `1px solid ${borderColor}`,
-              borderRadius: 16,
-              padding: 20,
-            }}
+            className="adm-card"
           >
-            <h3
-              style={{
-                margin: '0 0 16px',
-                fontSize: 15,
-                fontWeight: 700,
-                color: theme.text.primary,
-              }}
-            >
-              Plattform-Verteilung
-            </h3>
+            <h3 className="adm-card__title">Plattform-Verteilung</h3>
             {platformPieData.length > 0 ? (
               <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={250}>
                 <PieChart>
@@ -119,25 +97,9 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            style={{
-              background: cardBg,
-              backdropFilter: 'var(--blur-lg)',
-              WebkitBackdropFilter: 'var(--blur-lg)',
-              border: `1px solid ${borderColor}`,
-              borderRadius: 16,
-              padding: 20,
-            }}
+            className="adm-card"
           >
-            <h3
-              style={{
-                margin: '0 0 16px',
-                fontSize: 15,
-                fontWeight: 700,
-                color: theme.text.primary,
-              }}
-            >
-              Geschaute Serien (Extension)
-            </h3>
+            <h3 className="adm-card__title">Geschaute Serien (Extension)</h3>
             {seriesBarData.length > 0 ? (
               <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={250}>
                 <BarChart data={seriesBarData} layout="vertical">
@@ -182,25 +144,9 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <h3
-            style={{
-              margin: '0 0 16px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.text.primary,
-            }}
-          >
-            Extension-Aktivität nach Uhrzeit
-          </h3>
+          <h3 className="adm-card__title">Extension-Aktivität nach Uhrzeit</h3>
           <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={180}>
             <BarChart data={hourlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />

@@ -116,50 +116,30 @@ export function DataHealthTab({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Summary */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          padding: 16,
-          borderRadius: 12,
-          background: theme.background.paper,
-        }}
-      >
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: totalIssues > 0 ? '#ff4d6d' : '#06d6a0',
-            }}
-          >
-            {totalIssues}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Datenprobleme</div>
+      <div className="adm-stats">
+        <div className={`adm-stat ${totalIssues > 0 ? 'adm-tone-bad' : 'adm-tone-ok'}`}>
+          <div className="adm-stat__value">{totalIssues}</div>
+          <div className="adm-stat__label">Datenprobleme</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
-            {affectedUsers}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Betroffene User</div>
+        <div className="adm-stat adm-tone-info">
+          <div className="adm-stat__value">{affectedUsers}</div>
+          <div className="adm-stat__label">Betroffene User</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
-            {Object.keys(typeCounts).length}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Problem-Typen</div>
+        <div className="adm-stat adm-tone-info">
+          <div className="adm-stat__value">{Object.keys(typeCounts).length}</div>
+          <div className="adm-stat__label">Problem-Typen</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          {totalIssues === 0 ? (
-            <CheckCircle style={{ fontSize: 28, color: '#06d6a0' }} />
-          ) : (
-            <Warning style={{ fontSize: 28, color: '#ff4d6d' }} />
-          )}
-          <div style={{ fontSize: 12, color: theme.text.muted }}>
-            {totalIssues === 0 ? 'Alles OK' : 'Probleme'}
+        <div className={`adm-stat ${totalIssues === 0 ? 'adm-tone-ok' : 'adm-tone-bad'}`}>
+          <div className="adm-stat__value">
+            {totalIssues === 0 ? (
+              <CheckCircle style={{ fontSize: 26 }} />
+            ) : (
+              <Warning style={{ fontSize: 26 }} />
+            )}
           </div>
+          <div className="adm-stat__label">{totalIssues === 0 ? 'Alles OK' : 'Probleme'}</div>
         </div>
       </div>
 

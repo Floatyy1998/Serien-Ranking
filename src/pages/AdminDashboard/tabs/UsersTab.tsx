@@ -189,7 +189,7 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Stats bar */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <Stat label="Gesamt" value={data.usersList.length} theme={theme} />
@@ -242,19 +242,13 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
             </span>
           )}
           <button
+            className="adm-chip"
             onClick={handleRebuildSearchIndex}
             disabled={rebuildState === 'running'}
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              padding: '6px 14px',
-              borderRadius: 10,
-              border: `1px solid ${theme.border.default}`,
-              background: `${theme.background.surface}80`,
-              color: rebuildState === 'running' ? theme.text.muted : theme.primary,
-              fontSize: 12,
-              fontWeight: 600,
               cursor: rebuildState === 'running' ? 'wait' : 'pointer',
             }}
           >
@@ -267,14 +261,7 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          background: `${theme.background.surface}cc`,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${theme.border.default}`,
-          borderRadius: 16,
-          padding: 16,
-        }}
+        className="adm-card"
       >
         <DataTable
           data={data.usersList}
@@ -305,30 +292,25 @@ UsersTab.displayName = 'UsersTab';
 function Stat({
   label,
   value,
-  theme,
   color,
 }: {
   label: string;
   value: number;
-  theme: ReturnType<typeof useTheme>['currentTheme'];
+  /** @deprecated Farben kommen aus adminKit.css — Prop nur noch für Altaufrufe. */
+  theme?: ReturnType<typeof useTheme>['currentTheme'];
   color?: string;
 }) {
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 14px',
-        borderRadius: 10,
-        background: `${theme.background.surface}80`,
-        border: `1px solid ${theme.border.default}`,
-      }}
+      className="adm-stat"
+      style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}
     >
-      <span style={{ fontSize: 20, fontWeight: 800, color: color || theme.text.primary }}>
+      <span className="adm-stat__value" style={{ fontSize: 20, ...(color ? { color } : {}) }}>
         {value}
       </span>
-      <span style={{ fontSize: 12, color: theme.text.muted }}>{label}</span>
+      <span className="adm-stat__label" style={{ marginTop: 0 }}>
+        {label}
+      </span>
     </div>
   );
 }

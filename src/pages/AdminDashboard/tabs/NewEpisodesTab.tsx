@@ -118,41 +118,22 @@ export function NewEpisodesTab({
   const lastRun = data?.lastRunStart || data?.runStart;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Summary */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          padding: 16,
-          borderRadius: 12,
-          background: theme.background.paper,
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: hasNew ? theme.primary : theme.text.muted,
-            }}
-          >
-            {totalNew}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Neue Episoden (7 Tage)</div>
+      <div className="adm-stats">
+        <div className={`adm-stat ${hasNew ? 'adm-tone-info' : ''}`}>
+          <div className="adm-stat__value">{totalNew}</div>
+          <div className="adm-stat__label">Neue Episoden (7 Tage)</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
-            {seriesList.length}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Serien betroffen</div>
+        <div className="adm-stat adm-tone-info">
+          <div className="adm-stat__value">{seriesList.length}</div>
+          <div className="adm-stat__label">Serien betroffen</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: theme.text.muted }}>Letzter Lauf</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: theme.text.primary, marginTop: 2 }}>
+        <div className="adm-stat" style={{ minWidth: 190 }}>
+          <div className="adm-stat__value" style={{ fontSize: 15, fontWeight: 600 }}>
             {lastRun ? new Date(lastRun).toLocaleString('de-DE') : '—'}
           </div>
+          <div className="adm-stat__label">Letzter Lauf</div>
         </div>
       </div>
 

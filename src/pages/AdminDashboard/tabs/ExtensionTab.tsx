@@ -235,15 +235,9 @@ export const ExtensionTab = React.memo<ExtensionTabProps>(({ data, theme }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* KPI Scorecards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: 12,
-        }}
-      >
+      <div className="adm-grid">
         <KpiScorecard
           title="Extension User"
           value={extData.extUserCount}

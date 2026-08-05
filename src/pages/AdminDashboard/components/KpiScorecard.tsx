@@ -13,7 +13,8 @@ interface KpiScorecardProps {
   sparklineData?: Array<{ value: number }>;
   icon: React.ReactNode;
   color: string;
-  theme: ReturnType<typeof useTheme>['currentTheme'];
+  /** @deprecated Farben kommen aus adminKit.css — Prop nur noch für Altaufrufe. */
+  theme?: ReturnType<typeof useTheme>['currentTheme'];
   delay?: number;
 }
 
@@ -33,49 +34,20 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix?: string }) {
 }
 
 export const KpiScorecard = React.memo<KpiScorecardProps>(
-  ({ title, value, delta, suffix, sparklineData, icon, color, theme, delay = 0 }) => {
-    const deltaColor =
-      delta === undefined || delta === 0
-        ? theme.text.muted
-        : delta > 0
-          ? theme.status.success
-          : theme.status.error;
-    const DeltaIcon =
-      delta === undefined || delta === 0 ? TrendingFlat : delta > 0 ? TrendingUp : TrendingDown;
+  ({ title, value, delta, suffix, sparklineData, icon, color, delay = 0 }) => {
+    const trend = delta === undefined || delta === 0 ? 'flat' : delta > 0 ? 'up' : 'down';
+    const DeltaIcon = trend === 'flat' ? TrendingFlat : trend === 'up' ? TrendingUp : TrendingDown;
 
     return (
       <motion.div
+        className="adm-kpi"
+        style={{ '--adm-tone': color } as React.CSSProperties}
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: delay * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
-        style={{
-          background: `${theme.background.surface}cc`,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${theme.border.default}`,
-          borderRadius: 16,
-          padding: '16px 18px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          minWidth: 160,
-          flex: '1 1 0',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
       >
-        {/* Sparkline background */}
         {sparklineData && sparklineData.length > 1 && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 50,
-              opacity: 0.2,
-            }}
-          >
+          <div className="adm-kpi__spark">
             <SafeResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={sparklineData}>
                 <defs>
@@ -98,52 +70,17 @@ export const KpiScorecard = React.memo<KpiScorecardProps>(
           </div>
         )}
 
-        {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              background: `${color}20`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color,
-              flexShrink: 0,
-            }}
-          >
-            {icon}
-          </div>
-          <span style={{ fontSize: 12, color: theme.text.muted, fontWeight: 600 }}>{title}</span>
+        <div className="adm-kpi__head">
+          <div className="adm-kpi__icon">{icon}</div>
+          <span className="adm-kpi__title">{title}</span>
         </div>
 
-        {/* Value */}
-        <div
-          style={{
-            fontSize: 28,
-            fontWeight: 800,
-            color: theme.text.primary,
-            letterSpacing: '-0.03em',
-            zIndex: 1,
-          }}
-        >
+        <div className="adm-kpi__value">
           <AnimatedNumber value={value} suffix={suffix} />
         </div>
 
-        {/* Delta */}
         {delta !== undefined && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              fontSize: 12,
-              fontWeight: 600,
-              color: deltaColor,
-              zIndex: 1,
-            }}
-          >
+          <div className={`adm-kpi__delta adm-kpi__delta--${trend}`}>
             <DeltaIcon style={{ fontSize: 16 }} />
             <span>
               {delta > 0 ? '+' : ''}

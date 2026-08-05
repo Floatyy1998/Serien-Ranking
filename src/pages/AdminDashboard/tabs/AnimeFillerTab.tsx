@@ -143,22 +143,16 @@ export const AnimeFillerTab = () => {
   );
 
   const statBox = (label: string, value: number | string, tone: string, icon?: React.ReactNode) => (
-    <div
-      style={{
-        flex: '1 1 110px',
-        padding: '12px 14px',
-        borderRadius: 12,
-        background: `color-mix(in srgb, ${tone} 10%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${tone} 30%, transparent)`,
-      }}
-    >
+    <div className="adm-stat" style={{ '--adm-tone': tone } as React.CSSProperties}>
       <div
+        className="adm-stat__label"
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 6,
+          marginTop: 0,
+          marginBottom: 4,
           color: tone,
-          fontSize: 11,
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: 0.5,
@@ -167,15 +161,7 @@ export const AnimeFillerTab = () => {
         {icon}
         {label}
       </div>
-      <div
-        style={{
-          marginTop: 4,
-          fontSize: 22,
-          fontWeight: 800,
-          fontFamily: 'var(--font-display)',
-          color: currentTheme.text.primary,
-        }}
-      >
+      <div className="adm-stat__value" style={{ fontSize: 22 }}>
         {value}
       </div>
     </div>

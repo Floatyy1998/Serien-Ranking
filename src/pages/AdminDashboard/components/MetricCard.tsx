@@ -5,41 +5,26 @@ import type { useTheme } from '../../../contexts/ThemeContext';
 interface MetricCardProps {
   title: string;
   children: React.ReactNode;
-  theme: ReturnType<typeof useTheme>['currentTheme'];
+  /** @deprecated Farben kommen aus adminKit.css — Prop nur noch für Altaufrufe. */
+  theme?: ReturnType<typeof useTheme>['currentTheme'];
   delay?: number;
   icon?: React.ReactNode;
   headerRight?: React.ReactNode;
 }
 
 export const MetricCard = React.memo<MetricCardProps>(
-  ({ title, children, theme, delay = 0, icon, headerRight }) => (
+  ({ title, children, delay = 0, icon, headerRight }) => (
     <motion.div
+      className="adm-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      style={{
-        background: `${theme.background.surface}cc`,
-        backdropFilter: 'var(--blur-lg)',
-        WebkitBackdropFilter: 'var(--blur-lg)',
-        border: `1px solid ${theme.border.default}`,
-        borderRadius: 16,
-        padding: 20,
-      }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="adm-card__head">
+        <h3 className="adm-card__title">
           {icon}
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: theme.text.primary }}>
-            {title}
-          </h3>
-        </div>
+          {title}
+        </h3>
         {headerRight}
       </div>
       {children}

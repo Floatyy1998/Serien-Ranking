@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle, ContentCopy, Delete, Warning } from '@mui/icons-material';
+import type { CSSProperties } from 'react';
+import { CheckCircle, ContentCopy, Delete } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
+import { buildEnvRows, formatDuration } from '../../../lib/errorReport/envRows';
 import { groupReports, type ErrorGroup } from '../../../lib/errorReport/group';
-import type { ErrorKind, ErrorReport } from '../../../types/ErrorReport';
-
-interface TabTheme {
-  primary: string;
-  text: { primary: string; muted: string };
-  background: { paper: string };
-}
+import type { BreadcrumbType, ErrorKind, ErrorReport } from '../../../types/ErrorReport';
 
 const KIND_LABEL: Record<ErrorKind, string> = {
   render: 'Render',
@@ -18,11 +14,20 @@ const KIND_LABEL: Record<ErrorKind, string> = {
   resource: 'Ressource',
 };
 
-const KIND_COLOR: Record<ErrorKind, string> = {
-  render: '#ff4d6d',
-  error: '#ff9f1c',
-  promise: '#8338ec',
-  resource: '#3a86ff',
+const KIND_TONE: Record<ErrorKind, string> = {
+  render: '#ff5c7a',
+  error: '#f2a648',
+  promise: '#c08cff',
+  resource: '#7aa2ff',
+};
+
+const CRUMB_LABEL: Record<BreadcrumbType, string> = {
+  route: 'Route',
+  click: 'Klick',
+  fetch: 'Anfrage',
+  console: 'Konsole',
+  visibility: 'Sichtbarkeit',
+  error: 'Fehler',
 };
 
 const formatTime = (ts: number): string =>
@@ -40,33 +45,34 @@ const relative = (ts: number): string => {
 
 function groupToText(group: ErrorGroup): string {
   const r = group.latest;
-  const env = Object.entries(r.env || {})
-    .map(([k, v]) => `  ${k}: ${v}`)
+  const env = buildEnvRows(r.env)
+    .map((row) => `  ${row.label}: ${row.value}`)
     .join('\n');
   const crumbs = (r.breadcrumbs || [])
-    .map((b) => `  +${b.t}ms [${b.type}] ${b.label}${b.detail ? ` (${b.detail})` : ''}`)
+    .map(
+      (b) =>
+        `  ${formatDuration(b.t)} [${CRUMB_LABEL[b.type] || b.type}] ${b.label}` +
+        (b.detail ? ` (${b.detail})` : '')
+    )
     .join('\n');
   return [
     `${r.name}: ${r.message}`,
     `Fingerprint ${group.fingerprint} · ${group.occurrences} Auftreten · ${group.users} Nutzer`,
-    `Zuletzt ${formatTime(group.lastTs)}`,
+    `Erstmals ${formatTime(group.firstTs)} · zuletzt ${formatTime(group.lastTs)}`,
     r.source ? `Quelle: ${r.source}` : '',
     '',
-    'Umgebung:',
-    env,
+    `Umgebung:\n${env}`,
     '',
-    'Verlauf:',
-    crumbs,
+    `Verlauf:\n${crumbs}`,
     '',
-    'Stack:',
-    r.stack || '(keiner)',
+    `Stack:\n${r.stack || '(keiner)'}`,
     r.componentStack ? `\nComponent-Stack:\n${r.componentStack}` : '',
   ]
     .filter(Boolean)
     .join('\n');
 }
 
-export function ClientErrorsTab({ theme }: { theme: TabTheme }) {
+export function ClientErrorsTab() {
   const [reports, setReports] = useState<ErrorReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [openOnly, setOpenOnly] = useState(true);
@@ -89,12 +95,13 @@ export function ClientErrorsTab({ theme }: { theme: TabTheme }) {
   }, [reports, kind, openOnly]);
 
   const totals = useMemo(() => {
-    const users = new Set(reports.map((r) => r.uid).filter(Boolean));
+    const all = groupReports(reports);
     return {
-      groups: groupReports(reports).length,
-      open: reports.filter((r) => r.status !== 'resolved').length,
-      users: users.size,
+      groups: all.length,
+      open: all.filter((g) => g.openCount > 0).length,
       occurrences: reports.reduce((sum, r) => sum + 1 + (r.suppressed || 0), 0),
+      users: new Set(reports.map((r) => r.uid).filter(Boolean)).size,
+      resolved: all.filter((g) => g.openCount === 0).length,
     };
   }, [reports]);
 
@@ -114,70 +121,42 @@ export function ClientErrorsTab({ theme }: { theme: TabTheme }) {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: 40, textAlign: 'center', color: theme.text.muted }}>Laden...</div>
-    );
+    return <div className="adm-empty">Laden...</div>;
   }
 
-  const cardStyle = {
-    background: theme.background.paper,
-    borderRadius: 12,
-    padding: 14,
-  } as const;
+  const stats = [
+    { value: totals.groups, label: 'Fehlergruppen', tone: 'adm-tone-info' },
+    { value: totals.open, label: 'offen', tone: totals.open ? 'adm-tone-bad' : 'adm-tone-ok' },
+    { value: totals.occurrences, label: 'Auftreten', tone: '' },
+    { value: totals.users, label: 'betroffene Nutzer', tone: '' },
+    { value: totals.resolved, label: 'erledigt', tone: 'adm-tone-ok' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ ...cardStyle, display: 'flex', gap: 16, alignItems: 'center' }}>
-        {[
-          { value: totals.groups, label: 'Fehlergruppen' },
-          { value: totals.open, label: 'offen' },
-          { value: totals.occurrences, label: 'Auftreten' },
-          { value: totals.users, label: 'betroffene Nutzer' },
-        ].map((stat) => (
-          <div key={stat.label} style={{ flex: 1, textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: 26,
-                fontWeight: 700,
-                color: totals.open > 0 ? '#ff4d6d' : '#06d6a0',
-              }}
-            >
-              {stat.value}
-            </div>
-            <div style={{ fontSize: 12, color: theme.text.muted }}>{stat.label}</div>
+    <div className="adm-stack">
+      <div className="adm-stats">
+        {stats.map((stat) => (
+          <div key={stat.label} className={`adm-stat ${stat.tone}`}>
+            <div className="adm-stat__value">{stat.value}</div>
+            <div className="adm-stat__label">{stat.label}</div>
           </div>
         ))}
-        {totals.open === 0 && <CheckCircle style={{ fontSize: 26, color: '#06d6a0' }} />}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="adm-chips">
         <button
+          className={`adm-chip ${openOnly ? 'adm-chip--on' : ''}`}
           onClick={() => setOpenOnly((v) => !v)}
-          style={{
-            padding: '5px 12px',
-            borderRadius: 999,
-            cursor: 'pointer',
-            border: `1px solid ${openOnly ? theme.primary : 'transparent'}`,
-            background: theme.background.paper,
-            color: openOnly ? theme.primary : theme.text.muted,
-            fontSize: 12,
-          }}
         >
           nur offene
         </button>
+        <span className="adm-chips__sep" />
         {(Object.keys(KIND_LABEL) as ErrorKind[]).map((k) => (
           <button
             key={k}
+            className={`adm-chip ${kind === k ? 'adm-chip--on' : ''}`}
+            style={{ '--adm-tone': KIND_TONE[k] } as CSSProperties}
             onClick={() => setKind((cur) => (cur === k ? null : k))}
-            style={{
-              padding: '5px 12px',
-              borderRadius: 999,
-              cursor: 'pointer',
-              border: `1px solid ${kind === k ? KIND_COLOR[k] : 'transparent'}`,
-              background: theme.background.paper,
-              color: kind === k ? KIND_COLOR[k] : theme.text.muted,
-              fontSize: 12,
-            }}
           >
             {KIND_LABEL[k]}
           </button>
@@ -185,134 +164,160 @@ export function ClientErrorsTab({ theme }: { theme: TabTheme }) {
       </div>
 
       {groups.length === 0 && (
-        <div style={{ ...cardStyle, textAlign: 'center', color: theme.text.muted }}>
-          Keine Fehler im gewählten Filter.
+        <div className="adm-card">
+          <div className="adm-empty">
+            <div className="adm-empty__t">Keine Fehler im gewählten Filter</div>
+            <div className="adm-empty__s">
+              Berichte erscheinen automatisch, sobald bei einem Nutzer etwas schiefgeht.
+            </div>
+          </div>
         </div>
       )}
 
       {groups.map((group) => {
         const latest = group.latest;
         const isOpen = expanded === group.fingerprint;
+        const envRows = buildEnvRows(latest.env);
         return (
-          <div key={group.fingerprint} style={cardStyle}>
+          <div
+            key={group.fingerprint}
+            className="adm-row"
+            style={{ '--adm-tone': KIND_TONE[latest.kind] || '#ff5c7a' } as CSSProperties}
+          >
             <div
+              className="adm-row__head"
               onClick={() => setExpanded(isOpen ? null : group.fingerprint)}
-              style={{ cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start' }}
             >
-              <Warning style={{ fontSize: 20, color: KIND_COLOR[latest.kind] || '#ff4d6d' }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: theme.text.primary, fontWeight: 600, fontSize: 14 }}>
+              <div className="adm-row__bar" />
+              <div className="adm-tag">{KIND_LABEL[latest.kind] || latest.kind}</div>
+              <div style={{ minWidth: 0 }}>
+                <div className="adm-row__title">
                   {latest.name}: {latest.message}
                 </div>
-                <div style={{ color: theme.text.muted, fontSize: 12, marginTop: 4 }}>
-                  {KIND_LABEL[latest.kind] || latest.kind} · {group.occurrences} Auftreten ·{' '}
-                  {group.users} Nutzer · {latest.env?.route || '?'} · Build {latest.env?.build} ·{' '}
-                  {relative(group.lastTs)}
-                  {group.openCount === 0 && ' · erledigt'}
+                <div className="adm-row__meta">
+                  <span>
+                    <b>{group.occurrences}</b> Auftreten
+                  </span>
+                  <span>
+                    <b>{group.users}</b> Nutzer
+                  </span>
+                  <span>{latest.env?.route || '?'}</span>
+                  <span>Build {latest.env?.build}</span>
+                  <span>{relative(group.lastTs)}</span>
+                  {group.openCount === 0 && <span>erledigt</span>}
                 </div>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void copyTextToClipboard(groupToText(group));
-                }}
-                title="Details kopieren"
-                style={{ background: 'none', border: 'none', color: theme.text.muted }}
-              >
-                <ContentCopy style={{ fontSize: 16 }} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void resolveGroup(group.fingerprint);
-                }}
-                title="Als erledigt markieren"
-                style={{ background: 'none', border: 'none', color: theme.text.muted }}
-              >
-                <CheckCircle style={{ fontSize: 16 }} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void deleteGroup(group.fingerprint);
-                }}
-                title="Gruppe löschen"
-                style={{ background: 'none', border: 'none', color: theme.text.muted }}
-              >
-                <Delete style={{ fontSize: 16 }} />
-              </button>
+              <div className="adm-row__acts">
+                <button
+                  className="adm-icon-btn"
+                  title="Details kopieren"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void copyTextToClipboard(groupToText(group));
+                  }}
+                >
+                  <ContentCopy style={{ fontSize: 16 }} />
+                </button>
+                <button
+                  className="adm-icon-btn"
+                  title="Als erledigt markieren"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void resolveGroup(group.fingerprint);
+                  }}
+                >
+                  <CheckCircle style={{ fontSize: 16 }} />
+                </button>
+                <button
+                  className="adm-icon-btn"
+                  title="Gruppe löschen"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void deleteGroup(group.fingerprint);
+                  }}
+                >
+                  <Delete style={{ fontSize: 16 }} />
+                </button>
+              </div>
             </div>
 
             {isOpen && (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: 12, color: theme.text.muted }}>
-                  Erstmals {formatTime(group.firstTs)} · zuletzt {formatTime(group.lastTs)} ·
-                  Fingerprint {group.fingerprint}
-                  {latest.source ? ` · ${latest.source}` : ''}
-                </div>
-
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                    gap: 6,
-                    fontSize: 12,
-                  }}
-                >
-                  {Object.entries(latest.env || {}).map(([key, value]) => (
-                    <div key={key} style={{ color: theme.text.muted }}>
-                      <span style={{ opacity: 0.7 }}>{key}:</span>{' '}
-                      <span style={{ color: theme.text.primary }}>{String(value)}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {latest.breadcrumbs?.length > 0 && (
+              <div className="adm-row__body">
+                <div className="adm-detail">
                   <div>
-                    <div style={{ fontSize: 12, color: theme.text.muted, marginBottom: 4 }}>
-                      Verlauf vor dem Fehler
+                    <div className="adm-sec">
+                      <h4 className="adm-sec__title">Umgebung</h4>
+                      <div className="adm-sec__rule" />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {latest.breadcrumbs.map((crumb, i) => (
+                    <div className="adm-kv">
+                      {envRows.map((row) => (
                         <div
-                          key={`${crumb.t}-${i}`}
-                          style={{ fontSize: 11, color: theme.text.muted, fontFamily: 'monospace' }}
+                          key={row.label}
+                          className={`adm-kv__item ${row.wide ? 'adm-kv__item--wide' : ''}`}
                         >
-                          +{crumb.t}ms [{crumb.type}] {crumb.label}
-                          {crumb.detail ? ` (${crumb.detail})` : ''}
+                          <div className="adm-kv__k">{row.label}</div>
+                          <div className="adm-kv__v">{row.value}</div>
                         </div>
                       ))}
                     </div>
+                    <div style={{ marginTop: 10, fontSize: 11, color: 'var(--adm-faint)' }}>
+                      Erstmals {formatTime(group.firstTs)} · zuletzt {formatTime(group.lastTs)} ·
+                      Fingerprint {group.fingerprint}
+                      {latest.source ? ` · ${latest.source}` : ''}
+                    </div>
                   </div>
-                )}
 
-                {latest.stack && (
-                  <pre
-                    style={{
-                      fontSize: 11,
-                      color: theme.text.muted,
-                      whiteSpace: 'pre-wrap',
-                      margin: 0,
-                      overflowX: 'auto',
-                    }}
-                  >
-                    {latest.stack}
-                  </pre>
-                )}
+                  <div>
+                    <div className="adm-sec">
+                      <h4 className="adm-sec__title">Verlauf vor dem Fehler</h4>
+                      <div className="adm-sec__rule" />
+                    </div>
+                    {latest.breadcrumbs?.length ? (
+                      <div className="adm-time adm-panel">
+                        {latest.breadcrumbs.map((crumb, i) => (
+                          <div
+                            key={`${crumb.t}-${i}`}
+                            className="adm-time__i"
+                            style={
+                              crumb.type === 'error' || crumb.detail
+                                ? ({ '--adm-tone': '#ff5c7a' } as CSSProperties)
+                                : undefined
+                            }
+                          >
+                            <div className="adm-time__t">{formatDuration(crumb.t)}</div>
+                            <div className="adm-time__dot" />
+                            <div className="adm-time__l">
+                              <span>{CRUMB_LABEL[crumb.type] || crumb.type}</span> {crumb.label}
+                              {crumb.detail ? <span> · {crumb.detail}</span> : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="adm-panel"
+                        style={{ color: 'var(--adm-faint)', fontSize: 12 }}
+                      >
+                        Kein Verlauf aufgezeichnet.
+                      </div>
+                    )}
+                  </div>
 
-                {latest.componentStack && (
-                  <pre
-                    style={{
-                      fontSize: 11,
-                      color: theme.text.muted,
-                      whiteSpace: 'pre-wrap',
-                      margin: 0,
-                      overflowX: 'auto',
-                    }}
-                  >
-                    {latest.componentStack}
-                  </pre>
-                )}
+                  {(latest.stack || latest.componentStack) && (
+                    <div className="adm-detail__full">
+                      <div className="adm-sec">
+                        <h4 className="adm-sec__title">Stack</h4>
+                        <div className="adm-sec__rule" />
+                      </div>
+                      {latest.stack && <pre className="adm-code">{latest.stack}</pre>}
+                      {latest.componentStack && (
+                        <pre className="adm-code" style={{ marginTop: 8 }}>
+                          {latest.componentStack}
+                        </pre>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
@@ -117,72 +118,33 @@ export function BackendErrorsTab({
   const hasErrors = allErrors.length > 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Summary */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          padding: 16,
-          borderRadius: 12,
-          background: theme.background.paper,
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: hasErrors ? '#ff4d6d' : '#06d6a0',
-            }}
-          >
-            {allErrors.length}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Fehler gesamt</div>
+      <div className="adm-stats">
+        <div className={`adm-stat ${hasErrors ? 'adm-tone-bad' : 'adm-tone-ok'}`}>
+          <div className="adm-stat__value">{allErrors.length}</div>
+          <div className="adm-stat__label">Fehler gesamt</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
-            {Object.keys(logs).length}
-          </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Runs</div>
+        <div className="adm-stat adm-tone-info">
+          <div className="adm-stat__value">{Object.keys(logs).length}</div>
+          <div className="adm-stat__label">Runs</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          {hasErrors ? (
-            <Warning style={{ fontSize: 28, color: '#ff4d6d' }} />
-          ) : (
-            <CheckCircle style={{ fontSize: 28, color: '#06d6a0' }} />
-          )}
-          <div style={{ fontSize: 12, color: theme.text.muted }}>
-            {hasErrors ? 'Fehler' : 'Alles OK'}
+        <div className={`adm-stat ${hasErrors ? 'adm-tone-bad' : 'adm-tone-ok'}`}>
+          <div className="adm-stat__value">
+            {hasErrors ? (
+              <Warning style={{ fontSize: 26 }} />
+            ) : (
+              <CheckCircle style={{ fontSize: 26 }} />
+            )}
           </div>
+          <div className="adm-stat__label">{hasErrors ? 'Fehler' : 'Alles OK'}</div>
         </div>
         {hasErrors && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={handleCopyAll}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: theme.text.muted,
-                cursor: 'pointer',
-                padding: 4,
-              }}
-              title="Alle Errors kopieren"
-            >
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginLeft: 'auto' }}>
+            <button className="adm-icon-btn" onClick={handleCopyAll} title="Alle Errors kopieren">
               <ContentCopy style={{ fontSize: 18 }} />
             </button>
-            <button
-              onClick={handleClear}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: theme.text.muted,
-                cursor: 'pointer',
-                padding: 4,
-              }}
-              title="Alle Errors löschen"
-            >
+            <button className="adm-icon-btn" onClick={handleClear} title="Alle Errors löschen">
               <Delete style={{ fontSize: 18 }} />
             </button>
           </div>
@@ -191,20 +153,10 @@ export function BackendErrorsTab({
 
       {/* Action tabs */}
       {Object.keys(logs).length > 0 && (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="adm-chips">
           <button
+            className={`adm-chip ${activeAction === null ? 'adm-chip--on' : ''}`}
             onClick={() => setActiveAction(null)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 20,
-              border:
-                activeAction === null ? `2px solid ${theme.primary}` : '2px solid transparent',
-              background: `${theme.text.muted}15`,
-              color: theme.text.primary,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
           >
             Alle ({allErrors.length})
           </button>
@@ -216,18 +168,9 @@ export function BackendErrorsTab({
               return (
                 <button
                   key={action}
+                  className={`adm-chip ${activeAction === action ? 'adm-chip--on' : ''}`}
+                  style={{ '--adm-tone': color } as CSSProperties}
                   onClick={() => setActiveAction(activeAction === action ? null : action)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: 20,
-                    border:
-                      activeAction === action ? `2px solid ${color}` : '2px solid transparent',
-                    background: `${color}20`,
-                    color,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
                   {action} ({count})
                 </button>

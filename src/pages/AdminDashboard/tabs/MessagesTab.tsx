@@ -203,39 +203,11 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     notifMessage.trim().length > 0 &&
     !notifSending;
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    background: theme.background.default,
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '8px',
-    color: theme.text.secondary,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="adm-stack">
       {/* In-App-Notification (+ optional Push) über /admin/notify */}
-      <div
-        style={{
-          padding: '16px',
-          borderRadius: '12px',
-          background: theme.background.surface,
-          border: `1px solid rgba(255,255,255,0.06)`,
-        }}
-      >
-        <h3
-          style={{
-            margin: '0 0 12px',
-            fontSize: '14px',
-            color: theme.text.secondary,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
+      <div className="adm-card">
+        <h3 className="adm-card__title" style={{ marginBottom: 12 }}>
           <NotificationsActive style={{ fontSize: '16px', color: theme.primary }} />
           In-App-Notification senden
         </h3>
@@ -254,16 +226,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
               <button
                 key={f.id}
                 onClick={() => setNotifLangFilter(f.id)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  border: `1px solid ${active ? theme.primary : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? `${theme.primary}20` : 'transparent',
-                  color: active ? theme.primary : theme.text.muted,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
+                className={`adm-chip ${active ? 'adm-chip--on' : ''}`}
               >
                 {f.label}
               </button>
@@ -278,35 +241,13 @@ export function MessagesTab({ theme }: MessagesTabProps) {
             onChange={(e) => setNotifSearch(e.target.value)}
             onFocus={() => setNotifListOpen(true)}
             placeholder="Empfänger suchen (Name oder UID)..."
-            style={{ ...inputStyle, flex: 1, width: 'auto', minWidth: '180px' }}
+            className="adm-input"
+            style={{ flex: 1, width: 'auto', minWidth: '180px' }}
           />
-          <button
-            onClick={() => setNotifListOpen((v) => !v)}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: theme.background.default,
-              color: theme.text.secondary,
-              cursor: 'pointer',
-              fontSize: '13px',
-            }}
-          >
+          <button onClick={() => setNotifListOpen((v) => !v)} className="adm-btn">
             {notifListOpen ? 'Liste ▴' : 'Liste ▾'}
           </button>
-          <button
-            onClick={selectAllNotifTargets}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '8px',
-              border: `1px solid ${theme.primary}40`,
-              background: `${theme.primary}15`,
-              color: theme.primary,
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-            }}
-          >
+          <button onClick={selectAllNotifTargets} className="adm-btn adm-btn--primary">
             Alle auswählen (
             {notifLangFilter === 'all'
               ? Object.keys(users).length
@@ -316,33 +257,14 @@ export function MessagesTab({ theme }: MessagesTabProps) {
             )
           </button>
           {Object.keys(notifTargets).length > 0 && (
-            <button
-              onClick={() => setNotifTargets({})}
-              style={{
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.08)',
-                background: 'transparent',
-                color: theme.text.muted,
-                cursor: 'pointer',
-                fontSize: '13px',
-              }}
-            >
+            <button onClick={() => setNotifTargets({})} className="adm-btn adm-btn--ghost">
               Leeren
             </button>
           )}
         </div>
 
         {(notifListOpen || notifSearch) && (
-          <div
-            style={{
-              maxHeight: '220px',
-              overflowY: 'auto',
-              marginBottom: '8px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
+          <div className="adm-list" style={{ marginBottom: 8 }}>
             {notifFilteredUsers.map(([uid, u]) => {
               const selected = !!notifTargets[uid];
               return (
@@ -456,7 +378,8 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           onChange={(e) => setNotifTitle(e.target.value)}
           maxLength={120}
           placeholder="Titel..."
-          style={{ ...inputStyle, marginBottom: '8px' }}
+          className="adm-input"
+          style={{ marginBottom: '8px' }}
         />
         <textarea
           value={notifMessage}
@@ -464,7 +387,8 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           maxLength={1000}
           placeholder="Nachricht..."
           rows={3}
-          style={{ ...inputStyle, resize: 'vertical', marginBottom: '8px' }}
+          className="adm-input"
+          style={{ resize: 'vertical', marginBottom: '8px' }}
         />
 
         <div
@@ -529,14 +453,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
       </div>
 
       {/* Neue Nachricht */}
-      <div
-        style={{
-          padding: '16px',
-          borderRadius: '12px',
-          background: theme.background.surface,
-          border: `1px solid rgba(255,255,255,0.06)`,
-        }}
-      >
+      <div className="adm-card">
         <h3 style={{ margin: '0 0 12px', fontSize: '14px', color: theme.text.secondary }}>
           Neue Nachricht senden
         </h3>
@@ -653,14 +570,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
       </div>
 
       {/* Aktive Nachrichten */}
-      <div
-        style={{
-          padding: '16px',
-          borderRadius: '12px',
-          background: theme.background.surface,
-          border: `1px solid rgba(255,255,255,0.06)`,
-        }}
-      >
+      <div className="adm-card">
         <h3 style={{ margin: '0 0 12px', fontSize: '14px', color: theme.text.secondary }}>
           Aktive Nachrichten ({Object.keys(messages).length})
         </h3>

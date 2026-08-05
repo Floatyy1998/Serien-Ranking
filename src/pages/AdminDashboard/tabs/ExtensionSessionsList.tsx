@@ -62,31 +62,15 @@ interface ExtensionSessionsListProps {
 }
 
 export const ExtensionSessionsList = React.memo<ExtensionSessionsListProps>(
-  ({ sessions, userProfiles, cardBg, borderColor, theme }) => {
+  ({ sessions, userProfiles, theme }) => {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
-          padding: 20,
-        }}
+        className="adm-card"
       >
-        <h3
-          style={{
-            margin: '0 0 16px',
-            fontSize: 15,
-            fontWeight: 700,
-            color: theme.text.primary,
-          }}
-        >
-          Sessions ({sessions.length})
-        </h3>
+        <h3 className="adm-card__title">Sessions ({sessions.length})</h3>
         <div
           style={{
             display: 'flex',

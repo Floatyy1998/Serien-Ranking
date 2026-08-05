@@ -31,7 +31,6 @@ const PAGE_COLORS: Record<string, string> = {
 };
 
 export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
-  const cardBg = `${theme.background.surface}cc`;
   const borderColor = theme.border.default;
   const [tick, setTick] = useState(0);
 
@@ -61,78 +60,38 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
   void tick;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Big counter */}
       <motion.div
+        className="adm-hero"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'var(--blur-lg)',
-          WebkitBackdropFilter: 'var(--blur-lg)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 20,
-          padding: '32px 20px',
-          textAlign: 'center',
-        }}
       >
-        <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
-          <div
-            style={{
-              position: 'absolute',
-              inset: -8,
-              borderRadius: '50%',
-              background: `${theme.status.success}15`,
-              animation: 'admin-pulse 2s ease-in-out infinite',
-            }}
-          />
+        <div className="adm-hero__ring">
           <motion.div
+            className="adm-hero__value"
             key={data.realtimeUsers.length}
             initial={{ scale: 1.3 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            style={{
-              fontSize: 64,
-              fontWeight: 900,
-              color: theme.text.primary,
-              letterSpacing: '-0.04em',
-              position: 'relative',
-            }}
           >
             {data.realtimeUsers.length}
           </motion.div>
         </div>
-        <p style={{ margin: 0, color: theme.text.muted, fontSize: 16, fontWeight: 600 }}>
+        <p className="adm-hero__label">
           {data.realtimeUsers.length === 1 ? 'User' : 'Users'} jetzt aktiv
         </p>
       </motion.div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 12,
-        }}
-      >
+      <div className="adm-grid">
         {/* Active users list */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <h3
-            style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: theme.text.primary }}
-          >
-            Aktive User
-          </h3>
+          <h3 className="adm-card__title">Aktive User</h3>
           <AnimatePresence mode="popLayout">
             {data.realtimeUsers.length === 0 ? (
               <motion.p
@@ -191,20 +150,9 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
+          className="adm-card"
         >
-          <h3
-            style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: theme.text.primary }}
-          >
-            Seiten-Verteilung
-          </h3>
+          <h3 className="adm-card__title">Seiten-Verteilung</h3>
           {pageDistribution.length > 0 ? (
             <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={240}>
               <PieChart>

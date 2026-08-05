@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Today } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import {
@@ -127,7 +128,7 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
   const isToday = daysBack === 0 && range === 1;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="adm-stack">
       {/* Date Navigation */}
       <div
         style={{
@@ -157,17 +158,8 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
           key={selectedDateKey + range}
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            padding: '8px 20px',
-            borderRadius: 12,
-            background: theme.background.surface,
-            border: `1px solid ${theme.border.default}`,
-            color: theme.text.primary,
-            fontSize: 14,
-            fontWeight: 700,
-            minWidth: 180,
-            textAlign: 'center',
-          }}
+          className="adm-panel"
+          style={{ fontSize: 14, fontWeight: 700, minWidth: 180, textAlign: 'center' }}
         >
           {range === 1 ? formatDateLabel(selectedDateKey) : `Letzte ${range} Tage`}
         </motion.div>
@@ -256,16 +248,14 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05, type: 'spring', stiffness: 200 }}
-            style={{
-              flex: '1 1 80px',
-              textAlign: 'center',
-              padding: '14px 8px',
-              borderRadius: 14,
-              background: `linear-gradient(135deg, ${s.color}12, ${s.color}06)`,
-              border: `1px solid ${s.color}25`,
-              backdropFilter: 'var(--blur-lg)',
-              WebkitBackdropFilter: 'var(--blur-lg)',
-            }}
+            className="adm-stat"
+            style={
+              {
+                '--adm-tone': s.color,
+                flex: '1 1 120px',
+                textAlign: 'center',
+              } as CSSProperties
+            }
           >
             <div
               style={{

@@ -24,6 +24,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import './AdminDashboardPage.css';
+import './adminKit.css';
 import { ActivityTab } from './tabs/ActivityTab';
 import { EventsTab } from './tabs/EventsTab';
 import { ExtensionTab } from './tabs/ExtensionTab';
@@ -176,7 +177,7 @@ export function AdminDashboardPage() {
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
-              {activeTab === 'client-errors' && <ClientErrorsTab theme={currentTheme} />}
+              {activeTab === 'client-errors' && <ClientErrorsTab />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>

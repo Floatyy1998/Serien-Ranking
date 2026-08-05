@@ -198,13 +198,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
             ) : (
               <>
                 {/* Quick Stats */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-                    gap: 8,
-                  }}
-                >
+                <div className="adm-grid">
                   {[
                     { label: 'Events', value: userAnalysis.totalEvents, color: theme.primary },
                     { label: 'Episoden', value: userAnalysis.totalEpisodes, color: '#00cec9' },
@@ -254,13 +248,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                 </div>
 
                 {/* Series watched + Genres */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: 12,
-                  }}
-                >
+                <div className="adm-grid">
                   {/* What they watched */}
                   {userAnalysis.topSeries.length > 0 && (
                     <MetricCard
@@ -361,13 +349,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                 </div>
 
                 {/* Activity by hour */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: 12,
-                  }}
-                >
+                <div className="adm-grid">
                   <MetricCard title="Aktivität nach Uhrzeit" theme={theme}>
                     <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={150}>
                       <BarChart data={userAnalysis.hourActivity}>
