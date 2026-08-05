@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** Build-Kennung aus vite.config (`define`); im Dev-Server der String `dev`. */
+declare const __APP_BUILD__: string;
+
 interface ImportMetaEnv {
   readonly VITE_APIKEY: string;
   readonly VITE_AUTHDOMAIN: string;

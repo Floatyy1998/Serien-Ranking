@@ -118,6 +118,16 @@ export const DataCollectionSection = memo(({ data }: DataCollectionSectionProps)
           </p>
         </>
       )}
+      {data.subsections.errorDiagnostics && (
+        <>
+          <h3 className="priv-subtitle" style={{ color: currentTheme.text.primary }}>
+            {data.subsections.errorDiagnostics.title}
+          </h3>
+          <p className="priv-card-text" style={{ color: currentTheme.text.secondary }}>
+            {data.subsections.errorDiagnostics.text}
+          </p>
+        </>
+      )}
     </PrivacySection>
   );
 });

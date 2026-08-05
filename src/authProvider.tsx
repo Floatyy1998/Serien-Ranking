@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initAnalyticsIfConsented, setAnalyticsUser } from './services/firebase/analytics';
+import { setErrorReporterUser } from './services/errorReporting/errorReporter';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './contexts/AuthContext';
@@ -74,6 +75,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(user);
             setAuthStateResolved(true);
             setAnalyticsUser(user?.uid ?? null);
+            // Gibt gepufferte Fehlerberichte frei — vor dem Login verbieten
+            // die Rules den Write.
+            setErrorReporterUser(user?.uid ?? null);
             window.setAppReady?.('auth', true);
             window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
 

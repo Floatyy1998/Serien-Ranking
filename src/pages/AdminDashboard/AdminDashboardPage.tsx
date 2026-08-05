@@ -12,6 +12,7 @@ import {
   History,
   Message,
   Refresh,
+  ReportProblem,
   Settings,
   Speed,
   Timeline,
@@ -30,6 +31,7 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { RealtimeTab } from './tabs/RealtimeTab';
 import { UsersTab } from './tabs/UsersTab';
 import { BackendErrorsTab } from './tabs/BackendErrorsTab';
+import { ClientErrorsTab } from './tabs/ClientErrorsTab';
 import { DataHealthTab } from './tabs/DataHealthTab';
 import { MessagesTab } from './tabs/MessagesTab';
 import { TicketsTab } from './tabs/TicketsTab';
@@ -55,6 +57,7 @@ const TABS = [
   { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
   { id: 'anime-filler', label: 'Anime Filler', icon: <FilterAlt style={{ fontSize: 16 }} /> },
   { id: 'performance', label: 'Perf', icon: <Timer style={{ fontSize: 16 }} /> },
+  { id: 'client-errors', label: 'Client-Fehler', icon: <ReportProblem style={{ fontSize: 16 }} /> },
   { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
   { id: 'config', label: 'Config', icon: <Settings style={{ fontSize: 16 }} /> },
 ] as const;
@@ -173,6 +176,7 @@ export function AdminDashboardPage() {
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
+              {activeTab === 'client-errors' && <ClientErrorsTab theme={currentTheme} />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>

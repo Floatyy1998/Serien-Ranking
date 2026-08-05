@@ -28,6 +28,10 @@ export interface PrivacyData {
           title: string;
           text: string;
         };
+        errorDiagnostics?: {
+          title: string;
+          text: string;
+        };
       };
     };
     firebase: {

@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import { reportRenderError } from '../services/errorReporting/errorReporter';
 import { t } from '../services/i18n';
 import { copyTextToClipboard } from '../utils/clipboard';
 
@@ -48,6 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
       .join('\n\n');
 
     this.setState({ errorInfo });
+    reportRenderError(error, info.componentStack ?? undefined);
   }
 
   handleCopy = () => {

@@ -89,6 +89,11 @@ export default defineConfig(({ command }) => ({
     visualizer({ open: false, gzipSize: true, brotliSize: true, filename: 'dist/stats.html' }),
   ],
   define: {
+    // Build-Kennung fuer Fehlerberichte — ohne sie laesst sich ein Bericht
+    // keinem Release zuordnen (dev = Dev-Server).
+    __APP_BUILD__: JSON.stringify(
+      command === 'build' ? new Date().toISOString().slice(0, 16).replace('T', ' ') : 'dev'
+    ),
     // In Production-Builds: console.log/debug/info zu No-Op replacen, dann
     // strippt der Tree-Shaker die Aufrufe komplett raus. console.warn und
     // console.error bleiben — die wollen wir bei echten Problemen sehen.
