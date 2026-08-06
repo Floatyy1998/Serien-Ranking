@@ -85,7 +85,7 @@ export const TasteMatchCard: React.FC = () => {
               whiteSpace: 'nowrap',
             }}
           >
-            Taste Match
+            {t('Taste Match')}
           </h2>
           <p
             style={{

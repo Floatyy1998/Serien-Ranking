@@ -88,7 +88,7 @@ export const CatchUpCard: React.FC = memo(() => {
             whiteSpace: 'nowrap',
           }}
         >
-          Backlog
+          {t('Backlog')}
         </h2>
         <p
           style={{
@@ -123,7 +123,7 @@ export const CatchUpCard: React.FC = memo(() => {
         >
           {formatTime(stats.totalMinutes)}
         </span>
-        <span style={{ fontSize: 11, color: currentTheme.text.muted }}>Watchtime</span>
+        <span style={{ fontSize: 11, color: currentTheme.text.muted }}>{t('Watchtime')}</span>
       </div>
 
       <ChevronRight

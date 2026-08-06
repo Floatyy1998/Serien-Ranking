@@ -127,7 +127,7 @@ export const PetCard = memo(function PetCard({
                 color: currentTheme.accent,
               }}
             >
-              {pet.favoriteGenre}
+              {t(pet.favoriteGenre)}
             </div>
           )}
         </div>

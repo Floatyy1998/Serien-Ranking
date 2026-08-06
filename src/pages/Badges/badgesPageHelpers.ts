@@ -16,14 +16,14 @@ import { t } from '../../services/i18n';
 
 export const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
   { key: 'all', label: t('Alle'), icon: createElement(EmojiEvents) },
-  { key: 'binge', label: 'Binge', icon: createElement(Movie) },
-  { key: 'quickwatch', label: 'Quick', icon: createElement(Speed) },
-  { key: 'marathon', label: 'Marathon', icon: createElement(LocalFireDepartment) },
-  { key: 'streak', label: 'Streak', icon: createElement(TrendingUp) },
-  { key: 'rewatch', label: 'Rewatch', icon: createElement(Refresh) },
-  { key: 'series_explorer', label: 'Explorer', icon: createElement(Explore) },
-  { key: 'collector', label: 'Collector', icon: createElement(Star) },
-  { key: 'social', label: 'Social', icon: createElement(Groups) },
+  { key: 'binge', label: t('Binge'), icon: createElement(Movie) },
+  { key: 'quickwatch', label: t('Quick'), icon: createElement(Speed) },
+  { key: 'marathon', label: t('Marathon'), icon: createElement(LocalFireDepartment) },
+  { key: 'streak', label: t('Streak'), icon: createElement(TrendingUp) },
+  { key: 'rewatch', label: t('Rewatch'), icon: createElement(Refresh) },
+  { key: 'series_explorer', label: t('Explorer'), icon: createElement(Explore) },
+  { key: 'collector', label: t('Collector'), icon: createElement(Star) },
+  { key: 'social', label: t('Social'), icon: createElement(Groups) },
 ];
 
 export function getEarnedCount(category: BadgeCategory | 'all', earnedBadges: EarnedBadge[]) {

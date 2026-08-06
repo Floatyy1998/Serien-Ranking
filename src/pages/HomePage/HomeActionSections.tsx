@@ -29,7 +29,7 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
   > = {
     ratings: {
       icon: <Star style={{ fontSize: '22px' }} />,
-      label: 'Ratings',
+      label: t('Ratings'),
       path: '/ratings',
       color: currentTheme.status.warning,
     },
@@ -180,7 +180,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
     },
     badges: {
       icon: <AutoAwesome style={{ fontSize: '22px' }} />,
-      label: 'Badges',
+      label: t('Badges'),
       path: '/badges',
       bg: `linear-gradient(135deg, ${currentTheme.primary}1A 0%, ${currentTheme.accent}1A 100%)`,
       border: `1px solid ${currentTheme.primary}33`,
@@ -188,7 +188,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
     },
     pets: {
       icon: <LocalFireDepartment style={{ fontSize: '22px' }} />,
-      label: 'Pets',
+      label: t('Pets'),
       path: '/pets',
       bg: `linear-gradient(135deg, ${currentTheme.status.success}1A 0%, ${currentTheme.status.info.main}1A 100%)`,
       border: `1px solid ${currentTheme.status.success}33`,

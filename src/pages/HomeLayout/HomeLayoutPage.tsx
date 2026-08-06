@@ -345,7 +345,7 @@ export const HomeLayoutPage = () => {
                     style={{ backgroundColor: 'currentColor' }}
                     aria-hidden
                   />
-                  <span className="hl-dock-label">Home</span>
+                  <span className="hl-dock-label">{t('Home')}</span>
                 </span>
 
                 <Reorder.Group

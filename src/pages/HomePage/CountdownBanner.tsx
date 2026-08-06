@@ -105,7 +105,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
               letterSpacing: '0.5px',
             }}
           >
-            Countdown
+            {t('Countdown')}
           </span>
           {totalCount > 1 && (
             <span

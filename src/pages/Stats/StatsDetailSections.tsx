@@ -116,7 +116,7 @@ export const TopGenresSection = memo(({ genres, theme, wide }: TopGenresProps) =
             </span>
             <div className="stats-genre-info">
               <div className="stats-genre-header">
-                <span className="stats-genre-name">{genre.name}</span>
+                <span className="stats-genre-name">{t(genre.name)}</span>
                 <span className="stats-genre-count" style={{ color: theme.text.muted }}>
                   {genre.count}
                 </span>

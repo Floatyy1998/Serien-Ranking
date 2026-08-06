@@ -250,7 +250,7 @@ export const WatchStreakCard: React.FC = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              Watch Streak
+              {t('Watch Streak')}
             </h2>
             <p
               style={{

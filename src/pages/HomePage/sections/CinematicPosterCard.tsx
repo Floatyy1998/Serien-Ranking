@@ -226,7 +226,14 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {item.genres}
+                  {/* Die Genres kommen je nach Quelle schon uebersetzt oder roh
+                      aus dem Katalog (dort englisch) — jedes Stueck einzeln
+                      durch t() schicken; bereits Uebersetztes faellt unveraendert
+                      durch. */}
+                  {item.genres
+                    .split(', ')
+                    .map((g) => t(g.trim()))
+                    .join(', ')}
                 </span>
               )}
             </div>

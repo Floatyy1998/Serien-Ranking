@@ -32,7 +32,7 @@ export const WatchJourneyCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          Watch Journey
+          {t('Watch Journey')}
         </h2>
         <p
           style={{

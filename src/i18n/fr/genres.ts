@@ -22,7 +22,7 @@ const dict: Record<string, string> = {
   'Action & Adventure': 'Action & Aventure',
   Animation: 'Animation',
   Comedy: 'Comédie',
-  Crime: 'Crime',
+  Crime: 'Policier',
   Drama: 'Drame',
   Documentary: 'Documentaire',
   Family: 'Familial',

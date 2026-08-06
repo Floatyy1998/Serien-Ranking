@@ -230,7 +230,7 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const mangaMenuItems: ProfileMenuItem[] = useMemo(
     () => [
-      { label: 'Manga Home', icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
+      { label: t('Manga Home'), icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
       {
         label: t('Entdecken'),
         icon: Explore,
@@ -264,7 +264,7 @@ export const useProfileData = (): UseProfileDataResult => {
               path: '/manga/recently-read',
             },
             {
-              label: 'Journey',
+              label: t('Journey'),
               icon: Timeline,
               color: currentTheme.secondary,
               path: '/manga/journey',
@@ -319,7 +319,7 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const settingsItems: ProfileMenuItem[] = useMemo(
     () => [
-      { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
+      { label: t('Design'), icon: Palette, color: currentTheme.primary, path: '/theme' },
       {
         label: 'Homepage Layout',
         icon: ViewQuilt,

@@ -88,7 +88,7 @@ export const BottomNavigation = () => {
             }}
           />
         ),
-        label: 'Home',
+        label: t('Home'),
       },
       ...slotItems,
       {
