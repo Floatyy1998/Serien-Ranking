@@ -117,7 +117,7 @@ const dict: Record<string, string> = {
   'Streaming-Anbieter': 'Plataformas de streaming',
   'Episoden-Informationen': 'Información de episodios',
   'Film- & Seriendaten': 'Datos de películas y series',
-  Bewertungen: 'Valoraciones',
+  Bewertungen: 'Notas',
   Benachrichtigungen: 'Notificaciones',
   'Push-Benachrichtigungen': 'Notificaciones push',
   'Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy':
@@ -206,7 +206,7 @@ const dict: Record<string, string> = {
   Entdecken: 'Descubrir',
   Verlauf: 'Historial',
   Freunde: 'Amigos',
-  Rangliste: 'Clasificación',
+  Rangliste: 'Ranking',
   Weiter: 'Siguiente',
   Kalender: 'Calendario',
   Aktivität: 'Actividad',

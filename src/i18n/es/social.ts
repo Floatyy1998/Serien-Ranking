@@ -184,7 +184,7 @@ const dict: Record<string, string> = {
   'Manga-Bewertungen': 'Valoraciones de manga',
   'Manga-Statistiken': 'Estadísticas de manga',
   'Zuletzt gelesen': 'Leído recientemente',
-  Rangliste: 'Clasificación',
+  Rangliste: 'Ranking',
   Statistiken: 'Estadísticas',
   Verlauf: 'Historial',
   Erfolge: 'Logros',

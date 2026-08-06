@@ -13,7 +13,7 @@ const dict: Record<string, string> = {
   Leseliste: 'Lista de lectura',
   '{n} aktiv': '{n} activos',
   Entdecken: 'Descubrir',
-  Bewertungen: 'Valoraciones',
+  Bewertungen: 'Notas',
   Statistiken: 'Estadísticas',
   '{n} Kap.': '{n} cap.',
   Verlauf: 'Historial',

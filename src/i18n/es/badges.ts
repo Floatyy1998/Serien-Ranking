@@ -117,7 +117,7 @@ const dict: Record<string, string> = {
   Episch: 'Épica',
   Legendär: 'Legendaria',
   Alle: 'Todas',
-  Rangliste: 'Clasificación',
+  Rangliste: 'Ranking',
   Episoden: 'Episodios',
   Filme: 'Películas',
   'Monats-Streak': 'Racha mensual',

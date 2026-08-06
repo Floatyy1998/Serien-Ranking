@@ -97,7 +97,7 @@ const dict: Record<string, string> = {
   'Du schaust am liebsten {time}': 'Sueles ver {time}',
   'Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende des Jahres zeigen wir dir deine persönlichen Highlights!':
     'Tu resumen del año aún no está disponible. Sigue viendo series y películas: a final de año te mostraremos tus momentos destacados.',
-  Bewertungen: 'Valoraciones',
+  Bewertungen: 'Notas',
   'Zurück zur Startseite': 'Volver al inicio',
   'Mein {year}': 'Mi {year}',
   'Mein Jahr in Serien & Filmen': 'Mi año en series y películas',

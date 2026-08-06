@@ -227,7 +227,7 @@ const dict: Record<string, string> = {
   'Episode {nummer}': 'Épisode {nummer}',
   Genre: 'Genre',
   Start: 'Début',
-  Countdowns: 'Comptes à rebours',
+  Countdowns: 'Décomptes',
   Owner: 'Propriétaire',
   Bug: 'Bug',
   Feature: 'Fonctionnalité',
