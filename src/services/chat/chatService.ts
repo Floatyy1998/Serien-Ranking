@@ -17,7 +17,7 @@ import 'firebase/compat/storage';
 import { ADMIN_UID } from '../../config/admin';
 import { prepareChatImage } from '../../lib/imageCompress';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
-import { t } from '../i18n';
+import { localizedVariants, t } from '../i18n';
 import { queuePush } from '../pushQueue';
 
 export interface ChatMessage {
@@ -122,8 +122,6 @@ export async function sendMessage(
   void queuePush(friendUid, {
     title: myName,
     body: preview,
-    titleEn: myName,
-    bodyEn: preview,
     url: `/chat/${myUid}`,
   });
 }
@@ -174,8 +172,9 @@ export async function sendImageMessage(
   void queuePush(friendUid, {
     title: myName,
     body: preview,
-    titleEn: myName,
-    bodyEn: text ? preview : prepared.isGif ? 'GIF' : 'Image',
+    // Bildnachrichten haben statt Text ein Token („Bild"/„GIF") — nur das
+    // gehört übersetzt, eine echte Bildunterschrift bleibt wie geschrieben.
+    ...(text ? {} : { bodyL: localizedVariants(preview) }),
     url: `/chat/${myUid}`,
   });
 }

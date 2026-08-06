@@ -1,4 +1,5 @@
 import { ADMIN_UID } from '../config/admin';
+import type { LocalizedMap } from '../services/i18n';
 import { dbRef, userPath } from '../services/db/ref';
 import { queuePush } from '../services/pushQueue';
 import type { DiscussionItemType } from '../types/Discussion';
@@ -17,8 +18,9 @@ export const getDiscussionPath = (
 };
 
 // Helper to send notification to another user.
-// title/message sind die deutschen Quelltexte, titleEn/messageEn die englische
-// Variante — die Anzeige/der Push-Versand wählt nach Empfänger-Sprache.
+// title/message sind die deutschen Quelltexte, titleL/messageL die Übersetzungen
+// je Sprache — Anzeige und Push-Versand wählen nach Empfänger-Sprache.
+// Nie t() benutzen: das wäre die Sprache des ABSENDERS.
 export const sendNotificationToUser = async (
   targetUserId: string,
   notification: {
@@ -31,13 +33,23 @@ export const sendNotificationToUser = async (
       | 'moderation_ban';
     title: string;
     message: string;
-    titleEn?: string;
-    messageEn?: string;
+    titleL?: LocalizedMap;
+    messageL?: LocalizedMap;
     data?: Record<string, unknown>;
   }
 ) => {
   try {
-    const { titleEn, messageEn, ...base } = notification;
+    const { titleL, messageL, ...base } = notification;
+    const cap = (map: LocalizedMap | undefined, max: number): LocalizedMap | undefined => {
+      if (!map) return undefined;
+      const out: LocalizedMap = {};
+      for (const [locale, value] of Object.entries(map)) {
+        if (value) out[locale as keyof LocalizedMap] = value.slice(0, max);
+      }
+      return Object.keys(out).length ? out : undefined;
+    };
+    const cappedTitle = cap(titleL, 500);
+    const cappedMessage = cap(messageL, 2000);
     // Rules capen title≤500 / message≤2000 — vorher kürzen, sonst wird der
     // ganze Push mit PERMISSION_DENIED verworfen
     const notificationRef = dbRef(userPath(targetUserId, 'notifications'));
@@ -45,8 +57,8 @@ export const sendNotificationToUser = async (
       ...base,
       title: base.title.slice(0, 500),
       message: base.message.slice(0, 2000),
-      ...(titleEn && { titleEn: titleEn.slice(0, 500) }),
-      ...(messageEn && { messageEn: messageEn.slice(0, 2000) }),
+      ...(cappedTitle && { titleL: cappedTitle }),
+      ...(cappedMessage && { messageL: cappedMessage }),
       timestamp: Date.now(),
       read: false,
     });
@@ -61,8 +73,8 @@ export const sendNotificationToUser = async (
     await queuePush(targetUserId, {
       title: notification.title,
       body: notification.message,
-      ...(titleEn && { titleEn }),
-      ...(messageEn && { bodyEn: messageEn }),
+      ...(cappedTitle && { titleL: cappedTitle }),
+      ...(cappedMessage && { bodyL: cappedMessage }),
       url,
     });
   } catch (error) {

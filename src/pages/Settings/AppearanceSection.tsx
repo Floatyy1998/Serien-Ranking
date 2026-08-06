@@ -189,7 +189,7 @@ export const AppearanceSection = memo(
             <Palette style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
           </div>
           <div className="settings-nav-btn-text">
-            <h2 className="settings-nav-btn-title">Design & Themes</h2>
+            <h2 className="settings-nav-btn-title">{t('Design & Themes')}</h2>
             <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
               {t('Farben und Aussehen anpassen')}
             </p>

@@ -1,0 +1,70 @@
+/** Spanische Übersetzungen: Gast-Onboarding („Wähl 3 → Sichern") + Pet-Schlüpf-Schritt. */
+
+const dict: Record<string, string> = {
+  'Wo alles läuft — für dein Land.': 'Dónde ver cada título, en tu país.',
+  'Damit füllt sich deine App. Den Rest machst du nach dem Anmelden.':
+    'Así se llena tu app. El resto lo haces al registrarte.',
+  'Konto anlegen = deine Auswahl & dein Begleiter bleiben — auf allen Geräten. Danach nur noch: wo stehst du?':
+    'Crea una cuenta y conserva tu selección y tu compañero en todos tus dispositivos. Después solo falta: ¿por dónde vas?',
+  'Titel nicht gefunden.': 'Título no encontrado.',
+  'Zur Startseite': 'Ir al inicio',
+  Staffeln: 'temporadas',
+  'Tracke {title} mit TV-RANK': 'Sigue {title} con TV-RANK',
+  'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
+    'Marca episodios, valora y compara con amigos: gratis.',
+  'Jetzt tracken — kostenlos': 'Empieza ahora — gratis',
+  'Im App Store laden': 'Descargar en el App Store',
+  'Bei Google Play laden': 'Disponible en Google Play',
+  'erst wählen, dann sichern': 'elige primero, guarda después',
+  Anmelden: 'Iniciar sesión',
+  'Schon ein Konto? Anmelden': '¿Ya tienes cuenta? Inicia sesión',
+  überspringen: 'omitir',
+  'Serien · Filme · Manga': 'Series · Películas · Manga',
+  'Alles, was du schaust.': 'Todo lo que ves.',
+  Begleiter: 'Compañero',
+  Wrapped: 'Wrapped',
+  Streaming: 'Streaming',
+  'Ein Begleiter, der mit jeder Folge levelt.': 'Un compañero que sube de nivel con cada episodio.',
+  'Dein Jahr in Zahlen — Rekorde, Genres, Binges.':
+    'Tu año en cifras: récords, géneros, maratones.',
+  'los geht’s': 'vamos',
+  '30 sekunden': '30 segundos',
+  'Wähl drei.': 'Elige tres.',
+  'serie oder film suchen …': 'buscar serie o película …',
+  'sichere dein setup': 'guarda tu configuración',
+  'Fast fertig — jetzt sichern.': 'Ya casi — solo falta guardar.',
+  'Wir richten alles ein …': 'Lo estamos preparando todo …',
+  'letzter Schritt': 'último paso',
+  'mit e-mail registrieren': 'registrarse con correo',
+  '← zurück zur Auswahl': '← volver a la selección',
+  'Er levelt mit jeder Folge, die du schaust. Gib ihm einen Namen und eine Gestalt.':
+    'Sube de nivel con cada episodio que veas. Dale un nombre y una forma.',
+  'weiter zur premiere': 'ir al estreno',
+  'Wo stehst du?': '¿Por dónde vas?',
+  'Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.':
+    'Toca una serie y dinos hasta dónde la has visto.',
+  'wo stehst du?': '¿por dónde vas?',
+  'komplett gesehen': 'vista completa',
+  'fertig — los geht’s': 'listo — vamos',
+  'Bereit, wenn du es bist.': 'Cuando tú quieras.',
+  'Melde dich an — deine Auswahl und dein Begleiter warten schon.':
+    'Inicia sesión: tus elecciones y tu compañero ya te esperan.',
+  'dein Begleiter': 'tu compañero',
+  'Dein Begleiter erwacht': 'Tu compañero despierta',
+  'Name deines Begleiters …': 'Nombre de tu compañero …',
+  Gestalt: 'Forma',
+  'gib ihm einen namen': 'ponle un nombre',
+  'Mein Pet': 'Mi mascota',
+  Katze: 'Gato',
+  Hund: 'Perro',
+  Fuchs: 'Zorro',
+  Hase: 'Conejo',
+  Panda: 'Panda',
+  Vogel: 'Pájaro',
+  Drache: 'Dragón',
+  'Cloud-Sync': 'Sincronización en la nube',
+  'Smart Notifications': 'Notificaciones inteligentes',
+  'Deep Analytics': 'Análisis avanzado',
+};
+
+export default dict;

@@ -20,7 +20,7 @@ const dict: Record<string, string> = {
   'Du kannst nur eigene Diskussionen löschen': 'You can only delete your own discussions',
   'Fehler beim Löschen der Diskussion': 'Failed to delete discussion',
   '{name} gefällt deine Diskussion "{title}"': '{name} likes your discussion "{title}"',
-  'Du musst eingeloggt sein um zu diskutieren': 'You must be logged in to join the discussion',
+  'Du musst eingeloggt sein um zu diskutieren': 'Log in to join the discussion',
   'Neue Antwort': 'New reply',
   '{name} hat auch auf "{title}" geantwortet': '{name} also replied to "{title}"',
   'Spoiler-Markierung': 'Spoiler flag',
@@ -34,7 +34,7 @@ const dict: Record<string, string> = {
   'Kommentare automatisch übersetzen': 'Auto-translate comments',
   An: 'On',
   'Fremdsprachige Diskussionen und Antworten werden automatisch in deine Sprache übersetzt. Ausgeschaltet erscheint stattdessen ein Übersetzen-Button.':
-    'Discussions and replies in other languages are automatically translated into your language. When off, a translate button is shown instead.',
+    "Discussions and replies in other languages are automatically translated into your language. When off, you'll see a Translate button instead.",
   'Du wurdest von Diskussionen ausgeschlossen und kannst nichts mehr posten.':
     'You have been banned from discussions and can no longer post.',
   'Du wurdest vom Erstellen von Tickets ausgeschlossen.':
@@ -49,15 +49,14 @@ const dict: Record<string, string> = {
   'Du wurdest bis {date} ausgeschlossen. Grund: {reason}':
     'You have been banned until {date}. Reason: {reason}',
   'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}':
-    'You have been banned permanently. Reason: {reason}',
-  'Verstoß gegen die Community-Regeln': 'Violation of the community rules',
+    'You have been permanently banned. Reason: {reason}',
+  'Verstoß gegen die Community-Regeln': 'Community guidelines violation',
 
   // "Bezieht sich auf"-Gating
   'Bezieht sich auf Folge': 'Refers to an episode',
   Staffel: 'Season',
   Folge: 'Episode',
-  'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}':
-    'Refers to S{s}E{e} — you are at S{vs}E{ve}',
+  'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}': "Refers to S{s}E{e} — you're on S{vs}E{ve}",
   'Bezieht sich auf S{s}E{e}': 'Refers to S{s}E{e}',
 };
 export default dict;

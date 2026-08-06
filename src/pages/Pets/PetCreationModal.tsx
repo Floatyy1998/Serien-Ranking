@@ -66,7 +66,7 @@ export const PetCreationModal = memo(function PetCreationModal({
             type="text"
             value={petName}
             onChange={(e) => onNameChange(e.target.value)}
-            placeholder="Pet Name..."
+            placeholder={t('Pet Name...')}
             className="pet-create-input"
             style={{
               backgroundColor: currentTheme.background.default,

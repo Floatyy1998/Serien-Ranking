@@ -24,7 +24,7 @@ export interface NameBadgeDefinition {
 export const NAME_BADGES: Record<string, NameBadgeDefinition> = {
   owner: {
     id: 'owner',
-    label: 'Owner',
+    label: t('Owner'),
     title: t('Betreiber von TV-Rank'),
     gradient: 'linear-gradient(135deg, #f8d574, #e9980f)',
     textColor: '#1a1203',

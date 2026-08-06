@@ -1,7 +1,7 @@
 /**
  * Auth-Mails (Passwort-Reset, Verifizierung) über die eigene Domain: das
  * Backend generiert den Firebase-Aktionslink per Admin-SDK und verschickt
- * ihn via Resend (mail@tv-rank.de, DE/EN nach App-Sprache). Schlägt der
+ * ihn via Resend (mail@tv-rank.de, Text in der App-Sprache). Schlägt der
  * Backend-Weg fehl, fällt alles auf den Firebase-Standardversand zurück —
  * der User bekommt seine Mail in jedem Fall.
  */

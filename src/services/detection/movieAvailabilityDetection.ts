@@ -12,7 +12,7 @@
 import { dbGet, dbRef, userPath } from '../db/ref';
 import { mergeProviderNames } from '../../lib/providerMerge';
 import { isMovieWatched } from '../../lib/rating/rating';
-import { isEnglish } from '../i18n';
+import { t } from '../i18n';
 import type { Movie } from '../../types/Movie';
 
 interface MovieProviderState {
@@ -143,17 +143,19 @@ async function writeAvailabilityNotification(
   userId: string,
   newly: AvailableMovie[]
 ): Promise<void> {
-  const en = isEnglish();
+  // Benachrichtigung an den Nutzer selbst — also t() in seiner Sprache,
+  // kein gespeichertes Sprachpaar wie bei Cross-User-Meldungen.
   const ref = dbRef(userPath(userId, 'notifications'));
 
   if (newly.length === 1) {
     const { movie, providers } = newly[0];
     await ref.push({
       type: 'movie_available',
-      title: en ? 'Now streaming for you' : 'Jetzt für dich streambar',
-      message: en
-        ? `"${movie.title}" from your list is now available on ${providers.join(', ')}.`
-        : `„${movie.title}" von deiner Liste ist jetzt bei ${providers.join(', ')} verfügbar.`,
+      title: t('Jetzt für dich streambar'),
+      message: t('„{title}" von deiner Liste ist jetzt bei {providers} verfügbar.', {
+        title: movie.title ?? '',
+        providers: providers.join(', '),
+      }),
       timestamp: Date.now(),
       read: false,
       data: { movieId: movie.id, itemType: 'movie', itemId: movie.id },
@@ -166,12 +168,8 @@ async function writeAvailabilityNotification(
   const list = titles.join(', ') + (rest > 0 ? ` +${rest}` : '');
   await ref.push({
     type: 'movie_available',
-    title: en
-      ? `${newly.length} movies from your list are now streamable`
-      : `${newly.length} Filme aus deiner Liste jetzt streambar`,
-    message: en
-      ? `Now available on your subscriptions: ${list}`
-      : `Jetzt auf deinen Abos verfügbar: ${list}`,
+    title: t('{count} Filme aus deiner Liste jetzt streambar', { count: newly.length }),
+    message: t('Jetzt auf deinen Abos verfügbar: {list}', { list }),
     timestamp: Date.now(),
     read: false,
   });

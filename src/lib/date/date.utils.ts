@@ -1,4 +1,4 @@
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 
 /**
  * Returns a date as YYYY-MM-DD string in the local timezone.
@@ -25,11 +25,11 @@ export const getFormattedDate = (date: string) => {
 };
 
 /**
- * Langes deutsches Datum, z.B. „5. Juli 2026". Geteilter Helfer für
- * Countdown-/Premieren-Anzeigen (ersetzt identische lokale Duplikate).
+ * Langes Datum in der App-Sprache, z. B. „5. Juli 2026" / „July 5, 2026".
+ * Geteilter Helfer für Countdown-/Premieren-Anzeigen.
  */
 export const formatSeasonDate = (date: string | Date): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(d.getTime())) return t('Ungültiges Datum');
-  return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' });
 };

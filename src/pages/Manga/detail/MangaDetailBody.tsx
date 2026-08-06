@@ -15,7 +15,7 @@ import type { MangaDexChapterInfo } from '../../../services/mangaUpdatesService'
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { inferStatus } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';
-import { appLocale, t } from '../../../services/i18n';
+import { dateLocale, t } from '../../../services/i18n';
 
 // Status-Optionen als Funktion, damit "Geplant" die Theme-Secondary-Farbe nutzt
 // (Farben werden mit Hex-Alpha-Suffix kombiniert, daher kein var() möglich)
@@ -149,14 +149,11 @@ export const MangaDetailBody = ({
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
                       {t('Nächstes Kapitel')} ~
-                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString(
-                        appLocale === 'en' ? 'en-US' : 'de-DE',
-                        {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        }
-                      )}
+                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString(dateLocale(), {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
                     </div>
                     {chapterInfo.avgDaysBetweenReleases && (
                       <div
@@ -217,13 +214,10 @@ export const MangaDetailBody = ({
                         flexShrink: 0,
                       }}
                     >
-                      {new Date(ch.publishedAt).toLocaleDateString(
-                        appLocale === 'en' ? 'en-US' : 'de-DE',
-                        {
-                          day: 'numeric',
-                          month: 'short',
-                        }
-                      )}
+                      {new Date(ch.publishedAt).toLocaleDateString(dateLocale(), {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
                     </span>
                     {isConfirming ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
@@ -576,7 +570,7 @@ export const MangaDetailBody = ({
 
       {externalLinks.length > 0 && (
         <Section bg={`${currentTheme.text.primary}08`} delay={0.5}>
-          <SectionTitle color={currentTheme.text.primary}>Links</SectionTitle>
+          <SectionTitle color={currentTheme.text.primary}>{t('Links')}</SectionTitle>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             <a
               href={`https://anilist.co/manga/${anilistId}`}

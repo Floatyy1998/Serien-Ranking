@@ -18,9 +18,9 @@ const dict: Record<string, string> = {
   'Wochenend-Warrior': 'Weekend Warrior',
   'Marathon-Meister': 'Marathon Master',
   'Wochenend-Titan': 'Weekend Titan',
-  'Serien-Vernichter': 'Series Annihilator',
+  'Serien-Vernichter': 'Show Slayer',
   Gewohnheitstier: 'Creature of Habit',
-  'Serien-Routine': 'Series Routine',
+  'Serien-Routine': 'Daily Ritual',
   Unaufhaltsam: 'Unstoppable',
   'Serien-Süchtig': 'Series Addict',
   'Ewige Flamme': 'Eternal Flame',
@@ -33,17 +33,17 @@ const dict: Record<string, string> = {
   'Serien-Scout': 'Series Scout',
   'Genre-Meister': 'Genre Master',
   'Serien-Weltreisender': 'Series Globetrotter',
-  'Serien-Universum': 'Series Universe',
+  'Serien-Universum': 'Cinematic Universe',
   'Omnipräsenter Explorer': 'Omnipresent Explorer',
   Kritiker: 'Critic',
   'Bewertungs-Experte': 'Rating Expert',
   'Rating-Meister': 'Rating Master',
   'Bewertungs-Gott': 'Rating God',
-  'Kritiker-Legende': 'Critic Legend',
+  'Kritiker-Legende': 'Legendary Critic',
   'Allmächtiger Kritiker': 'Almighty Critic',
   Gesellig: 'Social Butterfly',
   'Serien-Buddy': 'Series Buddy',
-  'Netzwerk-Guru': 'Network Guru',
+  'Netzwerk-Guru': 'Networking Guru',
   'Serien-Influencer': 'Series Influencer',
 
   // --- Badge-Beschreibungen ---
@@ -96,7 +96,7 @@ const dict: Record<string, string> = {
 
   // --- Badge-Details (Checker) ---
   '{n} verschiedene Serien entdeckt': 'Discovered {n} different shows',
-  '{n} Bewertungen abgegeben': 'Submitted {n} ratings',
+  '{n} Bewertungen abgegeben': 'Rated {n} titles',
   '{n} Freunde hinzugefügt': 'Added {n} friends',
   '10 Stunden': '10 hours',
   'einem Tag': 'one day',
@@ -142,7 +142,7 @@ const dict: Record<string, string> = {
   Du: 'You',
   'Diesen Monat': 'This month',
   'Aller Zeiten': 'All time',
-  'Alle Nutzer': 'All users',
+  'Alle Nutzer': 'Everyone',
   '1. Platz!': '1st place!',
   '2. Platz!': '2nd place!',
   '3. Platz!': '3rd place!',
@@ -166,6 +166,24 @@ const dict: Record<string, string> = {
   Oktober: 'October',
   November: 'November',
   Dezember: 'December',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  'Day One Fan': 'Day One Fan',
+  'Release Hunter': 'Release Hunter',
+  'Release Predator': 'Release Predator',
+  'Day Zero Destroyer': 'Day Zero Destroyer',
+  'Community-Leader': 'Community Leader',
+  'Ep.': 'Ep.',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  Binge: 'Binge',
+  Quick: 'Quick',
+  Marathon: 'Marathon',
+  Streak: 'Streak',
+  Explorer: 'Explorer',
+  Collector: 'Collector',
+  Social: 'Social',
+  'Feedback & Bugs': 'Feedback & Bugs',
 };
 
 export default dict;

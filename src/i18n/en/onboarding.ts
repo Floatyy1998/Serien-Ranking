@@ -8,9 +8,9 @@ const dict: Record<string, string> = {
   'Passwort anzeigen': 'Show password',
   'Ungültige E-Mail-Adresse.': 'Invalid email address.',
   'Unbekannter Fehler': 'Unknown error',
-  'Dein Kino. Dein Ranking.': 'Your cinema. Your ranking.',
+  'Dein Kino. Dein Ranking.': 'Your movies. Your ranking.',
   'Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.':
-    'Track series, movies & manga — with friends, stats, and all the bells and whistles.',
+    'Track shows, movies & manga — with friends, stats and all the bells and whistles.',
 
   // --- Login ---
   'Willkommen zurück': 'Welcome back',
@@ -21,16 +21,16 @@ const dict: Record<string, string> = {
     "If an account exists, we've sent you an email.",
   'E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.':
     "The email couldn't be sent. Please try again later.",
-  'Kein Benutzer mit dieser E-Mail-Adresse gefunden.': 'No user found with this email address.',
+  'Kein Benutzer mit dieser E-Mail-Adresse gefunden.': 'No account found with this email address.',
   'Falsches Passwort.': 'Wrong password.',
   'E-Mail oder Passwort ist falsch.': 'Email or password is incorrect.',
   'Ein Fehler ist aufgetreten: {code}': 'Something went wrong: {code}',
   'Anmelden...': 'Signing in...',
   Anmelden: 'Sign in',
   'Passwort vergessen?': 'Forgot your password?',
-  'Noch kein Konto?': 'No account yet?',
+  'Noch kein Konto?': "Don't have an account?",
   'Jetzt registrieren': 'Sign up now',
-  '← Zur Startseite': '← Back to start',
+  '← Zur Startseite': '← Back to home',
 
   // --- Registrierung ---
   'Erstelle dein Konto': 'Create your account',
@@ -75,11 +75,11 @@ const dict: Record<string, string> = {
   Serien: 'Series',
   Filme: 'Movies',
   Abos: 'Subscriptions',
-  'Richtungen wählen': 'Pick directions',
+  'Richtungen wählen': 'Pick your interests',
   'Deine Favoriten': 'Your favorites',
-  'Kino-Highlights': 'Cinema highlights',
+  'Kino-Highlights': 'Big-screen picks',
   'Was streamst du': 'What you stream',
-  'Vorhang auf': 'Curtain up',
+  'Vorhang auf': 'Showtime',
   Programm: 'Program',
   '4 Akte': '4 acts',
   '5 Akte': '5 acts',
@@ -99,7 +99,7 @@ const dict: Record<string, string> = {
   'Willkommen, {name}.': 'Welcome, {name}.',
   'Was läuft': 'What are you',
   'bei dir?': 'watching?',
-  'wähle bis zu {max} richtungen': 'pick up to {max} directions',
+  'wähle bis zu {max} richtungen': 'pick up to {max} genres',
   weiter: 'continue',
   'name: min. 3 zeichen': 'name: min. 3 characters',
   'Fast geschafft': 'Almost there',
@@ -113,20 +113,20 @@ const dict: Record<string, string> = {
 
   // --- Onboarding: Discovery (Serien/Filme) ---
   'Was läuft, was schaust, was willst du verfolgen?':
-    "What's on, what are you watching, what do you want to follow?",
-  'Welche Filme dürfen nicht fehlen?': 'Which movies are must-haves?',
+    "What's on, what are you watching, what do you want to track?",
+  'Welche Filme dürfen nicht fehlen?': 'Which movies are must-sees?',
   '← zurück': '← back',
   serien: 'series',
   filme: 'movies',
   'serie suchen — auch unbekannte titel …': 'search series — obscure titles welcome …',
   'film suchen — auch unbekannte titel …': 'search movies — obscure titles welcome …',
   gewählt: 'picked',
-  'die katalogwand wird durchforstet …': 'combing through the catalog wall …',
+  'die katalogwand wird durchforstet …': 'combing through the catalog …',
   'kuration läuft …': 'curating …',
   'nichts.': 'nothing.',
   'leer.': 'empty.',
   'keine treffer für „{query}"': 'no matches for "{query}"',
-  'nutze die suche, um etwas hinzuzufügen': 'use the search to add something',
+  'nutze die suche, um etwas hinzuzufügen': 'use search to add something',
   'weiter zu filmen': 'on to movies',
   fertig: 'done',
   '{n} gewählt': '{n} picked',
@@ -135,7 +135,7 @@ const dict: Record<string, string> = {
   'Wo bist du bei': 'Where are you in',
   'Noch nicht gesehen': 'Not watched yet',
   'Steht auf der Watchlist': 'On my watchlist',
-  'Bin mittendrin': "I'm in the middle",
+  'Bin mittendrin': 'Partway through',
   'Episode auswählen': 'Pick an episode',
   'Komplett gesehen': 'Watched it all',
   'Alle Episoden abhaken': 'Check off every episode',
@@ -182,12 +182,12 @@ const dict: Record<string, string> = {
   'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
     'Discover new series, movies and manga, manage your watchlist, track your progress, and share your favorites with friends.',
   'Kostenlos starten': 'Start for free',
-  'Desktop App herunterladen': 'Download the desktop app',
+  'Desktop App herunterladen': 'Download desktop app',
   'Alles was du brauchst': 'Everything you need',
   'Features für das beste Tracking-Erlebnis': 'Features for the best tracking experience',
   'Serien-Tracking': 'Series tracking',
   'Verfolge jede Episode, markiere gesehene Folgen und verpasse nie wieder eine neue Staffel.':
-    'Follow every episode, mark them as watched, and never miss a new season again.',
+    'Track every episode, mark them as watched, and never miss a new season again.',
   'Film-Bibliothek': 'Movie library',
   'Organisiere deine Filmsammlung, bewerte Filme und entdecke neue Highlights.':
     'Organize your movie collection, rate films, and discover new highlights.',
@@ -197,13 +197,13 @@ const dict: Record<string, string> = {
   'Badges & Erfolge': 'Badges & achievements',
   'Sammle Badges für deine Aktivitäten und zeige deine Achievements.':
     'Collect badges for your activity and show off your achievements.',
-  'Freunde-System': 'Friends system',
+  'Freunde-System': 'Friends',
   'Teile deine Listen mit Freunden und entdecke, was andere schauen.':
     'Share your lists with friends and see what others are watching.',
   'Manga-Tracking': 'Manga tracking',
   'Tracke Manga, Manhwa und Manhua. Kapitelfortschritt, Bewertungen und Release-Daten.':
     'Track manga, manhwa, and manhua. Chapter progress, ratings, and release dates.',
-  Statistiken: 'Statistics',
+  Statistiken: 'Stats',
   'Detaillierte Einblicke in deine Seh- und Lesegewohnheiten.':
     'Detailed insights into your watching and reading habits.',
   'Weitere Highlights': 'More highlights',
@@ -217,14 +217,17 @@ const dict: Record<string, string> = {
   'Bereit loszulegen?': 'Ready to dive in?',
   'Starte noch heute und entdecke deine neue Lieblingsserie':
     'Start today and find your next favorite series',
-  'Jetzt kostenlos registrieren': 'Sign up for free now',
+  'Jetzt kostenlos registrieren': 'Sign up for free',
   Datenschutz: 'Privacy',
-  Impressum: 'Legal notice',
-  'Suche nach Serien oder Filmen': 'Search for series or movies',
+  Impressum: 'Legal',
+  'Suche nach Serien oder Filmen': 'Search shows or movies',
   Weiterschauen: 'Continue watching',
   'Staffel 2 · Folge 5': 'Season 2 · Episode 5',
   'Staffel 1 · Folge 8': 'Season 1 · Episode 8',
   'Staffel 4 · Folge 12': 'Season 4 · Episode 12',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  '04 — Premiere': '04 — Premiere',
 };
 
 export default dict;

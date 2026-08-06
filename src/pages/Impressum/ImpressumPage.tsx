@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Gavel } from '@mui/icons-material';
-import { isEnglish, t } from '../../services/i18n';
+import { localeFileChain, t } from '../../services/i18n';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
 
@@ -44,11 +44,11 @@ export const ImpressumPage = () => {
 
   useEffect(() => {
     // Legal content lives on the backend (kept out of the public frontend repo).
-    // Englische Fassung ist eine Convenience-Übersetzung — Fallback auf Deutsch.
+    // Übersetzte Fassungen sind Convenience — verbindlich ist die deutsche.
     const load = async () => {
       try {
-        if (isEnglish()) {
-          const res = await fetch(`${BACKEND_URL}/legal/impressum.en.json`);
+        for (const locale of localeFileChain()) {
+          const res = await fetch(`${BACKEND_URL}/legal/impressum.${locale}.json`);
           if (res.ok) {
             setData(await res.json());
             return;

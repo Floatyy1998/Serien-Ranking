@@ -209,7 +209,7 @@ export const MangaRatingsPage = () => {
                     'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
                 }}
               >
-                {f.label}
+                {t(f.label)}
               </button>
             );
           })}
@@ -238,7 +238,7 @@ export const MangaRatingsPage = () => {
                     'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
                 }}
               >
-                {s.label}
+                {t(s.label)}
               </button>
             );
           })}

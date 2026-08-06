@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { LocalizedMap } from '../services/i18n';
 
 export interface AppNotification {
   id: string;
@@ -25,7 +26,12 @@ export interface AppNotification {
   title: string;
   message: string;
   // Englische Variante (Cross-User-Notifications) — Anzeige wählt nach appLocale
+  /** Übersetzungen je Sprache — neben dem deutschen Quelltext in title/message. */
+  titleL?: LocalizedMap;
+  messageL?: LocalizedMap;
+  /** @deprecated Altbestand vor Aug 2026 — nur noch lesend, wird als `en` gedeutet. */
   titleEn?: string;
+  /** @deprecated Altbestand vor Aug 2026 — nur noch lesend, wird als `en` gedeutet. */
   messageEn?: string;
   timestamp: number;
   read: boolean;

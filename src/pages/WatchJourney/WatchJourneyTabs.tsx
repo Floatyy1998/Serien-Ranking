@@ -50,7 +50,7 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                aria-label={tab.label}
+                aria-label={t(tab.label)}
                 whileTap={tapScale}
                 onClick={() => onTabChange(tab.id)}
                 className="wj-tab-btn"
@@ -65,7 +65,7 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
                 }}
               >
                 {tab.icon}
-                <span className="wj-tab-label">{tab.label}</span>
+                <span className="wj-tab-label">{t(tab.label)}</span>
               </motion.button>
             );
           })}

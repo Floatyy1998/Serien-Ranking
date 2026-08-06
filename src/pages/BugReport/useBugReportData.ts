@@ -7,7 +7,7 @@ import type { BugTicket, TicketComment, TicketPriority, TicketType } from './typ
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { queueModerationScan } from '../../services/moderation/moderationScan';
-import { t, tLocale } from '../../services/i18n';
+import { localizedVariants, t, tLocale } from '../../services/i18n';
 
 const AUTO_DELETE_DAYS = 5;
 
@@ -108,7 +108,7 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
           title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
-          titleEn: tLocale('en', isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
+          titleL: localizedVariants(isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
           message: `${displayName}: "${data.title}"`,
           data: { ticketId, ticketType: data.ticketType },
         });
@@ -160,9 +160,9 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
           title: 'Neuer Kommentar',
-          titleEn: tLocale('en', 'Neuer Kommentar'),
+          titleL: localizedVariants('Neuer Kommentar'),
           message: tLocale('de', '{name} hat auf "{title}" geantwortet', vars),
-          messageEn: tLocale('en', '{name} hat auf "{title}" geantwortet', vars),
+          messageL: localizedVariants('{name} hat auf "{title}" geantwortet', vars),
           data: { ticketId, ticketType },
         });
 
@@ -224,9 +224,9 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_status',
           title: 'Ticket geschlossen',
-          titleEn: tLocale('en', 'Ticket geschlossen'),
+          titleL: localizedVariants('Ticket geschlossen'),
           message: tLocale('de', '{name} hat das Ticket "{title}" geschlossen', vars),
-          messageEn: tLocale('en', '{name} hat das Ticket "{title}" geschlossen', vars),
+          messageL: localizedVariants('{name} hat das Ticket "{title}" geschlossen', vars),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
         return true;

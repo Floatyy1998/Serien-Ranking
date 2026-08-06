@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isEnglish, t } from '../../services/i18n';
+import { dateLocale as appDateLocale, t } from '../../services/i18n';
 
 // Isolated clock component - updates every second without re-rendering parent.
 // We also pause the 1s ticker when the tab is hidden — a clock on a background
@@ -31,7 +31,7 @@ export const LiveClock = () => {
       stop();
     };
   }, []);
-  const locale = isEnglish() ? 'en-US' : 'de-DE';
+  const locale = appDateLocale();
   return (
     <>
       {time.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isEnglish } from '../../services/i18n';
+import { localeFileChain } from '../../services/i18n';
 
 export interface PrivacyData {
   title: string;
@@ -100,11 +100,12 @@ export const usePrivacyData = () => {
 
   useEffect(() => {
     // Legal content lives on the backend (kept out of the public frontend repo).
-    // Englische Fassung ist eine Convenience-Übersetzung — Fallback auf Deutsch.
+    // Übersetzte Fassungen sind Convenience — verbindlich ist die deutsche.
+    // Reihenfolge: aktive Sprache, deren Rückfallkette, zuletzt Deutsch.
     const load = async () => {
       try {
-        if (isEnglish()) {
-          const res = await fetch(`${BACKEND_URL}/legal/privacy.en.json`);
+        for (const locale of localeFileChain()) {
+          const res = await fetch(`${BACKEND_URL}/legal/privacy.${locale}.json`);
           if (res.ok) {
             setData(await res.json());
             return;

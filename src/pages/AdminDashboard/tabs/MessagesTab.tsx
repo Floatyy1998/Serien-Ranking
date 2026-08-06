@@ -2,6 +2,7 @@ import { Delete, NotificationsActive, Send } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { backendFetch } from '../../../services/backendApi';
 import { dbRef } from '../../../services/db/ref';
+import { LOCALES, LOCALE_LABEL, isLocale, type Locale } from '../../../services/i18n';
 
 interface UserMessage {
   text: string;
@@ -16,7 +17,7 @@ interface UserProfile {
   language: string;
 }
 
-type LangFilter = 'all' | 'de' | 'en' | 'unknown';
+type LangFilter = 'all' | Locale | 'unknown';
 
 interface MessagesTabProps {
   theme: {
@@ -63,8 +64,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           profiles[uid] = {
             displayName: val[uid]?.displayName || '',
             username: val[uid]?.username || '',
-            language:
-              val[uid]?.language === 'de' || val[uid]?.language === 'en' ? val[uid].language : '',
+            language: isLocale(val[uid]?.language) ? val[uid].language : '',
           };
         });
         setUsers(profiles);
@@ -116,14 +116,15 @@ export function MessagesTab({ theme }: MessagesTabProps) {
       (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '', 'de')
     );
 
+  // Zähler je Sprache plus „unbekannt" — aus der Sprachtabelle abgeleitet,
+  // damit eine neue Sprache hier von allein auftaucht.
   const langCounts = Object.values(users).reduce(
     (acc, u) => {
-      if (u.language === 'de') acc.de++;
-      else if (u.language === 'en') acc.en++;
-      else acc.unknown++;
+      const key = isLocale(u.language) ? u.language : 'unknown';
+      acc[key] = (acc[key] || 0) + 1;
       return acc;
     },
-    { de: 0, en: 0, unknown: 0 }
+    Object.fromEntries([...LOCALES, 'unknown'].map((l) => [l, 0])) as Record<string, number>
   );
 
   const toggleNotifTarget = (uid: string, name: string) => {
@@ -216,9 +217,11 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           {(
             [
               { id: 'all', label: `Alle (${Object.keys(users).length})` },
-              { id: 'de', label: `🇩🇪 Deutsch (${langCounts.de})` },
-              { id: 'en', label: `🇬🇧 Englisch (${langCounts.en})` },
-              { id: 'unknown', label: `? Unbekannt (${langCounts.unknown})` },
+              ...LOCALES.map((code) => ({
+                id: code,
+                label: `${LOCALE_LABEL[code]} (${langCounts[code]})`,
+              })),
+              { id: 'unknown', label: `Unbekannt (${langCounts.unknown})` },
             ] as { id: LangFilter; label: string }[]
           ).map((f) => {
             const active = notifLangFilter === f.id;

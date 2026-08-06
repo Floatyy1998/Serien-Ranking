@@ -4,7 +4,7 @@ const dict: Record<string, string> = {
   // Gemeinsam
   Zurück: 'Back',
   'Teilen & Empfehlen': 'Share & recommend',
-  'Extern teilen': 'Share externally',
+  'Extern teilen': 'Share elsewhere',
   'Link kopiert!': 'Link copied!',
   'Schau dir "{title}" auf TV-RANK an': 'Check out "{title}" on TV-RANK',
   'Lade...': 'Loading...',
@@ -67,7 +67,7 @@ const dict: Record<string, string> = {
   Donnerstags: 'Thursdays',
   Freitags: 'Fridays',
   Samstags: 'Saturdays',
-  '{day} neue Folge': 'New episode {day}',
+  '{day} neue Folge': 'New episodes {day}',
   'Alle 2 Wochen': 'Every 2 weeks',
   'Episode {n}': 'Episode {n}',
   'Läuft · {rhythm}': 'Airing · {rhythm}',
@@ -107,7 +107,7 @@ const dict: Record<string, string> = {
   // CharacterGuide
   'Frage zur Serie': 'Ask about the show',
   '(spoilerfrei bis S{s}E{e})': '(spoiler-free up to S{s}E{e})',
-  'Was ist nochmal mit ... passiert?': 'What happened with ... again?',
+  'Was ist nochmal mit ... passiert?': 'What happened to ... again?',
   'Frage absenden': 'Send question',
   'Wer war das nochmal?': 'Who was that again?',
   'KI-Charakter-Guide spoilerfrei bis S{s}E{e}': 'AI character guide, spoiler-free up to S{s}E{e}',
@@ -123,7 +123,7 @@ const dict: Record<string, string> = {
   'Nochmal gesehen ({n}x)': 'Watched again ({n}x)',
   'Auf {n}x reduzieren': 'Reduce to {n}x',
   'Auf 1x reduzieren': 'Reduce to 1x',
-  'Zur Diskussion': 'Go to discussion',
+  'Zur Diskussion': 'View discussion',
 
   // SeasonsSection
   'Erstausstrahlung {date}': 'First aired {date}',
@@ -160,7 +160,7 @@ const dict: Record<string, string> = {
   Heatmap: 'Heatmap',
   'Du: {n}/10': 'You: {n}/10',
   'Beste Folge': 'Best episode',
-  Schwächste: 'Weakest',
+  Schwächste: 'Worst',
   'Linie: Community · gestrichelt: du': 'Line: community · dashed: you',
   'Ø der TV-Rank-Community': 'TV-Rank community average',
   'Deine Folgenbewertungen': 'Your episode ratings',
@@ -177,9 +177,9 @@ const dict: Record<string, string> = {
   'Serie erfolgreich gelöscht!': 'Series deleted!',
   'Fehler beim Löschen der Serie.': 'Failed to delete the series.',
   'Fehler beim Aktualisieren der Watchlist.': 'Failed to update the watchlist.',
-  'Nicht weiterschauen': 'Not watching anymore',
-  'Serie wieder aktiv': 'Series active again',
-  'Fehler beim Ändern des Status.': 'Failed to change the status.',
+  'Nicht weiterschauen': 'Stop watching',
+  'Serie wieder aktiv': 'Series reactivated',
+  'Fehler beim Ändern des Status.': "Couldn't update status.",
   'Rewatch #{n} abgeschlossen!': 'Rewatch #{n} completed!',
   'S{s}E{e} Rewatch markiert': 'S{s}E{e} marked as rewatched',
   'Fehler beim Rewatch der Episode.': 'Failed to mark the episode as rewatched.',
@@ -189,7 +189,7 @@ const dict: Record<string, string> = {
   'als gesehen markiert': 'marked as watched',
   'als nicht gesehen markiert': 'marked as unwatched',
   'Fehler beim Speichern.': 'Failed to save.',
-  'Rewatch #{n} fortgesetzt!': 'Rewatch #{n} continued!',
+  'Rewatch #{n} fortgesetzt!': 'Rewatch #{n} resumed!',
   'Rewatch #{n} gestartet!': 'Rewatch #{n} started!',
   'Fehler beim Starten des Rewatches.': 'Failed to start the rewatch.',
   'Rewatch beendet.': 'Rewatch ended.',
@@ -201,7 +201,7 @@ const dict: Record<string, string> = {
     "This movie isn't in your list. A TMDB API key is required to view friends' movies.",
   'Film löschen?': 'Delete movie?',
   'Möchtest du "{title}" wirklich aus deiner Sammlung entfernen? Diese Aktion kann nicht rückgängig gemacht werden.':
-    'Do you really want to remove "{title}" from your collection? This action cannot be undone.',
+    'Are you sure you want to remove \\"{title}\\" from your collection? This can\'t be undone.',
   'Film-Bereiche': 'Movie sections',
   Veröffentlicht: 'Released',
   'Als gesehen': 'Mark watched',
@@ -212,11 +212,15 @@ const dict: Record<string, string> = {
   '{x} von {y} gesehen': '{x} of {y} watched',
   'ab {jahr}': 'coming {jahr}',
   'Film erfolgreich hinzugefügt!': 'Movie added!',
-  'Film ist bereits in deiner Liste!': 'This movie is already in your list!',
+  'Film ist bereits in deiner Liste!': 'This movie is already on your list!',
   'Fehler beim Hinzufügen des Films.': 'Failed to add the movie.',
-  'Der Gesehen-Status konnte nicht gespeichert werden.': 'The watched status could not be saved.',
+  'Der Gesehen-Status konnte nicht gespeichert werden.': "Couldn't save watched status.",
   'Film erfolgreich gelöscht!': 'Movie deleted!',
   'Fehler beim Löschen des Films.': 'Failed to delete the movie.',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  'Top Actors': 'Top Actors',
+  'Galaxy Map': 'Galaxy Map',
 };
 
 export default dict;

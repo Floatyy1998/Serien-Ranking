@@ -5,10 +5,20 @@
  */
 
 import type { SeasonAnime } from '../../services/anilistSeasonService';
-import { appLocale, t } from '../../services/i18n';
+import { appLocale, dateLocale, t, type Locale } from '../../services/i18n';
 
 /** Datumsformatierung folgt der App-Sprache (Boot-fixiert wie t()). */
-const DATE_LOCALE = appLocale === 'en' ? 'en-US' : 'de-DE';
+const DATE_LOCALE = dateLocale();
+
+/**
+ * Sprachen, die den Monat vor den Tag setzen („July 3" statt „3. Juli").
+ * Deutsch, Spanisch und Französisch schreiben den Tag zuerst.
+ */
+const MONTH_FIRST = new Set<Locale>(['en']);
+
+/** Tag + Monat in der Reihenfolge der App-Sprache, bereits formatiert. */
+const dayAndMonth = (date: Date, month: string): string =>
+  MONTH_FIRST.has(appLocale) ? `${month} ${date.getDate()}` : `${date.getDate()}. ${month}`;
 
 const FORMAT_LABELS_DE: Record<string, string> = {
   TV: 'TV',
@@ -179,7 +189,7 @@ export function franchiseTitle(title: string): string | null {
 export function dayLabel(date: Date): string {
   const weekday = date.toLocaleDateString(DATE_LOCALE, { weekday: 'long' }).toUpperCase();
   const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
-  const day = appLocale === 'en' ? `${month} ${date.getDate()}` : `${date.getDate()}. ${month}`;
+  const day = dayAndMonth(date, month);
   return `${weekday} · ${day}`;
 }
 
@@ -201,7 +211,7 @@ export function datePillText(date: Date): string {
     .replace('.', '')
     .toUpperCase();
   const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
-  const day = appLocale === 'en' ? `${month} ${date.getDate()}` : `${date.getDate()}. ${month}`;
+  const day = dayAndMonth(date, month);
   return `${weekday} · ${day}`;
 }
 

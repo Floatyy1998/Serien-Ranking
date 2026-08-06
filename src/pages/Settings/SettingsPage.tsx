@@ -118,7 +118,7 @@ export const SettingsPage = () => {
                 <DesktopWindows style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
               </div>
               <div className="settings-nav-btn-text">
-                <h2 className="settings-nav-btn-title">Desktop App</h2>
+                <h2 className="settings-nav-btn-title">{t('Desktop App')}</h2>
                 <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
                   {t('TV-Rank für Windows herunterladen')}
                 </p>
@@ -150,7 +150,7 @@ export const SettingsPage = () => {
                 <Android style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
               </div>
               <div className="settings-nav-btn-text">
-                <h2 className="settings-nav-btn-title">Android App</h2>
+                <h2 className="settings-nav-btn-title">{t('Android App')}</h2>
                 <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
                   {t('APK direkt herunterladen und installieren')}
                 </p>
@@ -247,7 +247,7 @@ const AutoStartToggle = ({ currentTheme }: { currentTheme: ThemeContextType['cur
         <PowerSettingsNew style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
       </div>
       <div className="settings-nav-btn-text">
-        <h2 className="settings-nav-btn-title">Autostart</h2>
+        <h2 className="settings-nav-btn-title">{t('Autostart')}</h2>
         <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
           {t('TV-Rank beim Hochfahren starten')}
         </p>

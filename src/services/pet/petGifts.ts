@@ -1,5 +1,5 @@
 import { dbRef, userPath } from '../../services/db/ref';
-import { t, tLocale } from '../i18n';
+import { LOCALES, SOURCE_LOCALE, t, tLocale, type Locale, type LocalizedMap } from '../i18n';
 import { queuePush } from '../pushQueue';
 
 export type PetGiftType = 'snack' | 'toy';
@@ -8,8 +8,8 @@ export interface PetGiftPayload {
   type: 'pet_gift';
   title: string;
   message: string;
-  titleEn?: string;
-  messageEn?: string;
+  titleL?: LocalizedMap;
+  messageL?: LocalizedMap;
   timestamp: number;
   read: boolean;
   data: {
@@ -55,25 +55,32 @@ export async function sendPetGift(opts: {
   const { fromUid, fromName, toUid, giftType } = opts;
   const preset = GIFT_PRESETS[giftType];
 
-  const titleFor = (locale: 'de' | 'en') =>
+  const titleFor = (locale: Locale) =>
     tLocale(locale, '{name} schickt {gift}', {
       name: fromName,
       gift: tLocale(locale, preset.label),
     });
-  const messageFor = (locale: 'de' | 'en') =>
+  const messageFor = (locale: Locale) =>
     tLocale(locale, 'Dein Pet freut sich (+{h} Glück{rest})', {
       h: preset.happinessDelta,
       rest:
         preset.hungerDelta < 0 ? tLocale(locale, ', {n} Hunger', { n: preset.hungerDelta }) : '',
     });
 
+  /** Sprach-Map über alle Nicht-Quellsprachen — der Name steckt im Text. */
+  const mapOver = (build: (locale: Locale) => string): LocalizedMap => {
+    const out: LocalizedMap = {};
+    for (const locale of LOCALES) if (locale !== SOURCE_LOCALE) out[locale] = build(locale);
+    return out;
+  };
+
   // Rules capen title≤500 / message≤2000 — fromName ist unbegrenzt lang möglich
   const payload: PetGiftPayload = {
     type: 'pet_gift',
-    title: titleFor('de').slice(0, 500),
-    message: messageFor('de').slice(0, 2000),
-    titleEn: titleFor('en').slice(0, 500),
-    messageEn: messageFor('en').slice(0, 2000),
+    title: titleFor(SOURCE_LOCALE).slice(0, 500),
+    message: messageFor(SOURCE_LOCALE).slice(0, 2000),
+    titleL: mapOver((l) => titleFor(l).slice(0, 500)),
+    messageL: mapOver((l) => messageFor(l).slice(0, 2000)),
     timestamp: Date.now(),
     read: false,
     data: {
@@ -89,8 +96,8 @@ export async function sendPetGift(opts: {
   await queuePush(toUid, {
     title: `🎁 ${payload.title}`,
     body: payload.message,
-    titleEn: `🎁 ${payload.titleEn}`,
-    bodyEn: payload.messageEn,
+    titleL: mapOver((l) => `🎁 ${titleFor(l).slice(0, 500)}`),
+    bodyL: payload.messageL,
     url: '/pets',
   });
 

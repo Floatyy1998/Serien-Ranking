@@ -11,7 +11,7 @@ import { ADMIN_UID } from '../config/admin';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
-import { t, tLocale } from '../services/i18n';
+import { localizedVariants, t, tLocale } from '../services/i18n';
 
 interface EditReplyInput {
   content?: string;
@@ -166,9 +166,9 @@ export const useDiscussionReplies = (
           await sendNotificationToUser(participantId, {
             type: 'discussion_reply',
             title: 'Neue Antwort',
-            titleEn: tLocale('en', 'Neue Antwort'),
+            titleL: localizedVariants('Neue Antwort'),
             message: tLocale('de', template, vars),
-            messageEn: tLocale('en', template, vars),
+            messageL: localizedVariants(template, vars),
             data: {
               discussionId,
               discussionPath,
@@ -279,14 +279,13 @@ export const useDiscussionReplies = (
           await sendNotificationToUser(reply.userId, {
             type: 'spoiler_flag',
             title: 'Spoiler-Markierung',
-            titleEn: tLocale('en', 'Spoiler-Markierung'),
+            titleL: localizedVariants('Spoiler-Markierung'),
             message: tLocale(
               'de',
               '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
               vars
             ),
-            messageEn: tLocale(
-              'en',
+            messageL: localizedVariants(
               '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
               vars
             ),
@@ -371,9 +370,9 @@ export const useDiscussionReplies = (
             await sendNotificationToUser(reply.userId, {
               type: 'discussion_like',
               title: 'Neue Reaktion',
-              titleEn: tLocale('en', 'Neue Reaktion'),
+              titleL: localizedVariants('Neue Reaktion'),
               message: tLocale('de', '{name} gefällt deine Antwort: "{snippet}"', vars),
-              messageEn: tLocale('en', '{name} gefällt deine Antwort: "{snippet}"', vars),
+              messageL: localizedVariants('{name} gefällt deine Antwort: "{snippet}"', vars),
               data: {
                 discussionId,
                 discussionPath,

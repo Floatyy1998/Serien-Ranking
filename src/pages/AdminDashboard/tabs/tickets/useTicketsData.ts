@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
-import { tLocale } from '../../../../services/i18n';
+import { localizedVariants, tLocale } from '../../../../services/i18n';
 import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
 import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
@@ -106,9 +106,9 @@ export function useTicketsData(): UseTicketsDataResult {
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_status',
           title: 'Ticket-Status geändert',
-          titleEn: tLocale('en', 'Ticket-Status geändert'),
+          titleL: localizedVariants('Ticket-Status geändert'),
           message: tLocale('de', template, { title: ticket.title, status: statusRaw }),
-          messageEn: tLocale('en', template, {
+          messageL: localizedVariants(template, {
             title: ticket.title,
             status: tLocale('en', statusRaw),
           }),
@@ -143,9 +143,9 @@ export function useTicketsData(): UseTicketsDataResult {
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_reply',
           title: 'Antwort auf dein Ticket',
-          titleEn: tLocale('en', 'Antwort auf dein Ticket'),
+          titleL: localizedVariants('Antwort auf dein Ticket'),
           message: tLocale('de', template, vars),
-          messageEn: tLocale('en', template, vars),
+          messageL: localizedVariants(template, vars),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }

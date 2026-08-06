@@ -52,6 +52,6 @@ export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: str
 };
 
 export const TYPE_CONFIG: Record<TicketType, { label: string; color: string; icon: string }> = {
-  bug: { label: 'Bug', color: '#ef4444', icon: '🐛' },
-  feature: { label: 'Feature', color: '#8b5cf6', icon: '💡' },
+  bug: { label: t('Bug'), color: '#ef4444', icon: '🐛' },
+  feature: { label: t('Feature'), color: '#8b5cf6', icon: '💡' },
 };

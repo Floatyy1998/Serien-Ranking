@@ -38,7 +38,7 @@ export const BugReportPage = memo(() => {
   return (
     <PageLayout>
       <PageHeader
-        title="Feedback & Bugs"
+        title={t('Feedback & Bugs')}
         gradientFrom={currentTheme.primary}
         subtitle={t('Bugs melden oder Features vorschlagen')}
         icon={<Feedback />}

@@ -1,4 +1,8 @@
-/** Sprachwahl: Auto (Browsersprache, DACH→Deutsch) / Deutsch / Englisch. Wechsel lädt die App neu. */
+/**
+ * Sprachwahl: Auto (Browsersprache) oder eine feste Sprache. Die Liste kommt
+ * aus `i18n/locales.ts` — eine neue Sprache erscheint hier von allein.
+ * Ein Wechsel lädt die App neu, weil die Sprache beim Boot fixiert wird.
+ */
 
 import { Language, Public, Translate } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -7,7 +11,13 @@ import { ThemedSelect } from '../../components/ui/ThemedSelect';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 import type { AppLanguage } from '../../services/i18n';
-import { getAppLanguageSetting, setAppLanguageSetting, t } from '../../services/i18n';
+import {
+  LOCALES,
+  LOCALE_LABEL,
+  getAppLanguageSetting,
+  setAppLanguageSetting,
+  t,
+} from '../../services/i18n';
 import { getWatchRegionSetting, setWatchRegionSetting } from '../../services/region';
 import {
   isAutoTranslateEnabled,
@@ -16,8 +26,7 @@ import {
 
 const OPTIONS: { value: AppLanguage; label: string }[] = [
   { value: 'auto', label: 'Auto' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'en', label: 'English' },
+  ...LOCALES.map((code) => ({ value: code as AppLanguage, label: LOCALE_LABEL[code] })),
 ];
 
 /** Länder mit eigener TMDB-Provider-Abdeckung — Auswahl fürs Streaming-Land. */
@@ -127,7 +136,7 @@ export const LanguageSection = () => {
           margin: '10px 0 0 0',
         }}
       >
-        {t('Auto nutzt die Gerätesprache: Deutsch im DACH-Raum, sonst Englisch.')}
+        {t('Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.')}
       </p>
 
       <div

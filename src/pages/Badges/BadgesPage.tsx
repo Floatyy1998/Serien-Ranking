@@ -304,7 +304,7 @@ export const BadgesPage = () => {
               >
                 <div className="mobile-badges-tab-icon">{category.icon}</div>
                 <div className="mobile-badges-tab-content">
-                  <span className="mobile-badges-tab-label">{category.label}</span>
+                  <span className="mobile-badges-tab-label">{t(category.label)}</span>
                   <span
                     className="mobile-badges-tab-count"
                     style={{

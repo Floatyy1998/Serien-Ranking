@@ -13,7 +13,7 @@
  */
 
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
-import { appLocale, t } from '../../services/i18n';
+import { dateLocale, pickLocalized, t } from '../../services/i18n';
 
 // Reine Date-Helfer aus dem Anime-Kalender wiederverwenden (identische UI).
 export {
@@ -52,10 +52,7 @@ export function quarterRangeShort(date: Date): string {
   const q = quarterOf(date);
   const start = new Date(date.getFullYear(), q * 3, 1);
   const end = new Date(date.getFullYear(), q * 3 + 2, 1);
-  const m = (d: Date) =>
-    d
-      .toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', { month: 'short' })
-      .replace('.', '');
+  const m = (d: Date) => d.toLocaleDateString(dateLocale(), { month: 'short' }).replace('.', '');
   return `${m(start)}–${m(end)}`;
 }
 
@@ -71,14 +68,23 @@ export function shiftQuarter(date: Date, delta: number): Date {
   return new Date(date.getFullYear(), (quarterOf(date) + delta) * 3, 1);
 }
 
-/** Titel in App-Sprache — EN-Feld mit DE-Fallback (ältere Exporte ohne EN). */
+/**
+ * Titel in App-Sprache. `titleL` ist die Sprach-Map des Exports; `titleEn`
+ * bleibt als Altbestand lesbar (Exporte vor Aug 2026 kannten nur Englisch).
+ */
 export function premiereTitle(entry: TvPremiereStaticEntry): string {
-  return (appLocale === 'en' && entry.titleEn) || entry.title;
+  return pickLocalized(
+    entry.title,
+    entry.titleL ?? (entry.titleEn ? { en: entry.titleEn } : undefined)
+  );
 }
 
-/** Beschreibung in App-Sprache — EN-Feld mit DE-Fallback. */
+/** Beschreibung in App-Sprache — gleiche Regel wie beim Titel. */
 export function premiereOverview(entry: TvPremiereStaticEntry): string {
-  return (appLocale === 'en' && entry.overviewEn) || entry.overviewDe || '';
+  return pickLocalized(
+    entry.overviewDe || '',
+    entry.overviewL ?? (entry.overviewEn ? { en: entry.overviewEn } : undefined)
+  );
 }
 
 /** Karten-/Timeline-Badge aus dem Premieren-Typ: „Neu" (Primary) für eine

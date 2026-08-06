@@ -8,7 +8,7 @@ const dict: Record<string, string> = {
   'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
     'Check off episodes, rate, compare with friends — for free.',
   'Jetzt tracken — kostenlos': 'Track now — free',
-  'Im App Store laden': 'Get it on the App Store',
+  'Im App Store laden': 'Download on the App Store',
   'Bei Google Play laden': 'Get it on Google Play',
 
   // GuestOnboardingPage — Kopf & Intro
@@ -24,29 +24,29 @@ const dict: Record<string, string> = {
   'Ein Begleiter, der mit jeder Folge levelt.': 'A companion that levels up with every episode.',
   'Dein Jahr in Zahlen — Rekorde, Genres, Binges.':
     'Your year in numbers — records, genres, binges.',
-  'Wo alles läuft — für dein Land.': 'Where everything streams — for your country.',
+  'Wo alles läuft — für dein Land.': 'Where to watch — in your country.',
   'los geht’s': 'let’s go',
   '30 sekunden': '30 seconds',
 
   // GuestOnboardingPage — Auswahl
   'Wähl drei.': 'Pick three.',
   'Damit füllt sich deine App. Den Rest machst du nach dem Anmelden.':
-    'This fills your app. Do the rest after signing up.',
-  'serie oder film suchen …': 'search a series or movie …',
+    "That's what fills your app. The rest comes after you sign up.",
+  'serie oder film suchen …': 'search for a series or movie …',
   'sichere dein setup': 'save your setup',
 
   // GuestOnboardingPage — Sichern (ein Onboarding, Signup in der Mitte)
   'Fast fertig — jetzt sichern.': 'Almost there — save it now.',
   'Konto anlegen = deine Auswahl & dein Begleiter bleiben — auf allen Geräten. Danach nur noch: wo stehst du?':
-    'Create an account to keep your picks & companion — on every device. Then just: where are you?',
+    "Create an account to keep your picks & companion — on every device. Then all that's left: where are you?",
 
   // GuestResumeOnboarding (nach dem Signup)
   'Wir richten alles ein …': 'Setting everything up …',
   'letzter Schritt': 'last step',
-  'Wo stehst du?': 'Where are you?',
+  'Wo stehst du?': "Where'd you leave off?",
   'Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.':
     'Tap a series and tell us how far you’ve watched.',
-  'wo stehst du?': 'where are you?',
+  'wo stehst du?': "where'd you leave off?",
   'komplett gesehen': 'seen it all',
   'fertig — los geht’s': 'done — let’s go',
 
@@ -74,6 +74,11 @@ const dict: Record<string, string> = {
   Panda: 'Panda',
   Vogel: 'Bird',
   Drache: 'Dragon',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  'Cloud-Sync': 'Cloud Sync',
+  'Smart Notifications': 'Smart Notifications',
+  'Deep Analytics': 'Deep Analytics',
 };
 
 export default dict;

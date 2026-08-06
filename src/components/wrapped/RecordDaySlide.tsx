@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';
 import type { DayStats } from '../../types/Wrapped';
-import { isEnglish, t } from '../../services/i18n';
+import { dateLocale as appDateLocale, t } from '../../services/i18n';
 
 interface RecordDaySlideProps {
   mostActiveDay: DayStats;
@@ -34,7 +34,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
   // Formatiere das Datum schöner (ungültige Datumswerte nicht als "Invalid Date" rendern)
   const dateObj = new Date(mostActiveDay.date);
   const formattedDate = Number.isFinite(dateObj.getTime())
-    ? dateObj.toLocaleDateString(isEnglish() ? 'en-US' : 'de-DE', {
+    ? dateObj.toLocaleDateString(appDateLocale(), {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -244,7 +244,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
             {hours}h
           </p>
-          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>Watchtime</p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Watchtime')}
+          </p>
         </motion.div>
       </motion.div>
 

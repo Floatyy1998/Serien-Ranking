@@ -1,7 +1,7 @@
 /** Englische Übersetzungen: Patch Notes. */
 const dict: Record<string, string> = {
   // Version titles
-  'Juli 2026 – Der Freunde-Chat': 'July 2026 – The Friends Chat',
+  'Juli 2026 – Der Freunde-Chat': 'July 2026 – Chat with Friends',
   'Juli 2026 – Das große Pet-Update': 'July 2026 – The Big Pet Update',
   'Juli 2026 – Filme im Rampenlicht': 'July 2026 – Movies in the Spotlight',
   'Juli 2026 – TV-Rank klopft an': 'July 2026 – TV-Rank Comes Knocking',
@@ -10,7 +10,7 @@ const dict: Record<string, string> = {
   'Juli 2026 – Anime-Season-Kalender': 'July 2026 – Anime Season Calendar',
   'Juni 2026 – Mehr über deine Freunde': 'June 2026 – More About Your Friends',
   'Juni 2026 – Anime, Aktivität & Polish': 'June 2026 – Anime, Activity & Polish',
-  'Juni 2026 – Empfehlungen an Freunde': 'June 2026 – Recommendations to Friends',
+  'Juni 2026 – Empfehlungen an Freunde': 'June 2026 – Recommend to Friends',
   'Juni 2026 – Streaming-Abos': 'June 2026 – Streaming Subscriptions',
   'März 2026 – QoL Update': 'March 2026 – QoL Update',
   'März 2026 – Update 3': 'March 2026 – Update 3',
@@ -23,12 +23,12 @@ const dict: Record<string, string> = {
   'Zu deinen Pets': 'Go to Your Pets',
   'Zum Film-Kalender': 'Go to the Movie Calendar',
   'Zu den Einstellungen': 'Go to Settings',
-  'Leiste anpassen': 'Customize the Bar',
+  'Leiste anpassen': 'Customize Nav Bar',
   'Zur Rangliste': 'Go to the Leaderboard',
   'Zum Profil': 'Go to Profile',
   'Zum Anime-Season-Kalender': 'Go to the Anime Season Calendar',
   'Layout anpassen': 'Customize Layout',
-  'Sektionen sortieren': 'Sort Sections',
+  'Sektionen sortieren': 'Reorder Sections',
   'Streaming-Abos öffnen': 'Open Streaming Subscriptions',
   'Abos verwalten': 'Manage Subscriptions',
   'Insights ansehen': 'View Insights',
@@ -41,9 +41,9 @@ const dict: Record<string, string> = {
 
   // Feature titles
   'Drei neue Pets: Eule, Pinguin & Axolotl': 'Three New Pets: Owl, Penguin & Axolotl',
-  'Alle Pets im neuen Look': 'All Pets with a New Look',
+  'Alle Pets im neuen Look': 'All Pets Get a New Look',
   '30 neue Accessoires & 20 neue Hintergründe': '30 New Accessories & 20 New Backgrounds',
-  'Der gesamte Bestand poliert': 'The Entire Collection Polished',
+  'Der gesamte Bestand poliert': 'The Entire Lineup, Polished',
   'Der Film-Kalender ist da': 'The Movie Calendar Is Here',
   'Filmreihen mit Fortschritt': 'Movie Collections with Progress',
   'Fairness & Feinschliff': 'Fairness & Polish',
@@ -52,27 +52,27 @@ const dict: Record<string, string> = {
   // Feature titles + descriptions + Announcement (Freunde-Chat Juli 2026)
   'Private Chats mit deinen Freunden': 'Private Chats with Your Friends',
   'Emojis, Herz-Reaktionen & Pet-Sticker': 'Emojis, Heart Reactions & Pet Stickers',
-  'Live wie ein richtiger Messenger': 'Live Like a Real Messenger',
+  'Live wie ein richtiger Messenger': 'Real-Time, Like a Proper Messenger',
   'Privatsphäre eingebaut': 'Privacy Built In',
   'Schreib deinen Freunden direkt in TV-Rank — über das Papierflieger-Symbol im Freunde-Bereich oder den Chat-Button auf jedem Freund-Profil. Am Desktop als Split-View wie bei Instagram: links deine Chats mit Suche, rechts die Unterhaltung in voller Breite.':
-    'Message your friends right inside TV-Rank — via the paper-plane icon in the friends area or the chat button on any friend profile. On desktop it is a split view like Instagram: your chats with search on the left, the conversation in full width on the right.',
+    "Message your friends right inside TV-Rank — via the paper-plane icon in the Friends section or the chat button on any friend's profile. On desktop it's a split view like Instagram: your chats with search on the left, the conversation full-width on the right.",
   'Der Picker bringt ein kuratiertes Emoji-Set und exklusive Sticker deiner Pets mit — jedes der zehn Pets in Basis- und Entwicklungsform. Und wie beim großen Vorbild: Doppeltipp auf eine Nachricht schenkt ihr ein Herz.':
-    'The picker comes with a curated emoji set and exclusive stickers of your pets — each of the ten pets in base and evolved form. And just like the big role models: double-tap a message to give it a heart.',
+    'The picker comes with a curated emoji set and exclusive stickers of your pets — each of the ten pets in base and evolved form. And just like the apps you know: double-tap a message to give it a heart.',
   'Du siehst, wer online ist und wer gerade schreibt, ungelesene Chats sind auf einen Blick markiert, Nachrichten gruppieren sich zu Bubbles mit Tages-Trennern — und wenn du gerade nicht da bist, klopft eine Push-Benachrichtigung an.':
-    'You can see who is online and who is typing, unread chats are marked at a glance, messages group into bubbles with day separators — and when you are away, a push notification comes knocking.',
+    "You'll see who's online and who's typing, unread chats are flagged at a glance, messages group into bubbles with day separators — and when you're away, a push notification comes knocking.",
   'Nachrichten sind nur für euch beide lesbar — kein automatisches Mitlesen, keine Auswertung. Unangenehme Chats kannst du melden oder blockieren, Löschen entfernt den Verlauf für beide Seiten, und nach 12 Monaten räumen wir alte Nachrichten automatisch weg.':
-    'Messages can only be read by the two of you — no automatic scanning, no analysis. You can report or block unpleasant chats, deleting removes the history for both sides, and after 12 months old messages are cleaned up automatically.',
+    'Messages can only be read by the two of you — no automatic scanning, no analysis. If a chat gets uncomfortable, you can report or block it; deleting removes the history for both sides, and after 12 months we clear out old messages automatically.',
   'Mach den Chat zu deinem': 'Make the Chat Your Own',
   'Gestalte deine Bubbles mit eigenem Farbverlauf und Eckenform — mit Live-Vorschau. Dazu wählst du pro Chat einen Hintergrund: ruhige Verläufe für alle, und die Pet-Szenen, die du im Pet-System schon freigeschaltet hast. Beides siehst nur du.':
     'Style your bubbles with a custom gradient and corner shape — with live preview. Plus pick a background per chat: calm gradients for everyone, and the pet scenes you have already unlocked in the pet system. Both are visible only to you.',
   // Announcement (neues Standard-Design, Juli 2026)
   'Neu: Ein neues Standard-Design': 'New: A New Default Look',
   'TV-Rank trägt jetzt Rosé und Amber auf dunklem Plum. Wer bereits ein eigenes Theme eingestellt hat, behält es unverändert. Und falls dir das neue Design nicht zusagt: Farben, Hintergrund und Akzente stellst du frei in den Einstellungen ein — tippe hier, um direkt dorthin zu kommen.':
-    'TV-Rank now wears rosé and amber on deep plum. If you have already set your own theme, it stays exactly as it was. And if the new look is not for you: colors, background and accents are yours to change in the settings — tap here to go straight there.',
+    "TV-Rank now wears rosé and amber on deep plum. If you've already set your own theme, it stays exactly as it was. And if the new look isn't for you: colors, background and accents are yours to change in the settings — tap here to go straight there.",
 
   'Neu: Private Chats mit deinen Freunden': 'New: Private Chats with Your Friends',
   'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Gestalte Bubbles und Chat-Hintergründe selbst, freigeschaltete Pet-Szenen inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.':
-    'You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Style your bubbles and chat backgrounds yourself, unlocked pet scenes included. And everything stays private: only the person you write to can read along. All details in the patch notes.',
+    "You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Style your bubbles and chat backgrounds yourself, unlocked pet scenes included. And everything stays private: only the person you're messaging can see it. All details in the patch notes.",
 
   // Feature descriptions + Announcement (Pet-Update Juli 2026)
   'Drei neue Begleiter ziehen ein: eine weise Eule, ein watschelnder Pinguin und ein verspielter Axolotl. Jedes hat eine eigene Entwicklungsform ab Level 50 — Erzmagier, Kaiser und Leviathan.':
@@ -82,7 +82,7 @@ const dict: Record<string, string> = {
   'Von der Popcorn-Tüte über die VR-Brille bis zur Galaxien-Krone: 30 neue Accessoires in allen Seltenheiten — acht davon exklusiv in der Mystery Box. Dazu 20 neue Hintergrund-Szenen, vom Autokino über den Koi-Teich bis zur Premierennacht.':
     'From the popcorn bucket to the VR headset to the galaxy crown: 30 new accessories across all rarities — eight of them exclusive to the mystery box. Plus 20 new background scenes, from the drive-in cinema to the koi pond to premiere night.',
   'Auch alles Bisherige wurde überarbeitet: Alle 73 bestehenden Accessoires bekamen weiche Formen, Verläufe und Glanzlichter, alle 60 bestehenden Hintergründe wurden als Szenen neu gezeichnet — mit Tiefenebenen und stimmiger Lichtstimmung.':
-    'Everything existing got a makeover too: all 73 existing accessories received soft shapes, gradients and highlights, and all 60 existing backgrounds were redrawn as scenes — with depth layers and cohesive lighting.',
+    'Everything that was already there got a makeover too: all 73 accessories now have soft shapes, gradients and highlights, and all 60 backgrounds were redrawn as scenes — with depth layers and cohesive lighting.',
   'Neu: Das große Pet-Update': 'New: The Big Pet Update',
   'Drei neue Pets — Eule, Pinguin und Axolotl — mit eigenen Entwicklungsformen, alle bisherigen Pets komplett neu gezeichnet, dazu 30 neue Accessoires und 20 neue Hintergründe. Und der gesamte Bestand wurde poliert. Alle Details in den Patch Notes.':
     'Three new pets — owl, penguin and axolotl — with their own evolved forms, all existing pets completely redrawn, plus 30 new accessories and 20 new backgrounds. And the entire collection has been polished. All details in the patch notes.',
@@ -103,39 +103,39 @@ const dict: Record<string, string> = {
     'Big movie update: the new movie calendar shows theatrical and streaming releases for your region, the homepage alerts you when movies from your list land on your subscriptions, and you can now track movie collections with progress right on the movie page. All details in the patch notes.',
   'Die untere Leiste gehört jetzt dir': 'The Bottom Bar Is Now Yours',
   'Neuer Layout-Editor: deine App in klein': 'New Layout Editor: Your App in Miniature',
-  'Rangliste im Kino-Look': 'Leaderboard in Cinema Style',
+  'Rangliste im Kino-Look': 'Leaderboard, Cinema Style',
   'Backdrops in Originalauflösung': 'Backdrops in Original Resolution',
   'Feinschliff im ganzen System': 'Polish Across the Whole System',
   'Komplettes Redesign — jede Seite neu': 'Complete Redesign — Every Page Rebuilt',
   'Neues Profil: dein Kino auf einem Screen': 'New Profile: Your Cinema on One Screen',
   'Desktop nutzt endlich die volle Breite': 'Desktop Finally Uses the Full Width',
   'Neue Startseite, Login & Registrierung': 'New Landing Page, Login & Sign-Up',
-  'Sanfte Updates — nie wieder Zwangs-Reload': 'Gentle Updates — No More Forced Reload',
+  'Sanfte Updates — nie wieder Zwangs-Reload': 'Seamless Updates — No More Forced Reloads',
   'Schnellerer Start': 'Faster Start',
   'Mobile-Feinschliff': 'Mobile Polish',
   'Neue Seite: Anime-Season-Kalender': 'New Page: Anime Season Calendar',
   'Live-Countdown zur nächsten Premiere': 'Live Countdown to the Next Premiere',
   '„Staffel 2"-, „Part 2"- und „NEU"-Chips': '"Season 2", "Part 2" and "NEW" Chips',
-  'Termine wie in deinem Kalender': 'Dates Like in Your Calendar',
-  'Deine Serien werden erkannt': 'Your Shows Are Recognized',
+  'Termine wie in deinem Kalender': 'Dates, Just Like in Your Calendar',
+  'Deine Serien werden erkannt': 'We Spot Your Shows',
   'Komfort beim Stöbern': 'Easier Browsing',
   'Filter: Serien, Filme & Provider': 'Filter: Shows, Movies & Providers',
   'Direkt zur Liste hinzufügen': 'Add Straight to Your List',
   'TMDB-Rating auf den Karten': 'TMDB Rating on the Cards',
-  'Beschreibung komplett lesen': 'Read the Full Description',
-  'Freunde-Stand auf der Seriendetail-Seite': "Friends' Progress on the Series Detail Page",
-  'Was schaut [Freund] gerade?': 'What Is [Friend] Watching Right Now?',
-  'Worauf wartet [Freund]?': 'What Is [Friend] Waiting For?',
+  'Beschreibung komplett lesen': 'Read Full Description',
+  'Freunde-Stand auf der Seriendetail-Seite': "Friends' Progress on the Show Page",
+  'Was schaut [Freund] gerade?': "What's [Friend] Watching Right Now?",
+  'Worauf wartet [Freund]?': "What's [Friend] Waiting For?",
   'Pet-Sneakpeek + Snack schicken': 'Pet Sneak Peek + Send a Snack',
   'Air-Date + Erstes-Mal-Gesehen pro Folge': 'Air Date + First-Watched Per Episode',
-  'Anime-Filler & Recap im Detail': 'Anime Filler & Recap in Detail',
-  'Freunde-Aktivitäten als Ticker': "Friends' Activity as a Ticker",
+  'Anime-Filler & Recap im Detail': 'Anime Filler & Recap Details',
+  'Freunde-Aktivitäten als Ticker': "Friends' Activity Feed",
   'Streaming-Reminder direkt auf der Homepage': 'Streaming Reminder Right on the Homepage',
   'Now-Playing-Indikator auf Postern': 'Now-Playing Indicator on Posters',
   'Pet reagiert auf deine Streak': 'Your Pet Reacts to Your Streak',
   'Recap-Button statt Auto-Popup': 'Recap Button Instead of Auto-Popup',
-  'Sanfte Seitenwechsel (View Transitions)': 'Gentle Page Transitions (View Transitions)',
-  'Layout aufgeräumt': 'Layout Tidied Up',
+  'Sanfte Seitenwechsel (View Transitions)': 'Smooth Page Transitions (View Transitions)',
+  'Layout aufgeräumt': 'Layout Cleanup',
   'Serien & Filme empfehlen': 'Recommend Shows & Movies',
   'Empfehlung im Bell-Hub': 'Recommendation in the Bell Hub',
   'Smart Friend-Filter': 'Smart Friend Filter',
@@ -161,7 +161,7 @@ const dict: Record<string, string> = {
   'Navbar Redesign': 'Navbar Redesign',
   'TV-Kalender überarbeitet': 'TV Calendar Reworked',
   'Serien-Fortschritt': 'Series Progress',
-  'Neue Sortierung': 'New Sorting',
+  'Neue Sortierung': 'New Sort Options',
   'Provider-Filter': 'Provider Filter',
   'Rewatch-Fortschritt': 'Rewatch Progress',
   '"Ich bin bei…" Markierung': '"I\'m At…" Marker',
@@ -169,11 +169,11 @@ const dict: Record<string, string> = {
 
   // Feature descriptions
   'Die iOS- und Android-App melden sich jetzt von selbst: morgens, wenn eine deiner Serien heute eine neue Folge bekommt, und sofort, wenn dich eine Freundschaftsanfrage erreicht. Einschalten unter Einstellungen → Benachrichtigungen → Push-Benachrichtigungen.':
-    'The iOS and Android apps now reach out on their own: in the morning when one of your shows gets a new episode today, and instantly when a friend request arrives. Turn it on under Settings → Notifications → Push Notifications.',
+    'The iOS and Android apps now speak up on their own: in the morning when one of your shows drops a new episode today, and instantly when a friend request comes in. Turn it on under Settings → Notifications → Push Notifications.',
   'Belege bis zu 4 Plätze der Navigationsleiste mit deinen Lieblingszielen — Kalender raus, Statistiken rein? Rangliste statt Manga? Du entscheidest. Seiten in der Leiste verlieren automatisch ihren Zurück-Pfeil, denn sie sind jetzt ein Zuhause.':
-    'Fill up to 4 slots in the navigation bar with your favorite destinations — drop the calendar, add stats? Leaderboard instead of manga? You decide. Pages in the bar automatically lose their back arrow, because they are a home base now.',
+    "Fill up to 4 slots in the navigation bar with your favorite destinations — drop the calendar, add stats? Leaderboard instead of manga? You decide. Pages in the bar automatically lose their back arrow — they're home now.",
   'Homepage anpassen heißt jetzt anfassen: Deine App schwebt als Miniatur in der Mitte — Sektionen greifst und verschiebst du direkt, das Auge blendet aus, und die Leiste bestückst du per Tipp. Was du siehst, ist live dein Layout.':
-    'Customizing the homepage now means hands-on: your app floats as a miniature in the center — grab and move sections directly, the eye hides them, and you fill the bar with a tap. What you see is your layout, live.',
+    'Customizing your homepage is now hands-on: your app floats as a miniature in the center — grab and drag sections directly, tap the eye to hide them, and fill the bar with a tap. What you see is your layout, live.',
   'Das Podium ist jetzt eine Bühne: große Avatare mit Medaillen-Ring und Krone, Glas-Sockel mit Gold-, Silber- und Bronze-Lichtkante und deine Zahl groß im Rampenlicht. Die Trophäen-Galerie füllt den Desktop als Glas-Karten in voller Breite.':
     'The podium is now a stage: large avatars with medal rings and crowns, glass pedestals with gold, silver and bronze light edges, and your number big in the spotlight. The trophy gallery fills the desktop as full-width glass cards.',
   'Auf großen und hochauflösenden Displays laden die Kino-Zeilen auf der Startseite ihre Artworks jetzt in Originalqualität — kein weiches Hochskalieren mehr. Auch die Backdrop-Collage im Profil ist deutlich schärfer geworden.':
@@ -191,25 +191,25 @@ const dict: Record<string, string> = {
   'Neue Versionen laden sich komplett im Hintergrund vor und werden nur noch angewendet, wenn du es nicht merkst (beim Tab-Wechsel) oder wenn du selbst auf „Aktualisieren" tippst. Der „Update wird installiert"-Reload mitten in der Session ist Geschichte.':
     'New versions preload completely in the background and are only applied when you don\'t notice (on tab switch) or when you tap "Update" yourself. The "installing update" reload mid-session is history.',
   'Die Startseite lädt für Besucher jetzt in rund einer Sekunde — der Ladebildschirm erscheint nur noch dort, wo er wirklich gebraucht wird.':
-    'The landing page now loads for visitors in about a second — the loading screen only appears where it is really needed.',
+    "The landing page now loads in about a second for visitors — the loading screen only shows up where it's really needed.",
   'Die Begrüßung auf der Startseite bricht jetzt sauber um statt abgeschnitten zu werden, und der Bug, bei dem Text beim Antippen kurz unsichtbar wurde, ist behoben.':
     'The greeting on the homepage now wraps cleanly instead of being cut off, and the bug where text briefly became invisible on tap is fixed.',
   'Alle Anime der laufenden Season auf einen Blick – als Premieren-Timeline mit einem Datums-Node pro Tag: „HEUTE" pulsiert, vergangene Premieren sind gedimmt, „Start noch offen" sammelt Einträge ohne Termin. Vorherige und nächste Season sind per Tab erreichbar, „Fortlaufend" und „Beendet" hängen unten dran.':
-    'All anime of the current season at a glance – as a premiere timeline with one date node per day: "TODAY" pulses, past premieres are dimmed, "Start still open" collects entries without a date. Previous and next season are reachable by tab, "Ongoing" and "Finished" hang below.',
+    'All anime of the current season at a glance – as a premiere timeline with one date node per day: "TODAY" pulses, past premieres are dimmed, "Date TBA" collects entries without a date. Previous and next season are one tab away, with "Ongoing" and "Finished" tacked on below.',
   'Der Hero zeigt die nächste große Premiere der Season mit tickendem Countdown (Tage · Std · Min · Sek), Poster, deutscher Beschreibung und Provider-Logos. Läuft schon alles, übernimmt das Season-Highlight.':
     "The hero shows the season's next big premiere with a ticking countdown (days · hrs · min · sec), poster, description and provider logos. If everything is already airing, the season highlight takes over.",
   'Jede Karte zeigt sofort, ob ein Anime eine Fortsetzung ist („Staffel 2", „Part 2", „Fortsetzung" – erkannt aus Titel und AniList-Relationen) oder eine komplett neue Serie („NEU").':
     'Every card shows instantly whether an anime is a continuation ("Season 2", "Part 2", "Sequel" – detected from the title and AniList relations) or a completely new show ("NEW").',
   'AniList kennt nur den japanischen TV-Termin – der Season-Kalender priorisiert deshalb: Termin aus deinem Serien-Kalender (für Serien in deiner Liste) → TVMaze-geprüfter Termin → AniList. Simulcast-Verschiebungen um einen Tag sind damit Geschichte.':
-    'AniList only knows the Japanese TV date – so the season calendar prioritizes: date from your series calendar (for shows in your list) → TVMaze-verified date → AniList. One-day simulcast shifts are now history.',
+    'AniList only knows the Japanese TV date – so the season calendar prioritizes: date from your series calendar (for shows in your list) → TVMaze-verified date → AniList. One-day simulcast shifts are a thing of the past.',
   'Sequel-Seasons („Saga of Tanya the Evil Season 2") und Arc-Titel („Tokyo Revengers: Santen Sensou-hen") matchen jetzt zuverlässig auf die Serie in deiner Liste – mit Badge, deinen Providern und Direkteinstieg in die Detailseite. Deutsche Beschreibungen und Provider-Logos laden für alle anderen automatisch nach.':
-    'Sequel seasons ("Saga of Tanya the Evil Season 2") and arc titles ("Tokyo Revengers: Santen Sensou-hen") now reliably match the show in your list – with a badge, your providers and a direct jump into the detail page. Descriptions and provider logos load automatically for everything else.',
+    'Sequel seasons ("Saga of Tanya the Evil Season 2") and arc titles ("Tokyo Revengers: Santen Sensou-hen") now reliably match the show in your list – with a badge, your providers and a direct link to the detail page. Descriptions and provider logos load automatically for everything else.',
   'Zurück von einer Detailseite landest du exakt dort, wo du warst – inklusive gewähltem Season-Tab. Dazu: Schnellsprung zu „Fortlaufend" im Timeline-Header und der bekannte Scroll-to-top-Button.':
     'Coming back from a detail page, you land exactly where you were – including the selected season tab. Plus: a quick jump to "Ongoing" in the timeline header and the familiar scroll-to-top button.',
   'Oben filterst du per „Alle · Serien · Filme" und blendest mit „Mit Provider" alles aus, was keinen deutschen Streaming-Anbieter hat. Anime-Filme haben ein eigenes Badge und öffnen ihre Film-Detailseite.':
     'At the top you filter by "All · Shows · Movies" and use "With provider" to hide everything without a streaming provider. Anime movies have their own badge and open their movie detail page.',
   'Jede Karte (und der Hero) hat einen „+"-Button – Serie oder Film landet ohne Umweg über die Suche in deiner Liste und zeigt danach sofort Kalender-Termin, Provider und Haken.':
-    'Every card (and the hero) has a "+" button – a show or movie lands in your list without a detour through search and then instantly shows its calendar date, providers and check mark.',
+    'Every card (and the hero) has a "+" button – a show or movie goes straight into your list without going through search, then instantly shows its calendar date, providers and check mark.',
   'Statt der AniList-Prozente steht jetzt das TMDB-Rating auf der 10er-Skala („★ 8.4") auf jeder Karte – dieselbe Bewertung wie auf den Detailseiten.':
     'Instead of AniList percentages, every card now shows the TMDB rating on the 10-point scale ("★ 8.4") – the same rating as on the detail pages.',
   'Mit „mehr lesen" klappst du die volle Beschreibung direkt auf der Karte auf – ohne die Seite zu verlassen.':
@@ -219,19 +219,19 @@ const dict: Record<string, string> = {
   'Auf jedem Friend-Profil erscheint die heißeste Serie der letzten 14 Tage mit Status („Binge-Modus", „Aktiv dabei", „Schaut entspannt", „Pausiert" oder „Rewatch"), aktueller Folge und Spoiler-Diff zu deinem Stand. Rewatch wird erkannt und blendet den Spoiler-Hinweis automatisch aus.':
     'Every friend profile shows the hottest show of the last 14 days with a status ("Binge mode", "Actively watching", "Watching casually", "Paused" or "Rewatch"), the current episode and a spoiler diff to your progress. Rewatches are detected and hide the spoiler warning automatically.',
   'Ebenfalls auf dem Friend-Profil: die nächsten anstehenden Folgen aus der Watchlist deines Freundes, sortiert nach Air-Date. Wenn ihr beide eine Serie wartet, gibt es ein „Ihr beide"-Badge – idealer Co-Watch-Hinweis.':
-    "Also on the friend profile: the next upcoming episodes from your friend's watchlist, sorted by air date. If you're both waiting on a show, there's a \"Both of you\" badge – an ideal co-watch hint.",
+    "Also on the friend profile: the next upcoming episodes from your friend's watchlist, sorted by air date. If you're both waiting on a show, there's a \"Both of you\" badge – perfect for a co-watch.",
   'Du siehst Level, Hunger und Glück des Pets von deinem Freund – und kannst einmal pro Tag pro Freund einen Snack schicken. Sein Pet bekommt −10 Hunger und +5 Glück, sobald die App das nächste Mal geöffnet wird. In der Glocke landet zusätzlich eine Notification „X schickt Snack".':
-    'You see the level, hunger and happiness of your friend\'s pet – and can send a snack once per day per friend. Their pet gets −10 hunger and +5 happiness the next time the app is opened. A notification "X sends a snack" also lands in the bell.',
+    'You see the level, hunger and happiness of your friend\'s pet – and can send a snack once per day per friend. Their pet gets −10 hunger and +5 happiness the next time the app is opened. A "X sent a snack" notification also shows up in the bell.',
   'In der Episodenliste steht jetzt rechts neben jeder Folge das Erstausstrahlungs-Datum und – falls geschaut – wann du sie zum ersten Mal gesehen hast. Auf dem Handy klappt die Info unter die Folge.':
-    'In the episode list, each episode now shows its original air date on the right and – if watched – when you first saw it. On mobile the info folds below the episode.',
+    'In the episode list, each episode now shows its original air date on the right and – if watched – when you first saw it. On mobile the info moves below the episode.',
   'Für japanische Animes erscheint auf der Detail-Seite jetzt ein Banner mit Filler- und Recap-Folgen (Quelle: Jikan/MyAnimeList). In der Episodenliste markieren kleine F/R-Chips jede betroffene Folge, auf der Episode-Discussion-Seite siehst du die Markierung direkt neben dem S/E-Badge. Daten kommen aus dem Backend – kein API-Hänger im Frontend, ein täglicher Job hält alles frisch.':
-    'For Japanese anime, the detail page now shows a banner with filler and recap episodes (source: Jikan/MyAnimeList). In the episode list, small F/R chips mark each affected episode; on the episode discussion page you see the marker right next to the S/E badge. The data comes from the backend – no API hang in the frontend, a daily job keeps everything fresh.',
+    'For Japanese anime, the detail page now shows a banner with filler and recap episodes (source: Jikan/MyAnimeList). In the episode list, small F/R chips mark each affected episode; on the episode discussion page you see the marker right next to the S/E badge. The data comes from the backend – no API stalls in the frontend, a daily job keeps everything fresh.',
   'Eine sanfte Lauf-Schrift unter dem Greeting zeigt was deine Freunde gerade tun („Lisa hat Folge 5 von Breaking Bad gesehen · Tim hat Dune 2 mit 9.0 bewertet …"). Pixelgenaue Geschwindigkeit, hover hält die Marquee an genau der Position an. Ein- und ausblendbar im Sektionen-Layout.':
     'A gentle marquee under the greeting shows what your friends are up to ("Lisa watched episode 5 of Breaking Bad · Tim rated Dune 2 a 9.0 …"). Pixel-precise speed, hover pauses the marquee at exactly that position. Can be shown or hidden in the section layout.',
   'Ungenutzte Abos schlummern jetzt nicht mehr versteckt im Subscriptions-Tab. Eine eigene Card im „Für dich"-Bereich listet die schlafendsten Anbieter inline mit Pausieren-Button samt Undo-Toast. Geld sparen ohne Seitenwechsel.':
     'Unused subscriptions no longer slumber hidden in the Subscriptions tab. A dedicated card in the "For you" area lists the most dormant providers inline with a pause button and undo toast. Save money without switching pages.',
   'In der Weiterschauen-Liste pulsiert ein dezenter 3-Bar-Equalizer auf Serien, die du in den letzten 3 Tagen aktiv weiterschaust. Sofort erkennbar woran du gerade dran bist, ohne den Provider-Sticker zu überlagern.':
-    'In the Continue Watching list, a subtle 3-bar equalizer pulses on shows you have actively continued in the last 3 days. Instantly shows what you are on right now, without overlapping the provider sticker.',
+    "In the Continue Watching list, a subtle 3-bar equalizer pulses on shows you've actively kept watching in the last 3 days. Instantly see what you're on right now, without covering the provider sticker.",
   'Wenn dein Watch-Streak steigt oder ein Meilenstein erreicht ist (3, 7, 14, 21, 30, 50, 100 Tage …), erscheint eine kleine Sprechblase über deinem Pet mit Emoji und Glückwunsch. Verbindet Streak-Tracking und Pet-System ohne extra Klick.':
     'When your watch streak grows or hits a milestone (3, 7, 14, 21, 30, 50, 100 days …), a little speech bubble with an emoji and congratulations appears above your pet. Connects streak tracking and the pet system without an extra click.',
   'Die Detail-Seite öffnet das Recap-Sheet nicht mehr automatisch – stattdessen liegt ein klar sichtbarer „Recap der letzten N Folgen"-Button im Info-Tab, sobald du Episoden gesehen hast. Du entscheidest wann es dich interessiert.':
@@ -261,25 +261,25 @@ const dict: Record<string, string> = {
   'Im Weiterschauen-Tab ein neuer Toggle: zeigt nur Watchlist-Serien, die du auf deinen aktiven Abos schauen kannst. Spart das Hin- und Herklicken zwischen den Streaming-Diensten.':
     'A new toggle in the Continue Watching tab: shows only watchlist shows you can watch on your active subscriptions. Saves clicking back and forth between streaming services.',
   'Neue User werden im Onboarding direkt nach ihren Streaming-Abos gefragt – damit Empfehlungen, Filter und Kalender vom ersten Login an passen.':
-    'New users are asked about their streaming subscriptions right in onboarding – so recommendations, filters and the calendar fit from the very first login.',
+    'New users are asked about their streaming subscriptions right in onboarding – so recommendations, filters and your calendar are spot on from your very first login.',
   'Wenn TMDB neue Streaming-Provider für eine Serie hinzufügt (z. B. Chernobyl kommt zu Disney+), wird das jetzt täglich automatisch ins Catalog gespiegelt – kein 30-Tage-Lag mehr.':
     'When TMDB adds new streaming providers for a show (e.g. Chernobyl comes to Disney+), it is now mirrored into the catalog automatically every day – no more 30-day lag.',
   'Auf dem Handy scrollt der Kalender jetzt automatisch zum heutigen Wochentag – kein manuelles Suchen mehr.':
-    "On mobile the calendar now scrolls automatically to today's weekday – no more manual searching.",
+    'On mobile the calendar now jumps straight to today – no more hunting for it.',
   'Neue Badges zeigen dir direkt im Kalender ob eine Serie in die Pause geht oder das Staffelfinale kommt. Erkennt auch Pausen wenn kommende Folgen noch kein Datum haben.':
     "New badges show you right in the calendar whether a show is going on break or the season finale is coming. Also detects breaks when upcoming episodes don't have a date yet.",
   'Kleine Streaming-Logos (Crunchyroll, Netflix, etc.) auf dem Poster – überall: Weiterschauen, Heute Neu, Rewatches und Watchlist.':
     'Small streaming logos (Crunchyroll, Netflix, etc.) on the poster – everywhere: Continue Watching, New Today, Rewatches and Watchlist.',
   'Der Status-Badge im Serien-Detail zeigt jetzt den Ausstrahlungsrhythmus: "Läuft · Sonntags neue Folge" oder "Läuft · Alle 2 Wochen" statt nur "Fortlaufend".':
-    'The status badge in the series detail now shows the airing rhythm: "Airing · New episode on Sundays" or "Airing · Every 2 weeks" instead of just "Ongoing".',
+    'The status badge on the show page now shows the release schedule: "Airing · New episode Sundays" or "Airing · Every 2 weeks" instead of just "Ongoing".',
   'Neuer Chip im Serien-Detail zeigt sofort die nächste Episode mit Datum an – ohne scrollen zu müssen.':
-    'A new chip in the series detail immediately shows the next episode with its date – without having to scroll.',
+    'A new chip on the show page shows the next episode and its date right away – no scrolling needed.',
   'Jede Karte in Weiterschauen zeigt jetzt wann du die Serie zuletzt geschaut hast – hilft beim Priorisieren.':
     'Every card in Continue Watching now shows when you last watched the show – helps with prioritizing.',
   'Wenn du in einem Serien-Detail eine Staffel oder Tab (Info/Besetzung/KI-Guide) wählst und zurücknavigierst, landest du wieder an der gleichen Stelle.':
-    'When you select a season or tab (Info/Cast/AI Guide) in a series detail and navigate back, you land at the same spot again.',
+    'When you pick a season or tab (Info/Cast/AI Guide) on a show page and navigate back, you land right back where you were.',
   'Komplett neues Card-Design im Kino-Stil: Trending-Cards mit Rang-Nummer in abgerundeter Ecke, Genre-Anzeige, TMDB-Rating und Erscheinungsjahr – einheitlich für alle drei Sektionen.':
-    'A completely new card design in cinema style: trending cards with a rank number in a rounded corner, genre display, TMDB rating and release year – consistent across all three sections.',
+    'A brand-new cinematic card design: trending cards with a rank number in a rounded corner, genre, TMDB rating and release year – consistent across all three sections.',
   'Personalisierte Serien- und Film-Empfehlungen basierend auf deinen Bewertungen, Binge-Verhalten, Genre-Vorlieben und Watch-Patterns. Mit Poster, TMDB-Rating und Streaming-Anbietern – klick auf eine Empfehlung um direkt zur Serie zu gelangen.':
     'Personalized series and movie recommendations based on your ratings, binge behavior, genre preferences and watch patterns. With poster, TMDB rating and streaming providers – click a recommendation to jump straight to the show.',
   'Recaps werden nicht mehr automatisch geladen – erst wenn du auf "Recap lesen" klickst. Spart KI-Anfragen und lädt schneller.':
@@ -300,6 +300,22 @@ const dict: Record<string, string> = {
     'Pick a season and episode – everything before it is automatically marked as watched. Perfect for shows you watched elsewhere.',
   'Sektionen auf der Homepage sortieren, ausblenden und nach deinem Geschmack anpassen.':
     'Sort, hide and customize sections on the homepage to your taste.',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  'August 2026 – TV-Rank spricht vier Sprachen': 'August 2026 – TV-Rank Speaks Four Languages',
+  'Spanisch und Französisch sind da': 'Spanish and French are here',
+  'Neben Deutsch und Englisch gibt es TV-Rank jetzt auf Spanisch und Französisch. Beim ersten Start richtet sich die App nach der Sprache deines Geräts — du musst nichts einstellen. Wenn du lieber eine andere möchtest, wählst du sie in den Einstellungen unter Sprache.':
+    'Alongside German and English, TV-Rank is now available in Spanish and French. On first launch the app follows your device language — nothing to set up. Prefer a different one? Pick it in Settings under Language.',
+  'Sprache wählen': 'Choose language',
+  'Auch Serien-, Film- und Folgennamen': 'Show, movie and episode titles too',
+  'Übersetzt ist nicht nur die Oberfläche: Titel und Beschreibungen deiner Serien und Filme erscheinen in deiner Sprache, und auch die Namen einzelner Folgen. Genauso die Suche, die Genres und die Trending-Liste.':
+    "It's not just the interface: titles and descriptions for your shows and movies appear in your language, and so do episode names. Same for search, genres and the trending list.",
+  'Benachrichtigungen, Push und E-Mails': 'Notifications, push and email',
+  'Deine tägliche Übersicht, Staffelstarts, Anbieterwechsel, Pet- und Streak-Erinnerungen sowie die Mails zum Zurücksetzen des Passworts kommen ab sofort in deiner Sprache. Schreibt dir ein Freund, sieht jeder die Meldung in seiner eigenen.':
+    'Your daily digest, new seasons, provider changes, pet and streak reminders and password reset emails now come in your language. When a friend messages you, everyone sees the alert in their own.',
+  'Diskussionen über Sprachgrenzen hinweg': 'Discussions across language barriers',
+  'Kommentare in einer fremden Sprache bekommen einen Übersetzen-Knopf — auf Wunsch übersetzt die App sie automatisch in deine. Datenschutzerklärung und Impressum liegen ebenfalls auf Spanisch und Französisch vor; rechtlich verbindlich bleibt die deutsche Fassung.':
+    'Comments in another language get a Translate button — or let the app translate them for you automatically. The privacy policy and legal notice are available in Spanish and French too; the German version remains legally binding.',
 };
 
 export default dict;

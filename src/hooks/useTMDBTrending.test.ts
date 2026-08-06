@@ -62,7 +62,7 @@ afterEach(() => {
 describe('useTMDBTrending', () => {
   it('fast path: uses the cached backend /trending payload without per-item TMDB calls', async () => {
     fetchMock = vi.fn(async (url: string): Promise<FetchResult> => {
-      if (url.endsWith('/trending')) {
+      if (url.includes('/trending?')) {
         return ok({ tv: [tvItem(1, 500), tvItem(2, 100)], movie: [movieItem(3, 900)] });
       }
       return ok({ results: [] });
@@ -76,12 +76,14 @@ describe('useTMDBTrending', () => {
     expect(result.current.trending.length).toBe(3);
     expect(result.current.trending[0].id).toBe(3); // highest voteCount
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toMatch(/\/trending$/);
+    // Sprache und Land gehoeren zum Vertrag — ohne sie liefert das Backend
+    // deutsche Titel und deutsche Anbieter an alle.
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/trending\?lang=de&region=/);
   });
 
   it('falls back to the direct TMDB trending endpoints when the backend is empty', async () => {
     fetchMock = vi.fn(async (url: string): Promise<FetchResult> => {
-      if (url.endsWith('/trending')) return ok({ tv: [], movie: [] });
+      if (url.includes('/trending?')) return ok({ tv: [], movie: [] });
       if (url.includes('/watch/providers')) return ok({ results: {} });
       if (url.includes('/trending/tv/week')) return ok({ results: [tvItem(1, 200)] });
       if (url.includes('/trending/movie/week')) return ok({ results: [movieItem(2, 800)] });
@@ -118,7 +120,7 @@ describe('useTMDBTrending', () => {
     ctx.allSeriesList = [{ id: 1 }];
     ctx.movieList = [{ id: 3 }];
     fetchMock = vi.fn(async (url: string): Promise<FetchResult> => {
-      if (url.endsWith('/trending')) {
+      if (url.includes('/trending?')) {
         return ok({ tv: [tvItem(1, 500), tvItem(2, 100)], movie: [movieItem(3, 900)] });
       }
       return ok({ results: [] });
@@ -135,7 +137,7 @@ describe('useTMDBTrending', () => {
   it('sets an error when the backend is empty and no TMDB api key is configured', async () => {
     vi.stubEnv('VITE_API_TMDB', '');
     fetchMock = vi.fn(async (url: string): Promise<FetchResult> => {
-      if (url.endsWith('/trending')) return ok({ tv: [], movie: [] });
+      if (url.includes('/trending?')) return ok({ tv: [], movie: [] });
       return ok({ results: [] });
     });
     vi.stubGlobal('fetch', fetchMock);

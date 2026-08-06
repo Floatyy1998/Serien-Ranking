@@ -178,7 +178,7 @@ export const HomePage: React.FC = () => {
 
   // Early returns after all hooks
   if (!authContext || !user) {
-    return <div>Redirecting...</div>;
+    return <div>{t('Weiterleitung…')}</div>;
   }
 
   const handlePosterClick = (seriesId: number, title: string, episodePath: string) => {

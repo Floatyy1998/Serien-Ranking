@@ -12,7 +12,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { WrappedStats } from '../../types/Wrapped';
 import { ShareCardFrame } from '../share/ShareCardFrame';
 import { ShareCardSheet } from '../share/ShareCardSheet';
-import { isEnglish, t } from '../../services/i18n';
+import { dateLocale as appDateLocale, t } from '../../services/i18n';
 
 // Karten-Bausteine
 
@@ -71,7 +71,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
   const { currentTheme } = useTheme();
   const topSerie = stats.topSeries[0];
   const unlockedAchievements = stats.achievements.filter((a) => a.unlocked).length;
-  const numberLocale = isEnglish() ? 'en-US' : 'de-DE';
+  const numberLocale = appDateLocale();
 
   return (
     <ShareCardFrame

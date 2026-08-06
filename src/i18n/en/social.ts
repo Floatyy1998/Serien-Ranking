@@ -12,7 +12,7 @@ const dict: Record<string, string> = {
   Alle: 'All',
   Serien: 'Shows',
   Filme: 'Movies',
-  Aktivitäten: 'Activities',
+  Aktivitäten: 'Activity',
   aktiv: 'active',
   Heute: 'Today',
   Gestern: 'Yesterday',
@@ -22,7 +22,7 @@ const dict: Record<string, string> = {
   'Keine Film-Aktivitäten deiner Freunde.': 'No movie activity from your friends.',
   'Keine Serien-Aktivitäten deiner Freunde.': 'No show activity from your friends.',
   'Sobald deine Freunde etwas schauen, bewerten oder hinzufügen, erscheint es hier.':
-    "As soon as your friends watch, rate or add something, it'll show up here.",
+    "When your friends watch, rate or add something, it'll show up here.",
   Unbekannt: 'Unknown',
   'Unbekannte Serie': 'Unknown show',
   'Unbekannter Film': 'Unknown movie',
@@ -54,7 +54,7 @@ const dict: Record<string, string> = {
   'vor {n}h': '{n}h ago',
   'vor {n}d': '{n}d ago',
   'vor {n} min': '{n} min ago',
-  'vor {n} h': '{n} h ago',
+  'vor {n} h': '{n} hr ago',
   'vor 1 Tag': '1 day ago',
   'vor {n} Tagen': '{n} days ago',
   'vor {n} Min.': '{n} min ago',
@@ -100,8 +100,8 @@ const dict: Record<string, string> = {
   Annehmen: 'Accept',
   Ablehnen: 'Decline',
   'Anfrage abgelehnt': 'Request declined',
-  'Anfrage zurückgezogen': 'Request withdrawn',
-  'Anfrage zurückziehen': 'Withdraw request',
+  'Anfrage zurückgezogen': 'Request canceled',
+  'Anfrage zurückziehen': 'Cancel request',
   Ausstehend: 'Pending',
 
   // Discussions tab
@@ -121,7 +121,7 @@ const dict: Record<string, string> = {
   // Friend profile
   Profil: 'Profile',
   'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.':
-    'This profile is private. Only friends can see the library, ratings and activity.',
+    'This profile is private. Only friends can see their library, ratings and activity.',
   'Anfrage gesendet ✓': 'Request sent ✓',
   'Sende…': 'Sending…',
   'Fehler — nochmal versuchen': 'Error — try again',
@@ -156,7 +156,7 @@ const dict: Record<string, string> = {
   '{name} schaut': '{name} is watching',
   Folge: 'episode',
   Folgen: 'episodes',
-  'Noch nicht angeschaut': "You haven't started this yet",
+  'Noch nicht angeschaut': 'Not started yet',
   'Ihr seid gleichauf 🎉': "You're neck and neck 🎉",
   '{n} Staffeln voraus — Spoiler-Alarm': '{n} seasons ahead — spoiler alert',
   '1 Staffel voraus — Spoiler-Alarm': '1 season ahead — spoiler alert',
@@ -181,8 +181,8 @@ const dict: Record<string, string> = {
   'Ein Freund': 'A friend',
   'Wird verschickt …': 'Sending …',
   'Snack unterwegs': 'Snack on its way',
-  'Pet ist nicht mehr': 'Pet is no more',
-  'Schon verwöhnt — wieder {rest}': 'Already treated — again in {rest}',
+  'Pet ist nicht mehr': 'Your pet is gone',
+  'Schon verwöhnt — wieder {rest}': 'Already treated — next in {rest}',
   'Snack schicken': 'Send a snack',
   Hunger: 'Hunger',
   Glück: 'Happiness',
@@ -193,7 +193,7 @@ const dict: Record<string, string> = {
   'Profil nicht gefunden': 'Profile not found',
   'Dieses öffentliche Profil existiert nicht': "This public profile doesn't exist",
   'oder ist nicht mehr öffentlich zugänglich.': 'or is no longer publicly available.',
-  'Zur Startseite': 'Go to home',
+  'Zur Startseite': 'Back to home',
   'Versuche andere Filter oder entferne sie.': 'Try different filters or clear them.',
 
   // Profile page
@@ -235,7 +235,7 @@ const dict: Record<string, string> = {
   'Keine Film-Diskussionen vorhanden': 'No movie discussions yet',
   'Keine Episoden-Diskussionen vorhanden': 'No episode discussions yet',
   'Keine Serien-Diskussionen vorhanden': 'No show discussions yet',
-  'Es wurden noch keine Diskussionen gestartet': 'No discussions have been started yet',
+  'Es wurden noch keine Diskussionen gestartet': 'No one has started a discussion yet',
 
   // Episode discussion page
   'Nächste Episode': 'Next episode',
@@ -280,7 +280,7 @@ const dict: Record<string, string> = {
   'diese Episode': 'this episode',
   'Spoiler-Warnung': 'Spoiler warning',
   'Du hast {subject} noch nicht gesehen.': "You haven't watched {subject} yet.",
-  'Die Diskussionen könnten Spoiler enthalten.': 'The discussions might contain spoilers.',
+  'Die Diskussionen könnten Spoiler enthalten.': 'Discussions may contain spoilers.',
   'Trotzdem anzeigen': 'Show anyway',
   '{n} Diskussion versteckt': '{n} discussion hidden',
   '{n} Diskussionen versteckt': '{n} discussions hidden',
@@ -306,7 +306,7 @@ const dict: Record<string, string> = {
   'Lädt Antworten...': 'Loading replies...',
   'Beschreibung (optional)...': 'Description (optional)...',
   'Antwort schreiben...': 'Write a reply...',
-  'Spoiler-Markierung entfernen': 'Remove spoiler mark',
+  'Spoiler-Markierung entfernen': 'Remove spoiler tag',
   'Als Spoiler markieren': 'Mark as spoiler',
   '@{name} antworten': 'Reply to @{name}',
   'Als Spoiler?': 'Mark as spoiler?',
@@ -314,23 +314,26 @@ const dict: Record<string, string> = {
   // Recommendations
   'An Freund empfehlen': 'Recommend to a friend',
   'Empfehlung senden': 'Send recommendation',
-  'An wen?': 'To whom?',
+  'An wen?': 'Send to',
   '{n} verfügbar': '{n} available',
   '{n} ausgewählt': '{n} selected',
-  'Füge erst Freunde hinzu, um zu empfehlen.': 'Add friends first to recommend.',
+  'Füge erst Freunde hinzu, um zu empfehlen.': 'Add friends first to send recommendations.',
   '{name} hat den Film schon': '{name} already has this movie',
   '{name} hat die Serie schon': '{name} already has this show',
   'Hat das schon': 'Already has it',
   Nachricht: 'Message',
   optional: 'optional',
-  'Sag was dazu…': 'Say something about it…',
+  'Sag was dazu…': 'Say something…',
   'Du empfiehlst': "You're recommending",
   'Wird gesendet…': 'Sending…',
   'Freunde auswählen': 'Select friends',
   'An {n} Freunde senden': 'Send to {n} friends',
   'Empfehlung gesendet': 'Recommendation sent',
   'An {n} Freunde gesendet': 'Sent to {n} friends',
-  'Senden fehlgeschlagen': 'Sending failed',
+  'Senden fehlgeschlagen': "Couldn't send",
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  Feed: 'Feed',
 };
 
 export default dict;

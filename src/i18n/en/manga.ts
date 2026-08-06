@@ -22,7 +22,7 @@ const dict: Record<string, string> = {
   'Sammlung wird geladen …': 'Loading collection …',
   Sammlung: 'Collection',
   Alle: 'All',
-  'Keine Manga mit Filter "{filter}"': 'No manga with filter "{filter}"',
+  'Keine Manga mit Filter "{filter}"': 'No manga found for "{filter}"',
   'Suche oben nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.':
     'Search above for manga, manhwa, or manhua and add them to your collection.',
 
@@ -54,7 +54,7 @@ const dict: Record<string, string> = {
   Weiter: 'Resume',
   'Keine versteckten Manga': 'No hidden manga',
   'Verstecke Manga über die Detail-Seite, wenn du eine Pause machen möchtest.':
-    'Hide manga from the detail page when you want to take a break.',
+    'Hide manga from the details page when you need a break.',
 
   // ─── Manga: Aufholen ───────────────────────────────────────
   'Manga Aufholen': 'Manga Catch-Up',
@@ -72,7 +72,7 @@ const dict: Record<string, string> = {
   'Fortschritt ↓': 'Progress ↓',
   'Fortschritt ↑': 'Progress ↑',
   '{n} Manga zum Lesen': '{n} manga to read',
-  'Filter und Sortierung': 'Filter and sorting',
+  'Filter und Sortierung': 'Filter & sort',
   'Manga suchen...': 'Search manga...',
   'Füge Manga hinzu und setze den': 'Add manga and set their',
   'Status auf "Lese ich" oder "Geplant"!': 'status to "Reading" or "Planned"!',
@@ -149,9 +149,9 @@ const dict: Record<string, string> = {
 
   // ─── Manga: Detail ─────────────────────────────────────────
   'von {n} Kapiteln': 'of {n} chapters',
-  'Ein Kapitel zurück': 'One chapter back',
+  'Ein Kapitel zurück': 'Previous chapter',
   'Aktuelles Kapitel': 'Current chapter',
-  'Ein Kapitel weiter': 'One chapter forward',
+  'Ein Kapitel weiter': 'Next chapter',
   'Zur Sammlung hinzufügen': 'Add to collection',
   Beschreibung: 'Description',
   'Kapitel-Releases': 'Chapter releases',
@@ -163,7 +163,7 @@ const dict: Record<string, string> = {
   'Fortschritt auf Kapitel {n} zurücksetzen': 'Reset progress to chapter {n}',
   'Bis Kapitel {n} als gelesen markieren': 'Mark as read up to chapter {n}',
   Bewertung: 'Rating',
-  '{n} von 10 Sternen': '{n} of 10 stars',
+  '{n} von 10 Sternen': '{n} out of 10 stars',
   'Lese-Plattform': 'Reading platform',
   '+ Andere': '+ Other',
   'Plattform...': 'Platform...',
@@ -177,7 +177,7 @@ const dict: Record<string, string> = {
   Einblenden: 'Unhide',
   Verstecken: 'Hide',
   Entfernen: 'Remove',
-  'Wirklich entfernen?': 'Really remove?',
+  'Wirklich entfernen?': 'Remove this?',
 
   // ─── Manga: Sektionen ──────────────────────────────────────
   'Gerade eben': 'Just now',
@@ -219,7 +219,7 @@ const dict: Record<string, string> = {
   'Bitte einloggen, um Inhalte hinzuzufügen': 'Please sign in to add content',
   'Unbekannter Titel': 'Unknown title',
   '„{title}" hinzugefügt': '"{title}" added',
-  'Hinzufügen fehlgeschlagen': 'Adding failed',
+  'Hinzufügen fehlgeschlagen': "Couldn't add",
   'Was läuft diese Anime-Season?': "What's airing this anime season?",
   '{n} in deiner Liste': '{n} in your list',
   'Anime-Season': 'Anime Season',
@@ -233,11 +233,11 @@ const dict: Record<string, string> = {
   'Nächste große Premiere': 'Next big premiere',
   'Season-Highlight': 'Season highlight',
   'Premieren-Kalender ({n})': 'Premiere calendar ({n})',
-  Fortlaufend: 'Continuing',
+  Fortlaufend: 'Ongoing',
   'Termine aus deinem Kalender bzw. TVMaze — ohne Treffer: japanische Erstausstrahlung (AniList)':
-    'Dates from your calendar or TVMaze — without a match: Japanese first airing (AniList)',
-  'Fortlaufend ({n})': 'Continuing ({n})',
-  'Bereits beendet ({n})': 'Already finished ({n})',
+    'Dates from your calendar or TVMaze — if no match: Japanese premiere (AniList)',
+  'Fortlaufend ({n})': 'Ongoing ({n})',
+  'Bereits beendet ({n})': 'Finished ({n})',
   '{name}: Titel kopieren + Suche öffnen': '{name}: copy title + open search',
   läuft: 'airing',
   HEUTE: 'TODAY',
@@ -252,16 +252,16 @@ const dict: Record<string, string> = {
   Tage: 'Days',
   Std: 'Hrs',
   Sek: 'Sec',
-  'Countdown bis zur Premiere': 'Countdown to the premiere',
+  'Countdown bis zur Premiere': 'Countdown to premiere',
   'Startet HEUTE': 'Starts TODAY',
   'HEUTE gestartet': 'Started TODAY',
   'Läuft · Ep {n} in {rest}': 'Airing · Ep {n} in {rest}',
   Läuft: 'Airing',
-  'Poster von {title}': 'Poster of {title}',
+  'Poster von {title}': '{title} poster',
   'Alle Studios': 'All studios',
   'Studio-Filter': 'Studio filter',
   'Studio suchen …': 'Search studios …',
-  'Kein Studio gefunden': 'No studio found',
+  'Kein Studio gefunden': 'No studios found',
 
   // ─── Serien-Kalender ───────────────────────────────────────
   Staffeln: 'Seasons',
@@ -274,10 +274,10 @@ const dict: Record<string, string> = {
   'Genre suchen …': 'Search genres …',
   'Serien-Kalender wird geladen': 'Loading series calendar',
   'Premieren nicht erreichbar': 'Premieres unavailable',
-  'Die Premieren-Daten konnten nicht geladen werden.': 'The premiere data could not be loaded.',
+  'Die Premieren-Daten konnten nicht geladen werden.': "We couldn't load the premiere data.",
   'Keine Premieren': 'No premieres',
   'Für {q} sind mit diesen Filtern keine Premieren gelistet.':
-    'No premieres are listed for {q} with these filters.',
+    'No premieres for {q} with these filters.',
   'Nächste Premiere': 'Next premiere',
   'Highlight des Monats': 'Highlight of the month',
   'Neue Serien & Staffeln mit deutscher Verfügbarkeit (TMDB) — täglich aktualisiert':
@@ -290,20 +290,38 @@ const dict: Record<string, string> = {
   'Film-Kalender öffnen': 'Open movie calendar',
   'Kinostarts & Streaming-Releases': 'Theatrical & streaming releases',
   'Film-Kalender wird geladen': 'Loading movie calendar',
-  Kino: 'Cinema',
-  KINO: 'CINEMA',
+  Kino: 'Theaters',
+  KINO: 'THEATERS',
   STREAMING: 'STREAMING',
   '{n} Release': '{n} release',
   '{n} Releases': '{n} releases',
   'Releases nicht erreichbar': 'Releases unavailable',
-  'Die Release-Daten konnten nicht geladen werden.': 'The release data could not be loaded.',
+  'Die Release-Daten konnten nicht geladen werden.': "Couldn't load release data.",
   'Keine Releases': 'No releases',
   'Für {q} sind in diesem Modus keine Releases gelistet.':
-    'No releases are listed for {q} in this mode.',
+    'No releases listed for {q} in this view.',
   'Kinostarts in deiner Region (TMDB)': 'Theatrical releases in your region (TMDB)',
   'Digital-/Streaming-Releases in deiner Region (TMDB)':
     'Digital/streaming releases in your region (TMDB)',
   'Schon gesehen': 'Already watched',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  Jan: 'Jan',
+  Feb: 'Feb',
+  Apr: 'Apr',
+  Jun: 'Jun',
+  Jul: 'Jul',
+  Aug: 'Aug',
+  Sep: 'Sep',
+  Nov: 'Nov',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  Insights: 'Insights',
+  'Read Journey': 'Reading Journey',
+  'Name A-Z': 'Name A-Z',
+  'Name Z-A': 'Name Z-A',
+  Journey: 'Journey',
+  'Manga Home': 'Manga Home',
 };
 
 export default dict;

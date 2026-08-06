@@ -15,7 +15,7 @@ import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelper
 import { ADMIN_UID } from '../config/admin';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
-import { t, tLocale } from '../services/i18n';
+import { localizedVariants, t, tLocale } from '../services/i18n';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';
@@ -229,14 +229,13 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           await sendNotificationToUser(discussion.userId, {
             type: 'spoiler_flag',
             title: 'Spoiler-Markierung',
-            titleEn: tLocale('en', 'Spoiler-Markierung'),
+            titleL: localizedVariants('Spoiler-Markierung'),
             message: tLocale(
               'de',
               '{name} hat deine Diskussion "{title}" als Spoiler markiert',
               vars
             ),
-            messageEn: tLocale(
-              'en',
+            messageL: localizedVariants(
               '{name} hat deine Diskussion "{title}" als Spoiler markiert',
               vars
             ),
@@ -320,9 +319,9 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
             await sendNotificationToUser(discussion.userId, {
               type: 'discussion_like',
               title: 'Neue Reaktion',
-              titleEn: tLocale('en', 'Neue Reaktion'),
+              titleL: localizedVariants('Neue Reaktion'),
               message: tLocale('de', '{name} gefällt deine Diskussion "{title}"', vars),
-              messageEn: tLocale('en', '{name} gefällt deine Diskussion "{title}"', vars),
+              messageL: localizedVariants('{name} gefällt deine Diskussion "{title}"', vars),
               data: {
                 discussionId,
                 itemId,

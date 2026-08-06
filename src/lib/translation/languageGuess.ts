@@ -2,12 +2,19 @@
  * Heuristik: Soll unter einem Kommentar ein Übersetzen-Button angeboten werden?
  * Bewusst konservativ — falsch-positiv (Button zu viel) ist harmlos, die echte
  * Sprache wird nach der ersten Übersetzung als `lang` am Kommentar hinterlegt.
+ *
+ * Je Sprache zwei Signale: häufige Funktionswörter und die Buchstaben jenseits
+ * von a–z, die zu ihr GEHÖREN. Ein Buchstabe, den die Lesersprache nicht kennt,
+ * ist ein Fremdsprachen-Hinweis — für einen deutschen Leser ist „ñ" fremd, für
+ * einen spanischen nicht.
+ *
+ * Eine weitere Sprache: Wortliste + native Sonderzeichen in LANGUAGES eintragen.
+ * Wörter, die auch in einer der anderen Sprachen üblich sind („no", „me",
+ * „bien", „son", „en"), gehören in KEINE Liste — ein Treffer soll die Sprache
+ * belegen, nicht bloß nahelegen.
  */
 
-// Häufige Funktions-/Alltagswörter je Zielsprache. Wörter, die auch in der
-// jeweils anderen Sprache üblich sind (in, an, was, die, so, also …), fehlen
-// absichtlich — ein Treffer soll die Sprache eindeutig belegen.
-const DE_WORDS = new Set([
+const DE_WORDS = [
   'der',
   'die',
   'das',
@@ -25,7 +32,6 @@ const DE_WORDS = new Set([
   'einem',
   'einer',
   'auch',
-  'mal',
   'ja',
   'nein',
   'aber',
@@ -104,7 +110,6 @@ const DE_WORDS = new Set([
   'ihre',
   'jetzt',
   'heute',
-  'morgen',
   'gestern',
   'hier',
   'dort',
@@ -120,7 +125,6 @@ const DE_WORDS = new Set([
   'folgen',
   'staffel',
   'staffeln',
-  'serie',
   'serien',
   'geil',
   'krass',
@@ -139,9 +143,9 @@ const DE_WORDS = new Set([
   'freue',
   'gesehen',
   'geschaut',
-]);
+];
 
-const EN_WORDS = new Set([
+const EN_WORDS = [
   'the',
   'and',
   'is',
@@ -155,7 +159,6 @@ const EN_WORDS = new Set([
   'it',
   'we',
   'they',
-  'me',
   'him',
   'her',
   'us',
@@ -171,7 +174,6 @@ const EN_WORDS = new Set([
   'these',
   'those',
   'not',
-  'no',
   'yes',
   'but',
   'or',
@@ -259,13 +261,238 @@ const EN_WORDS = new Set([
   'didnt',
   'wasnt',
   'isnt',
-]);
+];
 
-const TARGET_WORDS: Record<string, Set<string>> = { de: DE_WORDS, en: EN_WORDS };
+const ES_WORDS = [
+  'que',
+  'qué',
+  'los',
+  'las',
+  'del',
+  'una',
+  'unos',
+  'unas',
+  'pero',
+  'porque',
+  'cuando',
+  'dónde',
+  'muy',
+  'más',
+  'también',
+  'siempre',
+  'nunca',
+  'entonces',
+  'aunque',
+  'mientras',
+  'después',
+  'antes',
+  'ahora',
+  'hoy',
+  'ayer',
+  'mañana',
+  'temporada',
+  'temporadas',
+  'episodio',
+  'episodios',
+  'capítulo',
+  'película',
+  'películas',
+  'ver',
+  'visto',
+  'viendo',
+  'gusta',
+  'gustó',
+  'encanta',
+  'bueno',
+  'buena',
+  'mejor',
+  'genial',
+  'increíble',
+  'esta',
+  'este',
+  'esto',
+  'eso',
+  'ese',
+  'esa',
+  'ellos',
+  'ellas',
+  'nosotros',
+  'yo',
+  'tú',
+  'usted',
+  'hay',
+  'tiene',
+  'tienen',
+  'puede',
+  'pueden',
+  'hacer',
+  'hace',
+  'está',
+  'están',
+  'estoy',
+  'ser',
+  'soy',
+  'eres',
+  'somos',
+  'fue',
+  'era',
+  'había',
+  'sobre',
+  'sin',
+  'con',
+  'para',
+  'por',
+  'desde',
+  'hasta',
+  'mucho',
+  'poco',
+  'todo',
+  'todos',
+  'nada',
+  'algo',
+  'alguien',
+  'cada',
+  'otro',
+  'otra',
+  'mismo',
+  'así',
+  'sí',
+  'claro',
+  'vale',
+];
 
-// Buchstaben, die weder im deutschen noch im englischen Alphabet vorkommen —
-// ein deutliches Fremdsprachen-Signal auch bei sehr kurzen Texten.
-const FOREIGN_DIACRITICS = /[țşșăâîčćžšđłńñõçãáàéèêëìíîïóòôøûùúýÿığ]/i;
+const FR_WORDS = [
+  'les',
+  'une',
+  'des',
+  'du',
+  'dans',
+  'avec',
+  'pour',
+  'sur',
+  'sous',
+  'mais',
+  'parce',
+  'pourquoi',
+  'comment',
+  'quand',
+  'où',
+  'qui',
+  'quoi',
+  'très',
+  'aussi',
+  'encore',
+  'toujours',
+  'jamais',
+  'déjà',
+  'maintenant',
+  'hier',
+  'demain',
+  'saison',
+  'saisons',
+  'épisode',
+  'épisodes',
+  'film',
+  'films',
+  'série',
+  'séries',
+  'regardé',
+  'regarder',
+  'aimé',
+  'aime',
+  'génial',
+  'super',
+  'meilleur',
+  'je',
+  'tu',
+  'il',
+  'elle',
+  'nous',
+  'vous',
+  'ils',
+  'elles',
+  'moi',
+  'toi',
+  'lui',
+  'leur',
+  'leurs',
+  'mon',
+  'ma',
+  'mes',
+  'ton',
+  'ta',
+  'tes',
+  'sa',
+  'ses',
+  'notre',
+  'votre',
+  'cette',
+  'ces',
+  'cet',
+  'celui',
+  'tout',
+  'tous',
+  'toute',
+  'rien',
+  'quelque',
+  'chose',
+  'beaucoup',
+  'moins',
+  'être',
+  'suis',
+  'sommes',
+  'sont',
+  'était',
+  'étaient',
+  'avoir',
+  'avons',
+  'avez',
+  'ont',
+  'fait',
+  'faire',
+  'peut',
+  'peuvent',
+  'doit',
+  'veux',
+  'veut',
+  'voir',
+  'savoir',
+  'sais',
+  'sait',
+  'pas',
+  'plus',
+  'est',
+  'ne',
+];
+
+interface LanguageProfile {
+  words: Set<string>;
+  /** Buchstaben jenseits von a–z, die diese Sprache selbst verwendet. */
+  native: string;
+}
+
+const LANGUAGES: Record<string, LanguageProfile> = {
+  de: { words: new Set(DE_WORDS), native: 'äöüß' },
+  en: { words: new Set(EN_WORDS), native: '' },
+  es: { words: new Set(ES_WORDS), native: 'áéíóúüñ' },
+  fr: { words: new Set(FR_WORDS), native: 'àâäçéèêëîïôöùûüÿœæ' },
+};
+
+/** Sonderbuchstaben, die überhaupt als Sprachsignal taugen. */
+const DIACRITICS = 'țşșăâîčćžšđłńñõçãáàéèêëìíîïóòôøûùúýÿığäöüßœæ';
+
+const foreignLettersCache = new Map<string, RegExp>();
+
+/** Sonderbuchstaben, die der Lesersprache FREMD sind. */
+function foreignLetters(lang: string): RegExp {
+  const cached = foreignLettersCache.get(lang);
+  if (cached) return cached;
+  const native = LANGUAGES[lang]?.native ?? '';
+  const chars = [...DIACRITICS].filter((c) => !native.includes(c)).join('');
+  const re = new RegExp(`[${chars}]`, 'i');
+  foreignLettersCache.set(lang, re);
+  return re;
+}
 
 const stripForDetection = (text: string): string =>
   text
@@ -278,8 +505,8 @@ const stripForDetection = (text: string): string =>
  * Unbekannte Zielsprachen und zu kurze/leere Texte ergeben false.
  */
 export function shouldOfferTranslation(text: string, targetLang: string): boolean {
-  const words = TARGET_WORDS[targetLang];
-  if (!words || !text) return false;
+  const profile = LANGUAGES[targetLang];
+  if (!profile || !text) return false;
 
   const cleaned = stripForDetection(text);
   const letters = cleaned.match(/\p{L}/gu) || [];
@@ -290,9 +517,9 @@ export function shouldOfferTranslation(text: string, targetLang: string): boolea
   if (nonLatin / letters.length > 0.3) return true;
 
   const tokens = (cleaned.toLowerCase().match(/\p{L}+/gu) || []).filter((w) => w.length > 1);
-  const hits = tokens.filter((w) => words.has(w)).length;
+  const hits = tokens.filter((w) => profile.words.has(w)).length;
   if (hits > 0) return false;
 
-  if (FOREIGN_DIACRITICS.test(cleaned)) return true;
+  if (foreignLetters(targetLang).test(cleaned)) return true;
   return tokens.length >= 3;
 }

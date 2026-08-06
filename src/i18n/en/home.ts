@@ -11,7 +11,7 @@ const dict: Record<string, string> = {
   Filme: 'Movies',
   Aktiv: 'Active',
   Heute: 'Today',
-  'Sprache des Grußes anzeigen': 'Show the language of this greeting',
+  'Sprache des Grußes anzeigen': 'Show greeting language',
   'Suche öffnen': 'Open search',
   'Suche nach Serien oder Filmen': 'Search for series or movies',
 
@@ -29,7 +29,7 @@ const dict: Record<string, string> = {
   'Gesamte Watchzeit': 'Total watch time',
   'Diese Woche': 'This week',
   '{n} Ep.': '{n} eps',
-  'neu geschaut': 'newly watched',
+  'neu geschaut': 'watched',
   'Zeit mit Serien': 'Series watch time',
   'Zeit mit Filmen': 'Movie watch time',
   'Ø Serien-Rating': 'Avg. series rating',
@@ -53,7 +53,7 @@ const dict: Record<string, string> = {
 
   // RatingQueueCard
   'Schnell bewerten: {n} gesehene Titel ohne Bewertung':
-    'Quick rate: {n} watched titles without a rating',
+    "Quick rate: {n} watched titles you haven't rated",
   Bewerten: 'Rate',
   '{n} Titel wartet auf deine Bewertung': '{n} title is waiting for your rating',
   '{n} Titel warten auf deine Bewertung': '{n} titles are waiting for your rating',
@@ -115,9 +115,9 @@ const dict: Record<string, string> = {
   '{n} ungelesen': '{n} unread',
   'Alles gelesen': 'All caught up',
   'Alle als gelesen markieren': 'Mark all as read',
-  'Alles ruhig hier': 'All quiet here',
+  'Alles ruhig hier': 'All quiet',
   'Keine neuen Benachrichtigungen': 'No new notifications',
-  'Alle Aktivitäten anzeigen': 'Show all activity',
+  'Alle Aktivitäten anzeigen': 'See all activity',
 
   // useUnifiedNotifications
   Unbekannt: 'Unknown',
@@ -126,7 +126,7 @@ const dict: Record<string, string> = {
   'hat "{title}" auf die Watchlist gesetzt': 'added "{title}" to their watchlist',
   'hat "{title}" hinzugefügt': 'added "{title}"',
   Freundschaftsanfrage: 'Friend request',
-  'empfiehlt dir "{title}"': 'recommends "{title}" to you',
+  'empfiehlt dir "{title}"': 'recommended "{title}" to you',
   'gerade eben': 'just now',
   'vor {n} Min': '{n} min ago',
   'vor {n} Std': '{n} hrs ago',
@@ -142,46 +142,46 @@ const dict: Record<string, string> = {
     'The biggest update ever: a complete redesign with a cinematic look on every page, a new profile with a backdrop hero of your top shows, desktop finally uses the full width, a new home screen — and updates now install invisibly in the background without ever interrupting you. Full details in the patch notes.',
   'Neu: Anime-Season-Kalender': 'New: Anime season calendar',
   'Alle Anime der Season auf einen Blick: Premieren-Timeline mit Live-Countdown zur nächsten großen Premiere, „Staffel 2"/„NEU"-Chips, Termine wie in deinem Kalender (TVMaze-geprüft) und Direkteinstieg zu deinen Serien. Alles in den Patch Notes.':
-    'Every anime of the season at a glance: a premiere timeline with a live countdown to the next big premiere, "Season 2"/"NEW" chips, dates just like in your calendar (TVMaze-verified), and quick access to your shows. All in the patch notes.',
+    'All the season\'s anime at a glance: a premiere timeline with a live countdown to the next big premiere, "Season 2"/"NEW" chips, dates just like in your calendar (TVMaze-verified), and quick access to your shows. All in the patch notes.',
   'Neu: Mehr über deine Freunde': 'New: More about your friends',
   'Freunde-Stand auf jeder Seriendetail-Seite, „Was schaut Lisa gerade", „Worauf wartet sie", Pet-Sneakpeek mit Snack-Geschenk und Air-Date + Watched-Date pro Folge. Alles in den Patch Notes.':
-    'Friend progress on every series detail page, "What\'s Lisa watching right now", "What\'s she waiting for", a pet sneak peek with snack gifts, and air date + watched date per episode. All in the patch notes.',
+    'Friends\' progress on every show page, "What\'s Lisa watching right now", "What\'s she waiting for", a pet sneak peek with snack gifts, and air date + watched date per episode. All in the patch notes.',
   'Neu: Anime-Filler, Aktivitäts-Ticker & mehr': 'New: Anime fillers, activity ticker & more',
   'Anime-Filler/Recap auf Detail-Seite und in der Episoden-Liste, Freunde-Aktivitäten als sanfter Ticker auf der Homepage, Streaming-Reminder mit Pausieren-Button, Pet-Reaktionen auf Streaks, sanfte Seitenwechsel – alles in den Patch Notes.':
     'Anime filler/recap on the detail page and in the episode list, friend activity as a gentle ticker on the home screen, streaming reminders with a pause button, pet reactions to streaks, smooth page transitions — all in the patch notes.',
   'Neu: Empfehlungen an Freunde': 'New: Recommend to friends',
   'Auf jeder Detailseite ist jetzt ein „Empfehlen"-Button. Schick Serien & Filme an deine Freunde – sie sehen die Empfehlung als Karte im Bell-Hub mit „Anschauen" oder „Nope". Freunde, die das Item schon haben, sind ausgegraut.':
-    'Every detail page now has a "Recommend" button. Send series & movies to your friends — they see the recommendation as a card in the bell hub with "Watch" or "Nope". Friends who already have the item are greyed out.',
+    'Every detail page now has a "Recommend" button. Send series & movies to your friends — they see the recommendation as a card in the bell hub with "Watch" or "Nope". Friends who already have it are greyed out.',
   'Neu: Streaming-Abos': 'New: Streaming subscriptions',
   'Pflege deine aktiven Anbieter, sieh was du ungenutzt zahlst, finde Watchlist-Lücken und filtere alles nach deinen Abos. Calendar bekommt Brand-Color-Streifen, Override pro Serie ist möglich.':
-    'Manage your active providers, see what you pay for without using it, find watchlist gaps, and filter everything by your subscriptions. The calendar gets brand-color stripes, with per-series overrides.',
+    "Manage your active providers, see which subs you're paying for but not using, find watchlist gaps, and filter everything by your subscriptions. The calendar gets brand-color stripes, with per-series overrides.",
   'Neues Feature: Homepage Layout': 'New feature: Homepage layout',
   'Du kannst jetzt deine Homepage-Sektionen sortieren und ausblenden! Gehe zu Profil → Homepage Layout um es auszuprobieren.':
     'You can now reorder and hide your homepage sections! Go to Profile → Homepage Layout to try it out.',
   'Neue Features: Kalender, Fortschritt & mehr': 'New features: Calendar, progress & more',
   'Neuer Kalender, Progress-Bars, Provider-Filter & Schnellmarkierung.':
-    'New calendar, progress bars, provider filters & quick marking.',
+    'New calendar, progress bars, provider filters & quick-mark as watched.',
   'Neu: KI-Empfehlungen': 'New: AI recommendations',
   'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!':
     'Personalized series and movie suggestions based on your taste. Try it now under "For you" on the home screen!',
-  'Neues Design: Trending & Co.': 'New design: Trending & co.',
+  'Neues Design: Trending & Co.': 'New look: Trending & more',
   'Trending, Saisonal und Bestbewertet haben ein neues Kino-Design mit Rang-Nummern, Genres und Ratings bekommen!':
     'Trending, Seasonal, and Top Rated got a new cinematic design with rank numbers, genres, and ratings!',
-  'QoL-Update: Kalender, Detail & Provider': 'QoL update: Calendar, detail & providers',
+  'QoL-Update: Kalender, Detail & Provider': 'QoL update: Calendar, details & providers',
   'Auto-Scroll zum heutigen Tag, Staffelpause/Staffelende-Chips, Provider-Badges auf allen Karten, smarter Status-Badge und mehr!':
     'Auto-scroll to today, season break/finale chips, provider badges on all cards, a smarter status badge, and more!',
 
   // NotificationItem / RecommendationCard
   Annehmen: 'Accept',
   Ablehnen: 'Decline',
-  'empfiehlt dir': 'recommends to you',
+  'empfiehlt dir': 'recommends',
   Film: 'Movie',
   Serie: 'Series',
   Anschauen: 'Watch',
 
   // SeriesNotificationHub
   Neu: 'New',
-  'Abo fehlt': 'No sub',
+  'Abo fehlt': 'Not subscribed',
   Inaktiv: 'Inactive',
   Fertig: 'Done',
   'Benachrichtigungs-Kategorien': 'Notification categories',
@@ -205,8 +205,8 @@ const dict: Record<string, string> = {
   // PlayTestBanner
   'Hol TV-Rank in den Play Store!': 'Get TV-Rank on the Play Store!',
   'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.':
-    'Want to test the Android app? Open a feature ticket with your Play Store email — you will get a personal invite to the test.',
-  'Hinweis ausblenden': 'Dismiss note',
+    "Want to test the Android app? Open a feature ticket with your Play Store email — we'll send you a personal invite.",
+  'Hinweis ausblenden': 'Dismiss',
   '1 Hinweis zu deinen Serien': '1 update about your shows',
   '{n} Hinweise zu deinen Serien': '{n} updates about your shows',
   'Feature-Ticket öffnen': 'Open feature ticket',
@@ -232,18 +232,18 @@ const dict: Record<string, string> = {
   'Staffel {n} startet {when}!': 'Season {n} starts {when}!',
   'Staffel {n} wird {when} fortgesetzt!': 'Season {n} continues {when}!',
   'Recap wird generiert...': 'Generating recap...',
-  'Recap der vorherigen Staffel': 'Recap of the previous season',
-  'Recap vor der Fortsetzung': 'Recap before it continues',
+  'Recap der vorherigen Staffel': 'Previous season recap',
+  'Recap vor der Fortsetzung': 'Recap before it returns',
   Einklappen: 'Collapse',
   'Recap lesen': 'Read recap',
   '{current} von {total}': '{current} of {total}',
 
   // TasteProfileCard / TasteMatchCard / WatchJourneyCard
   'KI Geschmacksprofil: Dein Seriengeschmack analysiert':
-    'AI taste profile: your series taste analyzed',
+    'AI taste profile: your taste in shows, analyzed',
   'KI-Empfehlungen': 'AI recommendations',
   'Personalisierte Vorschläge': 'Personalized suggestions',
-  'Taste Match: Geschmack mit Freunden vergleichen': 'Taste Match: compare taste with friends',
+  'Taste Match: Geschmack mit Freunden vergleichen': 'Taste Match: compare your taste with friends',
   'Geschmack vergleichen': 'Compare taste',
   'Profilbild von {name}': "{name}'s profile picture",
   'Freund auswählen': 'Pick a friend',
@@ -251,8 +251,8 @@ const dict: Record<string, string> = {
   'Trends & Entwicklung': 'Trends & progress',
 
   // WatchStreakCard
-  'Fehler beim Aktivieren des Shields': 'Failed to activate the shield',
-  'Kein Pet vorhanden': 'No pet available',
+  'Fehler beim Aktivieren des Shields': "Couldn't activate shield",
+  'Kein Pet vorhanden': 'No pet yet',
   'Dein Pet lebt nicht': "Your pet isn't alive",
   'Nicht genug XP ({have}/{need})': 'Not enough XP ({have}/{need})',
   'Cooldown: noch {n} Tag': 'Cooldown: {n} day left',
@@ -271,8 +271,8 @@ const dict: Record<string, string> = {
   'Streak verloren': 'Streak lost',
 
   // useRewatchHandler
-  'Episode-ID fehlt': 'Episode ID missing',
-  '{title} {episode} Rewatch als gesehen markiert': '{title} {episode} rewatch marked as watched',
+  'Episode-ID fehlt': 'Missing episode ID',
+  '{title} {episode} Rewatch als gesehen markiert': '{title} {episode} marked as rewatched',
   'Undo fehlgeschlagen': 'Undo failed',
   'Fehler beim Speichern': 'Failed to save',
 
@@ -286,16 +286,16 @@ const dict: Record<string, string> = {
   'Vor 1 Monat gesehen': 'Watched 1 month ago',
   'Vor {n} Monaten gesehen': 'Watched {n} months ago',
   Weiterschauen: 'Continue watching',
-  'Noch nichts zum Weiterschauen': 'Nothing to continue yet',
+  'Noch nichts zum Weiterschauen': 'Nothing to continue watching yet',
   'Tippe in einer Serie auf das Lesezeichen-Symbol, damit sie hier erscheint.':
-    'Tap the bookmark icon on a series to make it show up here.',
+    'Tap the bookmark icon on a series and it’ll show up here.',
   '{n} Serie wartet noch.': '{n} series is still waiting.',
   '{n} Serien warten noch.': '{n} series are still waiting.',
   'Nachricht vom TV-Rank Team': 'Message from the TV-Rank team',
   'Neu auf deinen Streaming-Anbietern': 'New on your streaming services',
   'Wähle deine Streaming-Anbieter': 'Pick your streaming services',
   'Sag uns, wo du streamst — sobald ein Film von deiner Liste dort auftaucht, siehst du ihn hier und bekommst eine Benachrichtigung.':
-    'Tell us where you stream — as soon as a movie from your list shows up there, you will see it here and get a notification.',
+    'Tell us where you stream — as soon as a movie from your list shows up there, you’ll see it here and get a notification.',
   NEU: 'NEW',
   'Noch keine Serien in deiner Liste': 'No series in your list yet',
   'Stöbere unter Entdecken oder such direkt nach deiner Lieblingsserie — sobald du eine hinzufügst, geht’s hier weiter.':
@@ -354,8 +354,8 @@ const dict: Record<string, string> = {
   'Guten Morgen': 'Good morning',
   'Schönen guten Morgen': 'Good morning to you',
   'Guten Morgen, Sonnenschein': 'Good morning, sunshine',
-  'Na, schon wach': 'Hey, up already',
-  'Gut geschlafen': 'Slept well',
+  'Na, schon wach': "Hey, you're up already",
+  'Gut geschlafen': 'Sleep well',
   Aufgestanden: 'Up and about',
   'Kaffee schon getrunken': 'Had your coffee yet',
   Ausgeschlafen: 'Well rested',
@@ -372,7 +372,7 @@ const dict: Record<string, string> = {
   'Zu mir, mein Schatz': 'Come to me, my precious',
   'Das ist der Weg': 'This is the way',
   'Ich bin dann mal weg': "I'm off then",
-  'Tschakka, du schaffst das': 'Tschakka, you can do it',
+  'Tschakka, du schaffst das': 'You got this',
   'Auf ein Neues': 'Here we go again',
   'Bereit für Abenteuer': 'Ready for adventure',
 
@@ -432,7 +432,7 @@ const dict: Record<string, string> = {
   Schlaflos: 'Sleepless',
   Nachtschicht: 'Night shift',
   'Noch eine Folge': 'One more episode',
-  'Nur noch diese eine Folge': 'Just this one last episode',
+  'Nur noch diese eine Folge': 'Just one last episode',
   'Die Nacht ist noch jung': 'The night is still young',
   'Nachts sind alle Katzen grau': 'All cats are grey in the dark',
   'Träum was Schönes': 'Sweet dreams',
@@ -461,10 +461,10 @@ const dict: Record<string, string> = {
   Spannend: 'Gripping',
   Emotional: 'Emotional',
   Düster: 'Dark',
-  'Du bist mittendrin — einfach weiterschauen': 'You are mid-show — just keep going',
+  'Du bist mittendrin — einfach weiterschauen': 'You’re already watching — just keep going',
   'Eine Folge ({m} Min) passt in dein Fenster': 'One episode ({m} min) fits your window',
-  '{n} Folgen à {m} Min passen in dein Fenster': '{n} episodes of {m} min fit your window',
-  'Liegt ungestartet in deiner Liste': 'Sitting unstarted on your list',
+  '{n} Folgen à {m} Min passen in dein Fenster': '{n} episodes at {m} min fit your window',
+  'Liegt ungestartet in deiner Liste': 'Still unstarted on your list',
   'Film, {m} Min': 'Movie, {m} min',
   'Steht auf deiner Watchlist': 'On your watchlist',
   'Passt zu deiner Stimmung': 'Matches your mood',
@@ -476,13 +476,32 @@ const dict: Record<string, string> = {
   Lustig: 'Funny',
   Romantisch: 'Romantic',
   Gruselig: 'Scary',
-  'Serie oder Film?': 'Series or movie?',
+  'Serie oder Film?': 'Show or movie?',
   'Aus deiner Liste oder was Neues?': 'From your list or something new?',
   'Meine Liste': 'My list',
   'Was Neues': 'Something new',
   'Neu für dich — TMDB {n}/10': 'New for you — TMDB {n}/10',
-  'Neu für dich — noch nicht in deiner Liste': 'New for you — not in your list yet',
+  'Neu für dich — noch nicht in deiner Liste': 'New for you — not on your list yet',
   'läuft bei deinen Anbietern': 'streaming on your services',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  Extras: 'Extras',
+  Countdown: 'Countdown',
+  Rewatches: 'Rewatches',
+  Trending: 'Trending',
+  'Watch Streak': 'Watch Streak',
+  'Taste Match': 'Taste Match',
+  'Watch Journey': 'Watch Journey',
+  Backlog: 'Backlog',
+  Ratings: 'Ratings',
+  Badges: 'Badges',
+  Pets: 'Pets',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit weitere
+  // Sprachen sie erreichen.
+  Slang: 'Slang',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  Happiness: 'Happiness',
 };
 
 export default dict;

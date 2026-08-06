@@ -223,7 +223,7 @@ export const MangaPage = () => {
           />
           <QuickTile
             icon={<Timeline style={{ fontSize: 16 }} />}
-            label="Journey"
+            label={t('Journey')}
             onClick={() => navigate('/manga/journey')}
             theme={currentTheme}
             accent={currentTheme.status?.error || '#ef4444'}

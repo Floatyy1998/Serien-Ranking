@@ -12,7 +12,7 @@ const dict: Record<string, string> = {
   'noch ~{n} Wochen': '~{n} weeks left',
   'Fertig ca. heute': 'Done ~today',
   'Fertig ca. am {day}.{month}.': 'Done ~{month}/{day}',
-  '~{n} Std. übrig': '~{n} h left',
+  '~{n} Std. übrig': '~{n}h left',
   '~{n} Min. übrig': '~{n} min left',
   '{n} Ep. offen': '{n} eps left',
 
@@ -71,7 +71,7 @@ const dict: Record<string, string> = {
   'Was soll das Feature können? Warum wäre es nützlich?':
     'What should the feature do? Why would it be useful?',
   'Schritte zum Reproduzieren': 'Steps to reproduce',
-  'Beschreibung des Ablaufs': 'Description of the flow',
+  'Beschreibung des Ablaufs': 'How it should work',
   '1. Gehe zu ...\n2. Klicke auf ...\n3. Der Fehler tritt auf ...':
     '1. Go to ...\n2. Click on ...\n3. The error occurs ...',
   '1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...':
@@ -79,7 +79,7 @@ const dict: Record<string, string> = {
   Bild: 'Image',
   'Fehlermeldungen aus der Konsole (optional)': 'Console error messages (optional)',
   'Falls vorhanden: Fehlermeldungen aus der Browser-Konsole (F12) hier einfügen':
-    'If available: paste error messages from the browser console (F12) here',
+    'Paste any error messages from the browser console (F12) here',
   Abbrechen: 'Cancel',
   'Wird gesendet...': 'Sending...',
   Absenden: 'Submit',
@@ -90,12 +90,12 @@ const dict: Record<string, string> = {
   Speichern: 'Save',
   Bearbeiten: 'Edit',
   Kommentare: 'Comments',
-  'Betreiber von TV-Rank': 'Owner of TV-Rank',
+  'Betreiber von TV-Rank': 'TV-Rank Owner',
   Champion: 'Champion',
   'Hat ein TV-Rank-Event gewonnen': 'Won a TV-Rank event',
   Supporter: 'Supporter',
   'Unterstützt TV-Rank': 'Supports TV-Rank',
-  'Wiedereroeffnung beantragen': 'Request reopening',
+  'Wiedereroeffnung beantragen': 'Request to reopen',
   'Begruendung fuer die Wiedereroeffnung:': 'Reason for reopening:',
   'Warum soll das Ticket wieder geoeffnet werden?': 'Why should the ticket be reopened?',
   '[Antrag auf Wiedereroeffnung] {text}': '[Reopen request] {text}',
@@ -114,15 +114,14 @@ const dict: Record<string, string> = {
   Geschlossen: 'Closed',
   Archiv: 'Archive',
   'Ticket schließen': 'Close ticket',
-  'Ticket wirklich schließen?': 'Really close this ticket?',
+  'Ticket wirklich schließen?': 'Close this ticket?',
   'Keine offenen Tickets.': 'No open tickets.',
   'Keine archivierten Tickets.': 'No archived tickets.',
   'Ticket geschlossen': 'Ticket closed',
   '{name} hat das Ticket "{title}" geschlossen': '{name} closed the ticket "{title}"',
   'Kontakt:': 'Contact:',
   'E-Mail:': 'Email:',
-  'Rechtliche Informationen konnten nicht geladen werden.':
-    'Legal information could not be loaded.',
+  'Rechtliche Informationen konnten nicht geladen werden.': "Couldn't load legal information.",
 };
 
 export default dict;

@@ -134,7 +134,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           ) : (
             <>
               <Inventory2 style={{ fontSize: 22, color: '#E040FB' }} />
-              Mystery Box
+              {t('Mystery Box')}
             </>
           )}
         </motion.h2>

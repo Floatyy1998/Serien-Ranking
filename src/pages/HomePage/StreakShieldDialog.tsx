@@ -152,7 +152,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Happiness</span>
+                <span>{t('Happiness')}</span>
                 <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
                   -{PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST}
                 </span>

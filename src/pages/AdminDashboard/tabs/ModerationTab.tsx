@@ -6,7 +6,15 @@ import { dbRef, serverIncrement } from '../../../services/db/ref';
 import { backendFetch } from '../../../services/backendApi';
 import { deleteDiscussionFeedEntries } from '../../../services/discussionFeedService';
 import { sendNotificationToUser } from '../../../hooks/useDiscussionHelpers';
-import { tLocale } from '../../../services/i18n';
+import {
+  LOCALES,
+  LOCALE_TAG,
+  SOURCE_LOCALE,
+  localizedVariants,
+  tLocale,
+  type Locale,
+  type LocalizedMap,
+} from '../../../services/i18n';
 
 interface ModerationFlag {
   id: string;
@@ -207,20 +215,26 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
           durationMs === null
             ? 'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}'
             : 'Du wurdest bis {date} ausgeschlossen. Grund: {reason}';
-        const messageFor = (locale: 'de' | 'en') =>
+        // Datum und Grund hängen an der Sprache — die Map wird deshalb Sprache
+        // für Sprache gebaut, nicht über localizedVariants().
+        const messageFor = (locale: Locale) =>
           tLocale(locale, template, {
-            date: new Date(until).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB', {
+            date: new Date(until).toLocaleString(LOCALE_TAG[locale], {
               dateStyle: 'medium',
               timeStyle: 'short',
             }),
             reason: reason || tLocale(locale, 'Verstoß gegen die Community-Regeln'),
           });
+        const messageL: LocalizedMap = {};
+        for (const locale of LOCALES) {
+          if (locale !== SOURCE_LOCALE) messageL[locale] = messageFor(locale);
+        }
         await sendNotificationToUser(flag.userId, {
           type: 'moderation_ban',
           title: titleDe,
-          titleEn: tLocale('en', titleDe),
-          message: messageFor('de'),
-          messageEn: messageFor('en'),
+          titleL: localizedVariants(titleDe),
+          message: messageFor(SOURCE_LOCALE),
+          messageL,
         });
       } catch (err) {
         console.error('[moderation] ban failed', err);

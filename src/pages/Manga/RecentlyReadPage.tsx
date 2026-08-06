@@ -9,7 +9,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { tapScaleSmall } from '../../lib/motion';
-import { appLocale, t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 
 const TIME_RANGES = [
   { days: 7, label: t('7 Tage') },
@@ -36,7 +36,7 @@ function formatGroupDate(date: Date): string {
   if (days === 1) return t('Gestern');
   if (days < 7) return t('Vor {n} Tagen', { n: days });
 
-  return d.toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', {
+  return d.toLocaleDateString(dateLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

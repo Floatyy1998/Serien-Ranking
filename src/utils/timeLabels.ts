@@ -1,12 +1,10 @@
-import { appLocale, t } from '../services/i18n';
+import { dateLocale, t } from '../services/i18n';
 
 const MINUTE = 60_000;
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
 type TimeInput = string | number | null | undefined;
-
-const dateLocale = () => (appLocale === 'en' ? 'en-US' : 'de-DE');
 
 const toDate = (value: TimeInput): Date | null => {
   if (value === null || value === undefined || value === '') return null;

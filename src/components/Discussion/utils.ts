@@ -1,4 +1,4 @@
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 
 // Format timestamp to relative time
 export const formatRelativeTime = (timestamp: number): string => {
@@ -12,7 +12,7 @@ export const formatRelativeTime = (timestamp: number): string => {
   if (minutes < 60) return t('vor {n} Min.', { n: minutes });
   if (hours < 24) return t('vor {n} Std.', { n: hours });
   if (days < 7) return t('vor {n} Tagen', { n: days });
-  return new Date(timestamp).toLocaleDateString('de-DE');
+  return new Date(timestamp).toLocaleDateString(dateLocale());
 };
 
 // Extract image URLs from content

@@ -1,6 +1,7 @@
 import { DeleteForever } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
+import { t } from '../../services/i18n';
 
 /** Öffentliche Konto-Löschungs-Seite (Pflicht-URL für Google Play; auch ausgeloggt erreichbar). */
 export const AccountDeletionPage = () => {
@@ -37,56 +38,58 @@ export const AccountDeletionPage = () => {
         paddingBottom: 60,
       }}
     >
-      <PageHeader title="Konto löschen" icon={<DeleteForever />} showBack={false} />
+      <PageHeader title={t('Konto löschen')} icon={<DeleteForever />} showBack={false} />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '8px 20px' }}>
         <p style={{ ...text, marginBottom: 20, color: currentTheme.text.muted }}>
-          Diese Seite beschreibt, wie du dein TV-Rank-Konto (App und Web, Anbieter: Konrad Dinges)
-          endgültig löschst und welche Daten dabei entfernt werden.
+          {t(
+            'Diese Seite beschreibt, wie du dein TV-Rank-Konto (App und Web, Anbieter: Konrad Dinges) endgültig löschst und welche Daten dabei entfernt werden.'
+          )}
         </p>
 
         <div style={card}>
-          <h2 style={h2}>So löschst du dein Konto</h2>
+          <h2 style={h2}>{t('So löschst du dein Konto')}</h2>
           <ol style={{ ...text, paddingLeft: 20, display: 'grid', gap: 6 }}>
-            <li>Melde dich in der TV-Rank-App oder auf tv-rank.de an.</li>
+            <li>{t('Melde dich in der TV-Rank-App oder auf tv-rank.de an.')}</li>
             <li>
-              Öffne <strong>Mehr → Einstellungen</strong>.
+              {t('Öffne')} <strong>{t('Mehr → Einstellungen')}</strong>.
             </li>
             <li>
-              Wähle unten <strong>„Konto löschen"</strong> und bestätige mit deinem Passwort.
+              {t('Wähle unten')} <strong>„{t('Konto löschen')}"</strong>{' '}
+              {t('und bestätige mit deinem Passwort.')}
             </li>
           </ol>
           <p style={{ ...text, marginTop: 10 }}>
-            Die Löschung erfolgt sofort und kann nicht rückgängig gemacht werden.
+            {t('Die Löschung erfolgt sofort und kann nicht rückgängig gemacht werden.')}
           </p>
         </div>
 
         <div style={card}>
-          <h2 style={h2}>Welche Daten gelöscht werden</h2>
+          <h2 style={h2}>{t('Welche Daten gelöscht werden')}</h2>
           <p style={text}>
-            Mit dem Konto werden alle zugehörigen Daten dauerhaft gelöscht: Anmeldedaten
-            (E-Mail-Adresse), Profil und Profilbild, deine Serien-, Film- und Manga-Listen samt
-            Watch-Verlauf, Bewertungen, Statistiken, Erfolge und virtuelle Haustiere,
-            Freundschaften, Ranglisten-Einträge sowie ein eventuell aktiviertes öffentliches Profil.
-            Es gibt keine zusätzliche Aufbewahrungsfrist.
+            {t(
+              'Mit dem Konto werden alle zugehörigen Daten dauerhaft gelöscht: Anmeldedaten (E-Mail-Adresse), Profil und Profilbild, deine Serien-, Film- und Manga-Listen samt Watch-Verlauf, Bewertungen, Statistiken, Erfolge und virtuelle Haustiere, Freundschaften, Ranglisten-Einträge sowie ein eventuell aktiviertes öffentliches Profil. Es gibt keine zusätzliche Aufbewahrungsfrist.'
+            )}
           </p>
           <p style={{ ...text, marginTop: 10 }}>
-            Von dir verfasste Beiträge in öffentlichen Diskussionen können in anonymisierter Form
-            erhalten bleiben.
+            {t(
+              'Von dir verfasste Beiträge in öffentlichen Diskussionen können in anonymisierter Form erhalten bleiben.'
+            )}
           </p>
         </div>
 
         <div style={card}>
-          <h2 style={h2}>Alternativ: Löschung anfordern</h2>
+          <h2 style={h2}>{t('Alternativ: Löschung anfordern')}</h2>
           <p style={text}>
-            Ohne Zugriff auf dein Konto kannst du die Löschung auch per E-Mail über die Kontaktdaten
-            im{' '}
+            {t(
+              'Ohne Zugriff auf dein Konto kannst du die Löschung auch per E-Mail über die Kontaktdaten im'
+            )}{' '}
             <a href="/impressum" style={{ color: currentTheme.primary }}>
-              Impressum
+              {t('Impressum')}
             </a>{' '}
-            anfordern. Weitere Informationen zur Datenverarbeitung findest du in der{' '}
+            {t('anfordern. Weitere Informationen zur Datenverarbeitung findest du in der')}{' '}
             <a href="/privacy" style={{ color: currentTheme.primary }}>
-              Datenschutzerklärung
+              {t('Datenschutzerklärung')}
             </a>
             .
           </p>

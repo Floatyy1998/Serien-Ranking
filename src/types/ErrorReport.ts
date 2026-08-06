@@ -4,6 +4,8 @@
  * `suppressed` mitgezählt statt einzeln geschrieben.
  */
 
+import type { Locale } from '../i18n/locales';
+
 export type ErrorKind = 'render' | 'error' | 'promise' | 'resource';
 
 export type ErrorPlatform = 'web' | 'pwa' | 'ios' | 'android' | 'electron';
@@ -26,7 +28,7 @@ export interface ErrorEnvironment {
   prevRoute?: string;
   build: string;
   platform: ErrorPlatform;
-  language: 'de' | 'en';
+  language: Locale;
   userAgent: string;
   /** `1920x1080@2` — Breite x Höhe @ devicePixelRatio. */
   viewport: string;

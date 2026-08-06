@@ -223,7 +223,7 @@ export const ActivityPage = () => {
               key={tab.id}
               role="tab"
               aria-selected={active}
-              aria-label={tab.label}
+              aria-label={t(tab.label)}
               onClick={() => setActiveTab(tab.id)}
               className={`activity-nav__tab${active ? ' is-active' : ''}`}
               style={{
@@ -259,7 +259,7 @@ export const ActivityPage = () => {
                   </span>
                 )}
               </span>
-              <span className="activity-nav__label">{tab.label}</span>
+              <span className="activity-nav__label">{t(tab.label)}</span>
             </button>
           );
         })}

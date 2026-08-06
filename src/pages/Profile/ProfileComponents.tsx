@@ -170,7 +170,7 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
               {item.value}
             </div>
             <div className="profile-stat-label" style={{ color: currentTheme.text.muted }}>
-              {item.label}
+              {t(item.label)}
             </div>
           </motion.div>
         ))}
@@ -226,7 +226,7 @@ export const ProfileFeaturedNav = memo(
               >
                 <item.icon style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
               </div>
-              <span className="profile-featured-label">{item.label}</span>
+              <span className="profile-featured-label">{t(item.label)}</span>
             </div>
             <div className="profile-featured-item-right">
               {item.badge !== undefined && item.badge > 0 && (

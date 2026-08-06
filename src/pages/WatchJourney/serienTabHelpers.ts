@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
-import { isEnglish, t } from '../../services/i18n';
+import { dateLocale as appDateLocale, t } from '../../services/i18n';
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -21,7 +21,7 @@ export const MONTH_NAMES = [
   'Dez',
 ].map((m) => t(m));
 
-const dateLocale = () => (isEnglish() ? 'en-US' : 'de-DE');
+const dateLocale = appDateLocale;
 
 export const formatDateShort = (date: Date) => {
   return date.toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short' });

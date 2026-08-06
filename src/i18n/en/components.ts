@@ -10,19 +10,19 @@ const dict: Record<string, string> = {
     '— the anime ends around chapter {kapitel}.',
   '(KI-Schätzung)': '(AI estimate)',
   Weiterlesen: 'Keep reading',
-  'Zum Manga': 'Go to manga',
+  'Zum Manga': 'View manga',
   Später: 'Later',
   'weiterer Anschluss': 'more continuation',
   'weitere Anschlüsse': 'more continuations',
 
   // BackButton
   Zurück: 'Back',
-  'Zur Startseite': 'Go to home',
+  'Zur Startseite': 'Back to home',
 
   // CarouselNotification
   'Staffel {staffel}': 'Season {staffel}',
   'Starttermin noch offen': 'start date TBA',
-  'ab {datum}': 'from {datum}',
+  'ab {datum}': 'starting {datum}',
   'in {tage} Tagen ({datum})': 'in {tage} days ({datum})',
   'morgen ({datum})': 'tomorrow ({datum})',
   'ab heute': 'starting today',
@@ -43,7 +43,7 @@ const dict: Record<string, string> = {
   'inaktive Serien': 'inactive shows',
   '{n} inaktive Rewatches': '{n} inactive rewatches',
   'Inaktiver Rewatch': 'Inactive rewatch',
-  'Längere Zeit nicht rewatcht': 'No rewatch activity in a while',
+  'Längere Zeit nicht rewatcht': 'Not rewatched in a while',
   Beenden: 'Stop',
   Beendet: 'Stopped',
   'inaktive Rewatches': 'inactive rewatches',
@@ -66,7 +66,7 @@ const dict: Record<string, string> = {
   Minimieren: 'Minimize',
   'Alle schließen': 'Dismiss all',
   Schließen: 'Close',
-  Serie: 'Series',
+  Serie: 'Show',
   Ansehen: 'View',
   'Später erinnern': 'Remind me later',
   'Erinnere mich in': 'Remind me in',
@@ -96,16 +96,16 @@ const dict: Record<string, string> = {
   Begonnen: 'Started',
   'Zuletzt Hinzugefügt': 'Recently added',
   Unveröffentlicht: 'Unreleased',
-  'Noch nicht begonnen': 'Not started yet',
+  'Noch nicht begonnen': 'Not started',
   Fortlaufend: 'Ongoing',
-  'Filter & Sortierung': 'Filter & sorting',
+  'Filter & Sortierung': 'Filter & sort',
   Suche: 'Search',
   'Film suchen...': 'Search movies...',
   'Serie suchen...': 'Search shows...',
   Schnellfilter: 'Quick filters',
   Sortierung: 'Sort by',
-  'Beste zuerst': 'Best first',
-  'Schlechteste zuerst': 'Worst first',
+  'Beste zuerst': 'Highest rated',
+  'Schlechteste zuerst': 'Lowest rated',
   'Neueste zuerst': 'Newest first',
   Alle: 'All',
 
@@ -157,7 +157,7 @@ const dict: Record<string, string> = {
   'Benachrichtigungen öffnen, {anzahl} ungelesen': 'Open notifications, {anzahl} unread',
   'Benachrichtigungen öffnen': 'Open notifications',
   'Profil und weitere Bereiche öffnen': 'Open profile and more',
-  'Alle anzeigen': 'Show all',
+  'Alle anzeigen': 'See all',
   'Nach links scrollen': 'Scroll left',
   'Nach rechts scrollen': 'Scroll right',
 
@@ -187,12 +187,12 @@ const dict: Record<string, string> = {
   Seitennavigation: 'Page navigation',
 
   // EmailVerificationBanner
-  'Verifizierungslink wurde erneut gesendet.': 'Verification link sent again.',
+  'Verifizierungslink wurde erneut gesendet.': 'Verification link resent.',
   'Email nicht verifiziert – bitte überprüfe dein Postfach':
     'Email not verified – please check your inbox',
   'Verifizierungslink erneut senden': 'Resend verification link',
   'Erneut senden': 'Resend',
-  'Vom Account abmelden': 'Log out of your account',
+  'Vom Account abmelden': 'Log out',
   'Email-Verifizierung erforderlich': 'Email verification required',
   'Um alle Funktionen nutzen zu können, musst du deine Email-Adresse verifizieren. Überprüfe dein Postfach und klicke auf den Verifizierungslink.':
     'To use all features, you need to verify your email address. Check your inbox and click the verification link.',
@@ -237,7 +237,7 @@ const dict: Record<string, string> = {
   'Bug melden': 'Report a bug',
   'Nutzungsstatistiken erlauben?': 'Allow usage statistics?',
   'Mit deiner Einwilligung erfassen wir kontobezogene Nutzungsereignisse (z. B. besuchte Seiten), um die App zu verbessern. Keine Cookies, keine Drittanbieter. Jederzeit in den':
-    'With your consent we record account-linked usage events (e.g. visited pages) to improve the app. No cookies, no third parties. Revocable at any time in',
+    'With your consent, we collect usage data tied to your account (e.g. pages you visit) to improve the app. No cookies, no third parties. You can opt out any time in',
   ' widerrufbar.': '.',
   'Mehr erfahren': 'Learn more',
   Ablehnen: 'Decline',
@@ -254,6 +254,29 @@ const dict: Record<string, string> = {
     'has been downloaded. Installing will restart the app.',
   'Installiere…': 'Installing…',
   'Jetzt installieren': 'Install now',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  'Um alle Funktionen weiter nutzen zu können, musst du deine Email-Adresse verifizieren. Überprüfe dein Postfach und klicke auf den Verifizierungslink.':
+    'To keep using all features, you need to verify your email address. Check your inbox and click the verification link.',
+  Version: 'Version',
+  Episode: 'Episode',
+  'Episode {nummer}': 'Episode {nummer}',
+  Genre: 'Genre',
+  Start: 'Start',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit weitere
+  // Sprachen sie erreichen.
+  Countdowns: 'Countdowns',
+  Owner: 'Owner',
+  Bug: 'Bug',
+  Feature: 'Feature',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  Home: 'Home',
+  Videos: 'Videos',
+  Links: 'Links',
+  Recap: 'Recap',
+  Premiere: 'Premiere',
+  'Weiterleitung…': 'Redirecting…',
 };
 
 export default dict;

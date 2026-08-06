@@ -2,12 +2,18 @@
 
 const settings: Record<string, string> = {
   Sprache: 'Language',
-  'Auto nutzt die Gerätesprache: Deutsch im DACH-Raum, sonst Englisch.':
-    'Auto follows your device language: German in the DACH region, English everywhere else.',
+  'Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.':
+    "Auto uses your device language. If we don't speak it, the app will be in English.",
   'Streaming-Land': 'Streaming country',
   'Auto (aus Gerätesprache)': 'Auto (from device language)',
   'Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.':
     "Sets which country's streaming providers are shown.",
+  // USA, Portugal und Japan heißen im Englischen gleich — der Eintrag steht
+  // trotzdem hier, damit jeder übersetzbare Schlüssel in `en/` auftaucht und
+  // weitere Sprachen ihn nicht übersehen (auf Spanisch „EE. UU.", „Japón").
+  USA: 'USA',
+  Portugal: 'Portugal',
+  Japan: 'Japan',
   Deutschland: 'Germany',
   Österreich: 'Austria',
   Schweiz: 'Switzerland',
@@ -38,18 +44,18 @@ const settings: Record<string, string> = {
   Abmelden: 'Log out',
 
   // useSettingsData (Snackbars/Dialoge)
-  'Möchtest du dich wirklich abmelden?': 'Do you really want to log out?',
+  'Möchtest du dich wirklich abmelden?': 'Are you sure you want to log out?',
   'Bild darf maximal 100MB groß sein': 'Image must be 100MB or smaller',
   'Profilbild erfolgreich hochgeladen!': 'Profile picture uploaded!',
-  'Fehler beim Hochladen des Bildes': 'Failed to upload the image',
+  'Fehler beim Hochladen des Bildes': "Couldn't upload image",
   'Anzeigename gespeichert!': 'Display name saved!',
-  'Fehler beim Speichern des Anzeigenamens': 'Failed to save the display name',
+  'Fehler beim Speichern des Anzeigenamens': "Couldn't save display name",
   'Link kopiert!': 'Link copied!',
   'Schau dir mein TV-Rank-Profil an!': 'Check out my TV-Rank profile!',
   'Teilen nicht möglich': 'Sharing not available',
 
   // ProfileSection
-  'Profilbild von {name}': 'Profile picture of {name}',
+  'Profilbild von {name}': "{name}'s profile picture",
   Benutzer: 'User',
   'Profilbild hochladen': 'Upload profile picture',
   'Tippe auf die Kamera um ein neues Profilbild hochzuladen':
@@ -101,14 +107,14 @@ const settings: Record<string, string> = {
   'Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.':
     'You sign in with Google or Apple. Set an additional password so you can also sign in with email & password — needed e.g. for the browser extension.',
   'Neues Passwort': 'New password',
-  'Passwort wiederholen': 'Repeat password',
+  'Passwort wiederholen': 'Confirm password',
   'Wird gespeichert…': 'Saving…',
   'Passwort festlegen': 'Set password',
 
   // AppearanceSection
   'Farben und Aussehen anpassen': 'Customize colors and appearance',
   'Homepage Layout': 'Homepage layout',
-  'Sektionen sortieren & ausblenden': 'Sort & hide sections',
+  'Sektionen sortieren & ausblenden': 'Reorder & hide sections',
   Anzeigegröße: 'Display size',
   'Ganze App größer oder kleiner': 'Make the whole app bigger or smaller',
   Klein: 'Small',
@@ -146,11 +152,12 @@ const settings: Record<string, string> = {
   'Import (TV-Rank- oder Trakt-JSON)': 'Import (TV-Rank or Trakt JSON)',
   'Datei nicht erkannt. Unterstützt: TV-Rank-Export-JSON und Trakt-JSON.':
     'File not recognized. Supported: TV-Rank export JSON and Trakt JSON.',
-  '{n} Serien ({e} Folgen), {m} Filme erkannt': '{n} series ({e} episodes), {m} movies detected',
+  '{n} Serien ({e} Folgen), {m} Filme erkannt': '{n} shows ({e} episodes), {m} movies found',
   '{n} Serien davon neu — sie werden deiner Liste hinzugefügt.':
-    '{n} of these series are new — they will be added to your list.',
-  'Bestehende Markierungen werden nie überschrieben.': 'Existing marks are never overwritten.',
-  'Import läuft… {done}/{total}': 'Import running… {done}/{total}',
+    "{n} of these shows are new — they'll be added to your list.",
+  'Bestehende Markierungen werden nie überschrieben.':
+    'Existing watch progress is never overwritten.',
+  'Import läuft… {done}/{total}': 'Importing… {done}/{total}',
   'Import starten': 'Start import',
   'Import abgeschlossen!': 'Import complete!',
   'Import fehlgeschlagen': 'Import failed',
@@ -165,7 +172,7 @@ const settings: Record<string, string> = {
     'Get notified when a streaming provider changes',
   'Provider-Änderungs-Benachrichtigungen': 'Provider change notifications',
   'Erinnerungen kommen frühestens 30 Tage nach der letzten Anzeige wieder — selbst wenn die Serie weiter inaktiv ist. Schaust du eine Episode, wird die Erinnerung beim nächsten Inaktivwerden direkt wieder freigeschaltet.':
-    'Reminders come back no sooner than 30 days after they were last shown — even if the show stays inactive. Once you watch an episode, the reminder is re-armed the next time the show goes inactive.',
+    'Reminders come back no sooner than 30 days after they were last shown — even if the show stays inactive. Once you watch an episode, the reminder is ready again the next time the show goes inactive.',
 
   // ThemePage
   'Farben anpassen': 'Customize colors',
@@ -197,18 +204,18 @@ const settings: Record<string, string> = {
   'Was du hier anfasst, ist sofort deine App — keine Vorschau, das Original in klein.':
     'Whatever you touch here is instantly your app — not a preview, the real thing in miniature.',
   'Halten und ziehen ändert die Reihenfolge': 'Hold and drag to change the order',
-  'Das Auge blendet eine Sektion aus': 'The eye hides a section',
+  'Das Auge blendet eine Sektion aus': 'Tap the eye to hide a section',
   'Die untere Leiste belegst du selbst — bis zu {n} Ziele':
-    'You fill the bottom bar yourself — up to {n} destinations',
+    'You fill the bottom bar yourself — up to {n} tabs',
   '{name} einblenden': 'Show {name}',
   '{name} ausblenden': 'Hide {name}',
   Mehr: 'More',
   'Antippen legt ein Ziel in die untere Leiste — Tippen in der Leiste entfernt es wieder, Ziehen sortiert.':
-    'Tap to put a destination in the bottom bar — tap it in the bar to remove it again, drag to sort.',
+    'Tap to add a tab to the bottom bar — tap it in the bar to remove it, drag to reorder.',
   '{name} aus der Navigation entfernen': 'Remove {name} from the navigation',
   '{name} zur Navigation hinzufügen': 'Add {name} to the navigation',
   'Alle {n} Plätze belegt — entferne erst ein Ziel in der Leiste.':
-    'All {n} slots are taken — remove a destination from the bar first.',
+    'All {n} slots are full — remove a tab from the bar first.',
 
   // Sektions-Labels (Home-Layout)
   'Freunde-Aktivitäten': 'Friend activity',
@@ -221,7 +228,7 @@ const settings: Record<string, string> = {
   Statistiken: 'Statistics',
   'KI-Empfehlungen': 'AI recommendations',
   'Bewertungs-Queue': 'Rating queue',
-  'Nicht weitergeschaut': 'Not continued',
+  'Nicht weitergeschaut': 'Stopped watching',
   Entdecken: 'Discover',
   Verlauf: 'History',
   Freunde: 'Friends',
@@ -234,12 +241,46 @@ const settings: Record<string, string> = {
   Abos: 'Subscriptions',
 
   // Spoiler-Schutz ('Aus' ist oben schon übersetzt)
-  'Spoiler-Schutz': 'Spoiler shield',
+  'Spoiler-Schutz': 'Spoiler protection',
   Bilder: 'Images',
   Streng: 'Strict',
-  'Alles sichtbar': 'Everything visible',
-  'Bilder ungesehener Folgen blurren': 'Blur images of unwatched episodes',
+  'Alles sichtbar': 'Show everything',
+  'Bilder ungesehener Folgen blurren': 'Blur images for unwatched episodes',
   'Auch Titel und Beschreibungen verstecken': 'Also hide titles and descriptions',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  Text: 'Text',
+  // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
+  // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
+  'Diese Seite beschreibt, wie du dein TV-Rank-Konto (App und Web, Anbieter: Konrad Dinges) endgültig löschst und welche Daten dabei entfernt werden.':
+    'This page explains how to permanently delete your TV-Rank account (app and web, provider: Konrad Dinges) and which data is removed in the process.',
+  'So löschst du dein Konto': 'How to delete your account',
+  'Melde dich in der TV-Rank-App oder auf tv-rank.de an.':
+    'Sign in to the TV-Rank app or at tv-rank.de.',
+  Öffne: 'Open',
+  'Mehr → Einstellungen': 'More → Settings',
+  'Wähle unten': 'At the bottom, select',
+  'und bestätige mit deinem Passwort.': 'and confirm with your password.',
+  'Die Löschung erfolgt sofort und kann nicht rückgängig gemacht werden.':
+    "Deletion takes effect immediately and can't be undone.",
+  'Welche Daten gelöscht werden': 'What data gets deleted',
+  'Mit dem Konto werden alle zugehörigen Daten dauerhaft gelöscht: Anmeldedaten (E-Mail-Adresse), Profil und Profilbild, deine Serien-, Film- und Manga-Listen samt Watch-Verlauf, Bewertungen, Statistiken, Erfolge und virtuelle Haustiere, Freundschaften, Ranglisten-Einträge sowie ein eventuell aktiviertes öffentliches Profil. Es gibt keine zusätzliche Aufbewahrungsfrist.':
+    'Deleting your account permanently removes all associated data: login details (email address), your profile and profile picture, your show, movie and manga lists including watch history, ratings, stats, achievements and virtual pets, friends, leaderboard entries, and a public profile if you enabled one. There is no additional retention period.',
+  'Von dir verfasste Beiträge in öffentlichen Diskussionen können in anonymisierter Form erhalten bleiben.':
+    "Posts you've written in public discussions may be kept in anonymized form.",
+  'Alternativ: Löschung anfordern': 'Alternative: request deletion',
+  'Ohne Zugriff auf dein Konto kannst du die Löschung auch per E-Mail über die Kontaktdaten im':
+    "If you can't access your account, you can also request deletion by email using the contact details in the",
+  'anfordern. Weitere Informationen zur Datenverarbeitung findest du in der':
+    ". You'll find more information on how your data is processed in the",
+  'Desktop App': 'Desktop App',
+  // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
+  // Franzoesisch sie ueberhaupt erreichen.
+  Design: 'Appearance',
+  'Android App': 'Android App',
+  Autostart: 'Launch at startup',
+  'Design & Themes': 'Appearance & Themes',
+  'Patch Notes': 'Patch Notes',
 };
 
 export default settings;

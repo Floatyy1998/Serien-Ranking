@@ -131,7 +131,7 @@ export const ActorUniversePage = () => {
                 }}
               >
                 <Icon style={{ fontSize: '16px' }} />
-                {tab.label}
+                {t(tab.label)}
               </motion.button>
             );
           })}

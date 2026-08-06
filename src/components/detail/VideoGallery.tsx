@@ -42,7 +42,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
     const fetchVideos = async () => {
       setLoading(true);
       try {
-        // German videos + English fallback
+        // Videos in App-Sprache + englischer Rückfall (Trailer gibt es oft nur auf Englisch)
         const [deData, enData] = await Promise.all([
           tmdbFetch<{ results?: Video[] }>(`${mediaType}/${tmdbId}/videos`),
           tmdbFetch<{ results?: Video[] }>(`${mediaType}/${tmdbId}/videos`, { language: 'en-US' }),
@@ -374,7 +374,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
-                aria-label="Videos"
+                aria-label={t('Videos')}
                 style={{
                   width: '100%',
                   maxWidth: hasSidebar ? '1160px' : '960px',

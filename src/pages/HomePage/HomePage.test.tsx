@@ -190,6 +190,6 @@ describe('HomePage (shallow smoke)', () => {
   it('shows the redirect placeholder when there is no auth context', () => {
     authState.value = null;
     render(<HomePage />);
-    expect(screen.getByText('Redirecting...')).toBeInTheDocument();
+    expect(screen.getByText('Weiterleitung…')).toBeInTheDocument();
   });
 });

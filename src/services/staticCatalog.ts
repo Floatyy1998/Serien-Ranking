@@ -30,7 +30,7 @@ import {
   idbRemove,
   idbRemovePrefix,
 } from './catalogIDB';
-import { isEnglish } from './i18n';
+import { SOURCE_LOCALE, appLocale, type LocalizedMap } from './i18n';
 import { watchRegion } from './region';
 
 // Vite injiziert process.env.VITE_* via define() in vite.config.ts
@@ -50,8 +50,12 @@ const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 const LS_COMMUNITY_RATINGS_KEY = LS_PREFIX + 'communityRatings';
-const LS_EN_OVERLAY_KEY = LS_PREFIX + 'enOverlay';
-const LS_EN_EPISODES_KEY = LS_PREFIX + 'enEpisodes';
+// Sprachabhaengige Schluessel: ohne die Sprache im Schluessel bekaeme ein
+// Nutzer nach dem Sprachwechsel die zwischengespeicherten Daten der alten.
+const LS_LANG_OVERLAY_PREFIX = LS_PREFIX + 'langOverlay:';
+const LS_LANG_EPISODES_PREFIX = LS_PREFIX + 'langEpisodes:';
+const langOverlayKey = () => LS_LANG_OVERLAY_PREFIX + appLocale;
+const langEpisodesKey = () => LS_LANG_EPISODES_PREFIX + appLocale;
 const LS_REGION_PROVIDERS_PREFIX = LS_PREFIX + 'regionProviders:';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
@@ -101,8 +105,8 @@ let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryCommunityRatings: CommunityRatings | null = null;
 const memoryEpisodeRatings = new Map<number, Record<string, CommunityRatingEntry> | null>();
-let memoryEnOverlay: EnOverlay | null | undefined = undefined;
-let memoryEnEpisodes: EnEpisodeNames | null | undefined = undefined;
+let memoryLangOverlay: LangOverlay | null | undefined = undefined;
+let memoryLangEpisodes: LangEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
@@ -198,8 +202,10 @@ async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Prom
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemove(LS_COMMUNITY_RATINGS_KEY),
-    idbRemove(LS_EN_OVERLAY_KEY),
-    idbRemove(LS_EN_EPISODES_KEY),
+    // Alle Sprachen, nicht nur die aktive: nach einem Sprachwechsel liegen
+    // sonst die Overlays der alten Sprache dauerhaft im Speicher.
+    idbRemovePrefix(LS_LANG_OVERLAY_PREFIX),
+    idbRemovePrefix(LS_LANG_EPISODES_PREFIX),
     idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
@@ -294,8 +300,8 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
   memoryEpisodeRatings.clear();
-  memoryEnOverlay = undefined;
-  memoryEnEpisodes = undefined;
+  memoryLangOverlay = undefined;
+  memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
   await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
   await setLocalVersion(remote);
@@ -339,46 +345,46 @@ async function ensureVersionFresh(): Promise<number | null> {
 // Datei (404) oder ein Eintrag, bleibt der deutsche Text stehen. Deutsche
 // Nutzer laden die Datei nie (0 Mehrkosten).
 
-interface EnOverlayEntry {
+interface LangOverlayEntry {
   t?: string;
   o?: string;
 }
 
-interface EnOverlay {
-  series?: Record<string, EnOverlayEntry>;
-  movies?: Record<string, EnOverlayEntry>;
+interface LangOverlay {
+  series?: Record<string, LangOverlayEntry>;
+  movies?: Record<string, LangOverlayEntry>;
 }
 
-async function getEnOverlay(): Promise<EnOverlay | null> {
-  if (!isEnglish()) return null;
-  if (memoryEnOverlay !== undefined) return memoryEnOverlay;
+async function getLangOverlay(): Promise<LangOverlay | null> {
+  if (appLocale === SOURCE_LOCALE) return null;
+  if (memoryLangOverlay !== undefined) return memoryLangOverlay;
 
-  const cached = await idbGetAny<EnOverlay>(LS_EN_OVERLAY_KEY);
+  const cached = await idbGetAny<LangOverlay>(langOverlayKey());
   if (cached) {
-    memoryEnOverlay = cached.data;
+    memoryLangOverlay = cached.data;
     void revalidateInBackground(cached.v);
     return cached.data;
   }
 
   const version = await ensureVersionFresh();
   try {
-    const data = await fetchJson<EnOverlay>('en/overlay.json', { version });
-    memoryEnOverlay = data && typeof data === 'object' ? data : null;
-    if (memoryEnOverlay) void idbSetVersioned(LS_EN_OVERLAY_KEY, version, memoryEnOverlay);
-    return memoryEnOverlay;
+    const data = await fetchJson<LangOverlay>(`${appLocale}/overlay.json`, { version });
+    memoryLangOverlay = data && typeof data === 'object' ? data : null;
+    if (memoryLangOverlay) void idbSetVersioned(langOverlayKey(), version, memoryLangOverlay);
+    return memoryLangOverlay;
   } catch (e) {
     // 404 = Backend-Export existiert noch nicht — deutscher Text bleibt.
     if (!String(e).includes('404')) {
       console.warn('[staticCatalog] en-overlay fetch failed', e);
     }
-    memoryEnOverlay = null;
+    memoryLangOverlay = null;
     return null;
   }
 }
 
-function applyEnOverlay<T extends { title: string; beschreibung?: string }>(
+function applyLangOverlay<T extends { title: string; beschreibung?: string }>(
   data: Record<string, T>,
-  entries: Record<string, EnOverlayEntry> | undefined
+  entries: Record<string, LangOverlayEntry> | undefined
 ): Record<string, T> {
   if (!entries) return data;
   const out: Record<string, T> = {};
@@ -395,14 +401,14 @@ function applyEnOverlay<T extends { title: string; beschreibung?: string }>(
   return out;
 }
 
-async function withEnOverlay<T extends { title: string; beschreibung?: string }>(
+async function withLangOverlay<T extends { title: string; beschreibung?: string }>(
   data: Record<string, T> | null,
   kind: 'series' | 'movies'
 ): Promise<Record<string, T> | null> {
-  if (!data || !isEnglish()) return data;
-  const overlay = await getEnOverlay();
+  if (!data || appLocale === SOURCE_LOCALE) return data;
+  const overlay = await getLangOverlay();
   if (!overlay) return data;
-  return applyEnOverlay(data, kind === 'series' ? overlay.series : overlay.movies);
+  return applyLangOverlay(data, kind === 'series' ? overlay.series : overlay.movies);
 }
 
 // Region-Provider-Overlay: catalog/providers/{CC}.json (Backend-Export) mappt
@@ -497,7 +503,7 @@ async function withRegionProviders<T extends { providers: RegionProviderEntry[] 
 async function withOverlays<
   T extends { title: string; beschreibung?: string; providers: RegionProviderEntry[] },
 >(data: Record<string, T> | null, kind: 'series' | 'movies'): Promise<Record<string, T> | null> {
-  return withRegionProviders(await withEnOverlay(data, kind), kind);
+  return withRegionProviders(await withLangOverlay(data, kind), kind);
 }
 
 // Englische Episodennamen: catalog/en/episodes.json (Backend-Export) mappt
@@ -508,38 +514,38 @@ async function withOverlays<
 // Speicher angewendet — die IDB-Caches bleiben bewusst deutsch (Sprachwechsel
 // = Reload). Fehlt die Datei oder ein Eintrag, bleibt der deutsche Name.
 
-interface EnEpisodeNames {
+interface LangEpisodeNames {
   series?: Record<string, Record<string, (string | undefined)[]>>;
 }
 
-async function getEnEpisodeNames(): Promise<EnEpisodeNames | null> {
-  if (!isEnglish()) return null;
-  if (memoryEnEpisodes !== undefined) return memoryEnEpisodes;
+async function getLangEpisodeNames(): Promise<LangEpisodeNames | null> {
+  if (appLocale === SOURCE_LOCALE) return null;
+  if (memoryLangEpisodes !== undefined) return memoryLangEpisodes;
 
-  const cached = await idbGetAny<EnEpisodeNames>(LS_EN_EPISODES_KEY);
+  const cached = await idbGetAny<LangEpisodeNames>(langEpisodesKey());
   if (cached) {
-    memoryEnEpisodes = cached.data;
+    memoryLangEpisodes = cached.data;
     void revalidateInBackground(cached.v);
     return cached.data;
   }
 
   const version = await ensureVersionFresh();
   try {
-    const data = await fetchJson<EnEpisodeNames>('en/episodes.json', { version });
-    memoryEnEpisodes = data && typeof data === 'object' ? data : null;
-    if (memoryEnEpisodes) void idbSetVersioned(LS_EN_EPISODES_KEY, version, memoryEnEpisodes);
-    return memoryEnEpisodes;
+    const data = await fetchJson<LangEpisodeNames>(`${appLocale}/episodes.json`, { version });
+    memoryLangEpisodes = data && typeof data === 'object' ? data : null;
+    if (memoryLangEpisodes) void idbSetVersioned(langEpisodesKey(), version, memoryLangEpisodes);
+    return memoryLangEpisodes;
   } catch (e) {
     // 404 = Backend-Export existiert noch nicht — deutsche Namen bleiben.
     if (!String(e).includes('404')) {
       console.warn('[staticCatalog] en-episodes fetch failed', e);
     }
-    memoryEnEpisodes = null;
+    memoryLangEpisodes = null;
     return null;
   }
 }
 
-function applyEnEpisodeNames(
+function applyLangEpisodeNames(
   seasons: Record<string, CatalogSeason>,
   entry: Record<string, (string | undefined)[]> | undefined
 ): Record<string, CatalogSeason> {
@@ -568,21 +574,21 @@ async function withEnEpisodeSeasons(
   id: string,
   seasons: Record<string, CatalogSeason> | null
 ): Promise<Record<string, CatalogSeason> | null> {
-  if (!seasons || !isEnglish()) return seasons;
-  const overlay = await getEnEpisodeNames();
-  return applyEnEpisodeNames(seasons, overlay?.series?.[id]);
+  if (!seasons || appLocale === SOURCE_LOCALE) return seasons;
+  const overlay = await getLangEpisodeNames();
+  return applyLangEpisodeNames(seasons, overlay?.series?.[id]);
 }
 
 async function withEnEpisodeBulk(
   bulk: Record<string, Record<string, CatalogSeason>> | null
 ): Promise<Record<string, Record<string, CatalogSeason>> | null> {
-  if (!bulk || !isEnglish()) return bulk;
-  const overlay = await getEnEpisodeNames();
+  if (!bulk || appLocale === SOURCE_LOCALE) return bulk;
+  const overlay = await getLangEpisodeNames();
   if (!overlay?.series) return bulk;
   const out: Record<string, Record<string, CatalogSeason>> = {};
   for (const sid in bulk) {
     const names = overlay.series[sid];
-    out[sid] = names ? applyEnEpisodeNames(bulk[sid], names) : bulk[sid];
+    out[sid] = names ? applyLangEpisodeNames(bulk[sid], names) : bulk[sid];
   }
   return out;
 }
@@ -1061,8 +1067,12 @@ export interface TvPremiereStaticEntry {
   title: string;
   originalTitle: string | null;
   overviewDe: string | null;
-  /** EN-Titel/-Beschreibung (Export seit Jul 2026); fehlen bei älteren Daten. */
+  /** Übersetzungen je Sprache (Export seit Aug 2026). */
+  titleL?: LocalizedMap;
+  overviewL?: LocalizedMap;
+  /** @deprecated Altbestand: nur Englisch (Export Jul–Aug 2026). */
   titleEn?: string | null;
+  /** @deprecated Altbestand: nur Englisch (Export Jul–Aug 2026). */
   overviewEn?: string | null;
   poster: string | null;
   backdrop: string | null;
@@ -1339,13 +1349,13 @@ export function clearStaticCatalogCache(): void {
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
   memoryEpisodeRatings.clear();
-  memoryEnOverlay = undefined;
-  memoryEnEpisodes = undefined;
+  memoryLangOverlay = undefined;
+  memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
   cachedVersion = null;
   localVersionCache = undefined;
-  void idbRemove(LS_EN_OVERLAY_KEY);
-  void idbRemove(LS_EN_EPISODES_KEY);
+  void idbRemove(langOverlayKey());
+  void idbRemove(langEpisodesKey());
   void idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX);
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);

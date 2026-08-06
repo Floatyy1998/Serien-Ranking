@@ -9,13 +9,13 @@ import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
-import { appLocale, t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
 export function formatDate(date: Date): string {
-  return date.toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', {
+  return date.toLocaleDateString(dateLocale(), {
     day: 'numeric',
     month: 'short',
     timeZone: 'Europe/Berlin',

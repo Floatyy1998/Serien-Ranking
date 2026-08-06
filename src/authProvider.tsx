@@ -2,6 +2,7 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initAnalyticsIfConsented, setAnalyticsUser } from './services/firebase/analytics';
 import { setErrorReporterUser } from './services/errorReporting/errorReporter';
+import { localizedVariants } from './services/i18n';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './contexts/AuthContext';
@@ -218,9 +219,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     title: 'Willkommen bei TV-Rank!',
                     message:
                       'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',
-                    titleEn: 'Welcome to TV-Rank!',
-                    messageEn:
-                      'Great to have you here — have fun tracking your series and movies! If you run into any problems or have questions, just reach out via the little red bug icon. Thanks for being part of TV-Rank!',
+                    titleL: localizedVariants('Willkommen bei TV-Rank!'),
+                    messageL: localizedVariants(
+                      'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!'
+                    ),
                     timestamp: Date.now(),
                     read: false,
                   });
@@ -232,9 +234,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     title: 'Mach TV-Rank zu deinem',
                     message:
                       'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.',
-                    titleEn: 'Make TV-Rank yours',
-                    messageEn:
-                      'Did you know? Under "More" you can freely customize the theme colors and arrange your homepage in the layout editor — entirely to your taste.',
+                    titleL: localizedVariants('Mach TV-Rank zu deinem'),
+                    messageL: localizedVariants(
+                      'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.'
+                    ),
                     timestamp: Date.now() - 1000,
                     read: false,
                     data: { navigateTo: '/profile' },

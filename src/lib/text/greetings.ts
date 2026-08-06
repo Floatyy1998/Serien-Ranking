@@ -1,4 +1,4 @@
-import { isEnglish, t } from '../../services/i18n';
+import { appLocale, t } from '../../services/i18n';
 
 export interface Greeting {
   text: string;
@@ -576,9 +576,10 @@ export function getGreeting(hour: number): Greeting {
   }
 
   // Sprachbewusster Pool: Dialekt-Grüße und deutsche Kultur-Referenzen bringen
-  // englischsprachigen Nutzern nichts — dafür bekommen sie eigene EN-Grüße.
-  const english = isEnglish();
-  greetings = greetings.filter((g) => (english ? !g.deOnly : !g.enOnly));
+  // nur deutschsprachigen Nutzern etwas — alle anderen bekommen den Rest des
+  // Pools, übersetzt über t(). Deshalb „deutsch oder nicht", nicht „de oder en".
+  const german = appLocale === 'de';
+  greetings = greetings.filter((g) => (german ? !g.enOnly : !g.deOnly));
 
   // Day-seeded Shuffle: pro Tag eine neue Permutation der Greetings-Liste,
   // dann per Stunden-Offset indexiert. Das garantiert, dass innerhalb eines

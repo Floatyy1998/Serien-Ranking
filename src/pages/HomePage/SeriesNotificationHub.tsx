@@ -322,7 +322,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
                 }
               >
                 <c.Icon />
-                <span>{c.label}</span>
+                <span>{t(c.label)}</span>
                 <span className="notif-hub-tab-count">{categoryCounts[c.key]}</span>
               </button>
             );

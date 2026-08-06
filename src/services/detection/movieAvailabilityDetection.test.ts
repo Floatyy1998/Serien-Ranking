@@ -24,7 +24,10 @@ vi.mock('../db/ref', () => ({
   })),
 }));
 
-vi.mock('../i18n', () => ({ isEnglish: () => false }));
+vi.mock('../i18n', () => ({
+  t: (text: string, vars?: Record<string, string | number>) =>
+    vars ? Object.keys(vars).reduce((s, k) => s.split(`{${k}}`).join(String(vars[k])), text) : text,
+}));
 
 import { detectMovieAvailability } from './movieAvailabilityDetection';
 

@@ -6,6 +6,7 @@ import { getProviderLogoUrl } from '../lib/providerMerge';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
 import { pickProviderRegion, watchRegion } from '../services/region';
+import { appLocale } from '../services/i18n';
 import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
@@ -128,7 +129,11 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
         // Fast path: one cached backend request (trending + providers),
         // replacing ~40 per-item TMDB /watch/providers round-trips.
         try {
-          const res = await fetch(`${BACKEND_URL}/trending`);
+          // Sprache UND Land mitgeben: der Cache haelt jede Sprache getrennt,
+          // sonst kaemen Titel und Anbieter fuer alle auf Deutsch heraus.
+          const res = await fetch(
+            `${BACKEND_URL}/trending?lang=${appLocale}&region=${watchRegion}`
+          );
           if (res.ok) {
             const data = await res.json();
             const tv: (TMDBTrendingItem & { providers?: RawWatchProvider[] })[] = Array.isArray(

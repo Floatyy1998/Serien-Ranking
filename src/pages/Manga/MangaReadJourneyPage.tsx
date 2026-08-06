@@ -174,7 +174,7 @@ export const MangaReadJourneyPage = () => {
                 }}
               >
                 {tab.icon}
-                {tab.label}
+                {t(tab.label)}
               </motion.button>
             );
           })}

@@ -8,7 +8,7 @@ import { previewLabel } from '../../services/chat/chatService';
 import { subscribeUnreadChats, type UnreadChat } from '../../services/chat/chatUnread';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
-import { isEnglish, t } from '../../services/i18n';
+import { pickLocalized, t } from '../../services/i18n';
 
 export interface RecommendationCardData {
   recId: string;
@@ -429,9 +429,14 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       const item: UnifiedNotification = {
         id: `notif_${n.id}`,
         kind: isPet || isPendingDrop ? 'pet' : isBugTicket ? 'bug_ticket' : 'discussion',
-        // Zweisprachig gespeicherte Notifications in der Leser-Sprache anzeigen
-        title: isEnglish() && n.titleEn ? n.titleEn : n.title,
-        message: isEnglish() && n.messageEn ? n.messageEn : n.message,
+        // Mehrsprachig gespeicherte Notifications in der Leser-Sprache anzeigen.
+        // Altbestand kennt nur titleEn/messageEn — daher als en-Eintrag deuten,
+        // damit vor dem Umbau geschriebene Meldungen lesbar bleiben.
+        title: pickLocalized(n.title, n.titleL ?? (n.titleEn ? { en: n.titleEn } : undefined)),
+        message: pickLocalized(
+          n.message,
+          n.messageL ?? (n.messageEn ? { en: n.messageEn } : undefined)
+        ),
         timestamp: n.timestamp,
         read: n.read,
         navigateTo:

@@ -181,7 +181,7 @@ export const MilestoneBoxCard: React.FC = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              Mystery Box
+              {t('Mystery Box')}
             </h2>
             <p
               style={{

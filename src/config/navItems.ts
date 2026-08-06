@@ -1,5 +1,7 @@
 /** Wählbare Ziele der freien Nav-Slots — Home und „Mehr" sind fix und fehlen hier bewusst. */
 
+import { t } from '../services/i18n';
+
 export interface NavSlotOption {
   id: string;
   path: string;
@@ -17,7 +19,7 @@ export const NAV_SLOT_OPTIONS: NavSlotOption[] = [
   { id: 'badges', path: '/badges', label: 'Badges' },
   { id: 'pets', path: '/pets', label: 'Pets' },
   { id: 'activity', path: '/activity', label: 'Aktivität' },
-  { id: 'countdowns', path: '/countdowns', label: 'Countdowns' },
+  { id: 'countdowns', path: '/countdowns', label: t('Countdowns') },
   { id: 'catchup', path: '/catch-up', label: 'Backlog' },
   { id: 'subscriptions', path: '/subscriptions', label: 'Abos' },
   { id: 'history', path: '/recently-watched', label: 'Verlauf' },

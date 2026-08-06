@@ -16,6 +16,7 @@ import {
   LocalFireDepartment,
   LocalMovies,
   Lock,
+  Language,
   Navigation,
   NewReleases,
   NotificationsActive,
@@ -36,6 +37,7 @@ import {
   SwapHoriz,
   SystemUpdateAlt,
   Today,
+  Translate,
   TransferWithinAStation,
   TrendingUp,
   Tune,
@@ -47,7 +49,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import './PatchNotesPage.css';
 
 interface Feature {
@@ -66,7 +68,7 @@ interface PatchRelease {
 
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('de-DE', {
+  return date.toLocaleDateString(dateLocale(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -78,6 +80,45 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: t('August 2026 – TV-Rank spricht vier Sprachen'),
+      date: '2026-08-06',
+      features: [
+        {
+          icon: <Language />,
+          color: currentTheme.primary,
+          title: t('Spanisch und Französisch sind da'),
+          description: t(
+            'Neben Deutsch und Englisch gibt es TV-Rank jetzt auf Spanisch und Französisch. Beim ersten Start richtet sich die App nach der Sprache deines Geräts — du musst nichts einstellen. Wenn du lieber eine andere möchtest, wählst du sie in den Einstellungen unter Sprache.'
+          ),
+          link: { label: t('Sprache wählen'), path: '/settings' },
+        },
+        {
+          icon: <LocalMovies />,
+          color: currentTheme.secondary,
+          title: t('Auch Serien-, Film- und Folgennamen'),
+          description: t(
+            'Übersetzt ist nicht nur die Oberfläche: Titel und Beschreibungen deiner Serien und Filme erscheinen in deiner Sprache, und auch die Namen einzelner Folgen. Genauso die Suche, die Genres und die Trending-Liste.'
+          ),
+        },
+        {
+          icon: <NotificationsActive />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Benachrichtigungen, Push und E-Mails'),
+          description: t(
+            'Deine tägliche Übersicht, Staffelstarts, Anbieterwechsel, Pet- und Streak-Erinnerungen sowie die Mails zum Zurücksetzen des Passworts kommen ab sofort in deiner Sprache. Schreibt dir ein Freund, sieht jeder die Meldung in seiner eigenen.'
+          ),
+        },
+        {
+          icon: <Translate />,
+          color: currentTheme.secondary,
+          title: t('Diskussionen über Sprachgrenzen hinweg'),
+          description: t(
+            'Kommentare in einer fremden Sprache bekommen einen Übersetzen-Knopf — auf Wunsch übersetzt die App sie automatisch in deine. Datenschutzerklärung und Impressum liegen ebenfalls auf Spanisch und Französisch vor; rechtlich verbindlich bleibt die deutsche Fassung.'
+          ),
+        },
+      ],
+    },
     {
       version: t('Juli 2026 – Der Freunde-Chat'),
       date: '2026-07-24',
@@ -837,7 +878,7 @@ export const PatchNotesPage = () => {
   return (
     <div className="patch-notes-page">
       <PageHeader
-        title="Patch Notes"
+        title={t('Patch Notes')}
         gradientTo={currentTheme.primary}
         icon={<NewReleases style={{ fontSize: 22, color: currentTheme.accent }} />}
       />

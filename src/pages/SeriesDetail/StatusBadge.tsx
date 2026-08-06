@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getEpisodeAirDate, hasEpisodeAired } from '../../utils/episodeDate';
-import { appLocale, t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 
 interface StatusBadgeProps {
@@ -96,14 +96,11 @@ function getNextEpisodeInfo(
   }
 
   if (nearestFuture) {
-    const formatted = nearestFuture.date.toLocaleDateString(
-      appLocale === 'en' ? 'en-US' : 'de-DE',
-      {
-        day: 'numeric',
-        month: 'short',
-        timeZone: 'Europe/Berlin',
-      }
-    );
+    const formatted = nearestFuture.date.toLocaleDateString(dateLocale(), {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'Europe/Berlin',
+    });
     return {
       label: `S${nearestFuture.season}E${nearestFuture.episode} · ${formatted}`,
       color: 'upcoming',

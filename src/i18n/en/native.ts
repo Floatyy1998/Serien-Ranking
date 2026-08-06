@@ -1,7 +1,7 @@
 /** Native-Hülle: App-Shortcuts (Long-Press aufs Icon). */
 
 const native: Record<string, string> = {
-  'Weiter schauen': 'Watch next',
+  'Weiter schauen': 'Continue watching',
   'Deine nächsten Folgen': 'Your next episodes',
   Suche: 'Search',
   'Serien & Filme finden': 'Find shows & movies',

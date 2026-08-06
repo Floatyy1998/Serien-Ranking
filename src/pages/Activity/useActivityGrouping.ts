@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';
 import type { ActivityFilterType } from './types';
@@ -75,7 +75,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     if (hours < 24) return t('vor {n}h', { n: hours });
     if (days < 7) return t('vor {n}d', { n: days });
 
-    return new Date(timestamp).toLocaleDateString('de-DE', {
+    return new Date(timestamp).toLocaleDateString(dateLocale(), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

@@ -1,18 +1,31 @@
 /** Push-Queue: Clients legen Einträge ab, der Backend-Listener (hello.js) verschickt per FCM und löscht. */
 import { dbRef, serverTimestamp } from './db/ref';
+import type { LocalizedMap } from './i18n';
+
+/** Kürzt jede Sprachfassung einzeln; leer heißt „kein Feld schreiben". */
+const capMap = (map: LocalizedMap | undefined, max: number): LocalizedMap | undefined => {
+  if (!map) return undefined;
+  const out: LocalizedMap = {};
+  for (const [locale, value] of Object.entries(map)) {
+    if (value) out[locale as keyof LocalizedMap] = value.slice(0, max);
+  }
+  return Object.keys(out).length ? out : undefined;
+};
 
 export const queuePush = async (
   toUid: string,
-  push: { title: string; body: string; url?: string; titleEn?: string; bodyEn?: string }
+  push: { title: string; body: string; url?: string; titleL?: LocalizedMap; bodyL?: LocalizedMap }
 ): Promise<void> => {
   try {
+    const titleL = capMap(push.titleL, 100);
+    const bodyL = capMap(push.bodyL, 300);
     await dbRef('pushQueue').push({
       to: toUid,
       title: push.title.slice(0, 100),
       body: push.body.slice(0, 300),
-      // Englische Variante — das Backend wählt nach users/$uid/language
-      ...(push.titleEn && { titleEn: push.titleEn.slice(0, 100) }),
-      ...(push.bodyEn && { bodyEn: push.bodyEn.slice(0, 300) }),
+      // Übersetzungen je Sprache — das Backend wählt nach users/$uid/language
+      ...(titleL && { titleL }),
+      ...(bodyL && { bodyL }),
       url: push.url && push.url.startsWith('/') ? push.url.slice(0, 200) : '/',
       ts: serverTimestamp(),
     });
