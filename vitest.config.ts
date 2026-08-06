@@ -268,6 +268,7 @@ export default defineConfig({
         'src/lib/text/greetings.ts',
         'src/lib/toast.ts',
         'src/services/detection/completedSeriesDetection.ts',
+        'src/services/detection/detectionCleanup.ts',
         'src/services/detection/inactiveSeriesDetection.ts',
         'src/services/detection/newSeasonDetection.ts',
         'src/services/detection/providerChangeDetection.ts',

@@ -21,6 +21,7 @@ import {
 } from '../../services/firebase/analytics';
 import { backendFetch } from '../../services/backendApi';
 import { bumpSeriesVersion } from '../../services/firebase/seriesVersionBump';
+import { cleanupSeriesDetectionState } from '../../services/detection/detectionCleanup';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
@@ -122,6 +123,7 @@ export function useSeriesActions(
         try {
           await dbRef(paths.seriesItem(userId, series.id)).remove();
           await dbRef(paths.seriesWatchItem(userId, series.id)).remove();
+          void cleanupSeriesDetectionState(userId, series.id);
           bumpSeriesVersion(userId);
           trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar(t('Serie erfolgreich gelöscht!'));

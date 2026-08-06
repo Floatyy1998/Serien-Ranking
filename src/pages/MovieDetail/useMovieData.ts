@@ -7,6 +7,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';
+import { cleanupMovieDetectionState } from '../../services/detection/detectionCleanup';
 import { getImageUrl } from '../../utils/imageUrl';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { pickProviderRegion, watchRegion } from '../../services/region';
@@ -302,6 +303,7 @@ export const useMovieData = () => {
 
       const movieRef = dbRef(paths.movieItem(user.uid, movie.id));
       await movieRef.remove();
+      void cleanupMovieDetectionState(user.uid, movie.id);
       trackMovieDeleted(String(movie.id), movie.title || '');
       setSnackbar({ open: true, message: t('Film erfolgreich gelöscht!') });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
