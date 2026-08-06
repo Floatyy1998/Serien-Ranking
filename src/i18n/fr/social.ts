@@ -190,7 +190,7 @@ const dict: Record<string, string> = {
   Erfolge: 'Succès',
   Haustiere: 'Compagnons',
   'KI-Empfehlungen': 'Recommandations IA',
-  'Serien-Kalender': 'Calendrier des séries',
+  'Serien-Kalender': 'Sorties séries',
   'Streaming-Abos': 'Abonnements streaming',
   'Ideen & Probleme': 'Idées et problèmes',
   '{n}J': '{n}a',

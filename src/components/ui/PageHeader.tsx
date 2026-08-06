@@ -20,6 +20,17 @@ interface PageHeaderProps {
   style?: React.CSSProperties;
 }
 
+/**
+ * Uebersetzte Titel sind teils deutlich laenger als die deutschen Originale
+ * („Serien-Kalender" → „Calendrier des séries"). Statt sie abzuschneiden,
+ * ruecken lange Titel eine Stufe kleiner; die Ellipse bleibt als Notnagel.
+ */
+const titleFontSize = (title: string): string => {
+  if (title.length > 24) return '20px';
+  if (title.length > 18) return '23px';
+  return '26px';
+};
+
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   gradientFrom,
@@ -88,7 +99,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             from={gradientFrom}
             to={gradientTo}
             style={{
-              fontSize: '26px',
+              fontSize: titleFontSize(title),
               fontFamily: 'var(--font-display)',
               fontWeight: 800,
               letterSpacing: '-0.03em',

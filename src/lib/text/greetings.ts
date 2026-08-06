@@ -575,11 +575,14 @@ export function getGreeting(hour: number): Greeting {
     slotStart = hour >= 22 ? 22 : -2; // 22-23 oder 0-4 (letztere als Vortagnacht)
   }
 
-  // Sprachbewusster Pool: Dialekt-Grüße und deutsche Kultur-Referenzen bringen
-  // nur deutschsprachigen Nutzern etwas — alle anderen bekommen den Rest des
-  // Pools, übersetzt über t(). Deshalb „deutsch oder nicht", nicht „de oder en".
-  const german = appLocale === 'de';
-  greetings = greetings.filter((g) => (german ? !g.enOnly : !g.deOnly));
+  // Sprachbewusster Pool: Dialekt-Grüße bringen nur Lesern der jeweiligen
+  // Sprache etwas — „Moin" nur auf Deutsch, „Howdy" nur auf Englisch. Wer
+  // Spanisch oder Französisch liest, bekommt den übersetzbaren Rest.
+  greetings = greetings.filter((g) => {
+    if (g.deOnly) return appLocale === 'de';
+    if (g.enOnly) return appLocale === 'en';
+    return true;
+  });
 
   // Day-seeded Shuffle: pro Tag eine neue Permutation der Greetings-Liste,
   // dann per Stunden-Offset indexiert. Das garantiert, dass innerhalb eines

@@ -68,7 +68,7 @@ const dict: Record<string, string> = {
   'Keine Folgen an diesem Tag': 'Aucun épisode ce jour-là',
   'Anime-Season': 'Saison anime',
   'Serien-Kalender öffnen': 'Ouvrir le calendrier des séries',
-  'Serien-Kalender': 'Calendrier des séries',
+  'Serien-Kalender': 'Sorties séries',
   'Neue Serien & Staffeln entdecken': 'Découvre de nouvelles séries & saisons',
   'Kalender wird geladen': 'Chargement du calendrier',
   'Keine Episoden in dieser Woche': 'Aucun épisode cette semaine',

@@ -241,7 +241,7 @@ const dict: Record<string, string> = {
   'Neue Serien & Staffeln entdecken': 'Descubre nuevas series y temporadas',
   '{n} Premiere': '{n} estreno',
   '{n} Premieren': '{n} estrenos',
-  'Serien-Kalender': 'Calendario de series',
+  'Serien-Kalender': 'Estrenos',
   'Alle Genres': 'Todos los géneros',
   'Genre suchen …': 'Buscar género …',
   'Serien-Kalender wird geladen': 'Cargando calendario de series',

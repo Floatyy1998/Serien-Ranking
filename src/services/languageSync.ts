@@ -2,7 +2,7 @@ import { dbRef, userPath } from './db/ref';
 import { appLocale } from './i18n';
 
 /**
- * Spiegelt die aufgeloeste App-Sprache (de/en) nach users/$uid/language.
+ * Spiegelt die aufgeloeste App-Sprache nach users/$uid/language.
  * Der Backend-Push-Cron liest das, um Notifications in der Sprache des Nutzers
  * zu bauen (der Server kann navigator/localStorage nicht sehen). Best-effort,
  * schreibt nur bei Aenderung.

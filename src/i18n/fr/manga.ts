@@ -243,7 +243,7 @@ const dict: Record<string, string> = {
   'Neue Serien & Staffeln entdecken': 'Découvre les nouvelles séries et saisons',
   '{n} Premiere': '{n} première',
   '{n} Premieren': '{n} premières',
-  'Serien-Kalender': 'Calendrier des séries',
+  'Serien-Kalender': 'Sorties séries',
   'Alle Genres': 'Tous les genres',
   'Genre suchen …': 'Rechercher un genre …',
   'Serien-Kalender wird geladen': 'Chargement du calendrier des séries',
@@ -253,7 +253,7 @@ const dict: Record<string, string> = {
   'Keine Premieren': 'Aucune première',
   'Für {q} sind mit diesen Filtern keine Premieren gelistet.':
     'Aucune première listée pour {q} avec ces filtres.',
-  'Nächste Premiere': 'Prochaine première',
+  'Nächste Premiere': 'Prochaine sortie',
   'Highlight des Monats': 'Coup de cœur du mois',
   'Bereits gestartet': 'Déjà sorti',
   'Die Release-Daten konnten nicht geladen werden.': 'Impossible de charger les dates de sortie.',
