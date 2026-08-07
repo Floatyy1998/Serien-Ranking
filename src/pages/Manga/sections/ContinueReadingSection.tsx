@@ -3,6 +3,7 @@
  * Uses SwipeableEpisodeRow with swipe-to-mark-chapter-read, undo toast, etc.
  */
 import { MenuBook } from '@mui/icons-material';
+import { AnimatePresence } from 'framer-motion';
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -117,106 +118,110 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
             position: 'relative',
           }}
         >
-          {items.slice(0, 6).map((item) => {
-            const key = String(item.anilistId);
-            const effectiveTotal = item.totalChapters;
-            const format = getDisplayFormat(item.countryOfOrigin, item.format);
+          <AnimatePresence mode="popLayout">
+            {items.slice(0, 6).map((item) => {
+              const key = String(item.anilistId);
+              const effectiveTotal = item.totalChapters;
+              const format = getDisplayFormat(item.countryOfOrigin, item.format);
 
-            return (
-              <SwipeableEpisodeRow
-                key={key}
-                itemKey={key}
-                poster={item.poster}
-                posterAlt={item.title}
-                backdrop={item.bannerImage}
-                accentColor={accentColor}
-                isCompleting={completingEpisodes.has(key)}
-                isSwiping={swipingEpisodes.has(key)}
-                dragOffset={dragOffsets[key] || 0}
-                swipeDirection={swipeDirections[key]}
-                canSwipe={true}
-                onSwipeStart={() => setSwipingEpisodes((prev) => new Set(prev).add(key))}
-                onSwipeDrag={(offset) => setDragOffsets((prev) => ({ ...prev, [key]: offset }))}
-                onSwipeEnd={() => {
-                  setSwipingEpisodes((prev) => {
-                    const s = new Set(prev);
-                    s.delete(key);
-                    return s;
-                  });
-                  setDragOffsets((prev) => ({ ...prev, [key]: 0 }));
-                }}
-                onComplete={(direction) => handleComplete(item, direction)}
-                onPosterClick={() => navigate(`/manga/${item.anilistId}`)}
-                action={null}
-                content={
-                  <>
-                    <h3
-                      style={{
-                        fontSize: 'clamp(13px, 3.5vw, 16px)',
-                        fontWeight: 700,
-                        margin: '0 0 2px 0',
-                        color: currentTheme.text.primary,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {item.title}
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: 'clamp(11px, 3vw, 14px)',
-                        margin: 0,
-                        color: accentColor,
-                        fontWeight: 500,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {t('Kap.')} {item.currentChapter}
-                      {effectiveTotal ? ` / ${effectiveTotal}` : ''}
-                      {effectiveTotal && item.currentChapter < effectiveTotal
-                        ? ` · ${t('{n} übrig', { n: effectiveTotal - item.currentChapter })}`
-                        : ` · ${format}`}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 'clamp(10px, 2.5vw, 13px)',
-                        margin: '2px 0 0 0',
-                        color: currentTheme.text.secondary,
-                        opacity: 0.6,
-                      }}
-                    >
-                      {item.lastReadAt ? formatLastRead(item.lastReadAt) : ''}
-                    </p>
-                    {/* Progress bar */}
-                    {item.progress > 0 && (
-                      <div
+              return (
+                <SwipeableEpisodeRow
+                  key={key}
+                  itemKey={key}
+                  poster={item.poster}
+                  posterAlt={item.title}
+                  backdrop={item.bannerImage}
+                  accentColor={accentColor}
+                  staysAfterComplete
+                  animateLayout
+                  isCompleting={completingEpisodes.has(key)}
+                  isSwiping={swipingEpisodes.has(key)}
+                  dragOffset={dragOffsets[key] || 0}
+                  swipeDirection={swipeDirections[key]}
+                  canSwipe={true}
+                  onSwipeStart={() => setSwipingEpisodes((prev) => new Set(prev).add(key))}
+                  onSwipeDrag={(offset) => setDragOffsets((prev) => ({ ...prev, [key]: offset }))}
+                  onSwipeEnd={() => {
+                    setSwipingEpisodes((prev) => {
+                      const s = new Set(prev);
+                      s.delete(key);
+                      return s;
+                    });
+                    setDragOffsets((prev) => ({ ...prev, [key]: 0 }));
+                  }}
+                  onComplete={(direction) => handleComplete(item, direction)}
+                  onPosterClick={() => navigate(`/manga/${item.anilistId}`)}
+                  action={null}
+                  content={
+                    <>
+                      <h3
                         style={{
-                          marginTop: 6,
-                          height: 4,
-                          borderRadius: 2,
-                          background: `${currentTheme.text.primary}12`,
+                          fontSize: 'clamp(13px, 3.5vw, 16px)',
+                          fontWeight: 700,
+                          margin: '0 0 2px 0',
+                          color: currentTheme.text.primary,
+                          whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
+                        {item.title}
+                      </h3>
+                      <p
+                        style={{
+                          fontSize: 'clamp(11px, 3vw, 14px)',
+                          margin: 0,
+                          color: accentColor,
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {t('Kap.')} {item.currentChapter}
+                        {effectiveTotal ? ` / ${effectiveTotal}` : ''}
+                        {effectiveTotal && item.currentChapter < effectiveTotal
+                          ? ` · ${t('{n} übrig', { n: effectiveTotal - item.currentChapter })}`
+                          : ` · ${format}`}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 'clamp(10px, 2.5vw, 13px)',
+                          margin: '2px 0 0 0',
+                          color: currentTheme.text.secondary,
+                          opacity: 0.6,
+                        }}
+                      >
+                        {item.lastReadAt ? formatLastRead(item.lastReadAt) : ''}
+                      </p>
+                      {/* Progress bar */}
+                      {item.progress > 0 && (
                         <div
                           style={{
-                            width: `${item.progress}%`,
-                            height: '100%',
+                            marginTop: 6,
+                            height: 4,
                             borderRadius: 2,
-                            background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            background: `${currentTheme.text.primary}12`,
+                            overflow: 'hidden',
                           }}
-                        />
-                      </div>
-                    )}
-                  </>
-                }
-              />
-            );
-          })}
+                        >
+                          <div
+                            style={{
+                              width: `${item.progress}%`,
+                              height: '100%',
+                              borderRadius: 2,
+                              background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                              transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                          />
+                        </div>
+                      )}
+                    </>
+                  }
+                />
+              );
+            })}
+          </AnimatePresence>
         </div>
       </section>
     );

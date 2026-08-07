@@ -37,6 +37,10 @@ interface SwipeableEpisodeRowProps {
   staticBackground?: string;
   staticBorder?: string;
   canSwipe?: boolean;
+  /** Zeile überlebt das Abhaken (Manga: Kapitel +1) — Karte federt zurück statt rauszufliegen. */
+  staysAfterComplete?: boolean;
+  /** Positionswechsel in der Liste (Neusortierung, Nachrutschen) animieren. */
+  animateLayout?: boolean;
 
   // Swipe handlers
   onSwipeStart: () => void;
@@ -80,6 +84,8 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     staticBackground,
     staticBorder,
     canSwipe = true,
+    staysAfterComplete = false,
+    animateLayout = false,
     onSwipeStart,
     onSwipeDrag,
     onSwipeEnd,
@@ -121,6 +127,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     // Gemeinsame Swipe-Handler für Hitfläche und Poster
     const beginSwipe = () => {
       armedRef.current = false;
+      setArmed(false);
       onSwipeStart();
     };
     const moveSwipe = (_event: unknown, info: PanInfo) => {
@@ -141,14 +148,19 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
       const flick = info.offset.x > SWIPE_FLICK_MIN_PX && info.velocity.x > SWIPE_FLICK_VELOCITY;
       if (canSwipe && (info.offset.x > SWIPE_COMMIT_PX || flick)) {
         setArmed(true);
-        // Karte fliegt mit dem Schwung des Fingers weiter nach rechts raus
-        animate(cardX, window.innerWidth, {
-          type: 'spring',
-          stiffness: 200,
-          damping: 30,
-          velocity: info.velocity.x,
-          restDelta: 1,
-        });
+        if (staysAfterComplete) {
+          // Karte bleibt sichtbar (nur der Inhalt aktualisiert sich) — kurz nachgeben, dann zurückfedern
+          animate(cardX, 0, { type: 'spring', stiffness: 380, damping: 34 });
+        } else {
+          // Karte fliegt mit dem Schwung des Fingers weiter nach rechts raus
+          animate(cardX, window.innerWidth, {
+            type: 'spring',
+            stiffness: 200,
+            damping: 30,
+            velocity: info.velocity.x,
+            restDelta: 1,
+          });
+        }
         onComplete('right');
       } else {
         setArmed(false);
@@ -189,7 +201,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
         className="cine-host"
         data-block-swipe
         data-index={index}
-        layout={isEditMode ? true : undefined}
+        layout={isEditMode || animateLayout ? true : undefined}
         initial={{ opacity: 0, y: 14 }}
         animate={{
           opacity: isCompleting ? 0.5 : 1,
