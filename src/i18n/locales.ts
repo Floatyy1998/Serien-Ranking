@@ -4,7 +4,7 @@
  * nirgends. Reine Datentabelle, kein I/O.
  */
 
-export const LOCALES = ['de', 'en', 'es', 'fr'] as const;
+export const LOCALES = ['de', 'en', 'es', 'fr', 'pt'] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -17,6 +17,7 @@ export const LOCALE_LABEL: Record<Locale, string> = {
   en: 'English',
   es: 'Español',
   fr: 'Français',
+  pt: 'Português',
 };
 
 /** BCP-47 für `Intl` (Datums- und Zahlenformatierung). */
@@ -25,6 +26,7 @@ export const LOCALE_TAG: Record<Locale, string> = {
   en: 'en-US',
   es: 'es-ES',
   fr: 'fr-FR',
+  pt: 'pt-BR',
 };
 
 /**
@@ -36,6 +38,7 @@ export const TMDB_LANGUAGE: Record<Locale, string> = {
   en: 'en-US',
   es: 'es-ES',
   fr: 'fr-FR',
+  pt: 'pt-BR',
 };
 
 /**
@@ -48,6 +51,7 @@ export const FALLBACK_CHAIN: Record<Locale, readonly Locale[]> = {
   en: [],
   es: ['en'],
   fr: ['en'],
+  pt: ['es', 'en'],
 };
 
 export const isLocale = (value: unknown): value is Locale =>

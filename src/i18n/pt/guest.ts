@@ -1,0 +1,70 @@
+/** Portugiesische Übersetzungen: Gast-Onboarding („Wähl 3 → Sichern") + Pet-Schlüpf-Schritt. */
+
+const dict: Record<string, string> = {
+  'Wo alles läuft — für dein Land.': 'Onde assistir a cada título, no seu país.',
+  'Damit füllt sich deine App. Den Rest machst du nach dem Anmelden.':
+    'É assim que seu app se preenche. O resto você faz depois de entrar.',
+  'Konto anlegen = deine Auswahl & dein Begleiter bleiben — auf allen Geräten. Danach nur noch: wo stehst du?':
+    'Crie uma conta e mantenha sua seleção e seu companheiro em todos os aparelhos. Depois só falta: por onde você está?',
+  'Titel nicht gefunden.': 'Título não encontrado.',
+  'Zur Startseite': 'Ir para o início',
+  Staffeln: 'temporadas',
+  'Tracke {title} mit TV-RANK': 'Acompanhe {title} com o TV-RANK',
+  'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
+    'Marque episódios, avalie e compare com amigos: de graça.',
+  'Jetzt tracken — kostenlos': 'Comece agora — de graça',
+  'Im App Store laden': 'Baixar na App Store',
+  'Bei Google Play laden': 'Disponível no Google Play',
+  'erst wählen, dann sichern': 'escolha primeiro, salve depois',
+  Anmelden: 'Entrar',
+  'Schon ein Konto? Anmelden': 'Já tem conta? Entrar',
+  überspringen: 'pular',
+  'Serien · Filme · Manga': 'Séries · Filmes · Mangá',
+  'Alles, was du schaust.': 'Tudo o que você assiste.',
+  Begleiter: 'Companheiro',
+  Wrapped: 'Wrapped',
+  Streaming: 'Streaming',
+  'Ein Begleiter, der mit jeder Folge levelt.': 'Um companheiro que sobe de nível a cada episódio.',
+  'Dein Jahr in Zahlen — Rekorde, Genres, Binges.':
+    'Seu ano em números: recordes, gêneros, maratonas.',
+  'los geht’s': 'vamos lá',
+  '30 sekunden': '30 segundos',
+  'Wähl drei.': 'Escolha três.',
+  'serie oder film suchen …': 'buscar série ou filme …',
+  'sichere dein setup': 'salve sua configuração',
+  'Fast fertig — jetzt sichern.': 'Quase lá — agora é só salvar.',
+  'Wir richten alles ein …': 'Estamos preparando tudo …',
+  'letzter Schritt': 'última etapa',
+  'mit e-mail registrieren': 'cadastrar com e-mail',
+  '← zurück zur Auswahl': '← voltar à seleção',
+  'Er levelt mit jeder Folge, die du schaust. Gib ihm einen Namen und eine Gestalt.':
+    'Ele sobe de nível a cada episódio que você assiste. Dê a ele um nome e uma forma.',
+  'weiter zur premiere': 'ir para a estreia',
+  'Wo stehst du?': 'Por onde você está?',
+  'Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.':
+    'Toque em uma série e diga até onde você já assistiu.',
+  'wo stehst du?': 'por onde você está?',
+  'komplett gesehen': 'assistida por completo',
+  'fertig — los geht’s': 'pronto — vamos lá',
+  'Bereit, wenn du es bist.': 'Quando você quiser.',
+  'Melde dich an — deine Auswahl und dein Begleiter warten schon.':
+    'Entre: sua seleção e seu companheiro já estão esperando.',
+  'dein Begleiter': 'seu companheiro',
+  'Dein Begleiter erwacht': 'Seu companheiro desperta',
+  'Name deines Begleiters …': 'Nome do seu companheiro …',
+  Gestalt: 'Forma',
+  'gib ihm einen namen': 'dê um nome a ele',
+  'Mein Pet': 'Meu bichinho',
+  Katze: 'Gato',
+  Hund: 'Cachorro',
+  Fuchs: 'Raposa',
+  Hase: 'Coelho',
+  Panda: 'Panda',
+  Vogel: 'Pássaro',
+  Drache: 'Dragão',
+  'Cloud-Sync': 'Sincronização na nuvem',
+  'Smart Notifications': 'Notificações inteligentes',
+  'Deep Analytics': 'Análises avançadas',
+};
+
+export default dict;

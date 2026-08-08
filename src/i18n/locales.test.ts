@@ -60,6 +60,8 @@ describe('matchLocale', () => {
   it('ignoriert die Region', () => {
     expect(matchLocale(['es-419'])).toBe('es');
     expect(matchLocale(['de-AT'])).toBe('de');
+    expect(matchLocale(['pt-BR'])).toBe('pt');
+    expect(matchLocale(['pt-PT'])).toBe('pt');
   });
 
   it('ist unabhängig von Groß- und Kleinschreibung', () => {
@@ -67,7 +69,7 @@ describe('matchLocale', () => {
   });
 
   it('gibt null ohne Treffer', () => {
-    expect(matchLocale(['it', 'pt-BR'])).toBeNull();
+    expect(matchLocale(['it', 'nl-NL'])).toBeNull();
     expect(matchLocale([])).toBeNull();
   });
 

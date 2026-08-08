@@ -14,6 +14,7 @@
 import en from '../i18n/en';
 import es from '../i18n/es';
 import fr from '../i18n/fr';
+import pt from '../i18n/pt';
 import {
   FALLBACK_CHAIN,
   LOCALES,
@@ -37,7 +38,7 @@ export {
 type Dictionary = Record<string, string>;
 
 /** Kein Eintrag für die Quellsprache — dort ist der Schlüssel der Text. */
-const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en, es, fr };
+const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en, es, fr, pt };
 
 export type AppLanguage = 'auto' | Locale;
 

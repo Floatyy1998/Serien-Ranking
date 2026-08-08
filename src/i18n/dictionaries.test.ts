@@ -14,8 +14,9 @@ import en from './en';
 import es from './es';
 import fr from './fr';
 import { LOCALES, SOURCE_LOCALE, type Locale } from './locales';
+import pt from './pt';
 
-const DICTIONARIES: Partial<Record<Locale, Record<string, string>>> = { en, es, fr };
+const DICTIONARIES: Partial<Record<Locale, Record<string, string>>> = { en, es, fr, pt };
 
 const placeholders = (text: string): string[] =>
   (text.match(/\{[a-zA-Z0-9_]+\}/g) ?? []).slice().sort();
