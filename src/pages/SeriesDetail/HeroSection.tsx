@@ -943,7 +943,10 @@ export const HeroSection = memo<HeroSectionProps>(
                 alignItems: 'flex-end',
                 gap: 12,
                 alignSelf: 'flex-end',
-                flexShrink: 0,
+                // Nicht mehr schrumpf-fest: sonst quetscht diese Karte bei
+                // Tablet-Breite die Textspalte links auf wenige Pixel.
+                flexShrink: 1,
+                maxWidth: '100%',
                 position: 'relative',
                 zIndex: 2,
                 borderRadius: 18,

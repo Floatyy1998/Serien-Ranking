@@ -33,6 +33,7 @@
   position: relative;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 40px;
   /* Oben nur so viel Luft wie der Back-Button braucht + etwas Atem —
@@ -118,7 +119,10 @@
    Lesbarkeit kommt aus den Verläufen der Hero-Ebene (unten + links). */
 .hero-section__glass-card {
   flex: 1;
-  min-width: 0;
+  /* Untergrenze statt 0: sonst frisst die Signal-Zone rechts (feste ~526px)
+     bei Tablet-Breite den ganzen Platz und die Textspalte kollabiert auf
+     wenige Pixel — der Titel bricht dann Buchstabe fuer Buchstabe. */
+  min-width: min(340px, 100%);
   background: none;
   border: none;
   box-shadow: none;
