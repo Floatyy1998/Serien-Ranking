@@ -747,8 +747,12 @@
 
 /* Live-Countdown (Signature-Moment im Hero) */
 
+/* Umbruch statt Ueberlauf: neben dem Poster bleiben auf schmalen Geraeten
+   nur ~230px, vier Kacheln a min 54px + Padding brauchen aber ~320px — die
+   Sekunden-Kachel wurde abgeschnitten. */
 .as-countdown {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: 6px 0 4px;
 }
@@ -758,8 +762,8 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  min-width: clamp(54px, 5vw, 72px);
-  padding: 8px 10px;
+  min-width: clamp(46px, 5vw, 72px);
+  padding: 8px clamp(6px, 1.4vw, 10px);
   border-radius: var(--radius-md);
   background: var(--glass-medium);
   border: 1px solid;
@@ -788,4 +792,18 @@
   letter-spacing: 1px;
   color: rgba(255, 255, 255, 0.85);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* Neben dem Poster bleiben auf dem Telefon nur ~170px — vier Kacheln in einer
+   Reihe gehen dort nicht. Statt 3+1 (die Sekunden haengen allein) ein
+   ausgewogener 2x2-Block. */
+@media (max-width: 560px) {
+  .as-countdown {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .as-countdown-tile {
+    min-width: 0;
+  }
 }
