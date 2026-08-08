@@ -9,7 +9,7 @@ import {
   useTransform,
   type PanInfo,
 } from 'framer-motion';
-import { memo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { hapticSelect } from '../../lib/haptics';
 
 // Swipe-Tuning: Commit nur nach rechts, links ist Gummiband
@@ -116,6 +116,14 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     const revealIconScale = useTransform(cardX, [0, SWIPE_COMMIT_PX], [0.55, 1]);
     const armedRef = useRef(false);
     const [armed, setArmed] = useState(false);
+    // Der Rückweg der Karte darf nicht auf einer bereits entfernten Zeile laufen
+    const mountedRef = useRef(true);
+    useEffect(() => {
+      mountedRef.current = true;
+      return () => {
+        mountedRef.current = false;
+      };
+    }, []);
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
 
     // Rechts folgt 1:1 (mit weichem Cap), links/gesperrt nur stark gedämpftes Gummiband
@@ -149,8 +157,21 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
       if (canSwipe && (info.offset.x > SWIPE_COMMIT_PX || flick)) {
         setArmed(true);
         if (staysAfterComplete) {
-          // Karte bleibt sichtbar (nur der Inhalt aktualisiert sich) — kurz nachgeben, dann zurückfedern
-          animate(cardX, 0, { type: 'spring', stiffness: 380, damping: 34 });
+          // Zeile überlebt das Abhaken (Manga: Kapitel +1). Die Karte fliegt
+          // trotzdem ganz nach rechts raus und läuft danach mit dem neuen
+          // Inhalt von links wieder ein. Bewusst ein kurzer Tween statt der
+          // Feder unten: deren Nachschwingen würde die Karte über eine Sekunde
+          // lang als leere Swipe-Ebene stehen lassen.
+          animate(cardX, window.innerWidth, {
+            duration: 0.3,
+            ease: [0.32, 0, 0.67, 0],
+            onComplete: () => {
+              if (!mountedRef.current) return;
+              setArmed(false);
+              cardX.set(-Math.min(window.innerWidth, 420));
+              animate(cardX, 0, { type: 'spring', stiffness: 320, damping: 34 });
+            },
+          });
         } else {
           // Karte fliegt mit dem Schwung des Fingers weiter nach rechts raus
           animate(cardX, window.innerWidth, {
