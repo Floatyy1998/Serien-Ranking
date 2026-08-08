@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbRef, dbGet, dbUpdate, userPath, paths } from '../services/db/ref';
+import { isDeletingAccount } from '../services/accountDeletionState';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
@@ -71,6 +72,10 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           setLastReadActivitiesTime(data.activities || 0);
           setReadTimesLoaded(true);
         } else if (!baselineWritten) {
+          // Beim Konto-Löschen feuert dieser Listener mit null, weil users/$uid
+          // gerade entfernt wurde — die Baseline würde den Knoten sofort wieder
+          // anlegen und readTimes als Rest zurücklassen.
+          if (isDeletingAccount(user.uid)) return;
           // Erstbesuch: Baseline setzen (der Listener feuert danach mit den Werten).
           baselineWritten = true;
           const now = Date.now();

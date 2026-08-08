@@ -387,6 +387,23 @@ class AnalyticsService {
     this.teardownLifecycleListeners();
     this.updateRealtimePresence(false);
   }
+
+  /**
+   * Harter Stopp für die Konto-Löschung — im Gegensatz zu `destroy()` OHNE
+   * Abschluss-Flush: der gepufferte Batch, der Flush-Timer, der Präsenz-
+   * Heartbeat und der pagehide-Beacon würden sonst `analytics/users/$uid`
+   * direkt nach dem Entfernen wieder anlegen. Die Einwilligung bleibt
+   * unangetastet, nur die laufende Sitzung wird stillgelegt.
+   */
+  stopForAccountDeletion(): void {
+    this.buffer = [];
+    this.stopFlushTimer();
+    this.stopHeartbeat();
+    this.teardownLifecycleListeners();
+    this.userId = null;
+    this.idToken = null;
+    this.sessionSince = null;
+  }
 }
 
 // ─── Singleton ───────────────────────────────────────────────────────────

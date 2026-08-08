@@ -4,6 +4,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
+import { beginAccountDeletion, endAccountDeletion } from './accountDeletionState';
+import { analyticsService } from './analyticsService';
 import { deleteAllChatsForUser } from './chat/chatService';
 import { dbGet, dbRef, userPath } from './db/ref';
 import { reauthenticateSocial } from './firebase/socialAuth';
@@ -22,6 +24,37 @@ export async function deleteAccount(password: string | null): Promise<void> {
   }
   const uid = user.uid;
 
+  // Die App läuft während der Löschung weiter. Beides muss VOR dem ersten
+  // Entfernen stehen, sonst legen die eigenen Schreiber die Knoten wieder an:
+  // selbstheilende value-Listener (readTimes-Baseline) reagieren auf das
+  // Entfernen mit ihrem Default, der Analytics-Flush-Timer und der Präsenz-
+  // Heartbeat schreiben ohnehin weiter.
+  beginAccountDeletion(uid);
+  analyticsService.stopForAccountDeletion();
+
+  try {
+    await purgeUserData(uid);
+  } catch (err) {
+    // Abgebrochen — der Nutzer bleibt angemeldet, also die Schreibsperre lösen.
+    endAccountDeletion();
+    throw err;
+  }
+
+  // Auth-Konto zuletzt (danach sind keine RTDB-Writes mehr möglich)
+  await user.delete();
+
+  // Lokale Spuren
+  try {
+    localStorage.removeItem('cachedUser');
+    localStorage.removeItem('homeConfig_cache');
+    localStorage.removeItem('navConfig_cache');
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Alles außer dem Auth-Konto. Reihenfolge: Fremdreferenzen zuerst, users/$uid zuletzt. */
+async function purgeUserData(uid: string): Promise<void> {
   // onDisconnect abbestellen, sonst schreibt der Verbindungsabbruch wieder einen users/$uid-Stub.
   try {
     await dbRef(userPath(uid, 'isOnline')).onDisconnect().cancel();
@@ -120,15 +153,14 @@ export async function deleteAccount(password: string | null): Promise<void> {
   // Alle Nutzerdaten — der eigentliche Kern der Löschung
   await dbRef(`users/${uid}`).remove();
 
-  // Auth-Konto zuletzt (danach sind keine RTDB-Writes mehr möglich)
-  await user.delete();
-
-  // Lokale Spuren
-  try {
-    localStorage.removeItem('cachedUser');
-    localStorage.removeItem('homeConfig_cache');
-    localStorage.removeItem('navConfig_cache');
-  } catch {
-    /* ignore */
+  // Nachfassen: die Sperre oben kennt nur die bekannten Schreiber. Kommt der
+  // Knoten trotzdem zurück, ist das jetzt noch reparierbar — nach user.delete()
+  // sind keine Writes mehr möglich. Writes desselben Clients bleiben in
+  // Reihenfolge, das zweite remove gewinnt also gegen ein laufendes Zurück-
+  // schreiben.
+  const leftover = await dbGet<Record<string, unknown>>(`users/${uid}`);
+  if (leftover) {
+    console.warn('[deleteAccount] users-Knoten kam zurück:', Object.keys(leftover).join(', '));
+    await dbRef(`users/${uid}`).remove();
   }
 }

@@ -22,7 +22,8 @@ interface FakeRef {
 
 const fb = vi.hoisted(() => {
   const emptySnap: FakeSnapshot = { val: () => null, exists: () => false };
-  const makeRef = (): FakeRef => {
+  const sets: string[] = [];
+  const makeRef = (path: string): FakeRef => {
     const ref: FakeRef = {
       orderByChild: () => ref,
       equalTo: () => ref,
@@ -35,12 +36,14 @@ const fb = vi.hoisted(() => {
       off: () => {},
       once: async () => emptySnap,
       update: async () => {},
-      set: async () => {},
+      set: async () => {
+        sets.push(path);
+      },
       remove: async () => {},
     };
     return ref;
   };
-  return { database: () => ({ ref: () => makeRef() }) };
+  return { database: () => ({ ref: (path: string) => makeRef(path) }), sets };
 });
 
 const cacheResult = vi.hoisted(
@@ -80,6 +83,7 @@ vi.mock('./friendOperations', () => ({
 
 import { OptimizedFriendsProvider } from './OptimizedFriendsProvider';
 import { useOptimizedFriends } from './OptimizedFriendsContext';
+import { beginAccountDeletion, endAccountDeletion } from '../services/accountDeletionState';
 
 const Consumer = () => {
   const { friends, loading, unreadRequestsCount } = useOptimizedFriends();
@@ -90,6 +94,8 @@ const Consumer = () => {
 
 afterEach(() => {
   cleanup();
+  fb.sets.length = 0;
+  endAccountDeletion();
 });
 
 describe('OptimizedFriendsProvider', () => {
@@ -103,5 +109,34 @@ describe('OptimizedFriendsProvider', () => {
     await waitFor(() => {
       expect(screen.getByTestId('friends').textContent).toBe('0|false|0');
     });
+  });
+
+  it('legt ohne readTimes eine Baseline an', async () => {
+    render(
+      <OptimizedFriendsProvider>
+        <Consumer />
+      </OptimizedFriendsProvider>
+    );
+
+    await waitFor(() => {
+      expect(fb.sets.filter((p) => p.endsWith('readTimes'))).toHaveLength(1);
+    });
+  });
+
+  it('schreibt die Baseline nicht, während das Konto gelöscht wird', async () => {
+    // Sonst legt der value-Listener den gerade entfernten users/$uid-Knoten
+    // wieder an und readTimes bleibt als Rest stehen.
+    beginAccountDeletion('u1');
+
+    render(
+      <OptimizedFriendsProvider>
+        <Consumer />
+      </OptimizedFriendsProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('friends').textContent).toBe('0|false|0');
+    });
+    expect(fb.sets.filter((p) => p.endsWith('readTimes'))).toHaveLength(0);
   });
 });
