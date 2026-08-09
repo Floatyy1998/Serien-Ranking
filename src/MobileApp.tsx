@@ -183,15 +183,23 @@ export const MobileApp = () => {
   // fuer den Admin ausloesen.
   useEffect(() => {
     preloadRoutes({ isAdmin: user?.uid === ADMIN_UID });
+    // .catch nicht vergessen: nach einem Deploy sind die Chunk-Hashes eines
+    // lange offenen Tabs weg, Hosting liefert dann die index.html und der
+    // import() lehnt mit "not a valid JavaScript MIME type" ab. Ohne catch
+    // waere das eine unbehandelte Rejection. Den Reload schaerft
+    // preloadRoutes() oben, das im selben Effekt laeuft.
+    const quiet = () => {};
     if (user?.uid === ADMIN_UID) {
-      import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
+      import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets()).catch(quiet);
     }
     if (user?.uid) {
-      import('./services/pushNotifications').then((m) => m.initNativePush(user.uid));
-      import('./services/languageSync').then((m) => m.syncAppLanguageToProfile(user.uid));
-      import('./services/timezoneSync').then((m) => m.syncTimezoneToProfile(user.uid));
-      import('./services/spoilerReveals').then((m) => m.syncSpoilerReveals(user.uid));
-      import('./services/spoilerMode').then((m) => m.syncSpoilerLevel(user.uid));
+      import('./services/pushNotifications').then((m) => m.initNativePush(user.uid)).catch(quiet);
+      import('./services/languageSync')
+        .then((m) => m.syncAppLanguageToProfile(user.uid))
+        .catch(quiet);
+      import('./services/timezoneSync').then((m) => m.syncTimezoneToProfile(user.uid)).catch(quiet);
+      import('./services/spoilerReveals').then((m) => m.syncSpoilerReveals(user.uid)).catch(quiet);
+      import('./services/spoilerMode').then((m) => m.syncSpoilerLevel(user.uid)).catch(quiet);
     }
   }, [user?.uid]);
 

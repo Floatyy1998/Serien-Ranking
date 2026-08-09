@@ -428,7 +428,15 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
   let i = 0;
   function loadNext() {
     if (i >= routes.length) return;
-    routes[i++]().finally(() => idle(loadNext, 3000));
+    // .catch VOR .finally: finally reicht eine Ablehnung durch, der Fehler
+    // waere sonst eine unbehandelte Promise-Rejection ("'text/html' is not a
+    // valid JavaScript MIME type" — nach einem Deploy liefert Hosting fuer den
+    // verschwundenen Chunk die index.html). Zugleich der einzige Ort, an dem
+    // ein veralteter Tab das ueberhaupt bemerkt: Hintergrund-Reload scharf
+    // machen, damit er sich beim naechsten Wegblenden erneuert.
+    routes[i++]()
+      .catch(() => armBackgroundReload())
+      .finally(() => idle(loadNext, 3000));
   }
 
   idle(loadNext, 5000);
