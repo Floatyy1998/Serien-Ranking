@@ -7,6 +7,7 @@ import {
   ConfirmationNumber,
   Extension,
   Gavel,
+  PersonSearch,
   Groups,
   HealthAndSafety,
   History,
@@ -33,6 +34,7 @@ import { RealtimeTab } from './tabs/RealtimeTab';
 import { UsersTab } from './tabs/UsersTab';
 import { BackendErrorsTab } from './tabs/BackendErrorsTab';
 import { ClientErrorsTab } from './tabs/ClientErrorsTab';
+import { SuspiciousAccountsTab } from './tabs/SuspiciousAccountsTab';
 import { DataHealthTab } from './tabs/DataHealthTab';
 import { MessagesTab } from './tabs/MessagesTab';
 import { TicketsTab } from './tabs/TicketsTab';
@@ -53,6 +55,7 @@ const TABS = [
   { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
   { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumber style={{ fontSize: 16 }} /> },
   { id: 'moderation', label: 'Moderation', icon: <Gavel style={{ fontSize: 16 }} /> },
+  { id: 'suspicious', label: 'Verdacht', icon: <PersonSearch style={{ fontSize: 16 }} /> },
   { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
   { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
@@ -178,6 +181,7 @@ export function AdminDashboardPage() {
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
               {activeTab === 'client-errors' && <ClientErrorsTab />}
+              {activeTab === 'suspicious' && <SuspiciousAccountsTab />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>
