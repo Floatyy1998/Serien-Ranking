@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import { isNativeApp } from './nativeShell';
 
 interface CacheStatus {
   caches: Array<{
@@ -31,7 +32,13 @@ class ServiceWorkerManager {
   private hiddenApplyHandler: (() => void) | null = null;
 
   constructor() {
-    this.isSupported = 'serviceWorker' in navigator;
+    // In der nativen Huelle KEIN Service Worker. Die Android-WebView bietet
+    // navigator.serviceWorker zwar an, verweigert dem Worker aber den Storage
+    // ("Failed to access storage") — die Registrierung schlaegt also immer fehl.
+    // Gebraucht wird er dort ohnehin nicht: die Huelle laedt die Live-Site, und
+    // gegen Deploy-Bruch schuetzt bereits preloadRoutes(). iOS faellt schon
+    // vorher raus, weil WKWebView serviceWorker gar nicht kennt.
+    this.isSupported = 'serviceWorker' in navigator && !isNativeApp();
     this.init();
   }
 
