@@ -80,8 +80,12 @@ describe('useAdminDashboardData', () => {
         meta: { firstSeen: 2, lastSeen: 100, platform: 'web' },
       },
     };
-    fb.state.dataByPath['users/userA'] = { displayName: 'Anna' };
-    fb.state.dataByPath['users/userB'] = { displayName: 'Ben' };
+    // Anzeigenamen kommen aus dem Suchindex, nicht mehr aus den Nutzerknoten
+    // (dort haengt die komplette Watch-History dran, siehe Hook-Kommentar).
+    fb.state.dataByPath['userSearchIndex'] = {
+      userA: { displayName: 'Anna' },
+      userB: { displayName: 'Ben' },
+    };
     // Direkt-Pfade für die per-User-Loader (eigene once-Reads).
     fb.state.dataByPath[`analytics/users/userA/daily/${TODAY}`] = {
       events: { play: 1 },

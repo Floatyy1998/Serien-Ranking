@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { dbRef, paths } from '../../services/db/ref';
+import { dbRef } from '../../services/db/ref';
 
 export interface DailyStats {
   date: string;
@@ -171,39 +171,41 @@ export function useAdminDashboardData(daysRange = 30) {
       );
   }, [refreshKey]);
 
-  // Load user profiles for display names (einzeln pro UID statt /users komplett)
+  // Anzeigenamen aus dem Suchindex statt aus den Nutzerknoten.
+  //
+  // Vorher lief pro UID ein once('value') auf users/$uid — das zog die
+  // KOMPLETTE Watch-History, Bewertungen, Wrapped-Events, Benachrichtigungen,
+  // Pets und Push-Tokens in den Admin-Browser, um daraus drei Felder zu lesen.
+  // Abruf ist Verarbeitung (Art. 4 Nr. 2 DSGVO), also ist das mehr, als der
+  // Zweck hergibt — und teuer war es obendrein.
+  //
+  // userSearchIndex/$uid enthaelt genau username, displayName und photoURL
+  // (buildUserSearchIndexEntry) und ist ein flacher Knoten: ein Read statt N.
   useEffect(() => {
     const uids = new Set([...Object.keys(userMetas), ...realtimeUsers.map((u) => u.uid)]);
     if (uids.size === 0) return;
 
-    Promise.all(
-      [...uids].map(async (uid) => {
-        try {
-          const snap = await dbRef(paths.user(uid)).once('value');
-          const val = snap.val();
-          if (!val) return null;
-          return {
-            uid,
-            displayName: val.displayName || '',
-            photoURL: val.photoURL || '',
-            username: val.username || '',
+    dbRef('userSearchIndex')
+      .once('value')
+      .then((snap) => {
+        const index =
+          (snap.val() as Record<
+            string,
+            { displayName?: string; photoURL?: string; username?: string }
+          > | null) || {};
+        const profiles: typeof userProfiles = {};
+        for (const uid of uids) {
+          const entry = index[uid];
+          if (!entry) continue;
+          profiles[uid] = {
+            displayName: entry.displayName || '',
+            photoURL: entry.photoURL || '',
+            username: entry.username || '',
           };
-        } catch {
-          return null;
         }
+        setUserProfiles(profiles);
       })
-    ).then((results) => {
-      const profiles: typeof userProfiles = {};
-      for (const r of results) {
-        if (r)
-          profiles[r.uid] = {
-            displayName: r.displayName,
-            photoURL: r.photoURL,
-            username: r.username,
-          };
-      }
-      setUserProfiles(profiles);
-    });
+      .catch((error) => console.error('Anzeigenamen konnten nicht geladen werden:', error));
   }, [userMetas, realtimeUsers, refreshKey]);
 
   // Realtime users listener
