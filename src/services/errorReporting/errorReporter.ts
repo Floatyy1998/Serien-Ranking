@@ -123,6 +123,13 @@ function onWindowError(event: ErrorEvent): void {
   if (!event.error && target && target !== (window as unknown as EventTarget)) {
     const tag = String(target.tagName || '').toLowerCase();
     if (tag !== 'script' && tag !== 'link') return;
+    // Bei <link> zaehlt nur das Stylesheet. modulepreload/preload/prefetch
+    // sind blosse Hinweise: scheitern sie (iOS kappt im Hintergrund die
+    // Verbindungen), holt der Browser das Modul beim echten Import ganz
+    // normal nach — gemeldet wuerde also ein folgenloser Abbruch.
+    if (tag === 'link' && (target.getAttribute?.('rel') || '').toLowerCase() !== 'stylesheet') {
+      return;
+    }
     const src = target.getAttribute?.('src') || target.getAttribute?.('href') || '';
     captureError({
       kind: 'resource',

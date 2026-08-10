@@ -162,6 +162,30 @@ describe('globale Handler', () => {
     expect(fb.sets).toHaveLength(0);
   });
 
+  it('meldet fehlgeschlagene Stylesheets', async () => {
+    setErrorReporterUser('u1');
+    const el = document.createElement('link');
+    el.setAttribute('rel', 'stylesheet');
+    el.setAttribute('href', '/assets/app.css');
+    document.body.appendChild(el);
+    el.dispatchEvent(new Event('error'));
+    el.remove();
+    await flush();
+    expect(fb.sets[0].value).toMatchObject({ kind: 'resource', source: '/assets/app.css' });
+  });
+
+  it('ignoriert fehlgeschlagene Modulepreloads — nur ein Hinweis, kein Fehler', async () => {
+    setErrorReporterUser('u1');
+    const el = document.createElement('link');
+    el.setAttribute('rel', 'modulepreload');
+    el.setAttribute('href', '/assets/MovieDetail-abc.js');
+    document.body.appendChild(el);
+    el.dispatchEvent(new Event('error'));
+    el.remove();
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+  });
+
   it('meldet Laufzeitfehler mit Quelle', async () => {
     setErrorReporterUser('u1');
     window.dispatchEvent(

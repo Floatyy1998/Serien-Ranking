@@ -439,5 +439,19 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
       .finally(() => idle(loadNext, 3000));
   }
 
-  idle(loadNext, 5000);
+  // Nicht im Hintergrund vorladen: iOS kappt der unsichtbaren WebView die
+  // Verbindungen, die Vorlade-Anfragen brechen also nur ab und kosten
+  // Bandbreite. Startet die App im Hintergrund (z. B. Aufwaermen nach einem
+  // Push), warten wir auf den ersten sichtbaren Moment.
+  const start = () => idle(loadNext, 5000);
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', onVisible);
+      start();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+  } else {
+    start();
+  }
 }
