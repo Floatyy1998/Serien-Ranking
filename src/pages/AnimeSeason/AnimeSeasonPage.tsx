@@ -112,6 +112,8 @@ import {
 } from './animeSeasonUtils';
 import type { DecoratedAnime } from './animeSeasonUtils';
 import { useAnimeListMatch } from './useAnimeListMatch';
+import { PastToggleRow } from './PastToggleRow';
+import { usePastCollapse } from './usePastCollapse';
 import { t } from '../../services/i18n';
 import './AnimeSeasonPage.css';
 
@@ -625,6 +627,13 @@ export const AnimeSeasonPage: React.FC = () => {
     () => dayGroups.reduce((sum, group) => sum + group.items.length, 0),
     [dayGroups]
   );
+
+  const {
+    visibleGroups: visibleDayGroups,
+    pastCount,
+    showPast,
+    togglePast,
+  } = usePastCollapse(dayGroups);
 
   /** Entry-Stagger-Index (Anzeige-Reihenfolge, in der Karte gedeckelt). */
   const staggerIndexById = useMemo(
@@ -1148,8 +1157,14 @@ export const AnimeSeasonPage: React.FC = () => {
                     </button>
                   ) : undefined
                 )}
-                <div className="as-timeline">
-                  {dayGroups.map((group) => (
+                <div className={pastCount ? 'as-timeline as-timeline--past-row' : 'as-timeline'}>
+                  <PastToggleRow
+                    count={pastCount}
+                    expanded={showPast}
+                    onToggle={togglePast}
+                    color={currentTheme.text.secondary}
+                  />
+                  {visibleDayGroups.map((group) => (
                     <div key={group.key} className="as-day">
                       <div className="as-day-header">
                         <span

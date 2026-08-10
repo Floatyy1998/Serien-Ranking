@@ -211,6 +211,8 @@ const dict: Record<string, string> = {
   'Nächste große Premiere': 'Prochaine grande sortie',
   'Season-Highlight': 'Coup de cœur de la saison',
   'Premieren-Kalender ({n})': 'Calendrier des sorties ({n})',
+  'Vergangenes anzeigen ({n})': 'Afficher le passé ({n})',
+  'Vergangenes ausblenden': 'Masquer le passé',
   Fortlaufend: 'En cours',
   'Fortlaufend ({n})': 'En cours ({n})',
   '{name}: Titel kopieren + Suche öffnen': '{name} : copier le titre + ouvrir la recherche',

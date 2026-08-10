@@ -62,6 +62,8 @@ import {
   shiftQuarter,
 } from './tvPremiereFormat';
 import { t } from '../../services/i18n';
+import { PastToggleRow } from '../AnimeSeason/PastToggleRow';
+import { usePastCollapse } from '../AnimeSeason/usePastCollapse';
 // Geteiltes CSS mit dem Anime-Season-Kalender (`as-*`-Klassen).
 import '../AnimeSeason/AnimeSeasonPage.css';
 
@@ -278,6 +280,13 @@ export const SerienKalenderPage: React.FC = () => {
     return [...byDay.values()];
   }, [visible, now, startOfToday]);
 
+  const {
+    visibleGroups: visibleDayGroups,
+    pastCount,
+    showPast,
+    togglePast,
+  } = usePastCollapse(dayGroups);
+
   const openEntry = (entry: TvPremiereStaticEntry) => {
     navigate(`/series/${entry.tmdbId}`);
   };
@@ -487,8 +496,14 @@ export const SerienKalenderPage: React.FC = () => {
                 <CalendarMonth style={sectionIconStyle} />,
                 t('Premieren-Kalender ({n})', { n: visible.length })
               )}
-              <div className="as-timeline">
-                {dayGroups.map((group) => (
+              <div className={pastCount ? 'as-timeline as-timeline--past-row' : 'as-timeline'}>
+                <PastToggleRow
+                  count={pastCount}
+                  expanded={showPast}
+                  onToggle={togglePast}
+                  color={currentTheme.text.secondary}
+                />
+                {visibleDayGroups.map((group) => (
                   <div key={group.key} className="as-day">
                     <div className="as-day-header">
                       <span

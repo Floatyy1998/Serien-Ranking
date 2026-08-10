@@ -207,6 +207,8 @@ const dict: Record<string, string> = {
   'Nächste große Premiere': 'Próxima grande estreia',
   'Season-Highlight': 'Destaque da temporada',
   'Premieren-Kalender ({n})': 'Calendário de estreias ({n})',
+  'Vergangenes anzeigen ({n})': 'Ver o que já passou ({n})',
+  'Vergangenes ausblenden': 'Ocultar o que já passou',
   Fortlaufend: 'Em andamento',
   'Termine aus deinem Kalender bzw. TVMaze — ohne Treffer: japanische Erstausstrahlung (AniList)':
     'Datas do seu calendário ou do TVMaze — sem correspondência: primeira exibição japonesa (AniList)',

@@ -50,7 +50,10 @@
 
 .as-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  /* minmax(0, …) statt 1fr: das Auto-Minimum einer Spalte ist die
+     min-content-Breite der Karte (Poster + nicht schrumpfende Chips, ~460px).
+     Ohne die 0 sprengt die Spalte auf dem Telefon den Viewport. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   /* start statt stretch: klappt EINE Karte ihre Beschreibung auf, wachsen
      die Nachbarn der Zeile nicht mit (die Zeile bekommt nur Leerraum). */
@@ -78,6 +81,7 @@
   /* KEIN content-visibility: auto mehr — nach dem Einmal-Mount hinter dem
      Skeleton ließ es Karten im Viewport erst leer und malte sie ruckartig
      nach („nicht da und plötzlich da"). ~90 Karten rendern problemlos. */
+  min-width: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--duration-normal) var(--ease-out);
@@ -197,6 +201,9 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
+  /* Die Chips selbst sind nowrap + flex-shrink:0 — ohne Umbruch der Gruppe
+     schiebt sich auf schmalen Karten der „+"-Button aus der Karte. */
+  flex-wrap: wrap;
 }
 
 /* „STAFFEL 2" / „PART 2" / „FORTSETZUNG" (neutral) bzw. „NEU" (Primary) */
@@ -477,6 +484,39 @@
   gap: 10px;
   margin: 0 0 var(--space-3);
   min-height: 20px;
+}
+
+/* „Vergangenes anzeigen" — eigene Timeline-Zeile ganz oben, mit Node auf
+   der Spine, damit die Chronologie nicht abreisst. */
+/* Die Zeile ist so hoch wie ihr Button, ein Tages-Header dagegen nur 20px —
+   der Spine-Anfang muss also mitwandern. Eine Variable treibt beides
+   (Zeilenhöhe, Node-Mitte, Spine-Start), damit die globale 44px-Button-Regel
+   die Ausrichtung nicht mehr verschieben kann. */
+.as-timeline {
+  --as-past-row-h: 44px;
+}
+
+.as-past-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--as-past-row-h);
+}
+
+.as-past-row .as-jump {
+  min-height: var(--as-past-row-h);
+  /* Umbruch würde die Zeile höher machen als die Variable behauptet. */
+  white-space: nowrap;
+}
+
+.as-past-row .as-day-node {
+  top: calc(var(--as-past-row-h) / 2);
+}
+
+/* Unterkante des Nodes, nicht seine Mitte — sonst laeuft der Strich sichtbar
+   in den hohlen Kreis hinein (Node ist 12px hoch, also +6px). */
+.as-timeline--past-row::before {
+  top: calc(var(--as-past-row-h) / 2 + 6px);
 }
 
 /* Node sitzt exakt auf der Spine (Spine-Mitte x = 7px im Timeline-Kasten). */
@@ -805,5 +845,57 @@
 
   .as-countdown-tile {
     min-width: 0;
+  }
+}
+
+/* ---- Telefon: eine Spalte, volle Breite ----
+   Mehrere Premieren an einem Tag stehen untereinander statt nebeneinander —
+   halbe Breite liess bei den ueblichen Ein-Titel-Tagen die halbe Zeile leer
+   und quetschte die Karte. Das Querformat-Ticket bleibt also auch auf dem
+   Telefon, es lief nur wegen des Grid-Blowouts (siehe .as-grid) aus dem
+   Bild.
+
+   Der Rest des Blocks kuerzt den Textblock: das Poster ist auf
+   align-self:stretch und wird auf die volle Kartenhoehe gezogen, object-fit
+   cover schneidet dafuer SEITLICH weg (bei 126x310 statt 126x189 fehlt ein
+   Drittel der Breite — genau die Mitte, wo der Schriftzug sitzt). Je naeher
+   die Karte an der 2:3-Hoehe des Posters liegt, desto weniger wird
+   beschnitten. */
+@media (max-width: 599px) {
+  .as-card-toprow {
+    align-items: flex-start;
+  }
+
+  .as-card-chips {
+    gap: 4px;
+  }
+
+  .as-card-chip {
+    font-size: 9px;
+    padding: 2px 7px;
+  }
+
+  /* Das Datum steht schon im Tages-Kopf direkt darueber. */
+  .as-card-pill {
+    display: none;
+  }
+
+  /* Genres stehen ohnehin abgeschnitten da und wiederholen den Filter. */
+  .as-card-genres {
+    display: none;
+  }
+
+  /* min-height muss mit: reserviert die Basis-Regel weiter drei Zeilen,
+     bleibt die dritte Zeile hinter dem „…" der zweiten sichtbar stehen. */
+  .as-card-desc {
+    -webkit-line-clamp: 2;
+    min-height: calc(2 * 1.5em);
+  }
+
+  /* Ein Tipp auf die Karte oeffnet ohnehin die Detailseite. Der Praefix ist
+     noetig, weil .mobile-app button hoehere Spezifitaet hat. */
+  .as-card-more,
+  .mobile-app button.as-card-more {
+    display: none;
   }
 }

@@ -45,6 +45,8 @@ import {
 } from '../SerienKalender/tvPremiereFormat';
 import { fetchFilmReleases, type FilmReleaseEntry, type ReleaseMode } from './filmReleaseData';
 import { FilmKalenderCard } from './FilmKalenderCard';
+import { PastToggleRow } from '../AnimeSeason/PastToggleRow';
+import { usePastCollapse } from '../AnimeSeason/usePastCollapse';
 // Geteiltes CSS mit Anime-Season-/Serien-Kalender (`as-*`-Klassen).
 import '../AnimeSeason/AnimeSeasonPage.css';
 
@@ -176,6 +178,13 @@ export const FilmKalenderPage: React.FC = () => {
     return [...byDay.values()];
   }, [visible, now, startOfToday]);
 
+  const {
+    visibleGroups: visibleDayGroups,
+    pastCount,
+    showPast,
+    togglePast,
+  } = usePastCollapse(dayGroups);
+
   const addEntry = async (entry: FilmReleaseEntry) => {
     if (!user) {
       showToast(t('Bitte einloggen, um Inhalte hinzuzufügen'), 2500, 'info');
@@ -286,8 +295,14 @@ export const FilmKalenderPage: React.FC = () => {
 
         {!loading && !failed && visible.length > 0 && (
           <section>
-            <div className="as-timeline">
-              {dayGroups.map((group) => (
+            <div className={pastCount ? 'as-timeline as-timeline--past-row' : 'as-timeline'}>
+              <PastToggleRow
+                count={pastCount}
+                expanded={showPast}
+                onToggle={togglePast}
+                color={currentTheme.text.secondary}
+              />
+              {visibleDayGroups.map((group) => (
                 <div key={group.key} className="as-day">
                   <div className="as-day-header">
                     <span
