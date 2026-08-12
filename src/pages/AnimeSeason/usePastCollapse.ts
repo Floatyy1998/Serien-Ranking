@@ -10,7 +10,6 @@ import { useMemo, useState } from 'react';
 
 interface CollapsibleGroup {
   isPast: boolean;
-  isTba?: boolean;
   items: unknown[];
 }
 
@@ -24,25 +23,20 @@ interface PastCollapse<T> {
 export function usePastCollapse<T extends CollapsibleGroup>(groups: T[]): PastCollapse<T> {
   const [showPast, setShowPast] = useState(false);
 
-  // Nur einklappen, wenn danach noch etwas dasteht: bei einer komplett
-  // abgelaufenen Season/Quartal bliebe sonst eine leere Timeline zurueck.
-  const collapsible = useMemo(
-    () =>
-      groups.some((group) => !group.isPast && !group.isTba) && groups.some((group) => group.isPast),
+  // Bewusst KEINE Ausnahme fuer „es bleibt sonst nichts uebrig": ob nur
+  // Vergangenes dasteht, weil die Season vorbei ist oder weil ein Filter
+  // (Provider, Genre, Studio) alles Kommende wegnimmt, laesst sich hier nicht
+  // unterscheiden — und im Filter-Fall klappte die Ausnahme dem Nutzer genau
+  // das wieder auf, was er eingeklappt haben wollte. Bleibt nichts uebrig,
+  // steht eben nur der Knopf da; ein Tipp holt alles zurueck.
+  const pastCount = useMemo(
+    () => groups.reduce((sum, group) => (group.isPast ? sum + group.items.length : sum), 0),
     [groups]
   );
 
-  const pastCount = useMemo(
-    () =>
-      collapsible
-        ? groups.reduce((sum, group) => (group.isPast ? sum + group.items.length : sum), 0)
-        : 0,
-    [groups, collapsible]
-  );
-
   const visibleGroups = useMemo(
-    () => (showPast || !collapsible ? groups : groups.filter((group) => !group.isPast)),
-    [groups, showPast, collapsible]
+    () => (showPast ? groups : groups.filter((group) => !group.isPast)),
+    [groups, showPast]
   );
 
   return {
