@@ -72,8 +72,22 @@ export function setErrorReporterUser(uid: string | null): void {
   for (const draft of flush) void persist(draft, uid);
 }
 
+/**
+ * Voller Geraetespeicher bzw. verweigerter Storage-Zugriff. Das ist ein
+ * Zustand des Geraets, kein Defekt der App: IndexedDB und localStorage sind
+ * ueberall abgesichert, ohne sie laeuft die App nur ohne Offline-Cache
+ * weiter. Gemeldet waere es eine Zeile, an der niemand etwas reparieren kann
+ * — und sie kaeme wieder, bis der Nutzer Platz schafft.
+ */
+function isStorageCondition(input: CaptureInput): boolean {
+  if (input.name === 'QuotaExceededError') return true;
+  const message = input.message || '';
+  return /full disk|backing store|quota ?exceeded|storage is full/i.test(message);
+}
+
 export function captureError(input: CaptureInput): void {
   try {
+    if (isStorageCondition(input)) return;
     const fingerprint = buildFingerprint(input);
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);

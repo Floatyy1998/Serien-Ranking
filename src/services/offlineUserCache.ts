@@ -32,7 +32,7 @@ export async function cacheUserToStorage(
 
 export async function getCachedUserFromStorage(
   enableIndexedDB: boolean,
-  getDB: () => Promise<IDBDatabase>
+  getDB: () => Promise<IDBDatabase | null>
 ): Promise<CachedUserData | null> {
   try {
     // Try localStorage first
@@ -51,6 +51,7 @@ export async function getCachedUserFromStorage(
     // Fallback to IndexedDB (Keys sind `user_${uid}` → Prefix-Scan)
     if (enableIndexedDB) {
       const db = await getDB();
+      if (!db) return null;
       const transaction = db.transaction(['firebaseCache'], 'readonly');
       const store = transaction.objectStore('firebaseCache');
 
@@ -71,13 +72,14 @@ export async function getCachedUserFromStorage(
 
 export async function clearCachedUserFromStorage(
   enableIndexedDB: boolean,
-  getDB: () => Promise<IDBDatabase>
+  getDB: () => Promise<IDBDatabase | null>
 ): Promise<void> {
   try {
     localStorage.removeItem('cachedUser');
 
     if (enableIndexedDB) {
       const db = await getDB();
+      if (!db) return;
       const transaction = db.transaction(['firebaseCache'], 'readwrite');
       const store = transaction.objectStore('firebaseCache');
 

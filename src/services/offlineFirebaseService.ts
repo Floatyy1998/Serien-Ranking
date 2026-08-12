@@ -20,7 +20,7 @@ class OfflineFirebaseService {
   private config: OfflineCacheConfig;
   private offlineQueue: OfflineQueueItem[] = [];
   private isOnline: boolean = navigator.onLine;
-  private dbPromise: Promise<IDBDatabase> | null = null;
+  private dbPromise: Promise<IDBDatabase | null> | null = null;
   private eventListenersAttached = false;
   private onlineHandler: (() => void) | null = null;
   private offlineHandler: (() => void) | null = null;
@@ -53,15 +53,35 @@ class OfflineFirebaseService {
     }
   }
 
-  private async initIndexedDB(): Promise<IDBDatabase> {
+  /**
+   * Liefert `null` statt zu werfen, wenn IndexedDB nicht zu haben ist —
+   * `indexedDB.open` scheitert auf vollen Geraeten mit QuotaExceededError
+   * („full disk while opening backing store"), und im Privatmodus mancher
+   * Browser fehlt es ganz. Eine rejectete Promise wuerde hier ausserdem
+   * dauerhaft zwischengespeichert: jeder spaetere Aufruf schlaege fehl, ohne
+   * es je erneut zu versuchen. Ohne Datenbank laeuft die App weiter, nur eben
+   * ohne Offline-Cache. Gleiches Muster wie catalogIDB/pendingWritesIDB.
+   */
+  private async initIndexedDB(): Promise<IDBDatabase | null> {
     if (this.dbPromise) {
       return this.dbPromise;
     }
 
-    this.dbPromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open('SerienRankingOfflineDB', 2);
+    this.dbPromise = new Promise((resolve) => {
+      if (typeof indexedDB === 'undefined') {
+        resolve(null);
+        return;
+      }
+      let request: IDBOpenDBRequest;
+      try {
+        request = indexedDB.open('SerienRankingOfflineDB', 2);
+      } catch {
+        resolve(null);
+        return;
+      }
 
-      request.onerror = () => reject(request.error);
+      request.onerror = () => resolve(null);
+      request.onblocked = () => resolve(null);
       request.onsuccess = () => resolve(request.result);
 
       request.onupgradeneeded = (event) => {
@@ -157,6 +177,7 @@ class OfflineFirebaseService {
       if (!this.config.enableIndexedDB) return null;
 
       const db = await this.initIndexedDB();
+      if (!db) return null;
       const transaction = db.transaction(['firebaseCache'], 'readonly');
       const store = transaction.objectStore('firebaseCache');
 
@@ -189,6 +210,7 @@ class OfflineFirebaseService {
     try {
       if (!this.config.enableIndexedDB) return null;
       const db = await this.initIndexedDB();
+      if (!db) return null;
       const transaction = db.transaction(['firebaseCache'], 'readonly');
       const store = transaction.objectStore('firebaseCache');
       return new Promise((resolve, reject) => {
@@ -213,6 +235,7 @@ class OfflineFirebaseService {
       if (!this.config.enableIndexedDB) return;
 
       const db = await this.initIndexedDB();
+      if (!db) return;
       const transaction = db.transaction(['firebaseCache'], 'readwrite');
       const store = transaction.objectStore('firebaseCache');
 
@@ -307,6 +330,7 @@ class OfflineFirebaseService {
       if (!this.config.enableIndexedDB) return;
 
       const db = await this.initIndexedDB();
+      if (!db) return;
       const transaction = db.transaction(['offlineQueue'], 'readonly');
       const store = transaction.objectStore('offlineQueue');
 
@@ -331,6 +355,7 @@ class OfflineFirebaseService {
   private async storeInIndexedDB(storeName: string, data: unknown): Promise<void> {
     try {
       const db = await this.initIndexedDB();
+      if (!db) return;
       const transaction = db.transaction([storeName], 'readwrite');
       const store = transaction.objectStore(storeName);
 
@@ -347,6 +372,7 @@ class OfflineFirebaseService {
   private async removeFromIndexedDB(storeName: string, key: string): Promise<void> {
     try {
       const db = await this.initIndexedDB();
+      if (!db) return;
       const transaction = db.transaction([storeName], 'readwrite');
       const store = transaction.objectStore(storeName);
 
@@ -364,6 +390,7 @@ class OfflineFirebaseService {
     try {
       if (this.config.enableIndexedDB) {
         const db = await this.initIndexedDB();
+        if (!db) return;
         const transaction = db.transaction(['firebaseCache'], 'readwrite');
         const store = transaction.objectStore('firebaseCache');
         await new Promise<void>((resolve, reject) => {
@@ -395,6 +422,7 @@ class OfflineFirebaseService {
     try {
       if (this.config.enableIndexedDB) {
         const db = await this.initIndexedDB();
+        if (!db) return stats;
         const transaction = db.transaction(['firebaseCache'], 'readonly');
         const store = transaction.objectStore('firebaseCache');
 

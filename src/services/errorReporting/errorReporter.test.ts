@@ -102,6 +102,25 @@ describe('captureError', () => {
     expect(String(fb.sets[0].value.message).length).toBeLessThanOrEqual(500);
   });
 
+  it('meldet vollen Geraetespeicher nicht — Zustand des Geraets, kein Defekt', async () => {
+    setErrorReporterUser('u1');
+    captureError({
+      kind: 'error',
+      name: 'QuotaExceededError',
+      message: 'Encountered full disk while opening backing store for indexedDB.open.',
+    });
+    captureError({ kind: 'promise', name: 'DOMException', message: 'The storage is full.' });
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+  });
+
+  it('meldet andere DOMExceptions weiterhin', async () => {
+    setErrorReporterUser('u1');
+    captureError({ kind: 'error', name: 'DOMException', message: 'Zugriff verweigert' });
+    await flush();
+    expect(fb.sets).toHaveLength(1);
+  });
+
   it('wirft nie, auch bei kaputter Eingabe', () => {
     setErrorReporterUser('u1');
     expect(() =>
