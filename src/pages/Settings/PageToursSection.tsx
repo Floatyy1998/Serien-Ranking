@@ -1,7 +1,9 @@
 import HelpOutline from '@mui/icons-material/HelpOutline';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { isNewAccount } from '../../lib/pageTour';
 import { hapticTap } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { tapScaleSmall } from '../../lib/motion';
@@ -10,10 +12,14 @@ import { t } from '../../services/i18n';
 
 export const PageToursSection = memo(() => {
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+
+  // Wer die Hilfen gar nicht bekommt, braucht auch den Knopf nicht.
+  if (!isNewAccount(user?.metadata?.creationTime)) return null;
 
   const handleClick = () => {
     hapticTap();
-    resetSeenTours();
+    resetSeenTours(user?.uid);
     showToast(t('Seitenhilfen werden wieder angezeigt'), 2500, 'success');
   };
 

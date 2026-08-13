@@ -48,6 +48,20 @@ export const findTour = (tours: readonly PageTour[], pathname: string): PageTour
   return match;
 };
 
+/**
+ * Erst ab diesem Zeitpunkt angelegte Konten bekommen die Seitenhilfe. Wer die
+ * App vorher schon benutzt hat, kennt sie und würde die Hinweise nur als
+ * Störung erleben. Entspricht dem Deploy, mit dem die Hilfe live ging.
+ */
+export const TOURS_START = Date.parse('2026-08-13T18:30:00Z');
+
+/** `creationTime` kommt als UTC-String aus den Firebase-Auth-Metadaten. */
+export const isNewAccount = (creationTime: string | undefined | null): boolean => {
+  if (!creationTime) return false; // im Zweifel nichts zeigen
+  const created = Date.parse(creationTime);
+  return Number.isFinite(created) && created >= TOURS_START;
+};
+
 export const isTourPending = (seen: SeenTours, tour: PageTour): boolean =>
   (seen[tour.path] ?? 0) < tour.version;
 

@@ -30,15 +30,26 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-const { resetMock, toastMock } = vi.hoisted(() => ({ resetMock: vi.fn(), toastMock: vi.fn() }));
+const { resetMock, toastMock, authRef } = vi.hoisted(() => ({
+  resetMock: vi.fn(),
+  toastMock: vi.fn(),
+  authRef: { current: null as { uid: string; metadata: { creationTime?: string } } | null },
+}));
+
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authRef.current }) }));
 
 vi.mock('../../services/pageTour', () => ({ resetSeenTours: resetMock }));
 vi.mock('../../lib/toast', () => ({ showToast: toastMock }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 
+import { TOURS_START } from '../../lib/pageTour';
 import { PageToursSection } from './PageToursSection';
 
+const NEW_ACCOUNT = new Date(TOURS_START + 86_400_000).toUTCString();
+const OLD_ACCOUNT = new Date(TOURS_START - 86_400_000).toUTCString();
+
 beforeEach(() => {
+  authRef.current = { uid: 'u1', metadata: { creationTime: NEW_ACCOUNT } };
   resetMock.mockClear();
   toastMock.mockClear();
 });
@@ -56,7 +67,13 @@ describe('PageToursSection', () => {
 
     fireEvent.click(screen.getByText('Seitenhilfen zurücksetzen'));
 
-    expect(resetMock).toHaveBeenCalledTimes(1);
+    expect(resetMock).toHaveBeenCalledWith('u1');
     expect(toastMock).toHaveBeenCalledWith('Seitenhilfen werden wieder angezeigt', 2500, 'success');
+  });
+
+  it('bleibt fuer Bestandsnutzer unsichtbar - sie bekommen die Hilfen gar nicht', () => {
+    authRef.current = { uid: 'u1', metadata: { creationTime: OLD_ACCOUNT } };
+    const { container } = render(<PageToursSection />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

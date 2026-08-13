@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { findTour, isTourPending, markTourSeen, matchesPath, type PageTour } from './pageTour';
+import {
+  TOURS_START,
+  findTour,
+  isNewAccount,
+  isTourPending,
+  markTourSeen,
+  matchesPath,
+  type PageTour,
+} from './pageTour';
 
 const tour = (path: string, version = 1): PageTour => ({
   path,
@@ -71,5 +79,28 @@ describe('gesehen-Zustand', () => {
   it('lässt andere Seiten unberührt', () => {
     const seen = markTourSeen({ '/search': 3 }, tour('/calendar'));
     expect(seen).toEqual({ '/search': 3, '/calendar': 1 });
+  });
+});
+
+describe('isNewAccount', () => {
+  const iso = (offsetMs: number) => new Date(TOURS_START + offsetMs).toUTCString();
+
+  it('erkennt ein nach dem Start angelegtes Konto', () => {
+    expect(isNewAccount(iso(1000))).toBe(true);
+  });
+
+  it('zaehlt den Startzeitpunkt selbst noch dazu', () => {
+    expect(isNewAccount(iso(0))).toBe(true);
+  });
+
+  it('schliesst Bestandskonten aus', () => {
+    expect(isNewAccount(iso(-1000))).toBe(false);
+  });
+
+  it('zeigt im Zweifel nichts', () => {
+    expect(isNewAccount(undefined)).toBe(false);
+    expect(isNewAccount(null)).toBe(false);
+    expect(isNewAccount('')).toBe(false);
+    expect(isNewAccount('irgendwann')).toBe(false);
   });
 });
