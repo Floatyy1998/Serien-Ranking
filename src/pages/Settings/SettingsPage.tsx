@@ -15,6 +15,8 @@ import { PublicProfileSection } from './PublicProfileSection';
 import { DeleteAccountSection } from './DeleteAccountSection';
 import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
+import { PageToursSection } from './PageToursSection';
+import { RateAppSection } from './RateAppSection';
 import { LanguageSection } from './LanguageSection';
 import { ImportExportSection } from './ImportExportSection';
 import { NotificationsSection } from './NotificationsSection';
@@ -87,6 +89,10 @@ export const SettingsPage = () => {
         {/* Stack = eine Grid-Zelle: Theme/Layout/Desktop-Buttons gebündelt,
             damit sie im Desktop-Grid nicht einzeln auf Reihenhöhe aufblasen */}
         <div className="settings-stack">
+          <RateAppSection />
+
+          <PageToursSection />
+
           <AppearanceSection
             onNavigateTheme={() => navigate('/theme')}
             onNavigateLayout={() => navigate('/home-layout')}

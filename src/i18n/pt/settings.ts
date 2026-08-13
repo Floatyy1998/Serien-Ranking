@@ -43,6 +43,9 @@ const dict: Record<string, string> = {
     'Se você ativar, qualquer pessoa poderá ver suas séries e filmes avaliados sem fazer login',
   'TV-Rank für Windows herunterladen': 'Baixar o TV-Rank para Windows',
   'APK direkt herunterladen und installieren': 'Baixar e instalar o APK diretamente',
+  'App bewerten': 'Avaliar o app',
+  'Eine Bewertung im Store hilft anderen beim Finden':
+    'Uma avaliação na loja ajuda outras pessoas a encontrar o app',
   Abmelden: 'Sair',
   'Möchtest du dich wirklich abmelden?': 'Tem certeza de que quer sair?',
   'Bild darf maximal 100MB groß sein': 'A imagem não pode passar de 100 MB',
@@ -203,7 +206,7 @@ const dict: Record<string, string> = {
   Bestbewertet: 'Melhor avaliados',
   'Für dich': 'Para você',
   Statistiken: 'Estatísticas',
-  'KI-Empfehlungen': 'Recomendações com IA',
+  'KI-Empfehlungen': 'Recomendações IA',
   'Bewertungs-Queue': 'Fila de avaliações',
   'Nicht weitergeschaut': 'Sem continuar',
   Entdecken: 'Descobrir',

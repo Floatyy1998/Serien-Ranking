@@ -17,6 +17,9 @@ project(':capacitor-push-notifications').projectDir = new File('../node_modules/
 include ':capacitor-share'
 project(':capacitor-share').projectDir = new File('../node_modules/@capacitor/share/android')
 
+include ':capawesome-capacitor-app-review'
+project(':capawesome-capacitor-app-review').projectDir = new File('../node_modules/@capawesome/capacitor-app-review/android')
+
 include ':capawesome-capacitor-app-shortcuts'
 project(':capawesome-capacitor-app-shortcuts').projectDir = new File('../node_modules/@capawesome/capacitor-app-shortcuts/android')
 

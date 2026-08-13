@@ -44,6 +44,9 @@ const settings: Record<string, string> = {
   Einstellungen: 'Settings',
   'TV-Rank für Windows herunterladen': 'Download TV-Rank for Windows',
   'APK direkt herunterladen und installieren': 'Download and install the APK directly',
+  'App bewerten': 'Rate the app',
+  'Eine Bewertung im Store hilft anderen beim Finden':
+    'A store review helps other people find TV-Rank',
   'TV-Rank beim Hochfahren starten': 'Launch TV-Rank at startup',
   Abmelden: 'Log out',
 
@@ -229,7 +232,7 @@ const settings: Record<string, string> = {
   'Saisonale Empfehlungen': 'Seasonal picks',
   Bestbewertet: 'Top rated',
   'Für dich': 'For you',
-  Statistiken: 'Statistics',
+  Statistiken: 'Stats',
   'KI-Empfehlungen': 'AI recommendations',
   'Bewertungs-Queue': 'Rating queue',
   'Nicht weitergeschaut': 'Stopped watching',

@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
+import { notePositiveMoment } from '../../services/appReview';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -156,6 +157,7 @@ export const WatchStreakCard: React.FC = () => {
     if (display > prev && display > 0 && display >= streak.longestStreak) {
       setCelebrateRecord(true);
       hapticCelebrate();
+      notePositiveMoment();
     }
   }, [streak]);
 

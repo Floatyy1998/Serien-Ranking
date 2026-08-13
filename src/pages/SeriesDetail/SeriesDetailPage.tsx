@@ -4,7 +4,7 @@ import List from '@mui/icons-material/List';
 import People from '@mui/icons-material/People';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { motion } from 'framer-motion';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -19,6 +19,7 @@ import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { useRecapData } from '../../hooks/useRecapData';
 import { CharacterGuide } from './CharacterGuide';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { notePositiveMoment } from '../../services/appReview';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
@@ -202,6 +203,18 @@ export const SeriesDetailPage = memo(() => {
       percentage: airedCount > 0 ? Math.round((watchedCount / airedCount) * 100) : 0,
     };
   }, [series]);
+
+  // Erfolgsmoment „Serie durch": nur die Flanke innerhalb dieser Sitzung zählt,
+  // sonst feuert jeder erneute Aufruf einer längst beendeten Serie mit.
+  const prevPercentageRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (progressStats.total === 0) return;
+    const prev = prevPercentageRef.current;
+    prevPercentageRef.current = progressStats.percentage;
+    if (prev !== null && prev < 100 && progressStats.percentage === 100) {
+      notePositiveMoment();
+    }
+  }, [progressStats]);
 
   const paceInfo = useMemo(() => {
     if (!series?.seasons) return null;

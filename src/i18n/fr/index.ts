@@ -29,6 +29,7 @@ import native from './native';
 import onboarding from './onboarding';
 import pets from './pets';
 import settings from './settings';
+import tour from './tour';
 import social from './social';
 
 const fr: Record<string, string> = {
@@ -54,6 +55,7 @@ const fr: Record<string, string> = {
   ...onboarding,
   ...pets,
   ...settings,
+  ...tour,
   ...social,
 };
 

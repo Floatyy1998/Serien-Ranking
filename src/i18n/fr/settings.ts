@@ -36,7 +36,7 @@ const dict: Record<string, string> = {
   Südkorea: 'Corée du Sud',
   Indien: 'Inde',
   Türkei: 'Turquie',
-  Einstellungen: 'Réglages',
+  Einstellungen: 'Paramètres',
   'Bild darf maximal 100MB groß sein': "L'image ne doit pas dépasser 100 Mo",
   'Profilbild erfolgreich hochgeladen!': 'Photo de profil importée !',
   'Anzeigename gespeichert!': "Nom d'affichage enregistré !",
@@ -48,6 +48,9 @@ const dict: Record<string, string> = {
     'Si activé, les autres peuvent voir les séries et films que tu as notés, même sans être connectés',
   'TV-Rank für Windows herunterladen': 'Télécharger TV-Rank pour Windows',
   'APK direkt herunterladen und installieren': "Télécharger et installer l'APK directement",
+  'App bewerten': "Noter l'application",
+  'Eine Bewertung im Store hilft anderen beim Finden':
+    "Un avis sur le store aide les autres à trouver l'application",
   'TV-Rank beim Hochfahren starten': 'Lancer TV-Rank au démarrage',
   Abmelden: 'Se déconnecter',
   'Möchtest du dich wirklich abmelden?': 'Veux-tu vraiment te déconnecter ?',

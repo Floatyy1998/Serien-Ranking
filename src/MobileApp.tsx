@@ -16,6 +16,7 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
 import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
+import { PageTourHost } from './features/tour';
 import './styles/App.css';
 
 // Haupt-Tabs leben in MainTabs (Keep-Alive) — hier nur die übrigen Routen
@@ -216,6 +217,7 @@ export const MobileApp = () => {
       <PushOptInPrompt />
       <WidgetDataSync />
       <EpisodeRatingSheetHost />
+      <PageTourHost />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

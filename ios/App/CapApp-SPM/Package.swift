@@ -17,6 +17,7 @@ let package = Package(
         .package(name: "CapacitorHaptics", path: "..\..\..\node_modules\@capacitor\haptics"),
         .package(name: "CapacitorPushNotifications", path: "..\..\..\node_modules\@capacitor\push-notifications"),
         .package(name: "CapacitorShare", path: "..\..\..\node_modules\@capacitor\share"),
+        .package(name: "CapawesomeCapacitorAppReview", path: "..\..\..\node_modules\@capawesome\capacitor-app-review"),
         .package(name: "CapawesomeCapacitorAppShortcuts", path: "..\..\..\node_modules\@capawesome\capacitor-app-shortcuts"),
         .package(name: "CapawesomeCapacitorBadge", path: "..\..\..\node_modules\@capawesome\capacitor-badge")
     ],
@@ -31,6 +32,7 @@ let package = Package(
                 .product(name: "CapacitorHaptics", package: "CapacitorHaptics"),
                 .product(name: "CapacitorPushNotifications", package: "CapacitorPushNotifications"),
                 .product(name: "CapacitorShare", package: "CapacitorShare"),
+                .product(name: "CapawesomeCapacitorAppReview", package: "CapawesomeCapacitorAppReview"),
                 .product(name: "CapawesomeCapacitorAppShortcuts", package: "CapawesomeCapacitorAppShortcuts"),
                 .product(name: "CapawesomeCapacitorBadge", package: "CapawesomeCapacitorBadge")
             ]
