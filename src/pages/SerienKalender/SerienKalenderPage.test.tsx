@@ -63,7 +63,14 @@ import { SerienKalenderPage } from './SerienKalenderPage';
 
 const useNavigateMock = vi.mocked(useNavigate);
 
-const today = new Date().toISOString().slice(0, 10);
+// Lokales Datum, nicht UTC: die Seite rechnet mit lokaler Zeit. Mit
+// toISOString() lag die Premiere zwischen lokaler Mitternacht und dem
+// UTC-Datumswechsel scheinbar in der Vergangenheit und der Test flatterte.
+const today = (() => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+})();
 
 beforeEach(() => {
   useNavigateMock.mockReturnValue(vi.fn());
