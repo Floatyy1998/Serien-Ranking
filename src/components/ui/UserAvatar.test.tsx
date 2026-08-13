@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UserAvatar } from './UserAvatar';
 
 const navigate = vi.fn<(to: string) => void>();
+/** Sammelt, welche Bilder gross angefordert wurden. */
+const viewed: string[] = [];
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
 }));
@@ -18,15 +20,20 @@ vi.mock('../../contexts/ThemeContext', async () => {
   return { useTheme: () => ({ currentTheme }) };
 });
 
+window.addEventListener('tvrank:view-avatar', (e) => {
+  viewed.push((e as CustomEvent<{ url: string }>).detail.url);
+});
+
 afterEach(() => {
   cleanup();
   navigate.mockReset();
+  viewed.length = 0;
 });
 
 describe('UserAvatar', () => {
   it('renders an accessible button with the username (smoke)', () => {
     render(<UserAvatar userId="u1" username="Konrad" />);
-    expect(screen.getByRole('button', { name: 'Profil von Konrad anzeigen' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Profil von Konrad öffnen' })).toBeInTheDocument();
   });
 
   it('navigates to the friend profile when navigable', () => {
@@ -45,5 +52,14 @@ describe('UserAvatar', () => {
     render(<UserAvatar userId="u1" username="Photo" photoURL="https://x/p.jpg" />);
     const btn = screen.getByRole('button', { name: /Photo/ });
     expect(btn.style.backgroundImage).toContain('https://x/p.jpg');
+  });
+
+  it('zeigt das Bild gross, wenn es nirgendwohin zu navigieren gibt', () => {
+    render(<UserAvatar userId="u1" username="Bob" photoURL="https://x/p.jpg" navigable={false} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Profilbild von Bob' }));
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(viewed).toEqual(['https://x/p.jpg']);
   });
 });

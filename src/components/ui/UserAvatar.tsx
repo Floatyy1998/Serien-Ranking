@@ -42,12 +42,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   return (
     <button
       onClick={handleClick}
+      // Immer benennen: ein Knopf ohne zugaenglichen Namen ist fuer
+      // Screenreader stumm, auch wenn er gerade nichts tut.
       aria-label={
         navigable
           ? t('Profil von {name} öffnen', { name: username })
-          : zoomable
-            ? t('Profilbild von {name}', { name: username })
-            : undefined
+          : t('Profilbild von {name}', { name: username })
       }
       style={{
         width: size,

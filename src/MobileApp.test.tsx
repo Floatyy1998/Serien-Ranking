@@ -40,6 +40,7 @@ vi.mock('./services/pushNotifications', () => ({ initNativePush: vi.fn() }));
 vi.mock('./components/PushOptInPrompt', () => ({ PushOptInPrompt: () => null }));
 vi.mock('./components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost: () => null }));
 vi.mock('./features/tour', () => ({ PageTourHost: () => null }));
+vi.mock('./components/AvatarViewerHost', () => ({ AvatarViewerHost: () => null }));
 
 vi.mock('./pages/HomePage', () => ({ HomePage: () => <div /> }));
 vi.mock('./pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));
