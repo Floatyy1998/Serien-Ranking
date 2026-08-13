@@ -1,6 +1,15 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
+  'Bild zuschneiden': 'Recortar imagen',
+  'Ziehen zum Verschieben, Regler zum Vergrößern': 'Arrastra para mover, control para ampliar',
+  'Als Profilbild verwenden': 'Usar como foto de perfil',
+  Vergrößern: 'Ampliar',
+  'Wird hochgeladen…': 'Subiendo…',
+  'Das ist kein Bild': 'Eso no es una imagen',
+  'Bild darf maximal 10 MB groß sein': 'La imagen no puede superar los 10 MB',
+  'Profilbild ändern': 'Cambiar la foto de perfil',
+  Schließen: 'Cerrar',
   'Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.':
     '«Automático» usa el idioma del dispositivo. Si no lo hablamos, la app se muestra en inglés.',
   'Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.':

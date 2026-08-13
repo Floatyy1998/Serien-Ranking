@@ -4,12 +4,14 @@ import {
   Logout,
   Movie,
   Person,
+  PhotoCamera,
   PlayCircle,
 } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
@@ -22,10 +24,20 @@ interface ProfileHeaderProps {
   email: string | null | undefined;
   photoURL: string | null | undefined;
   currentTheme: Theme;
+  /** Gesetzt: Avatar wird antippbar und bekommt einen Kamera-Hinweis. */
+  onChangePhoto?: () => void;
+  photoUploading?: boolean;
 }
 
 export const ProfileHeader = memo(
-  ({ displayName, email, photoURL, currentTheme }: ProfileHeaderProps) => (
+  ({
+    displayName,
+    email,
+    photoURL,
+    currentTheme,
+    onChangePhoto,
+    photoUploading = false,
+  }: ProfileHeaderProps) => (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -67,6 +79,31 @@ export const ProfileHeader = memo(
         >
           {!photoURL && <Person style={{ fontSize: '50px', color: currentTheme.text.secondary }} />}
         </div>
+
+        {onChangePhoto && (
+          <>
+            {/* Der ganze Avatar ist die Trefferflaeche (110px) — ein kleiner
+                Knopf wuerde von der globalen 44px-Regel aufgeblasen. */}
+            <button
+              type="button"
+              onClick={onChangePhoto}
+              disabled={photoUploading}
+              className="profile-avatar-hit"
+              aria-label={t('Profilbild ändern')}
+            />
+            <span
+              aria-hidden="true"
+              className="profile-avatar-edit"
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                color: getOptimalTextColor(currentTheme.primary),
+                opacity: photoUploading ? 0.6 : 1,
+              }}
+            >
+              <PhotoCamera style={{ fontSize: '17px' }} />
+            </span>
+          </>
+        )}
       </motion.div>
 
       {/* Name & Email */}

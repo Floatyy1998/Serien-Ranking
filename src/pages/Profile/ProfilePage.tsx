@@ -1,6 +1,6 @@
 /** Kompositions-Komponente — Logik in useProfileData, memoized Subkomponenten. */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import {
   ProfileFeaturedNav,
   ProfileHeader,
@@ -8,6 +8,8 @@ import {
   ProfileMenuGroup,
   ProfileStats,
 } from './ProfileComponents';
+import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
+import { useAvatarUpload } from '../../hooks/useAvatarUpload';
 import { useProfileData } from './useProfileData';
 import { t } from '../../services/i18n';
 import './ProfilePage.css';
@@ -27,7 +29,11 @@ export const ProfilePage = memo(() => {
     handleLogout,
   } = useProfileData();
 
-  const photoURL = userData?.photoURL || user?.photoURL || null;
+  // Frisch hochgeladenes Bild sofort zeigen, ohne auf den RTDB-Listener zu warten.
+  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const avatar = useAvatarUpload(setUploadedPhoto);
+
+  const photoURL = uploadedPhoto || userData?.photoURL || user?.photoURL || null;
   const displayName = userData?.displayName || user?.displayName || 'User';
 
   return (
@@ -71,6 +77,8 @@ export const ProfilePage = memo(() => {
             email={user?.email}
             photoURL={photoURL}
             currentTheme={currentTheme}
+            onChangePhoto={avatar.pickFile}
+            photoUploading={avatar.uploading}
           />
 
           <ProfileStats stats={stats} currentTheme={currentTheme} />
@@ -115,6 +123,20 @@ export const ProfilePage = memo(() => {
         currentTheme={currentTheme}
         onLogout={handleLogout}
         animationDelay={0.55}
+      />
+
+      <input
+        ref={avatar.fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={avatar.handleFileSelected}
+        style={{ display: 'none' }}
+      />
+      <ImageCropSheet
+        file={avatar.pendingFile}
+        onCancel={avatar.cancelCrop}
+        onConfirm={avatar.confirmCrop}
+        busy={avatar.uploading}
       />
     </div>
   );

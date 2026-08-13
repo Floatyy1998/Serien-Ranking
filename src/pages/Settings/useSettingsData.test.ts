@@ -196,19 +196,18 @@ describe('useSettingsData – actions', () => {
     );
   });
 
-  it('handleImageUpload lädt Bild hoch und speichert die URL', async () => {
+  it('gewaehltes Bild geht erst ins Zuschneiden, nicht direkt in den Upload', async () => {
     const { result } = renderHook(() => useSettingsData());
-    const file = new File(['img'], 'avatar.png');
+    const file = new File(['img'], 'avatar.png', { type: 'image/png' });
     const event = {
-      target: { files: [file] },
+      target: { files: [file], value: 'x' },
     } as unknown as React.ChangeEvent<HTMLInputElement>;
+
     await act(async () => {
-      await result.current.handleImageUpload(event);
+      result.current.avatar.handleFileSelected(event);
     });
-    expect(fb.state.putFiles).toContain('avatar.png');
-    expect(authState.user?.updateProfile).toHaveBeenCalledWith({
-      photoURL: 'https://cdn/profile.png',
-    });
-    expect(result.current.photoURL).toBe('https://cdn/profile.png');
+
+    expect(result.current.avatar.pendingFile).toBe(file);
+    expect(fb.state.putFiles).not.toContain('avatar.png');
   });
 });

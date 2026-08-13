@@ -23,7 +23,15 @@ const { settingsData } = vi.hoisted(() => ({
     setDialog: vi.fn(),
     snackbar: { open: false, message: '' },
     handleLogout: vi.fn(),
-    handleImageUpload: vi.fn(),
+    avatar: {
+      fileInputRef: { current: null },
+      pickFile: vi.fn(),
+      handleFileSelected: vi.fn(),
+      pendingFile: null,
+      cancelCrop: vi.fn(),
+      confirmCrop: vi.fn(),
+      uploading: false,
+    },
     saveUsername: vi.fn(),
     saveDisplayName: vi.fn(),
     handlePublicProfileToggle: vi.fn(),
@@ -82,6 +90,7 @@ vi.mock('../../components/ui', () => ({
 }));
 
 vi.mock('./useSettingsData', () => ({ useSettingsData: () => settingsData }));
+vi.mock('../../components/ui/ImageCropSheet', () => ({ ImageCropSheet: () => null }));
 vi.mock('./ProfileSection', () => ({ ProfileSection: () => <div>PROFILE_SECTION</div> }));
 vi.mock('./PublicProfileSection', () => ({
   PublicProfileSection: () => <div>PUBLIC_SECTION</div>,

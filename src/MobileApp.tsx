@@ -16,6 +16,7 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
 import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
+import { AvatarViewerHost } from './components/AvatarViewerHost';
 import { PageTourHost } from './features/tour';
 import './styles/App.css';
 
@@ -218,6 +219,7 @@ export const MobileApp = () => {
       <WidgetDataSync />
       <EpisodeRatingSheetHost />
       <PageTourHost />
+      <AvatarViewerHost />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

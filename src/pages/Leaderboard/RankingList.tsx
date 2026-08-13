@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { showAvatar } from '../../lib/avatarViewer';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -65,7 +66,17 @@ export const RankingList = React.memo(function RankingList({
               {entry.rank}
             </span>
 
-            <div className="lb-rank-avatar" style={{ background: currentTheme.background.card }}>
+            <div
+              className="lb-rank-avatar"
+              style={{
+                background: currentTheme.background.card,
+                cursor: entry.photoURL ? 'zoom-in' : undefined,
+              }}
+              // Zeile navigiert zum Profil — der Avatar zeigt nur das Bild groß.
+              onClick={(e) => {
+                if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();
+              }}
+            >
               {entry.photoURL ? (
                 <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
               ) : (

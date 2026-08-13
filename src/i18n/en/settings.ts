@@ -1,6 +1,15 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Englisch. */
 
 const settings: Record<string, string> = {
+  'Bild zuschneiden': 'Crop image',
+  'Ziehen zum Verschieben, Regler zum Vergrößern': 'Drag to move, slider to zoom',
+  'Als Profilbild verwenden': 'Use as profile picture',
+  Vergrößern: 'Zoom',
+  'Wird hochgeladen…': 'Uploading…',
+  'Das ist kein Bild': 'That is not an image',
+  'Bild darf maximal 10 MB groß sein': 'Images may be up to 10 MB',
+  'Profilbild ändern': 'Change profile picture',
+  Schließen: 'Close',
   Sprache: 'Language',
   'Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.':
     "Auto uses your device language. If we don't speak it, the app will be in English.",

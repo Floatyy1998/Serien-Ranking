@@ -12,6 +12,18 @@ vi.mock('./ProfileComponents', () => ({
   ProfileLogoutButton: () => <div data-testid="logout" />,
 }));
 vi.mock('./useProfileData', () => ({ useProfileData: useProfileDataMock }));
+vi.mock('../../components/ui/ImageCropSheet', () => ({ ImageCropSheet: () => null }));
+vi.mock('../../hooks/useAvatarUpload', () => ({
+  useAvatarUpload: () => ({
+    fileInputRef: { current: null },
+    pickFile: vi.fn(),
+    handleFileSelected: vi.fn(),
+    pendingFile: null,
+    cancelCrop: vi.fn(),
+    confirmCrop: vi.fn(),
+    uploading: false,
+  }),
+}));
 
 import { ProfilePage } from './ProfilePage';
 

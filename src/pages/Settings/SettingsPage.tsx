@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import type { ThemeContextType } from '../../contexts/ThemeContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Dialog, PageHeader } from '../../components/ui';
+import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
 import { useSettingsData } from './useSettingsData';
 import { t } from '../../services/i18n';
 import { isNativeApp } from '../../services/nativeShell';
@@ -42,7 +43,7 @@ export const SettingsPage = () => {
     dialog,
     setDialog,
     handleLogout,
-    handleImageUpload,
+    avatar,
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,
@@ -80,7 +81,7 @@ export const SettingsPage = () => {
           saving={saving}
           displayNameEditable={displayNameEditable}
           fileInputRef={fileInputRef}
-          onImageUpload={handleImageUpload}
+          onImageUpload={avatar.handleFileSelected}
           onDisplayNameChange={setDisplayName}
           onSaveDisplayName={saveDisplayName}
           onEditDisplayName={() => setDisplayNameEditable(true)}
@@ -208,6 +209,13 @@ export const SettingsPage = () => {
 
         <DeleteAccountSection />
       </div>
+
+      <ImageCropSheet
+        file={avatar.pendingFile}
+        onCancel={avatar.cancelCrop}
+        onConfirm={avatar.confirmCrop}
+        busy={avatar.uploading}
+      />
 
       <Dialog
         open={dialog.open}

@@ -1,10 +1,10 @@
 import firebase from 'firebase/compat/app';
-import 'firebase/compat/storage';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { trackLogout } from '../../services/firebase/analytics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
+import { useAvatarUpload } from '../../hooks/useAvatarUpload';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
@@ -18,7 +18,6 @@ export const useSettingsData = () => {
 
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
@@ -29,7 +28,6 @@ export const useSettingsData = () => {
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
   }>({ open: false, message: '', type: 'info' });
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user data from Firebase
   useEffect(() => {
@@ -77,44 +75,9 @@ export const useSettingsData = () => {
     }
   }, [navigate]);
 
-  const handleImageUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file || !user) return;
-
-      if (file.size > 100 * 1024 * 1024) {
-        setDialog({ open: true, message: t('Bild darf maximal 100MB groß sein'), type: 'error' });
-        return;
-      }
-
-      try {
-        setUploading(true);
-        const storageRef = firebase.storage().ref();
-        const imageRef = storageRef.child(`profile-images/${user.uid}`);
-
-        await imageRef.put(file);
-        const downloadURL = await imageRef.getDownloadURL();
-
-        await user.updateProfile({ photoURL: downloadURL });
-        await dbRef(userPath(user.uid, 'photoURL')).set(downloadURL);
-        // Such-Index spiegeln (best-effort, wirft nie)
-        void syncUserSearchIndex(user.uid, { photoURL: downloadURL });
-        await user.reload();
-
-        setPhotoURL(downloadURL);
-        showSnackbar(t('Profilbild erfolgreich hochgeladen!'));
-      } catch {
-        setDialog({
-          open: true,
-          message: t('Fehler beim Hochladen des Bildes'),
-          type: 'error',
-        });
-      } finally {
-        setUploading(false);
-      }
-    },
-    [user, showSnackbar]
-  );
+  // Datei waehlen, zuschneiden, hochladen — gemeinsamer Ablauf mit dem
+  // Profil-Hub, damit die Zuschneide-Vorschau an keiner Stelle fehlt.
+  const avatar = useAvatarUpload(setPhotoURL);
 
   const saveDisplayName = useCallback(async () => {
     if (!user || !displayName.trim()) return;
@@ -253,11 +216,11 @@ export const useSettingsData = () => {
     displayName,
     setDisplayName,
     photoURL,
-    uploading,
+    uploading: avatar.uploading,
     saving,
     displayNameEditable,
     setDisplayNameEditable,
-    fileInputRef,
+    fileInputRef: avatar.fileInputRef,
 
     // Public profile state
     isPublicProfile,
@@ -270,7 +233,7 @@ export const useSettingsData = () => {
 
     // Handlers
     handleLogout,
-    handleImageUpload,
+    avatar,
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,

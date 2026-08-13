@@ -1,4 +1,5 @@
 import { EmojiEvents } from '@mui/icons-material';
+import { showAvatar } from '../../lib/avatarViewer';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -146,6 +147,10 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         height: avatarSize,
                         border: `2px solid ${medal}60`,
                         background: currentTheme.background.default,
+                        cursor: entry.photoURL ? 'zoom-in' : undefined,
+                      }}
+                      onClick={(e) => {
+                        if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();
                       }}
                     >
                       {entry.photoURL ? (
