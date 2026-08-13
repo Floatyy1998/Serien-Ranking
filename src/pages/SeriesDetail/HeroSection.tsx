@@ -550,7 +550,12 @@ export const HeroSection = memo<HeroSectionProps>(
                 </span>
               )}
               {series.seasons && (
-                <span>&bull; {t('{n} Staffeln', { n: series.seasons.length })}</span>
+                <span>
+                  &bull;{' '}
+                  {series.seasons.length === 1
+                    ? t('1 Staffel')
+                    : t('{n} Staffeln', { n: series.seasons.length })}
+                </span>
               )}
               {series.status && (
                 <span>

@@ -337,11 +337,21 @@
 }
 
 @media (max-width: 767px) {
+  /* Sechs Elemente passen auf keinem Handy in eine Zeile: der CTA braucht rund
+     170px, die fünf Icon-Knöpfe je mindestens 44px (globale Touch-Regel) plus
+     Abstände. Vorher brach deshalb genau ein Knopf allein in die zweite Zeile.
+     Jetzt bekommt der CTA eine eigene Zeile und die Icons teilen sich die
+     zweite gleichmäßig — gleiche Höhe wie vorher, aber symmetrisch. */
   .hero-actions__btn--primary {
-    /* Wächst, schrumpft aber nie unter die eigene Textbreite — so quetscht
-       sich "Episoden" nicht zusammen, sondern die Reihe bricht um. */
-    flex: 1 0 auto;
-    min-width: max-content;
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+  /* Nur wenn der CTA da ist: ohne ihn (schreibgeschützte TMDB-Serie) soll der
+     einzelne Empfehlen-Knopf kompakt bleiben und nicht die Breite fluten. */
+  .hero-actions:has(.hero-actions__btn--primary)
+    .hero-actions__btn:not(.hero-actions__btn--primary) {
+    flex: 1 1 0;
+    padding: 0;
   }
 }
 

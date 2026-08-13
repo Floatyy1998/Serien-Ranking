@@ -50,8 +50,17 @@ describe('calculateWatchingPace', () => {
     expect(result.shouldShow).toBe(true);
   });
 
+  describe('noch gar nicht begonnen', () => {
+    it('keine gesehene Folge → nicht pausiert, sondern ungestartet', () => {
+      const s = seasons([ep({ watched: false, runtime: 45 }), ep({ watched: false, runtime: 45 })]);
+      const result = calculateWatchingPace(s);
+      expect(result.hasStarted).toBe(false);
+      expect(result.isPaused).toBe(false);
+    });
+  });
+
   describe('watchDates.length < 2 (nicht genug Timestamps)', () => {
-    it('0 Timestamps → isPaused true (Infinity), remainingHours aus runtime berechnet', () => {
+    it('gesehene Folge ohne Zeitstempel → begonnen, aber keine Pace-Daten', () => {
       const s = seasons([
         ep({ watched: true, runtime: 45 }), // gesehen aber ohne firstWatchedAt
         ep({ watched: false, runtime: 45 }),
@@ -60,7 +69,10 @@ describe('calculateWatchingPace', () => {
       expect(result.shouldShow).toBe(true);
       expect(result.episodesPerWeek).toBe(0);
       expect(result.estimatedCompletionDate).toBeNull();
-      expect(result.isPaused).toBe(true);
+      // Ohne Zeitstempel laesst sich keine Pause behaupten — begonnen ist sie
+      // trotzdem, die Folge ist ja abgehakt.
+      expect(result.isPaused).toBe(false);
+      expect(result.hasStarted).toBe(true);
       // remaining 1 * 45 min → 0.75h → gerundet 0.8
       expect(result.remainingHours).toBe(0.8);
     });
@@ -156,6 +168,7 @@ describe('formatPaceLine', () => {
     estimatedCompletionDate: null,
     remainingHours: 0,
     isPaused: false,
+    hasStarted: true,
     shouldShow: true,
   };
   const make = (o: Partial<WatchingPace> = {}): WatchingPace => ({ ...base, ...o });
@@ -168,6 +181,12 @@ describe('formatPaceLine', () => {
   it('epw 0 und nicht pausiert → "Nicht genügend Daten"', () => {
     expect(formatPaceLine(make({ episodesPerWeek: 0, remainingEpisodes: 5 }))).toBe(
       'Nicht genügend Daten · 5 Ep. offen'
+    );
+  });
+
+  it('nicht begonnen → "Noch nicht begonnen" statt "Pausiert"', () => {
+    expect(formatPaceLine(make({ hasStarted: false, remainingEpisodes: 7 }))).toBe(
+      'Noch nicht begonnen · 7 Ep. offen'
     );
   });
 

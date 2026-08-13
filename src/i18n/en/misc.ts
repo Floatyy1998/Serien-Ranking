@@ -1,6 +1,8 @@
 /** Englische Übersetzungen: Toasts/Push, Snooze-Labels, Bug-Report-Bereich. */
 
 const dict: Record<string, string> = {
+  '1 Staffel': '1 season',
+  'Noch nicht begonnen · {n} Ep. offen': 'Not started yet · {n} eps left',
   // Pace-Zeile (lib/date/paceCalculation)
   'Nicht genügend Daten · {n} Ep. offen': 'Not enough data · {n} eps left',
   'Pausiert · {n} Ep. offen': 'Paused · {n} eps left',

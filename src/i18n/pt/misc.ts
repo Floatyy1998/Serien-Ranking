@@ -1,6 +1,8 @@
 /** Portugiesische Übersetzungen: Toasts/Push, Snooze-Labels, Bug-Report-Bereich. */
 
 const dict: Record<string, string> = {
+  '1 Staffel': '1 temporada',
+  'Noch nicht begonnen · {n} Ep. offen': 'Ainda não começou · {n} eps. restantes',
   'Fertig ca. am {day}.{month}.': 'Você termina ~{day}/{month}',
   '{n} Ep. offen': 'Faltam {n} ep.',
   '🎬 Empfehlung von {name}': '🎬 Recomendação de {name}',

@@ -9,6 +9,8 @@ export interface WatchingPace {
   estimatedCompletionDate: Date | null;
   remainingHours: number;
   isPaused: boolean;
+  /** Falsch, solange keine einzige Folge abgehakt ist. */
+  hasStarted: boolean;
   shouldShow: boolean;
 }
 
@@ -22,6 +24,7 @@ export function calculateWatchingPace(
     estimatedCompletionDate: null,
     remainingHours: 0,
     isPaused: false,
+    hasStarted: false,
     shouldShow: false,
   };
 
@@ -84,7 +87,12 @@ export function calculateWatchingPace(
       remainingEpisodes: remaining,
       estimatedCompletionDate: null,
       remainingHours: remainingHoursCalc,
-      isPaused: daysSinceLastWatch > 14,
+      // Ohne eine einzige gesehene Folge ist daysSinceLastWatch unendlich —
+      // das ist keine Pause, sondern ein noch nicht begonnener Titel.
+      isPaused: lastWatch > 0 && daysSinceLastWatch > 14,
+      // Bewusst an den gesehenen Folgen, nicht an den Zeitstempeln: Altbestand
+      // hat abgehakte Folgen ohne firstWatchedAt und ist trotzdem begonnen.
+      hasStarted: watchedCount > 0,
       shouldShow: true,
     };
   }
@@ -138,6 +146,7 @@ export function calculateWatchingPace(
     estimatedCompletionDate,
     remainingHours: remainingHoursCalc,
     isPaused,
+    hasStarted: true,
     shouldShow: true,
   };
 }
@@ -147,7 +156,9 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
 
   const parts: string[] = [];
 
-  if (pace.episodesPerWeek === 0 && !pace.isPaused) {
+  if (!pace.hasStarted) {
+    return t('Noch nicht begonnen · {n} Ep. offen', { n: pace.remainingEpisodes });
+  } else if (pace.episodesPerWeek === 0 && !pace.isPaused) {
     return t('Nicht genügend Daten · {n} Ep. offen', { n: pace.remainingEpisodes });
   } else if (pace.isPaused) {
     return t('Pausiert · {n} Ep. offen', { n: pace.remainingEpisodes });

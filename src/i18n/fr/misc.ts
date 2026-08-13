@@ -1,6 +1,8 @@
 /** Französische Übersetzungen: Toasts/Push, Snooze-Labels, Bug-Report-Bereich. */
 
 const dict: Record<string, string> = {
+  '1 Staffel': '1 saison',
+  'Noch nicht begonnen · {n} Ep. offen': 'Pas encore commencée · {n} ép. restants',
   'Fertig ca. heute': "Terminé ~aujourd'hui",
   'Fertig ca. am {day}.{month}.': 'Terminé ~le {day}/{month}',
   'Undo fehlgeschlagen': "Échec de l'annulation",
