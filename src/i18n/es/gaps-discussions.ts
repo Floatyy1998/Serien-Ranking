@@ -54,7 +54,7 @@ const dict: Record<string, string> = {
   'Verstoß gegen die Community-Regeln': 'Incumplimiento de las normas de la comunidad',
   'Bezieht sich auf Folge': 'Se refiere a un episodio',
   Staffel: 'Temporada',
-  Folge: 'Episodio',
+  Folge: 'episodio',
   'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}':
     'Se refiere a T{s}E{e} — tú vas por T{vs}E{ve}',
   'Bezieht sich auf S{s}E{e}': 'Se refiere a T{s}E{e}',

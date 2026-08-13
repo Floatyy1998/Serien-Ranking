@@ -3,9 +3,9 @@
 const dict: Record<string, string> = {
   // Gemeinsam
   Alle: 'All',
-  Serien: 'Series',
+  Serien: 'Shows',
   Filme: 'Movies',
-  Serie: 'Series',
+  Serie: 'Show',
   Film: 'Movie',
   'Nur Titel auf meinen aktiven Abos anzeigen': 'Only show titles available on my subscriptions',
   'Nur was ich streamen kann': 'Only what I can stream',
@@ -20,7 +20,7 @@ const dict: Record<string, string> = {
   'Suche nach Serien und Filmen': 'Search shows and movies',
   'Suche löschen': 'Clear search',
   'Filter: {label}': 'Filter: {label}',
-  Abos: 'Subs',
+  Abos: 'Subscriptions',
   'Ergebnisse für "{query}"': 'results for "{query}"',
   'Suche fehlgeschlagen': 'Search failed',
   'Suche fehlgeschlagen.': 'Search failed.',
@@ -45,7 +45,7 @@ const dict: Record<string, string> = {
   Beliebt: 'Popular',
   Top: 'Top',
   Neu: 'New',
-  Läuft: 'On air',
+  Läuft: 'Airing',
   'Für dich': 'For you',
   'Filter „Auf meinen Abos" aktiv': '"On my services" filter is on',
   'Genre filtern': 'Filter by genre',
@@ -56,7 +56,7 @@ const dict: Record<string, string> = {
   'Filme suchen': 'Search movies',
   'Serien suchen...': 'Search series...',
   'Filme suchen...': 'Search movies...',
-  'Laden fehlgeschlagen': 'Loading failed',
+  'Laden fehlgeschlagen': 'Failed to load',
   'Der Filter „Auf meinen Abos" ist aktiv – tippe oben rechts, um ihn auszuschalten.':
     'The "On my services" filter is on – tap the top right icon to turn it off.',
   'Lade Empfehlungen...': 'Loading recommendations...',
@@ -79,7 +79,7 @@ const dict: Record<string, string> = {
   Ansicht: 'View',
   'Cinematic-Ansicht': 'Cinematic view',
   'Kompakte Listen-Ansicht': 'Compact list view',
-  'Meine Bewertungen': 'My Ratings',
+  'Meine Bewertungen': 'My ratings',
   bewertet: 'rated',
   Durchschnitt: 'average',
   'Serien & Filme durchsuchen...': 'Search series & movies...',
@@ -99,7 +99,7 @@ const dict: Record<string, string> = {
   '✓ Komplett gesehen': '✓ Fully watched',
   Watchlist: 'Watchlist',
   'Bewertung {rating}': 'Rating {rating}',
-  Unbewertet: 'Not rated',
+  Unbewertet: 'Unrated',
   'S{s} E{e} als gesehen markieren': 'Mark S{s} E{e} as watched',
 
   // Rating-Editor

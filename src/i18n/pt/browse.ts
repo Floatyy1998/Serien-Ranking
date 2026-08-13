@@ -1,7 +1,7 @@
 /** Browse-Bereiche (Suche, Entdecken, Bewertungen, Rating-Editor, Als Nächstes) — Deutsch → Portugiesisch. */
 
 const dict: Record<string, string> = {
-  Abos: 'Plataformas',
+  Abos: 'Assinaturas',
   'Keine Treffer für „{query}" auf deinen aktiven Abos. Schalte den Abo-Filter „Abos" aus, um alle Treffer zu sehen.':
     'Nenhum resultado para "{query}" nas suas assinaturas ativas. Desative o filtro "Plataformas" para ver todos os resultados.',
   'Abo-Filter aus': 'Filtro de plataformas desativado',
@@ -34,7 +34,7 @@ const dict: Record<string, string> = {
   'Zuletzt gesucht': 'Buscas recentes',
   'Nach „{term}" suchen': 'Buscar "{term}"',
   '„{term}" entfernen': 'Remover "{term}"',
-  Neu: 'Novidades',
+  Neu: 'Novo',
   'Filter „Auf meinen Abos" aktiv': 'Filtro "Nas minhas plataformas" ativo',
   'Gib einen Suchbegriff ein...': 'Digite algo para buscar...',
   'Fehler beim Hinzufügen des Inhalts.': 'Erro ao adicionar o conteúdo.',

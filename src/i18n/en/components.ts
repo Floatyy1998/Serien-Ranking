@@ -9,7 +9,7 @@ const dict: Record<string, string> = {
   'weiter — der Anime endet ca. bei Kapitel {kapitel}.':
     '— the anime ends around chapter {kapitel}.',
   '(KI-Schätzung)': '(AI estimate)',
-  Weiterlesen: 'Keep reading',
+  Weiterlesen: 'Continue reading',
   'Zum Manga': 'View manga',
   Später: 'Later',
   'weiterer Anschluss': 'more continuation',
@@ -45,7 +45,7 @@ const dict: Record<string, string> = {
   'Inaktiver Rewatch': 'Inactive rewatch',
   'Längere Zeit nicht rewatcht': 'Not rewatched in a while',
   Beenden: 'Stop',
-  Beendet: 'Stopped',
+  Beendet: 'Ended',
   'inaktive Rewatches': 'inactive rewatches',
   '{n} Serien zum Bewerten': '{n} shows to rate',
   'Noch nicht bewertet': 'Not rated yet',

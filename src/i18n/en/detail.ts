@@ -185,7 +185,7 @@ const dict: Record<string, string> = {
   'Fehler beim Rewatch der Episode.': 'Failed to mark the episode as rewatched.',
   'S{s}E{e} als nicht gesehen markiert': 'S{s}E{e} marked as unwatched',
   'Fehler beim Markieren als nicht gesehen.': 'Failed to mark as unwatched.',
-  'Episode-ID fehlt': 'Episode ID missing',
+  'Episode-ID fehlt': 'Missing episode ID',
   'als gesehen markiert': 'marked as watched',
   'als nicht gesehen markiert': 'marked as unwatched',
   'Fehler beim Speichern.': 'Failed to save.',

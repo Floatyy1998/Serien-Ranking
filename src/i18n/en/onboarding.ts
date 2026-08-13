@@ -34,8 +34,8 @@ const dict: Record<string, string> = {
 
   // --- Registrierung ---
   'Erstelle dein Konto': 'Create your account',
-  'Passwörter stimmen nicht überein.': "Passwords don't match.",
-  'Passwort muss mindestens 6 Zeichen lang sein.': 'Password must be at least 6 characters long.',
+  'Passwörter stimmen nicht überein.': 'Passwords do not match.',
+  'Passwort muss mindestens 6 Zeichen lang sein.': 'Password must be at least 6 characters.',
   'Anzeigename muss mindestens 3 Zeichen lang sein.':
     'Display name must be at least 3 characters long.',
   'Diese E-Mail-Adresse wird bereits verwendet.': 'This email address is already in use.',
@@ -72,7 +72,7 @@ const dict: Record<string, string> = {
 
   // --- Onboarding: Schritte & Inhaltsverzeichnis ---
   Kuration: 'Curation',
-  Serien: 'Series',
+  Serien: 'Shows',
   Filme: 'Movies',
   Abos: 'Subscriptions',
   'Richtungen wählen': 'Pick your interests',
@@ -219,7 +219,7 @@ const dict: Record<string, string> = {
     'Start today and find your next favorite series',
   'Jetzt kostenlos registrieren': 'Sign up for free',
   Datenschutz: 'Privacy',
-  Impressum: 'Legal',
+  Impressum: 'Legal notice',
   'Suche nach Serien oder Filmen': 'Search shows or movies',
   Weiterschauen: 'Continue watching',
   'Staffel 2 · Folge 5': 'Season 2 · Episode 5',

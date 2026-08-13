@@ -68,7 +68,7 @@ const dict: Record<string, string> = {
   'Alle 2 Wochen': 'Cada 2 semanas',
   'Episode {n}': 'Episodio {n}',
   'Läuft · {rhythm}': 'En emisión · {rhythm}',
-  Fortlaufend: 'En curso',
+  Fortlaufend: 'En emisión',
   Nächste: 'Siguiente',
   Dran: 'Toca ver',
   Freunde: 'Amigos',

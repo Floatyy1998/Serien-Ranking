@@ -41,7 +41,7 @@ const dict: Record<string, string> = {
   Accessoires: 'Acessórios',
   Hintergründe: 'Planos de fundo',
   '1 aktiv': '1 ativo',
-  Alle: 'Todos',
+  Alle: 'Tudo',
   'Schau Episoden, um Accessoires zu finden!': 'Assista a episódios para achar acessórios!',
   'Noch keine {rarity} entdeckt.': 'Você ainda não descobriu nenhum {rarity}.',
   'Öffne Mystery Boxen oder dreh das Glücksrad, um Hintergründe zu finden!':

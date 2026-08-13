@@ -13,7 +13,7 @@ const dict: Record<string, string> = {
   Heute: 'Today',
   'Sprache des Grußes anzeigen': 'Show greeting language',
   'Suche öffnen': 'Open search',
-  'Suche nach Serien oder Filmen': 'Search for series or movies',
+  'Suche nach Serien oder Filmen': 'Search shows or movies',
 
   // LiveClock
   '{time} Uhr': '{time}',
@@ -23,7 +23,7 @@ const dict: Record<string, string> = {
   'Statistiken einklappen': 'Collapse stats',
   'Statistiken ausklappen': 'Expand stats',
   'Eps. (begonnen, nicht abgebr.)': 'Eps. (started, not dropped)',
-  Serien: 'Series',
+  Serien: 'Shows',
   '{n} komplett': '{n} completed',
   '{n} geschaut': '{n} watched',
   'Gesamte Watchzeit': 'Total watch time',
@@ -176,7 +176,7 @@ const dict: Record<string, string> = {
   Ablehnen: 'Decline',
   'empfiehlt dir': 'recommends',
   Film: 'Movie',
-  Serie: 'Series',
+  Serie: 'Show',
   Anschauen: 'Watch',
 
   // SeriesNotificationHub
@@ -320,7 +320,7 @@ const dict: Record<string, string> = {
   'Serien und Filme suchen': 'Search series and movies',
   'Suche leeren': 'Clear search',
   'Suche schließen': 'Close search',
-  'Keine Treffer für „{query}“': 'No results for "{query}"',
+  'Keine Treffer für „{query}“': 'No matches for “{query}”',
   'Zuletzt gesucht': 'Recent searches',
   '„{term}" entfernen': 'Remove "{term}"',
   Beliebt: 'Popular',
@@ -385,7 +385,7 @@ const dict: Record<string, string> = {
   'Schönen Nachmittag': 'Good afternoon',
   'Tag auch': 'Afternoon',
   'Was geht': "What's up",
-  'Alles klar': 'All good',
+  'Alles klar': 'Got it',
   'Bis zur Unendlichkeit und noch viel weiter': 'To infinity and beyond',
   'Leben ist wie eine Schachtel Pralinen': 'Life is like a box of chocolates',
   'Ich mache ihm ein Angebot, das er nicht ablehnen kann':

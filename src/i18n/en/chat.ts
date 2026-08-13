@@ -24,7 +24,7 @@ const dict: Record<string, string> = {
     'Pick a chat on the left or start a new conversation.',
   Chat: 'Chat',
   'Nachricht senden': 'Send a message',
-  'Zum Profil': 'View profile',
+  'Zum Profil': 'Go to Profile',
   'Kein Freund mehr': 'No longer friends',
   'Chat-Optionen': 'Chat options',
   'Nachrichten melden': 'Report messages',

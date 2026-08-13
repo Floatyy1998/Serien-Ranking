@@ -46,7 +46,7 @@ const dict: Record<string, string> = {
   Ausblenden: 'Ocultar',
   '{n} Staffeln': '{n} temporadas',
   Beendet: 'Finalizada',
-  Pausiert: 'Pausada',
+  Pausiert: 'Em pausa',
   Status: 'Status',
   'Ep. offen': 'Ep. restantes',
   '~{h} Std.': '~{h} h',

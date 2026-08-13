@@ -145,7 +145,7 @@ const dict: Record<string, string> = {
     'Así verás qué series puedes ver ya — y cuáles te faltan. Es opcional: también puedes gestionarlo más tarde en',
   'Profil → Streaming-Abos': 'Perfil → Suscripciones de streaming',
   'pflegen.': 'cuando quieras.',
-  '{n} ausgewählt': '{n} seleccionadas',
+  '{n} ausgewählt': '{n} seleccionados',
   'weiter · 1 Abo': 'continuar · 1 suscripción',
   'weiter · {n} Abos': 'continuar · {n} suscripciones',
   überspringen: 'omitir',
@@ -180,7 +180,7 @@ const dict: Record<string, string> = {
   'Deine Daten auf allen Geräten synchronisiert':
     'Tus datos sincronizados en todos los dispositivos',
   'Suche nach Serien oder Filmen': 'Buscar series o películas',
-  Weiterschauen: 'Seguir viendo',
+  Weiterschauen: 'Continuar viendo',
   'Badges & Erfolge': 'Insignias y logros',
   'Sammle Badges für deine Aktivitäten und zeige deine Achievements.':
     'Consigue insignias por tu actividad y presume de tus logros.',

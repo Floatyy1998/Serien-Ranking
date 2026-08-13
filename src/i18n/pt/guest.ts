@@ -8,7 +8,7 @@ const dict: Record<string, string> = {
     'Crie uma conta e mantenha sua seleção e seu companheiro em todos os aparelhos. Depois só falta: por onde você está?',
   'Titel nicht gefunden.': 'Título não encontrado.',
   'Zur Startseite': 'Ir para o início',
-  Staffeln: 'temporadas',
+  Staffeln: 'Temporadas',
   'Tracke {title} mit TV-RANK': 'Acompanhe {title} com o TV-RANK',
   'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
     'Marque episódios, avalie e compare com amigos: de graça.',

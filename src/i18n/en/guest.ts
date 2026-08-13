@@ -3,7 +3,7 @@ const dict: Record<string, string> = {
   // GuestMediaPage — öffentliche Detailseite für geteilte Links
   'Titel nicht gefunden.': 'Title not found.',
   'Zur Startseite': 'Back to home',
-  Staffeln: 'seasons',
+  Staffeln: 'Seasons',
   'Tracke {title} mit TV-RANK': 'Track {title} with TV-RANK',
   'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
     'Check off episodes, rate, compare with friends — for free.',
@@ -70,7 +70,7 @@ const dict: Record<string, string> = {
   Katze: 'Cat',
   Hund: 'Dog',
   Fuchs: 'Fox',
-  Hase: 'Rabbit',
+  Hase: 'Bunny',
   Panda: 'Panda',
   Vogel: 'Bird',
   Drache: 'Dragon',

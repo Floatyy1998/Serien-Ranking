@@ -57,7 +57,7 @@ const dict: Record<string, string> = {
     'Tu as été exclu définitivement. Motif : {reason}',
   'Verstoß gegen die Community-Regeln': 'Non-respect des règles de la communauté',
   Staffel: 'Saison',
-  Folge: 'Épisode',
+  Folge: 'épisode',
 };
 
 export default dict;

@@ -142,7 +142,7 @@ const dict: Record<string, string> = {
     'Assim mostramos quais séries você já pode assistir – e quais faltam. É opcional: você também pode ajustar depois em',
   'Profil → Streaming-Abos': 'Perfil → Assinaturas de streaming',
   'pflegen.': 'quando quiser.',
-  '{n} ausgewählt': '{n} selecionadas',
+  '{n} ausgewählt': '{n} selecionados',
   'weiter · 1 Abo': 'continuar · 1 assinatura',
   'weiter · {n} Abos': 'continuar · {n} assinaturas',
   überspringen: 'pular',

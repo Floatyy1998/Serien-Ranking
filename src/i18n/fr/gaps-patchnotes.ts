@@ -166,7 +166,7 @@ const dict: Record<string, string> = {
   'Provider-Filter': 'Filtre par service',
   'Rewatch-Fortschritt': 'Progression du rewatch',
   '"Ich bin bei…" Markierung': "Repère « J'en suis à… »",
-  'Homepage Layout': "Mise en page de l'accueil",
+  'Homepage Layout': "Disposition de l'accueil",
   'Homepage anpassen heißt jetzt anfassen: Deine App schwebt als Miniatur in der Mitte — Sektionen greifst und verschiebst du direkt, das Auge blendet aus, und die Leiste bestückst du per Tipp. Was du siehst, ist live dein Layout.':
     "Personnaliser l'accueil, ça se fait maintenant à la main : ton app flotte en miniature au centre — tu attrapes et déplaces les sections directement, l'œil les masque, et tu remplis la barre d'une simple pression. Ce que tu vois, c'est ta mise en page, en direct.",
   'Auf großen und hochauflösenden Displays laden die Kino-Zeilen auf der Startseite ihre Artworks jetzt in Originalqualität — kein weiches Hochskalieren mehr. Auch die Backdrop-Collage im Profil ist deutlich schärfer geworden.':

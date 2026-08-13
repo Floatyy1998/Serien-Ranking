@@ -10,7 +10,7 @@ const dict: Record<string, string> = {
   Episoden: 'Episodes',
   Fortschritt: 'Progress',
   Zeit: 'Time',
-  Zuletzt: 'Recent',
+  Zuletzt: 'Latest',
   'Nach Episoden sortieren': 'Sort by episodes',
   'Nach verbleibender Zeit sortieren': 'Sort by remaining time',
   'Nach Fortschritt sortieren': 'Sort by progress',
@@ -21,10 +21,10 @@ const dict: Record<string, string> = {
   'Kürzeste Zeit': 'Shortest time',
   'Fast fertig': 'Almost done',
   'Am Anfang': 'Just started',
-  'Zuletzt geschaut': 'Recently watched',
+  'Zuletzt geschaut': 'Last watched',
   'Am längsten her': 'Oldest',
   Min: 'min',
-  Std: 'hrs',
+  Std: 'Hrs',
   Tage: 'days',
   Tag: 'day',
   '{title} öffnen': 'Open {title}',
@@ -67,12 +67,12 @@ const dict: Record<string, string> = {
   // TV-Kalender
   'TV-Kalender': 'TV calendar',
   'Anime-Season-Kalender öffnen': 'Open anime season calendar',
-  'Anime-Season': 'Anime season',
+  'Anime-Season': 'Anime Season',
   'Was läuft diese Season? Airing-Tage & Countdown':
     "What's airing this season? Airing days & countdown",
   'Serien-Kalender öffnen': 'Open calendar',
-  'Serien-Kalender': 'Calendar',
-  'Neue Serien & Staffeln entdecken': 'Discover new shows & seasons',
+  'Serien-Kalender': 'TV calendar',
+  'Neue Serien & Staffeln entdecken': 'Discover new series & seasons',
   'Kalender wird geladen': 'Loading calendar',
   'Keine Episoden in dieser Woche': 'No episodes this week',
   'In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an.':
@@ -111,7 +111,7 @@ const dict: Record<string, string> = {
   '{n} Folgen · {w} gesehen': '{n} episodes · {w} watched',
   einklappen: 'collapse',
   ausklappen: 'expand',
-  'Episode-ID fehlt': 'Episode ID missing',
+  'Episode-ID fehlt': 'Missing episode ID',
   '{title} {label} als gesehen markiert': '{title} {label} marked as watched',
   'Undo fehlgeschlagen': 'Undo failed',
   'Fehler beim Speichern': 'Failed to save',
@@ -131,7 +131,7 @@ const dict: Record<string, string> = {
   'Poster von {title}': '{title} poster',
 
   // Episoden-Verwaltung
-  'Serie nicht gefunden': 'Show not found',
+  'Serie nicht gefunden': 'Series not found',
   'Episoden verwalten': 'Manage episodes',
   'Serie hinzufügen?': 'Add show?',
   'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.':
@@ -148,7 +148,7 @@ const dict: Record<string, string> = {
   'Alle als ungesehen': 'Mark all as unwatched',
   'Alle als gesehen markieren': 'Mark all as watched',
   'Noch keine Folgen dieser Staffel veröffentlicht': 'No episodes of this season have aired yet',
-  'Ich bin bei...': "I'm up to...",
+  'Ich bin bei...': "I'm at...",
   'Folge {n}: {name}, {status}': 'Episode {n}: {name}, {status}',
   gesehen: 'watched',
   'nicht gesehen': 'not watched',
@@ -170,7 +170,7 @@ const dict: Record<string, string> = {
     "You're currently watching all your shows. Shows you stop watching will appear here.",
   '{watched}/{total} gesehen · {open} offen': '{watched}/{total} watched · {open} left',
   '{title} weiterschauen': 'Continue watching {title}',
-  Weiter: 'Resume',
+  Weiter: 'Next',
 
   // Streaming-Abos
   'Streaming-Abos': 'Streaming subscriptions',

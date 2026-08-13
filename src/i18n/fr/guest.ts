@@ -11,7 +11,7 @@ const dict: Record<string, string> = {
   'Wir richten alles ein …': 'On prépare tout …',
   'Titel nicht gefunden.': 'Titre introuvable.',
   'Zur Startseite': "Retour à l'accueil",
-  Staffeln: 'saisons',
+  Staffeln: 'Saisons',
   'Tracke {title} mit TV-RANK': 'Suis {title} avec TV-RANK',
   'Jetzt tracken — kostenlos': 'Suivre maintenant — gratuit',
   'Im App Store laden': "Télécharger dans l'App Store",

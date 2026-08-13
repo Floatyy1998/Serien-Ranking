@@ -1,7 +1,7 @@
 /** Browse-Bereiche (Suche, Entdecken, Bewertungen, Rating-Editor, Als Nächstes) — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
-  Abos: 'Plataformas',
+  Abos: 'Suscripciones',
   'Keine Treffer für „{query}" auf deinen aktiven Abos. Schalte den Abo-Filter „Abos" aus, um alle Treffer zu sehen.':
     'No hay resultados para «{query}» en tus suscripciones activas. Desactiva el filtro «Plataformas» para ver todos los resultados.',
   'Abo-Filter aus': 'Filtro de plataformas desactivado',
@@ -34,7 +34,7 @@ const dict: Record<string, string> = {
   'Zuletzt gesucht': 'Búsquedas recientes',
   'Nach „{term}" suchen': 'Buscar «{term}»',
   '„{term}" entfernen': 'Quitar «{term}»',
-  Neu: 'Novedades',
+  Neu: 'Nuevo',
   'Filter „Auf meinen Abos" aktiv': 'Filtro «En mis plataformas» activo',
   'Gib einen Suchbegriff ein...': 'Escribe algo para buscar...',
   'Fehler beim Hinzufügen des Inhalts.': 'Error al añadir el contenido.',
@@ -88,7 +88,7 @@ const dict: Record<string, string> = {
   '{name} öffnen': 'Abrir {name}',
   '{n} weitere Anbieter': '{n} plataformas más',
   'Auf deiner Watchlist': 'En tu lista',
-  Fertig: 'Hecho',
+  Fertig: 'Completado',
   'Weiter: {episode}': 'Siguiente: {episode}',
   Watchlist: 'Lista',
   'Bewertung {rating}': 'Valoración {rating}',
@@ -127,7 +127,7 @@ const dict: Record<string, string> = {
   'Reihenfolge bearbeiten': 'Editar orden',
   'Serie suchen...': 'Buscar serie...',
   'Serie suchen': 'Buscar serie',
-  Weiterschauen: 'Seguir viendo',
+  Weiterschauen: 'Continuar viendo',
   'Nur meine Abos anzeigen': 'Mostrar solo mis plataformas',
   'Nur meine Abos': 'Solo mis plataformas',
   '{n} aktive Rewatch ausblenden': 'Ocultar {n} rewatch activo',

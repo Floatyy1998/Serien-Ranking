@@ -27,7 +27,7 @@ const dict: Record<string, string> = {
   'Zur Rangliste': 'Go to the Leaderboard',
   'Zum Profil': 'Go to Profile',
   'Zum Anime-Season-Kalender': 'Go to the Anime Season Calendar',
-  'Layout anpassen': 'Customize Layout',
+  'Layout anpassen': 'Customize layout',
   'Sektionen sortieren': 'Reorder Sections',
   'Streaming-Abos öffnen': 'Open Streaming Subscriptions',
   'Abos verwalten': 'Manage Subscriptions',
@@ -156,7 +156,7 @@ const dict: Record<string, string> = {
   '"Zuletzt gesehen" in Weiterschauen': '"Last Watched" in Continue Watching',
   'Staffel & Tab merken': 'Remember Season & Tab',
   'Trending, Saisonal & Bestbewertet Redesign': 'Trending, Seasonal & Top-Rated Redesign',
-  'KI-Empfehlungen': 'AI Recommendations',
+  'KI-Empfehlungen': 'AI recommendations',
   'Proaktive Recaps verbessert': 'Proactive Recaps Improved',
   'Navbar Redesign': 'Navbar Redesign',
   'TV-Kalender überarbeitet': 'TV Calendar Reworked',
@@ -165,7 +165,7 @@ const dict: Record<string, string> = {
   'Provider-Filter': 'Provider Filter',
   'Rewatch-Fortschritt': 'Rewatch Progress',
   '"Ich bin bei…" Markierung': '"I\'m At…" Marker',
-  'Homepage Layout': 'Homepage Layout',
+  'Homepage Layout': 'Homepage layout',
 
   // Feature descriptions
   'Die iOS- und Android-App melden sich jetzt von selbst: morgens, wenn eine deiner Serien heute eine neue Folge bekommt, und sofort, wenn dich eine Freundschaftsanfrage erreicht. Einschalten unter Einstellungen → Benachrichtigungen → Push-Benachrichtigungen.':

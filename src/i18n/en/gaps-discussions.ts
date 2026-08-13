@@ -55,7 +55,7 @@ const dict: Record<string, string> = {
   // "Bezieht sich auf"-Gating
   'Bezieht sich auf Folge': 'Refers to an episode',
   Staffel: 'Season',
-  Folge: 'Episode',
+  Folge: 'episode',
   'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}': "Refers to S{s}E{e} — you're on S{vs}E{ve}",
   'Bezieht sich auf S{s}E{e}': 'Refers to S{s}E{e}',
 };

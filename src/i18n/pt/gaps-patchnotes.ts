@@ -156,7 +156,7 @@ const dict: Record<string, string> = {
   '"Zuletzt gesehen" in Weiterschauen': '"Assistido por último" em Continuar assistindo',
   'Staffel & Tab merken': 'Lembrar temporada e aba',
   'Trending, Saisonal & Bestbewertet Redesign': 'Redesign de Em alta, Temporada e Melhor avaliados',
-  'KI-Empfehlungen': 'Recomendações com IA',
+  'KI-Empfehlungen': 'Recomendações IA',
   'Proaktive Recaps verbessert': 'Recaps proativos melhorados',
   'Navbar Redesign': 'Redesign da barra de navegação',
   'TV-Kalender überarbeitet': 'Calendário de TV renovado',

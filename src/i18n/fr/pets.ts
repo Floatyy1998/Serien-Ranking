@@ -43,7 +43,7 @@ const dict: Record<string, string> = {
   Hintergründe: 'Arrière-plans',
   '{n} getragen': '{n} équipé(s)',
   '1 aktiv': '1 actif',
-  Alle: 'Tous',
+  Alle: 'Tout',
   'Schau Episoden, um Accessoires zu finden!':
     'Regarde des épisodes pour trouver des accessoires !',
   'Noch keine {rarity} entdeckt.': "Aucun {rarity} découvert pour l'instant.",
@@ -51,7 +51,7 @@ const dict: Record<string, string> = {
     'Ouvre des boîtes mystère ou tourne la roue de la chance pour trouver des arrière-plans !',
   'Farbe {name}': 'Couleur {name}',
   NEU: 'NOUVEAU',
-  Standard: 'Par défaut',
+  Standard: 'Standard',
   '{name} zur Adoption freigeben?': "Mettre {name} à l'adoption ?",
   Behalten: 'Garder',
   Freigeben: 'Laisser partir',

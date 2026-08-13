@@ -156,7 +156,7 @@ const dict: Record<string, string> = {
   'Staffel & Tab merken': 'Recordar temporada y pestaña',
   'Trending, Saisonal & Bestbewertet Redesign':
     'Rediseño de Tendencias, Temporada y Mejor valorados',
-  'KI-Empfehlungen': 'Recomendaciones con IA',
+  'KI-Empfehlungen': 'Recomendaciones IA',
   'Proaktive Recaps verbessert': 'Recaps proactivos mejorados',
   'Navbar Redesign': 'Rediseño de la barra de navegación',
   'TV-Kalender überarbeitet': 'Calendario de TV renovado',
@@ -165,7 +165,7 @@ const dict: Record<string, string> = {
   'Provider-Filter': 'Filtro de plataformas',
   'Rewatch-Fortschritt': 'Progreso de revisionado',
   '"Ich bin bei…" Markierung': 'Marcador "Voy por…"',
-  'Homepage Layout': 'Diseño de la página de inicio',
+  'Homepage Layout': 'Diseño de la pantalla de inicio',
   'Die iOS- und Android-App melden sich jetzt von selbst: morgens, wenn eine deiner Serien heute eine neue Folge bekommt, und sofort, wenn dich eine Freundschaftsanfrage erreicht. Einschalten unter Einstellungen → Benachrichtigungen → Push-Benachrichtigungen.':
     'Las apps de iOS y Android ahora te avisan solas: por la mañana, cuando una de tus series estrena episodio hoy, y al instante cuando recibes una solicitud de amistad. Actívalo en Ajustes → Notificaciones → Notificaciones push.',
   'Auf großen und hochauflösenden Displays laden die Kino-Zeilen auf der Startseite ihre Artworks jetzt in Originalqualität — kein weiches Hochskalieren mehr. Auch die Backdrop-Collage im Profil ist deutlich schärfer geworden.':
