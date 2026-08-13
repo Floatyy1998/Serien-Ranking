@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import { SearchInput } from './SearchInput';
 import { GradientText } from './GradientText';
+import { ThemedSelect } from './ThemedSelect';
 
 interface QuickFilterPanelProps {
   isMovieMode: boolean;
@@ -188,65 +189,19 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
           >
             {t('Sortierung')}
           </label>
-          <select
+          <ThemedSelect
             value={selectedSort}
-            onChange={(e) => setSelectedSort(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              background: 'var(--glass-medium)',
-              border: '1px solid var(--glass-border-light)',
-              borderRadius: 'var(--radius-xl)',
-              color: currentTheme.text.secondary,
-              fontSize: '15px',
-            }}
-          >
-            <option
-              value="rating-desc"
-              style={{
-                background: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              {t('Beste zuerst')}
-            </option>
-            <option
-              value="rating-asc"
-              style={{
-                background: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              {t('Schlechteste zuerst')}
-            </option>
-            <option
-              value="name-asc"
-              style={{
-                background: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              Name A-Z
-            </option>
-            <option
-              value="name-desc"
-              style={{
-                background: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              Name Z-A
-            </option>
-            <option
-              value="date-desc"
-              style={{
-                background: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              {t('Neueste zuerst')}
-            </option>
-          </select>
+            ariaLabel={t('Sortierung')}
+            width="100%"
+            onChange={setSelectedSort}
+            options={[
+              { value: 'rating-desc', label: t('Beste zuerst') },
+              { value: 'rating-asc', label: t('Schlechteste zuerst') },
+              { value: 'name-asc', label: 'Name A-Z' },
+              { value: 'name-desc', label: 'Name Z-A' },
+              { value: 'date-desc', label: t('Neueste zuerst') },
+            ]}
+          />
         </div>
       )}
 

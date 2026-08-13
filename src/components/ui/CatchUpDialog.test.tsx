@@ -67,11 +67,26 @@ describe('CatchUpDialog', () => {
     const onConfirm = vi.fn<(s: number, e: number) => void>();
     const onClose = vi.fn();
     render(<CatchUpDialog open onClose={onClose} series={series} onConfirm={onConfirm} />);
-    const selects = screen.getAllByRole('combobox');
-    // second combobox is the episode picker; value 1 = "up to Episode 1"
-    fireEvent.change(selects[1], { target: { value: '1' } });
+    // ThemedSelect statt nativem <select>: Trigger antippen, dann die Option.
+    fireEvent.click(screen.getByRole('button', { name: 'Episode' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Episode 1 - Pilot' }));
     fireEvent.click(screen.getByRole('button', { name: 'Markieren' }));
     expect(onConfirm).toHaveBeenCalledWith(0, 1);
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens and closes the season dropdown', () => {
+    render(<CatchUpDialog open onClose={vi.fn()} series={series} onConfirm={vi.fn()} />);
+    const trigger = screen.getByRole('button', { name: 'Staffel' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    // Nach der Wahl schliesst sich das Panel (die Exit-Animation laesst es in
+    // jsdom noch kurz stehen, der Zustand am Trigger kippt sofort).
+    fireEvent.click(screen.getByRole('option', { name: 'Staffel 1 (2 Episoden)' }));
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 });

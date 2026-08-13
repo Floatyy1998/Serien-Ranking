@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { BottomSheet } from './BottomSheet';
+import { ThemedSelect } from './ThemedSelect';
 
 interface CatchUpDialogProps {
   open: boolean;
@@ -75,19 +76,6 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
     });
   })();
 
-  const selectStyle: CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    background: 'var(--glass-medium)',
-    border: '1px solid var(--glass-border-light)',
-    borderRadius: 'var(--radius-lg)',
-    color: currentTheme.text.primary,
-    fontSize: '15px',
-    outline: 'none',
-    cursor: 'pointer',
-    transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  };
-
   const labelStyle: CSSProperties = {
     fontSize: 'var(--text-sm)',
     fontWeight: 600,
@@ -119,40 +107,37 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         {/* Season Picker */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>{t('Staffel')}</label>
-          <select
-            value={selectedSeason}
-            onChange={(e) => {
-              setSelectedSeason(Number(e.target.value));
+          <ThemedSelect
+            value={String(selectedSeason)}
+            ariaLabel={t('Staffel')}
+            width="100%"
+            onChange={(next) => {
+              setSelectedSeason(Number(next));
               setSelectedEpisode(0);
             }}
-            style={selectStyle}
-          >
-            {seasons.map((season, idx) => (
-              <option key={idx} value={idx}>
-                {t('Staffel {staffel} ({anzahl} Episoden)', {
-                  staffel: season.seasonNumber + 1,
-                  anzahl: season.episodes?.length || 0,
-                })}
-              </option>
-            ))}
-          </select>
+            options={seasons.map((season, idx) => ({
+              value: String(idx),
+              label: t('Staffel {staffel} ({anzahl} Episoden)', {
+                staffel: season.seasonNumber + 1,
+                anzahl: season.episodes?.length || 0,
+              }),
+            }))}
+          />
         </div>
 
         {/* Episode Picker */}
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>{t('Episode')}</label>
-          <select
-            value={selectedEpisode}
-            onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-            style={selectStyle}
-          >
-            {currentSeasonEpisodes.map((ep, idx) => (
-              <option key={idx} value={idx + 1}>
-                {t('Episode {nummer}', { nummer: idx + 1 })}
-                {ep.name ? ` - ${ep.name}` : ''}
-              </option>
-            ))}
-          </select>
+          <ThemedSelect
+            value={String(selectedEpisode)}
+            ariaLabel={t('Episode')}
+            width="100%"
+            onChange={(next) => setSelectedEpisode(Number(next))}
+            options={currentSeasonEpisodes.map((ep, idx) => ({
+              value: String(idx + 1),
+              label: t('Episode {nummer}', { nummer: idx + 1 }) + (ep.name ? ` - ${ep.name}` : ''),
+            }))}
+          />
         </div>
 
         {/* Preview */}
