@@ -185,7 +185,9 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
 
     setSendingRequest(true);
     try {
-      const success = await sendFriendRequest(targetUser.username);
+      // uid mitgeben: die Suche findet auch ueber den Anzeigenamen, der
+      // Namens-Lookup im Anfrage-Pfad kennt aber nur den Benutzernamen.
+      const success = await sendFriendRequest(targetUser.username, targetUser.uid);
       if (success) {
         setRecentlyAdded([...recentlyAdded, targetUser.uid]);
         setRequestSuccess(true);
@@ -398,15 +400,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                     >
                       {result.displayName}
                       <NameBadges uid={result.uid} />
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '14px',
-                        color: currentTheme.text.secondary,
-                        marginBottom: '4px',
-                      }}
-                    >
-                      @{result.username}
                     </div>
                     {(result.seriesCount !== undefined || result.moviesCount !== undefined) && (
                       <div

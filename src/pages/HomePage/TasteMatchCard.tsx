@@ -287,12 +287,6 @@ export const TasteMatchCard: React.FC = () => {
                           friend.username ||
                           'Friend'}
                       </div>
-                      {(friendProfiles[friend.uid]?.username || friend.username) &&
-                        (friendProfiles[friend.uid]?.displayName || friend.displayName) && (
-                          <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>
-                            @{friendProfiles[friend.uid]?.username || friend.username}
-                          </div>
-                        )}
                     </div>
 
                     <CompareArrows style={{ color: currentTheme.primary, fontSize: 20 }} />

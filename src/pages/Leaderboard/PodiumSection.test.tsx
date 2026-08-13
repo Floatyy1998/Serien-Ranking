@@ -53,14 +53,15 @@ describe('PodiumSection', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders ranks and first-name of the top entries', () => {
+  it('renders ranks and the full name of the top entries', () => {
     const top = [
       entry({ uid: 'a', displayName: 'Alice Wonder', rank: 1, value: 42 }),
       entry({ uid: 'b', displayName: 'Bob Builder', rank: 2, value: 30 }),
     ];
     render(<PodiumSection topThree={top} category="episodesThisMonth" unit="Ep." />);
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Bob')).toBeInTheDocument();
+    // Voller Name: die Kuerzung uebernimmt die CSS-Ellipse, nicht ein split(' ').
+    expect(screen.getByText('Alice Wonder')).toBeInTheDocument();
+    expect(screen.getByText('Bob Builder')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('42')).toBeInTheDocument();
   });
@@ -68,7 +69,7 @@ describe('PodiumSection', () => {
   it('navigates to a friend profile when a non-current entry is clicked', () => {
     const top = [entry({ uid: 'friend-1', displayName: 'Alice Wonder', rank: 1 })];
     render(<PodiumSection topThree={top} category="episodesThisMonth" unit="Ep." />);
-    fireEvent.click(screen.getByText('Alice'));
+    fireEvent.click(screen.getByText('Alice Wonder'));
     expect(navigateMock).toHaveBeenCalledWith('/friend/friend-1');
   });
 

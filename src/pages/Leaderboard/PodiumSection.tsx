@@ -117,7 +117,10 @@ export const PodiumSection = React.memo(function PodiumSection({
                 color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
               }}
             >
-              {entry.isCurrentUser ? t('Du') : entry.displayName.split(' ')[0]}
+              {/* Kein split(' ') mehr: .lb-podium-name kuerzt bereits per Ellipse.
+                  Vorher stand hier bei "Flo Spixi" nur "Flo", waehrend die Liste
+                  darunter den vollen Namen zeigte. */}
+              {entry.isCurrentUser ? t('Du') : entry.displayName}
               <NameBadges uid={entry.uid} compact />
             </span>
 

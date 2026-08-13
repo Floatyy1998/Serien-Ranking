@@ -60,7 +60,10 @@ describe('RankingList', () => {
     render(<RankingList entries={entries} category="watchtimeThisMonth" unit="" />);
     expect(screen.getByText('Charlie')).toBeInTheDocument();
     expect(screen.getByText('4')).toBeInTheDocument();
-    expect(screen.getByText('@chaz')).toBeInTheDocument();
+    // Der Benutzername wird nicht mehr angezeigt — er ist bei neuen Konten nur
+    // eine Kopie des Anzeigenamens. Als Suchschluessel fuer Freundschaftsanfragen
+    // bleibt er in den Daten.
+    expect(screen.queryByText('@chaz')).toBeNull();
     expect(screen.getByText('1h 30m')).toBeInTheDocument();
   });
 

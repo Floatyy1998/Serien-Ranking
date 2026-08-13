@@ -196,7 +196,9 @@ describe('FriendProfilePage', () => {
     );
     fireEvent.click(screen.getByText('Freundschaftsanfrage senden'));
     expect(await screen.findByText('Anfrage gesendet ✓')).toBeInTheDocument();
-    expect(friendsState.sendFriendRequest).toHaveBeenCalledWith('mia');
+    // Die uid entscheidet, der Name ist nur noch Beiwerk — sonst scheiterte die
+    // Anfrage bei Konten ohne oder mit abweichendem Benutzernamen.
+    expect(friendsState.sendFriendRequest).toHaveBeenCalledWith('mia', 'friend-1');
   });
 
   it('zeigt bei bereits gesendeter Anfrage den Gesendet-Status', () => {

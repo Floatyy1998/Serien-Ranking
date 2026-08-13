@@ -42,7 +42,10 @@ async function fetchProfileSubnode(
     const uname = unameSnap.val();
     const photo = photoSnap.val();
     return {
-      displayName: toDisplayName(unameSnap.val(), dnameSnap.val()),
+      // Reihenfolge wie im Schreibpfad unten und in mergeProfile: der
+      // Anzeigename gewinnt, username ist nur der Rueckfall. Andersherum zeigte
+      // dieselbe Person je nach Herkunft des Eintrags zwei verschiedene Namen.
+      displayName: toDisplayName(dnameSnap.val(), unameSnap.val()),
       photoURL: typeof photo === 'string' && photo.length > 0 ? photo : undefined,
       username: typeof uname === 'string' && uname.trim().length > 0 ? uname : undefined,
     };

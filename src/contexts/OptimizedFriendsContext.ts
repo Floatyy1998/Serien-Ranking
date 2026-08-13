@@ -12,7 +12,7 @@ export interface OptimizedFriendsContextType {
   lastReadActivitiesTime: number;
   markRequestsAsRead: () => void;
   markActivitiesAsRead: () => void;
-  sendFriendRequest: (username: string) => Promise<boolean>;
+  sendFriendRequest: (username: string, targetUid?: string) => Promise<boolean>;
   acceptFriendRequest: (requestId: string) => Promise<void>;
   declineFriendRequest: (requestId: string) => Promise<void>;
   cancelFriendRequest: (requestId: string) => Promise<void>;

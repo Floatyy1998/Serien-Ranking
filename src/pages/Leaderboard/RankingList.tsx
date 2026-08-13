@@ -97,11 +97,6 @@ export const RankingList = React.memo(function RankingList({
                 {entry.isCurrentUser ? t('Du') : entry.displayName}
                 <NameBadges uid={entry.uid} />
               </span>
-              {entry.username && !entry.isCurrentUser && (
-                <span className="lb-rank-username" style={{ color: currentTheme.text.muted }}>
-                  @{entry.username}
-                </span>
-              )}
             </div>
 
             <span

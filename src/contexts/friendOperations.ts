@@ -4,28 +4,47 @@ import type { FriendActivity, FriendRequest } from '../types/Friend';
 
 export async function sendFriendRequestOp(
   user: { uid: string; displayName: string | null; email: string | null },
-  username: string
+  username: string,
+  /**
+   * uid des Ziels, falls der Aufrufer sie schon kennt (Suchergebnis, Profil).
+   * Dann entfaellt die zweite Aufloesung — die Suche findet naemlich auch ueber
+   * displayNameLower, waehrend der Lookup hier nur usernameLower kennt. Ohne
+   * die uid scheiterte das Absenden bei Konten, deren username fehlt oder
+   * abweicht, mit einem stummen false.
+   */
+  targetUid?: string
 ): Promise<boolean> {
-  // Match on lowercased slug so "Spixi" can be reached as "spixi". Der Lookup
-  // läuft ausschließlich über den userSearchIndex-Knoten — der users-Root ist
-  // unter den gehärteten Rules nicht lesbar, ein Fallback dorthin erzeugt nur
-  // eine nicht abfangbare permission_denied-Warnung in der Konsole.
-  const lower = username.toLowerCase();
-  let userData: Record<string, Record<string, unknown>> | null = null;
-  try {
-    const snapshot = await dbRef('userSearchIndex')
-      .orderByChild('usernameLower')
-      .equalTo(lower)
-      .once('value');
-    userData = snapshot.val();
-  } catch {
-    // Index nicht lesbar (Rules-Drift) — Suche schlägt kontrolliert fehl.
+  let targetUserId = targetUid || '';
+  let targetUserData: Record<string, unknown> | undefined;
+
+  if (targetUserId) {
+    targetUserData =
+      (await dbGet<Record<string, unknown>>(`userSearchIndex/${targetUserId}`).catch(() => null)) ??
+      undefined;
+  } else {
+    // Match on lowercased slug so "Spixi" can be reached as "spixi". Der Lookup
+    // läuft ausschließlich über den userSearchIndex-Knoten — der users-Root ist
+    // unter den gehärteten Rules nicht lesbar, ein Fallback dorthin erzeugt nur
+    // eine nicht abfangbare permission_denied-Warnung in der Konsole.
+    const lower = username.toLowerCase();
+    let userData: Record<string, Record<string, unknown>> | null = null;
+    try {
+      const snapshot = await dbRef('userSearchIndex')
+        .orderByChild('usernameLower')
+        .equalTo(lower)
+        .once('value');
+      userData = snapshot.val();
+    } catch {
+      // Index nicht lesbar (Rules-Drift) — Suche schlägt kontrolliert fehl.
+    }
+
+    if (!userData) return false;
+
+    targetUserId = Object.keys(userData)[0];
+    targetUserData = userData[targetUserId];
   }
 
-  if (!userData) return false;
-
-  const targetUserId = Object.keys(userData)[0];
-  const targetUserData = userData[targetUserId];
+  if (!targetUserId) return false;
 
   const [ownUsername, ownEmail] = await Promise.all([
     dbGet<string>(userPath(user.uid, 'username')).catch(() => null),

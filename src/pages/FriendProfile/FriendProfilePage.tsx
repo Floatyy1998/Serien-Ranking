@@ -103,9 +103,11 @@ export const FriendProfilePage = memo(() => {
     sentRequests.some((r) => r.toUserId === friendId && r.status === 'pending');
 
   const handleSendRequest = async () => {
-    if (!restrictedProfile?.username || requestState === 'sending') return;
+    if (!friendId || requestState === 'sending') return;
     setRequestState('sending');
-    const ok = await sendFriendRequest(restrictedProfile.username);
+    // friendId ist die uid der Seite — damit klappt die Anfrage auch, wenn
+    // das Konto keinen oder einen abweichenden Benutzernamen hat.
+    const ok = await sendFriendRequest(restrictedProfile?.username || '', friendId);
     setRequestState(ok ? 'sent' : 'error');
   };
 

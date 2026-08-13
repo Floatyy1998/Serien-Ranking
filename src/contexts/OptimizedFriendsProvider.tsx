@@ -452,9 +452,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   }, [user]);
 
   const sendFriendRequest = useCallback(
-    async (username: string): Promise<boolean> => {
+    async (username: string, targetUid?: string): Promise<boolean> => {
       if (!user) return false;
-      return sendFriendRequestOp(user, username);
+      return sendFriendRequestOp(user, username, targetUid);
     },
     [user]
   );
