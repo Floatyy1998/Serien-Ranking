@@ -1,6 +1,8 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
+  'Bild wird geladen…': 'Cargando la imagen…',
+  'Bild konnte nicht geladen werden': 'No se pudo cargar la imagen',
   'Bild zuschneiden': 'Recortar imagen',
   'Ziehen zum Verschieben, Regler zum Vergrößern': 'Arrastra para mover, control para ampliar',
   'Als Profilbild verwenden': 'Usar como foto de perfil',

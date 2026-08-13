@@ -70,7 +70,7 @@ export const RankingList = React.memo(function RankingList({
               className="lb-rank-avatar"
               style={{
                 background: currentTheme.background.card,
-                cursor: entry.photoURL ? 'zoom-in' : undefined,
+                cursor: entry.photoURL ? 'pointer' : undefined,
               }}
               // Zeile navigiert zum Profil — der Avatar zeigt nur das Bild groß.
               onClick={(e) => {

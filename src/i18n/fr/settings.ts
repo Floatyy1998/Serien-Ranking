@@ -1,6 +1,8 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
+  'Bild wird geladen…': 'Chargement de l’image…',
+  'Bild konnte nicht geladen werden': 'Impossible de charger cette image',
   'Bild zuschneiden': 'Recadrer l’image',
   'Ziehen zum Verschieben, Regler zum Vergrößern':
     'Fais glisser pour déplacer, le curseur pour zoomer',

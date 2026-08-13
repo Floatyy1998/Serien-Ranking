@@ -70,7 +70,7 @@ export const PodiumSection = React.memo(function PodiumSection({
                     ? `0 0 28px ${medal}55, 0 0 64px ${medal}25`
                     : `0 6px 20px ${medal}35`,
                   marginBottom: 0,
-                  cursor: entry.photoURL ? 'zoom-in' : undefined,
+                  cursor: entry.photoURL ? 'pointer' : undefined,
                 }}
                 onClick={(e) => {
                   if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();

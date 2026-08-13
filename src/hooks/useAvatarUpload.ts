@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MAX_UPLOAD_BYTES, uploadProfileImage } from '../services/profileImage';
+import { setOwnPhotoURL } from '../services/ownProfilePhoto';
 import { showToast } from '../lib/toast';
 import { t } from '../services/i18n';
 
@@ -42,6 +43,8 @@ export const useAvatarUpload = (onUploaded?: (url: string) => void) => {
       setUploading(true);
       try {
         const url = await uploadProfileImage(user, cropped);
+        // Sofort sichtbar, bevor der Datenbank-Listener zurueckmeldet.
+        setOwnPhotoURL(url);
         setPendingFile(null);
         onUploaded?.(url);
         showToast(t('Profilbild erfolgreich hochgeladen!'), 2500, 'success');

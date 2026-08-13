@@ -9,6 +9,7 @@ import {
   cropSourceRect,
   type CropTransform,
 } from '../../lib/imageCrop';
+import { showToast } from '../../lib/toast';
 import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
 import './ImageCropSheet.css';
@@ -212,6 +213,12 @@ export const ImageCropSheet = ({
                 const img = e.currentTarget;
                 setSize({ w: img.naturalWidth, h: img.naturalHeight });
               }}
+              onError={() => {
+                // Ohne das bliebe das Sheet bei einer kaputten Datei fuer immer
+                // leer stehen — mit deaktivierten Knoepfen und ohne Hinweis.
+                showToast(t('Bild konnte nicht geladen werden'), 3000, 'error');
+                onCancel();
+              }}
               style={{
                 position: 'absolute',
                 left: '50%',
@@ -224,6 +231,22 @@ export const ImageCropSheet = ({
                 pointerEvents: 'none',
               }}
             />
+          )}
+
+          {/* Zwischen Dateiauswahl und fertig dekodiertem Bild vergeht bei einem
+              Handy-Foto gut eine Sekunde. Ohne Anzeige sieht das aus, als waere
+              nichts passiert. Gleiches gilt waehrend des Hochladens. */}
+          {(!size || working) && (
+            <div
+              className="crop-overlay"
+              style={{
+                background: `${currentTheme.background.default}cc`,
+                color: currentTheme.text?.muted || 'rgba(255,255,255,0.6)',
+              }}
+            >
+              <span className="crop-spinner" />
+              <span>{working ? t('Wird hochgeladen…') : t('Bild wird geladen…')}</span>
+            </div>
           )}
         </div>
 
@@ -259,9 +282,14 @@ export const ImageCropSheet = ({
             fontSize: '15px',
             fontWeight: 700,
             cursor: working ? 'default' : 'pointer',
-            opacity: working ? 0.6 : 1,
+            opacity: working ? 0.75 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
           }}
         >
+          {working && <span className="crop-spinner" />}
           {working ? t('Wird hochgeladen…') : t('Als Profilbild verwenden')}
         </button>
         <button

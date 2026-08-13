@@ -54,7 +54,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         height: size,
         borderRadius: '50%',
         flexShrink: 0,
-        cursor: navigable ? 'pointer' : zoomable ? 'zoom-in' : 'default',
+        cursor: navigable || zoomable ? 'pointer' : 'default',
         border: `2px solid ${borderColor}`,
         boxShadow: size >= 36 ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
         padding: 0,

@@ -48,6 +48,7 @@ import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { NewOnSubscriptionsSection } from './sections/NewOnSubscriptionsSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
+import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,6 +58,8 @@ export const HomePage: React.FC = () => {
   // All hooks must be called unconditionally (before any return)
   const [dbDisplayName, setDbDisplayName] = useState<string | null>(null);
   const [dbPhotoURL, setDbPhotoURL] = useState<string | null>(null);
+  // Reaktiv statt Einmal-Lesung: nach einem Upload aktualisiert sich der Avatar sofort.
+  const ownPhotoURL = useOwnPhotoURL(dbPhotoURL || user?.photoURL);
 
   useEffect(() => {
     if (user) {
@@ -475,7 +478,7 @@ export const HomePage: React.FC = () => {
 
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}
-        photoURL={dbPhotoURL || user.photoURL || undefined}
+        photoURL={ownPhotoURL || undefined}
         totalUnreadBadge={notifs.totalUnreadBadge}
         onNotificationsOpen={() => setShowNotifications(true)}
         watchedEpisodes={stats.watchedEpisodes}

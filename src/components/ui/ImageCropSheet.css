@@ -61,3 +61,40 @@
 .crop-range::-moz-range-track {
   background: transparent;
 }
+
+/* Ladeanzeige im Zuschnitt-Kreis und im Knopf. Eigener Spinner statt
+   LoadingSpinner: der soll hier nur so gross wie die Schrift sein. */
+.crop-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: crop-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.crop-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+}
+
+@keyframes crop-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crop-spinner {
+    animation-duration: 2.4s;
+  }
+}

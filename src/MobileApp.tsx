@@ -17,6 +17,7 @@ import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
 import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from './components/AvatarViewerHost';
+import { bindOwnPhotoURL } from './services/ownProfilePhoto';
 import { PageTourHost } from './features/tour';
 import './styles/App.css';
 
@@ -189,6 +190,11 @@ export const MobileApp = () => {
   // Ticket-Cleanup liest die komplette bugTickets-Liste — nach der Regel-
   // Haertung darf das nur der Admin (sonst permission-denied). Deshalb nur
   // fuer den Admin ausloesen.
+  // Eigenes Profilbild an das Konto binden — eine Quelle fuer alle Avatare.
+  useEffect(() => {
+    bindOwnPhotoURL(user?.uid);
+  }, [user?.uid]);
+
   useEffect(() => {
     preloadRoutes({ isAdmin: user?.uid === ADMIN_UID });
     // .catch nicht vergessen: nach einem Deploy sind die Chunk-Hashes eines

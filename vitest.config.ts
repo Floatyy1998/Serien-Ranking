@@ -262,6 +262,7 @@ export default defineConfig({
         'src/services/offline/pendingWritesIDB.ts',
         'src/services/offline/queuedUpdate.ts',
         'src/services/profileImage.ts',
+        'src/services/ownProfilePhoto.ts',
         'src/services/pageTour.ts',
         'src/lib/posterPlaceholder.ts',
         'src/lib/preloadImage.ts',

@@ -37,6 +37,7 @@ import {
 import './MangaPage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
 
 export const MangaPage = () => {
   const { currentTheme } = useTheme();
@@ -55,7 +56,7 @@ export const MangaPage = () => {
     user ? `users/${user.uid}` : '',
     { ttl: 5 * 60 * 1000, useRealtimeListener: true }
   );
-  const photoURL = userData?.photoURL || user?.photoURL || null;
+  const photoURL = useOwnPhotoURL(userData?.photoURL || user?.photoURL);
   const collectionRef = useRef<HTMLDivElement>(null);
   const [collectionFilter, setCollectionFilter] = useState('all');
 

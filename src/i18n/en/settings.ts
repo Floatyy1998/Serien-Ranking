@@ -1,6 +1,8 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Englisch. */
 
 const settings: Record<string, string> = {
+  'Bild wird geladen…': 'Loading image…',
+  'Bild konnte nicht geladen werden': 'That image could not be loaded',
   'Bild zuschneiden': 'Crop image',
   'Ziehen zum Verschieben, Regler zum Vergrößern': 'Drag to move, slider to zoom',
   'Als Profilbild verwenden': 'Use as profile picture',

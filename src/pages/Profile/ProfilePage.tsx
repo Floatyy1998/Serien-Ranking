@@ -1,6 +1,6 @@
 /** Kompositions-Komponente — Logik in useProfileData, memoized Subkomponenten. */
 
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import {
   ProfileFeaturedNav,
   ProfileHeader,
@@ -10,6 +10,7 @@ import {
 } from './ProfileComponents';
 import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
 import { useAvatarUpload } from '../../hooks/useAvatarUpload';
+import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
 import { useProfileData } from './useProfileData';
 import { t } from '../../services/i18n';
 import './ProfilePage.css';
@@ -29,11 +30,9 @@ export const ProfilePage = memo(() => {
     handleLogout,
   } = useProfileData();
 
-  // Frisch hochgeladenes Bild sofort zeigen, ohne auf den RTDB-Listener zu warten.
-  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
-  const avatar = useAvatarUpload(setUploadedPhoto);
+  const avatar = useAvatarUpload();
 
-  const photoURL = uploadedPhoto || userData?.photoURL || user?.photoURL || null;
+  const photoURL = useOwnPhotoURL(userData?.photoURL || user?.photoURL);
   const displayName = userData?.displayName || user?.displayName || 'User';
 
   return (

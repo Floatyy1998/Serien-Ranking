@@ -1,6 +1,8 @@
 /** Einstellungen (Settings-Bereich) — Deutsch → Portugiesisch. */
 
 const dict: Record<string, string> = {
+  'Bild wird geladen…': 'Carregando a imagem…',
+  'Bild konnte nicht geladen werden': 'Não foi possível carregar a imagem',
   'Bild zuschneiden': 'Recortar imagem',
   'Ziehen zum Verschieben, Regler zum Vergrößern':
     'Arraste para mover, use o controle para ampliar',

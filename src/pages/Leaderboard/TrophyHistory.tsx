@@ -147,7 +147,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         height: avatarSize,
                         border: `2px solid ${medal}60`,
                         background: currentTheme.background.default,
-                        cursor: entry.photoURL ? 'zoom-in' : undefined,
+                        cursor: entry.photoURL ? 'pointer' : undefined,
                       }}
                       onClick={(e) => {
                         if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();
