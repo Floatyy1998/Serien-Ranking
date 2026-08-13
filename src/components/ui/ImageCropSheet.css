@@ -1,0 +1,63 @@
+/* Zoom-Regler im Zuschneide-Sheet. Gleiche Optik wie der Bewertungs-Regler
+   (.rate-range), aber eigene Klasse: jene CSS gehoert zur Bewertungs-Seite und
+   wird nur dort geladen — ein geteiltes Sheet darf sich nicht darauf verlassen.
+
+   ACHTUNG: -webkit-Eigenschaft immer VOR der Standard-Eigenschaft, sonst
+   verschmilzt der Minifier das Paar und die Webkit-Variante faellt weg. */
+
+.crop-range {
+  width: 100%;
+  max-width: 280px;
+  height: 8px;
+  margin: 20px 0 4px;
+  border-radius: var(--radius-xs);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.crop-range:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.crop-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #f2a648)
+  );
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-default);
+}
+
+.crop-range::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+.crop-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #f2a648)
+  );
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
+  cursor: pointer;
+}
+
+.crop-range::-moz-range-track {
+  background: transparent;
+}

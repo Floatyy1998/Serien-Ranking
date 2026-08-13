@@ -11,6 +11,7 @@ import {
 } from '../../lib/imageCrop';
 import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
+import './ImageCropSheet.css';
 
 /** Kantenlänge des gespeicherten Bildes. Avatare werden nie größer gezeigt. */
 const OUTPUT_SIZE = 512;
@@ -143,11 +144,31 @@ export const ImageCropSheet = ({
   }, [size, transform, viewport, onConfirm, rendering]);
 
   const scale = size ? coverScale(size.w, size.h, viewport) * transform.zoom : 1;
+  const zoomPercent = ((transform.zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100;
   const working = busy || rendering;
 
   return (
-    <BottomSheet isOpen={file !== null} onClose={onCancel} ariaLabel={t('Bild zuschneiden')}>
-      <div style={{ padding: '0 20px 28px', textAlign: 'center' }}>
+    // maxWidth ist Pflicht: .ui-sheet ist auf dem Desktop bis 1600px breit
+    // (fuer Listen-Sheets mit Raster) — ein Dialog braucht das nicht.
+    <BottomSheet
+      isOpen={file !== null}
+      onClose={onCancel}
+      maxWidth="420px"
+      ariaLabel={t('Bild zuschneiden')}
+    >
+      {/* Spalte statt Textfluss: das Sheet haengt per Portal an document.body,
+          dort greift die globale Regel `.mobile-app button { display: flex }`
+          nicht. Regler und Knoepfe blieben sonst inline und landeten auf
+          breiten Fenstern nebeneinander in einer Zeile. */}
+      <div
+        style={{
+          padding: '0 20px 28px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px' }}>
           {t('Bild zuschneiden')}
         </h3>
@@ -215,11 +236,11 @@ export const ImageCropSheet = ({
           disabled={!size}
           aria-label={t('Vergrößern')}
           onChange={(e) => apply({ ...transform, zoom: Number(e.target.value) })}
+          className="crop-range"
+          // Gefuellter Teil der Schiene: als Verlauf, weil ::-webkit-slider-runnable-track
+          // den aktuellen Wert nicht kennt.
           style={{
-            width: '100%',
-            maxWidth: '280px',
-            margin: '18px 0 4px',
-            accentColor: currentTheme.primary,
+            background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${zoomPercent}%, rgba(255,255,255,0.12) ${zoomPercent}%, rgba(255,255,255,0.12) 100%)`,
           }}
         />
 
