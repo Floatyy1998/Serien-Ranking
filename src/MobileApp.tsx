@@ -67,6 +67,12 @@ const DevPetPreviewPage = import.meta.env.DEV
   ? lazy(() => import('./pages/DevPetPreview').then((m) => ({ default: m.DevPetPreviewPage })))
   : null;
 
+// Nur im Dev-Server: Overlays und Sheets in mehreren Fensterbreiten unter
+// /dev/ui-preview — faengt Layout-Fehler, die nur auf breiten Fenstern auftreten.
+const DevUiPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/DevUiPreview').then((m) => ({ default: m.DevUiPreviewPage })))
+  : null;
+
 // Themed Spinner statt rohem "Loading..."-Text — das hier ist der Suspense-
 // Fallback, den Nutzer beim ersten Besuch fast jeder Lazy-Route sehen
 const PageLoader = () => (
@@ -379,6 +385,7 @@ export const MobileApp = () => {
                   }
                 />
               )}
+              {DevUiPreviewPage && <Route path="/dev/ui-preview" element={<DevUiPreviewPage />} />}
               <Route
                 path="/admin"
                 element={
