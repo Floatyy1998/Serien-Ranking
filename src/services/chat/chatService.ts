@@ -144,9 +144,7 @@ export async function sendImageMessage(
   if (!msgId) return;
 
   const storageRef = firebase.storage().ref(`chat-images/${pairId}/${msgId}`);
-  await storageRef.put(prepared.blob, {
-    contentType: prepared.isGif ? 'image/gif' : 'image/webp',
-  });
+  await storageRef.put(prepared.blob, { contentType: prepared.contentType });
   const url: string = await storageRef.getDownloadURL();
 
   const ts = Date.now();

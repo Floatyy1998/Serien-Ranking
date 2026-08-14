@@ -342,16 +342,23 @@
 .ch-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 18px clamp(14px, 4vw, 48px) 10px;
-  display: flex;
-  flex-direction: column;
   position: relative;
   z-index: 1;
 }
 
+/* Eigener Inhalts-Kasten im Scroller: nur so kann ein ResizeObserver merken,
+   dass der Verlauf gewachsen ist (Bild geladen, Reaktion dazugekommen), und
+   den Blick wieder ans Ende ziehen. */
+.ch-messages-inner {
+  min-height: 100%;
+  padding: 18px clamp(14px, 4vw, 48px) 10px;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Kurze Verläufe kleben unten (Messenger-Verhalten) statt oben zu schweben.
    Eigener Spacer: die Gruppen-Wrapper sind display:contents und tragen keine Margins. */
-.ch-messages::before {
+.ch-messages-inner::before {
   content: '';
   margin-top: auto;
 }

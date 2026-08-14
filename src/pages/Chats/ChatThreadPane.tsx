@@ -65,6 +65,8 @@ function dayLabel(ts: number): string {
 
 const TYPING_VISIBLE_MS = 6000;
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
+/** Bis hierher gilt der Verlauf als „unten" und wird weiter nachgeführt. */
+const BOTTOM_SLACK_PX = 80;
 
 export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showBack: boolean }) => {
   const navigate = useNavigate();
@@ -101,6 +103,8 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   } | null>(null);
   const [caption, setCaption] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
+  const listContentRef = useRef<HTMLDivElement>(null);
+  const atBottom = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingFrame = useRef(0);
@@ -198,6 +202,13 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const scrollToBottom = useCallback(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
+    atBottom.current = true;
+  }, []);
+
+  /** Merkt sich, ob der Verlauf am Ende steht — nur dann wird nachgeführt. */
+  const rememberScrollAnchor = useCallback(() => {
+    const el = listRef.current;
+    if (el) atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < BOTTOM_SLACK_PX;
   }, []);
 
   useEffect(() => {
@@ -213,6 +224,25 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     pendingFrame.current = r1;
     return () => cancelAnimationFrame(pendingFrame.current);
   }, [messages.length, otherTyping, scrollToBottom]);
+
+  /**
+   * Der Verlauf wächst noch, nachdem der Sprung ans Ende gelaufen ist: Bilder
+   * bekommen ihre Höhe, Reaktionen trudeln aus einem eigenen Listener ein,
+   * Schriften laden nach. Jedes Mal rutscht das Ende nach unten weg, und der
+   * Chat sah aus, als würde er beim Öffnen von selbst ein Stück hochscrollen.
+   * Solange man unten steht, wird deshalb jede Höhenänderung nachgezogen.
+   */
+  useEffect(() => {
+    const content = listContentRef.current;
+    if (!content || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      if (!atBottom.current) return; // wer nach oben gelesen hat, bleibt dort
+      const el = listRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
 
   const iBlocked = !!myUid && blockedBy.includes(myUid);
   const chatFrozen = blockedBy.length > 0;
@@ -532,137 +562,135 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
         </AnimatePresence>
       </div>
 
-      <div className="ch-messages" ref={listRef} onClick={() => setMenuOpen(false)}>
-        {messages.length === 0 && (
-          <div className="ch-empty" style={{ color: currentTheme.text.muted }}>
-            <h3 style={{ color: currentTheme.text.primary }}>
-              {t('Sag hallo zu {name}!', { name: partner.name })}
-            </h3>
-            <p>
-              {t(
-                'Nachrichten sind nur für euch beide sichtbar. Sei freundlich — Meldungen prüfen wir ernsthaft.'
-              )}
-            </p>
-          </div>
-        )}
-        {grouped.map((group) => (
-          <div key={group.day} style={{ display: 'contents' }}>
-            <span className="ch-day" style={{ color: currentTheme.text.muted }}>
-              {group.day}
-            </span>
-            {group.items.map((m) => {
-              const own = m.senderId === myUid;
-              const msgReactions = Object.values(reactions[m.id] || {});
-              return (
-                <div key={m.id} className={`ch-bubble-wrap${own ? ' ch-bubble-wrap--own' : ''}`}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.15 }}
-                    className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId || m.imageUrl ? ' ch-bubble--media' : ''}`}
-                    onDoubleClick={() => toggleHeart(m.id)}
-                    style={(() => {
-                      if (m.stickerId || m.imageUrl) return undefined;
-                      const s = own ? myStyle : null;
-                      if (s) {
-                        return {
-                          background: `linear-gradient(135deg, ${s.c1}, ${s.c2})`,
-                          color: bubbleTextColor(s.c1, s.c2),
-                          '--bub-r': `${RADIUS_PX[s.r]}px`,
-                        } as React.CSSProperties;
-                      }
-                      return own
-                        ? {
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                          }
-                        : { color: currentTheme.text.primary };
-                    })()}
-                  >
-                    {m.imageUrl ? (
-                      <>
-                        <img
-                          className="ch-image"
-                          src={m.imageUrl}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          style={
-                            m.imageWidth && m.imageHeight
-                              ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
-                              : undefined
-                          }
-                          onLoad={() => {
-                            // Bild ohne bekannte Maße wächst beim Laden — nachführen,
-                            // aber nur wenn man ohnehin (fast) unten ist, sonst reißt
-                            // es den Lese-Scroll weg.
-                            const el = listRef.current;
-                            if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 160) {
-                              el.scrollTop = el.scrollHeight;
+      <div
+        className="ch-messages"
+        ref={listRef}
+        onScroll={rememberScrollAnchor}
+        onClick={() => setMenuOpen(false)}
+      >
+        <div className="ch-messages-inner" ref={listContentRef}>
+          {messages.length === 0 && (
+            <div className="ch-empty" style={{ color: currentTheme.text.muted }}>
+              <h3 style={{ color: currentTheme.text.primary }}>
+                {t('Sag hallo zu {name}!', { name: partner.name })}
+              </h3>
+              <p>
+                {t(
+                  'Nachrichten sind nur für euch beide sichtbar. Sei freundlich — Meldungen prüfen wir ernsthaft.'
+                )}
+              </p>
+            </div>
+          )}
+          {grouped.map((group) => (
+            <div key={group.day} style={{ display: 'contents' }}>
+              <span className="ch-day" style={{ color: currentTheme.text.muted }}>
+                {group.day}
+              </span>
+              {group.items.map((m) => {
+                const own = m.senderId === myUid;
+                const msgReactions = Object.values(reactions[m.id] || {});
+                return (
+                  <div key={m.id} className={`ch-bubble-wrap${own ? ' ch-bubble-wrap--own' : ''}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.15 }}
+                      className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId || m.imageUrl ? ' ch-bubble--media' : ''}`}
+                      onDoubleClick={() => toggleHeart(m.id)}
+                      style={(() => {
+                        if (m.stickerId || m.imageUrl) return undefined;
+                        const s = own ? myStyle : null;
+                        if (s) {
+                          return {
+                            background: `linear-gradient(135deg, ${s.c1}, ${s.c2})`,
+                            color: bubbleTextColor(s.c1, s.c2),
+                            '--bub-r': `${RADIUS_PX[s.r]}px`,
+                          } as React.CSSProperties;
+                        }
+                        return own
+                          ? {
+                              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
                             }
-                          }}
-                          onClick={() => setLightboxUrl(m.imageUrl || null)}
-                        />
-                        {m.text && (
-                          <div
-                            className="ch-image-caption"
-                            style={{ color: currentTheme.text.primary }}
-                          >
-                            {m.text}
-                          </div>
-                        )}
-                      </>
-                    ) : m.stickerId && isValidStickerId(m.stickerId) ? (
-                      <StickerCanvas stickerId={m.stickerId} size={150} />
-                    ) : m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
-                      <button
-                        className="ch-spoiler-cover"
-                        onClick={() => setRevealedSpoilers((prev) => new Set(prev).add(m.id))}
-                      >
-                        <VisibilityOffOutlined style={{ fontSize: 16 }} />
-                        {t('Spoiler — tippen zum Lesen')}
-                      </button>
-                    ) : m.isSpoiler ? (
-                      <>
-                        <span className="ch-spoiler-own">
-                          <VisibilityOffOutlined style={{ fontSize: 12 }} />
-                          {t('Als Spoiler gesendet')}
-                        </span>
-                        {m.text}
-                      </>
-                    ) : (
-                      m.text
-                    )}
-                    <span className="ch-bubble-time">
-                      {new Date(m.timestamp).toLocaleTimeString('de-DE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </motion.div>
-                  {msgReactions.length > 0 && (
-                    <motion.button
-                      initial={{ scale: 0.6, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="ch-reactions"
-                      onClick={() => toggleHeart(m.id)}
-                      aria-label={t('Reaktion')}
+                          : { color: currentTheme.text.primary };
+                      })()}
                     >
-                      {[...new Set(msgReactions)].join('')}
-                      {msgReactions.length > 1 ? ` ${msgReactions.length}` : ''}
-                    </motion.button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-        {otherTyping && (
-          <div className="ch-typing" style={{ color: currentTheme.text.primary }} aria-hidden>
-            <i />
-            <i />
-            <i />
-          </div>
-        )}
+                      {m.imageUrl ? (
+                        <>
+                          <img
+                            className="ch-image"
+                            src={m.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            style={
+                              m.imageWidth && m.imageHeight
+                                ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
+                                : undefined
+                            }
+                            onClick={() => setLightboxUrl(m.imageUrl || null)}
+                          />
+                          {m.text && (
+                            <div
+                              className="ch-image-caption"
+                              style={{ color: currentTheme.text.primary }}
+                            >
+                              {m.text}
+                            </div>
+                          )}
+                        </>
+                      ) : m.stickerId && isValidStickerId(m.stickerId) ? (
+                        <StickerCanvas stickerId={m.stickerId} size={150} />
+                      ) : m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
+                        <button
+                          className="ch-spoiler-cover"
+                          onClick={() => setRevealedSpoilers((prev) => new Set(prev).add(m.id))}
+                        >
+                          <VisibilityOffOutlined style={{ fontSize: 16 }} />
+                          {t('Spoiler — tippen zum Lesen')}
+                        </button>
+                      ) : m.isSpoiler ? (
+                        <>
+                          <span className="ch-spoiler-own">
+                            <VisibilityOffOutlined style={{ fontSize: 12 }} />
+                            {t('Als Spoiler gesendet')}
+                          </span>
+                          {m.text}
+                        </>
+                      ) : (
+                        m.text
+                      )}
+                      <span className="ch-bubble-time">
+                        {new Date(m.timestamp).toLocaleTimeString('de-DE', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </motion.div>
+                    {msgReactions.length > 0 && (
+                      <motion.button
+                        initial={{ scale: 0.6, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="ch-reactions"
+                        onClick={() => toggleHeart(m.id)}
+                        aria-label={t('Reaktion')}
+                      >
+                        {[...new Set(msgReactions)].join('')}
+                        {msgReactions.length > 1 ? ` ${msgReactions.length}` : ''}
+                      </motion.button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          {otherTyping && (
+            <div className="ch-typing" style={{ color: currentTheme.text.primary }} aria-hidden>
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
+        </div>
       </div>
 
       {chatFrozen ? (
