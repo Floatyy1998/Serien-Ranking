@@ -49,6 +49,7 @@ const ep = (
     episode_number?: number;
     watched?: boolean;
     lastWatchedAt?: string;
+    air_date?: string;
   } = {}
 ) => ({
   id: 1,
@@ -118,7 +119,7 @@ describe('detectAnimeMangaHandoff', () => {
     expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
   });
 
-  it('picks the highest completed season when several qualify', async () => {
+  it('meldet die letzte Staffel, wenn der ganze Anime gesehen ist', async () => {
     catalog.fetchStaticAnimeManga.mockResolvedValue({
       '1': { m: 999, t: 'M', c: 545, s: { '1': 120, '2': 260 } },
     });
@@ -147,6 +148,63 @@ describe('detectAnimeMangaHandoff', () => {
       seasons: [
         { seasonNumber: 0, episodes: [ep({ id: 1, watched: true }), ep({ id: 2, watched: true })] },
       ] as Series['seasons'],
+    });
+    expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
+  });
+
+  it('meldet nichts, solange eine spaetere Staffel noch offen ist', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120, '2': 260 } },
+    });
+    // Staffel 1 durch, Staffel 2 liegt vor und ist ungesehen — genau der Fall,
+    // in dem der Hinweis frueher nach jedem Finale kam.
+    const series = makeSeries({
+      seasons: [seasonWatched(0, true), seasonWatched(1, false)] as Series['seasons'],
+    });
+    expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
+  });
+
+  it('meldet nichts, wenn noch eine Folge mit Termin aussteht', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120 } },
+    });
+    const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const series = makeSeries({
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [
+            ep({ id: 1, watched: true, lastWatchedAt: RECENT }),
+            ep({ id: 2, episode_number: 2, air_date: future }),
+          ],
+        },
+      ] as Series['seasons'],
+    });
+    expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
+  });
+
+  it('meldet auch bei laufender Serie, wenn kein Termin aussteht', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120 } },
+    });
+    // Zwischen zwei Anime-Staffeln liegen oft Jahre — genau dann will man
+    // weiterlesen. Der Serienstatus darf das nicht blockieren.
+    const series = makeSeries({
+      status: 'Returning Series',
+      seasons: [seasonWatched(0, true)] as Series['seasons'],
+    });
+    const res = await detectAnimeMangaHandoff([series], UID);
+    expect(res).toHaveLength(1);
+    expect(res[0]).toMatchObject({ seasonNumber: 1, estimatedChapter: 120 });
+  });
+
+  it('schweigt, wenn fuer die letzte Staffel keine Schaetzung vorliegt', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      // nur Staffel 1 geschaetzt, gesehen sind aber beide
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120 } },
+    });
+    const series = makeSeries({
+      seasons: [seasonWatched(0, true), seasonWatched(1, true)] as Series['seasons'],
     });
     expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
   });

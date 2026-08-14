@@ -12,6 +12,30 @@ import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notification
 /** Nur Staffeln melden, die in diesem Fenster fertig geschaut wurden. */
 const HANDOFF_RECENCY_MS = 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * Gibt es im Anime noch etwas zu schauen? Der Hinweis „lies im Manga weiter"
+ * soll erst kommen, wenn nichts mehr nachkommt — nicht nach jedem Staffelfinale.
+ *
+ * Zwei Gründe sprechen dagegen:
+ *  1. noch nicht gesehene, bereits ausgestrahlte Folgen (z. B. Staffel 2 liegt
+ *     schon vor),
+ *  2. Folgen mit Ausstrahlungsdatum in der Zukunft (laufende Staffel, nächste
+ *     Woche geht es weiter).
+ *
+ * Der Serienstatus wird bewusst NICHT geprüft: zwischen zwei Anime-Staffeln
+ * liegen oft Jahre, und genau dann will man den Manga weiterlesen. Ein Status
+ * wie „Returning Series" ohne einen einzigen Termin darf das nicht verhindern.
+ */
+function hasMoreAnimeToWatch(series: Series): boolean {
+  for (const season of normalizeSeasons(series.seasons)) {
+    for (const ep of normalizeEpisodes(season.episodes)) {
+      if (!hasEpisodeAired(ep)) return true; // kommt noch
+      if (!isEpisodeWatched(ep)) return true; // liegt schon vor
+    }
+  }
+  return false;
+}
+
 /** Neuester Watch-Zeitstempel (ms) einer Staffel, oder 0 wenn keiner bekannt. */
 function seasonCompletionAt(
   eps: Array<{ lastWatchedAt?: string | number; firstWatchedAt?: string | number }>
@@ -29,24 +53,29 @@ function seasonCompletionAt(
 
 export interface AnimeMangaHandoff {
   series: Series;
-  /** 1-basierte, gerade abgeschlossene Staffel. */
+  /** 1-basierte letzte Staffel des Animes. */
   seasonNumber: number;
   /** AniList-id des Quell-Mangas. */
   mangaId: number;
   mangaTitle: string;
   /** Gesamt-Kapitelzahl des Mangas (falls bekannt). */
   totalChapters: number | null;
-  /** KI-geschätztes End-Kapitel dieser Staffel (approximativ). */
+  /** KI-geschätztes Kapitel, an dem der Anime endet (approximativ). */
   estimatedChapter: number;
   confidence?: 'high' | 'med' | 'low';
 }
 
 /**
- * Findet Animes, bei denen der Nutzer eine komplett ausgestrahlte Staffel
- * vollständig gesehen hat und für die ein Anime→Manga-Anschluss (aus dem
- * statischen `anime-manga.json`) existiert. Meldet pro Serie die **höchste**
- * solche abgeschlossene Staffel — so kommt beim Weiterschauen genau eine
- * „lies den Manga weiter"-Notification pro neu beendeter Staffel.
+ * Findet Animes, die der Nutzer **auserzählt** hat und für die ein
+ * Anime→Manga-Anschluss (aus dem statischen `anime-manga.json`) existiert.
+ *
+ * Auserzählt heißt: keine ungesehene ausgestrahlte Folge und keine Folge mit
+ * Termin in der Zukunft. Frühere Fassungen meldeten nach JEDEM Staffelfinale —
+ * auch wenn die nächste Staffel längst vorlag. Ein Hinweis zum Weiterlesen ist
+ * nur sinnvoll, wenn im Anime nichts mehr nachkommt.
+ *
+ * Gemeldet wird die letzte Staffel mit Folgen; fehlt für sie eine Schätzung,
+ * bleibt es still statt ein längst überholtes Kapitel zu nennen.
  *
  * Ein-Shot pro (Serie, Staffel): einmal dismissed → kommt nicht wieder (bis der
  * Nutzer eine höhere Staffel abschließt). Respektiert die Snooze-Tabelle.
@@ -74,27 +103,28 @@ export async function detectAnimeMangaHandoff(
     const entry = bridge[String(series.id)];
     if (!entry) continue;
 
-    // Höchste vollständig ausgestrahlte + komplett gesehene Staffel mit Schätzung.
+    // Der Anime muss auserzählt sein — sonst wäre der Hinweis nach jedem
+    // Staffelfinale da, obwohl noch Folgen warten oder nachkommen.
+    if (hasMoreAnimeToWatch(series)) continue;
+
+    // Ab hier ist alles gesehen: maßgeblich ist die LETZTE Staffel mit Folgen.
+    // Eine ältere zu melden würde ein Kapitel nennen, das der Nutzer im Anime
+    // längst hinter sich hat — dann lieber schweigen.
     let bestSeason = 0;
-    let bestChapter = 0;
     let bestCompletion = 0;
     for (const season of normalizeSeasons(series.seasons)) {
-      const seasonNum = (season.seasonNumber ?? 0) + 1;
-      const est = entry.s?.[String(seasonNum)];
-      if (est == null) continue;
-
       const eps = normalizeEpisodes(season.episodes);
       if (eps.length === 0) continue;
-      if (!eps.every((ep) => hasEpisodeAired(ep))) continue;
-      if (!eps.every((ep) => isEpisodeWatched(ep))) continue;
-
+      const seasonNum = (season.seasonNumber ?? 0) + 1;
       if (seasonNum > bestSeason) {
         bestSeason = seasonNum;
-        bestChapter = est;
         bestCompletion = seasonCompletionAt(eps);
       }
     }
     if (bestSeason === 0) continue;
+
+    const bestChapter = entry.s?.[String(bestSeason)];
+    if (bestChapter == null) continue;
 
     // NICHT rückwirkend: nur Staffeln, die *kürzlich* fertig geschaut wurden.
     // Ohne diesen Filter würde die Detection beim Feature-Start für die gesamte
