@@ -1,6 +1,7 @@
 /** Detail-Seiten (Serie + Film) — Deutsch → Portugiesisch. */
 
 const dict: Record<string, string> = {
+  'S{s} E{e}{name} als gesehen markieren': 'Marcar S{s} E{e}{name} como visto',
   'Extern teilen': 'Compartilhar fora do app',
   'Nächste Folge S{s} E{e} als gesehen markieren':
     'Marcar o próximo episódio T{s} E{e} como assistido',

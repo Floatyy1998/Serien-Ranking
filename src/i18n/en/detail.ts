@@ -1,6 +1,7 @@
 /** Detail-Seiten (Serie + Film) — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
+  'S{s} E{e}{name} als gesehen markieren': 'Mark S{s} E{e}{name} as watched',
   // Gemeinsam
   Zurück: 'Back',
   'Teilen & Empfehlen': 'Share & recommend',

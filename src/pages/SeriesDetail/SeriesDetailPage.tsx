@@ -1,3 +1,4 @@
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import History from '@mui/icons-material/History';
 import Info from '@mui/icons-material/Info';
 import List from '@mui/icons-material/List';
@@ -316,6 +317,7 @@ export const SeriesDetailPage = memo(() => {
               // Kompakter Pill-CTA statt 2500px-Streifen — DIE eine laute
               // Aktion der Seite, links verankert. Mobile darf voll wachsen.
               width: isMobile ? '100%' : 'auto',
+              maxWidth: '100%',
               minHeight: 48,
               padding: '12px 26px',
               borderRadius: 999,
@@ -333,11 +335,23 @@ export const SeriesDetailPage = memo(() => {
               boxShadow: `0 10px 30px -10px ${currentTheme.primary}80`,
             }}
           >
-            {t('▶ Weiter: S{s} E{e}{name} — gesehen', {
-              s: nextEpisode.seasonNumber,
-              e: nextEpisode.episodeNumber,
-              name: nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : '',
-            })}
+            {/* Icon statt des Textzeichens „▶", und der Text benennt die Aktion:
+                „… — gesehen" las sich wie ein Zustand und widersprach dem
+                Fortschritt darüber, der 0 % anzeigen kann. */}
+            <CheckCircle style={{ fontSize: 20, flexShrink: 0 }} />
+            <span
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('S{s} E{e}{name} als gesehen markieren', {
+                s: nextEpisode.seasonNumber,
+                e: nextEpisode.episodeNumber,
+                name: nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : '',
+              })}
+            </span>
           </button>
         </div>
       )}
