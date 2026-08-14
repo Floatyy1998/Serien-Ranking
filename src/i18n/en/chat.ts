@@ -78,6 +78,7 @@ const dict: Record<string, string> = {
   Bild: 'Image',
   'Bild ist zu groß (max. 8 MB).': 'Image is too large (max. 8 MB).',
   'Bild konnte nicht gesendet werden.': "Couldn't send image.",
+  'Doppeltippen zum Vergrößern': 'Double-tap to zoom in',
   Standard: 'Default',
   Smaragd: 'Emerald',
   Mitternacht: 'Midnight',

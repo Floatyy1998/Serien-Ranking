@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
 import { AvatarViewerHost } from '../../components/AvatarViewerHost';
+import { ZoomableImage } from '../../components/ui/ZoomableImage';
 import { PageTourSheet } from '../../features/tour/PageTourSheet';
+import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/avatarViewer';
 
@@ -88,8 +90,25 @@ const PageTourPreview = () => {
   return <PageTourSheet tour={longest} onClose={() => {}} />;
 };
 
+/** Chat-Bild in groß: Doppeltipp, Mausrad und Ziehen lassen sich hier prüfen. */
+const LightboxPreview = () => {
+  const [zoomed, setZoomed] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    void sampleImageFile().then((file) => setUrl(URL.createObjectURL(file)));
+  }, []);
+  if (!url) return null;
+  return (
+    <div className="ch-lightbox">
+      <ZoomableImage src={url} alt="Testbild" onZoomChange={setZoomed} />
+      {!zoomed && <span className="ch-lightbox-hint">Doppeltippen zum Vergrößern</span>}
+    </div>
+  );
+};
+
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },
+  { id: 'lightbox', label: 'Chat-Bild groß', render: () => <LightboxPreview /> },
   { id: 'avatar', label: 'Profilbild groß', render: () => <AvatarViewerPreview /> },
   { id: 'tour', label: 'Seitenhilfe', render: () => <PageTourPreview /> },
 ];

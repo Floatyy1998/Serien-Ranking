@@ -1,4 +1,5 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import Close from '@mui/icons-material/Close';
 import ImageOutlined from '@mui/icons-material/ImageOutlined';
 import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
 import InsertEmoticonOutlined from '@mui/icons-material/InsertEmoticonOutlined';
@@ -9,8 +10,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog } from '../../components/ui';
 import { NameBadges } from '../../components/ui/NameBadges';
+import { ZoomableImage } from '../../components/ui/ZoomableImage';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { hapticTap } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { t } from '../../services/i18n';
@@ -90,6 +93,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [wallpaperId, setWallpaperId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxZoomed, setLightboxZoomed] = useState(false);
   const [pendingImage, setPendingImage] = useState<{
     file: File;
     url: string;
@@ -101,6 +105,23 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingFrame = useRef(0);
   const lastTypingSentRef = useRef(0);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxUrl(null);
+    setLightboxZoomed(false);
+  }, []);
+
+  // Das Bild liegt über allem, hat aber keine eigene Route: Escape und der
+  // Android-Zurück-Knopf müssen es schließen, sonst verlässt Zurück den Chat.
+  useAndroidBack(lightboxUrl !== null, closeLightbox);
+  useEffect(() => {
+    if (!lightboxUrl) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxUrl, closeLightbox]);
 
   // Chat beim Öffnen anlegen — Listener auf einen nicht existierenden Chat
   // werden von Firebase bei permission_denied dauerhaft gecancelt.
@@ -819,11 +840,26 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setLightboxUrl(null)}
             role="dialog"
+            aria-modal="true"
             aria-label={t('Bild')}
           >
-            <img src={lightboxUrl} alt="" />
+            <ZoomableImage
+              src={lightboxUrl}
+              alt={t('Bild')}
+              onEmptyClick={closeLightbox}
+              onZoomChange={setLightboxZoomed}
+            />
+            {!lightboxZoomed && (
+              <span className="ch-lightbox-hint">{t('Doppeltippen zum Vergrößern')}</span>
+            )}
+            <button
+              className="ch-lightbox-close"
+              onClick={closeLightbox}
+              aria-label={t('Schließen')}
+            >
+              <Close style={{ fontSize: 22 }} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
