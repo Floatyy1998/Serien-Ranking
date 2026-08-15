@@ -1,4 +1,6 @@
 /** Push-Queue: Clients legen Einträge ab, der Backend-Listener (hello.js) verschickt per FCM und löscht. */
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 import { dbRef, serverTimestamp } from './db/ref';
 import type { LocalizedMap } from './i18n';
 
@@ -17,10 +19,15 @@ export const queuePush = async (
   push: { title: string; body: string; url?: string; titleL?: LocalizedMap; bodyL?: LocalizedMap }
 ): Promise<void> => {
   try {
+    // Rules verlangen from === auth.uid: macht jeden Eintrag zurechenbar und
+    // verhindert, dass Fremde beliebige Pushes an beliebige Nutzer einreihen.
+    const fromUid = firebase.auth().currentUser?.uid;
+    if (!fromUid) return;
     const titleL = capMap(push.titleL, 100);
     const bodyL = capMap(push.bodyL, 300);
     await dbRef('pushQueue').push({
       to: toUid,
+      from: fromUid,
       title: push.title.slice(0, 100),
       body: push.body.slice(0, 300),
       // Übersetzungen je Sprache — das Backend wählt nach users/$uid/language

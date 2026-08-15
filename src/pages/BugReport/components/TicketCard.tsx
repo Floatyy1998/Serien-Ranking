@@ -5,6 +5,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
+import { storageUrlOrNull } from '../../../lib/safeUrl';
 import { t } from '../../../services/i18n';
 import { formatDateTimeLabel, formatExactDateTime } from '../../../utils/timeLabels';
 
@@ -379,7 +380,7 @@ export function TicketCard({
                     Screenshots
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {ticket.screenshots.map((url, i) => (
+                    {ticket.screenshots.filter(storageUrlOrNull).map((url, i) => (
                       <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                         <img
                           src={url}

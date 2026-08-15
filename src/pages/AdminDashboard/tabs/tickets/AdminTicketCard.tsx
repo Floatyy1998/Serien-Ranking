@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
 import { Badge, Section } from './ticketHelpers';
+import { storageUrlOrNull } from '../../../../lib/safeUrl';
 import { copyTextToClipboard } from '../../../../utils/clipboard';
 import {
   formatAgoLabel,
@@ -301,7 +302,7 @@ export function AdminTicketCard({
                 {ticket.screenshots?.length > 0 && (
                   <Section title={`Screenshots (${ticket.screenshots.length})`} theme={theme}>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {ticket.screenshots.map((url, i) => (
+                      {ticket.screenshots.filter(storageUrlOrNull).map((url, i) => (
                         <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                           <img
                             src={url}

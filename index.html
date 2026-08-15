@@ -78,11 +78,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
 
-    <!-- Allow external resources including Firebase WebSocket -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="img-src 'self' data: https: http: blob:; connect-src 'self' https: wss: ws:; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: blob:;"
-    />
+    <!-- CSP kommt als echter HTTP-Header aus firebase.json (frame-ancestors wirkt im Meta-Tag nicht) -->
     <meta http-equiv="Expires" content="0" />
   </head>
   <body>
