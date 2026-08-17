@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
 import { StarRatingSlider } from '../../components/ui/StarRatingSlider';
-import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SeriesEpisode } from './types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -45,7 +44,6 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
 
   const watchCount = episode.watchCount || 1;
   const warningColor = currentTheme.status?.warning || '#f59e0b';
-  const dirty = draft !== userRating;
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Episode bearbeiten')}>
@@ -72,7 +70,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           </p>
         </div>
 
-        {/* Folgenbewertung: Sterne ziehen (Dezimalwerte), dann aktiv speichern */}
+        {/* Folgenbewertung: Sterne ziehen, gespeichert wird beim Loslassen */}
         {onRate && (
           <div style={{ marginBottom: '18px', textAlign: 'center' }}>
             <p
@@ -86,27 +84,15 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             >
               {t('Folge bewerten')}
             </p>
-            <StarRatingSlider value={draft} onChange={setDraft} size={24} />
-            <motion.button
-              whileTap={dirty ? tapScale : undefined}
-              onClick={() => dirty && onRate(episode, draft >= 0.5 ? draft : null)}
-              disabled={!dirty}
-              style={{
-                marginTop: '14px',
-                padding: '11px 24px',
-                borderRadius: 'var(--radius-lg)',
-                background: dirty ? currentTheme.primary : 'rgba(255,255,255,0.08)',
-                border: 'none',
-                color: dirty
-                  ? getOptimalTextColor(currentTheme.primary)
-                  : currentTheme.text?.muted || 'rgba(255,255,255,0.4)',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: dirty ? 'pointer' : 'default',
+            <StarRatingSlider
+              value={draft}
+              onChange={setDraft}
+              onCommit={(value) => {
+                if (value === userRating) return;
+                onRate(episode, value >= 0.5 ? value : null);
               }}
-            >
-              {draft >= 0.5 ? t('Bewertung speichern') : t('Bewertung entfernen')}
-            </motion.button>
+              size={24}
+            />
           </div>
         )}
 

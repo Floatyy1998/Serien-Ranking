@@ -6,7 +6,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
 import { StarRatingSlider } from '../../components/ui/StarRatingSlider';
-import { getOptimalTextColor } from '../../theme/colorUtils';
 import { setEpisodeRating } from '../../services/episodeRatingService';
 import { showToast } from '../../lib/toast';
 import { fillerLookupKey } from '../../services/animeFillerService';
@@ -80,33 +79,55 @@ export const EpisodeDiscussionPage = memo(() => {
 
   const currentRating = localEpisode?.userRating || 0;
   const [draft, setDraft] = useState(currentRating);
+  // Auch auf die Folge hören, nicht nur auf den Wert: hat die nächste Folge
+  // dieselbe Bewertung (meist 0), bliebe der Entwurf sonst stehen und würde
+  // beim Speichern der FALSCHEN Folge zugeschrieben.
   useEffect(() => {
     setDraft(currentRating);
-  }, [currentRating]);
+  }, [currentRating, localEpisode?.episodeId]);
   const ratingDirty = draft !== currentRating;
 
-  const handleRateEpisode = useCallback(async () => {
-    if (!user || !series || !localEpisode) return;
-    const value = draft >= 0.5 ? draft : null;
-    try {
-      await setEpisodeRating(
-        user.uid,
-        series.id,
-        localEpisode.seasonIndex,
-        localEpisode.episodeId,
-        value
-      );
-      showToast(
-        value
-          ? t('Folge mit {n}/10 bewertet', { n: value.toFixed(1) })
-          : t('Folgenbewertung entfernt'),
-        2000,
-        'success'
-      );
-    } catch {
-      showToast(t('Fehler beim Speichern'), 2500, 'error');
-    }
-  }, [user, series, localEpisode, draft]);
+  const saveRating = useCallback(
+    async (raw: number) => {
+      if (!user || !series || !localEpisode) return;
+      const value = raw >= 0.5 ? raw : null;
+      try {
+        await setEpisodeRating(
+          user.uid,
+          series.id,
+          localEpisode.seasonIndex,
+          localEpisode.episodeId,
+          value
+        );
+        showToast(
+          value
+            ? t('Folge mit {n}/10 bewertet', { n: value.toFixed(1) })
+            : t('Folgenbewertung entfernt'),
+          2000,
+          'success'
+        );
+      } catch {
+        showToast(t('Fehler beim Speichern'), 2500, 'error');
+      }
+    },
+    [user, series, localEpisode]
+  );
+
+  // Ende der Regler-Eingabe: hier speichern, nicht bei jeder Zwischenstufe.
+  const handleCommitRating = useCallback(
+    (value: number) => {
+      if (value === currentRating) return;
+      void saveRating(value);
+    },
+    [currentRating, saveRating]
+  );
+
+  // Abhaken springt zur nächsten Folge — ein noch offener Entwurf (etwa per
+  // Tastatur ohne Enter) wäre sonst verloren. Vorher festschreiben.
+  const handleToggleWatchedAndRating = useCallback(async () => {
+    if (ratingDirty) await saveRating(draft);
+    await handleToggleWatched();
+  }, [ratingDirty, draft, saveRating, handleToggleWatched]);
 
   // Anime filler/recap data – backend-driven, no direct AniList/Jikan calls.
   const animeFiller = useAnimeFillerData(series?.tmdb_id || series?.id, series?.seasons);
@@ -265,27 +286,12 @@ export const EpisodeDiscussionPage = memo(() => {
             >
               {t('Folge bewerten')}
             </div>
-            <StarRatingSlider value={draft} onChange={setDraft} size={22} />
-            <motion.button
-              whileTap={ratingDirty ? { scale: 0.96 } : undefined}
-              onClick={handleRateEpisode}
-              disabled={!ratingDirty}
-              style={{
-                marginTop: '12px',
-                padding: '10px 22px',
-                borderRadius: 'var(--radius-lg)',
-                background: ratingDirty ? currentTheme.primary : 'rgba(255,255,255,0.08)',
-                border: 'none',
-                color: ratingDirty
-                  ? getOptimalTextColor(currentTheme.primary)
-                  : currentTheme.text.muted,
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: ratingDirty ? 'pointer' : 'default',
-              }}
-            >
-              {draft >= 0.5 ? t('Bewertung speichern') : t('Bewertung entfernen')}
-            </motion.button>
+            <StarRatingSlider
+              value={draft}
+              onChange={setDraft}
+              onCommit={handleCommitRating}
+              size={22}
+            />
             {communityEntry && (
               <div
                 style={{
@@ -310,7 +316,7 @@ export const EpisodeDiscussionPage = memo(() => {
           hasSeries={hasSeries}
           isWatched={isWatched}
           seriesId={seriesId}
-          onToggleWatched={handleToggleWatched}
+          onToggleWatched={handleToggleWatchedAndRating}
           navigate={navigate}
         />
 

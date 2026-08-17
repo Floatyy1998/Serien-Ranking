@@ -9,6 +9,12 @@ interface StarRatingSliderProps {
   value: number;
   /** Live-Änderung beim Ziehen/Tippen (noch nicht gespeichert). */
   onChange: (value: number) => void;
+  /**
+   * Ende der Eingabe (Loslassen, Enter, Fokusverlust) — hier gehört das
+   * Speichern hin. Beim Ziehen entsteht ein Wert pro Pixel; ohne diesen
+   * Abschluss würde jede Zwischenstufe geschrieben.
+   */
+  onCommit?: (value: number) => void;
   /** Stern-Größe in px (Default 24 — bei 10 Sternen muss die Reihe mobil passen). */
   size?: number;
   /** Numerischen Wert darunter zeigen (Default true). */
@@ -29,6 +35,7 @@ const clamp = (v: number): number => Math.max(0, Math.min(MAX, v));
 export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
   value,
   onChange,
+  onCommit,
   size = 24,
   showValue = true,
 }) => {
@@ -38,10 +45,13 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
   const rowRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const lastTick = useRef(-1);
+  // Der value-Prop hinkt beim Ziehen einen Render hinterher.
+  const latest = useRef(value);
 
   const commit = useCallback(
     (v: number) => {
       const next = round1(clamp(v));
+      latest.current = next;
       const tick = Math.round(next * 2); // Haptik alle 0.5
       if (tick !== lastTick.current) {
         lastTick.current = tick;
@@ -51,6 +61,10 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
     },
     [onChange]
   );
+
+  const fireCommit = useCallback(() => {
+    onCommit?.(latest.current);
+  }, [onCommit]);
 
   const fromClientX = useCallback(
     (clientX: number): number => {
@@ -79,6 +93,7 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
     } catch {
       /* ignore */
     }
+    fireCommit();
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -90,6 +105,12 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
     if (next !== null) {
       e.preventDefault();
       commit(next);
+      return;
+    }
+    // Tastatur: nicht bei jedem Pfeiltastendruck speichern, erst auf Enter.
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fireCommit();
     }
   };
 
@@ -107,7 +128,9 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
         onKeyDown={onKeyDown}
+        onBlur={fireCommit}
         style={{
           display: 'inline-flex',
           gap: '2px',
