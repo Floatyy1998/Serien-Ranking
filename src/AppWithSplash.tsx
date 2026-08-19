@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { App } from './App';
 import { SplashScreen } from './components/ui/SplashScreen';
-import { applyDisplayScale, getDisplayScale } from './services/displayScale';
+import { applyDisplayScale, getDisplayScale, watchWidthStep } from './services/displayScale';
 
 /**
  * Globaler Ready-Tracker
@@ -65,6 +65,10 @@ export const AppWithSplash: React.FC = () => {
     const splashVisible = !isAuthPage && hasCachedUser && showSplash;
     applyDisplayScale(splashVisible ? 1 : getDisplayScale());
   }, [isAuthPage, hasCachedUser, showSplash]);
+
+  // Breiten-Stufe (data-width) an Größenänderungen hängen — sie ist die
+  // zoom-feste Alternative zu Media Queries.
+  useEffect(watchWidthStep, []);
 
   useEffect(() => {
     // Mount App im Hintergrund nach kurzer Verzögerung

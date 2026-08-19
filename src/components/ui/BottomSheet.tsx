@@ -63,7 +63,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
-            zIndex: 999,
+            zIndex: 'var(--z-sheet)' as unknown as number,
             backdropFilter: 'var(--blur-sm)',
             WebkitBackdropFilter: 'var(--blur-sm)',
           }}

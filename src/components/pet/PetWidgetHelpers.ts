@@ -29,12 +29,24 @@ export const isPetHealthy = (pet: Pet): boolean => {
   );
 };
 
+/**
+ * Platz, den das schwebende Dock unten belegt. Liest --dock-reserve, damit es
+ * nicht die dritte unabhaengige Schaetzung der Dock-Hoehe im Code ist — die
+ * alte Rechnung lag ~28px zu niedrig und schob das Pet ueber den Inhalt.
+ */
 export const getNavbarHeight = () => {
-  const basePadding = 16;
-  const iconContainerHeight = 32;
-  const labelHeight = 14;
-  const safeAreaBottom = window.innerHeight - (window.visualViewport?.height || window.innerHeight);
-  return basePadding + iconContainerHeight + labelHeight + safeAreaBottom;
+  const FALLBACK = 90;
+  if (typeof window === 'undefined' || typeof document === 'undefined') return FALLBACK;
+  try {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--dock-reserve)';
+    document.body.appendChild(probe);
+    const height = probe.getBoundingClientRect().height;
+    probe.remove();
+    return height > 0 ? height : FALLBACK;
+  } catch {
+    return FALLBACK;
+  }
 };
 
 export const convertPercentToEdge = (percentPos: {

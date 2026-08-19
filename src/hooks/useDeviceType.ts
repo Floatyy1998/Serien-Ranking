@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
+import { effectiveWidth, getDisplayScale } from '../services/displayScale';
 
 const MOBILE_BREAKPOINT = 768;
 
+/**
+ * Entscheidend ist die NUTZBARE Breite, nicht die Fensterbreite.
+ *
+ * Die Anzeigegröße skaliert die Oberfläche per `zoom`: bei 800px Fenster und
+ * Zoom 1.25 stehen den Inhalten nur 640px zur Verfügung. Mit `window.innerWidth`
+ * galt das als Desktop — das Desktop-Layout rendert dann in einen Raum, der
+ * dafür zu schmal ist (auf der Serien-Detailseite lief der Titel über das
+ * Poster). Geteilt durch den Zoom stimmt die Einordnung wieder.
+ */
 function getIsMobile(): boolean {
-  return window.innerWidth < MOBILE_BREAKPOINT;
+  return effectiveWidth(window.innerWidth, getDisplayScale()) < MOBILE_BREAKPOINT;
 }
 
 /**

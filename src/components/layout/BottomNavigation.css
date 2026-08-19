@@ -3,7 +3,7 @@
   position: fixed;
   /* iOS Home-Indicator: Safe-Area berücksichtigen, damit die Dock nicht hinter
      der System-Gesten-Leiste sitzt und Touch-Targets überlagert werden. */
-  bottom: calc(12px + env(safe-area-inset-bottom));
+  bottom: calc(var(--dock-gap) + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -44,7 +44,11 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 4px;
+  /* Feste Hoehe: --dock-reserve rechnet mit --dock-height. Waere die Leiste
+     inhaltsabhaengig hoch, wuerde der reservierte Platz wieder driften. */
+  height: var(--dock-height);
+  box-sizing: border-box;
+  padding: var(--space-1) var(--space-1);
   position: relative;
 }
 
@@ -54,9 +58,10 @@
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.55);
-  padding: 4px 0;
+  padding: 0;
   /* WCAG/Apple-HIG: min. 44–48px Trefferfläche für die primäre Navigation. */
   min-height: 48px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -126,6 +131,27 @@
 .nav-label--long {
   font-size: 9px;
   letter-spacing: 0;
+}
+
+/* Beschriftung nur unter dem aktiven Eintrag. Sechs beschriftete Symbole auf
+   einem 360px-Gerät ergaben abgeschnittene Wörter („Bewertu…") bei 9px Schrift;
+   die inaktiven Ziele bleiben über ihr Symbol und das aria-label erreichbar. */
+.nav-item:not(.active) .nav-label {
+  display: none;
+}
+
+.nav-item:not(.active) .nav-icon svg {
+  font-size: 26px !important;
+}
+
+/* Enge Ansicht: bei ~46px pro Eintrag passt auch „Bewertungen" bei 9px nicht
+   mehr. Dann nur Symbole — die aktive Pille zeigt, wo man ist. */
+:root[data-width='xs'] .nav-label {
+  display: none;
+}
+
+:root[data-width='xs'] .nav-icon svg {
+  font-size: 26px !important;
 }
 
 @media (max-width: 379px) {

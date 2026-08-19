@@ -10,18 +10,21 @@ export const BugFab = memo(() => {
       onClick={() => navigate('/bug-report?create=true')}
       aria-label={t('Bug melden')}
       style={{
+        // Schmale Lasche am Bildschirmrand statt runder Knopf mitten im
+        // Inhalt: der runde Knopf ragte 45px weit hinein und ueberlappte die
+        // Hinzufuegen-Knoepfe auf den Poster-Karten.
         position: 'fixed',
         bottom: '50%',
-        right: '5px',
-        width: '40px',
-        height: '40px',
-        minWidth: '40px',
-        minHeight: '40px',
+        right: 0,
+        width: '22px',
+        height: '46px',
+        minWidth: '22px',
+        minHeight: '46px',
         padding: 0,
-        borderRadius: '50%',
+        borderRadius: 'var(--radius-md) 0 0 var(--radius-md)',
         border: 'none',
-        background: 'rgba(239,68,68,0.08)',
-        color: 'rgba(239,68,68,0.3)',
+        background: 'rgba(239,68,68,0.10)',
+        color: 'rgba(239,68,68,0.35)',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -33,7 +36,7 @@ export const BugFab = memo(() => {
         overflow: 'hidden',
       }}
     >
-      <BugReport style={{ fontSize: 20 }} />
+      <BugReport style={{ fontSize: 16 }} />
     </button>
   );
 });

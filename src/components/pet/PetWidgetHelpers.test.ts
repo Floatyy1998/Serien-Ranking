@@ -80,9 +80,9 @@ describe('window-abhängige Positionierung', () => {
     vi.unstubAllGlobals();
   });
 
-  it('getNavbarHeight summiert die Basiswerte', () => {
-    // 16 + 32 + 14 + (800 - 800) = 62
-    expect(getNavbarHeight()).toBe(62);
+  it('getNavbarHeight faellt ohne aufgeloestes --dock-reserve auf den Dock-Platz zurueck', () => {
+    // jsdom rechnet keine CSS-Variablen aus -> dokumentierter Fallback
+    expect(getNavbarHeight()).toBe(90);
   });
 
   it('calculatePixelPosition: top-left nutzt die Offsets direkt', () => {

@@ -26,9 +26,11 @@ interface PageHeaderProps {
  * ruecken lange Titel eine Stufe kleiner; die Ellipse bleibt als Notnagel.
  */
 const titleFontSize = (title: string): string => {
-  if (title.length > 24) return '20px';
-  if (title.length > 18) return '23px';
-  return '26px';
+  const byLength = title.length > 24 ? '20px' : title.length > 18 ? '23px' : '26px';
+  // Zusaetzlich an die NUTZBARE Breite koppeln. Unter Anzeige-Zoom stehen auf
+  // einem 412px-Geraet nur 330px zur Verfuegung — dort wurde selbst ein kurzer
+  // Titel wie „Countdown" abgeschnitten, weil Media Queries den Zoom nicht sehen.
+  return `min(${byLength}, calc(var(--effective-width, 412px) * 0.066))`;
 };
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -54,8 +56,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       className="page-header"
       style={{
         position: 'relative',
-        padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))',
+        padding: 'var(--space-5) var(--page-x)',
+        paddingTop: 'calc(var(--space-5) + var(--safe-top))',
         ...(sticky
           ? {
               position: 'sticky',

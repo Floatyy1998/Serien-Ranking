@@ -57,6 +57,30 @@
   --space-8: 32px;
   --space-10: 40px;
 
+  /* Design Tokens - App-Shell. EINZIGE Quelle fuer den Platz, den das
+     schwebende Dock unten belegt. Inhalt, Sheets und schwebende Elemente
+     leiten ihren Abstand hieraus ab, damit Dock-Groesse und reservierter
+     Platz nicht wieder auseinanderlaufen. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --dock-height: 66px;
+  --dock-gap: 12px;
+  --dock-reserve: calc(var(--dock-height) + var(--dock-gap) * 2 + var(--safe-bottom));
+  /* Atem-Raum am Seitenende. Die Shell reserviert den Dock-Platz bereits —
+     Seiten setzen NUR noch diesen Wert, nie eigene 80–120px-Polster. */
+  --page-bottom-gap: var(--space-6);
+
+  /* Einheitlicher Seitenrand. Jede Seite benutzt diesen Wert, damit Titel,
+     Karten und Listen auf allen Seiten auf derselben Kante stehen. */
+  --page-x: 20px;
+
+  /* Hoehen-Skala fuer Bedienelemente. Segment-Umschalter, Filter-Pillen und
+     Chips greifen hier zu, statt sich ihre Hoehe aus Polstern zu ergeben —
+     sonst ist jede Leiste anders hoch. */
+  --control-sm: 34px;
+  --control-md: 42px;
+  --control-lg: 48px;
+
   /* Design Tokens - Shadows */
   --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
@@ -71,6 +95,9 @@
   --z-modal-backdrop: 900;
   --z-modal: 950;
   --z-nav: 1000;
+  /* Modale Sheets liegen ueber dem Dock — sonst muessten sie sich per
+     Fuss-Polster darunter wegducken (das kostete 80px in jedem Sheet). */
+  --z-sheet: 1050;
   --z-toast: 1100;
   --z-tooltip: 1200;
   --z-skip-nav: 10000;
@@ -245,7 +272,7 @@ a,
 .ui-tabs {
   display: flex;
   gap: 6px;
-  margin: 0 20px 20px;
+  margin: 0 var(--page-x) var(--space-3);
   position: relative;
   z-index: 5;
   border-radius: var(--radius-2xl);
@@ -264,7 +291,8 @@ a,
 
 .ui-tabs__tab {
   flex: 1 0 auto;
-  padding: 11px 16px;
+  min-height: var(--control-md);
+  padding: 0 16px;
   background: transparent;
   border: none;
   border-radius: var(--radius-xl);
@@ -298,14 +326,37 @@ a,
   }
 }
 
+/* Trefferflaeche auf 44px aufziehen, ohne das Element optisch zu vergroessern.
+   Fuer kleine Symbolknoepfe, die auf Postern oder in dichten Reihen sitzen. */
+.tap-target-44 {
+  position: relative;
+}
+
+.tap-target-44::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
 /* Geteiltes BottomSheet (components/ui): mobil angedockt, ab Desktop schwebendes Glas-Panel über dem Dock */
 .ui-sheet {
   width: 100%;
-  max-height: var(--sheet-max-h, 85vh);
+  /* Nie hoeher als der Bildschirm abzueglich Notch — sonst laeuft der Inhalt
+     unten aus dem Sichtfeld statt zu scrollen. */
+  max-height: min(
+    var(--sheet-max-h, 85vh),
+    calc(var(--vh, 100dvh) - var(--safe-top) - var(--space-6))
+  );
   border-radius: 28px 28px 0 0;
   border: 1px solid var(--glass-border-light);
   border-bottom: none;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  /* Sheet liegt ueber dem Dock (--z-sheet), braucht also nur die Safe-Area
+     plus Atem-Raum — kein Dock-Polster mehr. */
+  padding-bottom: calc(var(--safe-bottom) + var(--space-4));
 }
 
 @media (min-width: 768px) {
@@ -1059,10 +1110,52 @@ button:active:not(:disabled),
   }
 }
 
+/* In der engen Ansicht gilt das für JEDE Kopfzeile, nicht nur die mit
+   Untertitel: bei 288px nutzbarer Breite blieben dem Titel neben den
+   Symbolknöpfen ~22px („Erfolge", „Backlog", „Serien-Kalender" waren
+   unlesbar). Die Media Query oben greift hier nicht — Anzeige-Zoom
+   verändert die Viewport-Breite nicht. */
+:root[data-width='xs'] .page-header__row {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+:root[data-width='xs'] .page-header__actions {
+  margin-left: auto;
+}
+
+:root[data-width='xs'] .page-header__main {
+  order: 3;
+  flex-basis: 100%;
+}
+
+/* Segment-Umschalter: Beschriftungen dürfen nicht auf 0px gequetscht werden
+   („Feed", „Freunde", „Anfragen" auf /activity). Lieber scrollt die Leiste. */
+.ui-tabs__tab {
+  min-width: max-content;
+}
+
 /* Homepage-Top-Banner (Wrapped, Admin-Message): erster Banner braucht Safe-Area-Abstand */
 .home-top-banner {
   margin-top: calc(env(safe-area-inset-top, 0px) + 16px);
 }
 .home-top-banner ~ .home-top-banner {
   margin-top: 16px;
+}
+
+/* Streak-Karte in der engen Ansicht: kleinere Zahl und Marke, damit dem Text
+   daneben genug Breite bleibt. Die Ueberlappung selbst behebt flexShrink:0
+   an der Wertgruppe — das hier ist die Feinabstimmung. */
+:root[data-width='xs'] .streak-card__head {
+  gap: var(--space-2) !important;
+  padding: var(--space-2) var(--space-3) !important;
+}
+
+:root[data-width='xs'] .streak-card__value {
+  gap: 4px !important;
+  margin-right: 0 !important;
+}
+
+:root[data-width='xs'] .streak-card__value span {
+  font-size: 20px;
 }

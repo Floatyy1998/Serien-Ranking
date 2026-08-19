@@ -17,7 +17,7 @@ const COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
  */
 export const AppInstallBanner = () => {
   const { currentTheme } = useTheme();
-  const [target] = useState(detectAppInstallTarget);
+  const [target, setTarget] = useState(detectAppInstallTarget);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,17 @@ export const AppInstallBanner = () => {
     } catch {
       // localStorage blockiert (Privatmodus) → Banner trotzdem zeigen
     }
-    const timer = setTimeout(() => setVisible(true), 1500);
+    // Kurz vor dem Einblenden erneut pruefen: die Capacitor-Bruecke wird bei
+    // per URL geladener App erst nach dem ersten Render injiziert. Die
+    // Momentaufnahme vom Mount zeigte sonst den App-Hinweis INNERHALB der App.
+    const timer = setTimeout(() => {
+      const fresh = detectAppInstallTarget();
+      if (!fresh.os) {
+        setTarget(fresh);
+        return;
+      }
+      setVisible(true);
+    }, 1500);
     return () => clearTimeout(timer);
   }, [target.os]);
 

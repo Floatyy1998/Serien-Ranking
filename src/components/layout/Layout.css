@@ -45,12 +45,15 @@
   background: var(--color-background-default);
   box-sizing: border-box;
   /* Use calc to fill exact viewport without overflow */
-  min-height: calc(var(--vh, 100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: calc(var(--vh, 100dvh) - var(--safe-top) - var(--safe-bottom));
 }
 
-/* Padding for pages with floating dock navigation */
+/* Platz fuer das schwebende Dock. Leitet sich aus --dock-reserve ab, damit
+   Dock-Hoehe, Dock-Abstand und Geraete-Safe-Area immer mitgerechnet werden —
+   der frueher feste Wert (90px) ignorierte die Safe-Area und schob Inhalt
+   auf Geraeten mit Gestenleiste unter das Dock. */
 .mobile-content.with-nav {
-  padding-bottom: 90px; /* floating dock + extra space */
+  padding-bottom: calc(var(--dock-reserve) + var(--space-2));
 }
 
 /* No padding for pages without bottom navigation */
@@ -60,7 +63,7 @@
 
 /* Seite ist kein Dock-Ziel: Dock ausgeblendet, nur Atem-Raum statt 90px */
 .mobile-content.nav-hidden {
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
 }
 
 /* Hide scrollbar for WebKit browsers (Safari, Chrome) */

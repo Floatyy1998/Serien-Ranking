@@ -43,7 +43,10 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         autoFocus={autoFocus}
         style={{
           width: '100%',
-          padding: '16px 16px 16px 48px',
+          // Feste Hoehe aus der Skala statt Polster-Summe: das Feld war ueber
+          // 100px hoch und fraß den halben Kopfbereich.
+          minHeight: 'var(--control-lg)',
+          padding: '0 16px 0 48px',
           paddingRight: value ? '52px' : '16px',
           background: currentTheme.background.surface,
           border: `2px solid ${currentTheme.border.default}`,
