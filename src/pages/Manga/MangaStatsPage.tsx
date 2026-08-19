@@ -133,14 +133,14 @@ export const MangaStatsPage = () => {
         icon={<TrendingUp />}
       />
 
-      <div style={{ padding: '0 20px', paddingBottom: 100 }}>
+      <div style={{ padding: '0 20px', paddingBottom: 'var(--page-bottom-gap)' }}>
         {/* Desktop: Hero + Quick-Stats in EINER Reihe statt Einspalten-Stack */}
         <div
           style={
             isDesktop
               ? {
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(380px, 1.6fr) repeat(3, 1fr)',
+                  gridTemplateColumns: 'minmax(380px, 1.6fr) repeat(3, minmax(0, 1fr))',
                   gap: 12,
                   alignItems: 'stretch',
                   marginBottom: 24,
@@ -269,7 +269,7 @@ export const MangaStatsPage = () => {
                 ? { display: 'contents' }
                 : {
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                     gap: 10,
                     marginBottom: 24,
                   }

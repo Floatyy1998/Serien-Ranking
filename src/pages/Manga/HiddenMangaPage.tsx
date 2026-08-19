@@ -40,7 +40,7 @@ export const HiddenMangaPage = () => {
         icon={<VisibilityOff />}
       />
 
-      <div style={{ padding: '0 16px', paddingBottom: 100 }}>
+      <div style={{ padding: '0 16px', paddingBottom: 'var(--page-bottom-gap)' }}>
         <AnimatePresence mode="popLayout">
           {mangaWithStats.map(({ manga, totalChapters, progress }) => (
             <motion.div

@@ -45,7 +45,7 @@ export const BugReportPage = memo(() => {
         sticky
       />
 
-      <div style={{ padding: '16px', paddingBottom: '100px' }}>
+      <div style={{ padding: '16px', paddingBottom: 'var(--page-bottom-gap)' }}>
         {ban.tickets && (
           <div
             style={{

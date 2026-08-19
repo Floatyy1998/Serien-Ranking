@@ -78,7 +78,9 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
             {t('DEIN JAHR IN ZAHLEN')}
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}
+          >
             <div style={{ textAlign: 'center' }}>
               <motion.div
                 initial={{ scale: 0 }}

@@ -141,7 +141,7 @@
   padding: 16px 20px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 120px;
+  padding-bottom: var(--page-bottom-gap);
   position: relative;
   z-index: 1;
 }
@@ -367,7 +367,7 @@
 
 .rate-quick-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -635,7 +635,7 @@
   }
 
   .rate-quick-grid {
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(10, minmax(0, 1fr));
     gap: 12px;
   }
 

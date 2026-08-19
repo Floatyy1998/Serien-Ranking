@@ -149,7 +149,9 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               ? t('JAHRESÜBERSICHT {year}', { year: data.years[0] })
               : t('GESAMT ÜBER {n} JAHRE', { n: data.years.length })}
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}
+          >
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 32, fontWeight: 800 }}>
                 {data.totalEpisodes.toLocaleString()}

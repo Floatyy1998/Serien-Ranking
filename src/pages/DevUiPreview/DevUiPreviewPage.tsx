@@ -124,7 +124,7 @@ export const DevUiPreviewPage = () => {
   }
 
   return (
-    <div style={{ padding: '20px', paddingBottom: '80px' }}>
+    <div style={{ padding: '20px', paddingBottom: 'var(--page-bottom-gap)' }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>UI-Vorschau</h1>
       <p style={{ fontSize: 13, opacity: 0.7, margin: '0 0 16px' }}>
         Overlays in echten Fensterbreiten. Jedes Feld ist ein eigener Viewport — Media-Queries und

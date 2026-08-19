@@ -3,7 +3,7 @@
 /* Bento-Grid */
 .stats-bento {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 0 16px 120px;
 }
@@ -420,7 +420,7 @@
 /* Tablet / kleine Desktops (768–1099) */
 @media (min-width: 768px) {
   .stats-bento {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 14px;
     margin: 0 20px 120px;
   }
@@ -444,7 +444,7 @@
 /* Große Desktops (≥1100): volles 12-Spalten-Bento */
 @media (min-width: 1100px) {
   .stats-bento {
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   .stats-pod--time {
@@ -543,4 +543,23 @@
   .stats-provider-list {
     gap: 17px;
   }
+}
+
+/* Enge Ansicht (kleines Geraet ODER Anzeige-Zoom): Grossbuchstaben mit
+   0.12em Sperrung brachen Beschriftungen wie „EPISODEN DIESE WOCHE" auf vier
+   Zeilen und sprengten die Kachelhoehe. Media Queries sehen den Zoom nicht. */
+:root[data-width='xs'] .stats-pod__label {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  gap: 4px;
+}
+
+:root[data-width='sm'] .stats-pod__label {
+  font-size: 10px;
+  letter-spacing: 0.07em;
+}
+
+:root[data-width='xs'] .stats-quick-icon {
+  width: 30px;
+  height: 30px;
 }

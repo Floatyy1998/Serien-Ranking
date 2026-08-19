@@ -317,7 +317,7 @@
 
 .sm-posters {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -429,7 +429,7 @@
    7 Karten füllen exakt 2 Reihen (2+1+1 / 1+1+1+1) */
 @media (min-width: 1400px) {
   .start-features-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
   }
 
@@ -509,7 +509,7 @@
 
 @media (min-width: 1400px) {
   .start-highlights-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

@@ -362,7 +362,7 @@
 
 .episodes-list {
   padding: 16px;
-  padding-bottom: 120px;
+  padding-bottom: var(--page-bottom-gap);
 }
 
 .episode-item {
@@ -782,7 +782,7 @@
 /* Animated episode list wrapper */
 .em-episode-list-animated {
   padding: 16px;
-  padding-bottom: 120px;
+  padding-bottom: var(--page-bottom-gap);
 }
 
 /* 2050-Desktop: Episoden-Grid + kompakte Staffel-Karte */
@@ -794,7 +794,7 @@
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
     gap: 12px;
     padding: 20px;
-    padding-bottom: 120px;
+    padding-bottom: var(--page-bottom-gap);
     align-items: start;
   }
 

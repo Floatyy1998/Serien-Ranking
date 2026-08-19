@@ -2,7 +2,7 @@
 
 .sub-page {
   min-height: var(--vh, 100vh);
-  padding-bottom: 100px;
+  padding-bottom: var(--page-bottom-gap);
   position: relative;
   overflow: hidden;
 }
@@ -627,13 +627,13 @@
 /* Inactive grid */
 .sub-inactive-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 @media (min-width: 640px) {
   .sub-inactive-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -934,4 +934,29 @@
   .sub-opt-summary {
     grid-template-columns: 1fr;
   }
+}
+
+/* Enge Ansicht: zwei Spalten liessen den Anbieternamen auf 19px schrumpfen. */
+:root[data-width='xs'] .sub-insights,
+:root[data-width='xs'] .sub-opt-summary {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+/* Enge Ansicht: In der Zeile blieben dem Anbieternamen 24px neben dem Logo.
+   Logo ueber den Namen stellen — dann hat der Name die volle Kartenbreite. */
+:root[data-width='xs'] .sub-inactive-card {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+:root[data-width='xs'] .sub-inactive-name {
+  flex: 0 0 auto;
+  width: 100%;
+  white-space: normal;
+  font-size: 12px;
+  line-height: 1.25;
 }

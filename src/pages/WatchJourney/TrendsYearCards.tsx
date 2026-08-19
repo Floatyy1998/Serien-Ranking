@@ -99,7 +99,13 @@ export const TrendsYearCards: React.FC<TrendsYearCardsProps> = memo(
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 12,
+                }}
+              >
                 <div
                   style={{
                     padding: '12px',

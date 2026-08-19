@@ -22,14 +22,14 @@
 
 @media (min-width: 768px) {
   .fp-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .fp-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 
@@ -496,7 +496,7 @@
 
 @media (min-width: 1200px) {
   .fp-anticipation-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

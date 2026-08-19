@@ -3,7 +3,7 @@
 /* Page shell */
 .pet-page {
   position: relative;
-  padding-bottom: 100px;
+  padding-bottom: var(--page-bottom-gap);
 }
 
 @media (min-width: 900px) {
@@ -745,7 +745,7 @@
 
 .pet-card-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 0 20px 24px;
   position: relative;
@@ -1274,7 +1274,7 @@
 
 .pet-create-type-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 

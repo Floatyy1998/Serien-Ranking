@@ -142,7 +142,7 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
         transition={{ delay: 0.9 }}
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: '20px',
           width: '100%',
           maxWidth: '400px',

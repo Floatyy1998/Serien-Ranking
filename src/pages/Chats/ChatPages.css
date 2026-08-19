@@ -676,7 +676,7 @@
 
 .ch-emoji-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 2px;
   padding: 10px;
   max-height: 240px;
@@ -699,7 +699,7 @@
 
 .ch-sticker-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   padding: 10px;
   max-height: 260px;

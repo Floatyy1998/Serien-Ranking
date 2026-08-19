@@ -2,7 +2,7 @@
   min-height: var(--vh, 100vh);
   position: relative;
   overflow: hidden;
-  padding-bottom: 100px;
+  padding-bottom: var(--page-bottom-gap);
 }
 
 .manga-decorative-bg {
@@ -137,7 +137,7 @@
    ab Desktop eine Reihe aus Ring + allen Kacheln. */
 .manga-stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   padding: 0 20px;
 }
@@ -265,14 +265,14 @@
 
 @media (min-width: 768px) {
   .manga-collection-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .manga-collection-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 

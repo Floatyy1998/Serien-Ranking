@@ -455,3 +455,20 @@
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Enge Ansicht: die Drei-Spalten-Kopfzeile der Karte liess dem Serientitel
+   54px — er wurde unlesbar abgeschnitten. */
+:root[data-width='xs'] .cu-hero-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Enge Ansicht: Poster, Textblock und Fortschritts-/Aktionsblock nebeneinander
+   liessen dem Serientitel 68px. Der Textblock bekommt eine eigene Zeile. */
+:root[data-width='xs'] .cu-card {
+  flex-wrap: wrap;
+}
+
+:root[data-width='xs'] .cu-card-body {
+  flex-basis: 100%;
+  order: 3;
+}

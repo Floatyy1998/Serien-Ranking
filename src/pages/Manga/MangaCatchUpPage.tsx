@@ -153,7 +153,7 @@ export const MangaCatchUpPage = () => {
               : '1fr',
             gap: 10,
             alignItems: 'start',
-            paddingBottom: 100,
+            paddingBottom: 'var(--page-bottom-gap)',
           }}
         >
           {sorted.map((item) => (

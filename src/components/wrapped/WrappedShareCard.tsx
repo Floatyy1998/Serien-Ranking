@@ -82,7 +82,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: 24,
         }}
       >

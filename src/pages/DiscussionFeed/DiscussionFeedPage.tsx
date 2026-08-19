@@ -305,7 +305,7 @@ export const DiscussionFeedPage = () => {
                   : '1fr',
                 gap: '12px',
                 alignItems: 'start',
-                paddingBottom: '100px',
+                paddingBottom: 'var(--page-bottom-gap)',
               }}
             >
               {entries.map((entry, index) => (

@@ -305,7 +305,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         >
           {t('Alle Genres')}
         </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
           {genreStats.map((stat, i) => (
             <motion.div
               key={stat.genre}

@@ -207,7 +207,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
         transition={{ delay: 0.4 }}
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: '8px',
           width: '100%',
           maxWidth: '300px',

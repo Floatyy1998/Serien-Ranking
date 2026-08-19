@@ -107,7 +107,9 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}
+          >
             <div
               style={{
                 textAlign: 'center',
@@ -233,7 +235,9 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}
+          >
             <div
               style={{
                 textAlign: 'center',
@@ -376,7 +380,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           {t('Deine Rekorde')}
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
           <div
             style={{
               padding: 16,

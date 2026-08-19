@@ -3,7 +3,7 @@
 /* Page layout */
 .cd-content {
   padding: 0 20px;
-  padding-bottom: 100px;
+  padding-bottom: var(--page-bottom-gap);
   flex: 1;
   overflow: auto;
   position: relative;
@@ -265,4 +265,68 @@
 .cd-item-days-label {
   font-size: var(--text-xs);
   margin-top: 2px;
+}
+
+/* Enge Ansicht (kleines Geraet ODER Anzeige-Zoom): Poster, Kreis und Abstaende
+   der Hero-Karte belegten zusammen 238px — bei 288px nutzbarer Breite blieben
+   dem Titel ~50px, er brach auf „Th G." um. Media Queries greifen hier nicht,
+   weil zoom die Viewport-Breite nicht veraendert; darum data-width. */
+:root[data-width='xs'] .cd-hero,
+:root[data-width='sm'] .cd-hero {
+  height: auto;
+  min-height: 150px;
+}
+
+:root[data-width='xs'] .cd-hero-body,
+:root[data-width='sm'] .cd-hero-body {
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+:root[data-width='xs'] .cd-hero-poster,
+:root[data-width='xs'] .cd-hero-poster-placeholder {
+  width: 58px;
+  height: 87px;
+}
+
+:root[data-width='sm'] .cd-hero-poster,
+:root[data-width='sm'] .cd-hero-poster-placeholder {
+  width: 72px;
+  height: 108px;
+}
+
+:root[data-width='xs'] .cd-hero-circle {
+  width: 52px;
+  height: 52px;
+}
+
+:root[data-width='sm'] .cd-hero-circle {
+  width: 60px;
+  height: 60px;
+}
+
+:root[data-width='xs'] .cd-hero-title {
+  font-size: 16px;
+}
+
+:root[data-width='sm'] .cd-hero-title {
+  font-size: 18px;
+}
+
+:root[data-width='xs'] .cd-hero-season {
+  font-size: 13px;
+}
+
+:root[data-width='xs'] .cd-hero-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+:root[data-width='xs'] .cd-item {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+:root[data-width='xs'] .cd-item-days {
+  min-width: 38px;
 }

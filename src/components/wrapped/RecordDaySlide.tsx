@@ -140,7 +140,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
         transition={{ delay: 0.8 }}
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: '12px',
           width: '100%',
           maxWidth: '400px',

@@ -245,7 +245,7 @@ export const MangaRatingsPage = () => {
         </div>
 
         {/* Grid */}
-        <div className="manga-collection-grid" style={{ paddingBottom: 100 }}>
+        <div className="manga-collection-grid" style={{ paddingBottom: 'var(--page-bottom-gap)' }}>
           {items.map((manga) => {
             const rating = getRating(manga);
             const totalChapters = getEffectiveChapterCount(manga);

@@ -233,7 +233,9 @@ export const MangaDiscoverPage = () => {
             style={{
               display: 'grid',
               /* Desktop: kompakte Kacheln statt vollbreiter Streifen */
-              gridTemplateColumns: isMobile ? 'repeat(4, 1fr)' : 'repeat(4, minmax(110px, 150px))',
+              gridTemplateColumns: isMobile
+                ? 'repeat(4, minmax(0, 1fr))'
+                : 'repeat(4, minmax(110px, 150px))',
               gap: 8,
               marginBottom: 12,
             }}
@@ -307,7 +309,7 @@ export const MangaDiscoverPage = () => {
       </div>
 
       {/* ─── Content ─────────────────────────────── */}
-      <div style={{ padding: '16px 20px', paddingBottom: 100 }}>
+      <div style={{ padding: '16px 20px', paddingBottom: 'var(--page-bottom-gap)' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
             {t('Laden...')}
@@ -318,7 +320,7 @@ export const MangaDiscoverPage = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile
-                  ? 'repeat(2, 1fr)'
+                  ? 'repeat(2, minmax(0, 1fr))'
                   : 'repeat(auto-fill, minmax(200px, 1fr))',
                 gap: isMobile ? 16 : 24,
               }}

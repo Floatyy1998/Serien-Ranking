@@ -136,7 +136,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
             gap: '8px',
           }}
         >
@@ -221,7 +221,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
             gap: '8px',
             maxHeight: '200px',
             overflowY: 'auto',
@@ -280,7 +280,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
             gap: '8px',
           }}
         >

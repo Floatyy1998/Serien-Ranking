@@ -167,7 +167,7 @@
 }
 
 .wj-content {
-  padding-bottom: 120px;
+  padding-bottom: var(--page-bottom-gap);
   position: relative;
   z-index: 1;
 }

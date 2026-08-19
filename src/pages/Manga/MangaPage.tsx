@@ -342,7 +342,10 @@ export const MangaPage = () => {
           </div>
 
           {/* Grid */}
-          <div className="manga-collection-grid" style={{ padding: '0 20px', paddingBottom: 100 }}>
+          <div
+            className="manga-collection-grid"
+            style={{ padding: '0 20px', paddingBottom: 'var(--page-bottom-gap)' }}
+          >
             {filtered.map((manga) => (
               <MangaCard
                 key={manga.anilistId}

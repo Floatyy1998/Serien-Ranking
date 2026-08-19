@@ -126,7 +126,14 @@ export const RecentlyReadPage = () => {
         </div>
 
         {/* Date Groups */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 100 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+            paddingBottom: 'var(--page-bottom-gap)',
+          }}
+        >
           {dateGroups.map((group) => (
             <div key={group.date}>
               {/* Date Header */}

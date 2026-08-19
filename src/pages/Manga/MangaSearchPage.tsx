@@ -214,7 +214,7 @@ export const MangaSearchPage = () => {
       </div>
 
       {/* ─── Content ─────────────────────────────── */}
-      <div style={{ padding: '16px 20px', paddingBottom: 100 }}>
+      <div style={{ padding: '16px 20px', paddingBottom: 'var(--page-bottom-gap)' }}>
         {/* Recent Searches */}
         {!query && recentSearches.length > 0 && (
           <div style={{ marginBottom: 24 }}>
@@ -268,7 +268,7 @@ export const MangaSearchPage = () => {
             style={{
               display: 'grid',
               gridTemplateColumns: isMobile
-                ? 'repeat(2, 1fr)'
+                ? 'repeat(2, minmax(0, 1fr))'
                 : 'repeat(auto-fill, minmax(200px, 1fr))',
               gap: isMobile ? 16 : 24,
             }}

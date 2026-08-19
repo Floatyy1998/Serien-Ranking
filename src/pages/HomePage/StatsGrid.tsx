@@ -87,7 +87,7 @@ export const StatsGrid = () => {
         style={{
           display: 'grid',
           // Desktop: Ring + 4 Kacheln in EINER Reihe statt gestrecktem 50/50-Bento.
-          gridTemplateColumns: isMobile ? '1fr 1fr' : '280px repeat(4, 1fr)',
+          gridTemplateColumns: isMobile ? '1fr 1fr' : '280px repeat(4, minmax(0, 1fr))',
           gridTemplateRows: isMobile ? 'auto auto' : 'auto',
           gap: '12px',
           marginBottom: expanded ? '12px' : 0,
@@ -269,7 +269,7 @@ export const StatsGrid = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: isMobile
-              ? 'repeat(2, 1fr)'
+              ? 'repeat(2, minmax(0, 1fr))'
               : 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '12px',
           }}

@@ -979,7 +979,7 @@
 @media (min-width: 768px) {
   .cal-entry-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     padding: 4px 20px 12px;
   }
@@ -1213,4 +1213,29 @@
   .cal-ep-poster-info {
     padding: 10px;
   }
+}
+
+/* „KW 34 · 17. Aug. – 23. Aug." passt in der engen Ansicht nicht in den Chip. */
+:root[data-width='xs'] .cal-week-chip {
+  font-size: 11px;
+  padding: 6px var(--space-2);
+}
+
+:root[data-width='sm'] .cal-week-chip {
+  font-size: 12.5px;
+  padding: 6px var(--space-3);
+}
+
+/* Der Wochen-Chip zeigt in der engen Ansicht nur noch die Kalenderwoche —
+   „KW 34 · 17. Aug. – 23. Aug." passte auf 66px nicht einmal gekuerzt. */
+:root[data-width='xs'] .cal-week-chip {
+  font-size: 10.5px;
+  padding: 6px 6px;
+  letter-spacing: -0.01em;
+}
+
+/* Der Wochen-Chip soll den freien Platz zwischen den Pfeilen nutzen. */
+.cal-week-switcher .cal-week-chip {
+  flex: 1 1 auto;
+  min-width: 0;
 }

@@ -189,7 +189,7 @@ export const LeaderboardPage = () => {
         userName={user?.displayName || t('Du')}
       />
 
-      <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
+      <div style={{ paddingBottom: 'var(--page-bottom-gap)', position: 'relative', zIndex: 1 }}>
         {/* Sticky Header */}
         <PageHeader
           title={t('Rangliste')}

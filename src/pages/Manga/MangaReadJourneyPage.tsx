@@ -181,7 +181,7 @@ export const MangaReadJourneyPage = () => {
         </div>
 
         {/* Tab Content */}
-        <div style={{ paddingBottom: 100 }}>
+        <div style={{ paddingBottom: 'var(--page-bottom-gap)' }}>
           {activeTab === 'activity' && (
             <motion.div
               initial={{ opacity: 0 }}
