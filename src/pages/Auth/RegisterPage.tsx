@@ -30,6 +30,7 @@ import { SocialLoginButtons } from './SocialLoginButtons';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { requestVerificationMail } from '../../services/authMails';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
+import { writeWelcomeNotifications } from '../../services/welcomeNotifications';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -89,6 +90,10 @@ export const RegisterPage = () => {
           isOnline: true,
           onboardingComplete: false,
         });
+
+        // Der authProvider legt sie sonst nicht an: seine Frisch-Erkennung
+        // sieht den Knoten oben bereits mit uid und onboardingComplete.
+        writeWelcomeNotifications(userCredential.user.uid);
 
         // Such-Index spiegeln (best-effort, wirft nie) — der Login-Self-Heal
         // im authProvider kann diesen Write racen und ihn verpassen.

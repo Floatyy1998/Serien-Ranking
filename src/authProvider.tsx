@@ -2,13 +2,13 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initAnalyticsIfConsented, setAnalyticsUser } from './services/firebase/analytics';
 import { setErrorReporterUser } from './services/errorReporting/errorReporter';
-import { localizedVariants } from './services/i18n';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './contexts/AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from './services/db/ref';
+import { writeWelcomeNotifications } from './services/welcomeNotifications';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -207,44 +207,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 await userRef.update(userData);
                 setOnboardingComplete(false);
 
-                // Willkommens-Notifications beim Erstlogin. Beide Sprachen
-                // speichern — die Anzeige wählt nach der Leser-Sprache, damit
-                // ein späterer Sprachwechsel die Texte nicht veraltet.
-                // Feste Keys statt push(): onAuthStateChanged kann beim Erstlogin
-                // doppelt feuern, bevor der Frisch-Marker sichtbar ist — mit
-                // festem Key überschreibt der zweite Lauf statt zu duplizieren.
-                try {
-                  void userRef.child('notifications/welcome').set({
-                    type: 'welcome',
-                    title: 'Willkommen bei TV-Rank!',
-                    message:
-                      'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',
-                    titleL: localizedVariants('Willkommen bei TV-Rank!'),
-                    messageL: localizedVariants(
-                      'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!'
-                    ),
-                    timestamp: Date.now(),
-                    read: false,
-                  });
-                  // Hinweis auf Personalisierung (Theme-Farben + Homepage-Layout
-                  // unter „Mehr"); 1s älter, damit die Willkommens-Nachricht im
-                  // Feed oben steht.
-                  void userRef.child('notifications/customizeHint').set({
-                    type: 'welcome',
-                    title: 'Mach TV-Rank zu deinem',
-                    message:
-                      'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.',
-                    titleL: localizedVariants('Mach TV-Rank zu deinem'),
-                    messageL: localizedVariants(
-                      'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.'
-                    ),
-                    timestamp: Date.now() - 1000,
-                    read: false,
-                    data: { navigateTo: '/profile' },
-                  });
-                } catch {
-                  /* best-effort */
-                }
+                writeWelcomeNotifications(user.uid);
 
                 // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
                 void syncUserSearchIndex(user.uid, userData);
