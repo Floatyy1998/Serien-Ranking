@@ -36,8 +36,13 @@
 }
 
 .ratings-header-inner {
-  padding: 20px;
-  padding-top: calc(20px + env(safe-area-inset-top));
+  padding: var(--space-4) var(--page-x);
+  padding-top: calc(var(--space-4) + var(--safe-top));
+}
+
+:root[data-width='xs'] .ratings-header-inner {
+  padding: var(--space-3) var(--space-3);
+  padding-top: calc(var(--space-3) + var(--safe-top));
 }
 
 .ratings-header-row {
@@ -48,23 +53,28 @@
 
 /* Stats Row */
 
+/* Zwei gleich breite Spalten statt freier Flex-Zeile: so kann die zweite
+   Karte („7.1 Durchschnitt") nicht mehr aus dem Bildschirm laufen. */
 .ratings-stats-row {
-  display: flex;
-  gap: 16px;
-  margin-top: 16px;
+  display: grid;
+  /* „Durchschnitt" ist das laengere Wort und bekommt darum mehr Anteil. */
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .ratings-search-wrap {
-  margin-top: 14px;
+  margin-top: var(--space-3);
 }
 
 .ratings-stat-card {
-  padding: 10px 16px;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  gap: 6px;
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
 }
@@ -89,13 +99,25 @@
 }
 
 .ratings-stat-label {
-  font-size: 14px;
+  font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-width='xs'] .ratings-stat-label {
+  font-size: 11px;
+}
+
+:root[data-width='xs'] .ratings-stat-value {
+  font-size: 16px;
 }
 
 /* Content Area */
 
 .ratings-content {
-  padding: 0 20px;
+  padding: 0 var(--page-x);
   flex: 1;
   position: relative;
   z-index: 1;
@@ -109,16 +131,25 @@
   gap: 14px;
 }
 
+/* Enge Ansicht: bei 288px nutzbarer Breite passt neben der 140px-Untergrenze
+   nur EINE Spalte — die Poster wurden bildschirmfuellend gross. Zwei Spalten
+   fest vorgeben statt die Untergrenze entscheiden zu lassen. */
+:root[data-width='xs'] .ratings-grid,
+:root[data-width='sm'] .ratings-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
 @media (min-width: 768px) {
   .ratings-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .ratings-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 
@@ -177,7 +208,13 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 16px 10px 12px;
+  /* Das Poster liegt absolut am linken Rand und fuellt die Karte von Kante zu
+     Kante — auch wenn die Zeile umbricht. Der Platz dafuer kommt aus dem
+     linken Innenabstand. */
+  position: relative;
+  padding: var(--space-2) 16px var(--space-2) 90px;
+  min-height: 112px;
+  overflow: hidden;
   border-radius: var(--radius-md);
   background: var(--glass-light);
   border: 1px solid var(--glass-border-subtle);
@@ -207,9 +244,17 @@
 }
 
 .ratings-row-thumb {
-  width: 56px;
-  height: 82px;
-  border-radius: var(--radius-sm);
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 76px;
+  /* height:100% statt auto — ein Bild mit top/bottom:0 und auto behaelt sonst
+     sein Seitenverhaeltnis und fuellt die Karte nicht. */
+  height: 100%;
+  /* Ohne eigenen Radius: die Ecken beschneidet die Karte selbst
+     (.ratings-row hat overflow:hidden + Radius). */
+  border-radius: 0;
   object-fit: cover;
   flex: none;
   box-shadow: var(--shadow-sm);
@@ -220,7 +265,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
+  /* Das senkrechte Polster sass frueher auf der Zeile — die gibt es jetzt
+     nicht mehr, damit das Poster bis an die Kante reicht. */
+  padding-block: var(--space-2);
 }
 
 .ratings-row-title {
@@ -323,16 +372,12 @@
 @media (max-width: 639px) {
   .ratings-row {
     gap: 10px;
-    padding: 8px 12px 8px 10px;
+    padding: var(--space-2) 12px var(--space-2) 84px;
+    min-height: 106px;
   }
 
   .ratings-row-thumb {
-    width: 48px;
-    height: 70px;
-  }
-
-  .ratings-row-providers {
-    display: none;
+    width: 72px;
   }
 
   .ratings-row-bar {
@@ -719,4 +764,106 @@
 .ratings-empty-text {
   margin: 0;
   font-size: 15px;
+}
+
+/* Listen-Ansicht: Rang, Vorschaubild und Statuszeile passten bei enger
+   Ansicht nicht nebeneinander — der Watchlist-Hinweis wurde rechts
+   abgeschnitten. Die Statuszeile darf jetzt umbrechen, Bild und Rang
+   werden schmaler. */
+.ratings-row-status {
+  flex-wrap: wrap;
+  row-gap: 4px;
+  min-width: 0;
+}
+
+:root[data-width='xs'] .ratings-row,
+:root[data-width='sm'] .ratings-row {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) 84px;
+}
+
+:root[data-width='xs'] .ratings-row-rank {
+  min-width: 18px;
+  font-size: 0.75rem;
+}
+
+/* Enge Ansicht: Rang, Bild, Text, Anbieter, Bewertung und Haken sind sechs
+   Spalten — bei 248px blieben dem Titel ~50px („Regul…").
+   Die Bewertung bleibt in der ersten Zeile: als einzelne Zahl in einer eigenen
+   Zeile hing sie sonst im Leeren (fertig geschaute Titel haben keinen
+   Abhaken-Knopf, der ihr dort Gesellschaft leisten wuerde). Nur der
+   Abhaken-Knopf darf umbrechen — als Aktion liest sich das als Fussleiste. */
+/* Bei 232px nutzbarer Zeilenbreite passen Bild, Text, Bewertung UND
+   Abhaken-Knopf nicht alle nebeneinander. Das Poster bleibt (nur kleiner) —
+   es ist der schnellste Wiedererkennungs-Anker. Bewertung bleibt ebenfalls in
+   der ersten Zeile; als einzelne Zahl in einer eigenen Zeile hing sie im
+   Leeren. Nur der Abhaken-Knopf weicht nach unten, und den gibt es ohnehin
+   nur bei Titeln mit offener naechster Folge.
+   Das Poster behaelt seine volle Groesse: 232 - 56 (Poster) - 40 (Bewertung)
+   - Abstaende laesst 124px fuer den Text, mehr als das Minimum von 100. */
+:root[data-width='xs'] .ratings-row {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
+:root[data-width='xs'] .ratings-row-meta {
+  flex: 1 1 100px;
+  min-width: 100px;
+}
+
+:root[data-width='xs'] .ratings-row-mark {
+  flex-shrink: 0;
+  /* Landet der Knopf in der zweiten Zeile, gehoert er ans rechte Ende —
+     sonst klebt er unter dem Poster. */
+  margin-left: auto;
+}
+
+/* Bewertung bleibt senkrecht mittig in der Zeile. */
+.ratings-row-right {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+}
+
+/* Anbieter sitzt in der oberen rechten Ecke der Karte — aus dem Fluss
+   genommen, damit er die Bewertung nicht aus der Mitte schiebt. */
+.ratings-row-providers {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 2;
+}
+
+/* Enge Ansicht: nur EIN Logo, damit die Spalte schmal bleibt. */
+:root[data-width='xs'] .ratings-row-providers .ratings-provider-badge:nth-of-type(n + 2),
+:root[data-width='xs'] .ratings-row-providers .ratings-provider-count-badge {
+  display: none;
+}
+
+:root[data-width='xs'] .ratings-row-providers .ratings-provider-badge {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+}
+
+:root[data-width='xs'] .ratings-row-providers .ratings-provider-badge img {
+  width: 26px;
+  height: 26px;
+}
+
+/* Die Platzziffer entfaellt in der engen Ansicht — die Reihenfolge ist ohnehin
+   sichtbar, und ohne sie passen Bild, Text und Bewertung in eine Zeile. */
+:root[data-width='xs'] .ratings-row-rank {
+  display: none;
+}
+
+/* Bewertung und Abhaken-Knopf mittig zur Zeile, seit die Zeile stretch ist. */
+.ratings-row-score,
+.ratings-row-mark,
+.ratings-row-rank,
+.ratings-row-providers {
+  align-self: center;
 }

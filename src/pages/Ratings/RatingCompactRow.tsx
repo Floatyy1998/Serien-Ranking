@@ -133,35 +133,40 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
           )}
         </div>
 
-        {item.providers.length > 0 && (
-          <div className="ratings-row-providers">
-            <ProviderBadgeArea
-              providers={item.providers}
-              bgColor={`${theme.background.default}dd`}
-              textColor={theme.text.muted}
-              searchTitle={item.title}
-            />
-          </div>
-        )}
-
-        <span
-          className="ratings-row-score"
-          style={{ color: item.rating > 0 ? 'var(--theme-accent)' : theme.text.muted }}
-          aria-label={
-            item.rating > 0
-              ? t('Bewertung {rating}', { rating: item.rating.toFixed(1) })
-              : t('Unbewertet')
-          }
-        >
-          {item.rating > 0 ? (
-            <>
-              <span className="ratings-row-score-star">★</span>
-              <span className="ratings-row-score-value">{item.rating.toFixed(1)}</span>
-            </>
-          ) : (
-            <span className="ratings-row-score-value">–</span>
+        {/* Rechte Spalte: Anbieter ueber der Bewertung. In der engen Ansicht
+            blieb frueher nur die Zahl — wo etwas laeuft, ist beim Stoebern
+            genauso wichtig wie die Note. */}
+        <div className="ratings-row-right">
+          {item.providers.length > 0 && (
+            <div className="ratings-row-providers">
+              <ProviderBadgeArea
+                providers={item.providers}
+                bgColor={`${theme.background.default}dd`}
+                textColor={theme.text.muted}
+                searchTitle={item.title}
+              />
+            </div>
           )}
-        </span>
+
+          <span
+            className="ratings-row-score"
+            style={{ color: item.rating > 0 ? 'var(--theme-accent)' : theme.text.muted }}
+            aria-label={
+              item.rating > 0
+                ? t('Bewertung {rating}', { rating: item.rating.toFixed(1) })
+                : t('Unbewertet')
+            }
+          >
+            {item.rating > 0 ? (
+              <>
+                <span className="ratings-row-score-star">★</span>
+                <span className="ratings-row-score-value">{item.rating.toFixed(1)}</span>
+              </>
+            ) : (
+              <span className="ratings-row-score-value">–</span>
+            )}
+          </span>
+        </div>
 
         {!item.isMovie && next && (
           <button

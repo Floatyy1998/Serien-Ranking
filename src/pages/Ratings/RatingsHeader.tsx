@@ -54,15 +54,25 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               from={theme.text.primary}
               to={theme.accent}
               style={{
-                fontSize: 26,
+                // Aus der NUTZBAREN Breite gerechnet (--effective-width), nicht
+                // aus vw: unter Anzeige-Zoom weicht beides voneinander ab.
+                fontSize: 'clamp(18px, calc(var(--effective-width, 412px) * 0.058), 26px)',
                 fontWeight: 800,
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 12,
+                gap: 8,
+                minWidth: 0,
               }}
             >
-              <Star style={{ fontSize: 28, color: theme.accent, WebkitTextFillColor: 'initial' }} />
+              <Star
+                style={{
+                  fontSize: 'clamp(19px, calc(var(--effective-width, 412px) * 0.062), 28px)',
+                  color: theme.accent,
+                  WebkitTextFillColor: 'initial',
+                  flexShrink: 0,
+                }}
+              />
               {t('Meine Bewertungen')}
             </GradientText>
           </div>
@@ -108,7 +118,6 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           </div>
         </div>
 
-        {/* Tab Navigation */}
         <TabSwitcher
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },

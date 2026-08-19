@@ -20,6 +20,7 @@ import { t } from '../../services/i18n';
 import type { PreparedItem } from './useRatingsData';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 // Aus lib/ importieren + fuer bestehende Importer (RatingCompactRow) re-exportieren.
+import { primaryGenre } from '../../lib/genreLabel';
 import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
 export { PLACEHOLDER_SVG };
 
@@ -92,7 +93,7 @@ export function ProviderBadgeArea({
   // otherwise as a plain div (no broken anchor).
   const renderBadge = (p: PreparedItem['providers'][number]) => {
     const url = getProviderSearchUrl(p.name, searchTitle);
-    const className = 'ratings-provider-badge';
+    const className = 'ratings-provider-badge tap-target-44';
     const style: React.CSSProperties = { background: bgColor };
     const content = <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />;
     const tooltip = providerNeedsClipboardCopy(p.name)
@@ -132,7 +133,7 @@ export function ProviderBadgeArea({
       {overflow > 0 && (
         <button
           type="button"
-          className="ratings-provider-badge ratings-provider-count-badge"
+          className="ratings-provider-badge ratings-provider-count-badge tap-target-44"
           style={{ background: bgColor, color: textColor }}
           onClick={openPopup}
           aria-label={t('{n} weitere Anbieter', { n: overflow })}
@@ -296,7 +297,9 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
 
                 {/* Genres */}
                 {item.year && item.genres && <span className="ratings-card-dot">&bull;</span>}
-                {item.genres && <span className="ratings-card-genres">{item.genres}</span>}
+                {item.genres && (
+                  <span className="ratings-card-genres">{primaryGenre(item.genres, t)}</span>
+                )}
               </div>
 
               {/* Fortschritt (Serien): der Ring um die Karte trägt die Visualisierung,
