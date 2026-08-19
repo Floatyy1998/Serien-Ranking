@@ -71,6 +71,33 @@ describe('useTransitionNavigate', () => {
     expect(navSpy).toHaveBeenCalledWith('/detail', undefined);
   });
 
+  it('swallows the rejection of a skipped transition', async () => {
+    // Eine uebersprungene View-Transition (zweite Navigation ueberholt die
+    // erste) lehnt `ready` mit AbortError ab. Ohne Catch landete das als
+    // unbehandelte Ablehnung in der Fehlererfassung.
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    const svt = vi.fn((cb: () => void) => {
+      cb();
+      return {
+        ready: Promise.reject(new Error('Transition was skipped')),
+        finished: Promise.reject(new Error('Transition was skipped')),
+        updateCallbackDone: Promise.resolve(),
+      };
+    });
+    (document as unknown as { startViewTransition: typeof svt }).startViewTransition = svt;
+
+    const { result } = renderHook(() => useTransitionNavigate());
+    result.current('/detail');
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    process.off('unhandledRejection', unhandled);
+
+    expect(navSpy).toHaveBeenCalledWith('/detail', undefined);
+    expect(unhandled).not.toHaveBeenCalled();
+  });
+
   it('skips the transition when reduced motion is preferred', () => {
     stubReducedMotion(true);
     const svt = vi.fn((cb: () => void) => cb());

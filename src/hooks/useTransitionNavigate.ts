@@ -7,7 +7,27 @@ import {
 } from 'react-router-dom';
 import { useReducedMotion } from './useReducedMotion';
 
+type ViewTransitionLike = {
+  ready?: Promise<unknown>;
+  finished?: Promise<unknown>;
+  updateCallbackDone?: Promise<unknown>;
+};
+
 type StartViewTransition = (cb: () => void) => unknown;
+
+/**
+ * Eine übersprungene View-Transition ist ein NORMALER Fall: sobald eine zweite
+ * Navigation die erste überholt (Doppeltipp, schnelles Weiterklicken), lehnt
+ * `ready` mit `AbortError: Transition was skipped` ab. Ohne Catch landet das
+ * als unbehandelte Ablehnung in der Fehlererfassung.
+ */
+function swallowSkip(transition: unknown): void {
+  const t = transition as ViewTransitionLike | undefined | null;
+  if (!t) return;
+  t.ready?.catch(() => {});
+  t.finished?.catch(() => {});
+  t.updateCallbackDone?.catch(() => {});
+}
 
 function getStartViewTransition(): StartViewTransition | null {
   if (typeof document === 'undefined') return null;
@@ -41,7 +61,7 @@ export function useTransitionNavigate(): NavigateFunction {
         run();
         return;
       }
-      start(run);
+      swallowSkip(start(run));
     },
     [navigate, reducedMotion]
   );
