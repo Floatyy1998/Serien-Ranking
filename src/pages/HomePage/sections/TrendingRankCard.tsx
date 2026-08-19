@@ -253,18 +253,8 @@ export function TrendingRankCard({ item, index, cardWidth }: TrendingRankCardPro
               )}
               {item.rating != null && item.year && <span style={{ opacity: 0.4 }}>&bull;</span>}
               {item.year && <span>{item.year}</span>}
-              {item.year && item.genres && <span style={{ opacity: 0.4 }}>&bull;</span>}
-              {item.genres && (
-                <span
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.genres}
-                </span>
-              )}
+              {/* Kein Genre: neben Bewertung und Jahr bleiben ~50px, dort wird
+                  selbst ein einzelnes Genre zu „Sci-F…". */}
             </div>
           </div>
         </div>

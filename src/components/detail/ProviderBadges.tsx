@@ -131,10 +131,13 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   const displayProviders = providerList.slice(0, maxDisplay);
   const remainingCount = providerList.length - maxDisplay;
 
+  // Auf den Detailseiten waren die Logos bei 28px kaum zu erkennen und lagen
+  // deutlich unter der empfohlenen Trefferflaeche. Ein Anbieter-Logo ist die
+  // Antwort auf „wo laeuft das?" — es darf Platz beanspruchen.
   const sizeStyles = {
-    small: { width: 20, height: 20, fontSize: '9px' },
-    medium: { width: 28, height: 28, fontSize: '11px' },
-    large: { width: 36, height: 36, fontSize: '12px' },
+    small: { width: 24, height: 24, fontSize: '10px' },
+    medium: { width: 38, height: 38, fontSize: '13px' },
+    large: { width: 46, height: 46, fontSize: '15px' },
   };
 
   const style = sizeStyles[size];

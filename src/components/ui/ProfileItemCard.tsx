@@ -9,6 +9,7 @@
 import { Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { primaryGenre } from '../../lib/genreLabel';
 import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
 import { t } from '../../services/i18n';
 import { PosterFrame } from './PosterFrame';
@@ -243,7 +244,7 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
                 {year && <span>{year}</span>}
 
                 {year && genres && <span className="pic-card-dot">&bull;</span>}
-                {genres && <span className="pic-card-genres">{genres}</span>}
+                {genres && <span className="pic-card-genres">{primaryGenre(genres, t)}</span>}
               </div>
 
               {!isMovie && progress != null && progress > 0 && (

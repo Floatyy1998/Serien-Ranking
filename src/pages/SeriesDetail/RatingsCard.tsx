@@ -125,7 +125,9 @@ export const RatingsCard = memo<RatingsCardProps>(
               {badge.label}
             </span>
             <span style={{ fontWeight: 600 }}>{badge.value}</span>
-            <span style={{ fontSize: '12px', opacity: 0.7 }}>{badge.votes}</span>
+            <span className="detail-ratings-card__votes" style={{ fontSize: '12px', opacity: 0.7 }}>
+              {badge.votes}
+            </span>
           </a>
         ))}
       </div>

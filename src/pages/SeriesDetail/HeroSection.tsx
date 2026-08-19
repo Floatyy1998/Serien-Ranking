@@ -114,7 +114,8 @@ export const HeroSection = memo<HeroSectionProps>(
       (g) => g && g.trim() !== '' && g !== 'All'
     );
     // Desktop: max. 2 Genres in der Meta-Zeile — vier Stück machen sie zur Wurst.
-    const maxGenres = isMobile ? 3 : 2;
+    // Mobil nur zwei: drei Genres brachen die Faktenzeile auf zwei Zeilen um.
+    const maxGenres = 2;
     const themedPlaceholder = useMemo(
       () =>
         buildThemedPlaceholderDataUrl(fullTheme.primary, fullTheme.secondary || fullTheme.accent),
@@ -500,7 +501,7 @@ export const HeroSection = memo<HeroSectionProps>(
 
           {/* Info */}
           <div
-            className={isMobile ? undefined : 'hero-section__glass-card'}
+            className={isMobile ? 'hero-section__info' : 'hero-section__glass-card'}
             style={isMobile ? { width: '100%' } : { position: 'relative' }}
           >
             <h1
@@ -557,7 +558,10 @@ export const HeroSection = memo<HeroSectionProps>(
                     : t('{n} Staffeln', { n: series.seasons.length })}
                 </span>
               )}
-              {series.status && (
+              {/* Mobil steht der Status im StatusBadge darunter — der traegt
+                  mehr (z. B. „Freitags neue Folge"). Hier waere er nur eine
+                  aermere Dopplung direkt daneben. */}
+              {!isMobile && series.status && (
                 <span>
                   &bull;{' '}
                   {series.status === 'Returning Series' || series.status === 'ongoing'
@@ -570,8 +574,11 @@ export const HeroSection = memo<HeroSectionProps>(
               {parseFloat(overallRating) > 0 && (
                 <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
               )}
-              {/* Desktop: Genres als ruhiger Text in der Meta-Zeile — Chips
-                  derselben Form wie Status-Badges erzeugten nur Rauschen. */}
+              {/* Genres als ruhiger Text in der Meta-Zeile — auch mobil.
+                  Als eigenes Chip-Band kosteten sie eine ganze Zeile und waren
+                  am rechten Rand angeschnitten. */}
+              {/* Genres stehen mobil in einer EIGENEN Zeile (siehe unten): am
+                  Ende dieser abkuerzenden Zeile fielen sie als Erstes weg. */}
               {!isMobile && genres.length > 0 && (
                 <span style={{ color: fullTheme.text.muted }}>
                   &bull; {genres.slice(0, maxGenres).join(', ')}
@@ -594,6 +601,14 @@ export const HeroSection = memo<HeroSectionProps>(
               <NextEpisodeChip series={series} />
             </div>
 
+            {/* Genres: eigene Zeile, damit sie immer sichtbar bleiben. */}
+            {isMobile && genres.length > 0 && (
+              <div className="hero-section__genres-line">
+                {genres.slice(0, maxGenres).join(' · ')}
+                {genres.length > maxGenres && ` · +${genres.length - maxGenres}`}
+              </div>
+            )}
+
             {/* Desktop: Beschreibung gehört IN den Hero (Streaming-Layout) —
                 3 Zeilen, Inhaltsbreite, statt einsamer Sektion darunter. */}
             {!isMobile && overview && (
@@ -613,65 +628,15 @@ export const HeroSection = memo<HeroSectionProps>(
               </p>
             )}
 
-            {/* Genre Tags — nur Mobile (Desktop: in der Meta-Zeile) */}
-            {isMobile && genres.length > 0 && (
-              <div
-                className="hero-section__badges"
-                style={{
-                  gap: '6px',
-                  marginTop: 6,
-                  marginBottom: 10,
-                  justifyContent: 'center',
-                  padding: '0 20px',
-                }}
-              >
-                {genres.slice(0, maxGenres).map((genre, i) => (
-                  <span key={i} className="hero-section__genre-tag">
-                    {genre}
-                  </span>
-                ))}
-                {genres.length > maxGenres && (
-                  <span className="hero-section__genre-tag" style={{ opacity: 0.7 }}>
-                    +{genres.length - maxGenres}
-                  </span>
-                )}
-              </div>
-            )}
-
             {/* Ratings + Provider row */}
+            {/* EINE Faktenleiste statt zweier Baender: Wertungen, Trailer,
+                Anbieter und die Anbieter-Korrektur gehoeren zusammen —
+                „woher kommt die Zahl / wo laeuft es". Sie scrollt waagerecht,
+                wenn es eng wird, statt umzubrechen. */}
             {isMobile ? (
-              <>
-                <div
-                  style={{
-                    padding: '0 20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    flexWrap: 'wrap',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <RatingsCard
-                    series={series}
-                    localSeries={localSeries}
-                    tmdbRating={tmdbRating}
-                    imdbRating={imdbRating}
-                    seriesId={String(seriesId)}
-                    isMobile
-                    noMargin
-                  />
-                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginTop: 10,
-                    padding: '0 20px',
-                    justifyContent: 'center',
-                  }}
-                >
+              <div className="hero-section__span hero-section__factbar">
+                {/* Zeile 1 — „wo laeuft es, was gibt es zu sehen" */}
+                <div className="hero-section__factbar-row">
                   {displayProviders.length > 0 && (
                     <ProviderBadges
                       providers={displayProviders}
@@ -690,12 +655,26 @@ export const HeroSection = memo<HeroSectionProps>(
                     hasProviders={displayProviders.length > 0}
                     onChange={setProviderOverride}
                   />
+                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
-              </>
+
+                {/* Zeile 2 — Fremd-Wertungen, teilen sich die Breite */}
+                <div className="hero-section__factbar-row hero-section__factbar-row--ratings">
+                  <RatingsCard
+                    series={series}
+                    localSeries={localSeries}
+                    tmdbRating={tmdbRating}
+                    imdbRating={imdbRating}
+                    seriesId={String(seriesId)}
+                    isMobile
+                    noMargin
+                  />
+                </div>
+              </div>
             ) : null}
 
             {/* Bottom section: Progress + Actions (pushed to bottom on desktop) */}
-            <div style={{ marginTop: isMobile ? 0 : 'auto' }}>
+            <div className="hero-section__span" style={{ marginTop: isMobile ? 0 : 'auto' }}>
               {/* Desktop: Stats-Band — Fortschritts-Ring + Glas-Pods füllen die
                   Hero-Mitte mit echten Komponenten statt gequetschter Textzeilen. */}
               {!isMobile && progressStats.total > 0 && (
@@ -927,8 +906,10 @@ export const HeroSection = memo<HeroSectionProps>(
               {actionButtons && (
                 <div
                   style={{
-                    marginTop: isMobile ? 14 : 18,
-                    padding: isMobile ? '0 16px' : undefined,
+                    marginTop: isMobile ? 10 : 18,
+                    // Mobil traegt die Kopf-Zeile den Seitenrand — ein eigener
+                    // schob die Knoepfe gegenueber allem anderen ein.
+                    padding: isMobile ? 0 : undefined,
                   }}
                 >
                   {actionButtons}

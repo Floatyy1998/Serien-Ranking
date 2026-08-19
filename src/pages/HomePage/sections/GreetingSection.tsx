@@ -224,10 +224,15 @@ export const GreetingSection = React.memo(function GreetingSection({
                 from={currentTheme.primary}
                 to={currentTheme.accent}
                 style={{
-                  fontSize: isMobile ? '19px' : 'clamp(21px, 0.7vw + 17px, 26px)',
+                  // Aus der nutzbaren Breite gerechnet: unter Anzeige-Zoom
+                  // stehen bei 412px nur 330px zur Verfuegung, dort brach der
+                  // Gruss sonst auf drei Zeilen um.
+                  fontSize: isMobile
+                    ? 'clamp(15px, calc(var(--effective-width, 412px) * 0.049), 20px)'
+                    : 'clamp(21px, 0.7vw + 17px, 26px)',
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
-                  lineHeight: 1.25,
+                  lineHeight: 1.18,
                   margin: '0 0 2px 0',
                   // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
                   // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
@@ -327,8 +332,19 @@ export const GreetingSection = React.memo(function GreetingSection({
                 boxShadow: 'var(--glass-specular)',
               }}
             >
-              <Search style={{ fontSize: '20px', color: currentTheme.primary }} />
-              <span style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
+              <Search style={{ fontSize: '20px', color: currentTheme.primary, flexShrink: 0 }} />
+              <span
+                style={{
+                  color: currentTheme.text.muted,
+                  fontSize: '15px',
+                  // Einzeilig halten: der Hinweis brach sonst um und machte aus
+                  // dem Suchfeld einen doppelt hohen Kasten.
+                  minWidth: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {t('Suche nach Serien oder Filmen')}
               </span>
             </motion.button>

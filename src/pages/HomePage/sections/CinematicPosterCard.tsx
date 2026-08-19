@@ -215,27 +215,8 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
               {(item.year || item.releaseDate) && (
                 <span>{item.year || item.releaseDate?.slice(0, 4)}</span>
               )}
-              {(item.year || item.releaseDate) && item.genres && (
-                <span style={{ opacity: 0.4 }}>&bull;</span>
-              )}
-              {item.genres && (
-                <span
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {/* Die Genres kommen je nach Quelle schon uebersetzt oder roh
-                      aus dem Katalog (dort englisch) — jedes Stueck einzeln
-                      durch t() schicken; bereits Uebersetztes faellt unveraendert
-                      durch. */}
-                  {item.genres
-                    .split(', ')
-                    .map((g) => t(g.trim()))
-                    .join(', ')}
-                </span>
-              )}
+              {/* Kein Genre auf dieser Karte: neben Bewertung und Jahr bleiben
+                  ~50px, dort wird selbst ein einzelnes Genre zu „Sci-F…". */}
             </div>
           </div>
         </div>

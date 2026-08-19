@@ -74,14 +74,18 @@ const renderT = (item: MediaItem) =>
   );
 
 describe('CinematicPosterCard', () => {
-  it('renders title, rating, year, genres and the Serie type badge', () => {
+  it('renders title, rating, year and the Serie type badge', () => {
     renderT(baseItem);
     expect(screen.getByRole('heading', { name: 'Dune' })).toBeInTheDocument();
     expect(screen.getByText('8.7')).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
-    expect(screen.getByText('Sci-Fi')).toBeInTheDocument();
     expect(screen.getByText('Serie')).toBeInTheDocument();
     expect(screen.getByTestId('provider-badges')).toBeInTheDocument();
+  });
+
+  it('zeigt kein Genre — dafuer bleiben auf der Karte nur ~50px', () => {
+    renderT(baseItem);
+    expect(screen.queryByText('Sci-Fi')).not.toBeInTheDocument();
   });
 
   it('renders the Film badge for movie items', () => {

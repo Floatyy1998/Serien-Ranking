@@ -205,6 +205,7 @@ export const WatchStreakCard: React.FC = () => {
     <>
       <div style={{ margin: '0 20px', width: 'calc(100% - 40px)' }}>
         <div
+          className="streak-card__head"
           onClick={() => setShowInfo((v) => !v)}
           style={{
             padding: '12px 14px',
@@ -216,6 +217,7 @@ export const WatchStreakCard: React.FC = () => {
             alignItems: 'center',
             gap: '12px',
             cursor: 'pointer',
+            minWidth: 0,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
           }}
@@ -250,6 +252,8 @@ export const WatchStreakCard: React.FC = () => {
                 fontFamily: 'var(--font-display)',
                 color: currentTheme.text.primary,
                 whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               {t('Watch Streak')}
@@ -283,7 +287,21 @@ export const WatchStreakCard: React.FC = () => {
           </div>
 
           {/* Right side: Streak Number + Shield */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
+          <div
+            className="streak-card__value"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              marginRight: 4,
+              // Ohne flexShrink:0 wurde diese Gruppe unter ihre Inhaltsbreite
+              // gequetscht; die 24px-Zahl kann nicht schrumpfen und lief
+              // dadurch ueber den Text daneben.
+              flexShrink: 0,
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+            }}
+          >
             {/* Shield button */}
             {showShieldButton && !shieldJustUsed && (
               <motion.button

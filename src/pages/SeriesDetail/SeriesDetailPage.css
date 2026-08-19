@@ -170,7 +170,11 @@
   font-weight: 800;
   margin: 0 0 6px 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  word-break: break-word;
+  /* break-word zerlegte lange Woerter mitten drin („Wiedergebur/t").
+     overflow-wrap bricht nur, wenn ein Wort wirklich nicht passt. */
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
   line-height: 1.2;
   /* KEIN line-clamp/overflow mehr: der alte 2-Zeilen-Clamp hat bei großer
      Type die Unterlängen (y, g, j) abgeschnitten. Lange Titel brechen um. */
@@ -926,4 +930,238 @@ button.episode-list-number:focus-visible {
 .friend-progress-bar-fill {
   height: 100%;
   transition: width 0.4s var(--ease-default);
+}
+
+/* Enge Ansicht: TMDB- und IMDb-Plakette passten nicht nebeneinander und
+   belegten je eine eigene Zeile — zusammen mit Video- und Anbieter-Knopf
+   wuchs der Kopf der Detailseite auf vier zusaetzliche Zeilen. Kompaktere
+   Plaketten bringen sie wieder in eine Reihe. */
+:root[data-width='xs'] .detail-ratings-card,
+:root[data-width='sm'] .detail-ratings-card {
+  gap: var(--space-1);
+}
+
+:root[data-width='xs'] .detail-ratings-card__badge,
+:root[data-width='sm'] .detail-ratings-card__badge {
+  gap: 4px;
+  padding: 3px 7px !important;
+  font-size: 12px;
+}
+
+:root[data-width='xs'] .detail-ratings-card__badge span,
+:root[data-width='sm'] .detail-ratings-card__badge span {
+  font-size: 11px;
+}
+
+/* Ohne die Stimmenzahl passen TMDB und IMDb nebeneinander statt auf zwei
+   eigene Zeilen — die Wertung selbst bleibt sichtbar. */
+:root[data-width='xs'] .detail-ratings-card__votes {
+  display: none;
+}
+
+/* Kompakter Serien-Kopf auf schmalen Ansichten.
+   Vorher standen zwoelf Baender untereinander (Poster, Titel, Fakten, Status,
+   naechste Folge, Genres, Wertungen, Videos, Anbieter, Fortschritt …) — alle
+   zentriert, zusammen rund 640px. Jetzt sitzt das Poster LINKS neben Titel,
+   Fakten, Status und Genres; alles darunter nutzt die volle Breite.
+
+   Gesteuert ueber data-layout (NUTZBARE Breite), nicht ueber eine Media Query:
+   unter Anzeige-Zoom rendert die Seite bereits mobil, waehrend der Viewport
+   noch als Desktop gilt — genau dort lief der Titel ueber das Poster.
+
+   Der Trick ist display:contents am Info-Wrapper: dadurch werden dessen Kinder
+   selbst zu Rasterfeldern und lassen sich einzeln platzieren. */
+:root[data-layout='mobile'] .hero-section__content-row {
+  display: grid !important;
+  grid-template-columns: 132px minmax(0, 1fr);
+  /* Am Element steht inline gap:0 (Rest des alten Spalten-Layouts). Ohne
+     !important klebte der Titel bundig an der Poster-Kante — das sah aus,
+     als laege der Text hinter dem Poster. */
+  column-gap: 14px !important;
+  row-gap: 0 !important;
+  align-items: start;
+  /* Die Inline-Angabe am Element setzt padding:… 0 …; ohne !important klebte
+     das Poster an der Bildschirmkante. */
+  padding-inline: 16px !important;
+}
+
+:root[data-layout='mobile'] .hero-section__info {
+  display: contents;
+}
+
+/* Poster spannt die vier Zeilen daneben: Titel, Fakten, Status, Genres. */
+:root[data-layout='mobile'] .hero-section__poster-wrap {
+  grid-column: 1;
+  grid-row: 1 / span 4;
+  margin-bottom: 0 !important;
+  align-self: start !important;
+}
+
+:root[data-layout='mobile'] .hero-section__poster {
+  width: 132px !important;
+  height: 198px !important;
+}
+
+/* Titel, Faktenzeile und Status stehen rechts vom Poster — linksbuendig,
+   zentriert wirkte neben einem Bild wie ein Fehler. */
+:root[data-layout='mobile'] .hero-section__title {
+  grid-column: 2;
+  margin: 0 0 4px !important;
+  text-align: left !important;
+  font-size: clamp(17px, calc(var(--effective-width, 412px) * 0.058), 24px) !important;
+  line-height: 1.15;
+}
+
+:root[data-layout='mobile'] .hero-section__meta {
+  grid-column: 2;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+  margin-top: 4px !important;
+}
+
+:root[data-layout='mobile'] .hero-section__badges {
+  grid-column: 2;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+}
+
+/* Alles unterhalb des Posters: volle Breite, gemeinsame linke Kante. */
+:root[data-layout='mobile'] .hero-section__span {
+  grid-column: 1 / -1;
+  justify-content: flex-start !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 8px !important;
+}
+
+/* Faktenleiste: „wo laeuft es" und „was sagen andere" in ZWEI vollen Zeilen.
+   Vorher lag alles in einer umbrechenden Reihe — je nach Breite wurden daraus
+   drei ungleiche Zeilen mit leerem Rand rechts. Explizite Zeilen sind
+   vorhersehbar; die Elemente darin teilen sich die Breite. */
+:root[data-layout='mobile'] .hero-section__factbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-subtle);
+  -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
+}
+
+:root[data-layout='mobile'] .hero-section__factbar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  /* Umbrechen statt ueberlaufen: die Zeilen muessen mit beliebig vielen
+     Anbietern und Wertungen klarkommen — bei drei Wertungen bzw. vier
+     Anbietern lief der letzte Eintrag sonst rechts aus der Leiste. */
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
+/* Der Trailer-Knopf FUELLT den Rest der Zeile. Ans rechte Ende geschoben
+   riss er bei nur einem Anbieter eine grosse Luecke in die Mitte. */
+:root[data-layout='mobile'] .hero-section__factbar-row > button:last-child {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+/* Die beiden Wertungen teilen sich die volle Breite. */
+:root[data-layout='mobile'] .hero-section__factbar-row--ratings .detail-ratings-card {
+  display: flex;
+  width: 100%;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
+/* Untergrenze statt starrer Drittelung: zwei Wertungen teilen sich die Zeile,
+   drei brechen sauber um, statt auf unlesbare Breite gequetscht zu werden. */
+:root[data-layout='mobile'] .hero-section__factbar-row--ratings .detail-ratings-card__badge {
+  flex: 1 1 108px;
+  min-width: 108px;
+  justify-content: center;
+  padding: 4px 8px !important;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Genre-Zeile liegt unter dem Poster und nutzt darum die VOLLE Breite —
+   in der rechten Spalte blieb links vom Text eine tote Flaeche, und der
+   knappe Platz kuerzte die Genres unnoetig ab. */
+:root[data-layout='mobile'] .hero-section__genres-line {
+  grid-column: 1 / -1;
+  margin-top: var(--space-3);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Die Faktenzeile bleibt einzeilig — sie ist eine Zeile Fliesstext, kein Block. */
+:root[data-layout='mobile'] .hero-section__meta {
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* In der Leiste zaehlt Kompaktheit: kleine Plaketten, damit Anbieter,
+   Wertungen und Trailer in zwei ruhige Zeilen passen statt in drei. */
+:root[data-layout='mobile'] .hero-section__factbar .detail-ratings-card__badge {
+  padding: 3px 8px !important;
+  font-size: 11.5px;
+  white-space: nowrap;
+  gap: 4px;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+/* Der Chip fuer die naechste Folge bleibt einzeilig — umgebrochen zerfiel er
+   in „Dran" und den Rest und sah aus wie zwei Elemente. */
+:root[data-layout='mobile'] .hero-section__badges > * {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:root[data-layout='mobile'] .hero-section__factbar .detail-ratings-card__label {
+  padding: 1px 5px;
+  font-size: 10px;
+}
+
+:root[data-layout='mobile'] .hero-section__factbar button {
+  min-height: 32px !important;
+  min-width: 32px !important;
+}
+
+/* Sehr schmal: schmaleres Poster, damit der Textspalte genug Breite bleibt.
+   Seite-an-Seite bleibt auch hier — mit echtem Abstand funktioniert es. */
+:root[data-layout='mobile'][data-width='xs'] .hero-section__content-row {
+  grid-template-columns: 104px minmax(0, 1fr);
+  column-gap: 12px !important;
+  padding-inline: 12px !important;
+}
+
+:root[data-layout='mobile'][data-width='xs'] .hero-section__poster {
+  width: 104px !important;
+  height: 156px !important;
+}
+
+/* Desktop: die Textspalte bekommt Vorrang vor der rechten Signal-Zone.
+   Ohne Untergrenze blieben ihr bei ~1160px Fensterbreite nur 388px von 1068 —
+   der Titel brach dann in fuenf Zeilen, waehrend rechts das halbe Artwork
+   leer stand. Passt beides nicht nebeneinander, rutscht die Signal-Zone
+   in die naechste Zeile. */
+.hero-section__glass-card {
+  flex: 1 1 520px;
+  min-width: min(520px, 100%);
 }
