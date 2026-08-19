@@ -119,6 +119,7 @@ export const DiscoveryStep: React.FC<Props> = ({
         <CoverWall />
 
         <div
+          className="ob-discovery-body"
           style={{
             position: 'relative',
             zIndex: 2,
@@ -179,6 +180,7 @@ export const DiscoveryStep: React.FC<Props> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
+            className="ob-discovery-search"
             style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
           >
             <div className="ob-search">
@@ -207,7 +209,10 @@ export const DiscoveryStep: React.FC<Props> = ({
               )}
               <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)', fontSize: 10 }}>
                 {addedCount.toString().padStart(2, '0')}
-                <span style={{ opacity: 0.5 }}> / {t('gewählt')}</span>
+                <span className="ob-search__count-label" style={{ opacity: 0.5 }}>
+                  {' '}
+                  / {t('gewählt')}
+                </span>
               </span>
             </div>
 
@@ -259,7 +264,10 @@ export const DiscoveryStep: React.FC<Props> = ({
           )}
 
           {/* Grid */}
-          <div style={{ flex: 1, minHeight: 0, overflow: 'auto', paddingBottom: 16 }}>
+          <div
+            className="ob-discovery-results"
+            style={{ flex: 1, minHeight: 0, overflow: 'auto', paddingBottom: 16 }}
+          >
             {(loading || searchLoading) && displayItems.length === 0 ? (
               <div
                 style={{
@@ -306,7 +314,10 @@ export const DiscoveryStep: React.FC<Props> = ({
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                  // min(150px, 47%) statt fester 150px: bei 288px nutzbarer
+                  // Breite (kleines Geraet oder Anzeige-Zoom) passte sonst nur
+                  // EINE Spalte und das Poster fuellte den halben Bildschirm.
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(150px, 47%), 1fr))',
                   gap: 'clamp(14px, 2vw, 22px)',
                   rowGap: 'clamp(22px, 3vw, 32px)',
                 }}
@@ -334,19 +345,22 @@ export const DiscoveryStep: React.FC<Props> = ({
 
         {/* CTA */}
         <div
+          className="ob-discovery-cta"
           style={{
             position: 'relative',
             zIndex: 3,
             padding:
-              'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) calc(20px + env(safe-area-inset-bottom))',
+              'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) calc(20px + var(--safe-bottom))',
             background: 'linear-gradient(180deg, transparent 0%, var(--ob-stage) 50%)',
           }}
         >
           <button onClick={onNext} disabled={addedCount === 0} className="ob-cta">
             <span className="ob-cta__inner">
               <span>{contentType === 'series' ? t('weiter zu filmen') : t('fertig')}</span>
-              <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
-              <span style={{ opacity: 0.55, fontSize: 11 }}>
+              <span className="ob-cta__hint" style={{ opacity: 0.55, fontSize: 11 }}>
+                ·
+              </span>
+              <span className="ob-cta__hint" style={{ opacity: 0.55, fontSize: 11 }}>
                 {addedCount > 0 ? t('{n} gewählt', { n: addedCount }) : t('wähle min. 1')}
               </span>
             </span>

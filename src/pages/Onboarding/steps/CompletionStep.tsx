@@ -233,7 +233,8 @@ export const CompletionStep: React.FC<Props> = ({
           transition={{ delay: 1.3, duration: 0.6 }}
           style={{
             display: 'grid',
-            gridTemplateColumns: watchedSeriesCount > 0 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
+            gridTemplateColumns:
+              watchedSeriesCount > 0 ? 'repeat(3, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))',
             gap: 'clamp(16px, 3vw, 28px)',
             width: '100%',
             maxWidth: 540,

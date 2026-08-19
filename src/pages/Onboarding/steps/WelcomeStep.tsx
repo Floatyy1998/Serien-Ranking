@@ -171,15 +171,19 @@ export const WelcomeStep: React.FC<Props> = ({
                   </span>
                 </motion.div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="ob-mono"
-                  style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
-                >
-                  {t('Willkommen, {name}.', { name: username })}
-                </motion.div>
+                /* Im Gast-Flow gibt es noch keinen Namen — dann bleibt die
+                   Zeile weg, statt „Willkommen, ." anzuzeigen. */
+                username.trim() && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="ob-mono"
+                    style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
+                  >
+                    {t('Willkommen, {name}.', { name: username })}
+                  </motion.div>
+                )
               )}
               <h1
                 className="ob-display"

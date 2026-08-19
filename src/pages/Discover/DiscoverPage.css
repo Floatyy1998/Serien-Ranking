@@ -19,17 +19,27 @@
 
 /* Kategorie-Kacheln: mobil 5 gleiche Spalten, ab Desktop kompakt statt
    vollbreiter Streifen. */
+/* Chip-Zeile statt Fuenfer-Raster: bei 330px nutzbarer Breite (Anzeige-Zoom)
+   blieben pro Spalte ~60px, „Fuer dich" brach auf zwei Zeilen um. Die Chips
+   sind jetzt so breit wie ihr Wort und scrollen waagerecht, falls noetig. */
 .discover-cats {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  padding: 8px 20px 14px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  padding: 0 var(--page-x) var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 768px) {
-  .discover-cats {
-    grid-template-columns: repeat(5, minmax(110px, 150px));
-  }
+.discover-cats::-webkit-scrollbar {
+  display: none;
+}
+
+.discover-cats > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .discover-poster-wrap {
@@ -89,7 +99,9 @@
   min-width: 44px;
   min-height: 44px;
   padding: 10px;
-  border-radius: 12px;
+  /* Gleicher Radius wie der Segment-Umschalter daneben — mit 12px wirkten die
+     Knoepfe wie fremde Kacheln neben einer Pille. */
+  border-radius: var(--radius-2xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,4 +111,70 @@
 .discover-abo-toggle:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
+}
+
+/* Kopfzeile: Zurueck + Titel + Suche. Die beiden Filter-Knoepfe sitzen eine
+   Reihe tiefer neben dem Serien/Filme-Umschalter — so bleibt der
+   Zurueck-Knopf auch bei 288px nutzbarer Breite erhalten. */
+:root[data-width='xs'] .discover-head-row {
+  gap: var(--space-2);
+}
+
+/* Umschalter + Filter-Knoepfe als eine Einheit: gleiche Hoehe, gleicher
+   Radius, gleiche Glas-Sprache. */
+.discover-control-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding: 0 var(--page-x) var(--space-3);
+}
+
+.discover-control-row > button {
+  min-width: var(--control-md);
+}
+
+.discover-control-row > button {
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.discover-tabs {
+  margin: 0;
+}
+
+/* Der Umschalter teilt sich die Reihe mit zwei Knoepfen. Bleibt zu wenig
+   Platz, weicht das Symbol — die Beschriftung ist die Information. */
+:root[data-width='xs'] .discover-tabs .ui-tabs__tab svg,
+:root[data-width='sm'] .discover-tabs .ui-tabs__tab svg {
+  display: none;
+}
+
+:root[data-width='xs'] .discover-tabs .ui-tabs__tab {
+  padding: 0 var(--space-2);
+}
+
+/* Beim Scrollen faehrt die Titelzeile ein — Umschalter, Filter und Kategorien
+   bleiben oben stehen. Der Platzhalter im Scroll-Container behaelt die volle
+   Kopfhoehe, darum springt der Inhalt dabei nicht. */
+.discover-header .discover-head-row {
+  overflow: hidden;
+  max-height: 72px;
+  opacity: 1;
+  transition:
+    max-height 0.28s var(--ease-default),
+    opacity 0.2s var(--ease-default),
+    margin-bottom 0.28s var(--ease-default);
+}
+
+.discover-header.is-collapsed .discover-head-row {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discover-header .discover-head-row {
+    transition: none;
+  }
 }

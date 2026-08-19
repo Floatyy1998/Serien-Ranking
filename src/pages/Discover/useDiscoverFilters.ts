@@ -54,9 +54,12 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   useEffect(() => {
     const updateHeaderHeight = () => {
       const headerElement = document.querySelector('[data-header="discover-header"]');
-      if (headerElement) {
-        const height = headerElement.getBoundingClientRect().height;
-        setHeaderHeight(height + 10);
+      if (headerElement instanceof HTMLElement) {
+        // offsetHeight statt getBoundingClientRect: unter Anzeige-Zoom liefert
+        // das Rect SKALIERTE Pixel, der Platzhalter unten wird aber in
+        // unskalierten CSS-Pixeln gesetzt — der Kopf-Platzhalter war dadurch
+        // 25 % zu hoch und riss eine leere Lücke über die erste Posterreihe.
+        setHeaderHeight(headerElement.offsetHeight + 10);
       }
     };
 

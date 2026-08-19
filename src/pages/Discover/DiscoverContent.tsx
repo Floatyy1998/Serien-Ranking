@@ -118,7 +118,7 @@ export const DiscoverContent = memo(
               display: 'grid',
               gridTemplateColumns: isDesktop
                 ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                : 'repeat(2, 1fr)',
+                : 'repeat(2, minmax(0, 1fr))',
               gap: isDesktop ? '24px' : '16px',
               maxWidth: '100%',
               margin: '0',
@@ -202,7 +202,7 @@ export const DiscoverContent = memo(
                 display: 'grid',
                 gridTemplateColumns: isDesktop
                   ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                  : 'repeat(2, 1fr)',
+                  : 'repeat(2, minmax(0, 1fr))',
                 gap: isDesktop ? '24px' : '16px',
                 maxWidth: '100%',
                 margin: '0',
@@ -263,7 +263,7 @@ export const DiscoverContent = memo(
           display: 'grid',
           gridTemplateColumns: isDesktop
             ? 'repeat(auto-fill, minmax(200px, 1fr))'
-            : 'repeat(2, 1fr)',
+            : 'repeat(2, minmax(0, 1fr))',
           gap: isDesktop ? '24px' : '16px',
           maxWidth: '100%',
           margin: '0',

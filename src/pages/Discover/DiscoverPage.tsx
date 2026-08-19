@@ -11,7 +11,7 @@ import {
   Whatshot,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { t } from '../../services/i18n';
@@ -65,6 +65,19 @@ export const DiscoverPage = memo(() => {
   } = useDiscoverFilters();
 
   const { activeProviders } = useActiveSubscriptions();
+
+  // Beim Scrollen klappt die Titelzeile ein; Umschalter, Filter und Kategorien
+  // bleiben stehen. Der Platzhalter unten behaelt die volle Kopfhoehe, damit
+  // der Inhalt beim Einklappen nicht springt.
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  useEffect(() => {
+    const box = document.querySelector('.mobile-discover-container');
+    if (!box) return;
+    const onScroll = () => setHeaderCollapsed(box.scrollTop > 24);
+    box.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => box.removeEventListener('scroll', onScroll);
+  }, []);
   // Der Toggle greift nur, wenn der Nutzer mindestens ein AKTIVES Abo gepflegt
   // hat — sonst gäbe es keine Grundlage zum Filtern (leer + verwirrend).
   const canFilterByProviders = activeProviders.size > 0;
@@ -139,6 +152,7 @@ export const DiscoverPage = memo(() => {
       {/* Fixed Header and Controls */}
       <div
         data-header="discover-header"
+        className={headerCollapsed ? 'discover-header is-collapsed' : 'discover-header'}
         style={{
           position: 'fixed',
           top: 0,
@@ -158,97 +172,55 @@ export const DiscoverPage = memo(() => {
           {/* Header */}
           <header
             style={{
-              padding: '14px 20px',
-              paddingTop: 'calc(14px + env(safe-area-inset-top))',
+              padding: 'var(--space-3) var(--page-x)',
+              paddingTop: 'calc(var(--space-3) + var(--safe-top))',
             }}
           >
             <div
+              className="discover-head-row"
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                gap: 'var(--space-2)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BackButton showHome={false} />
+              <div
+                className="discover-head-title"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  // Ohne minWidth:0 schiebt sich der Titel unter die Symbole,
+                  // sobald die nutzbare Breite unter ~340px faellt (Zoom).
+                  minWidth: 0,
+                }}
+              >
+                <span className="discover-head-back">
+                  <BackButton showHome={false} />
+                </span>
                 <GradientText
                   as="h1"
                   style={{
-                    fontSize: '22px',
+                    fontSize: 'clamp(15px, calc(var(--effective-width, 412px) * 0.068), 28px)',
                     fontWeight: 800,
                     fontFamily: 'var(--font-display)',
                     letterSpacing: '-0.03em',
                     margin: 0,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {t('Entdecken')}
                 </GradientText>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <motion.button
-                  type="button"
-                  className="discover-abo-toggle"
-                  whileTap={canFilterByProviders ? tapScaleTight : undefined}
-                  onClick={() => {
-                    if (canFilterByProviders) setOnlyMyProviders((v) => !v);
-                  }}
-                  disabled={!canFilterByProviders}
-                  aria-pressed={providerFilterActive}
-                  aria-label={t('Nur Titel auf meinen aktiven Abos anzeigen')}
-                  title={providerToggleTitle}
-                  style={{
-                    background: providerFilterActive
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                      : currentTheme.background.surface,
-                    border: providerFilterActive
-                      ? 'none'
-                      : `1px solid ${currentTheme.border.default}`,
-                    color: providerFilterActive
-                      ? getOptimalTextColor(currentTheme.primary)
-                      : currentTheme.text.primary,
-                    cursor: canFilterByProviders ? 'pointer' : 'not-allowed',
-                    opacity: canFilterByProviders ? 1 : 0.5,
-                    boxShadow: providerFilterActive
-                      ? `0 4px 12px ${currentTheme.primary}40`
-                      : 'none',
-                  }}
-                >
-                  <Subscriptions style={{ fontSize: '20px' }} />
-                </motion.button>
-
-                {!showSearch && activeCategory !== 'recommendations' && (
-                  <motion.button
-                    whileTap={tapScaleTight}
-                    onClick={() => setShowFilters(!showFilters)}
-                    aria-label={t('Genre filtern')}
-                    aria-expanded={showFilters}
-                    style={{
-                      padding: '10px',
-                      background: selectedGenre
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                        : currentTheme.background.surface,
-                      border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
-                      borderRadius: '12px',
-                      color: selectedGenre
-                        ? getOptimalTextColor(currentTheme.primary)
-                        : currentTheme.text.primary,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: selectedGenre ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-                    }}
-                    title={
-                      selectedGenre
-                        ? genres.find((g) => g.id === selectedGenre)?.name
-                        : t('Genre Filter')
-                    }
-                  >
-                    <FilterList style={{ fontSize: '20px' }} />
-                  </motion.button>
-                )}
-
+              <div
+                className="discover-head-actions"
+                style={{ display: 'flex', gap: '6px', flexShrink: 0 }}
+              >
                 <motion.button
                   whileTap={tapScaleTight}
                   onClick={() => {
@@ -266,7 +238,7 @@ export const DiscoverPage = memo(() => {
                       ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                       : currentTheme.background.surface,
                     border: showSearch ? 'none' : `1px solid ${currentTheme.border.default}`,
-                    borderRadius: '12px',
+                    borderRadius: 'var(--radius-2xl)',
                     color: showSearch
                       ? getOptimalTextColor(currentTheme.primary)
                       : currentTheme.text.primary,
@@ -319,26 +291,88 @@ export const DiscoverPage = memo(() => {
             )}
           </AnimatePresence>
 
-          {/* Tab switcher */}
-          <TabSwitcher
-            tabs={[
-              { id: 'series', label: t('Serien'), icon: CalendarToday },
-              { id: 'movies', label: t('Filme'), icon: MovieIcon },
-            ]}
-            activeTab={activeTab}
-            onTabChange={(id) => {
-              setActiveTab(id as 'series' | 'movies');
-              setShowSearch(false);
-            }}
-            style={{ margin: '8px 20px 0 20px' }}
-          />
+          {/* Umschalter und die beiden Filter-Knoepfe teilen sich eine Reihe:
+              drei getrennte Baender (Kopf, Umschalter, Kategorien) wirkten
+              zerfallen und liessen in der engen Ansicht keinen Platz fuer den
+              Zurueck-Knopf in der Kopfzeile. */}
+          <div className="discover-control-row">
+            <TabSwitcher
+              tabs={[
+                { id: 'series', label: t('Serien'), icon: CalendarToday },
+                { id: 'movies', label: t('Filme'), icon: MovieIcon },
+              ]}
+              activeTab={activeTab}
+              onTabChange={(id) => {
+                setActiveTab(id as 'series' | 'movies');
+                setShowSearch(false);
+              }}
+              className="discover-tabs"
+              style={{ margin: 0, flex: 1, minWidth: 0 }}
+            />
+            <motion.button
+              type="button"
+              className="discover-abo-toggle"
+              whileTap={canFilterByProviders ? tapScaleTight : undefined}
+              onClick={() => {
+                if (canFilterByProviders) setOnlyMyProviders((v) => !v);
+              }}
+              disabled={!canFilterByProviders}
+              aria-pressed={providerFilterActive}
+              aria-label={t('Nur Titel auf meinen aktiven Abos anzeigen')}
+              title={providerToggleTitle}
+              style={{
+                background: providerFilterActive
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  : currentTheme.background.surface,
+                border: providerFilterActive ? 'none' : `1px solid ${currentTheme.border.default}`,
+                color: providerFilterActive
+                  ? getOptimalTextColor(currentTheme.primary)
+                  : currentTheme.text.primary,
+                cursor: canFilterByProviders ? 'pointer' : 'not-allowed',
+                opacity: canFilterByProviders ? 1 : 0.5,
+                boxShadow: providerFilterActive ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+              }}
+            >
+              <Subscriptions style={{ fontSize: '20px' }} />
+            </motion.button>
+            {!showSearch && activeCategory !== 'recommendations' && (
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={() => setShowFilters(!showFilters)}
+                aria-label={t('Genre filtern')}
+                aria-expanded={showFilters}
+                style={{
+                  padding: '10px',
+                  background: selectedGenre
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                    : currentTheme.background.surface,
+                  border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
+                  borderRadius: 'var(--radius-2xl)',
+                  color: selectedGenre
+                    ? getOptimalTextColor(currentTheme.primary)
+                    : currentTheme.text.primary,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: selectedGenre ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                }}
+                title={
+                  selectedGenre
+                    ? genres.find((g) => g.id === selectedGenre)?.name
+                    : t('Genre Filter')
+                }
+              >
+                <FilterList style={{ fontSize: '20px' }} />
+              </motion.button>
+            )}
+          </div>
 
           {/* Categories */}
           {!showSearch && (
             <div className="discover-cats">
               {categories.map((cat) => {
                 const isActive = activeCategory === cat.id;
-                const Icon = cat.icon;
                 return (
                   <motion.button
                     key={cat.id}
@@ -347,25 +381,24 @@ export const DiscoverPage = memo(() => {
                       setActiveCategory(cat.id);
                     }}
                     style={{
-                      padding: '10px 4px',
+                      minHeight: 'var(--control-sm)',
+                      padding: '0 var(--space-3)',
                       background: isActive
                         ? `linear-gradient(135deg, ${cat.color}25, ${cat.color}0a)`
                         : 'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
                       border: isActive
                         ? `1px solid ${cat.color}40`
                         : '1px solid var(--glass-border-subtle)',
-                      borderRadius: '12px',
+                      borderRadius: 'var(--radius-md)',
                       color: isActive ? cat.color : currentTheme.text.secondary,
                       cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '4px',
+                      justifyContent: 'center',
                       transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
                       boxShadow: isActive ? `0 4px 16px -4px ${cat.color}20` : 'none',
                     }}
                   >
-                    <Icon style={{ fontSize: '20px' }} />
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700 }}>{cat.label}</span>
                   </motion.button>
                 );
@@ -385,7 +418,7 @@ export const DiscoverPage = memo(() => {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                     gap: '8px',
                     maxHeight: '160px',
                     overflowY: 'auto',
@@ -517,8 +550,9 @@ export const DiscoverPage = memo(() => {
             </motion.div>
           )}
 
-          {/* Bottom padding */}
-          <div style={{ height: '80px' }} />
+          {/* Eigener Scroll-Container: das Polster der Shell greift hier nicht,
+              also den Dock-Platz aus derselben Quelle reservieren. */}
+          <div style={{ height: 'calc(var(--dock-reserve) + var(--page-bottom-gap))' }} />
         </div>
       </div>
 

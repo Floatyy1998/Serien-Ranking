@@ -119,8 +119,23 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding-top: calc(env(safe-area-inset-top));
-  padding-bottom: calc(env(safe-area-inset-bottom));
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Unterhalb des zweispaltigen Layouts scrollt der GANZE Schritt statt eines
+   Mittelstreifens zwischen Fortschritt und Knopf. Auf kurzen Bildschirmen
+   blieb von diesem Streifen sonst kaum eine Zeile uebrig. */
+@media (max-width: 1279px) {
+  .ob-step {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ob-step::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Progress meter (top bar — like an old reel counter) */
@@ -1222,6 +1237,18 @@
   gap: clamp(20px, 3vw, 36px);
 }
 
+/* Auf Handys scrollt der ganze Schritt (siehe .ob-step). Der Mittelstreifen
+   darf dann NICHT selbst scrollen — sonst bleibt von ihm zwischen Fortschritt
+   und Knopf nur eine Zeile uebrig. Muss nach .ob-spread stehen, sonst
+   gewinnt dessen overflow:auto. */
+@media (max-width: 1279px) {
+  .ob-spread {
+    flex: 0 0 auto;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+
 @media (min-width: 1280px) {
   .ob-spread {
     display: grid;
@@ -1287,5 +1314,79 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
     align-items: start;
     gap: clamp(40px, 5vw, 80px);
+  }
+}
+
+/* Enge Ansicht: der Zaehler „00 / gewaehlt" sass im Suchfeld und wurde dort
+   abgeschnitten, waehrend er zugleich den Platzhalter verdeckte. Er zeigt in
+   der engen Ansicht nur noch die Zahl. */
+:root[data-width='xs'] .ob-search__count-label {
+  display: none;
+}
+
+/* Der Weiter-Knopf brach auf zwei Zeilen um. In der engen Ansicht entfaellt
+   der Zusatz („· wähle min. 1") — der ausgegraute Knopf sagt dasselbe. */
+:root[data-width='xs'] .ob-cta {
+  padding: 12px 14px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+:root[data-width='xs'] .ob-cta__hint {
+  display: none;
+}
+
+:root[data-width='xs'] .ob-cta__inner {
+  min-width: 0;
+}
+
+/* Suchfeld: der lange Platzhalter passt in der engen Ansicht nur kleiner. */
+:root[data-width='xs'] .ob-search input {
+  font-size: 13px;
+}
+
+/* Onboarding-Auswahl: auf Handys scrollt der ganze Schritt (siehe .ob-step).
+   Die grosse Ueberschrift darf dabei wegwandern, das Suchfeld bleibt oben
+   stehen. Dafuer muss der Rumpf sein overflow:hidden abgeben — sonst waere er
+   der Scroll-Bezug und das sticky-Element wuerde sich nie bewegen. */
+@media (max-width: 1279px) {
+  .ob-discovery-body {
+    /* flex:1 hielt den Rumpf auf Viewport-Hoehe, waehrend der Inhalt darueber
+       hinauslief — der Weiter-Knopf landete dadurch MITTEN im Raster statt
+       darunter. Natuerliche Hoehe schiebt ihn ans Ende. */
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+  }
+
+  /* Das Suchfeld klebt als schwebende Pille. KEIN gemalter Streifen dahinter:
+     ueber der Posterwand erzeugte der eine harte Kante quer durchs Bild, die
+     wie eine willkuerliche Abgrenzung aussah. Die Pille selbst ist deckend,
+     die Poster laufen links und rechts daran vorbei. */
+  .ob-discovery-search {
+    position: sticky;
+    top: var(--space-2);
+    z-index: 6;
+  }
+
+  .ob-discovery-search .ob-search {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Das Poster-Raster hatte einen EIGENEN Scroll-Bereich: 4267px Inhalt in
+     einem 251px hohen Band. Genau das fuehlte sich an wie „eine Zeile zum
+     Scrollen". Es scrollt jetzt mit dem ganzen Schritt. */
+  .ob-discovery-results {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+    min-height: 0;
+  }
+
+  /* Der Weiter-Knopf ist Pflicht — er bleibt am unteren Rand erreichbar,
+     statt ans Ende einer langen Liste zu rutschen. */
+  .ob-discovery-cta {
+    /* Inline steht position:relative — hier muss die Regel gewinnen. */
+    position: sticky !important;
+    bottom: 0;
+    z-index: 5;
   }
 }
