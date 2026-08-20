@@ -54,19 +54,16 @@
 
 /* Nav Item (alle gleich breit) */
 .nav-item {
-  /* Nur der aktive Eintrag traegt ein Label, die uebrigen sind reine Symbole.
-     Also bekommt der aktive so viel Breite, wie sein Wort braucht (in pt heisst
-     ein Eintrag „Contagens regressivas“), und die anderen teilen den Rest.
-     Basis 0 heisst zugleich: bei Platzmangel schrumpft nur der aktive. */
+  /* Alle Felder exakt gleich breit: sonst wandern die Symbole beim
+     Seitenwechsel. Passt das Wort des aktiven Eintrags nicht hinein, waechst
+     stattdessen die Pille darueber hinaus (siehe BottomNavigation.tsx). */
   flex: 1 1 0;
-  min-width: 36px;
+  min-width: 0;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.55);
-  /* Die Pille sitzt je 4px eingerueckt — ohne dieses Polster ragt das Label
-     ueber ihren Rand hinaus. */
-  padding: 0 10px;
-  /* WCAG/Apple-HIG: min. 44–48px Trefferfläche für die primäre Navigation. */
+  padding: 0;
+  /* WCAG/Apple-HIG: min. 44-48px Trefferflaeche fuer die primaere Navigation. */
   min-height: 48px;
   height: 100%;
   display: flex;
@@ -82,8 +79,6 @@
 
 .nav-item.active {
   color: var(--color-primary);
-  flex: 0 1 auto;
-  min-width: 0;
 }
 
 /* Nav Icon */
@@ -128,11 +123,9 @@
   font-weight: 500;
   font-family: var(--font-body);
   letter-spacing: 0.1px;
-  /* 6 Items: lange Labels ("Bewertungen") dürfen die gleichmäßige
-     Item-Breite nicht sprengen */
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Bewusst KEIN max-width: laengere Woerter sind breiter als ein Sechstel der
+     Leiste. Sie ragen ueber ihr Feld hinaus, die Pille waechst mit - die
+     Nachbarn sind reine Symbole und haben dort rund 14px Luft. */
   white-space: nowrap;
 }
 

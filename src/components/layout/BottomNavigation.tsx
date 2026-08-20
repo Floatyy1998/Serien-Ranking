@@ -130,10 +130,20 @@ export const BottomNavigation = () => {
     const measure = () => {
       const el = itemRefs.current[pillTargetIndex];
       if (!el || el.offsetWidth === 0) return;
-      setPillPos({
-        left: el.offsetLeft + 4,
-        width: el.offsetWidth - 8,
-      });
+
+      // Die Felder sind alle gleich breit, damit die Symbole beim Seitenwechsel
+      // stehen bleiben. Laengere Woerter ("Bewertungen", "Abonnements") passen
+      // dort nicht hinein - dann waechst die Pille ueber ihr Feld hinaus,
+      // zentriert um das Symbol. Die Nachbarn tragen nur Symbole, daneben ist
+      // Luft. Zum Schluss innerhalb der Leiste halten.
+      const label = el.querySelector<HTMLElement>('.nav-label');
+      const labelWidth = label && label.offsetWidth > 0 ? label.scrollWidth : 0;
+      const width = Math.max(el.offsetWidth - 8, labelWidth + 16);
+      const mitte = el.offsetLeft + el.offsetWidth / 2;
+      const grenze = containerRef.current?.clientWidth ?? el.offsetLeft + el.offsetWidth;
+      const left = Math.max(2, Math.min(mitte - width / 2, grenze - width - 2));
+
+      setPillPos({ left, width });
     };
     measure();
     const container = containerRef.current;
