@@ -1,4 +1,4 @@
-import HelpOutline from '@mui/icons-material/HelpOutline';
+import HelpOutlined from '@mui/icons-material/HelpOutlined';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -39,7 +39,7 @@ export const PageToursSection = memo(() => {
           background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
         }}
       >
-        <HelpOutline style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+        <HelpOutlined style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
       </div>
       <div className="settings-nav-btn-text">
         <h2 className="settings-nav-btn-title">{t('Seitenhilfen zurücksetzen')}</h2>

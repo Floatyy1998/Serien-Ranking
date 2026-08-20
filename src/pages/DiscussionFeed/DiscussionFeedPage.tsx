@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, Movie, Reply, Tv } from '@mui/icons-material';
+import { ChatBubbleOutlined, Movie, Reply, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -210,7 +210,7 @@ export const DiscussionFeedPage = () => {
 
   return (
     <PageLayout>
-      <PageHeader title={t('Diskussions-Feed')} icon={<ChatBubbleOutline />} />
+      <PageHeader title={t('Diskussions-Feed')} icon={<ChatBubbleOutlined />} />
 
       {/* Filter Tabs */}
       <div
@@ -278,7 +278,7 @@ export const DiscussionFeedPage = () => {
           </div>
         ) : entries.length === 0 ? (
           <EmptyState
-            icon={<ChatBubbleOutline style={{ fontSize: '48px' }} />}
+            icon={<ChatBubbleOutlined style={{ fontSize: '48px' }} />}
             title={t('Noch keine Diskussionen')}
             description={
               filter !== 'all'

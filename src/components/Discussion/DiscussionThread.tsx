@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ChatBubbleOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -357,7 +357,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             border: `2px dashed ${currentTheme.border.default}`,
           }}
         >
-          <ChatBubbleOutline style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.4 }} />
+          <ChatBubbleOutlined style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.4 }} />
           <p style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>
             {t('Noch keine Diskussionen')}
           </p>

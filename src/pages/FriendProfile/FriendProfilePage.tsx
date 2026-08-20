@@ -1,5 +1,5 @@
 import {
-  ChatBubbleOutline,
+  ChatBubbleOutlined,
   CompareArrows,
   ExpandLess,
   ExpandMore,
@@ -289,7 +289,7 @@ export const FriendProfilePage = memo(() => {
                 color: currentTheme.primary,
               }}
             >
-              <ChatBubbleOutline style={{ fontSize: 19 }} />
+              <ChatBubbleOutlined style={{ fontSize: 19 }} />
               {t('Chat')}
             </motion.button>
             <motion.button

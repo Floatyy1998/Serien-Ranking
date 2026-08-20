@@ -16,7 +16,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 
-vi.mock('@mui/icons-material/HelpOutline', () => ({ default: () => null }));
+vi.mock('@mui/icons-material/HelpOutlined', () => ({ default: () => null }));
 
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>

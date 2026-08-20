@@ -35,6 +35,9 @@ describe('IconContainer', () => {
     );
     const wrapper = screen.getByTestId('child').parentElement as HTMLElement;
     expect(wrapper.style.background).toContain('linear-gradient');
-    expect(wrapper.style.background).toContain('#123456');
+    // jsdom normalisiert Hex-Farben zu rgb() — beide Schreibweisen zaehlen,
+    // geprueft wird die FARBE, nicht die Serialisierung der Testumgebung.
+    expect(wrapper.style.background).toMatch(/#123456|rgb\(18,\s*52,\s*86\)/);
+    expect(wrapper.style.background).toMatch(/#654321|rgb\(101,\s*67,\s*33\)/);
   });
 });

@@ -87,23 +87,33 @@ const createDynamicTheme = () => {
           root: {
             borderRadius: 8,
           },
-          containedPrimary: {
-            backgroundColor: primaryColor,
-            color: backgroundColor,
-            fontWeight: 600,
-            '&:hover': {
-              backgroundColor: primaryColor,
-            },
-          },
-          outlinedPrimary: {
-            borderColor: primaryColor,
-            color: primaryColor,
-            '&:hover': {
-              borderColor: primaryColor,
-              backgroundColor: 'transparent',
-            },
-          },
         },
+        // MUI 9 kennt den Schluessel `containedPrimary` in styleOverrides nicht
+        // mehr — dieselbe Regel als Variante beschrieben.
+        variants: [
+          {
+            props: { variant: 'contained', color: 'primary' },
+            style: {
+              backgroundColor: primaryColor,
+              color: backgroundColor,
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: primaryColor,
+              },
+            },
+          },
+          {
+            props: { variant: 'outlined', color: 'primary' },
+            style: {
+              borderColor: primaryColor,
+              color: primaryColor,
+              '&:hover': {
+                borderColor: primaryColor,
+                backgroundColor: 'transparent',
+              },
+            },
+          },
+        ],
       },
       MuiCard: {
         styleOverrides: {

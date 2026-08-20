@@ -1,4 +1,4 @@
-import { ArrowForward, AutoAwesome, CheckCircleOutline } from '@mui/icons-material';
+import { ArrowForward, AutoAwesome, CheckCircleOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +39,7 @@ export const EmptyState = memo(() => {
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
         >
-          <CheckCircleOutline style={{ fontSize: '60px', color: currentTheme.status.success }} />
+          <CheckCircleOutlined style={{ fontSize: '60px', color: currentTheme.status.success }} />
         </motion.div>
       </motion.div>
 

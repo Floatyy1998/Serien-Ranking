@@ -1,4 +1,4 @@
-import { ErrorOutline } from '@mui/icons-material';
+import { ErrorOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
@@ -99,7 +99,7 @@ export const SubscriptionInsights = ({
             className="sub-insight-label"
             style={{ color: warning, display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ErrorOutline style={{ fontSize: 16 }} />
+            <ErrorOutlined style={{ fontSize: 16 }} />
             {t('Vorschlag')}
           </p>
           <p className="sub-insight-suggestion" style={{ color: currentTheme.text.primary }}>

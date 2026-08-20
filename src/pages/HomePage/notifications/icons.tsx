@@ -1,6 +1,6 @@
 import {
   BugReport,
-  ChatBubbleOutline,
+  ChatBubbleOutlined,
   Favorite,
   Flag,
   Lightbulb,
@@ -25,7 +25,7 @@ const ICON_MAP: Record<string, (theme: Theme) => React.ReactNode> = {
   star: (t) => <Star style={{ fontSize: '18px', color: t.status.warning }} />,
   watchlist: (t) => <PlayCircle style={{ fontSize: '18px', color: t.primary }} />,
   person: (t) => <PersonAdd style={{ fontSize: '18px', color: t.status.success }} />,
-  chat: (t) => <ChatBubbleOutline style={{ fontSize: '18px', color: t.primary }} />,
+  chat: (t) => <ChatBubbleOutlined style={{ fontSize: '18px', color: t.primary }} />,
   heart: (t) => <Favorite style={{ fontSize: '18px', color: t.status?.error || '#ef4444' }} />,
   flag: (t) => <Flag style={{ fontSize: '18px', color: t.status.warning }} />,
   announcement: (t) => <NewReleases style={{ fontSize: '18px', color: t.accent }} />,

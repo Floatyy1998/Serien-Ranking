@@ -10,7 +10,7 @@ import {
   PlaylistRemove,
   SnoozeOutlined,
   Star,
-  StarOutline,
+  StarOutlined,
   Stop,
   Tv,
 } from '@mui/icons-material';
@@ -159,7 +159,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
   unrated: {
     category: 'unrated',
     themeColor: (t) => t.primary,
-    HeaderIcon: StarOutline,
+    HeaderIcon: StarOutlined,
     DetailIcon: Star,
     headerText: (n) => (n > 1 ? t('{n} Serien zum Bewerten', { n }) : t('Noch nicht bewertet')),
     detailText: () => t('Staffel fertig — wie war sie?'),
@@ -195,7 +195,7 @@ const InlineRatingPicker: React.FC<{
           const fillPct = Math.max(0, Math.min(1, value - (n - 1)));
           return (
             <span key={n} className="inline-rating-star-visual">
-              <StarOutline className="inline-rating-star-bg" />
+              <StarOutlined className="inline-rating-star-bg" />
               <span
                 className="inline-rating-star-fg"
                 style={{

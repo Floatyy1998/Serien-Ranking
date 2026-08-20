@@ -7,7 +7,7 @@
  */
 
 import AccessTime from '@mui/icons-material/AccessTime';
-import PauseCircleOutline from '@mui/icons-material/PauseCircleOutline';
+import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
@@ -247,7 +247,7 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                     fontFamily: 'inherit',
                   }}
                 >
-                  <PauseCircleOutline style={{ fontSize: 14 }} />
+                  <PauseCircleOutlined style={{ fontSize: 14 }} />
                   {t('Pausieren')}
                 </motion.button>
               </div>

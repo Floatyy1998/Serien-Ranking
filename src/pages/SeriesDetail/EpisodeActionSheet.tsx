@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, Repeat, RemoveCircle } from '@mui/icons-material';
+import { ChatBubbleOutlined, Repeat, RemoveCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -163,7 +163,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
               gap: '8px',
             }}
           >
-            <ChatBubbleOutline style={{ fontSize: '18px' }} />
+            <ChatBubbleOutlined style={{ fontSize: '18px' }} />
             {t('Zur Diskussion')}
           </motion.button>
         </div>

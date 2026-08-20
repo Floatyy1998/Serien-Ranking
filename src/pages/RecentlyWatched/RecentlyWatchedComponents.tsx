@@ -1,6 +1,6 @@
 /** Memoized Subkomponenten der RecentlyWatchedPage. */
 
-import { CalendarToday, ChatBubbleOutline, Check, History, PlayCircle } from '@mui/icons-material';
+import { CalendarToday, ChatBubbleOutlined, Check, History, PlayCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -52,7 +52,7 @@ export const EpisodeDiscussionIndicator: React.FC<{
         fontWeight: 600,
       }}
     >
-      <ChatBubbleOutline style={DISCUSSION_ICON_STYLE} />
+      <ChatBubbleOutlined style={DISCUSSION_ICON_STYLE} />
       {count}
     </button>
   );

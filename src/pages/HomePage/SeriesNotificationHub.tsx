@@ -16,7 +16,7 @@ import {
   ExpandMore,
   MenuBook,
   NewReleases,
-  StarOutline,
+  StarOutlined,
   SwapHoriz,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -80,7 +80,7 @@ const CATEGORY_DEFS: CategoryDef[] = [
     Icon: CheckCircle,
     color: (t) => t.status.success,
   },
-  { key: 'unrated', label: t('Bewerten'), Icon: StarOutline, color: (t) => t.primary },
+  { key: 'unrated', label: t('Bewerten'), Icon: StarOutlined, color: (t) => t.primary },
   {
     key: 'anime-manga',
     label: 'Manga',

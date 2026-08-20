@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   CheckCircle,
-  ErrorOutline,
+  ErrorOutlined,
   HourglassEmpty,
-  PlayCircleOutline,
+  PlayCircleOutlined,
   Refresh,
 } from '@mui/icons-material';
 import type firebase from 'firebase/compat/app';
@@ -122,7 +122,7 @@ export const AnimeFillerTab = () => {
         fontSize: 12,
       }}
     >
-      <PlayCircleOutline style={{ fontSize: 14 }} /> läuft
+      <PlayCircleOutlined style={{ fontSize: 14 }} /> läuft
     </span>
   ) : (
     <span
@@ -312,7 +312,7 @@ export const AnimeFillerTab = () => {
           'errors',
           counts.errors ?? 0,
           currentTheme.status.error,
-          <ErrorOutline style={{ fontSize: 14 }} />
+          <ErrorOutlined style={{ fontSize: 14 }} />
         )}
       </div>
     </div>

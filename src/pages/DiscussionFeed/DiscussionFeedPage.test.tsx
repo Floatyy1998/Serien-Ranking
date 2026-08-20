@@ -25,7 +25,7 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => {
   const Stub = () => <span />;
-  return { ChatBubbleOutline: Stub, Movie: Stub, Reply: Stub, Tv: Stub };
+  return { ChatBubbleOutlined: Stub, Movie: Stub, Reply: Stub, Tv: Stub };
 });
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../contexts/ThemeContext', () => {

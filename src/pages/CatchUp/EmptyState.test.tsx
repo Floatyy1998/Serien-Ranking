@@ -19,7 +19,7 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => ({
   ArrowForward: () => null,
   AutoAwesome: () => null,
-  CheckCircleOutline: () => null,
+  CheckCircleOutlined: () => null,
 }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));

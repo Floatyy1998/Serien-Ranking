@@ -244,12 +244,14 @@ export const LoginPage = () => {
                   required
                   autoComplete="email"
                   error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 2,
@@ -287,32 +289,34 @@ export const LoginPage = () => {
                   required
                   autoComplete="current-password"
                   error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip
-                          title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
-                          arrow
-                        >
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            aria-label={
-                              showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
-                            }
-                            aria-pressed={showPassword}
-                            sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip
+                            title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
+                            arrow
                           >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                              aria-label={
+                                showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
+                              }
+                              aria-pressed={showPassword}
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 4,

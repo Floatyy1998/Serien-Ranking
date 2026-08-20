@@ -8,7 +8,7 @@ vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
     [
-      'CheckCircleOutline',
+      'CheckCircleOutlined',
       'ExpandLess',
       'ExpandMore',
       'NotificationsActive',

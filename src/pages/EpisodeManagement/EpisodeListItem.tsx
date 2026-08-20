@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, Check, DateRange, Visibility } from '@mui/icons-material';
+import { ChatBubbleOutlined, Check, DateRange, Visibility } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
@@ -126,7 +126,7 @@ export const EpisodeListItem = memo(
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <ChatBubbleOutline style={DISCUSSION_ICON_STYLE} />
+            <ChatBubbleOutlined style={DISCUSSION_ICON_STYLE} />
             {discussionCount > 0 && <span style={DISCUSSION_COUNT_STYLE}>{discussionCount}</span>}
           </button>
         </Tooltip>

@@ -1,4 +1,4 @@
-import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline';
+import ChatBubbleOutlined from '@mui/icons-material/ChatBubbleOutlined';
 import SendRounded from '@mui/icons-material/SendRounded';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
@@ -288,7 +288,7 @@ export const ActivityPage = () => {
                 secondaryColor={currentTheme.accent}
                 size={42}
               >
-                <ChatBubbleOutline style={{ fontSize: '22px', color: '#fff' }} />
+                <ChatBubbleOutlined style={{ fontSize: '22px', color: '#fff' }} />
               </IconContainer>
 
               <div style={{ flex: 1, minWidth: 0 }}>

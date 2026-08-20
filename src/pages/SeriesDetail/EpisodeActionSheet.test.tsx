@@ -42,7 +42,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('@mui/icons-material', () => ({
-  ChatBubbleOutline: () => null,
+  ChatBubbleOutlined: () => null,
   Repeat: () => null,
   RemoveCircle: () => null,
 }));

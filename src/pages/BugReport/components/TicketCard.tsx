@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, ExpandMore, Send } from '@mui/icons-material';
+import { ChatBubbleOutlined, ExpandMore, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
@@ -153,7 +153,7 @@ export function TicketCard({
             </span>
             {comments.length > 0 && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <ChatBubbleOutline style={{ fontSize: 12 }} />
+                <ChatBubbleOutlined style={{ fontSize: 12 }} />
                 {comments.length}
               </span>
             )}

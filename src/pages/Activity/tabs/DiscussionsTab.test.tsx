@@ -45,7 +45,7 @@ vi.mock('framer-motion', async () => {
 
 // @mui/icons-material barrel import pulls in ~11k modules → OOM in the worker; stub used icons.
 vi.mock('@mui/icons-material', () => ({
-  ChatBubbleOutline: () => null,
+  ChatBubbleOutlined: () => null,
   Favorite: () => null,
   Flag: () => null,
 }));

@@ -6,7 +6,7 @@ import type { ProviderInsight } from '../../../types/Subscription';
 
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
-  return Object.fromEntries(['ErrorOutline'].map((n) => [n, stub]));
+  return Object.fromEntries(['ErrorOutlined'].map((n) => [n, stub]));
 });
 
 const theme = vi.hoisted(() => ({

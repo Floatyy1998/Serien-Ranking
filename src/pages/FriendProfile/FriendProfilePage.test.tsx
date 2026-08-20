@@ -64,7 +64,7 @@ vi.mock('./FriendCurrentlyWatchingCard', () => ({ FriendCurrentlyWatchingCard: (
 vi.mock('./FriendAnticipationSection', () => ({ FriendAnticipationSection: () => null }));
 vi.mock('./FriendPetCard', () => ({ FriendPetCard: () => null }));
 vi.mock('@mui/icons-material', () => ({
-  ChatBubbleOutline: () => null,
+  ChatBubbleOutlined: () => null,
   CompareArrows: () => null,
   ExpandLess: () => null,
   ExpandMore: () => null,

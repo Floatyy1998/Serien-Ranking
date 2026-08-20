@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
+import { ChatBubbleOutlined, Favorite, Flag } from '@mui/icons-material';
 import ForumRounded from '@mui/icons-material/ForumRounded';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -106,7 +106,7 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
                   }}
                 >
                   {notification.type === 'discussion_reply' ? (
-                    <ChatBubbleOutline style={{ color: currentTheme.primary, fontSize: '20px' }} />
+                    <ChatBubbleOutlined style={{ color: currentTheme.primary, fontSize: '20px' }} />
                   ) : notification.type === 'spoiler_flag' ? (
                     <Flag style={{ color: currentTheme.status.warning, fontSize: '20px' }} />
                   ) : (

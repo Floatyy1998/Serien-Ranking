@@ -1,4 +1,4 @@
-import { ChatBubbleOutline, ContentCopy, Delete, ExpandMore, Send } from '@mui/icons-material';
+import { ChatBubbleOutlined, ContentCopy, Delete, ExpandMore, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
@@ -190,7 +190,7 @@ export function AdminTicketCard({
               <>
                 <span style={{ opacity: 0.4 }}>|</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                  <ChatBubbleOutline style={{ fontSize: 10 }} /> {comments.length}
+                  <ChatBubbleOutlined style={{ fontSize: 10 }} /> {comments.length}
                 </span>
               </>
             )}

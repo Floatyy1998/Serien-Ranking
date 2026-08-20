@@ -1,6 +1,6 @@
 import {
   AddPhotoAlternate,
-  ChatBubbleOutline,
+  ChatBubbleOutlined,
   Close,
   ExpandLess,
   ExpandMore,
@@ -132,7 +132,7 @@ export const RepliesSection: React.FC<{
         {isSpoilerHidden ? (
           <VisibilityOff style={{ fontSize: '18px' }} />
         ) : (
-          <ChatBubbleOutline style={{ fontSize: '18px' }} />
+          <ChatBubbleOutlined style={{ fontSize: '18px' }} />
         )}
         {replyCount > 0 ? t('{n} Antworten', { n: replyCount }) : t('Antworten')}
         {!isSpoilerHidden &&

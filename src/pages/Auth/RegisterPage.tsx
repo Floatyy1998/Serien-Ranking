@@ -262,13 +262,15 @@ export const RegisterPage = () => {
                   helperText={t(
                     'So heißt du in der App — andere Nutzer können diesen Namen sehen.'
                   )}
-                  FormHelperTextProps={{ sx: { color: 'rgba(255, 255, 255, 0.5)', mx: 0 } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    formHelperText: { sx: { color: 'rgba(255, 255, 255, 0.5)', mx: 0 } },
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 2,
@@ -306,12 +308,14 @@ export const RegisterPage = () => {
                   required
                   autoComplete="email"
                   error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 2,
@@ -349,32 +353,34 @@ export const RegisterPage = () => {
                   required
                   autoComplete="new-password"
                   error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip
-                          title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
-                          arrow
-                        >
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            aria-label={
-                              showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
-                            }
-                            aria-pressed={showPassword}
-                            sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip
+                            title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
+                            arrow
                           >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                              aria-label={
+                                showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
+                              }
+                              aria-pressed={showPassword}
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 2,
@@ -412,34 +418,38 @@ export const RegisterPage = () => {
                   required
                   autoComplete="new-password"
                   error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip
-                          title={
-                            showConfirmPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
-                          }
-                          arrow
-                        >
-                          <IconButton
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            edge="end"
-                            aria-label={
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip
+                            title={
                               showConfirmPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
                             }
-                            aria-pressed={showConfirmPassword}
-                            sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                            arrow
                           >
-                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
+                            <IconButton
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              edge="end"
+                              aria-label={
+                                showConfirmPassword
+                                  ? t('Passwort verbergen')
+                                  : t('Passwort anzeigen')
+                              }
+                              aria-pressed={showConfirmPassword}
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                            >
+                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                   sx={{
                     mb: 4,

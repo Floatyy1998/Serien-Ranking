@@ -1,4 +1,4 @@
-import { ChatBubbleOutline } from '@mui/icons-material';
+import { ChatBubbleOutlined } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +46,7 @@ export const EpisodeDiscussionButton: React.FC<{
           zIndex: 10,
         }}
       >
-        <ChatBubbleOutline style={{ fontSize: '18px' }} />
+        <ChatBubbleOutlined style={{ fontSize: '18px' }} />
         {count > 0 ? <span style={{ fontSize: '13px', fontWeight: 600 }}>{count}</span> : null}
       </button>
     </Tooltip>
