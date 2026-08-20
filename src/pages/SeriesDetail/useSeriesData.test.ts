@@ -157,6 +157,79 @@ describe('useSeriesData', () => {
     expect(s.imdb.imdb_id).toBe('tt999');
   });
 
+  it('wechselt zur neuen Serie, wenn die id sich aendert (Empfehlung angeklickt)', async () => {
+    // Gemeldeter Fehler: von einer fremden Serie auf eine Empfehlung geklickt
+    // → die URL wechselte, die Seite zeigte aber weiter die alte Serie, teils
+    // mit deren Hintergrund. Ursache war die Sperre `!tmdbSeries`, die beim
+    // zweiten Aufruf noch mit der ersten Serie gefuellt war.
+    const proSerie = (url: string): unknown => {
+      const id = /\/tv\/(\d+)/.exec(url)?.[1] ?? '0';
+      if (url.includes('omdbapi')) return { imdbRating: '7.0', imdbVotes: '10' };
+      if (url.includes('/watch/providers')) return { results: {} };
+      if (url.includes('/season/')) return { episodes: [] };
+      if (url.includes('append_to_response')) {
+        return {
+          ...FULL_REMOTE,
+          id: Number(id),
+          name: 'Serie ' + id,
+          original_name: 'Serie ' + id,
+          backdrop_path: '/b' + id + '.jpg',
+          seasons: [{ season_number: 1 }],
+          external_ids: { imdb_id: 'tt' + id },
+        };
+      }
+      if (url.includes('language=en-US')) return { name: 'Serie ' + id };
+      return {
+        backdrop_path: '/b' + id + '.jpg',
+        vote_average: 8,
+        vote_count: 100,
+        first_air_date: '2020-01-01',
+        overview: 'Beschreibung ' + id,
+      };
+    };
+    stubFetch(proSerie);
+
+    const { result, rerender } = renderHook(({ id }) => useSeriesData(id), {
+      initialProps: { id: '111' },
+    });
+
+    await waitFor(() => expect(result.current.tmdbSeries?.id).toBe(111));
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b111.jpg'));
+
+    rerender({ id: '222' });
+
+    await waitFor(() => expect(result.current.tmdbSeries?.id).toBe(222));
+    expect(result.current.series?.title).toBe('Serie 222');
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b222.jpg'));
+    expect(result.current.tmdbOverview).toBe('Beschreibung 222');
+  });
+
+  it('verwirft die Daten der vorigen Serie sofort beim id-Wechsel', async () => {
+    // Auch wenn die neue Serie kein Backdrop mitbringt, darf nicht das alte
+    // stehen bleiben — sonst: neue Serie mit dem Hintergrund der alten.
+    stubFetch((url: string) => {
+      if (url.includes('omdbapi')) return {};
+      if (url.includes('/watch/providers')) return { results: {} };
+      if (url.includes('/season/')) return { episodes: [] };
+      if (url.includes('/tv/111')) {
+        return { backdrop_path: '/b111.jpg', overview: 'Alt', vote_average: 8, vote_count: 9 };
+      }
+      return {}; // Serie 222 liefert nichts davon
+    });
+
+    const { result, rerender } = renderHook(({ id }) => useSeriesData(id), {
+      initialProps: { id: '111' },
+    });
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b111.jpg'));
+    expect(result.current.tmdbOverview).toBe('Alt');
+
+    rerender({ id: '222' });
+
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBeNull());
+    expect(result.current.tmdbOverview).toBeNull();
+    expect(result.current.tmdbRating).toBeNull();
+  });
+
   it('fetches the IMDB rating from OMDb once an imdb id is available', async () => {
     ctx.seriesList = [makeSeries({ id: 123, imdb: { imdb_id: 'tt123' } })];
     stubFetch(fullDataHandler);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
@@ -50,6 +50,8 @@ export const useMovieData = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
+  // Fuer welche ID der Vollabruf schon lief.
+  const geholtFuer = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [isAdding, setIsAdding] = useState(false);
 
@@ -118,82 +120,118 @@ export const useMovieData = () => {
     return `${hours}h ${mins}m`;
   };
 
+  // Beim Wechsel des Films muss alles weg, was zum vorigen gehoert: die Felder
+  // unten werden nur gesetzt, wenn die neue Antwort sie mitbringt.
+  useEffect(() => {
+    setTmdbMovie(null);
+    setTmdbBackdrop(null);
+    setProviders(null);
+    setTmdbRating(null);
+    setImdbRating(null);
+    setTmdbOverview(null);
+    setLoading(false);
+    geholtFuer.current = null;
+  }, [id]);
+
   useEffect(() => {
     const apiKey = getTmdbApiKey();
+    if (!id || !apiKey) return;
 
-    if (id && apiKey) {
-      tmdbFetch<TmdbMediaDetail>(`movie/${id}`)
-        .then((data) => {
-          if (data.backdrop_path) {
-            setTmdbBackdrop(data.backdrop_path);
-          }
-          if (data.vote_average && data.vote_count) {
-            setTmdbRating({
-              vote_average: data.vote_average,
-              vote_count: data.vote_count,
-            });
-          }
-          if (data.overview) {
-            setTmdbOverview(data.overview);
-          }
-        })
-        .catch(() => {}); // bewusst still: Backdrop/TMDB-Rating sind optionale Anreicherung
+    // Wechselt der Film waehrend eine Anfrage laeuft, darf deren spaete
+    // Antwort den neuen Film nicht ueberschreiben.
+    let abgebrochen = false;
 
-      tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
-        .then((data) => {
-          const flatrate = pickProviderRegion(data.results)?.flatrate;
-          if (flatrate) {
-            setProviders(
-              flatrate.filter(
-                (p: { provider_name: string }) =>
-                  watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
-              )
-            );
-          }
-        })
-        .catch(() => {}); // bewusst still: Provider-Anzeige ist optionale Anreicherung
-    }
+    tmdbFetch<TmdbMediaDetail>(`movie/${id}`)
+      .then((data) => {
+        if (abgebrochen) return;
+        if (data.backdrop_path) {
+          setTmdbBackdrop(data.backdrop_path);
+        }
+        if (data.vote_average && data.vote_count) {
+          setTmdbRating({
+            vote_average: data.vote_average,
+            vote_count: data.vote_count,
+          });
+        }
+        if (data.overview) {
+          setTmdbOverview(data.overview);
+        }
+      })
+      .catch(() => {}); // bewusst still: Backdrop/TMDB-Rating sind optionale Anreicherung
 
-    if (!localMovie && id && apiKey && !tmdbMovie) {
-      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
-      setLoading(true);
-      Promise.all([
-        tmdbFetch<TmdbMediaDetail>(`movie/${id}`, {
-          append_to_response: 'credits,external_ids',
-        }),
-        tmdbFetch<TmdbMediaDetail>(`movie/${id}`, { language: 'en-US' }),
-      ])
-        .then(([data, dataEN]) => {
-          const bestTitle =
-            data.title && !hasNonLatin(data.title) ? data.title : dataEN.title || data.title;
-          if (data.id) {
-            const movie: Movie = {
-              id: data.id,
-              title: bestTitle || '',
-              poster: { poster: data.poster_path || '' },
-              genre: {
-                genres: data.genres?.map((g: TMDBGenre) => g.name) || [],
-              },
-              provider: { provider: [] },
-              release_date: data.release_date,
-              runtime: data.runtime ?? 0,
-              beschreibung: data.overview,
-              overview: data.overview,
-              backdrop: data.backdrop_path ?? undefined,
-              begründung: '',
-              imdb: { imdb_id: data.external_ids?.imdb_id || '' },
-              rating: {},
-              wo: { wo: '' },
-            };
-            setTmdbMovie(movie);
-          }
-        })
-        .catch((error) =>
-          console.error('Film-Details konnten nicht von TMDB geladen werden:', error)
-        )
-        .finally(() => setLoading(false));
-    }
-  }, [localMovie, id, tmdbMovie]);
+    tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
+      .then((data) => {
+        if (abgebrochen) return;
+        const flatrate = pickProviderRegion(data.results)?.flatrate;
+        if (flatrate) {
+          setProviders(
+            flatrate.filter(
+              (p: { provider_name: string }) =>
+                watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
+            )
+          );
+        }
+      })
+      .catch(() => {}); // bewusst still: Provider-Anzeige ist optionale Anreicherung
+
+    return () => {
+      abgebrochen = true;
+    };
+  }, [id]);
+
+  // Film nicht in der eigenen Liste: Vollabruf von TMDB. Frueher sperrte
+  // `!tmdbMovie` gegen Mehrfachabrufe — beim Sprung von einem fremden Film zum
+  // naechsten war die Sperre aber noch mit dem ALTEN gefuellt, der Abruf
+  // unterblieb und die Seite zeigte weiter den alten Film.
+  useEffect(() => {
+    if (!id || localMovie || !getTmdbApiKey()) return;
+    if (geholtFuer.current === id) return;
+    geholtFuer.current = id;
+
+    let abgebrochen = false;
+    const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
+    setLoading(true);
+    Promise.all([
+      tmdbFetch<TmdbMediaDetail>(`movie/${id}`, {
+        append_to_response: 'credits,external_ids',
+      }),
+      tmdbFetch<TmdbMediaDetail>(`movie/${id}`, { language: 'en-US' }),
+    ])
+      .then(([data, dataEN]) => {
+        if (abgebrochen) return;
+        const bestTitle =
+          data.title && !hasNonLatin(data.title) ? data.title : dataEN.title || data.title;
+        if (data.id) {
+          const movie: Movie = {
+            id: data.id,
+            title: bestTitle || '',
+            poster: { poster: data.poster_path || '' },
+            genre: {
+              genres: data.genres?.map((g: TMDBGenre) => g.name) || [],
+            },
+            provider: { provider: [] },
+            release_date: data.release_date,
+            runtime: data.runtime ?? 0,
+            beschreibung: data.overview,
+            overview: data.overview,
+            backdrop: data.backdrop_path ?? undefined,
+            begründung: '',
+            imdb: { imdb_id: data.external_ids?.imdb_id || '' },
+            rating: {},
+            wo: { wo: '' },
+          };
+          setTmdbMovie(movie);
+        }
+      })
+      .catch((error) => console.error('Film-Details konnten nicht von TMDB geladen werden:', error))
+      .finally(() => {
+        if (!abgebrochen) setLoading(false);
+      });
+
+    return () => {
+      abgebrochen = true;
+    };
+  }, [id, localMovie]);
 
   useEffect(() => {
     const omdbKey = import.meta.env.VITE_API_OMDb;

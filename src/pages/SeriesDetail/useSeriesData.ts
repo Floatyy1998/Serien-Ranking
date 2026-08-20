@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 
@@ -27,6 +27,8 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
   const { seriesList, hiddenSeriesList } = useSeriesList();
 
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
+  // Fuer welche ID der Vollabruf schon lief.
+  const geholtFuer = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
   const [providers, setProviders] = useState<TMDBWatchProvider[] | null>(null);
@@ -45,14 +47,35 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     );
   }, [seriesList, hiddenSeriesList, id]);
 
-  // Fetch from TMDB - always for backdrop and full data if not found locally
+  // Beim Wechsel der Serie muss alles weg, was zur vorigen gehoert. Die Felder
+  // werden unten nur gesetzt, wenn die neue Antwort sie mitbringt — ohne diesen
+  // Schnitt blieben Backdrop, Bewertung oder Beschreibung der alten Serie
+  // stehen (Serie B mit dem Hintergrund von A).
+  useEffect(() => {
+    setTmdbSeries(null);
+    setTmdbBackdrop(null);
+    setProviders(null);
+    setTmdbRating(null);
+    setImdbRating(null);
+    setTmdbFirstAirDate(null);
+    setTmdbOverview(null);
+    setLoading(false);
+    geholtFuer.current = null;
+  }, [id]);
+
+  // Backdrop, Bewertung, Beschreibung und Anbieter: immer von TMDB, auch fuer
+  // Serien aus der eigenen Liste.
   useEffect(() => {
     const apiKey = getTmdbApiKey();
     if (!id || !apiKey) return;
 
-    // Backdrop/Rating immer von TMDB holen (auch für lokal vorhandene Serien).
+    // Wechselt die Serie waehrend eine Anfrage laeuft, darf deren spaete
+    // Antwort die neue Serie nicht ueberschreiben.
+    let abgebrochen = false;
+
     tmdbFetch<TmdbMediaDetail>(`tv/${id}`)
       .then((data) => {
+        if (abgebrochen) return;
         if (data.backdrop_path) {
           setTmdbBackdrop(data.backdrop_path);
         }
@@ -79,6 +102,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     // dauerhaft bei Serien ohne DE-Flatrate.
     tmdbFetch<TmdbWatchProvidersResponse>(`tv/${id}/watch/providers`, { language: undefined })
       .then((data) => {
+        if (abgebrochen) return;
         const flatrate = pickProviderRegion(data.results)?.flatrate;
         setProviders(
           Array.isArray(flatrate)
@@ -90,19 +114,38 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
         );
       })
       .catch(() => {
-        setProviders([]);
+        if (!abgebrochen) setProviders([]);
       });
 
-    // Full fetch if not found locally
-    if (!localSeries && !tmdbSeries) {
-      setLoading(true);
-      fetchTmdbSeriesFallback(id)
-        .then((s) => {
-          if (s) setTmdbSeries(s);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [localSeries, id, tmdbSeries]); // Remove loading dependency, add tmdbSeries to prevent re-fetching
+    return () => {
+      abgebrochen = true;
+    };
+  }, [id]);
+
+  // Serie nicht in der eigenen Liste: Vollabruf von TMDB. Frueher stand hier
+  // `!tmdbSeries` als Sperre gegen Mehrfachabrufe — beim Sprung von einer
+  // fremden Serie zur naechsten (Empfehlungen!) war die aber noch mit der
+  // ALTEN gefuellt, der Abruf unterblieb und die Seite zeigte weiter die alte
+  // Serie. Die Sperre merkt sich jetzt die ID statt des Ergebnisses.
+  useEffect(() => {
+    if (!id || localSeries) return;
+    if (geholtFuer.current === id) return;
+    geholtFuer.current = id;
+
+    let abgebrochen = false;
+    setLoading(true);
+    fetchTmdbSeriesFallback(id)
+      .then((s) => {
+        if (!abgebrochen && s) setTmdbSeries(s);
+      })
+      .finally(() => {
+        if (!abgebrochen) setLoading(false);
+      });
+
+    return () => {
+      abgebrochen = true;
+    };
+  }, [id, localSeries]);
 
   const series = localSeries || tmdbSeries;
 
@@ -111,21 +154,27 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     const omdbKey = import.meta.env.VITE_API_OMDb;
     const imdbId = series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id;
 
-    if (imdbId && omdbKey) {
-      fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${omdbKey}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.imdbRating && data.imdbRating !== 'N/A') {
-            setImdbRating({
-              rating: parseFloat(data.imdbRating),
-              votes: data.imdbVotes || '0',
-            });
-          }
-        })
-        .catch(() => {
-          // Handle error silently
-        });
-    }
+    if (!imdbId || !omdbKey) return;
+
+    let abgebrochen = false;
+    fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${omdbKey}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (abgebrochen) return;
+        if (data.imdbRating && data.imdbRating !== 'N/A') {
+          setImdbRating({
+            rating: parseFloat(data.imdbRating),
+            votes: data.imdbVotes || '0',
+          });
+        }
+      })
+      .catch(() => {
+        // Handle error silently
+      });
+
+    return () => {
+      abgebrochen = true;
+    };
   }, [series, localSeries]);
 
   const isReadOnlyTmdbSeries = !localSeries && !!tmdbSeries;

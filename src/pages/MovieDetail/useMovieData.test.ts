@@ -150,6 +150,43 @@ describe('useMovieData', () => {
     expect(result.current.loading).toBe(false);
   });
 
+  it('wechselt zum neuen Film, wenn die id sich aendert (Empfehlung angeklickt)', async () => {
+    // Gleicher Fehler wie bei den Serien: die Sperre `!tmdbMovie` war beim
+    // zweiten Aufruf noch mit dem ersten Film gefuellt, der Abruf unterblieb
+    // und die Seite zeigte weiter den alten Film.
+    stubFetch((url: string) => {
+      const id = /\/movie\/(\d+)/.exec(url)?.[1] ?? '0';
+      if (url.includes('omdbapi')) return { imdbRating: '7.0', imdbVotes: '10' };
+      if (url.includes('/watch/providers')) return { results: {} };
+      if (url.includes('append_to_response')) {
+        return {
+          id: Number(id),
+          title: 'Film ' + id,
+          poster_path: '/p' + id + '.jpg',
+          genres: [],
+          overview: 'Text ' + id,
+          backdrop_path: '/b' + id + '.jpg',
+          external_ids: { imdb_id: 'tt' + id },
+        };
+      }
+      if (url.includes('language=en-US')) return { title: 'Film ' + id };
+      return { backdrop_path: '/b' + id + '.jpg', overview: 'Text ' + id };
+    });
+
+    rr.id = '111';
+    const { result, rerender } = renderHook(() => useMovieData());
+    await waitFor(() => expect(result.current.movie?.id).toBe(111));
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b111.jpg'));
+
+    rr.id = '222';
+    rerender();
+
+    await waitFor(() => expect(result.current.movie?.id).toBe(222));
+    expect(result.current.movie?.title).toBe('Film 222');
+    await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b222.jpg'));
+    rr.id = '123';
+  });
+
   it('filters providers to the supported set', async () => {
     ctx.movieList = [makeMovie({ id: 123 })];
     stubFetch(handler);
