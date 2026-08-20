@@ -174,6 +174,28 @@
   z-index: 1;
 }
 
+/* Ab Tablet bleibt alles eine Zeile: Preis und Erinnerung, dann Schalter und Pfeil. */
+.sub-active-actions,
+.sub-active-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sub-price-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sub-price-unit {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
 .sub-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -183,33 +205,58 @@
   word-break: break-word;
 }
 
-.sub-meta {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Mobile: 2-Zeilen-Layout. Zeile 1: Logo + Name/Meta + Toggle + Chevron.
-   Zeile 2: Price + Bell linksbündig. Meta darf umbrechen (2 Zeilen max). */
+/* Mobil: festes Raster statt umbrechender Flex-Zeile mit order-Verschiebung.
+   Zeile 1  Logo | Name + Zustand | Schalter + Pfeil
+   Zeile 2  Preis und Erinnerung, durch eine Haarlinie abgesetzt, volle Breite. */
 @media (max-width: 640px) {
   .sub-active-card {
     padding: 12px;
   }
   .sub-active-row {
-    flex-wrap: wrap;
-    row-gap: 10px;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 10px;
+    row-gap: 9px;
   }
+  /* Der Block loest sich auf, damit Name und Zustand eigene Rasterfelder werden:
+     der Name teilt Zeile 1 mit dem Schalter, der Zustand bekommt Zeile 2 ganz. */
   .sub-name-block {
-    min-width: 0;
-    flex: 1 1 auto;
+    display: contents;
   }
-  .sub-meta {
-    white-space: normal;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-height: 1.35;
+  .sub-name {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    min-width: 0;
+  }
+  /* Volle Breite, nicht erst hinter dem Logo: Zustand und Preiszeile teilen
+     dieselbe linke Kante, sonst schwebt der Chip in der Mitte. */
+  .sub-status {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+  }
+  .sub-active-controls {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .sub-active-actions {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .sub-state {
+    margin-top: 0;
   }
   .sub-logo--lg {
     width: 38px;
@@ -239,20 +286,6 @@
   }
   .sub-expand-btn {
     padding: 2px;
-  }
-  .sub-active-row::after {
-    /* Bricht die Zeile zwischen Name/Toggle und Price/Bell */
-    content: '';
-    flex-basis: 100%;
-    height: 0;
-    order: 5;
-  }
-  .sub-price-pill {
-    order: 10;
-    margin-left: 48px; /* Indent unter dem Logo */
-  }
-  .sub-cancel-icon-btn {
-    order: 11;
   }
 }
 
@@ -451,23 +484,48 @@
   letter-spacing: -0.01em;
 }
 
-.sub-meta {
-  font-size: 11px;
-  margin: 2px 0 0 0;
-  opacity: 0.78;
-  display: flex;
+/* Der Zustand ist kein Satz, sondern ein Zustand: ein Chip mit Punkt.
+   Frueher stand hier ein Ring-Symbol neben umbrechendem Fliesstext. */
+.sub-state {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  line-height: 1.3;
-}
-
-.sub-meta--warn {
-  opacity: 1;
+  gap: 6px;
+  margin-top: 5px;
+  max-width: 100%;
+  padding: 3px 9px 3px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
   font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sub-meta-icon {
-  font-size: 13px;
+.sub-state-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sub-state--warn .sub-state-dot {
+  box-shadow: 0 0 0 3px rgba(255, 174, 64, 0.18);
+}
+
+/* Zuletzt gesehener Titel und Aufrufzahl: leise, eine Zeile. */
+.sub-detail {
+  margin: 5px 0 0 0;
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.72;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Toggle (large) */

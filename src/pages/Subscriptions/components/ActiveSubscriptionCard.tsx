@@ -1,10 +1,8 @@
 import {
-  CheckCircleOutline,
   ExpandLess,
   ExpandMore,
   NotificationsActive,
   NotificationsNone,
-  Warning,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -67,6 +65,19 @@ export const ActiveSubscriptionCard = ({
   const brand = getProviderBrand(insight.name);
   const showUnusedWarning = insight.cancelIfUnused && insight.isUnused;
 
+  // Zuletzt gesehener Titel und Aufrufzahl standen frueher mit im Zustandssatz
+  // und liessen ihn ueber mehrere Zeilen laufen. Jetzt eine eigene, ruhige Zeile.
+  const detail = [
+    insight.lastWatchTitle,
+    insight.recentCount > 0
+      ? insight.recentCount === 1
+        ? t('1 Aufruf')
+        : t('{n} Aufrufe', { n: insight.recentCount })
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -84,108 +95,118 @@ export const ActiveSubscriptionCard = ({
         <ProviderLogo brand={brand} logoPath={logoPath} name={insight.name} size="lg" />
         <div className="sub-name-block">
           <p className="sub-name">{insight.name}</p>
-          <p
-            className={`sub-meta${showUnusedWarning ? ' sub-meta--warn' : ''}`}
-            style={{
-              color: showUnusedWarning ? warning : currentTheme.text.secondary,
-            }}
-          >
-            {showUnusedWarning ? (
-              <Warning className="sub-meta-icon" />
-            ) : (
-              <CheckCircleOutline className="sub-meta-icon" />
-            )}
-            <span>
-              {insight.lastWatchTitle ? `${insight.lastWatchTitle} · ` : ''}
+          <div className="sub-status">
+            <span
+              className={`sub-state${showUnusedWarning ? ' sub-state--warn' : ''}`}
+              style={
+                showUnusedWarning
+                  ? { color: warning, background: `${warning}1f`, borderColor: `${warning}44` }
+                  : { color: currentTheme.text.secondary }
+              }
+            >
+              <span className="sub-state-dot" aria-hidden />
               {formatLastWatched(insight, unusedThresholdDays)}
-              {insight.recentCount > 0 &&
-                ` · ${insight.recentCount === 1 ? t('1 Aufruf') : t('{n} Aufrufe', { n: insight.recentCount })}`}
             </span>
-          </p>
+            {detail && (
+              <p className="sub-detail" style={{ color: currentTheme.text.secondary }}>
+                {detail}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div
-          className="sub-price-pill"
-          style={{
-            borderColor: `${brand.color}40`,
-            color: currentTheme.text.primary,
-          }}
-        >
-          <span style={{ fontSize: 12, color: muted, marginRight: 2 }}>€</span>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder="0,00"
-            defaultValue={insight.monthlyPrice > 0 ? insight.monthlyPrice.toFixed(2) : ''}
-            onBlur={(e) => {
-              const v = parseFloat(e.target.value.replace(',', '.'));
-              updateProvider(insight.name, {
-                monthlyPrice: Number.isNaN(v) ? 0 : v,
-              });
-            }}
-            className="sub-price-input"
-            aria-label={t('Monatspreis für {name}', { name: insight.name })}
-          />
-        </div>
+        <div className="sub-active-actions">
+          <div className="sub-price-group">
+            <div
+              className="sub-price-pill"
+              style={{
+                borderColor: `${brand.color}40`,
+                color: currentTheme.text.primary,
+              }}
+            >
+              <span style={{ fontSize: 12, color: muted, marginRight: 2 }}>€</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0,00"
+                defaultValue={insight.monthlyPrice > 0 ? insight.monthlyPrice.toFixed(2) : ''}
+                onBlur={(e) => {
+                  const v = parseFloat(e.target.value.replace(',', '.'));
+                  updateProvider(insight.name, {
+                    monthlyPrice: Number.isNaN(v) ? 0 : v,
+                  });
+                }}
+                className="sub-price-input"
+                aria-label={t('Monatspreis für {name}', { name: insight.name })}
+              />
+            </div>
+            <span className="sub-price-unit">{t('/ Monat')}</span>
+          </div>
 
-        <Tooltip title={t('Kündigen wenn ungenutzt')} arrow>
-          <span
-            className={`sub-cancel-icon-btn${insight.cancelIfUnused ? ' sub-cancel-icon-btn--on' : ''}`}
-            style={{
-              color: insight.cancelIfUnused ? warning : muted,
-              borderColor: insight.cancelIfUnused ? `${warning}55` : undefined,
-            }}
-            role="button"
-            tabIndex={0}
-            aria-pressed={insight.cancelIfUnused}
-            aria-label={t('Kündigen wenn ungenutzt umschalten')}
-            onClick={() =>
-              updateProvider(insight.name, {
-                cancelIfUnused: !insight.cancelIfUnused,
-              })
-            }
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+          <Tooltip title={t('Kündigen wenn ungenutzt')} arrow>
+            <span
+              className={`sub-cancel-icon-btn${insight.cancelIfUnused ? ' sub-cancel-icon-btn--on' : ''}`}
+              style={{
+                color: insight.cancelIfUnused ? warning : muted,
+                borderColor: insight.cancelIfUnused ? `${warning}55` : undefined,
+              }}
+              role="button"
+              tabIndex={0}
+              aria-pressed={insight.cancelIfUnused}
+              aria-label={t('Kündigen wenn ungenutzt umschalten')}
+              onClick={() =>
                 updateProvider(insight.name, {
                   cancelIfUnused: !insight.cancelIfUnused,
-                });
+                })
               }
-            }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  updateProvider(insight.name, {
+                    cancelIfUnused: !insight.cancelIfUnused,
+                  });
+                }
+              }}
+            >
+              {insight.cancelIfUnused ? (
+                <NotificationsActive style={{ fontSize: 18 }} />
+              ) : (
+                <NotificationsNone style={{ fontSize: 18 }} />
+              )}
+            </span>
+          </Tooltip>
+        </div>
+
+        <div className="sub-active-controls">
+          <label
+            className="sub-toggle"
+            aria-label={t('{name} deaktivieren', { name: insight.name })}
           >
-            {insight.cancelIfUnused ? (
-              <NotificationsActive style={{ fontSize: 18 }} />
+            <input
+              type="checkbox"
+              className="sub-toggle-input"
+              checked
+              onChange={() => updateProvider(insight.name, { active: false })}
+            />
+            <span className="sub-toggle-track" style={{ background: brand.color }} />
+            <span className="sub-toggle-thumb sub-toggle-thumb--on" />
+          </label>
+
+          <button
+            type="button"
+            className={`sub-expand-btn${expanded ? ' sub-expand-btn--open' : ''}`}
+            onClick={onToggleExpand}
+            aria-expanded={expanded}
+            aria-label={t('Letzte Aufrufe anzeigen')}
+          >
+            {expanded ? (
+              <ExpandLess style={{ fontSize: 20 }} />
             ) : (
-              <NotificationsNone style={{ fontSize: 18 }} />
+              <ExpandMore style={{ fontSize: 20 }} />
             )}
-          </span>
-        </Tooltip>
-
-        <label className="sub-toggle" aria-label={t('{name} deaktivieren', { name: insight.name })}>
-          <input
-            type="checkbox"
-            className="sub-toggle-input"
-            checked
-            onChange={() => updateProvider(insight.name, { active: false })}
-          />
-          <span className="sub-toggle-track" style={{ background: brand.color }} />
-          <span className="sub-toggle-thumb sub-toggle-thumb--on" />
-        </label>
-
-        <button
-          type="button"
-          className={`sub-expand-btn${expanded ? ' sub-expand-btn--open' : ''}`}
-          onClick={onToggleExpand}
-          aria-expanded={expanded}
-          aria-label={t('Letzte Aufrufe anzeigen')}
-        >
-          {expanded ? (
-            <ExpandLess style={{ fontSize: 20 }} />
-          ) : (
-            <ExpandMore style={{ fontSize: 20 }} />
-          )}
-        </button>
+          </button>
+        </div>
       </div>
 
       <AnimatePresence initial={false}>
