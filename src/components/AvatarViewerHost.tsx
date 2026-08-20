@@ -17,12 +17,16 @@ export const AvatarViewerHost = () => {
   const { currentTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const [request, setRequest] = useState<AvatarViewRequest | null>(null);
+  const [broken, setBroken] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onRequest = (e: Event) => {
       const detail = (e as CustomEvent<AvatarViewRequest>).detail;
-      if (detail?.url) setRequest(detail);
+      if (detail?.url) {
+        setBroken(false);
+        setRequest(detail);
+      }
     };
     window.addEventListener(AVATAR_VIEW_EVENT, onRequest);
     return () => window.removeEventListener(AVATAR_VIEW_EVENT, onRequest);
@@ -44,6 +48,15 @@ export const AvatarViewerHost = () => {
   }, [request, close]);
 
   if (typeof document === 'undefined') return null;
+
+  const frameStyle = {
+    width: 'auto',
+    borderRadius: '50%',
+    objectFit: 'cover' as const,
+    aspectRatio: '1 / 1',
+    boxShadow: `0 24px 60px -20px ${currentTheme.primary}80`,
+    border: `2px solid ${currentTheme.primary}`,
+  };
 
   return createPortal(
     <AnimatePresence>
@@ -72,25 +85,37 @@ export const AvatarViewerHost = () => {
             WebkitBackdropFilter: 'var(--blur-sm)',
           }}
         >
-          <motion.img
-            initial={shouldReduceMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
-            animate={shouldReduceMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
-            exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-            src={request.url}
-            alt={t('Profilbild von {name}', { name: request.name })}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: 'min(92vw, 520px)',
-              maxHeight: '70vh',
-              width: 'auto',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              aspectRatio: '1 / 1',
-              boxShadow: `0 24px 60px -20px ${currentTheme.primary}80`,
-              border: `2px solid ${currentTheme.primary}`,
-            }}
-          />
+          {broken ? (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                ...frameStyle,
+                width: 'min(70vw, 320px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
+                color: '#fff',
+                fontSize: '96px',
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              {request.name?.trim().charAt(0).toUpperCase() || ''}
+            </div>
+          ) : (
+            <motion.img
+              initial={shouldReduceMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
+              animate={shouldReduceMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              src={request.url}
+              alt={t('Profilbild von {name}', { name: request.name })}
+              onClick={(e) => e.stopPropagation()}
+              onError={() => setBroken(true)}
+              style={{ ...frameStyle, maxWidth: 'min(92vw, 520px)', maxHeight: '70vh' }}
+            />
+          )}
           <span style={{ color: '#fff', fontSize: '17px', fontWeight: 700 }}>{request.name}</span>
 
           <button

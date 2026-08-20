@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UserAvatar } from './UserAvatar';
 
@@ -8,6 +8,15 @@ const navigate = vi.fn<(to: string) => void>();
 const viewed: string[] = [];
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
+}));
+
+const livePhotoURL = vi.fn<() => string | null>(() => null);
+vi.mock('../../services/firebase/userDisplayData', () => ({
+  fetchPublicUserFields: async () => ({
+    username: null,
+    displayName: null,
+    photoURL: livePhotoURL(),
+  }),
 }));
 
 vi.mock('../../contexts/ThemeContext', async () => {
@@ -23,6 +32,13 @@ vi.mock('../../contexts/ThemeContext', async () => {
 window.addEventListener('tvrank:view-avatar', (e) => {
   viewed.push((e as CustomEvent<{ url: string }>).detail.url);
 });
+
+/** Das Bild im Avatar-Knopf; wirft, wenn keins da ist. */
+const avatarImg = (name: RegExp) => {
+  const img = screen.getByRole('button', { name }).querySelector('img');
+  if (!img) throw new Error(`Avatar ohne Bild: ${name}`);
+  return img;
+};
 
 afterEach(() => {
   cleanup();
@@ -48,10 +64,38 @@ describe('UserAvatar', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('uses a background image when photoURL is provided', () => {
+  it('uses the photoURL as image when provided', () => {
     render(<UserAvatar userId="u1" username="Photo" photoURL="https://x/p.jpg" />);
-    const btn = screen.getByRole('button', { name: /Photo/ });
-    expect(btn.style.backgroundImage).toContain('https://x/p.jpg');
+    expect(screen.getByRole('button', { name: /Photo/ }).querySelector('img')).toHaveAttribute(
+      'src',
+      'https://x/p.jpg'
+    );
+  });
+
+  it('holt die aktuelle URL nach, wenn die gecachte nicht mehr laedt', async () => {
+    livePhotoURL.mockReturnValue('https://x/neu.jpg');
+    render(<UserAvatar userId="u7" username="Kat" photoURL="https://x/alt.jpg" />);
+
+    fireEvent.error(avatarImg(/Kat/));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Kat/ }).querySelector('img')).toHaveAttribute(
+        'src',
+        'https://x/neu.jpg'
+      )
+    );
+  });
+
+  it('faellt auf die Initiale zurueck, wenn es gar kein Bild mehr gibt', async () => {
+    livePhotoURL.mockReturnValue(null);
+    render(<UserAvatar userId="u8" username="Bob" photoURL="https://x/tot.jpg" />);
+
+    fireEvent.error(avatarImg(/Bob/));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Bob/ }).querySelector('img')).toBeNull()
+    );
+    expect(screen.getByText('B')).toBeInTheDocument();
   });
 
   it('zeigt das Bild gross, wenn es nirgendwohin zu navigieren gibt', () => {

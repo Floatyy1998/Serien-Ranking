@@ -2,6 +2,7 @@ import { Person } from '@mui/icons-material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAvatarSource } from '../../hooks/useAvatarSource';
 import { showAvatar } from '../../lib/avatarViewer';
 import { t } from '../../services/i18n';
 
@@ -22,6 +23,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { src, onError } = useAvatarSource(userId, photoURL);
 
   const iconSize = Math.round(size * 0.5);
   const borderColor = size >= 36 ? `${currentTheme.primary}40` : currentTheme.border.default;
@@ -29,14 +31,14 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   // Nicht navigierbar (z. B. auf dem Profil, auf dem man schon steht): dann
   // zeigt ein Tipp das Bild groß, statt gar nichts zu tun.
-  const zoomable = !navigable && !!photoURL;
+  const zoomable = !navigable && !!src;
 
   const handleClick = () => {
     if (navigable) {
       navigate(`/friend/${userId}`);
       return;
     }
-    showAvatar(photoURL, username);
+    showAvatar(src, username);
   };
 
   return (
@@ -58,41 +60,44 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         border: `2px solid ${borderColor}`,
         boxShadow: size >= 36 ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
         padding: 0,
-        ...(photoURL
-          ? {
-              backgroundImage: `url("${photoURL}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...(src
+          ? {}
           : {
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }),
       }}
     >
-      {!photoURL &&
-        (initial ? (
-          <span
-            style={{
-              fontSize: Math.round(size * 0.42),
-              fontWeight: 700,
-              lineHeight: 1,
-              color: '#fff',
-              fontFamily: 'var(--font-display)',
-              userSelect: 'none',
-            }}
-            aria-hidden="true"
-          >
-            {initial}
-          </span>
-        ) : (
-          <Person
-            style={{ fontSize: iconSize, color: currentTheme.text.primary }}
-            aria-hidden="true"
-          />
-        ))}
+      {src ? (
+        <img
+          src={src}
+          alt=""
+          onError={onError}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : initial ? (
+        <span
+          style={{
+            fontSize: Math.round(size * 0.42),
+            fontWeight: 700,
+            lineHeight: 1,
+            color: '#fff',
+            fontFamily: 'var(--font-display)',
+            userSelect: 'none',
+          }}
+          aria-hidden="true"
+        >
+          {initial}
+        </span>
+      ) : (
+        <Person
+          style={{ fontSize: iconSize, color: currentTheme.text.primary }}
+          aria-hidden="true"
+        />
+      )}
     </button>
   );
 };
