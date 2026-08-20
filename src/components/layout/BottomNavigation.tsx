@@ -148,9 +148,24 @@ export const BottomNavigation = () => {
     measure();
     const container = containerRef.current;
     if (!container || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(measure);
+
+    // Im Beobachter erst im naechsten Frame messen: `measure` liest Layout und
+    // setzt Zustand: geschieht das noch im selben Durchlauf, kann der Browser
+    // die Groessenmeldungen nicht alle zustellen und meldet einen Schleifen-
+    // abbruch. Mehrere Meldungen werden dabei zu einer zusammengefasst.
+    let frame: number | null = null;
+    const observer = new ResizeObserver(() => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        measure();
+      });
+    });
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [pillTargetIndex, navItems.length, location.pathname]);
 
   const isActive = (path: string) => {

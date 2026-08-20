@@ -32,33 +32,49 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   };
 
   useEffect(() => {
+    // Layout lesen und im selben Durchlauf Zustand setzen laesst den Browser die
+    // Groessenmeldungen nicht mehr in einem Frame zustellen ("ResizeObserver
+    // loop completed with undelivered notifications") — die Pfeile aendern ja
+    // selbst wieder das Layout. Deshalb erst im naechsten Frame messen und
+    // mehrere Meldungen dabei zu einer zusammenfassen.
+    let frame: number | null = null;
+    const scheduleCheck = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        checkScroll();
+      });
+    };
+
     // Small delay to ensure content is rendered
     const initialTimeout = setTimeout(checkScroll, 100);
     const container = scrollRef.current;
     if (container) {
-      container.addEventListener('scroll', checkScroll);
-      const resizeObserver = new ResizeObserver(checkScroll);
+      container.addEventListener('scroll', scheduleCheck);
+      const resizeObserver = new ResizeObserver(scheduleCheck);
       resizeObserver.observe(container);
 
       // Nachladende Bilder ändern die Scroll-Breite
       const images = container.querySelectorAll('img');
       images.forEach((img) => {
         if (img.complete) {
-          checkScroll();
+          scheduleCheck();
         } else {
-          img.addEventListener('load', checkScroll);
+          img.addEventListener('load', scheduleCheck);
         }
       });
 
       return () => {
         clearTimeout(initialTimeout);
-        container.removeEventListener('scroll', checkScroll);
+        if (frame !== null) cancelAnimationFrame(frame);
+        container.removeEventListener('scroll', scheduleCheck);
         resizeObserver.disconnect();
-        images.forEach((img) => img.removeEventListener('load', checkScroll));
+        images.forEach((img) => img.removeEventListener('load', scheduleCheck));
       };
     }
     return () => {
       clearTimeout(initialTimeout);
+      if (frame !== null) cancelAnimationFrame(frame);
     };
   }, [children]); // Re-check when children change
 

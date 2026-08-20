@@ -95,10 +95,24 @@ function isServiceWorkerRegistration(input: CaptureInput): boolean {
   return /failed to register a serviceworker/i.test(input.message || '');
 }
 
+/**
+ * "ResizeObserver loop completed with undelivered notifications" — der Browser
+ * sagt damit, dass er die Groessenmeldungen eines Frames auf den naechsten
+ * verschiebt. Nichts bricht, und die Meldung kommt ohne Stack, ist also auch
+ * nicht zuzuordnen. Die bekannten Ausloeser (Layout lesen + Zustand setzen in
+ * derselben Rueckmeldung) sind in HorizontalScrollContainer und
+ * BottomNavigation auf den naechsten Frame verlegt; hier bleibt nur der
+ * Rueckfall, damit Fremdquellen die Berichte nicht zumuellen.
+ */
+function isResizeObserverLoop(input: CaptureInput): boolean {
+  return /resizeobserver loop/i.test(input.message || '');
+}
+
 export function captureError(input: CaptureInput): void {
   try {
     if (isStorageCondition(input)) return;
     if (isServiceWorkerRegistration(input)) return;
+    if (isResizeObserverLoop(input)) return;
     const fingerprint = buildFingerprint(input);
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);
