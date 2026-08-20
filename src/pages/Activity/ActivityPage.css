@@ -143,6 +143,9 @@
   max-width: 0;
   opacity: 0;
   overflow: hidden;
+  /* Grundsicherung: reicht der Platz doch nicht, endet das Wort mit Auslassung
+     statt mitten im Buchstaben. */
+  text-overflow: ellipsis;
   margin-left: 0;
   font-size: 14px;
   font-weight: 700;
@@ -157,6 +160,34 @@
   max-width: 140px;
   opacity: 1;
   margin-left: 9px;
+}
+
+/* Schmale Geraete: die drei inaktiven Reiter sind reine Symbole und duerfen
+   schmaler werden, damit der aktive Reiter sein Wort ganz zeigen kann.
+   data-width statt Media Query, weil die Anzeigegroesse (CSS-zoom) fuer
+   Media Queries unsichtbar ist. */
+:root[data-width='sm'] .activity-nav__tab,
+:root[data-width='xs'] .activity-nav__tab {
+  flex-basis: 44px;
+  min-width: 44px;
+  padding: 0 11px;
+}
+
+/* Sehr schmal: selbst dann bleibt kein Platz fuer ein Wort ("Comentarios"
+   braucht 84px, verfuegbar sind 27px). Also nur Symbole - der aktive Reiter
+   bleibt durch Fuellung und Farbe erkennbar, der Name steht im aria-label. */
+:root[data-width='xs'] .activity-nav__tab {
+  flex: 1 1 0;
+}
+
+:root[data-width='xs'] .activity-nav__tab.is-active {
+  flex-grow: 1;
+}
+
+:root[data-width='xs'] .activity-nav__tab.is-active .activity-nav__label {
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
 }
 
 /* Nav badges */

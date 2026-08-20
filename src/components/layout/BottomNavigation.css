@@ -54,11 +54,18 @@
 
 /* Nav Item (alle gleich breit) */
 .nav-item {
-  flex: 1;
+  /* Nur der aktive Eintrag traegt ein Label, die uebrigen sind reine Symbole.
+     Also bekommt der aktive so viel Breite, wie sein Wort braucht (in pt heisst
+     ein Eintrag „Contagens regressivas“), und die anderen teilen den Rest.
+     Basis 0 heisst zugleich: bei Platzmangel schrumpft nur der aktive. */
+  flex: 1 1 0;
+  min-width: 36px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.55);
-  padding: 0;
+  /* Die Pille sitzt je 4px eingerueckt — ohne dieses Polster ragt das Label
+     ueber ihren Rand hinaus. */
+  padding: 0 10px;
   /* WCAG/Apple-HIG: min. 44–48px Trefferfläche für die primäre Navigation. */
   min-height: 48px;
   height: 100%;
@@ -75,6 +82,8 @@
 
 .nav-item.active {
   color: var(--color-primary);
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 /* Nav Icon */
