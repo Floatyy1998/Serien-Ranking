@@ -105,6 +105,15 @@ let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryCommunityRatings: CommunityRatings | null = null;
 const memoryEpisodeRatings = new Map<number, Record<string, CommunityRatingEntry> | null>();
+// Die Speicher oben werden erst NACH der Antwort gefuellt. Fragen zwei
+// Bauteile derselben Seite gleichzeitig (auf der Serien-Detailseite z. B.
+// Fieberkurve und Staffelliste), verfehlen beide den Speicher und laden
+// dieselbe Datei doppelt. Deshalb auch das laufende Versprechen merken.
+const laufendeEpisodeRatings = new Map<
+  number,
+  Promise<Record<string, CommunityRatingEntry> | null>
+>();
+let laufendeCommunityRatings: Promise<CommunityRatings | null> | null = null;
 let memoryLangOverlay: LangOverlay | null | undefined = undefined;
 let memoryLangEpisodes: LangEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
@@ -300,6 +309,8 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
   memoryEpisodeRatings.clear();
+  laufendeCommunityRatings = null;
+  laufendeEpisodeRatings.clear();
   memoryLangOverlay = undefined;
   memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
@@ -998,9 +1009,18 @@ export interface CommunityRatings {
  * Durchschnitte der TV-Rank-Nutzer ab 5 Bewertungen). Gleiche Cache-Strategie
  * wie die übrigen Catalog-Files. null bei 404 (Export noch nicht vorhanden).
  */
-export async function fetchStaticCommunityRatings(): Promise<CommunityRatings | null> {
-  if (memoryCommunityRatings) return memoryCommunityRatings;
+export function fetchStaticCommunityRatings(): Promise<CommunityRatings | null> {
+  if (memoryCommunityRatings) return Promise.resolve(memoryCommunityRatings);
+  if (laufendeCommunityRatings) return laufendeCommunityRatings;
+  const p = ladeCommunityRatings();
+  laufendeCommunityRatings = p;
+  void p.finally(() => {
+    if (laufendeCommunityRatings === p) laufendeCommunityRatings = null;
+  });
+  return p;
+}
 
+async function ladeCommunityRatings(): Promise<CommunityRatings | null> {
   const cached = await idbGetAny<CommunityRatings>(LS_COMMUNITY_RATINGS_KEY);
   if (cached) {
     memoryCommunityRatings = cached.data;
@@ -1030,10 +1050,25 @@ export async function fetchStaticCommunityRatings(): Promise<CommunityRatings | 
  * (nur Serien mit mindestens einer Episode über der Bewertungs-Schwelle;
  * 404 = keine Daten, wird pro Session gemerkt).
  */
-export async function fetchStaticEpisodeRatings(
+export function fetchStaticEpisodeRatings(
   seriesId: number
 ): Promise<Record<string, CommunityRatingEntry> | null> {
-  if (memoryEpisodeRatings.has(seriesId)) return memoryEpisodeRatings.get(seriesId) ?? null;
+  if (memoryEpisodeRatings.has(seriesId)) {
+    return Promise.resolve(memoryEpisodeRatings.get(seriesId) ?? null);
+  }
+  const laufend = laufendeEpisodeRatings.get(seriesId);
+  if (laufend) return laufend;
+  const p = ladeEpisodeRatings(seriesId);
+  laufendeEpisodeRatings.set(seriesId, p);
+  void p.finally(() => {
+    if (laufendeEpisodeRatings.get(seriesId) === p) laufendeEpisodeRatings.delete(seriesId);
+  });
+  return p;
+}
+
+async function ladeEpisodeRatings(
+  seriesId: number
+): Promise<Record<string, CommunityRatingEntry> | null> {
   const version = await ensureVersionFresh();
   try {
     const data = await fetchJson<{ entries?: Record<string, CommunityRatingEntry> }>(
@@ -1349,6 +1384,8 @@ export function clearStaticCatalogCache(): void {
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
   memoryEpisodeRatings.clear();
+  laufendeCommunityRatings = null;
+  laufendeEpisodeRatings.clear();
   memoryLangOverlay = undefined;
   memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;

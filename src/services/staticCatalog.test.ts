@@ -721,3 +721,58 @@ describe('Force-Fresh: Netzwerkfehler → null (catch-Zweig)', () => {
     await expect(fetchStaticCatalogMoviesFresh()).resolves.toBeNull();
   });
 });
+
+describe('Gleichzeitige Abrufe werden zusammengefasst', () => {
+  it('zwei parallele fetchStaticEpisodeRatings laden die Datei nur einmal', async () => {
+    // Auf der Serien-Detailseite fragen Fieberkurve und Staffelliste gleichzeitig
+    // dieselbe Datei an; der Speicher wird aber erst nach der Antwort gefuellt.
+    server.files['episode-ratings/4711.json'] = {
+      ok: true,
+      status: 200,
+      json: { entries: { '9001': { avg: 8.5, count: 12 } } },
+    };
+    const { fetchStaticEpisodeRatings } = await load();
+
+    const [a, b] = await Promise.all([
+      fetchStaticEpisodeRatings(4711),
+      fetchStaticEpisodeRatings(4711),
+    ]);
+
+    expect(a).toEqual({ '9001': { avg: 8.5, count: 12 } });
+    expect(b).toEqual(a);
+    expect(callsTo('episode-ratings/4711.json')).toBe(1);
+  });
+
+  it('auch ein 404 wird nur einmal angefragt', async () => {
+    // Serien ohne Community-Episodenbewertungen liefern 404 — das ist normal,
+    // muss aber nicht zweimal ueber die Leitung.
+    const { fetchStaticEpisodeRatings } = await load();
+
+    const [a, b] = await Promise.all([
+      fetchStaticEpisodeRatings(113808),
+      fetchStaticEpisodeRatings(113808),
+    ]);
+
+    expect(a).toBeNull();
+    expect(b).toBeNull();
+    expect(callsTo('episode-ratings/113808.json')).toBe(1);
+  });
+
+  it('zwei parallele fetchStaticCommunityRatings laden die Datei nur einmal', async () => {
+    server.files['community-ratings.json'] = {
+      ok: true,
+      status: 200,
+      json: { entries: { series: { '1': { avg: 7 } }, movies: {} } },
+    };
+    const { fetchStaticCommunityRatings } = await load();
+
+    const [a, b] = await Promise.all([
+      fetchStaticCommunityRatings(),
+      fetchStaticCommunityRatings(),
+    ]);
+
+    expect(a).toEqual({ series: { '1': { avg: 7 } }, movies: {} });
+    expect(b).toEqual(a);
+    expect(callsTo('community-ratings.json')).toBe(1);
+  });
+});
