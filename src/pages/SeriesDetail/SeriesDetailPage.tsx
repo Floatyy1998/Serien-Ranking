@@ -152,10 +152,7 @@ export const SeriesDetailPage = memo(() => {
   useEffect(() => {
     if (!series) return;
     const savedTab = sessionStorage.getItem(`series_${id}_tab`) as
-      | 'info'
-      | 'cast'
-      | 'characters'
-      | null;
+      'info' | 'cast' | 'characters' | null;
     if (savedTab && savedTab !== 'info') {
       setActiveTab(savedTab);
     }

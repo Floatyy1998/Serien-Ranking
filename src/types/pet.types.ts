@@ -3,16 +3,7 @@ export interface Pet {
   userId: string;
   name: string;
   type:
-    | 'cat'
-    | 'dog'
-    | 'bird'
-    | 'dragon'
-    | 'fox'
-    | 'rabbit'
-    | 'panda'
-    | 'owl'
-    | 'penguin'
-    | 'axolotl';
+    'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl';
   color: string;
   level: number;
   experience: number;
@@ -29,29 +20,13 @@ export interface Pet {
   reviveCount?: number; // Wie oft wurde das Pet wiederbelebt
   // Einzigartige Merkmale
   pattern?:
-    | 'spots'
-    | 'stripes'
-    | 'plain'
-    | 'patches'
-    | 'galaxy'
-    | 'hearts'
-    | 'stars'
-    | 'zigzag'
-    | 'dots';
+    'spots' | 'stripes' | 'plain' | 'patches' | 'galaxy' | 'hearts' | 'stars' | 'zigzag' | 'dots';
   eyeColor?: string;
   personality?: 'lazy' | 'playful' | 'brave' | 'shy' | 'smart';
   size?: 'tiny' | 'small' | 'normal' | 'big' | 'chonky';
   // Neue Features
   mood?:
-    | 'happy'
-    | 'sad'
-    | 'excited'
-    | 'sleepy'
-    | 'hungry'
-    | 'playful'
-    | 'festive'
-    | 'scared'
-    | 'loved';
+    'happy' | 'sad' | 'excited' | 'sleepy' | 'hungry' | 'playful' | 'festive' | 'scared' | 'loved';
   favoriteGenre?: string; // Lieblings-Serie-Genre fuer XP-Bonus
   accessories?: PetAccessory[];
   unlockedColors?: string[]; // Freigeschaltete spezielle Farben

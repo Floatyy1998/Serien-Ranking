@@ -156,16 +156,7 @@ const DEFAULT_ANCHORS: PetAnchors = {
 
 function getAnchors(
   petType:
-    | 'cat'
-    | 'dog'
-    | 'bird'
-    | 'dragon'
-    | 'fox'
-    | 'rabbit'
-    | 'panda'
-    | 'owl'
-    | 'penguin'
-    | 'axolotl',
+    'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl',
   level: number
 ): PetAnchors {
   const cx = 16;

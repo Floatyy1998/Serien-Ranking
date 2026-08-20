@@ -5,10 +5,4 @@ export interface TooltipEntry {
 }
 
 export type TabType =
-  | 'genre'
-  | 'provider'
-  | 'heatmap'
-  | 'activity'
-  | 'trends'
-  | 'serien'
-  | 'insights';
+  'genre' | 'provider' | 'heatmap' | 'activity' | 'trends' | 'serien' | 'insights';

@@ -14,14 +14,7 @@ import { t } from '../../services/i18n';
 
 type SortBy = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc' | 'progress-desc';
 type QuickFilterType =
-  | 'all'
-  | 'rated'
-  | 'unrated'
-  | 'reading'
-  | 'completed'
-  | 'manga'
-  | 'manhwa'
-  | 'manhua';
+  'all' | 'rated' | 'unrated' | 'reading' | 'completed' | 'manga' | 'manhwa' | 'manhua';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'rating-desc', label: t('Bewertung ↓') },

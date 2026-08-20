@@ -34,8 +34,7 @@ export interface ChatMessage {
 }
 
 export type OutgoingMessage =
-  | { kind: 'text'; text: string; spoiler?: boolean }
-  | { kind: 'sticker'; stickerId: string };
+  { kind: 'text'; text: string; spoiler?: boolean } | { kind: 'sticker'; stickerId: string };
 
 export interface ChatSummary {
   lastMessage?: string;

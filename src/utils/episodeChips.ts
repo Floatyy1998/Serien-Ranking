@@ -2,10 +2,7 @@ import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { getEpisodeAirDate } from './episodeDate';
 
 export type EpisodeChipType =
-  | 'season-start'
-  | 'mid-season-return'
-  | 'season-finale'
-  | 'season-break';
+  'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 
 /**
  * Detect premiere/break chip type for an episode within its season.

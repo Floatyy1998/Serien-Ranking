@@ -5,14 +5,7 @@ import type { Movie } from '../types/Movie';
 import type { Series } from '../types/Series';
 
 export type TonightMood =
-  | 'leicht'
-  | 'lustig'
-  | 'spannend'
-  | 'emotional'
-  | 'romantisch'
-  | 'duester'
-  | 'gruselig'
-  | 'egal';
+  'leicht' | 'lustig' | 'spannend' | 'emotional' | 'romantisch' | 'duester' | 'gruselig' | 'egal';
 export type TonightTime = 30 | 60 | 120 | 0;
 export type TonightType = 'egal' | 'series' | 'movie';
 export type TonightSource = 'egal' | 'library' | 'discover';

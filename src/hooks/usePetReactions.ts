@@ -307,8 +307,7 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
  */
 export function triggerPetReaction(
   reaction:
-    | Omit<PetReaction, 'id'>
-    | { tone: PetReactionTone; vars?: Record<string, string | number> }
+    Omit<PetReaction, 'id'> | { tone: PetReactionTone; vars?: Record<string, string | number> }
 ): void {
   if (typeof window === 'undefined') return;
   const detail: Omit<PetReaction, 'id'> =

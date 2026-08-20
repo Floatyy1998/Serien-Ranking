@@ -5,8 +5,8 @@ import type { Series } from '../../types/Series';
 
 // firebase compat
 const fb = vi.hoisted(() => {
-  const onceMock = vi.fn(
-    (): Promise<{ val: () => unknown }> => Promise.resolve({ val: () => null })
+  const onceMock = vi.fn((): Promise<{ val: () => unknown }> =>
+    Promise.resolve({ val: () => null })
   );
   const refMock = vi.fn((_p?: string) => ({ once: onceMock }));
   const database = () => ({ ref: refMock });
