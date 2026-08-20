@@ -230,7 +230,7 @@ export const FriendProfilePage = memo(() => {
 
   return (
     <PageLayout>
-      <div ref={scrollRef}>
+      <div ref={scrollRef} className="fp-page">
         {/* Profil-Kopf: Name links, Avatar rechts, Aktionen, Bewertungs-Stat */}
         <header className="fp-hero">
           <div
@@ -412,6 +412,7 @@ export const FriendProfilePage = memo(() => {
 
         {/* Tab Switcher */}
         <TabSwitcher
+          className="fp-tabs"
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: ratedSeries.length },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },

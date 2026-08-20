@@ -1,16 +1,36 @@
 /* FriendProfilePage - Layout styles with fp- prefix */
 
+/* Seitenweiter Seitenabstand — Kopf, Insights, Suche, Tabs und Grid teilen
+   sich denselben Wert, damit alles buendig steht. */
+.fp-page {
+  --fp-x: 20px;
+}
+
+@media (min-width: 768px) {
+  .fp-page {
+    --fp-x: 40px;
+  }
+}
+
+/* Tab-Umschalter auf denselben Rand ziehen wie der restliche Seiteninhalt
+   (.ui-tabs liegt sonst auf dem globalen --page-x). */
+.fp-tabs {
+  margin-left: var(--fp-x);
+  margin-right: var(--fp-x);
+  max-width: calc(100% - var(--fp-x) * 2);
+}
+
 /* Grid */
 
 .fp-grid-wrapper {
-  padding: 0 20px 100px;
+  padding: 0 var(--fp-x) 100px;
   position: relative;
   z-index: 5;
 }
 
 @media (min-width: 768px) {
   .fp-grid-wrapper {
-    padding: 0 40px 40px;
+    padding-bottom: 40px;
   }
 }
 
@@ -168,25 +188,13 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 20px;
+  padding: 0 var(--fp-x);
   margin-bottom: 22px;
 }
 
-@media (min-width: 768px) {
-  .fp-insights {
-    padding: 0 40px;
-  }
-}
-
 .fp-search-wrap {
-  padding: 0 20px;
+  padding: 0 var(--fp-x);
   margin-bottom: 16px;
-}
-
-@media (min-width: 768px) {
-  .fp-search-wrap {
-    padding: 0 40px;
-  }
 }
 
 .fp-insights-toggle {
@@ -594,7 +602,7 @@
 /* ── Profil-Kopf (Identitätskarte) ─────────────────────── */
 .fp-hero {
   position: relative;
-  padding: calc(12px + env(safe-area-inset-top)) 20px 18px;
+  padding: calc(12px + env(safe-area-inset-top)) var(--fp-x) 18px;
   overflow: hidden;
 }
 

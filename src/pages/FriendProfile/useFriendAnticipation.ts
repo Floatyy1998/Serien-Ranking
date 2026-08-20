@@ -67,9 +67,16 @@ function findNextUpcoming(
   } | null = null;
   // Backend writes TMDB raw shape (`air_date`, `season_number`) but the
   // TypeScript types optimistically claim camelCase. Read both.
-  for (const rawSeason of Object.values(seasons) as unknown as RawSeason[]) {
+  for (const [seasonKey, rawSeason] of Object.entries(seasons) as unknown as [
+    string,
+    RawSeason,
+  ][]) {
     if (!rawSeason?.episodes) continue;
-    const seasonNumber = rawSeason.seasonNumber ?? rawSeason.season_number ?? 0;
+    // Katalog speichert Staffeln 0-basiert (Key wie Feld) — Anzeige ist +1.
+    const keyIndex = Number(seasonKey);
+    const seasonIndex = Number.isFinite(keyIndex)
+      ? keyIndex
+      : (rawSeason.seasonNumber ?? rawSeason.season_number ?? 0);
     // Backend may store episodes either as an array or as a keyed object
     // (e.g. Firebase). Normalize to an array so for…of never throws.
     const episodes = Array.isArray(rawSeason.episodes)
@@ -83,7 +90,7 @@ function findNextUpcoming(
       if (!best || ts < best.ts) {
         best = {
           airDate: dateStr as string,
-          seasonNumber: seasonNumber || ep.seasonNumber || ep.season_number || 0,
+          seasonNumber: seasonIndex + 1,
           episodeNumber: ep.episodeNumber ?? ep.episode_number ?? 0,
           title: ep.name || '',
           ts,
