@@ -85,9 +85,20 @@ function isStorageCondition(input: CaptureInput): boolean {
   return /full disk|backing store|quota ?exceeded|storage is full/i.test(message);
 }
 
+/**
+ * Fehlgeschlagene Service-Worker-Registrierung. Der Manager behandelt das
+ * bereits als folgenlos und versucht es erneut, sobald wieder Netz da ist.
+ * Ausloeser ist praktisch immer eine abgerissene Verbindung beim Start — eine
+ * Meldung, an der niemand etwas reparieren kann.
+ */
+function isServiceWorkerRegistration(input: CaptureInput): boolean {
+  return /failed to register a serviceworker/i.test(input.message || '');
+}
+
 export function captureError(input: CaptureInput): void {
   try {
     if (isStorageCondition(input)) return;
+    if (isServiceWorkerRegistration(input)) return;
     const fingerprint = buildFingerprint(input);
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);

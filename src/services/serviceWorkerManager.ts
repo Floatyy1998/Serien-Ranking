@@ -30,6 +30,7 @@ class ServiceWorkerManager {
   private updateReadyHandled = false;
   private intentionalActivation = false;
   private hiddenApplyHandler: (() => void) | null = null;
+  private retryOnlineHandler: (() => void) | null = null;
 
   constructor() {
     // In der nativen Huelle KEIN Service Worker. Die Android-WebView bietet
@@ -60,8 +61,24 @@ class ServiceWorkerManager {
         document.addEventListener('visibilitychange', this.visibilityHandler);
       }
     } catch {
-      // ignore — service worker registration failures are non-fatal
+      // Registrierung gescheitert (fast immer: beim Start kein Netz). Das ist
+      // nicht toedlich, darf die Sitzung aber nicht dauerhaft ohne Worker und
+      // ohne Update-Pruefung lassen — also einmal neu versuchen, sobald die
+      // Verbindung zurueck ist.
+      this.retryWhenOnline();
     }
+  }
+
+  /** Einmaliger Neuversuch, sobald der Browser wieder online meldet. */
+  private retryWhenOnline(): void {
+    if (this.retryOnlineHandler || typeof window === 'undefined') return;
+    const handler = () => {
+      window.removeEventListener('online', handler);
+      this.retryOnlineHandler = null;
+      void this.init();
+    };
+    this.retryOnlineHandler = handler;
+    window.addEventListener('online', handler);
   }
 
   private async register(): Promise<ServiceWorkerRegistration> {
@@ -77,7 +94,17 @@ class ServiceWorkerManager {
       updateViaCache: 'none', // Browser soll selbst prüfen ob Update nötig ist
     });
 
-    const registration = await this.registrationPromise;
+    let registration: ServiceWorkerRegistration;
+    try {
+      registration = await this.registrationPromise;
+    } catch (err) {
+      // Scheitert die Registrierung (typisch: beim Start kein Netz), darf das
+      // abgelehnte Versprechen nicht liegen bleiben. Sonst gibt register() es
+      // fuer den Rest der Sitzung zurueck und die App verliert dauerhaft ihren
+      // Update-Weg, obwohl die Verbindung laengst wieder steht.
+      this.registrationPromise = null;
+      throw err;
+    }
 
     // Wartender Worker beim Seitenstart → Update bereit, aber KEIN Reload (Pille bzw. Hidden-Apply).
     if (registration.waiting && navigator.serviceWorker.controller) {
