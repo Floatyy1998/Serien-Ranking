@@ -7,17 +7,77 @@ import {
   motion,
   useMotionValue,
   useTransform,
+  type MotionValue,
   type PanInfo,
 } from 'framer-motion';
 import { memo, useEffect, useRef, useState } from 'react';
 import { hapticSelect } from '../../lib/haptics';
+import {
+  SWIPE_COMMIT_PX,
+  dampSwipeOffset,
+  isSwipeArmed,
+  resolveSwipeCommit,
+} from '../../lib/swipeGesture';
 
-// Swipe-Tuning: Commit nur nach rechts, links ist Gummiband
-const SWIPE_COMMIT_PX = 110;
-const SWIPE_FLICK_MIN_PX = 60;
-const SWIPE_FLICK_VELOCITY = 600;
-const RIGHT_SOFT_CAP_PX = 150;
-const WRONG_WAY_RESISTANCE = 0.1;
+/** Raster, in dem der Swipe-Offset nach oben gemeldet wird (pro Frame = Seiten-Rerender pro Frame). */
+const SWIPE_REPORT_RASTER_PX = 25;
+
+/** Freigelegte Ebene hinter der Karte — spiegelt sich je nach Swipe-Richtung. */
+const SwipeReveal = ({
+  side,
+  color,
+  radius,
+  armed,
+  opacity,
+  iconScale,
+}: {
+  side: 'left' | 'right';
+  color: string;
+  radius: string;
+  armed: boolean;
+  opacity: MotionValue<number>;
+  iconScale: MotionValue<number>;
+}) => (
+  <motion.div
+    aria-hidden
+    style={{
+      position: 'absolute',
+      inset: 0,
+      zIndex: 0,
+      borderRadius: radius,
+      background: `linear-gradient(${side === 'left' ? '90deg' : '270deg'}, ${color}30 0%, ${color}10 60%, transparent 100%)`,
+      border: `1px solid ${color}35`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: side === 'left' ? 'flex-start' : 'flex-end',
+      paddingLeft: side === 'left' ? '26px' : undefined,
+      paddingRight: side === 'right' ? '26px' : undefined,
+      pointerEvents: 'none',
+      opacity,
+    }}
+  >
+    <motion.div style={{ scale: iconScale }}>
+      <motion.div
+        animate={{ scale: armed ? 1.12 : 1 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: armed ? `linear-gradient(135deg, ${color}, ${color}bb)` : `${color}22`,
+          border: `1.5px solid ${armed ? color : `${color}66`}`,
+          boxShadow: armed ? `0 0 18px ${color}80` : 'none',
+          transition: 'background 0.15s ease, box-shadow 0.15s ease, border 0.15s ease',
+        }}
+      >
+        <Check style={{ fontSize: '20px', color: armed ? '#fff' : color }} />
+      </motion.div>
+    </motion.div>
+  </motion.div>
+);
 
 interface SwipeableEpisodeRowProps {
   itemKey: string;
@@ -110,12 +170,19 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     const color = accentColor;
     // Eigene Tap-Erkennung (<12px Weg + <600ms), weil framers onTap bei Touch-Mikro-Bewegungen abbricht
     const tapStart = useRef<{ x: number; y: number; t: number } | null>(null);
-    // Sichtbare Karte folgt dem Finger; dahinter wird das Check-Icon freigelegt
+    // Sichtbare Karte folgt dem Finger; dahinter wird das Check-Icon freigelegt —
+    // links wie rechts, je nachdem wohin gezogen wird
     const cardX = useMotionValue(0);
-    const revealOpacity = useTransform(cardX, [0, 30, SWIPE_COMMIT_PX], [0, 0.4, 1]);
-    const revealIconScale = useTransform(cardX, [0, SWIPE_COMMIT_PX], [0.55, 1]);
+    const revealRightOpacity = useTransform(cardX, [0, 30, SWIPE_COMMIT_PX], [0, 0.4, 1]);
+    const revealRightIconScale = useTransform(cardX, [0, SWIPE_COMMIT_PX], [0.55, 1]);
+    const revealLeftOpacity = useTransform(cardX, [-SWIPE_COMMIT_PX, -30, 0], [1, 0.4, 0]);
+    const revealLeftIconScale = useTransform(cardX, [-SWIPE_COMMIT_PX, 0], [1, 0.55]);
     const armedRef = useRef(false);
     const [armed, setArmed] = useState(false);
+    // Die Karte folgt dem Finger ueber cardX (ohne React-Render). Der Offset geht
+    // nur gerastert nach oben — ungerastert rendert jede Pointer-Bewegung die
+    // komplette Seite neu und der langsame Swipe ruckelt.
+    const reportedStepRef = useRef(0);
     // Der Rückweg der Karte darf nicht auf einer bereits entfernten Zeile laufen
     const mountedRef = useRef(true);
     useEffect(() => {
@@ -126,55 +193,57 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     }, []);
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
 
-    // Rechts folgt 1:1 (mit weichem Cap), links/gesperrt nur stark gedämpftes Gummiband
-    const dampOffset = (raw: number): number => {
-      if (raw <= 0 || !canSwipe) return raw * WRONG_WAY_RESISTANCE;
-      return raw <= RIGHT_SOFT_CAP_PX ? raw : RIGHT_SOFT_CAP_PX + (raw - RIGHT_SOFT_CAP_PX) * 0.4;
-    };
-
     // Gemeinsame Swipe-Handler für Hitfläche und Poster
     const beginSwipe = () => {
       armedRef.current = false;
       setArmed(false);
+      reportedStepRef.current = 0;
       onSwipeStart();
     };
     const moveSwipe = (_event: unknown, info: PanInfo) => {
-      const damped = dampOffset(info.offset.x);
+      const damped = dampSwipeOffset(info.offset.x, canSwipe);
       cardX.set(damped);
-      const nowArmed = canSwipe && info.offset.x > SWIPE_COMMIT_PX;
+      const nowArmed = isSwipeArmed(info.offset.x, canSwipe);
       if (nowArmed !== armedRef.current) {
         armedRef.current = nowArmed;
         setArmed(nowArmed);
         if (nowArmed) hapticSelect();
       }
-      onSwipeDrag(damped);
+      const step = Math.round(damped / SWIPE_REPORT_RASTER_PX);
+      if (step !== reportedStepRef.current) {
+        reportedStepRef.current = step;
+        onSwipeDrag(step * SWIPE_REPORT_RASTER_PX);
+      }
     };
     const endSwipe = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       event.stopPropagation();
       onSwipeEnd();
       armedRef.current = false;
-      const flick = info.offset.x > SWIPE_FLICK_MIN_PX && info.velocity.x > SWIPE_FLICK_VELOCITY;
-      if (canSwipe && (info.offset.x > SWIPE_COMMIT_PX || flick)) {
+      reportedStepRef.current = 0;
+      const direction = resolveSwipeCommit(info.offset.x, info.velocity.x, canSwipe);
+      if (direction) {
         setArmed(true);
+        const exitX = direction === 'left' ? -window.innerWidth : window.innerWidth;
         if (staysAfterComplete) {
           // Zeile überlebt das Abhaken (Manga: Kapitel +1). Die Karte fliegt
-          // trotzdem ganz nach rechts raus und läuft danach mit dem neuen
-          // Inhalt von links wieder ein. Bewusst ein kurzer Tween statt der
-          // Feder unten: deren Nachschwingen würde die Karte über eine Sekunde
-          // lang als leere Swipe-Ebene stehen lassen.
-          animate(cardX, window.innerWidth, {
+          // trotzdem ganz raus und läuft danach mit dem neuen Inhalt von der
+          // Gegenseite wieder ein. Bewusst ein kurzer Tween statt der Feder
+          // unten: deren Nachschwingen würde die Karte über eine Sekunde lang
+          // als leere Swipe-Ebene stehen lassen.
+          animate(cardX, exitX, {
             duration: 0.3,
             ease: [0.32, 0, 0.67, 0],
             onComplete: () => {
               if (!mountedRef.current) return;
               setArmed(false);
-              cardX.set(-Math.min(window.innerWidth, 420));
+              const enter = Math.min(window.innerWidth, 420);
+              cardX.set(direction === 'left' ? enter : -enter);
               animate(cardX, 0, { type: 'spring', stiffness: 320, damping: 34 });
             },
           });
         } else {
-          // Karte fliegt mit dem Schwung des Fingers weiter nach rechts raus
-          animate(cardX, window.innerWidth, {
+          // Karte fliegt mit dem Schwung des Fingers in ihre Richtung weiter raus
+          animate(cardX, exitX, {
             type: 'spring',
             stiffness: 200,
             damping: 30,
@@ -182,7 +251,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             restDelta: 1,
           });
         }
-        onComplete('right');
+        onComplete(direction);
       } else {
         setArmed(false);
         animate(cardX, 0, { type: 'spring', stiffness: 500, damping: 32 });
@@ -262,47 +331,26 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
           />
         )}
 
-        {/* Freigelegte Ebene hinter der Karte: Check-Icon wächst mit dem Swipe, ab der Schwelle gefüllt */}
+        {/* Freigelegte Ebenen hinter der Karte: Check-Icon wächst mit dem Swipe, ab der Schwelle gefüllt */}
         {!isEditMode && canSwipe && (
-          <motion.div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              borderRadius: isMobile ? '14px' : '18px',
-              background: `linear-gradient(90deg, ${color}30 0%, ${color}10 60%, transparent 100%)`,
-              border: `1px solid ${color}35`,
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: '26px',
-              pointerEvents: 'none',
-              opacity: revealOpacity,
-            }}
-          >
-            <motion.div style={{ scale: revealIconScale }}>
-              <motion.div
-                animate={{ scale: armed ? 1.12 : 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: armed
-                    ? `linear-gradient(135deg, ${color}, ${color}bb)`
-                    : `${color}22`,
-                  border: `1.5px solid ${armed ? color : `${color}66`}`,
-                  boxShadow: armed ? `0 0 18px ${color}80` : 'none',
-                  transition: 'background 0.15s ease, box-shadow 0.15s ease, border 0.15s ease',
-                }}
-              >
-                <Check style={{ fontSize: '20px', color: armed ? '#fff' : color }} />
-              </motion.div>
-            </motion.div>
-          </motion.div>
+          <>
+            <SwipeReveal
+              side="left"
+              color={color}
+              radius={isMobile ? '14px' : '18px'}
+              armed={armed}
+              opacity={revealRightOpacity}
+              iconScale={revealRightIconScale}
+            />
+            <SwipeReveal
+              side="right"
+              color={color}
+              radius={isMobile ? '14px' : '18px'}
+              armed={armed}
+              opacity={revealLeftOpacity}
+              iconScale={revealLeftIconScale}
+            />
+          </>
         )}
 
         <motion.div
@@ -336,8 +384,11 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               position: 'relative',
               borderRadius: isMobile ? '14px' : '18px',
               overflow: 'hidden',
-              border: `1px solid ${borderColor}`,
-              borderLeft: staticBorder ? undefined : `1px solid transparent`,
+              // Longhand statt border+borderLeft: React warnt beim Rerender vor gemischten Kurz-/Langformen
+              borderTop: `1px solid ${borderColor}`,
+              borderRight: `1px solid ${borderColor}`,
+              borderBottom: `1px solid ${borderColor}`,
+              borderLeft: staticBorder ? `1px solid ${borderColor}` : '1px solid transparent',
               boxShadow: isDragged
                 ? `0 8px 24px ${color}40`
                 : isDragTarget
@@ -581,7 +632,10 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                   ) : animateAction ? (
                     <motion.div
                       key="action"
-                      animate={{ x: isSwiping ? 8 : 0, opacity: isSwiping ? 0.4 : 1 }}
+                      animate={{
+                        x: isSwiping ? (dragOffset < 0 ? -8 : 8) : 0,
+                        opacity: isSwiping ? 0.4 : 1,
+                      }}
                       transition={{ duration: 0.2 }}
                       style={{
                         display: 'flex',

@@ -280,6 +280,7 @@ export default defineConfig({
         'src/services/share/shareCard.ts',
         'src/services/staticCatalog.ts',
         'src/lib/text/greetings.ts',
+        'src/lib/swipeGesture.ts',
         'src/lib/toast.ts',
         'src/services/detection/completedSeriesDetection.ts',
         'src/services/detection/detectionCleanup.ts',
