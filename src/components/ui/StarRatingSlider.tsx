@@ -25,6 +25,15 @@ const MAX = 10;
 const STARS = 10; // jeder Stern = 1 Punkt, passend zur 1-10-Skala
 const STEP = 0.1;
 
+/** :focus-visible kennen nicht alle Umgebungen (jsdom wirft beim Selektor). */
+const isFocusVisible = (el: Element): boolean => {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    return false;
+  }
+};
+
 const round1 = (v: number): number => Math.round(v * 10) / 10;
 const clamp = (v: number): number => Math.max(0, Math.min(MAX, v));
 
@@ -44,6 +53,9 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
   const muted = currentTheme.text?.muted || 'rgba(255,255,255,0.2)';
   const rowRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
+  // WebKit vergibt :focus-visible auch nach Touch an tabindex-Elemente — der globale
+  // Fokusring rahmte die Sternreihe dann dauerhaft ein. Ring nur bei Tastatur zeigen.
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
   const lastTick = useRef(-1);
   // Der value-Prop hinkt beim Ziehen einen Render hinterher.
   const latest = useRef(value);
@@ -79,6 +91,7 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
+    setKeyboardFocus(false);
     setDragging(true);
     commit(fromClientX(e.clientX));
   };
@@ -88,6 +101,7 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
   };
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     setDragging(false);
+    setKeyboardFocus(false);
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
@@ -104,12 +118,14 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
     else if (e.key === 'End') next = MAX;
     if (next !== null) {
       e.preventDefault();
+      setKeyboardFocus(true);
       commit(next);
       return;
     }
     // Tastatur: nicht bei jedem Pfeiltastendruck speichern, erst auf Enter.
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
+      setKeyboardFocus(true);
       fireCommit();
     }
   };
@@ -130,7 +146,16 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onKeyDown={onKeyDown}
-        onBlur={fireCommit}
+        onFocus={(e) => {
+          // Tastatur-Fokus (Tab) meldet sich ohne vorheriges pointerdown
+          if (isFocusVisible(e.currentTarget) && !dragging) setKeyboardFocus(true);
+        }}
+        onBlur={() => {
+          setKeyboardFocus(false);
+          fireCommit();
+        }}
+        className="star-slider"
+        data-kbd={keyboardFocus ? 'true' : undefined}
         style={{
           display: 'inline-flex',
           gap: '2px',

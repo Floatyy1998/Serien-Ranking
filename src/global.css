@@ -473,6 +473,20 @@ svg rect {
   outline-offset: 2px !important;
 }
 
+/* Sterne-Slider: WebKit gibt tabindex-Elementen auch nach Touch :focus-visible —
+   der globale Ring rahmte die Sternreihe nach jedem Tipp dauerhaft ein.
+   Eigene Anzeige nur bei echter Tastaturbedienung (data-kbd). */
+.star-slider:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.star-slider[data-kbd='true'] {
+  outline: 2px solid var(--theme-primary, #ef6f8a) !important;
+  outline-offset: 4px !important;
+  border-radius: 12px;
+}
+
 /* Remove default outlines for mouse users */
 *:focus:not(:focus-visible) {
   outline: none !important;
