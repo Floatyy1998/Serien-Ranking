@@ -70,8 +70,10 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           position: 'absolute',
           inset: 0,
           background: `radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.07), transparent 55%), linear-gradient(135deg, ${countdownColor}38 0%, rgba(10, 14, 26, 0.72) 100%)`,
-          border: `1px solid ${countdownColor}50`,
-          borderTopColor: 'rgba(255,255,255,0.22)',
+          borderTop: '1px solid rgba(255,255,255,0.22)',
+          borderRight: `1px solid ${countdownColor}50`,
+          borderBottom: `1px solid ${countdownColor}50`,
+          borderLeft: `1px solid ${countdownColor}50`,
           borderRadius: '18px',
         }}
       />
