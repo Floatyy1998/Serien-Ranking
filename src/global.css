@@ -473,6 +473,14 @@ svg rect {
   outline-offset: 2px !important;
 }
 
+/* Dialog/Sheet bekommt beim Oeffnen den Fokus (Focus-Trap) — der Ring gehoert
+   an die Bedienelemente darin, nicht um die ganze Flaeche. */
+[role='dialog']:focus,
+[role='dialog']:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Sterne-Slider: WebKit gibt tabindex-Elementen auch nach Touch :focus-visible —
    der globale Ring rahmte die Sternreihe nach jedem Tipp dauerhaft ein.
    Eigene Anzeige nur bei echter Tastaturbedienung (data-kbd). */

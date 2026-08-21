@@ -22,15 +22,25 @@ export function useFocusTrap(
     // Save currently focused element
     previouslyFocused.current = document.activeElement as HTMLElement;
 
-    // Focus the first focusable element inside the container
-    const focusableElements =
-      containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    if (focusableElements.length > 0) {
-      // Small delay to ensure the modal is rendered
-      requestAnimationFrame(() => {
-        focusableElements[0]?.focus();
-      });
-    }
+    // Fokus auf den Dialog selbst, nicht auf sein erstes Bedienelement: WebKit
+    // vergibt bei programmatischem focus() auch :focus-visible, wodurch der
+    // globale Fokusring beim Oeffnen um das erste Element stand (Sternreihe).
+    // Eigene Wuensche gehen ueber [data-autofocus], ein bereits per autoFocus
+    // gesetzter Fokus im Sheet bleibt unangetastet.
+    requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== el && el.contains(active)) return;
+
+      const preferred = el.querySelector<HTMLElement>('[data-autofocus]');
+      if (preferred) {
+        preferred.focus();
+        return;
+      }
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      el.focus({ preventScroll: true });
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

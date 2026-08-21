@@ -35,10 +35,29 @@ describe('useFocusTrap', () => {
     vi.restoreAllMocks();
   });
 
-  it('focuses the first focusable element when activated', async () => {
+  it('focuses the dialog itself, not its first control', async () => {
     const onClose = vi.fn();
     renderHook(() => useFocusTrap(containerRef(), true, onClose));
-    await waitFor(() => expect(document.activeElement).toBe(first));
+    await waitFor(() => expect(document.activeElement).toBe(container));
+    expect(container.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('prefers an element marked with data-autofocus', async () => {
+    const input = document.createElement('input');
+    input.setAttribute('data-autofocus', '');
+    container.appendChild(input);
+
+    const onClose = vi.fn();
+    renderHook(() => useFocusTrap(containerRef(), true, onClose));
+    await waitFor(() => expect(document.activeElement).toBe(input));
+  });
+
+  it('leaves a focus that autoFocus already placed inside the container', async () => {
+    last.focus();
+    const onClose = vi.fn();
+    renderHook(() => useFocusTrap(containerRef(), true, onClose));
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    expect(document.activeElement).toBe(last);
   });
 
   it('calls onClose when Escape is pressed', () => {
