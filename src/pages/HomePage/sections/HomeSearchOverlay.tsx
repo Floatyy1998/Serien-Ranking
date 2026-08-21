@@ -9,10 +9,11 @@
  */
 import { Add, Check, Close, Search, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useAndroidBack } from '../../../hooks/useAndroidBack';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -43,6 +44,25 @@ interface HomeSearchOverlayProps {
 
 export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps) => {
   const navigate = useNavigate();
+  const { pathname, key } = useLocation();
+  // Home bleibt beim Sprung auf eine Detailseite gemountet (MainTabs-Keep-Alive),
+  // also wird das Overlay dort nur geparkt statt geschlossen — Zurück landet
+  // wieder in den Suchergebnissen. Jede andere Route schließt es.
+  const parked = /^\/(series|movie)\//.test(pathname);
+  // Zurueck stellt per POP denselben History-Eintrag wieder her; der Home-Button
+  // der Detailseite pusht dagegen einen neuen. Nur der Eintrag, auf dem die Suche
+  // geoeffnet wurde, bekommt sie zurueck — sonst landet man ueber Home wieder
+  // ungewollt in der Suche.
+  const homeKey = useRef<string | null>(null);
+  const visible = open && pathname === '/' && (homeKey.current === null || homeKey.current === key);
+
+  useEffect(() => {
+    if (!open) {
+      homeKey.current = null;
+      return;
+    }
+    if (pathname === '/' && homeKey.current === null) homeKey.current = key;
+  }, [open, pathname, key]);
   const { currentTheme } = useTheme();
   const communityMap = useCommunityRatingsMap();
   const {
@@ -114,7 +134,21 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (open && !visible && !parked) onClose();
+  }, [open, visible, parked, onClose]);
+
+  useAndroidBack(visible, onClose);
+
+  // Scrollposition des Ergebnis-Grids über den Detail-Ausflug retten:
+  // display:none verwirft scrollTop.
+  const contentRef = useRef<HTMLDivElement>(null);
+  const contentScroll = useRef(0);
+  useLayoutEffect(() => {
+    if (visible && contentRef.current) contentRef.current.scrollTop = contentScroll.current;
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -123,15 +157,26 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
-  }, [open, onClose]);
+  }, [visible, onClose]);
 
-  // Beim Schließen zurücksetzen, damit das nächste Öffnen frisch startet.
+  // Beim Schließen zurücksetzen, damit das nächste Öffnen frisch startet —
+  // inklusive Scrollstand, der sonst aus der vorigen Suche stehen bliebe.
   useEffect(() => {
     if (!open) {
       if (query) setQuery('');
       setFilter('all');
+      contentScroll.current = 0;
     }
   }, [open, query, setQuery]);
+
+  const lastQueryFilter = useRef(`${query}|${filter}`);
+  useEffect(() => {
+    const sig = `${query}|${filter}`;
+    if (lastQueryFilter.current === sig) return;
+    lastQueryFilter.current = sig;
+    contentScroll.current = 0;
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  }, [query, filter]);
 
   const shown = useMemo(
     () =>
@@ -168,11 +213,9 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
 
   const goTo = (item: QuickResult) => {
     if (query.trim()) saveRecent(query);
-    // Erst navigieren — die Detailseite rendert hinter dem Overlay —, dann
-    // kurz danach schliessen, damit das Overlay sanft ueber der bereits
-    // sichtbaren Seite ausblendet (Home bleibt gemountet).
+    // Nur navigieren, nicht schliessen: das Overlay parkt sich selbst (siehe
+    // `parked`) und ist beim Zurueck mit Query, Treffern und Scrollstand da.
     navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
-    window.setTimeout(onClose, 250);
   };
 
   // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
@@ -296,7 +339,10 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
           // Bewusst nur ~60% Tint: die Lesbarkeit kommt vom starken Blur
           // (--glass-filter-xl), nicht von dunkler Farbe — sonst wirkt das
           // Overlay auf schwarzen Themes wie eine schwarze Wand statt Glas.
-          style={{ background: `${currentTheme.background.default}99` }}
+          style={{
+            background: `${currentTheme.background.default}99`,
+            display: visible ? undefined : 'none',
+          }}
         >
           {/* Ambient-Licht unter dem Glas — eigene Lichtquelle, damit das Overlay
               lebendig aussieht, egal wie dunkel/leer der Home-Inhalt dahinter ist. */}
@@ -427,7 +473,13 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
             </motion.div>
 
             {/* Inhalt */}
-            <div className="hso__content">
+            <div
+              className="hso__content"
+              ref={contentRef}
+              onScroll={(e) => {
+                contentScroll.current = e.currentTarget.scrollTop;
+              }}
+            >
               {/* Bewusst KEIN AnimatePresence mode="wait" hier: die Keys wechseln bei
                 jedem Tastendruck (loading/empty/results), und mode="wait" kann bei
                 schnellem Tippen im Exit hängen bleiben — dann klebt eine veraltete

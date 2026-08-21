@@ -1,6 +1,6 @@
 import { Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HeaderActions } from '../../../components/ui';
 import { useDeviceType } from '../../../hooks/useDeviceType';
@@ -40,6 +40,7 @@ export const GreetingSection = React.memo(function GreetingSection({
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 
@@ -407,7 +408,7 @@ export const GreetingSection = React.memo(function GreetingSection({
         </div>
       </header>
 
-      <HomeSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <HomeSearchOverlay open={searchOpen} onClose={closeSearch} />
     </>
   );
 });
