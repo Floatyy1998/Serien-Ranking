@@ -336,11 +336,11 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
           exit={{ opacity: 0 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           onClick={onBackdropClick}
-          // Bewusst nur ~60% Tint: die Lesbarkeit kommt vom starken Blur
-          // (--glass-filter-xl), nicht von dunkler Farbe — sonst wirkt das
-          // Overlay auf schwarzen Themes wie eine schwarze Wand statt Glas.
+          // Fast deckender Tint statt Blur (der kostete ~25 ms pro Frame). Die
+          // Orbs darueber halten die Flaeche lebendig, damit es auf dunklen
+          // Themes nicht wie eine schwarze Wand wirkt.
           style={{
-            background: `${currentTheme.background.default}99`,
+            background: `${currentTheme.background.default}eb`,
             display: visible ? undefined : 'none',
           }}
         >

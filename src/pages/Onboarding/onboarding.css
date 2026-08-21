@@ -691,9 +691,10 @@
 .ob-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(6, 7, 11, 0.72);
-  -webkit-backdrop-filter: var(--blur-md) saturate(0.7);
-  backdrop-filter: var(--blur-md) saturate(0.7);
+  background: rgba(6, 7, 11, 0.86);
+  /* Kein backdrop-filter: eine ganzflaechige Blur-Ebene kostet ~25 ms pro
+     Frame. Die Trennung traegt die Deckkraft. */
+
   z-index: 9998;
 }
 .ob-sheet {

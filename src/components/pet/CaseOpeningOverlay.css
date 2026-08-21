@@ -6,9 +6,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: var(--blur-md);
-  backdrop-filter: var(--blur-md);
+  background: rgba(0, 0, 0, 0.93);
+  /* Kein backdrop-filter: eine ganzflaechige Blur-Ebene kostet ~25 ms pro
+     Frame. Die Trennung traegt die Deckkraft. */
 }
 
 .case-opening-content {

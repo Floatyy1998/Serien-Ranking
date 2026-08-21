@@ -6,8 +6,8 @@
   z-index: 1400;
   display: flex;
   flex-direction: column;
-  -webkit-backdrop-filter: var(--glass-filter-xl);
-  backdrop-filter: var(--glass-filter-xl);
+  /* Kein backdrop-filter: gemessen kostet eine ganzflaechige Blur-Ebene ~25 ms
+     pro Frame. Die Lesbarkeit traegt stattdessen der fast deckende Tint. */
   overflow: hidden;
 }
 

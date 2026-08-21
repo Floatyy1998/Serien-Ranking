@@ -84,9 +84,8 @@ export const Dialog = memo(
               alignItems: 'center',
               justifyContent: 'center',
               padding: '16px',
-              background: 'var(--overlay-backdrop)',
-              backdropFilter: 'var(--blur-sm)',
-              WebkitBackdropFilter: 'var(--blur-sm)',
+              // Deckkraft statt Unschaerfe — siehe --overlay-backdrop-strong.
+              background: 'var(--overlay-backdrop-strong)',
               zIndex: 'var(--z-modal)' as string,
             }}
           >

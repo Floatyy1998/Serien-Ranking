@@ -116,6 +116,9 @@
 
   /* Design Tokens - Overlay / Modal Backdrop (single source for dialog scrims) */
   --overlay-backdrop: rgba(0, 0, 0, 0.6);
+  /* Fuer Scrims ohne backdrop-filter: die fehlende Unschaerfe wird durch
+     Deckkraft ersetzt (ganzflaechiger Blur kostet ~25 ms pro Frame). */
+  --overlay-backdrop-strong: rgba(0, 0, 0, 0.78);
 }
 
 /* Native App (WKWebView/Android): backdrop-filter ist der teuerste Scroll-Effekt — halbierte Blur-Radien rendern flüssiger */

@@ -59,13 +59,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'var(--overlay-backdrop)',
+            // Gemessen: jede ganzflaechige backdrop-filter-Ebene kostet ~25 ms
+            // pro Frame (Sheet 13 fps statt 60). Der Scrim traegt die Trennung
+            // deshalb allein ueber Deckkraft statt ueber Unschaerfe.
+            background: 'var(--overlay-backdrop-strong)',
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
             zIndex: 'var(--z-sheet)' as unknown as number,
-            backdropFilter: 'var(--blur-sm)',
-            WebkitBackdropFilter: 'var(--blur-sm)',
           }}
           onClick={onClose}
         >
@@ -91,14 +92,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             onDragEnd={handleDragEnd}
             className="ui-sheet"
             style={{
-              /* transluzent + Glass-Filter: der Seiteninhalt schimmert durch */
+              /* Ohne Blur (siehe Scrim) traegt die Flaeche selbst — knapp
+                 deckend, Tiefe kommt aus Sheen, Rand und Schatten. */
               background: `
-                radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
+                radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 60%),
                 linear-gradient(145deg,
-                  color-mix(in srgb, ${currentTheme.background.surface} 88%, transparent) 0%,
-                  color-mix(in srgb, ${currentTheme.background.default} 93%, transparent) 100%)`,
-              WebkitBackdropFilter: 'var(--glass-filter-xl)',
-              backdropFilter: 'var(--glass-filter-xl)',
+                  color-mix(in srgb, ${currentTheme.background.surface} 97%, transparent) 0%,
+                  color-mix(in srgb, ${currentTheme.background.default} 99%, transparent) 100%)`,
               maxWidth,
               /* max-height lebt in .ui-sheet — Desktop darf den Prop-Wert überstimmen */
               ['--sheet-max-h' as string]: maxHeight,

@@ -1157,9 +1157,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 14, 26, 0.75);
-  -webkit-backdrop-filter: var(--blur-sm);
-  backdrop-filter: var(--blur-sm);
+  background: rgba(10, 14, 26, 0.88);
+  /* Kein backdrop-filter: eine ganzflaechige Blur-Ebene kostet ~25 ms pro
+     Frame. Die Trennung traegt die Deckkraft. */
+
   display: flex;
   align-items: center;
   justify-content: center;

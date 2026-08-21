@@ -605,9 +605,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 75%, transparent);
-  -webkit-backdrop-filter: var(--blur-sm);
-  backdrop-filter: var(--blur-sm);
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 88%, transparent);
+  /* Kein backdrop-filter: eine ganzflaechige Blur-Ebene kostet ~25 ms pro
+     Frame. Die Trennung traegt die Deckkraft. */
+
   display: flex;
   align-items: center;
   justify-content: center;
