@@ -13,6 +13,7 @@ import {
   hasAnySeasonFullyWatched,
 } from '../../lib/validation/rewatch.utils';
 import { fillerLookupKey, type FillerEpisode } from '../../services/animeFillerService';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
 import { useSpoilerLevel } from '../../services/spoilerMode';
 import type { DynamicTheme } from '../../theme/dynamicTheme';
@@ -45,9 +46,9 @@ interface SeasonsSectionProps {
   fillerByKey?: Map<string, FillerEpisode>;
 }
 
-function formatDate(input: string | undefined | null): string | null {
+function formatDate(input: string | Date | undefined | null): string | null {
   if (!input) return null;
-  const d = new Date(input);
+  const d = input instanceof Date ? input : new Date(input);
   if (isNaN(d.getTime())) return null;
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -58,7 +59,7 @@ function EpisodeDateMeta({
   mutedColor,
   accentColor,
 }: {
-  airDate?: string;
+  airDate?: Date | string | null;
   firstWatchedAt?: string;
   mutedColor: string;
   accentColor: string;
@@ -468,7 +469,7 @@ export function SeasonsSection({
                     {/* Date meta — right-aligned on desktop, hidden on mobile (shown
                         as wrapped below row on small screens via CSS media query) */}
                     <EpisodeDateMeta
-                      airDate={episode.air_date}
+                      airDate={getEpisodeAirDate(episode) ?? episode.air_date}
                       firstWatchedAt={episode.firstWatchedAt}
                       mutedColor={currentTheme.text.muted}
                       accentColor={currentTheme.accent}

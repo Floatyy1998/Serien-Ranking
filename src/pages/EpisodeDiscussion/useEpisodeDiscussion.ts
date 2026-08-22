@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
@@ -408,12 +409,9 @@ export const useEpisodeDiscussion = () => {
   // Derived episode details
   const episodeName = localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
   const episodeOverview = tmdbDetails?.overview || '';
-  const episodeAirDate =
-    localEpisode?.airstamp?.split('T')[0] ||
-    localEpisode?.air_date ||
-    localEpisode?.airDate ||
-    localEpisode?.firstAired ||
-    tmdbDetails?.air_date;
+  // Lokales Kalenderdatum aus dem airstamp — der rohe UTC-Split wich bei
+  // spaetabendlichen Stamps um einen Tag von Kalender und Episodenliste ab.
+  const episodeAirDate = getEpisodeAirDateStr(localEpisode) || tmdbDetails?.air_date;
   const episodeRuntime =
     (localEpisode as typeof localEpisode & { runtime?: number })?.runtime || tmdbDetails?.runtime;
   const episodeRating = tmdbDetails?.vote_average;

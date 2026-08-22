@@ -6,6 +6,7 @@ import type { CSSProperties, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
 import { useSpoilerLevel } from '../../services/spoilerMode';
@@ -74,7 +75,7 @@ export const EpisodeListItem = memo(
             <div className="episode-meta">
               <span className="meta-item">
                 <DateRange fontSize="small" />
-                {getUnifiedEpisodeDate(episode.air_date)}
+                {getUnifiedEpisodeDate(getEpisodeAirDate(episode) ?? episode.air_date)}
               </span>
               {episode.firstWatchedAt && (
                 <span className="meta-item watched-date">

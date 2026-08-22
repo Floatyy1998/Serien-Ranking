@@ -121,6 +121,28 @@ describe('SeasonsSection', () => {
     expect(baseProps.handleEpisodeQuickToggle).toHaveBeenCalledWith(0, 0);
   });
 
+  it('zeigt das lokale Ausstrahlungsdatum aus dem airstamp, nicht das rohe air_date', () => {
+    const withStamp = {
+      ...series,
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [
+            {
+              id: 1,
+              watched: false,
+              name: 'Trust Fall',
+              air_date: '2026-08-23',
+              airstamp: '2026-08-24T01:00:00+00:00',
+            },
+          ],
+        },
+      ],
+    } as unknown as Series;
+    render(<SeasonsSection {...baseProps} series={withStamp} />);
+    expect(screen.getByText('Erstausstrahlung 24.08.2026')).toBeInTheDocument();
+  });
+
   it('navigates to the management page from the header action', () => {
     render(<SeasonsSection {...baseProps} />);
     fireEvent.click(screen.getByText('Alle verwalten'));
