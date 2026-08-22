@@ -20,6 +20,11 @@ vi.mock('framer-motion', async () => {
   };
 });
 
+const providers = vi.hoisted(() => ({ list: [] as { name: string; logo: string }[] }));
+vi.mock('../../hooks/useItemProviders', () => ({
+  useItemProviders: () => providers.list,
+}));
+
 const makeTheme = (): ItemCardProps['currentTheme'] => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
@@ -46,7 +51,10 @@ const item = (over: Partial<DiscoverItem> = {}): DiscoverItem => ({
 
 import { ItemCard } from './DiscoverItemCard';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  providers.list = [];
+});
 
 describe('DiscoverItemCard / ItemCard', () => {
   it('renders the title, year and rating', () => {
@@ -109,5 +117,22 @@ describe('DiscoverItemCard / ItemCard', () => {
       />
     );
     expect(container.querySelector('.discover-add-btn')).toBeNull();
+  });
+
+  it('zeigt die Provider-Logos auf dem Poster, aber nicht unter dem Info-Overlay', () => {
+    providers.list = [{ name: 'Netflix', logo: 'https://img/nf.jpg' }];
+    render(
+      <ItemCard
+        item={item()}
+        onItemClick={vi.fn()}
+        onAddToList={vi.fn()}
+        addingItem={null}
+        currentTheme={theme}
+        isDesktop
+      />
+    );
+    expect(screen.getByAltText('Netflix')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('Dune'));
+    expect(screen.queryByAltText('Netflix')).toBeNull();
   });
 });

@@ -96,12 +96,6 @@
 
 /* F7: "Auf meinen Abos"-Toggle — >=44px Tap-Target, sichtbarer Fokus. */
 .discover-abo-toggle {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 10px;
-  /* Gleicher Radius wie der Segment-Umschalter daneben — mit 12px wirkten die
-     Knoepfe wie fremde Kacheln neben einer Pille. */
-  border-radius: var(--radius-2xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,17 +123,33 @@
   padding: 0 var(--page-x) var(--space-3);
 }
 
+/* Runde Symbolknoepfe neben dem Umschalter — quadratisch, damit der
+   50%-Radius auch wirklich einen Kreis ergibt. */
 .discover-control-row > button {
-  min-width: var(--control-md);
-}
-
-.discover-control-row > button {
-  flex-shrink: 0;
-  align-self: stretch;
+  flex: 0 0 auto;
+  align-self: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border-radius: 50%;
 }
 
 .discover-tabs {
   margin: 0;
+}
+
+/* Mobil fuellt der Umschalter die Reihe, ab Desktop ist er nur so breit wie
+   seine beiden Woerter — sonst steht eine leere Pille ueber die halbe Seite. */
+.discover-control-row .discover-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .discover-control-row .discover-tabs {
+    flex: 0 0 auto;
+  }
 }
 
 /* Der Umschalter teilt sich die Reihe mit zwei Knoepfen. Bleibt zu wenig
@@ -177,4 +187,9 @@
   .discover-header .discover-head-row {
     transition: none;
   }
+}
+
+/* Provider-Logos unten links auf dem Poster. */
+.discover-provider-badges {
+  line-height: 0;
 }

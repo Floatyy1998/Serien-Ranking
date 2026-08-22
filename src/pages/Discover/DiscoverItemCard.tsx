@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { getImageUrl } from '../../utils/imageUrl';
+import { useItemProviders } from '../../hooks/useItemProviders';
+import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { PosterFrame } from '../../components/ui/PosterFrame';
@@ -18,6 +20,9 @@ export const ItemCard = memo(
     const [showInfo, setShowInfo] = useState(false);
 
     const imageUrl = useMemo(() => getImageUrl(item.poster_path, 'w500'), [item.poster_path]);
+
+    // Provider-Logos direkt aufs Poster — Katalog zuerst, sonst TMDB.
+    const providers = useItemProviders(item.type, item.id);
 
     // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
     const communityMap = useCommunityRatingsMap();
@@ -206,6 +211,28 @@ export const ItemCard = memo(
               </motion.div>
             )}
           </AnimatePresence>
+
+          {providers.length > 0 && !showInfo && (
+            <div
+              className="discover-provider-badges"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                bottom: '10px',
+                zIndex: 2,
+                maxWidth: 'calc(100% - 68px)',
+                overflow: 'hidden',
+              }}
+            >
+              <MiniProviderBadges
+                providers={providers}
+                isMobile={!isDesktop}
+                textColor={currentTheme.text.primary}
+                searchTitle={item.title || item.name || ''}
+              />
+            </div>
+          )}
 
           {!item.inList && !showInfo && (
             <Tooltip title={t('Zur Liste hinzufügen')} arrow>

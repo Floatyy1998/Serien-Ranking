@@ -307,7 +307,7 @@ export const DiscoverPage = memo(() => {
                 setShowSearch(false);
               }}
               className="discover-tabs"
-              style={{ margin: 0, flex: 1, minWidth: 0 }}
+              style={{ margin: 0 }}
             />
             <motion.button
               type="button"
@@ -342,12 +342,10 @@ export const DiscoverPage = memo(() => {
                 aria-label={t('Genre filtern')}
                 aria-expanded={showFilters}
                 style={{
-                  padding: '10px',
                   background: selectedGenre
                     ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                     : currentTheme.background.surface,
                   border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
-                  borderRadius: 'var(--radius-2xl)',
                   color: selectedGenre
                     ? getOptimalTextColor(currentTheme.primary)
                     : currentTheme.text.primary,
