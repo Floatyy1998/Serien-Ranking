@@ -17,13 +17,25 @@ interface UserTiming {
   itemCount: number;
 }
 
+/** Ein Lauf aus admin/runs — Grundlage fuer den Verlauf. */
+interface RunRecord {
+  startedAt: string;
+  durationMs: number;
+  realErrorCount?: number;
+  counters?: { users?: number; uniqueSeries?: number; uniqueMovies?: number };
+  tmdb?: { requests?: number; cacheHits?: number; rateLimits?: number; fails?: number };
+  catalog?: { luecken?: number };
+}
+
 interface ActionPerf {
   timestamp: string;
   action: string;
   totalDurationMs: number;
   totalDurationFormatted: string;
   phases: Record<string, PhaseData>;
-  users: UserTiming[];
+  // Optional, weil der Cron seit der Umstellung auf globale Verarbeitung
+  // keine Zeiten je Nutzer mehr erhebt — das Feld fehlt in den Daten.
+  users?: UserTiming[];
   tmdb: { requests: number; cacheHits: number; rateLimits: number; fails: number };
   tvMaze?: { requests: number; cacheHits: number; rateLimits: number };
 }
@@ -64,12 +76,31 @@ export function PerformanceTab({
 }) {
   const [data, setData] = useState<Record<string, ActionPerf>>({});
   const [loading, setLoading] = useState(true);
+  const [verlauf, setVerlauf] = useState<Record<string, RunRecord[]>>({});
 
   useEffect(() => {
     const ref = dbRef('admin/performance');
     const handler = ref.on('value', (snap) => {
       setData(snap.val() || {});
       setLoading(false);
+    });
+    return () => ref.off('value', handler);
+  }, []);
+
+  // Der Verlauf beantwortet die Frage, die eine Momentaufnahme nicht kann:
+  // wird es langsamer? Kommt die Trefferquote des Caches ins Rutschen?
+  useEffect(() => {
+    const ref = dbRef('admin/runs');
+    const handler = ref.on('value', (snap) => {
+      const val = (snap.val() || {}) as Record<string, Record<string, RunRecord>>;
+      const proAction: Record<string, RunRecord[]> = {};
+      for (const action of Object.keys(val)) {
+        proAction[action] = Object.values(val[action] || {})
+          .filter((r) => r && r.startedAt)
+          .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+          .slice(-20);
+      }
+      setVerlauf(proAction);
     });
     return () => ref.off('value', handler);
   }, []);
@@ -126,6 +157,104 @@ export function PerformanceTab({
           </button>
         </div>
       )}
+      {/* Laufzeit-Verlauf je Action.
+          Farbwahl geprueft: die Marken-Farbe und das Fehler-Rot sind fuer das
+          Auge praktisch identisch (dE 6.1) — deshalb tragen die Balken ein
+          neutrales Grau und nur Laeufe MIT echten Fehlern das Rot (dE 22.5
+          normal, 10.5 bei Protanopie). Die Legende benennt es zusaetzlich,
+          damit die Farbe nicht allein traegt. */}
+      {Object.entries(verlauf)
+        .filter(([, runs]) => runs.length > 1)
+        .map(([action, runs]) => {
+          const max = Math.max(...runs.map((r) => r.durationMs || 0), 1);
+          const letzter = runs[runs.length - 1];
+          const schnitt = runs.reduce((a, r) => a + (r.durationMs || 0), 0) / runs.length;
+          const trefferquote = (r: RunRecord) => {
+            const req = r.tmdb?.requests || 0;
+            const hits = r.tmdb?.cacheHits || 0;
+            return req + hits > 0 ? Math.round((hits / (req + hits)) * 100) : null;
+          };
+          return (
+            <div
+              key={action}
+              style={{ borderRadius: 12, background: theme.background.paper, padding: '12px 16px' }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  marginBottom: 10,
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 700, color: theme.text.primary }}>
+                  Laufzeit-Verlauf · {action}
+                </span>
+                <span style={{ fontSize: 11, color: theme.text.muted }}>
+                  Schnitt {Math.round(schnitt / 1000)}s · zuletzt{' '}
+                  {Math.round((letzter.durationMs || 0) / 1000)}s
+                  {trefferquote(letzter) !== null && <> · Cache {trefferquote(letzter)}%</>}
+                  {letzter.counters?.users !== undefined && (
+                    <>
+                      {' '}
+                      · {letzter.counters.users} Nutzer · {letzter.counters.uniqueSeries ?? 0}{' '}
+                      Serien · {letzter.counters.uniqueMovies ?? 0} Filme
+                    </>
+                  )}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 56 }}>
+                {runs.map((r) => {
+                  const fehlerhaft = (r.realErrorCount ?? 0) > 0;
+                  const hoehe = Math.max(3, Math.round(((r.durationMs || 0) / max) * 56));
+                  return (
+                    <div
+                      key={r.startedAt}
+                      title={`${new Date(r.startedAt).toLocaleString('de-DE')} · ${Math.round(
+                        (r.durationMs || 0) / 1000
+                      )}s · ${r.realErrorCount ?? 0} echte Fehler`}
+                      style={{
+                        flex: 1,
+                        minWidth: 6,
+                        height: hoehe,
+                        borderRadius: '4px 4px 0 0',
+                        background: fehlerhaft ? '#ff4d6d' : '#8a93a5',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 14,
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: theme.text.muted,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span
+                    style={{ width: 9, height: 9, borderRadius: 2, background: '#8a93a5' }}
+                    aria-hidden
+                  />
+                  ohne echte Fehler
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span
+                    style={{ width: 9, height: 9, borderRadius: 2, background: '#ff4d6d' }}
+                    aria-hidden
+                  />
+                  mit echten Fehlern
+                </span>
+                <span style={{ marginLeft: 'auto' }}>{runs.length} Läufe</span>
+              </div>
+            </div>
+          );
+        })}
+
       {/* Overview cards */}
       <div className="adm-stats">
         {actions.map(([action, perf]) => {

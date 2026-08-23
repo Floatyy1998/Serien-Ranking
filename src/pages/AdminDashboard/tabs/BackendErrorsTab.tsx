@@ -22,11 +22,21 @@ const summe = (liste: BackendError[]) => liste.reduce((n, e) => n + (e.count ?? 
 const istEcht = (e: BackendError) => (e.severity ?? 'error') === 'error';
 
 /** Ein Lauf aus admin/runs — die Historie, die es vorher gar nicht gab. */
+interface RunGroup {
+  context: string;
+  muster: string;
+  severity?: 'error' | 'info';
+  anzahl: number;
+  zuletzt?: string;
+  beispiele?: { message?: string; [k: string]: unknown }[];
+}
+
 interface RunRecord {
   startedAt: string;
   durationMs: number;
   errorTotal: number;
   realErrorCount: number;
+  errorGroups?: RunGroup[];
   catalog?: { luecken?: number; seriesGeprueft?: number; offeneRemaps?: number };
   counters?: Record<string, number>;
 }
@@ -127,13 +137,44 @@ export function BackendErrorsTab({
     await dbRef(`admin/backendErrors/${action}`).remove();
   };
 
+  // Ein bestimmter Lauf kann geoeffnet werden (?run=…) — dann zeigt der Tab
+  // dessen Fehler statt der des letzten Laufs. Damit ist ein konkreter
+  // Vorfall verlinkbar, nicht nur "der aktuelle Stand".
+  const gewaehlterLauf = params.get('run');
+  const offenerLauf = gewaehlterLauf
+    ? runs.find((r) => String(new Date(r.startedAt).getTime()) === gewaehlterLauf)
+    : null;
+
+  const setLauf = useCallback(
+    (r: RunRecord | null) => {
+      const next = new URLSearchParams(params);
+      if (r) next.set('run', String(new Date(r.startedAt).getTime()));
+      else next.delete('run');
+      setParams(next);
+    },
+    [params, setParams]
+  );
+
   // Collect all errors across all actions
   const allErrors: (BackendError & { _action: string })[] = [];
-  Object.entries(logs).forEach(([action, log]) => {
-    toErrorArray(log.errors).forEach((e) => {
-      allErrors.push({ ...e, _action: action });
+  if (offenerLauf) {
+    (offenerLauf.errorGroups || []).forEach((g) =>
+      allErrors.push({
+        timestamp: g.zuletzt || offenerLauf.startedAt,
+        context: g.context,
+        message: g.beispiele?.[0]?.message || g.muster,
+        severity: g.severity,
+        count: g.anzahl,
+        _action: activeAction || 'run',
+      })
+    );
+  } else {
+    Object.entries(logs).forEach(([action, log]) => {
+      toErrorArray(log.errors).forEach((e) => {
+        allErrors.push({ ...e, _action: action });
+      });
     });
-  });
+  }
 
   const filteredErrors = activeAction
     ? allErrors.filter((e) => e._action === activeAction)
@@ -321,13 +362,26 @@ export function BackendErrorsTab({
             {runs.map((r) => (
               <div
                 key={r.startedAt}
+                role="button"
+                tabIndex={0}
+                onClick={() => setLauf(offenerLauf === r ? null : r)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setLauf(offenerLauf === r ? null : r);
+                  }
+                }}
+                title="Diesen Lauf öffnen — zeigt seine Fehlergruppen statt der aktuellen"
                 style={{
                   display: 'flex',
                   gap: 12,
                   alignItems: 'baseline',
                   fontSize: 12,
                   fontVariantNumeric: 'tabular-nums',
-                  padding: '3px 0',
+                  padding: '3px 6px',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  background: offenerLauf === r ? `${theme.primary}22` : 'transparent',
                   color: theme.text.primary,
                 }}
               >
@@ -352,6 +406,45 @@ export function BackendErrorsTab({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Unuebersehbar machen, dass ein historischer Lauf offen ist — sonst
+          liest man alte Fehler als aktuellen Stand. */}
+      {offenerLauf && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '10px 14px',
+            borderRadius: 10,
+            background: `${theme.primary}18`,
+            border: `1px solid ${theme.primary}44`,
+            fontSize: 13,
+            color: theme.text.primary,
+          }}
+        >
+          <span>
+            Lauf vom <strong>{new Date(offenerLauf.startedAt).toLocaleString('de-DE')}</strong> —
+            nicht der aktuelle Stand
+          </span>
+          <button
+            onClick={() => setLauf(null)}
+            style={{
+              marginLeft: 'auto',
+              background: 'transparent',
+              border: `1px solid ${theme.primary}55`,
+              color: theme.primary,
+              padding: '4px 12px',
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Zurück zum aktuellen Stand
+          </button>
         </div>
       )}
 

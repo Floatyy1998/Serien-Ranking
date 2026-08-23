@@ -22,7 +22,28 @@ interface UserIssues {
   issues: DataIssue[];
 }
 
+/** Zusammenfassung aus admin/dataHealth — schreibt der naechtliche Cron. */
+interface HealthSummary {
+  lastRun?: string;
+  durationMs?: number;
+  usersChecked?: number;
+  usersWithIssues?: number;
+  issueTotal?: number;
+  catalog?: {
+    seriesGeprueft?: number;
+    luecken?: number;
+    lueckenSerien?: { id: string; keys: string }[];
+    offeneRemaps?: number;
+  };
+}
+
 const ISSUE_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  // Fehlerklassen des heutigen, ID-basierten Datenmodells
+  'orphan-episode': { label: 'Unsichtbare Haken (Episode fehlt im Katalog)', color: '#ff4d6d' },
+  'season-out-of-range': { label: 'Staffel-Key ausserhalb des Katalogs', color: '#d62828' },
+  'orphan-series': { label: 'Watch-Daten ohne verfolgte Serie', color: '#f77f00' },
+  'no-catalog-entry': { label: 'Serie fehlt im Katalog', color: '#e76f51' },
+  // Altbestand aus der frueheren Array-Struktur
   'missing-episode-number': { label: 'Episoden ohne episode_number', color: '#ff4d6d' },
   'missing-series-name': { label: 'Serien ohne Name', color: '#e76f51' },
   'missing-series-id': { label: 'Serien ohne ID', color: '#d62828' },
@@ -57,12 +78,23 @@ export function DataHealthTab({
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string | null>(null);
 
+  const [summary, setSummary] = useState<HealthSummary | null>(null);
+
   useEffect(() => {
     const ref = dbRef('admin/dataIntegrityIssues');
     const handler = ref.on('value', (snap) => {
       setIssuesByUser(snap.val() || {});
       setLoading(false);
     });
+    return () => ref.off('value', handler);
+  }, []);
+
+  // Getrennt vom Befund-Knoten: ohne diese Zusammenfassung liesse sich
+  // "geprueft und sauber" nicht von "nie geprueft" unterscheiden — der Tab
+  // zeigte jahrelang gruen, weil gar nichts mass.
+  useEffect(() => {
+    const ref = dbRef('admin/dataHealth');
+    const handler = ref.on('value', (snap) => setSummary(snap.val() || null));
     return () => ref.off('value', handler);
   }, []);
 
@@ -131,16 +163,53 @@ export function DataHealthTab({
           <div className="adm-stat__value">{Object.keys(typeCounts).length}</div>
           <div className="adm-stat__label">Problem-Typen</div>
         </div>
-        <div className={`adm-stat ${totalIssues === 0 ? 'adm-tone-ok' : 'adm-tone-bad'}`}>
+        <div
+          className={`adm-stat ${
+            (summary?.catalog?.luecken ?? 0) > 0 ? 'adm-tone-bad' : 'adm-tone-ok'
+          }`}
+        >
+          <div className="adm-stat__value">{summary?.catalog?.luecken ?? '—'}</div>
+          <div className="adm-stat__label">Katalog-Lücken</div>
+        </div>
+        <div
+          className={`adm-stat ${
+            !summary?.lastRun ? 'adm-tone-info' : totalIssues === 0 ? 'adm-tone-ok' : 'adm-tone-bad'
+          }`}
+        >
           <div className="adm-stat__value">
-            {totalIssues === 0 ? (
+            {!summary?.lastRun ? (
+              <Warning style={{ fontSize: 26 }} />
+            ) : totalIssues === 0 ? (
               <CheckCircle style={{ fontSize: 26 }} />
             ) : (
               <Warning style={{ fontSize: 26 }} />
             )}
           </div>
-          <div className="adm-stat__label">{totalIssues === 0 ? 'Alles OK' : 'Probleme'}</div>
+          {/* Ohne Prueflauf gibt es kein "alles OK" — ein leerer Knoten ist
+              kein Gesundheitszeugnis. Genau daran hat dieser Tab jahrelang
+              gruen gezeigt, ohne etwas zu messen. */}
+          <div className="adm-stat__label">
+            {!summary?.lastRun ? 'Nie geprüft' : totalIssues === 0 ? 'Alles OK' : 'Probleme'}
+          </div>
         </div>
+      </div>
+
+      <div style={{ fontSize: 12, color: theme.text.muted, lineHeight: 1.6 }}>
+        {summary?.lastRun ? (
+          <>
+            Zuletzt geprüft {new Date(summary.lastRun).toLocaleString('de-DE')} ·{' '}
+            {summary.usersChecked ?? 0} Nutzer · {summary.catalog?.seriesGeprueft ?? 0} Serien im
+            Katalog
+            {(summary.catalog?.offeneRemaps ?? 0) > 0 && (
+              <> · {summary.catalog?.offeneRemaps} offene Episoden-Umschlüsselung(en)</>
+            )}
+          </>
+        ) : (
+          <>
+            Es liegt noch kein Prüflauf vor. Die nächtliche Prüfung schreibt Befunde und diese
+            Zusammenfassung — bis dahin sagt dieser Tab nichts über den Zustand der Daten aus.
+          </>
+        )}
       </div>
 
       {/* Type summary pills */}
