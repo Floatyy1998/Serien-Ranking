@@ -841,3 +841,12 @@
     white-space: nowrap;
   }
 }
+
+/* Serie ohne Katalog-Staffeln (frisch hinzugefuegt) */
+.em-no-seasons {
+  margin: 24px 16px;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}

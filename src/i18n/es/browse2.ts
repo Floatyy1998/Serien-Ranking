@@ -144,6 +144,10 @@ const dict: Record<string, string> = {
   'Alle als {n}x gesehen': 'Marcar todas como vistas {n}x',
   'Alle als ungesehen': 'Marcar todas como no vistas',
   'Alle als gesehen markieren': 'Marcar todas como vistas',
+  'Folgen werden noch geladen': 'Los episodios aún se están cargando',
+  'Die Folgen dieser Serie werden noch vorbereitet. Schau gleich nochmal vorbei.':
+    'Los episodios de esta serie aún se están preparando. Vuelve a mirar en unos instantes.',
+  'Nichts zu markieren': 'Nada que marcar',
   'Noch keine Folgen dieser Staffel veröffentlicht':
     'Aún no se ha estrenado ningún episodio de esta temporada',
   'Ich bin bei...': 'Voy por...',

@@ -209,7 +209,7 @@ export const useEpisodeManagement = () => {
   // Season navigation
 
   const handleSwipeLeft = () => {
-    if (series && selectedSeason < series.seasons.length - 1) {
+    if (series && selectedSeason < (series.seasons?.length ?? 0) - 1) {
       setSelectedSeason(selectedSeason + 1);
     }
   };
@@ -230,8 +230,14 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
     if (!requireTracked()) return;
 
-    const season = series.seasons[seasonIndex];
-    const episode = season.episodes[episodeIndex];
+    // Frisch hinzugefuegte Serien stehen in der Liste, bevor der Katalog ihre
+    // Staffeln liefert — dann gibt es hier noch nichts zu markieren.
+    const season = series.seasons?.[seasonIndex];
+    const episode = season?.episodes?.[episodeIndex];
+    if (!season || !episode) {
+      showToast(t('Folgen werden noch geladen'), 2500, 'info');
+      return;
+    }
 
     try {
       // `|| 1`, nicht `|| 0`: currentWatchCount wird nur in den isWatched-Zweigen
@@ -423,7 +429,7 @@ export const useEpisodeManagement = () => {
   // Episode click (show dialog or toggle)
 
   const handleEpisodeClick = (seasonIndex: number, episodeIndex: number) => {
-    const episode = series?.seasons[seasonIndex]?.episodes?.[episodeIndex];
+    const episode = series?.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
     if (!episode) return;
 
     if (episode.watched) {
@@ -446,7 +452,7 @@ export const useEpisodeManagement = () => {
       const updates: Record<string, unknown> = {};
       const markedEpPaths: string[] = []; // fuer Undo: alle neu-gemarkten Eps
 
-      series.seasons.forEach((season, sIdx) => {
+      (series.seasons ?? []).forEach((season, sIdx) => {
         const eps = Array.isArray(season.episodes)
           ? season.episodes
           : season.episodes
@@ -471,6 +477,13 @@ export const useEpisodeManagement = () => {
           markedEpPaths.push(epBase);
         });
       });
+
+      // Ohne markierte Folge nichts schreiben: ein reiner serienVersion-Bump
+      // zwingt alle Geräte grundlos zum Delta-Sync.
+      if (markedEpPaths.length === 0) {
+        showToast(t('Nichts zu markieren'), 2500, 'info');
+        return;
+      }
 
       updates[paths.serienVersion(user.uid)] = serverTimestamp();
       // Bulk-Mark als EIN Queue-Eintrag (eine Multi-Path-Map) über die
@@ -517,7 +530,11 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
     if (!requireTracked()) return;
 
-    const season = series.seasons[seasonIndex];
+    const season = series.seasons?.[seasonIndex];
+    if (!season) {
+      showToast(t('Folgen werden noch geladen'), 2500, 'info');
+      return;
+    }
     const allEps = season.episodes ?? [];
     // Bulk markiert nie unveröffentlichte Folgen — einzeln bleibt das erlaubt.
     // Ausnahme: bereits markierte Folgen bleiben in Rewatch/Unwatch drin.
@@ -608,7 +625,7 @@ export const useEpisodeManagement = () => {
       // F4 — nicht blockierend (siehe handleEpisodeToggle): wegwischbarer
       // Hinweis statt Auto-Modal; öffnet die Schnellbewertung erst auf Tap.
       if (mode !== 'unwatch' && seasonEps.length === allEps.length) {
-        const lastSeasonIndex = series.seasons.length - 1;
+        const lastSeasonIndex = (series.seasons?.length ?? 0) - 1;
         if (seasonIndex === lastSeasonIndex) {
           const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
           if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {

@@ -438,6 +438,22 @@ describe('useEpisodeManagement', () => {
     expect(applyUserUpdate).not.toHaveBeenCalled();
   });
 
+  it('Serie ohne Katalog-Staffeln: Bulk/Einzel/Catch-Up stürzen nicht ab', async () => {
+    // Frisch hinzugefügt: steht in der Liste, hat aber noch keine Staffeln.
+    ctx.allSeriesList = [makeSeries({ seasons: [] })];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'watch');
+      await result.current.handleEpisodeToggle(0, 0);
+      await result.current.handleCatchUp(0, 0);
+      result.current.handleEpisodeClick(0, 0);
+      result.current.handleSwipeLeft();
+    });
+
+    expect(applyUserUpdate).not.toHaveBeenCalled();
+  });
+
   it('handleCatchUp: markiert keine unveröffentlichten Folgen', async () => {
     ctx.allSeriesList = [
       makeSeries({

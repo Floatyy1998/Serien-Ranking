@@ -59,6 +59,10 @@ export const EpisodeManagementPage = () => {
     );
   }
 
+  // Frisch hinzugefuegte Serien haben noch keine Staffeln aus dem Katalog —
+  // dann statt leerer Tabs und wirkungsloser Bulk-Buttons einen Hinweis zeigen.
+  const hasSeasons = (series.seasons?.length ?? 0) > 0;
+
   return (
     <div className="mobile-episode-page">
       {/* Header */}
@@ -67,25 +71,35 @@ export const EpisodeManagementPage = () => {
       {/* Pull to Refresh Indicator */}
       <RefreshIndicator isRefreshing={isRefreshing} />
 
-      {/* Season Tabs */}
-      <SeasonTabs
-        seasons={series.seasons}
-        selectedSeason={selectedSeason}
-        onSelectSeason={setSelectedSeason}
-        onPrev={handleSwipeRight}
-        onNext={handleSwipeLeft}
-        totalSeasons={series.seasons.length}
-      />
+      {!hasSeasons && (
+        <p className="em-no-seasons">
+          {t('Die Folgen dieser Serie werden noch vorbereitet. Schau gleich nochmal vorbei.')}
+        </p>
+      )}
 
-      {/* Season Progress + Bulk Actions */}
-      <BulkActionBar
-        seasonNumber={(currentSeason?.seasonNumber ?? 0) + 1}
-        seasonProgress={seasonProgress}
-        selectedSeason={selectedSeason}
-        onSeasonToggle={handleSeasonToggle}
-        onMarkAll={(idx) => handleSeasonToggle(idx)}
-        onCatchUp={() => setShowCatchUpDialog(true)}
-      />
+      {hasSeasons && (
+        <>
+          {/* Season Tabs */}
+          <SeasonTabs
+            seasons={series.seasons}
+            selectedSeason={selectedSeason}
+            onSelectSeason={setSelectedSeason}
+            onPrev={handleSwipeRight}
+            onNext={handleSwipeLeft}
+            totalSeasons={series.seasons.length}
+          />
+
+          {/* Season Progress + Bulk Actions */}
+          <BulkActionBar
+            seasonNumber={(currentSeason?.seasonNumber ?? 0) + 1}
+            seasonProgress={seasonProgress}
+            selectedSeason={selectedSeason}
+            onSeasonToggle={handleSeasonToggle}
+            onMarkAll={(idx) => handleSeasonToggle(idx)}
+            onCatchUp={() => setShowCatchUpDialog(true)}
+          />
+        </>
+      )}
 
       {/* Episodes List */}
       <div
