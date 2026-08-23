@@ -1,7 +1,17 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { BackendErrorsTab } from './BackendErrorsTab';
+
+// Der Action-Filter steht in der URL (Deep-Link), der Tab braucht also einen
+// Router-Kontext.
+const renderTab = () =>
+  render(
+    <MemoryRouter>
+      <BackendErrorsTab data={{}} theme={theme} />
+    </MemoryRouter>
+  );
 
 const fb = vi.hoisted(() => {
   const store: Record<string, unknown> = {};
@@ -45,7 +55,7 @@ afterEach(cleanup);
 
 describe('BackendErrorsTab', () => {
   it('shows the all-clear state when there are no backend errors', () => {
-    render(<BackendErrorsTab data={{}} theme={theme} />);
+    renderTab();
     expect(screen.getByText('Keine Backend-Fehler')).toBeInTheDocument();
     expect(screen.getByText('Fehler gesamt')).toBeInTheDocument();
   });
@@ -59,7 +69,7 @@ describe('BackendErrorsTab', () => {
         errors: [{ timestamp: new Date().toISOString(), context: 'TMDB', message: 'Boom' }],
       },
     };
-    render(<BackendErrorsTab data={{}} theme={theme} />);
+    renderTab();
     expect(screen.getByText('Boom')).toBeInTheDocument();
     expect(screen.getByText('TMDB')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /episodes \(1\)/ })).toBeInTheDocument();

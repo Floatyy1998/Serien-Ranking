@@ -20,7 +20,7 @@ import {
   Timer,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -47,45 +47,111 @@ import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: <Assessment style={{ fontSize: 16 }} /> },
-  { id: 'realtime', label: 'Live', icon: <Speed style={{ fontSize: 16 }} /> },
-  { id: 'users', label: 'Users', icon: <Groups style={{ fontSize: 16 }} /> },
-  { id: 'activity', label: 'Activity', icon: <History style={{ fontSize: 16 }} /> },
-  { id: 'events', label: 'Events', icon: <Timeline style={{ fontSize: 16 }} /> },
-  { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
-  { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumber style={{ fontSize: 16 }} /> },
-  { id: 'moderation', label: 'Moderation', icon: <Gavel style={{ fontSize: 16 }} /> },
-  { id: 'suspicious', label: 'Verdacht', icon: <PersonSearch style={{ fontSize: 16 }} /> },
-  { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
-  { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
-  { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
-  { id: 'anime-filler', label: 'Anime Filler', icon: <FilterAlt style={{ fontSize: 16 }} /> },
-  { id: 'performance', label: 'Perf', icon: <Timer style={{ fontSize: 16 }} /> },
-  { id: 'client-errors', label: 'Client-Fehler', icon: <ReportProblem style={{ fontSize: 16 }} /> },
-  { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
-  { id: 'config', label: 'Config', icon: <Settings style={{ fontSize: 16 }} /> },
+  {
+    id: 'overview',
+    label: 'Overview',
+    group: 'Überblick',
+    icon: <Assessment style={{ fontSize: 16 }} />,
+  },
+  { id: 'realtime', label: 'Live', group: 'Überblick', icon: <Speed style={{ fontSize: 16 }} /> },
+  { id: 'users', label: 'Users', group: 'Nutzung', icon: <Groups style={{ fontSize: 16 }} /> },
+  {
+    id: 'activity',
+    label: 'Activity',
+    group: 'Nutzung',
+    icon: <History style={{ fontSize: 16 }} />,
+  },
+  { id: 'events', label: 'Events', group: 'Nutzung', icon: <Timeline style={{ fontSize: 16 }} /> },
+  {
+    id: 'extension',
+    label: 'Extension',
+    group: 'Nutzung',
+    icon: <Extension style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'tickets',
+    label: 'Tickets',
+    group: 'Community',
+    icon: <ConfirmationNumber style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'moderation',
+    label: 'Moderation',
+    group: 'Community',
+    icon: <Gavel style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'suspicious',
+    label: 'Verdacht',
+    group: 'Community',
+    icon: <PersonSearch style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    group: 'Community',
+    icon: <Message style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'health',
+    label: 'Data Health',
+    group: 'Betrieb',
+    icon: <HealthAndSafety style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'new-episodes',
+    label: 'Neue Folgen',
+    group: 'Inhalte',
+    icon: <FiberNew style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'anime-filler',
+    label: 'Anime Filler',
+    group: 'Inhalte',
+    icon: <FilterAlt style={{ fontSize: 16 }} />,
+  },
+  { id: 'performance', label: 'Perf', group: 'Betrieb', icon: <Timer style={{ fontSize: 16 }} /> },
+  {
+    id: 'client-errors',
+    label: 'Client-Fehler',
+    group: 'Betrieb',
+    icon: <ReportProblem style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'backend',
+    label: 'Backend',
+    group: 'Betrieb',
+    icon: <BugReport style={{ fontSize: 16 }} />,
+  },
+  { id: 'config', label: 'Config', group: 'Inhalte', icon: <Settings style={{ fontSize: 16 }} /> },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
 
+// Reihenfolge der Abschnitte in der Leiste. 18 Tabs nebeneinander waren nicht
+// ueberschaubar — gruppiert findet man den gesuchten Bereich, ohne zu suchen.
+const TAB_GRUPPEN = ['Überblick', 'Nutzung', 'Community', 'Betrieb', 'Inhalte'] as const;
+
 export function AdminDashboardPage() {
   const { isAdmin, checking } = useAdminGuard();
   const { currentTheme } = useTheme();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabId>(() => {
-    const param = searchParams.get('tab');
-    const valid = TABS.some((t) => t.id === param);
-    return valid ? (param as TabId) : 'overview';
-  });
-  const data = useAdminDashboardData(30);
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Die URL ist die einzige Quelle der Wahrheit fuer den offenen Tab: Tabs
+  // sind damit verlinkbar, der Zurueck-Knopf funktioniert, und ein Reload
+  // landet wieder an derselben Stelle.
+  const paramTab = searchParams.get('tab');
+  const activeTab: TabId = TABS.some((t) => t.id === paramTab) ? (paramTab as TabId) : 'overview';
+  // Der Hook laedt nur, was der offene Tab wirklich braucht.
+  const data = useAdminDashboardData(30, activeTab);
 
-  // Deep-Links (?tab=…) auch bei bereits geöffnetem Dashboard anwenden
-  useEffect(() => {
-    const param = searchParams.get('tab');
-    if (param && TABS.some((tb) => tb.id === param)) {
-      setActiveTab(param as TabId);
-    }
-  }, [searchParams]);
+  const selectTab = useCallback(
+    (id: TabId) => {
+      // Unter-Parameter (ticket, uid, ...) fallen beim Wechsel weg — sonst
+      // erbt der neue Tab eine Auswahl, die nicht zu ihm gehoert.
+      setSearchParams(id === 'overview' ? {} : { tab: id });
+    },
+    [setSearchParams]
+  );
 
   const handleRefresh = useCallback(() => data.refresh(), [data]);
 
@@ -119,25 +185,50 @@ export function AdminDashboardPage() {
       {/* Tab Navigation */}
       <div className="admin-tab-bar">
         <div className="admin-tab-scroll">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                color: activeTab === tab.id ? currentTheme.primary : currentTheme.text.muted,
-                borderColor: activeTab === tab.id ? currentTheme.primary : 'transparent',
-              }}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
+          {TAB_GRUPPEN.map((gruppe) => (
+            <div className="admin-tab-group" key={gruppe}>
+              <span className="admin-tab-group__label" style={{ color: currentTheme.text.muted }}>
+                {gruppe}
+              </span>
+              {TABS.filter((t) => t.group === gruppe).map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''}`}
+                  onClick={() => selectTab(tab.id)}
+                  style={{
+                    color: activeTab === tab.id ? currentTheme.primary : currentTheme.text.muted,
+                    borderColor: activeTab === tab.id ? currentTheme.primary : 'transparent',
+                  }}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
           ))}
+
+          <span
+            style={{
+              marginLeft: 'auto',
+              alignSelf: 'center',
+              fontSize: 12,
+              whiteSpace: 'nowrap',
+              color: currentTheme.text.muted,
+            }}
+            title="Daten werden nicht mehr automatisch nachgeladen — hier bewusst aktualisieren"
+          >
+            {data.lastUpdated
+              ? `Stand ${new Date(data.lastUpdated).toLocaleTimeString('de-DE', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}`
+              : ''}
+          </span>
 
           <button
             className="admin-tab admin-refresh-btn"
             onClick={handleRefresh}
-            style={{ color: currentTheme.text.muted, marginLeft: 'auto' }}
+            style={{ color: currentTheme.text.muted }}
           >
             <Refresh style={{ fontSize: 16 }} />
           </button>

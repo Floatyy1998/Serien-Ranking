@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { CSSProperties } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
@@ -8,7 +9,26 @@ interface BackendError {
   timestamp: string;
   context: string;
   message: string;
+  // Seit der Telemetrie-Umstellung steht EIN Eintrag fuer eine ganze Gruppe
+  // gleichartiger Fehler: count ist die Anzahl der Vorkommen, severity trennt
+  // echte Fehler von erwarteten Normalfaellen (z. B. TVMaze-Fallback).
+  severity?: 'error' | 'info';
+  count?: number;
   [key: string]: unknown;
+}
+
+/** Vorkommen statt Eintraege zaehlen — ein Eintrag kann N Fehler buendeln. */
+const summe = (liste: BackendError[]) => liste.reduce((n, e) => n + (e.count ?? 1), 0);
+const istEcht = (e: BackendError) => (e.severity ?? 'error') === 'error';
+
+/** Ein Lauf aus admin/runs — die Historie, die es vorher gar nicht gab. */
+interface RunRecord {
+  startedAt: string;
+  durationMs: number;
+  errorTotal: number;
+  realErrorCount: number;
+  catalog?: { luecken?: number; seriesGeprueft?: number; offeneRemaps?: number };
+  counters?: Record<string, number>;
 }
 
 interface ActionLog {
@@ -47,7 +67,19 @@ export function BackendErrorsTab({
 }) {
   const [logs, setLogs] = useState<Record<string, ActionLog>>({});
   const [loading, setLoading] = useState(true);
-  const [activeAction, setActiveAction] = useState<string | null>(null);
+  // Der Filter steht in der URL, damit ein bestimmter Lauf verlinkbar ist:
+  // /admin?tab=backend&action=episodes
+  const [params, setParams] = useSearchParams();
+  const activeAction = params.get('action');
+  const setActiveAction = useCallback(
+    (naechste: string | null) => {
+      const next = new URLSearchParams(params);
+      if (naechste) next.set('action', naechste);
+      else next.delete('action');
+      setParams(next);
+    },
+    [params, setParams]
+  );
 
   useEffect(() => {
     const ref = dbRef('admin/backendErrors');
@@ -66,6 +98,26 @@ export function BackendErrorsTab({
     });
     return () => ref.off('value', handler);
   }, []);
+
+  // Historie nur fuer die gewaehlte Action laden — der Gesamtknoten waere
+  // unnoetig gross, und ohne Auswahl gibt es nichts Sinnvolles zu zeigen.
+  const [runs, setRuns] = useState<RunRecord[]>([]);
+  useEffect(() => {
+    if (!activeAction) {
+      setRuns([]);
+      return;
+    }
+    const ref = dbRef(`admin/runs/${activeAction}`).limitToLast(20);
+    const handler = ref.on('value', (snap) => {
+      const val = (snap.val() || {}) as Record<string, RunRecord>;
+      setRuns(
+        Object.values(val).sort(
+          (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+        )
+      );
+    });
+    return () => ref.off('value', handler);
+  }, [activeAction]);
 
   const handleClear = async () => {
     await dbRef('admin/backendErrors').remove();
@@ -115,15 +167,21 @@ export function BackendErrorsTab({
     );
   }
 
-  const hasErrors = allErrors.length > 0;
+  const echteFehler = allErrors.filter(istEcht);
+  const erwartete = allErrors.filter((e) => !istEcht(e));
+  const hasErrors = summe(echteFehler) > 0;
 
   return (
     <div className="adm-stack">
       {/* Summary */}
       <div className="adm-stats">
         <div className={`adm-stat ${hasErrors ? 'adm-tone-bad' : 'adm-tone-ok'}`}>
-          <div className="adm-stat__value">{allErrors.length}</div>
+          <div className="adm-stat__value">{summe(echteFehler)}</div>
           <div className="adm-stat__label">Fehler gesamt</div>
+        </div>
+        <div className="adm-stat adm-tone-info">
+          <div className="adm-stat__value">{summe(erwartete)}</div>
+          <div className="adm-stat__label">erwartet (kein Handlungsbedarf)</div>
         </div>
         <div className="adm-stat adm-tone-info">
           <div className="adm-stat__value">{Object.keys(logs).length}</div>
@@ -158,13 +216,13 @@ export function BackendErrorsTab({
             className={`adm-chip ${activeAction === null ? 'adm-chip--on' : ''}`}
             onClick={() => setActiveAction(null)}
           >
-            Alle ({allErrors.length})
+            Alle ({summe(allErrors)})
           </button>
           {Object.entries(logs)
             .sort((a, b) => (b[1].runStart || '').localeCompare(a[1].runStart || ''))
             .map(([action, log]) => {
               const color = ACTION_COLORS[action] || theme.primary;
-              const count = toErrorArray(log.errors).length;
+              const count = summe(toErrorArray(log.errors));
               return (
                 <button
                   key={action}
@@ -220,10 +278,11 @@ export function BackendErrorsTab({
                 <span
                   style={{
                     marginLeft: 8,
-                    color: toErrorArray(log.errors).length > 0 ? '#ff4d6d' : '#06d6a0',
+                    color:
+                      summe(toErrorArray(log.errors).filter(istEcht)) > 0 ? '#ff4d6d' : '#06d6a0',
                   }}
                 >
-                  {toErrorArray(log.errors).length} Fehler
+                  {summe(toErrorArray(log.errors))} Fehler
                 </span>
               </div>
               <button
@@ -243,9 +302,69 @@ export function BackendErrorsTab({
           );
         })}
 
+      {/* Lauf-Historie der gewaehlten Action */}
+      {activeAction && runs.length > 0 && (
+        <div style={{ borderRadius: 12, background: theme.background.paper, padding: '12px 16px' }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: theme.text.muted,
+              marginBottom: 8,
+            }}
+          >
+            Verlauf ({runs.length} Läufe)
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {runs.map((r) => (
+              <div
+                key={r.startedAt}
+                style={{
+                  display: 'flex',
+                  gap: 12,
+                  alignItems: 'baseline',
+                  fontSize: 12,
+                  fontVariantNumeric: 'tabular-nums',
+                  padding: '3px 0',
+                  color: theme.text.primary,
+                }}
+              >
+                <span style={{ color: theme.text.muted, minWidth: 118 }}>
+                  {new Date(r.startedAt).toLocaleString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+                <span style={{ minWidth: 46 }}>{Math.round(r.durationMs / 1000)}s</span>
+                <span style={{ minWidth: 96, color: r.realErrorCount > 0 ? '#ff4d6d' : '#06d6a0' }}>
+                  {r.realErrorCount} echte
+                </span>
+                <span style={{ color: theme.text.muted, minWidth: 92 }}>{r.errorTotal} gesamt</span>
+                {r.catalog?.luecken !== undefined && (
+                  <span style={{ color: r.catalog.luecken > 0 ? '#ff4d6d' : theme.text.muted }}>
+                    {r.catalog.luecken} Katalog-Lücken
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Errors grouped by context */}
       {Object.entries(grouped)
-        .sort((a, b) => b[1].length - a[1].length)
+        .sort((a, b) => {
+          // Echte Fehler zuerst, danach nach Haeufigkeit — die 46 erwarteten
+          // TVMaze-Fallbacks sollen den einen echten nicht verdraengen.
+          const aEcht = a[1].some(istEcht);
+          const bEcht = b[1].some(istEcht);
+          if (aEcht !== bEcht) return aEcht ? -1 : 1;
+          return summe(b[1]) - summe(a[1]);
+        })
         .map(([context, contextErrors]) => (
           <div
             key={context}
@@ -275,7 +394,7 @@ export function BackendErrorsTab({
                   fontWeight: 700,
                 }}
               >
-                {contextErrors.length}x
+                {summe(contextErrors)}x
               </span>
             </div>
 

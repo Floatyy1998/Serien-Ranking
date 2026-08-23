@@ -10,6 +10,10 @@ const theme = generateDynamicTheme(defaultThemeConfig);
 const h = vi.hoisted(() => ({
   guard: { isAdmin: true, checking: false },
   data: { loading: false, refresh: () => {} } as { loading: boolean; refresh: () => void },
+  // Der offene Tab steht in der URL, also muss die Router-Attrappe echten
+  // Zustand haben — ein no-op-Setter wuerde jeden Tab-Wechsel verschlucken.
+  params: { current: new URLSearchParams('') },
+  listeners: new Set<() => void>(),
 }));
 
 vi.mock('./useAdminGuard', () => ({ useAdminGuard: () => h.guard }));
@@ -17,9 +21,26 @@ vi.mock('./useAdminDashboardData', () => ({ useAdminDashboardData: () => h.data 
 
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 
-vi.mock('react-router-dom', () => ({
-  useSearchParams: () => [new URLSearchParams(''), vi.fn()],
-}));
+vi.mock('react-router-dom', async () => {
+  const { useState, useEffect } = await import('react');
+  return {
+    useSearchParams: () => {
+      const [, tick] = useState(0);
+      useEffect(() => {
+        const l = () => tick((n) => n + 1);
+        h.listeners.add(l);
+        return () => {
+          h.listeners.delete(l);
+        };
+      }, []);
+      const set = (next: URLSearchParams | Record<string, string>) => {
+        h.params.current = next instanceof URLSearchParams ? next : new URLSearchParams(next);
+        h.listeners.forEach((l) => l());
+      };
+      return [h.params.current, set];
+    },
+  };
+});
 
 // Passthrough framer-motion so AnimatePresence "mode=wait" doesn't hold back
 // the newly-activated tab behind an unfinished exit animation.
@@ -71,6 +92,10 @@ vi.mock('./tabs/ConfigTab', () => ({ ConfigTab: () => <div>config-tab</div> }));
 beforeEach(() => {
   h.guard = { isAdmin: true, checking: false };
   h.data = { loading: false, refresh: vi.fn() };
+  // Der Tab steht in der URL — ohne Reset traegt ein Test die Auswahl des
+  // vorherigen weiter und die Suite haengt an der Reihenfolge.
+  h.params.current = new URLSearchParams('');
+  h.listeners.clear();
 });
 
 afterEach(cleanup);

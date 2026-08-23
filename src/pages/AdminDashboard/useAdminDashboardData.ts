@@ -55,7 +55,29 @@ export function monthKey(monthsAgo = 0): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function useAdminDashboardData(daysRange = 30) {
+/**
+ * Welcher Tab welche Datenbereiche braucht. 11 der 22 Tabs holen ihre Daten
+ * selbst und brauchen aus diesem Hook nichts — vorher loesten auch sie das
+ * volle Analytics-Laden aus. Nicht aufgefuehrte Tabs laden nichts.
+ *
+ *  daily    analytics/global/daily ueber den gewaehlten Zeitraum (KPIs, Charts)
+ *  users    analytics/users + Anzeigenamen aus dem Suchindex
+ *  live     on('value') auf die aktiven Nutzer
+ */
+const TAB_DATENBEDARF: Record<string, ReadonlyArray<'daily' | 'users' | 'live'>> = {
+  overview: ['daily', 'users', 'live'],
+  realtime: ['users', 'live'],
+  users: ['users', 'live'],
+  activity: ['users'],
+  extension: ['users'],
+  events: ['daily'],
+};
+
+export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
+  const braucht = useCallback(
+    (bereich: 'daily' | 'users' | 'live') => (TAB_DATENBEDARF[activeTab] ?? []).includes(bereich),
+    [activeTab]
+  );
   const [loading, setLoading] = useState(true);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [userMetas, setUserMetas] = useState<Record<string, UserMeta>>({});
@@ -67,17 +89,22 @@ export function useAdminDashboardData(daysRange = 30) {
     {}
   );
   const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
-  // Auto-refresh every 10 minutes
-  useEffect(() => {
-    const interval = setInterval(() => setRefreshKey((k) => k + 1), 10 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Kein Auto-Refresh mehr. Der fruehere 10-Minuten-Timer lud ALLE Analytics
+  // neu — unabhaengig davon, welcher Tab offen war und ob sich etwas geaendert
+  // hatte. Die wirklich fluechtigen Daten (analytics/global/realtime) haengen
+  // ohnehin an einem on('value')-Listener und kommen als Delta rein; alles
+  // andere aktualisiert der Admin bewusst, mit sichtbarem Datenalter.
 
   // Load global daily stats
   useEffect(() => {
+    if (!braucht('daily')) {
+      setLoading(false);
+      return;
+    }
     const loadDailyStats = async () => {
       setLoading(true);
       const stats: DailyStats[] = [];
@@ -134,16 +161,18 @@ export function useAdminDashboardData(daysRange = 30) {
       }
 
       setDailyStats(stats);
+      setLastUpdated(Date.now());
       setLoading(false);
     };
 
     loadDailyStats();
-  }, [daysRange, refreshKey]);
+  }, [daysRange, refreshKey, braucht]);
 
   // Load user metas + extension sessions for today in EINEM Read.
   // Vorher liefen zwei separate once('value') auf analytics/users (haelfte
   // der Bytes gedoppelt). Beide States werden aus demselben Snapshot befuellt.
   useEffect(() => {
+    if (!braucht('users')) return;
     const today = dateKey(0);
 
     dbRef('analytics/users')
@@ -169,7 +198,7 @@ export function useAdminDashboardData(daysRange = 30) {
       .catch((error) =>
         console.error('Analytics-Nutzerdaten konnten nicht geladen werden:', error)
       );
-  }, [refreshKey]);
+  }, [refreshKey, braucht]);
 
   // Anzeigenamen aus dem Suchindex statt aus den Nutzerknoten.
   //
@@ -182,6 +211,7 @@ export function useAdminDashboardData(daysRange = 30) {
   // userSearchIndex/$uid enthaelt genau username, displayName und photoURL
   // (buildUserSearchIndexEntry) und ist ein flacher Knoten: ein Read statt N.
   useEffect(() => {
+    if (!braucht('users')) return;
     const uids = new Set([...Object.keys(userMetas), ...realtimeUsers.map((u) => u.uid)]);
     if (uids.size === 0) return;
 
@@ -206,10 +236,14 @@ export function useAdminDashboardData(daysRange = 30) {
         setUserProfiles(profiles);
       })
       .catch((error) => console.error('Anzeigenamen konnten nicht geladen werden:', error));
-  }, [userMetas, realtimeUsers, refreshKey]);
+  }, [userMetas, realtimeUsers, refreshKey, braucht]);
 
   // Realtime users listener
   useEffect(() => {
+    if (!braucht('live')) {
+      setRealtimeUsers([]);
+      return;
+    }
     const ref = dbRef('analytics/global/realtime/activeUsers');
 
     const handler = ref.on('value', (snap) => {
@@ -235,7 +269,7 @@ export function useAdminDashboardData(daysRange = 30) {
     });
 
     return () => ref.off('value', handler);
-  }, []);
+  }, [braucht]);
 
   // Computed metrics
 
@@ -411,6 +445,7 @@ export function useAdminDashboardData(daysRange = 30) {
   return {
     loading,
     refresh,
+    lastUpdated,
     // KPIs
     dauToday,
     dauDelta,
