@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -46,9 +46,23 @@ function useProviderColoring(
   /** Effektiver Display-Provider: User-Override gewinnt, sonst erster TMDB-Provider. */
   displayProvider: WeeklyEpisodeProvider | null;
 } {
-  const { activeProviders, getSeriesOverride } = useActiveSubscriptions();
+  const { activeProviders, getSeriesOverride, getKnownProviders } = useActiveSubscriptions();
   const hasActiveSubs = activeProviders.size > 0;
   const override = getSeriesOverride(seriesId);
+
+  // Der Katalog wird nur einmal taeglich aktualisiert. Die Detailseite fragt
+  // TMDB beim Oeffnen live und legt das Ergebnis unter knownProviders ab —
+  // ohne diese Quelle zeigte der Kalender bis zu einen Tag lang gar keinen
+  // Provider, waehrend die Detailseite laengst einen kannte.
+  const bekannte = getKnownProviders(seriesId);
+  const providersMitLive: WeeklyEpisodeProvider[] = useMemo(() => {
+    if (bekannte.length === 0) return providers;
+    const vorhanden = new Set(providers.map((p) => p.name.trim().toLowerCase()));
+    const zusatz = bekannte
+      .filter((name) => !vorhanden.has(name.trim().toLowerCase()))
+      .map((name) => ({ id: 0, logo: getProviderLogoUrl(name) ?? '', name }));
+    return zusatz.length ? [...providers, ...zusatz] : providers;
+  }, [providers, bekannte]);
 
   // User-Override hat höchste Priorität — überschreibt Strip + Logo.
   if (override) {
@@ -64,7 +78,7 @@ function useProviderColoring(
     return { brandColor: brand.color, hasNoActiveSub, displayProvider };
   }
 
-  const normalized = providers
+  const normalized = providersMitLive
     .map((p) => ({ raw: p, norm: normalizeProviderName(p.name) }))
     .filter((p): p is { raw: WeeklyEpisodeProvider; norm: string } => p.norm !== null);
 
@@ -72,7 +86,7 @@ function useProviderColoring(
     return {
       brandColor: null,
       hasNoActiveSub: hasActiveSubs,
-      displayProvider: providers[0] ?? null,
+      displayProvider: providersMitLive[0] ?? null,
     };
   }
 

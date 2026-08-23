@@ -18,6 +18,12 @@ import type { Movie } from '../types/Movie';
 interface SubsSnapshot {
   active: Set<string>;
   overrides: Record<string, string>;
+  /** Live-Schnappschuss der Provider je Serie (users/$uid/knownProviders).
+   *  Der Katalog wird nur einmal taeglich aktualisiert; die Detailseite fragt
+   *  TMDB beim Oeffnen live und legt das Ergebnis hier ab. Ohne diese Quelle
+   *  zeigen Listen- und Kalenderansichten bis zu einen Tag lang einen anderen
+   *  Provider als die Detailseite. */
+  known: Record<string, string[]>;
 }
 
 // Modul-Cache: pro UID ein Snapshot, vermeidet doppelte Reads im selben Tab
@@ -32,9 +38,11 @@ async function loadSubs(uid: string): Promise<SubsSnapshot> {
   if (cached) return cached;
   const inFlight = pending.get(uid);
   if (inFlight) return inFlight;
-  const p = dbRef(userPath(uid, 'subscriptions'))
-    .once('value')
-    .then((snap) => {
+  const p = Promise.all([
+    dbRef(userPath(uid, 'subscriptions')).once('value'),
+    dbRef(userPath(uid, 'knownProviders')).once('value'),
+  ])
+    .then(([snap, knownSnap]) => {
       const raw = (snap.val() ?? {}) as {
         providers?: Record<string, ProviderSubscription>;
         seriesOverrides?: Record<string, string>;
@@ -43,9 +51,17 @@ async function loadSubs(uid: string): Promise<SubsSnapshot> {
       for (const [name, sub] of Object.entries(raw.providers ?? {})) {
         if (sub?.active) active.add(name);
       }
+      const knownRaw = (knownSnap.val() ?? {}) as Record<string, { providers?: string[] }>;
+      const known: Record<string, string[]> = {};
+      for (const [seriesId, eintrag] of Object.entries(knownRaw)) {
+        if (Array.isArray(eintrag?.providers) && eintrag.providers.length) {
+          known[seriesId] = eintrag.providers;
+        }
+      }
       const snapshot: SubsSnapshot = {
         active,
         overrides: raw.seriesOverrides ?? {},
+        known,
       };
       cache.set(uid, snapshot);
       pending.delete(uid);
@@ -54,7 +70,7 @@ async function loadSubs(uid: string): Promise<SubsSnapshot> {
     .catch((err: unknown) => {
       console.error('[useActiveSubscriptions] Failed:', err);
       pending.delete(uid);
-      return { active: new Set<string>(), overrides: {} };
+      return { active: new Set<string>(), overrides: {}, known: {} };
     });
   pending.set(uid, p);
   return p;
@@ -81,6 +97,7 @@ export interface UseActiveSubscriptionsResult {
   seriesOverrides: Record<string, string>;
   /** Liefert den Override-Provider-Namen für eine Serie, falls gesetzt. */
   getSeriesOverride: (seriesId: number | string) => string | null;
+  getKnownProviders: (seriesId: number | string) => string[];
   loading: boolean;
 }
 
@@ -93,6 +110,9 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
   const [seriesOverrides, setSeriesOverrides] = useState<Record<string, string>>(
     () => initial?.overrides ?? {}
   );
+  const [knownProviders, setKnownProviders] = useState<Record<string, string[]>>(
+    () => initial?.known ?? {}
+  );
   const [hasAnySubscription, setHasAnySubscription] = useState(false);
   const [loading, setLoading] = useState(!user || !cache.has(user.uid));
 
@@ -104,6 +124,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
         if (cancelled) return;
         setActiveProviders(snap.active);
         setSeriesOverrides(snap.overrides);
+        setKnownProviders(snap.known);
         setLoading(false);
       });
     };
@@ -140,6 +161,12 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
     [seriesOverrides]
   );
 
+  /** Zuletzt live gefundene Provider-Namen einer Serie (ohne Logo). */
+  const getKnownProviders = useCallback(
+    (seriesId: number | string): string[] => knownProviders[String(seriesId)] ?? [],
+    [knownProviders]
+  );
+
   return useMemo(
     () => ({
       activeProviders,
@@ -147,6 +174,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
       isOnActiveSub,
       seriesOverrides,
       getSeriesOverride,
+      getKnownProviders,
       loading,
     }),
     [
@@ -155,6 +183,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
       isOnActiveSub,
       seriesOverrides,
       getSeriesOverride,
+      getKnownProviders,
       loading,
     ]
   );

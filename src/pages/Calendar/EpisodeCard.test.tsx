@@ -11,6 +11,7 @@ vi.mock('../../hooks/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
     activeProviders: new Set<string>(),
     getSeriesOverride: () => null,
+    getKnownProviders: () => [],
   }),
 }));
 vi.mock('../../contexts/ThemeContext', () => {

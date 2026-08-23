@@ -47,10 +47,20 @@ describe('applyOverrideToProviders', () => {
     expect(applyOverrideToProviders(providers, '')).toBe(providers);
   });
 
-  it('Override → einzelnes synthetisches Provider-Objekt mit Logo aus der Map', () => {
+  it('Override steht vorne, die echten Provider bleiben erhalten', () => {
+    // Der Override sagt, wo der Nutzer schaut — er widerlegt nicht, wo die
+    // Serie laeuft. Frueher ersetzte er die Liste und liess den echten
+    // Provider verschwinden.
     expect(applyOverrideToProviders([{ name: 'Netflix' }], 'Disney Plus')).toEqual([
       { id: undefined, logo: DISNEY_LOGO, name: 'Disney Plus' },
+      { name: 'Netflix' },
     ]);
+  });
+
+  it('Override, der schon in der Liste steht, wird nicht gedoppelt', () => {
+    expect(
+      applyOverrideToProviders([{ name: 'disney plus' }, { name: 'Netflix' }], 'Disney Plus')
+    ).toEqual([{ id: undefined, logo: DISNEY_LOGO, name: 'Disney Plus' }, { name: 'Netflix' }]);
   });
 
   it('Override ohne Map-Eintrag → Logo undefined', () => {

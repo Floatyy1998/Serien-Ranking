@@ -32,11 +32,12 @@ const PAGE_COLORS: Record<string, string> = {
 
 export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
   const borderColor = theme.border.default;
-  const [tick, setTick] = useState(0);
-
-  // Refresh display every 10 seconds for time-ago updates
+  // Die "online seit"-Angaben rechnen gegen die aktuelle Uhrzeit und muessen
+  // deshalb regelmaessig neu gerendert werden. Der Zaehlerwert selbst wird
+  // nirgends gelesen — er dient nur als Ausloeser.
+  const [, zeitangabenAktualisieren] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 10000);
+    const interval = setInterval(() => zeitangabenAktualisieren((n) => n + 1), 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -55,9 +56,6 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
         fill: PAGE_COLORS[name] || `hsl(${(name.length * 47) % 360}, 60%, 60%)`,
       }));
   }, [data.realtimeUsers]);
-
-  // Suppress unused tick warning
-  void tick;
 
   return (
     <div className="adm-stack">

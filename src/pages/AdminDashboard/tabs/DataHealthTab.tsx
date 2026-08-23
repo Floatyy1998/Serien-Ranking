@@ -34,6 +34,14 @@ interface HealthSummary {
     luecken?: number;
     lueckenSerien?: { id: string; keys: string }[];
     offeneRemaps?: number;
+    unvollstaendig?: number;
+    unvollstaendigeSerien?: {
+      id: string;
+      title: string;
+      tmdb: number;
+      katalog: number;
+      fehlen: number;
+    }[];
   };
 }
 
@@ -173,6 +181,14 @@ export function DataHealthTab({
         </div>
         <div
           className={`adm-stat ${
+            (summary?.catalog?.unvollstaendig ?? 0) > 0 ? 'adm-tone-bad' : 'adm-tone-ok'
+          }`}
+        >
+          <div className="adm-stat__value">{summary?.catalog?.unvollstaendig ?? '—'}</div>
+          <div className="adm-stat__label">Unvollständige Serien</div>
+        </div>
+        <div
+          className={`adm-stat ${
             !summary?.lastRun ? 'adm-tone-info' : totalIssues === 0 ? 'adm-tone-ok' : 'adm-tone-bad'
           }`}
         >
@@ -193,6 +209,46 @@ export function DataHealthTab({
           </div>
         </div>
       </div>
+
+      {(summary?.catalog?.unvollstaendigeSerien?.length ?? 0) > 0 && (
+        <div
+          style={{
+            borderRadius: 12,
+            background: theme.background.paper,
+            padding: '12px 16px',
+            fontSize: 12,
+          }}
+        >
+          {/* TVMaze kennt manche Serien nur teilweise. Weil TVMaze die Quelle
+              komplett gewinnt, fehlen dann ganze Staffeln in der App — der
+              Nutzer sieht sie nie. Abhilfe: Serie in forceTmdb.js eintragen. */}
+          <div style={{ fontWeight: 700, marginBottom: 6, color: theme.text.primary }}>
+            Serien mit fehlenden Folgen
+          </div>
+          <div style={{ color: theme.text.muted, marginBottom: 8 }}>
+            TMDB kennt mehr Folgen als im Katalog stehen. Abhilfe: Serie in{' '}
+            <code>forceTmdb.js</code> eintragen, dann kommt sie beim nächsten Lauf von TMDB.
+          </div>
+          {summary?.catalog?.unvollstaendigeSerien?.map((u) => (
+            <div
+              key={u.id}
+              style={{
+                display: 'flex',
+                gap: 10,
+                padding: '3px 0',
+                fontVariantNumeric: 'tabular-nums',
+                color: theme.text.primary,
+              }}
+            >
+              <span style={{ minWidth: 62, color: theme.text.muted }}>{u.id}</span>
+              <span style={{ flex: 1 }}>{u.title}</span>
+              <span style={{ color: '#ff4d6d' }}>
+                {u.katalog} von {u.tmdb} — {u.fehlen} fehlen
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ fontSize: 12, color: theme.text.muted, lineHeight: 1.6 }}>
         {summary?.lastRun ? (

@@ -50,13 +50,20 @@ export function applyOverrideToProviders<T extends RawProvider>(
   providers: T[] | undefined,
   override: string | null
 ): (T | { name: string; logo: string | undefined; id: undefined })[] {
-  if (!override) return providers ?? [];
+  const liste = providers ?? [];
+  if (!override) return liste;
+  // Der Override sagt, WO der Nutzer schaut — er widerlegt nicht, wo die Serie
+  // tatsaechlich laeuft. Frueher ersetzte er die Liste komplett, wodurch der
+  // echte Provider aus der Anzeige verschwand.
+  const gleich = (name: string | undefined) =>
+    (name ?? '').trim().toLowerCase() === override.trim().toLowerCase();
   return [
     {
       id: undefined,
       logo: PROVIDER_LOGOS[override],
       name: override,
     },
+    ...liste.filter((p) => !gleich(p.name)),
   ];
 }
 
