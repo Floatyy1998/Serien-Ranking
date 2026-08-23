@@ -16,6 +16,15 @@ const backend = vi.hoisted(() => ({
 }));
 vi.mock('../../../services/backendApi', () => ({ backendFetch: backend.backendFetch }));
 
+const db = vi.hoisted(() => ({ dbGet: vi.fn(async () => null as unknown) }));
+vi.mock('../../../services/db/ref', () => ({
+  dbGet: db.dbGet,
+  paths: {
+    seriesItem: (uid: string, id: number | string) => `users/${uid}/series/${id}`,
+    movieItem: (uid: string, id: number | string) => `users/${uid}/movies/${id}`,
+  },
+}));
+
 async function loadHook(): Promise<typeof UseOnboardingSearch> {
   vi.resetModules();
   return (await import('./useOnboardingSearch')).useOnboardingSearch;
@@ -30,6 +39,8 @@ beforeEach(() => {
   authState.user = { uid: 'u1' };
   refetchAfterAdd.mockClear();
   backend.backendFetch.mockReset();
+  db.dbGet.mockReset();
+  db.dbGet.mockResolvedValue(null);
   vi.stubEnv('VITE_API_TMDB', 'tmdb-key');
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -140,6 +151,61 @@ describe('useOnboardingSearch – addToList', () => {
       expect.objectContaining({ method: 'POST' })
     );
     expect(refetchAfterAdd).toHaveBeenCalledWith(5);
+  });
+
+  it('überspringt den Katalog-Refetch auf Wunsch', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    backend.backendFetch.mockResolvedValue({ ok: true });
+    const useOnboardingSearch = await loadHook();
+    const { result } = renderHook(() => useOnboardingSearch());
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.addToList(
+        { id: 5, title: 'X', poster_path: '/x.jpg', vote_average: 8, type: 'series' },
+        { skipCatalogRefetch: true }
+      );
+    });
+    expect(ok).toBe(true);
+    expect(refetchAfterAdd).not.toHaveBeenCalled();
+  });
+
+  it('wertet ein 400 „bereits vorhanden" als Erfolg, wenn der Titel im Konto liegt', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    backend.backendFetch.mockResolvedValue({ ok: false });
+    db.dbGet.mockResolvedValue({ rating: 0 });
+    const useOnboardingSearch = await loadHook();
+    const { result } = renderHook(() => useOnboardingSearch());
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.addToList({
+        id: 5,
+        title: 'X',
+        poster_path: '/x.jpg',
+        vote_average: 8,
+        type: 'series',
+      });
+    });
+    expect(ok).toBe(true);
+    expect(db.dbGet).toHaveBeenCalledWith('users/u1/series/5');
+  });
+
+  it('bleibt false, wenn der Titel nach einem Fehler nicht im Konto liegt', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    backend.backendFetch.mockResolvedValue({ ok: false });
+    db.dbGet.mockResolvedValue(null);
+    const useOnboardingSearch = await loadHook();
+    const { result } = renderHook(() => useOnboardingSearch());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.addToList({
+        id: 5,
+        title: 'X',
+        poster_path: '/x.jpg',
+        vote_average: 8,
+        type: 'series',
+      });
+    });
+    expect(ok).toBe(false);
   });
 
   it('gibt false zurück ohne User', async () => {

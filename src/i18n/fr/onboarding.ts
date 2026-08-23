@@ -89,6 +89,7 @@ const dict: Record<string, string> = {
   'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung und versuch es gleich nochmal.':
     "Ta sélection n'a pas pu être enregistrée — vérifie ta connexion et réessaie dans un instant.",
   'erneut versuchen': 'réessayer',
+  'Auswahl verwerfen und neu starten': 'Effacer la sélection et recommencer',
   'Willkommen, {name}.': 'Bienvenue, {name}.',
   'Was läuft': "Qu'est-ce que tu",
   'bei dir?': 'regardes ?',

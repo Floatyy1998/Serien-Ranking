@@ -85,6 +85,7 @@ const dict: Record<string, string> = {
   'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung und versuch es gleich nochmal.':
     'Não foi possível salvar sua seleção: verifique sua conexão e tente de novo em instantes.',
   'erneut versuchen': 'tentar de novo',
+  'Auswahl verwerfen und neu starten': 'Descartar a seleção e começar de novo',
   'Willkommen, {name}.': 'Bem-vindo, {name}.',
   'Was läuft': 'O que você está',
   'bei dir?': 'assistindo?',

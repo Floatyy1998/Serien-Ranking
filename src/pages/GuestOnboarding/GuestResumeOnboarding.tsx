@@ -18,10 +18,14 @@ import { WatchStatusSheet } from '../Onboarding/components/WatchStatusSheet';
 import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
 import { useApplyWatchProgress } from '../Onboarding/hooks/useApplyWatchProgress';
 import { useOnboardingSearch } from '../Onboarding/hooks/useOnboardingSearch';
+import { mapLimit } from '../../utils/mapLimit';
 import { useWaitForBackendItem } from '../Onboarding/hooks/useWaitForBackendItem';
 import '../Onboarding/onboarding.css';
 
 type Phase = 'applying' | 'progress' | 'failed';
+
+/** Das Backend deckelt /add + /addMovie bei 30 Requests pro Minute. */
+const ADD_CONCURRENCY = 4;
 
 function summaryLabel(target: WatchTarget | undefined): string | null {
   if (!target || target.kind === 'none') return null;
@@ -35,10 +39,12 @@ function summaryLabel(target: WatchTarget | undefined): string | null {
  * und fragt anschließend den Watch-Fortschritt ab („wo stehst du?") — der geht
  * erst jetzt, weil die Serien nun im Katalog liegen.
  */
-export const GuestResumeOnboarding: React.FC = () => {
+export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = ({
+  onRestartFull,
+}) => {
   const navigate = useNavigate();
   const { user, setOnboardingComplete } = useAuth() || {};
-  const { addToList } = useOnboardingSearch();
+  const { addToList, refetchCatalog } = useOnboardingSearch();
   const waitForBackendItem = useWaitForBackendItem();
   const applyWatchProgress = useApplyWatchProgress();
 
@@ -133,16 +139,33 @@ export const GuestResumeOnboarding: React.FC = () => {
     // wirklich gelandet ist, statt mit leerem Konto abzuschließen.
     let addedOk = 0;
     try {
-      await Promise.all(
-        picks.map(async (item) => {
-          const ok = await addToList(item);
-          if (ok) {
-            addedOk++;
-            await waitForBackendItem(item.type, item.id, 60_000);
-          }
-          tick();
-        })
-      );
+      // Was schon im Konto liegt (abgebrochener erster Anlauf), nicht erneut
+      // ans Backend schicken: /add antwortet darauf mit 400 und die Requests
+      // fressen das 30/min-Limit auf.
+      const [haveSeries, haveMovies] = await Promise.all([
+        dbGet(userPath(uid, 'series')).catch(() => null),
+        dbGet(userPath(uid, 'movies')).catch(() => null),
+      ]);
+      const existing = new Set<string>([
+        ...Object.keys((haveSeries as Record<string, unknown> | null) || {}).map((id) => `s${id}`),
+        ...Object.keys((haveMovies as Record<string, unknown> | null) || {}).map((id) => `m${id}`),
+      ]);
+      const todo = picks.filter((item) => {
+        if (!existing.has(`${item.type === 'series' ? 's' : 'm'}${item.id}`)) return true;
+        addedOk++;
+        tick();
+        return false;
+      });
+
+      await mapLimit(todo, ADD_CONCURRENCY, async (item) => {
+        const ok = await addToList(item, { skipCatalogRefetch: true });
+        if (ok) {
+          addedOk++;
+          await waitForBackendItem(item.type, item.id, 60_000);
+        }
+        tick();
+      });
+      if (todo.length > 0) await refetchCatalog();
 
       if (subscriptions.length > 0) {
         const cfg: Record<string, { active: boolean }> = {};
@@ -153,8 +176,8 @@ export const GuestResumeOnboarding: React.FC = () => {
       tick();
 
       if (pet) {
-        const existing = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
-        if (!existing) await petService.createPet(uid, pet.name.trim() || t('Mein Pet'), pet.type);
+        const hasPet = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
+        if (!hasPet) await petService.createPet(uid, pet.name.trim() || t('Mein Pet'), pet.type);
       }
       tick();
     } catch (e) {
@@ -249,6 +272,17 @@ export const GuestResumeOnboarding: React.FC = () => {
                 </span>
                 <span className="ob-cta__arrow">→</span>
               </button>
+              {onRestartFull && (
+                <button
+                  onClick={() => {
+                    clearGuestPicks();
+                    onRestartFull();
+                  }}
+                  className="ob-link"
+                >
+                  {t('Auswahl verwerfen und neu starten')}
+                </button>
+              )}
             </motion.div>
           )}
 

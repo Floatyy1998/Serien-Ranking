@@ -22,10 +22,13 @@ import { hasGuestOnboarding } from '../../services/guestOnboarding';
 import { GuestResumeOnboarding } from '../GuestOnboarding/GuestResumeOnboarding';
 import { t } from '../../services/i18n';
 import { showToast } from '../../lib/toast';
+import { mapLimit } from '../../utils/mapLimit';
 import type { Pet } from '../../types/pet.types';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'pet' | 'done';
 const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'pet', 'done'];
+/** Das Backend deckelt /add + /addMovie bei 30 Requests pro Minute. */
+const ADD_CONCURRENCY = 4;
 const STEP_LABELS: Record<Step, string> = {
   welcome: 'Kuration',
   series: 'Serien',
@@ -61,7 +64,10 @@ export const OnboardingPage: React.FC = () => {
   // Ein Onboarding, Signup in der Mitte: Kam der Nutzer über den Pre-Signup-Gast-
   // Flow (/join), liegt seine Auswahl im Store — dann NICHT das volle Onboarding
   // wiederholen, sondern nur anwenden + Watch-Fortschritt abfragen (unten).
-  const [isResume] = useState(() => hasGuestOnboarding());
+  // Scheitert das Anwenden dauerhaft, kann der Nutzer die Gast-Auswahl
+  // verwerfen und das volle Onboarding gehen — sonst sperrt ihn ein kaputter
+  // Resume dauerhaft aus der App aus (nur Neuinstallation half).
+  const [isResume, setIsResume] = useState(() => hasGuestOnboarding());
 
   const toggleProvider = useCallback((name: string) => {
     setSelectedProviders((prev) => {
@@ -80,6 +86,7 @@ export const OnboardingPage: React.FC = () => {
     fetchSuggestions,
     search,
     addToList,
+    refetchCatalog,
     setSearchResults,
   } = useOnboardingSearch();
 
@@ -231,18 +238,20 @@ export const OnboardingPage: React.FC = () => {
 
     try {
       setPendingId(null);
-      await Promise.all(
-        items.map(async (item) => {
-          setPendingId(`${item.type}-${item.id}`);
-          const ok = await addToList(item);
-          if (ok) {
-            addedOk++;
-            await waitForBackendItem(item.type, item.id, 60_000);
-          }
-          tick();
-        })
-      );
+      // Begrenzte Parallelität + EIN Katalog-Refetch am Ende: seasonsAll.json
+      // ist ~9 MB, pro Titel neu geladen legt das ein Handy lahm — und das
+      // Backend deckelt /add + /addMovie bei 30 Requests pro Minute.
+      await mapLimit(items, ADD_CONCURRENCY, async (item) => {
+        setPendingId(`${item.type}-${item.id}`);
+        const ok = await addToList(item, { skipCatalogRefetch: true });
+        if (ok) {
+          addedOk++;
+          await waitForBackendItem(item.type, item.id, 60_000);
+        }
+        tick();
+      });
       setPendingId(null);
+      if (addedOk > 0) await refetchCatalog();
 
       if (items.length > 0 && addedOk === 0) {
         showToast(
@@ -307,6 +316,7 @@ export const OnboardingPage: React.FC = () => {
     petName,
     petType,
     addToList,
+    refetchCatalog,
     waitForBackendItem,
     applyWatchProgress,
     setOnboardingComplete,
@@ -318,7 +328,7 @@ export const OnboardingPage: React.FC = () => {
   const progressPct = ((currentStepIndex + 1) / totalSteps) * 100;
 
   // Gast-Flow → nur anwenden + „wo stehst du?" (statt volles Onboarding erneut).
-  if (isResume) return <GuestResumeOnboarding />;
+  if (isResume) return <GuestResumeOnboarding onRestartFull={() => setIsResume(false)} />;
 
   return (
     <div className="ob-root">

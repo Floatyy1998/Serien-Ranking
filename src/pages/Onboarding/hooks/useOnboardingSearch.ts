@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { backendFetch } from '../../../services/backendApi';
+import { dbGet, paths } from '../../../services/db/ref';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
 import { CURATED_GENRES } from '../genres';
 
@@ -30,6 +31,24 @@ type TmdbListItem = {
   release_date?: string;
 };
 type TmdbResultsResponse = { results?: TmdbListItem[] };
+
+export interface AddOptions {
+  /** Katalog nicht sofort nachladen — der Aufrufer macht das einmal am Ende. */
+  skipCatalogRefetch?: boolean;
+}
+
+/** /add und /addMovie antworten auf einen bereits vorhandenen Titel mit 400.
+ *  Beim zweiten Anlauf (Retry, App-Neustart) gilt das sonst als Fehlschlag —
+ *  das Onboarding hielt sich dann für gescheitert und kam nie mehr durch. */
+async function alreadyInList(uid: string, item: OnboardingItem): Promise<boolean> {
+  try {
+    const path =
+      item.type === 'series' ? paths.seriesItem(uid, item.id) : paths.movieItem(uid, item.id);
+    return (await dbGet(path)) != null;
+  } catch {
+    return false;
+  }
+}
 
 export function useOnboardingSearch() {
   const { user } = useAuth() || {};
@@ -181,7 +200,7 @@ export function useOnboardingSearch() {
   }, []);
 
   const addToList = useCallback(
-    async (item: OnboardingItem): Promise<boolean> => {
+    async (item: OnboardingItem, opts?: AddOptions): Promise<boolean> => {
       const uid = user?.uid;
       if (!uid) return false;
       try {
@@ -194,16 +213,28 @@ export function useOnboardingSearch() {
             uuid: uid,
           }),
         });
-        if (response.ok && item.type === 'series') {
+        if (!response.ok) return await alreadyInList(uid, item);
+        if (!opts?.skipCatalogRefetch && item.type === 'series') {
           await refetchAfterAdd(item.id);
         }
-        return response.ok;
+        return true;
       } catch {
-        return false;
+        return await alreadyInList(uid, item);
       }
     },
     [user?.uid, refetchAfterAdd]
   );
+
+  // seasonsAll.json ist ~9 MB und wird mit cache:'no-store' geladen. Pro Titel
+  // einmal reicht, um ein Handy in die Knie zu zwingen — deshalb laden die
+  // Onboarding-Flows den Katalog erst nach allen Adds ein einziges Mal nach.
+  const refetchCatalog = useCallback(async () => {
+    try {
+      await refetchAfterAdd();
+    } catch {
+      /* best-effort — der Auto-Refetch des Providers holt das nach */
+    }
+  }, [refetchAfterAdd]);
 
   return {
     suggestions,
@@ -213,6 +244,7 @@ export function useOnboardingSearch() {
     fetchSuggestions,
     search,
     addToList,
+    refetchCatalog,
     setSearchResults,
   };
 }

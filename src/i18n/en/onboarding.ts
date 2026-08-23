@@ -96,6 +96,7 @@ const dict: Record<string, string> = {
   'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung und versuch es gleich nochmal.':
     'Your selection could not be saved — check your connection and try again in a moment.',
   'erneut versuchen': 'try again',
+  'Auswahl verwerfen und neu starten': 'Discard selection and start over',
   'Willkommen, {name}.': 'Welcome, {name}.',
   'Was läuft': 'What are you',
   'bei dir?': 'watching?',
