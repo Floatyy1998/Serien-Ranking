@@ -474,9 +474,11 @@ export const useEpisodeManagement = () => {
           updates[`${epBase}/c`] = 1;
           updates[`${epBase}/f`] = nowUnix;
           updates[`${epBase}/l`] = nowUnix;
-          // Folgennummer mitschreiben — macht den Eintrag unabhaengig davon,
-          // aus welcher Quelle der Katalog gerade gebaut wurde.
+          // Beide Nummern mitschreiben — sie machen den Eintrag unabhaengig
+          // davon, aus welcher Quelle der Katalog gebaut wurde und wie die
+          // Staffeln dort geschnitten sind.
           if (ep.episode_number != null) updates[`${epBase}/n`] = ep.episode_number;
+          if (ep.absoluteNumber != null) updates[`${epBase}/a`] = ep.absoluteNumber;
           markedEpPaths.push(epBase);
         });
       });
@@ -571,8 +573,9 @@ export const useEpisodeManagement = () => {
         if (!ep.id) return;
         const epBase = `${seasonPath}/eps/${ep.id}`;
         // Folgennummer mitschreiben, ausser beim Entfernen des Eintrags.
-        if (mode !== 'unwatch' && ep.episode_number != null) {
-          updates[`${epBase}/n`] = ep.episode_number;
+        if (mode !== 'unwatch') {
+          if (ep.episode_number != null) updates[`${epBase}/n`] = ep.episode_number;
+          if (ep.absoluteNumber != null) updates[`${epBase}/a`] = ep.absoluteNumber;
         }
         if (mode === 'unwatch') {
           updates[epBase] = null;

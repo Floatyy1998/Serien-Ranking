@@ -427,6 +427,38 @@ describe('mergeToSeriesView', () => {
       expect(result.seasons[0].episodes[1].watchCount).toBe(2);
     });
 
+    it('Selbstheilung 2. Stufe: Staffeln neu geschnitten → absolute Nummer rettet den Haken', () => {
+      // TVMaze schneidet eine Serie in 2+2, TMDB in 4 — dieselben vier Folgen.
+      // Der gespeicherte Eintrag liegt dann unter einem fremden Staffel-Key,
+      // und auch die Folgennummer passt nicht mehr. Nur die absolute Nummer
+      // ist noch eindeutig.
+      const neuerSchnitt = {
+        '0': {
+          seasonNumber: 0,
+          episodes: [
+            makeEp(11, { episodeNumber: 1 }),
+            makeEp(12, { episodeNumber: 2 }),
+            makeEp(13, { episodeNumber: 3 }),
+            makeEp(14, { episodeNumber: 4 }),
+          ],
+        },
+      };
+      // Alter Stand: zweite Staffel, Folge 1 — absolut die dritte Folge.
+      const watch = makeWatch({
+        '1': { eps: { '888': { w: 1, c: 1, n: 1, a: 3 } } },
+      });
+      const result = mergeToSeriesView(
+        1,
+        makeCatalog({ seasons: neuerSchnitt }),
+        makeUserRef(),
+        watch
+      );
+      const eps = result.seasons[0].episodes;
+      expect(eps[2].watched).toBe(true);
+      expect(eps[0].watched).toBe(false);
+      expect(eps[3].watched).toBe(false);
+    });
+
     it('ohne Folgennummer bleibt eine verwaiste ID ungesehen', () => {
       const watch = makeWatch({
         '0': { eps: { '999999': { w: 1, c: 2 } } },

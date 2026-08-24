@@ -15,6 +15,7 @@ import {
   isLegacyArraySeason,
   readEpisodeById,
   readEpisodeByNumber,
+  readEpisodeByAbsolute,
   readEpisodeFromLegacyArray,
 } from './compactWatch';
 
@@ -67,6 +68,9 @@ export function mergeToSeriesView(
       Array.isArray(catalog.seasons)
         ? catalog.seasons.map((s, i) => [String(i), s] as const).filter(([, s]) => s != null)
         : Object.entries(catalog.seasons).filter(([, s]) => s != null);
+    // Laufender Zaehler ueber alle Staffeln — Grundlage fuer die Heilung nach
+    // einer Umgruppierung (siehe readEpisodeByAbsolute).
+    let absolutZaehler = 0;
     for (const [snKey, catalogSeason] of seasonsEntries) {
       if (!catalogSeason) continue;
       const episodesList = ensureArray<AdapterCatalogEpisode>(catalogSeason.episodes);
@@ -75,6 +79,7 @@ export function mergeToSeriesView(
       const seasonWatch = watchData?.seasons?.[snKey];
 
       const episodes = episodesList.map((ep, idx) => {
+        const absolutNummer = ++absolutZaehler;
         // ID-basiertes Format (eps-Map) bevorzugen, sonst Legacy-Array, sonst
         // pre-compact Episodes-Objekt.
         let watched = false;
@@ -91,6 +96,13 @@ export function mergeToSeriesView(
         // zuzuordnen, ohne auf den Nachzug im Backend zu warten.
         const epNummer = ep.episodeNumber ?? ep.episode_number ?? idx + 1;
         const perNummer = epidHit ? null : readEpisodeByNumber(epidSeason, epNummer);
+        // Letzte Stufe: Wurde die Serie anders in Staffeln geschnitten, liegt
+        // der Eintrag unter einem fremden Staffel-Key — dann hilft nur die
+        // absolute Nummer.
+        const perAbsolut =
+          epidHit || perNummer
+            ? null
+            : readEpisodeByAbsolute(watchData?.seasons as Record<string, unknown>, absolutNummer);
 
         if (epidHit && epidSeason && ep.id != null) {
           const cw = readEpisodeById(epidSeason, ep.id);
@@ -105,6 +117,12 @@ export function mergeToSeriesView(
           firstWatchedAt = perNummer.firstWatchedAt;
           lastWatchedAt = perNummer.lastWatchedAt;
           userRating = perNummer.userRating;
+        } else if (perAbsolut) {
+          watched = perAbsolut.watched;
+          watchCount = perAbsolut.watchCount;
+          firstWatchedAt = perAbsolut.firstWatchedAt;
+          lastWatchedAt = perAbsolut.lastWatchedAt;
+          userRating = perAbsolut.userRating;
         } else if (seasonWatch && isLegacyArraySeason(seasonWatch)) {
           // Fallback wenn Season teil-migriert ist (eps existiert, aber diese
           // Episode steht noch im Legacy-Array). Sonst gehen vorher gesehene
@@ -131,6 +149,7 @@ export function mergeToSeriesView(
           // (Bulk-File-Slim-Down). Outer Key `sn` ist die zuverlaessige Quelle.
           season_number: ep.seasonNumber ?? ep.season_number ?? sn,
           episode_number: ep.episodeNumber ?? ep.episode_number ?? idx + 1,
+          absoluteNumber: absolutNummer,
           runtime: ep.runtime ?? undefined,
           watched,
           watchCount,

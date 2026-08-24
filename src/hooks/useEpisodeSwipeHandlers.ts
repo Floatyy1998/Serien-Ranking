@@ -73,7 +73,8 @@ async function markEpisodeWatchedInFirebase(
   seasonIndex: number,
   episodeId: number | string,
   queueLabel?: string,
-  episodeNumber?: number
+  episodeNumber?: number,
+  absoluteNumber?: number
 ): Promise<EpisodeSnapshot> {
   const base = `${paths.seriesWatchItem(uid, seriesId)}/seasons/${seasonIndex}/eps/${episodeId}`;
 
@@ -94,7 +95,8 @@ async function markEpisodeWatchedInFirebase(
     previousCount + 1,
     nowIso,
     !hadFirstWatched,
-    episodeNumber
+    episodeNumber,
+    absoluteNumber
   );
   await applyUserUpdate(uid, updates, queueLabel);
 
@@ -199,7 +201,8 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           item.nextEpisode.seasonIndex,
           item.nextEpisode.episodeId,
           `${item.title} ${label} (Weiterschauen-Swipe)`,
-          item.nextEpisode.episodeNumber
+          item.nextEpisode.episodeNumber,
+          item.nextEpisode.absoluteNumber
         );
 
         hapticSuccess();
@@ -305,7 +308,8 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           episode.seasonIndex,
           episode.episodeId,
           `${episode.seriesTitle} ${label} (Heute-Swipe)`,
-          episode.episodeNumber
+          episode.episodeNumber,
+          episode.absoluteNumber
         );
 
         showUndoToast(

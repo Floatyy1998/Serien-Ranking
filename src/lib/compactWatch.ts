@@ -29,9 +29,15 @@ export interface EpisodeWatchEntry {
   f?: number;
   l?: number;
   r?: number; // Folgenbewertung 1-10
-  /** Folgennummer — macht den Eintrag unabhaengig von der Episoden-ID der
-   *  Quelle und erlaubt die Zuordnung nach einem Quellenwechsel. */
+  /** Folgennummer innerhalb der Staffel — macht den Eintrag unabhaengig von
+   *  der Episoden-ID der Quelle. */
   n?: number;
+  /** Absolute Folgennummer ueber die ganze Serie. Ueberlebt zusaetzlich eine
+   *  Umgruppierung der Staffeln: TVMaze schneidet "Haus des Geldes" in
+   *  15/8/8/10, TMDB in 15/16/10 — dieselben 41 Folgen, andere Staffeln.
+   *  Folge 24 ist bei beiden dieselbe, die Staffel-Nummer waere hier
+   *  mehrdeutig. */
+  a?: number;
 }
 
 export interface EpidSeason {
@@ -109,6 +115,29 @@ export function readEpisodeById(
  * sofort, unabhaengig davon, ob der Nachzug im Backend schon gelaufen ist.
  * Der Suchlauf geht nur ueber eine Staffel und nur im Fehlerfall.
  */
+/**
+ * Sucht den Eintrag einer Folge ueber ihre ABSOLUTE Nummer — ueber alle
+ * Staffeln hinweg.
+ *
+ * Letzte Stufe der Selbstheilung: Hat die Quelle nicht nur die IDs geaendert,
+ * sondern die Staffeln anders geschnitten, liegt der Eintrag unter einem
+ * anderen Staffel-Key. Die Suche muss deshalb den ganzen Serien-Knoten
+ * durchgehen, nicht nur die aktuelle Staffel.
+ */
+export function readEpisodeByAbsolute(
+  seasons: Record<string, unknown> | null | undefined,
+  absolut: number | null | undefined
+): EpisodeWatch | null {
+  if (!seasons || absolut == null) return null;
+  for (const season of Object.values(seasons)) {
+    if (!season || !isEpidSeason(season)) continue;
+    for (const entry of Object.values(season.eps || {})) {
+      if (entry && entry.a === absolut) return expandEntry(entry);
+    }
+  }
+  return null;
+}
+
 export function readEpisodeByNumber(
   season: EpidSeason | null | undefined,
   episodeNumber: number | null | undefined
@@ -149,7 +178,8 @@ export function buildEpisodeWatchedUpdates(
   newWatchCount: number,
   nowIso: string,
   isFirstWatch: boolean,
-  episodeNumber?: number
+  episodeNumber?: number,
+  absoluteNumber?: number
 ): Record<string, unknown> {
   const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   const updates: Record<string, unknown> = {
@@ -162,6 +192,9 @@ export function buildEpisodeWatchedUpdates(
   // Quelle. Wechselt der Katalog zwischen TMDB und TVMaze, ist die Zuordnung
   // damit eindeutig statt auf den alten Katalog angewiesen.
   if (episodeNumber != null) updates[`${base}/n`] = episodeNumber;
+  // Zusaetzlich die absolute Nummer: sie ueberlebt auch eine Umgruppierung
+  // der Staffeln, bei der die Staffel-Nummer selbst nicht mehr passt.
+  if (absoluteNumber != null) updates[`${base}/a`] = absoluteNumber;
   if (isFirstWatch) {
     updates[`${base}/f`] = isoToUnix(nowIso);
   }

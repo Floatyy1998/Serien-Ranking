@@ -28,6 +28,7 @@ interface NextEpisodeInfo {
   episodeIndex: number;
   seasonNumber: number;
   episodeNumber: number;
+  absoluteNumber?: number;
   episodeId: number;
   episodeName?: string;
   runtime: number;
@@ -55,6 +56,7 @@ export function findNextEpisode(series: Series): NextEpisodeInfo | null {
           episodeIndex: k,
           seasonNumber: (season.seasonNumber ?? 0) + 1,
           episodeNumber: episode.episode_number || k + 1,
+          absoluteNumber: episode.absoluteNumber,
           episodeId: episode.id ?? 0,
           episodeName: episode.name,
           runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
@@ -75,7 +77,8 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
   const next = findNextEpisode(series);
   if (!next || !next.episodeId) return false;
 
-  const { seasonIndex, seasonNumber, episodeNumber, episodeId, runtime, airDate } = next;
+  const { seasonIndex, seasonNumber, episodeNumber, absoluteNumber, episodeId, runtime, airDate } =
+    next;
   const base = `${paths.seriesWatchItem(uid, series.id)}/seasons/${seasonIndex}/eps/${episodeId}`;
 
   try {
@@ -100,7 +103,8 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
         previousCount + 1,
         nowIso,
         !hadFirstWatched,
-        episodeNumber
+        episodeNumber,
+        absoluteNumber
       ),
       `${series.title} ${label} (Quick-Mark)`
     );

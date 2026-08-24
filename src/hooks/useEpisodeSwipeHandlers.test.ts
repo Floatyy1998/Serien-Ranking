@@ -146,8 +146,10 @@ describe('useEpisodeSwipeHandlers – handleContinueEpisodeComplete', () => {
       3,
       expect.any(String),
       true,
-      // Folgennummer: macht den Eintrag unabhaengig von der Episoden-ID der Quelle
-      expect.any(Number)
+      // Folgennummer und absolute Nummer: machen den Eintrag unabhaengig von der
+      // Episoden-ID der Quelle und vom Staffelschnitt.
+      expect.any(Number),
+      undefined
     );
     expect(mocks.applyUserUpdate).toHaveBeenCalledWith(
       'u1',

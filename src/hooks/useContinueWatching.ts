@@ -24,6 +24,8 @@ export const useContinueWatching = () => {
       seasonIndex: number;
       episodeIndex: number;
       episodeId: number;
+      /** Absolute Folgennummer — wird in die Watch-Daten mitgeschrieben. */
+      absoluteNumber?: number;
     };
     airDate: string;
     lastWatchedAt: string;
@@ -84,6 +86,7 @@ export const useContinueWatching = () => {
                   seasonIndex: j,
                   episodeIndex: k,
                   episodeId: episode.id ?? 0,
+                  absoluteNumber: episode.absoluteNumber,
                 },
                 airDate: getEpisodeAirDateStr(episode) || episode.air_date,
                 lastWatchedAt,

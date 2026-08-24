@@ -17,6 +17,8 @@ export interface TodayEpisode {
   seasonIndex: number;
   episodeIndex: number;
   episodeId: string;
+  /** Absolute Folgennummer — wird in die Watch-Daten mitgeschrieben. */
+  absoluteNumber?: number;
   episodeName: string;
   watched: boolean;
   runtime: number;

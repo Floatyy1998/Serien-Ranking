@@ -49,6 +49,9 @@ export interface Series {
       userRating?: number;
       runtime?: number;
       episode_number?: number; // TMDB format
+      /** Absolute Folgennummer ueber die ganze Serie — ueberlebt auch eine
+       *  Umgruppierung der Staffeln und wird in die Watch-Daten geschrieben. */
+      absoluteNumber?: number;
       season_number?: number; // Vom seriesAdapter gesetzt (äußerer Season-Key als Quelle)
       airDate?: string; // Alternative date format
       firstAired?: string; // Another alternative date format
