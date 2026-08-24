@@ -36,6 +36,18 @@
   display: none;
 }
 
+/* Ab Tablet-Breite brechen die Tabs um, statt seitlich zu scrollen: bei 18
+   Tabs lief sonst die Haelfte aus dem Bild, und was man nicht sieht, sucht
+   man nicht. Auf schmalen Geraeten bleibt das Scrollen — umgebrochen wuerde
+   die Leiste dort den halben Bildschirm einnehmen, und sie klebt oben fest. */
+@media (min-width: 900px) {
+  .admin-tab-scroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 2px;
+  }
+}
+
 .admin-tab {
   display: flex;
   align-items: center;
