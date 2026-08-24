@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef, serverTimestamp } from '../../../services/db/ref';
+import { useAuth } from '../../../contexts/AuthContext';
+import { showToast } from '../../../lib/toast';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 
 interface DataIssue {
@@ -84,6 +86,10 @@ export function DataHealthTab({
   const [issuesByUser, setIssuesByUser] = useState<Record<string, UserIssues>>({});
   const [loading, setLoading] = useState(true);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
+  const { user: angemeldeterNutzer } = useAuth() || {};
+  const eigeneUid = angemeldeterNutzer?.uid ?? null;
+  /** Firebase-Schluessel duerfen kein / . # $ [ ] enthalten. */
+  const auftragsSchluessel = (pfad: string) => pfad.replace(/[/.#$[]]/g, '_');
   const [filterType, setFilterType] = useState<string | null>(null);
 
   const [summary, setSummary] = useState<HealthSummary | null>(null);
@@ -155,10 +161,29 @@ export function DataHealthTab({
     await dbRef(`admin/dataIntegrityIssues/${uid}`).remove();
   };
 
+  /**
+   * Loescht einen fehlerhaften Watch-Eintrag.
+   *
+   * Direkt geht das nur bei den eigenen Daten: Die Rules erlauben Schreiben
+   * ausschliesslich unter der eigenen UID, Lesen dagegen ueberall. Fuer fremde
+   * Nutzer wird der Auftrag deshalb in admin/config/watchDeletions abgelegt —
+   * das Backend hoert darauf und fuehrt ihn binnen Sekunden aus.
+   *
+   * Vorher scheiterte der Knopf bei fremden Nutzern lautlos: kein catch, keine
+   * Meldung, nichts passierte.
+   */
   const handleDeleteCorruptEpisode = async (uid: string, issue: DataIssue) => {
     setDeletingPath(issue.firebasePath);
     try {
-      await dbRef(issue.firebasePath).remove();
+      if (uid === eigeneUid) {
+        await dbRef(issue.firebasePath).remove();
+      } else {
+        await dbRef(`admin/config/watchDeletions/${auftragsSchluessel(issue.firebasePath)}`).set({
+          path: issue.firebasePath,
+          requestedAt: serverTimestamp(),
+        });
+        showToast('Löschauftrag gesendet — das Backend führt ihn in Kürze aus', 3000);
+      }
       const remaining = issuesByUser[uid]?.issues?.filter(
         (i) => i.firebasePath !== issue.firebasePath
       );
@@ -168,6 +193,9 @@ export function DataHealthTab({
         await dbRef(`admin/dataIntegrityIssues/${uid}/issues`).set(remaining);
         await dbRef(`admin/dataIntegrityIssues/${uid}/issueCount`).set(remaining.length);
       }
+    } catch (e) {
+      console.error('[DataHealth] Löschen fehlgeschlagen:', e);
+      showToast(`Löschen fehlgeschlagen: ${(e as Error)?.message || 'unbekannt'}`, 5000, 'error');
     } finally {
       setDeletingPath(null);
     }
