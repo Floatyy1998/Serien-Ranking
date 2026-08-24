@@ -120,7 +120,8 @@ export function buildEpisodeWatchedUpdates(
   episodeId: number | string,
   newWatchCount: number,
   nowIso: string,
-  isFirstWatch: boolean
+  isFirstWatch: boolean,
+  episodeNumber?: number
 ): Record<string, unknown> {
   const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   const updates: Record<string, unknown> = {
@@ -129,6 +130,10 @@ export function buildEpisodeWatchedUpdates(
     [`${base}/l`]: isoToUnix(nowIso),
     [`users/${uid}/meta/serienVersion`]: { '.sv': 'timestamp' },
   };
+  // Die Folgennummer macht den Eintrag unabhaengig von der Episoden-ID der
+  // Quelle. Wechselt der Katalog zwischen TMDB und TVMaze, ist die Zuordnung
+  // damit eindeutig statt auf den alten Katalog angewiesen.
+  if (episodeNumber != null) updates[`${base}/n`] = episodeNumber;
   if (isFirstWatch) {
     updates[`${base}/f`] = isoToUnix(nowIso);
   }

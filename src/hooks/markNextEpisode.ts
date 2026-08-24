@@ -99,7 +99,8 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
         episodeId,
         previousCount + 1,
         nowIso,
-        !hadFirstWatched
+        !hadFirstWatched,
+        episodeNumber
       ),
       `${series.title} ${label} (Quick-Mark)`
     );
