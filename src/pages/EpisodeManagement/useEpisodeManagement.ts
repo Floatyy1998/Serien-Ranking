@@ -293,6 +293,10 @@ export const useEpisodeManagement = () => {
           [`${epPath}/w`]: 1,
           [`${epPath}/c`]: newWatchCount,
           [`${epPath}/l`]: nowUnix,
+          // Beide Nummern mitschreiben: sie machen den Eintrag unabhaengig von
+          // der Episoden-ID der Quelle und vom Staffelschnitt.
+          ...(episode.episode_number != null ? { [`${epPath}/n`]: episode.episode_number } : {}),
+          ...(episode.absoluteNumber != null ? { [`${epPath}/a`]: episode.absoluteNumber } : {}),
           ...autoWatchlistUpdates(user.uid, series),
           [paths.serienVersion(user.uid)]: serverTimestamp(),
         };

@@ -16,6 +16,8 @@ interface TodayEpisode {
   seasonIndex: number;
   episodeIndex: number;
   episodeId: number;
+  /** Absolute Folgennummer — wird beim Markieren mitgeschrieben. */
+  absoluteNumber?: number;
   episodeName: string;
   watched: boolean;
   provider: Series['provider'];
@@ -77,6 +79,7 @@ export const useTodayEpisodes = () => {
               seasonIndex: actualSeasonIndex,
               episodeIndex: k,
               episodeId: episode.id,
+              absoluteNumber: episode.absoluteNumber,
               episodeName: episode.name,
               watched: episode.watched,
               provider: series.provider,

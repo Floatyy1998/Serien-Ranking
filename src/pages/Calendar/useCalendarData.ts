@@ -161,6 +161,10 @@ export const useCalendarData = () => {
         const updates: Record<string, unknown> = {};
         updates[`${epBase}/w`] = 1;
         updates[`${epBase}/c`] = prevCount + 1;
+        // Beide Nummern mitschreiben: sie machen den Eintrag unabhaengig von
+        // der Episoden-ID der Quelle und vom Staffelschnitt.
+        if (episode?.episode_number != null) updates[`${epBase}/n`] = episode.episode_number;
+        if (episode?.absoluteNumber != null) updates[`${epBase}/a`] = episode.absoluteNumber;
         updates[`${epBase}/l`] = nowUnix;
         if (!prevFirst) {
           updates[`${epBase}/f`] = nowUnix;

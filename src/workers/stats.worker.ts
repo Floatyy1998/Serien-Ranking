@@ -13,6 +13,8 @@ interface WorkerEpisode {
   lastWatchedAt?: string;
   runtime?: number;
   episode_number?: number;
+  /** Vom seriesAdapter gesetzt — absolute Folgennummer ueber die Serie. */
+  absoluteNumber?: number;
 }
 
 // TVMaze-Quirk inline (Worker baut als classic worker, keine zusaetzlichen Imports moeglich):
@@ -93,6 +95,9 @@ interface WorkerProcessedEpisode {
   seasonIndex: number;
   episodeIndex: number;
   episodeId: number;
+  /** Absolute Folgennummer — wird beim Markieren mitgeschrieben und macht
+   *  den Eintrag unabhaengig vom Staffelschnitt der Quelle. */
+  absoluteNumber?: number;
   episodeName: string | undefined;
   watched: boolean | number | string;
   seriesGenre: string[] | undefined;
@@ -332,6 +337,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             seasonIndex: actualSeasonIndex,
             episodeIndex: k,
             episodeId: episode.id,
+            absoluteNumber: episode.absoluteNumber,
             episodeName: episode.name,
             watched: episode.watched,
             seriesGenre: series.genre?.genres,

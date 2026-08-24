@@ -309,6 +309,14 @@ export const useEpisodeDiscussion = () => {
             [`${epPath}/c`]: 1,
             [`${epPath}/f`]: nowUnix,
             [`${epPath}/l`]: nowUnix,
+            // Beide Nummern mitschreiben: sie machen den Eintrag unabhaengig
+            // von der Episoden-ID der Quelle und vom Staffelschnitt.
+            ...(localEpisode.episode_number != null
+              ? { [`${epPath}/n`]: localEpisode.episode_number }
+              : {}),
+            ...(localEpisode.absoluteNumber != null
+              ? { [`${epPath}/a`]: localEpisode.absoluteNumber }
+              : {}),
             [`users/${user.uid}/meta/serienVersion`]: serverTimestamp(),
           },
           queueLabel
