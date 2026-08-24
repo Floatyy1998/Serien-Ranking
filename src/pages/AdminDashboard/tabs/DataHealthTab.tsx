@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
-import { dbRef } from '../../../services/db/ref';
+import { dbRef, serverTimestamp } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 
 interface DataIssue {
@@ -87,6 +87,9 @@ export function DataHealthTab({
   const [filterType, setFilterType] = useState<string | null>(null);
 
   const [summary, setSummary] = useState<HealthSummary | null>(null);
+  /** Serien, die bereits auf TMDB festgelegt sind (admin/config/forceTmdb). */
+  const [forceListe, setForceListe] = useState<Record<string, unknown>>({});
+  const [festlegend, setFestlegend] = useState<string | null>(null);
 
   useEffect(() => {
     const ref = dbRef('admin/dataIntegrityIssues');
@@ -105,6 +108,31 @@ export function DataHealthTab({
     const handler = ref.on('value', (snap) => setSummary(snap.val() || null));
     return () => ref.off('value', handler);
   }, []);
+
+  useEffect(() => {
+    const ref = dbRef('admin/config/forceTmdb');
+    const handler = ref.on('value', (snap) => setForceListe(snap.val() || {}));
+    return () => ref.off('value', handler);
+  }, []);
+
+  /**
+   * Legt eine Serie auf TMDB fest. Das Backend liest die Liste aus Datei UND
+   * diesem Knoten und uebernimmt den Eintrag binnen einer Minute — der
+   * naechste Katalog-Lauf baut die Serie dann vollstaendig aus TMDB.
+   */
+  const aufTmdbFestlegen = async (id: string, titel: string) => {
+    setFestlegend(id);
+    try {
+      await dbRef(`admin/config/forceTmdb/${id}`).set({
+        addedAt: serverTimestamp(),
+        title: titel,
+      });
+    } catch (e) {
+      console.error('[forceTmdb] Schreiben fehlgeschlagen:', e);
+    } finally {
+      setFestlegend(null);
+    }
+  };
 
   const totalIssues = Object.values(issuesByUser).reduce(
     (sum, u) => sum + (u.issues?.length || 0),
@@ -226,8 +254,9 @@ export function DataHealthTab({
             Serien mit fehlenden Folgen
           </div>
           <div style={{ color: theme.text.muted, marginBottom: 8 }}>
-            TMDB kennt mehr Folgen als im Katalog stehen. Abhilfe: Serie in{' '}
-            <code>forceTmdb.js</code> eintragen, dann kommt sie beim nächsten Lauf von TMDB.
+            TMDB kennt mehr Folgen als im Katalog stehen — TVMaze führt die Serie dann nur
+            teilweise. Ein Klick legt sie auf TMDB fest; der nächste Katalog-Lauf baut sie
+            vollständig neu auf.
           </div>
           {summary?.catalog?.unvollstaendigeSerien?.map((u) => (
             <div
@@ -245,6 +274,27 @@ export function DataHealthTab({
               <span style={{ color: '#ff4d6d' }}>
                 {u.katalog} von {u.tmdb} — {u.fehlen} fehlen
               </span>
+              {forceListe[u.id] ? (
+                <span style={{ color: '#06d6a0', whiteSpace: 'nowrap' }}>auf TMDB festgelegt</span>
+              ) : (
+                <button
+                  onClick={() => aufTmdbFestlegen(u.id, u.title)}
+                  disabled={festlegend === u.id}
+                  style={{
+                    background: 'transparent',
+                    border: `1px solid ${theme.primary}55`,
+                    color: theme.primary,
+                    padding: '2px 10px',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: festlegend === u.id ? 'default' : 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {festlegend === u.id ? '…' : 'Auf TMDB festlegen'}
+                </button>
+              )}
             </div>
           ))}
         </div>
