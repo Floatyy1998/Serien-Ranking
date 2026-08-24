@@ -402,6 +402,39 @@ describe('mergeToSeriesView', () => {
       '0': { seasonNumber: 0, episodes: [makeEp(1001), makeEp(1002)] },
     };
 
+    it('Selbstheilung: ID passt nicht mehr, Folgennummer schon → Haken bleibt sichtbar', () => {
+      // Nach einem Quellenwechsel (TMDB <-> TVMaze) existiert die gespeicherte
+      // Episoden-ID nicht mehr im Katalog. Der Eintrag traegt aber die Nummer,
+      // also muss der Fortschritt trotzdem angezeigt werden — sofort, ohne
+      // auf den Nachzug im Backend zu warten.
+      const nummerierte = {
+        '0': {
+          seasonNumber: 0,
+          episodes: [makeEp(1001, { episodeNumber: 1 }), makeEp(1002, { episodeNumber: 2 })],
+        },
+      };
+      const watch = makeWatch({
+        '0': { eps: { '999999': { w: 1, c: 2, n: 2 } } },
+      });
+      const result = mergeToSeriesView(
+        1,
+        makeCatalog({ seasons: nummerierte }),
+        makeUserRef(),
+        watch
+      );
+      expect(result.seasons[0].episodes[0].watched).toBe(false);
+      expect(result.seasons[0].episodes[1].watched).toBe(true);
+      expect(result.seasons[0].episodes[1].watchCount).toBe(2);
+    });
+
+    it('ohne Folgennummer bleibt eine verwaiste ID ungesehen', () => {
+      const watch = makeWatch({
+        '0': { eps: { '999999': { w: 1, c: 2 } } },
+      });
+      const result = mergeToSeriesView(1, makeCatalog({ seasons }), makeUserRef(), watch);
+      expect(result.seasons[0].episodes[0].watched).toBe(false);
+    });
+
     it('expandiert {w,c,f,l}: Unix-Sekunden werden zu ISO-Strings', () => {
       const watch = makeWatch({
         '0': { eps: { '1001': { w: 1, c: 2, f: UNIX_F, l: UNIX_L } } },

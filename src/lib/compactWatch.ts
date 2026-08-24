@@ -29,6 +29,9 @@ export interface EpisodeWatchEntry {
   f?: number;
   l?: number;
   r?: number; // Folgenbewertung 1-10
+  /** Folgennummer — macht den Eintrag unabhaengig von der Episoden-ID der
+   *  Quelle und erlaubt die Zuordnung nach einem Quellenwechsel. */
+  n?: number;
 }
 
 export interface EpidSeason {
@@ -78,11 +81,8 @@ export function isLegacyArraySeason(season: unknown): season is LegacyArraySeaso
 // Read Helpers
 
 /** Liest Episode-Watch-Daten aus einer ID-basierten Season. */
-export function readEpisodeById(
-  season: EpidSeason | null | undefined,
-  episodeId: number | string
-): EpisodeWatch {
-  const entry = season?.eps?.[String(episodeId)];
+/** Wandelt einen Kompakt-Eintrag in die ausgepackte Form. */
+function expandEntry(entry: EpisodeWatchEntry | undefined): EpisodeWatch {
   return {
     watched: (entry?.w ?? 0) === 1,
     watchCount: entry?.c ?? 0,
@@ -90,6 +90,34 @@ export function readEpisodeById(
     lastWatchedAt: unixToIso(entry?.l),
     ...(typeof entry?.r === 'number' && entry.r > 0 ? { userRating: entry.r } : {}),
   };
+}
+
+export function readEpisodeById(
+  season: EpidSeason | null | undefined,
+  episodeId: number | string
+): EpisodeWatch {
+  return expandEntry(season?.eps?.[String(episodeId)]);
+}
+
+/**
+ * Sucht den Eintrag einer Folge ueber ihre NUMMER statt ueber die ID.
+ *
+ * Selbstheilung fuer den Fall, dass der Katalog fuer eine Serie die Quelle
+ * gewechselt hat (TMDB <-> TVMaze) und die gespeicherte Episoden-ID deshalb
+ * nicht mehr existiert. Die Nummer steht seit August 2026 in jedem Eintrag,
+ * die Zuordnung ist damit eindeutig — der Nutzer sieht seinen Fortschritt
+ * sofort, unabhaengig davon, ob der Nachzug im Backend schon gelaufen ist.
+ * Der Suchlauf geht nur ueber eine Staffel und nur im Fehlerfall.
+ */
+export function readEpisodeByNumber(
+  season: EpidSeason | null | undefined,
+  episodeNumber: number | null | undefined
+): EpisodeWatch | null {
+  if (!season?.eps || episodeNumber == null) return null;
+  for (const entry of Object.values(season.eps)) {
+    if (entry && entry.n === episodeNumber) return expandEntry(entry);
+  }
+  return null;
 }
 
 /** Liest Episode-Watch-Daten aus altem Array-Format. Nur fuer Migration. */

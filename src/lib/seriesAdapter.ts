@@ -14,6 +14,7 @@ import {
   isEpidSeason,
   isLegacyArraySeason,
   readEpisodeById,
+  readEpisodeByNumber,
   readEpisodeFromLegacyArray,
 } from './compactWatch';
 
@@ -84,6 +85,12 @@ export function mergeToSeriesView(
 
         const epidSeason = seasonWatch && isEpidSeason(seasonWatch) ? seasonWatch : null;
         const epidHit = epidSeason && ep.id != null ? epidSeason.eps?.[String(ep.id)] : undefined;
+        // Selbstheilung: Hat der Katalog fuer diese Serie die Quelle gewechselt
+        // (TMDB <-> TVMaze), existiert die gespeicherte Episoden-ID nicht mehr.
+        // Der Eintrag traegt aber die Folgennummer — damit ist er eindeutig
+        // zuzuordnen, ohne auf den Nachzug im Backend zu warten.
+        const epNummer = ep.episodeNumber ?? ep.episode_number ?? idx + 1;
+        const perNummer = epidHit ? null : readEpisodeByNumber(epidSeason, epNummer);
 
         if (epidHit && epidSeason && ep.id != null) {
           const cw = readEpisodeById(epidSeason, ep.id);
@@ -92,6 +99,12 @@ export function mergeToSeriesView(
           firstWatchedAt = cw.firstWatchedAt;
           lastWatchedAt = cw.lastWatchedAt;
           userRating = cw.userRating;
+        } else if (perNummer) {
+          watched = perNummer.watched;
+          watchCount = perNummer.watchCount;
+          firstWatchedAt = perNummer.firstWatchedAt;
+          lastWatchedAt = perNummer.lastWatchedAt;
+          userRating = perNummer.userRating;
         } else if (seasonWatch && isLegacyArraySeason(seasonWatch)) {
           // Fallback wenn Season teil-migriert ist (eps existiert, aber diese
           // Episode steht noch im Legacy-Array). Sonst gehen vorher gesehene
