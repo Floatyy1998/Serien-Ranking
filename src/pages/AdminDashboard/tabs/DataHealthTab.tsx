@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef, serverTimestamp } from '../../../services/db/ref';
-import { useAuth } from '../../../contexts/AuthContext';
 import { showToast } from '../../../lib/toast';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 
@@ -86,8 +85,6 @@ export function DataHealthTab({
   const [issuesByUser, setIssuesByUser] = useState<Record<string, UserIssues>>({});
   const [loading, setLoading] = useState(true);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
-  const { user: angemeldeterNutzer } = useAuth() || {};
-  const eigeneUid = angemeldeterNutzer?.uid ?? null;
   /** Firebase-Schluessel duerfen kein / . # $ [ ] enthalten. */
   const auftragsSchluessel = (pfad: string) => pfad.replace(/[/.#$[]]/g, '_');
   const [filterType, setFilterType] = useState<string | null>(null);
@@ -157,8 +154,19 @@ export function DataHealthTab({
     return counts;
   }, [issuesByUser]);
 
+  /**
+   * Alle Befunde eines Nutzers verwerfen.
+   *
+   * Laeuft ueber das Backend: admin/dataIntegrityIssues ist laut Rules
+   * schreibgeschuetzt (unter admin darf nur config und userMessages
+   * beschrieben werden). Ein direktes remove() endete in PERMISSION_DENIED.
+   */
   const handleDeleteUserIssues = async (uid: string) => {
-    await dbRef(`admin/dataIntegrityIssues/${uid}`).remove();
+    await dbRef(`admin/config/watchDeletions/befunde_${uid}`).set({
+      uid,
+      clearIssues: true,
+      requestedAt: serverTimestamp(),
+    });
   };
 
   /**
@@ -175,24 +183,15 @@ export function DataHealthTab({
   const handleDeleteCorruptEpisode = async (uid: string, issue: DataIssue) => {
     setDeletingPath(issue.firebasePath);
     try {
-      if (uid === eigeneUid) {
-        await dbRef(issue.firebasePath).remove();
-      } else {
-        await dbRef(`admin/config/watchDeletions/${auftragsSchluessel(issue.firebasePath)}`).set({
-          path: issue.firebasePath,
-          requestedAt: serverTimestamp(),
-        });
-        showToast('Löschauftrag gesendet — das Backend führt ihn in Kürze aus', 3000);
-      }
-      const remaining = issuesByUser[uid]?.issues?.filter(
-        (i) => i.firebasePath !== issue.firebasePath
-      );
-      if (!remaining || remaining.length === 0) {
-        await handleDeleteUserIssues(uid);
-      } else {
-        await dbRef(`admin/dataIntegrityIssues/${uid}/issues`).set(remaining);
-        await dbRef(`admin/dataIntegrityIssues/${uid}/issueCount`).set(remaining.length);
-      }
+      // Immer ueber das Backend, auch bei eigenen Daten: Der Befund selbst
+      // liegt unter admin/dataIntegrityIssues und ist vom Panel aus nicht
+      // beschreibbar. Ein Auftrag erledigt Eintrag UND Befund in einem Zug.
+      await dbRef(`admin/config/watchDeletions/${auftragsSchluessel(issue.firebasePath)}`).set({
+        path: issue.firebasePath,
+        uid,
+        requestedAt: serverTimestamp(),
+      });
+      showToast('Löschauftrag gesendet — wird in Sekunden ausgeführt', 3000);
     } catch (e) {
       console.error('[DataHealth] Löschen fehlgeschlagen:', e);
       showToast(`Löschen fehlgeschlagen: ${(e as Error)?.message || 'unbekannt'}`, 5000, 'error');
