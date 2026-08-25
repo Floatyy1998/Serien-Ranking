@@ -93,11 +93,15 @@ export function applyDisplayScale(scale: number): void {
     if (s === 1) {
       root.style.removeProperty('--vh');
       root.style.removeProperty('--display-scale');
+      root.style.removeProperty('--display-scale-inverse');
     } else {
       root.style.setProperty('--vh', `calc(100dvh / ${s})`);
-      // Roher Faktor für Elemente, die NICHT mitskalieren sollen (z. B. Splash):
-      // sie gegen-zoomen mit calc(1 / var(--display-scale)).
+      // Roher Faktor für Elemente, die NICHT mitskalieren sollen (z. B. Splash).
       root.style.setProperty('--display-scale', String(s));
+      // Kehrwert fertig ausgerechnet: `zoom: calc(...)` ist nicht überall
+      // zuverlässig, `zoom: var(--display-scale-inverse)` ist eine schlichte
+      // Zahl und funktioniert damit garantiert.
+      root.style.setProperty('--display-scale-inverse', String(1 / s));
     }
   } catch {
     /* niemals crashen wegen einer Anzeige-Einstellung */

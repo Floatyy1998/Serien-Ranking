@@ -131,8 +131,12 @@ export const SplashContainer = styled(Box, {
     var(--theme-surface, #3a2640) 75%,
     var(--theme-background, #2b1a2e) 100%
   );
+  /* Gegen-Zoom: waehrend des Ausblendens liegt die App bereits mit ihrer
+     echten Anzeigegroesse darunter. Der Splash darf davon nichts mitbekommen,
+     sonst springt er im letzten Moment. */
+  zoom: var(--display-scale-inverse, 1);
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
-    ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
+    ${(props) => (props.isHiding ? '0.18s' : '0.8s')} ease-out forwards;
   overflow: hidden;
 `;
 

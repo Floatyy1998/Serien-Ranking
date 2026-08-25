@@ -93,7 +93,7 @@ export const RegisterPage = () => {
 
         // Der authProvider legt sie sonst nicht an: seine Frisch-Erkennung
         // sieht den Knoten oben bereits mit uid und onboardingComplete.
-        writeWelcomeNotifications(userCredential.user.uid);
+        void writeWelcomeNotifications(userCredential.user.uid);
 
         // Such-Index spiegeln (best-effort, wirft nie) — der Login-Self-Heal
         // im authProvider kann diesen Write racen und ihn verpassen.

@@ -201,16 +201,29 @@ describe('fetchStaticCatalogSeries — Caching & Provider-Expansion', () => {
     expect(callsTo('seriesMeta.json')).toBe(1);
   });
 
-  it('IDB-Hit liefert sofort; Background-Revalidate invalidiert bei Versions-Bump', async () => {
+  it('IDB-Hit liefert sofort; Background-Revalidate TAUSCHT bei Versions-Bump aus', async () => {
     idb.store.set(LS.seriesMeta, { v: 100, data: { '1': { title: 'ALT' } } });
     server.version = 200; // Server ist weiter → Bump
+    server.files['seriesMeta.json'] = {
+      ok: true,
+      status: 200,
+      json: { '1': { title: 'NEU', providers: [] } },
+    };
     const { fetchStaticCatalogSeries } = await load();
 
     const data = await fetchStaticCatalogSeries();
     expect(data).toEqual({ '1': { title: 'ALT' } }); // stale sofort ausgeliefert
 
-    // Revalidate laeuft fire-and-forget → auf Invalidierung warten
-    await vi.waitFor(() => expect(idb.idbRemove).toHaveBeenCalledWith(LS.seriesMeta));
+    // Revalidate laeuft fire-and-forget → auf den Austausch warten. Der Cache
+    // darf dabei zu keinem Zeitpunkt geleert werden: sonst startet die App
+    // beim naechsten Mal ohne Katalog.
+    await vi.waitFor(() =>
+      expect(idb.store.get(LS.seriesMeta)).toEqual({
+        v: 200,
+        data: { '1': { title: 'NEU', providers: [] } },
+      })
+    );
+    expect(idb.idbRemove).not.toHaveBeenCalledWith(LS.seriesMeta);
   });
 
   it('IDB-Hit ohne Bump behaelt den Cache', async () => {
@@ -290,19 +303,47 @@ describe('checkForCatalogVersionBump', () => {
     expect(idb.idbRemove).not.toHaveBeenCalled();
   });
 
-  it('neue Version → true, invalidiert ALLE Catalog-Caches (inkl. tvPremieres/seasonalAnime)', async () => {
+  it('neue Version → tauscht seriesMeta aus statt es zu loeschen, leert die kleinen Caches', async () => {
     server.version = 200;
     seedLocalVersion(100);
-    idb.store.set(LS.seriesMeta, { v: 100, data: {} });
+    idb.store.set(LS.seriesMeta, { v: 100, data: { '1': { title: 'alt', providers: [] } } });
     idb.store.set(LS.tvPremieres, { v: 100, data: [] });
     idb.store.set(LS.seasonalAnime, { v: 100, data: {} });
+    server.files['seriesMeta.json'] = {
+      ok: true,
+      status: 200,
+      json: { '1': { title: 'neu', providers: [] } },
+    };
     const { checkForCatalogVersionBump } = await load();
 
     await expect(checkForCatalogVersionBump()).resolves.toBe(true);
-    expect(idb.idbRemove).toHaveBeenCalledWith(LS.seriesMeta);
+    // Startkritisch: der Katalog darf nie leer zurueckbleiben, sonst muss der
+    // naechste App-Start ~400 kB blockierend nachladen.
+    expect(idb.idbRemove).not.toHaveBeenCalledWith(LS.seriesMeta);
+    expect(idb.store.get(LS.seriesMeta)).toEqual({
+      v: 200,
+      data: { '1': { title: 'neu', providers: [] } },
+    });
     expect(idb.idbRemove).toHaveBeenCalledWith(LS.tvPremieres);
     expect(idb.idbRemove).toHaveBeenCalledWith(LS.seasonalAnime);
     expect(idb.store.get(LS.version)).toEqual({ v: 0, data: 200 });
+  });
+
+  it('neue Version, aber seriesMeta nicht erreichbar → alter Katalog bleibt, Version bleibt stehen', async () => {
+    server.version = 200;
+    seedLocalVersion(100);
+    idb.store.set(LS.seriesMeta, { v: 100, data: { '1': { title: 'alt', providers: [] } } });
+    const { checkForCatalogVersionBump } = await load();
+
+    await expect(checkForCatalogVersionBump()).resolves.toBe(true);
+    expect(idb.idbRemove).not.toHaveBeenCalledWith(LS.seriesMeta);
+    expect(idb.store.get(LS.seriesMeta)).toEqual({
+      v: 100,
+      data: { '1': { title: 'alt', providers: [] } },
+    });
+    // Version NICHT hochgesetzt — sonst gilt der alte Stand als aktuell und
+    // wird nie wieder nachgezogen.
+    expect(idb.store.get(LS.version)).toEqual({ v: 0, data: 100 });
   });
 
   it('version.json-Fetch wirft → false (best-effort)', async () => {

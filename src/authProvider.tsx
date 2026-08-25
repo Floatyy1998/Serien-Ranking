@@ -7,7 +7,7 @@ import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './contexts/AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
-import { dbRef, paths, serverTimestamp } from './services/db/ref';
+import { dbGet, dbRef, paths, serverTimestamp, userPath } from './services/db/ref';
 import { writeWelcomeNotifications } from './services/welcomeNotifications';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -174,20 +174,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               // else: local theme exists, keep it — cloud updates are ignored
 
               const userRef = dbRef(paths.user(user.uid));
-              const snapshot = await userRef.once('value');
+              // NUR die sechs benoetigten Felder lesen. Ein once('value') auf
+              // paths.user(uid) zieht den kompletten Nutzerknoten — series,
+              // seriesWatch, movies, manga, wrapped, Benachrichtigungen — bei
+              // einem grossen Konto rund 3 MB, bei JEDEM Login, um sechs
+              // Strings zu pruefen. Gemessen war das der groesste Einzelposten
+              // im Startvorgang.
+              const [uidField, onboardingComplete, username, displayName, photoURL, bio] =
+                await Promise.all([
+                  dbGet<string>(userPath(user.uid, 'uid')),
+                  dbGet<boolean>(userPath(user.uid, 'onboardingComplete')),
+                  dbGet<string>(userPath(user.uid, 'username')),
+                  dbGet<string>(userPath(user.uid, 'displayName')),
+                  dbGet<string>(userPath(user.uid, 'photoURL')),
+                  dbGet<string>(userPath(user.uid, 'bio')),
+                ]);
 
               // Neuling auch dann erkennen, wenn der Knoten schon als RUMPF
               // existiert: beim (Social-)Erstlogin mounten App-Provider parallel
               // und schreiben z. B. readTimes/language, BEVOR dieser Check läuft
               // — dann wäre exists() true und der Nutzer bekäme nie ein
               // Onboarding. Echte Bestandsnutzer haben immer ein uid-Feld
-              // (RegisterPage/dieser Zweig schreiben es seit jeher).
-              const existingData = snapshot.exists()
-                ? (snapshot.val() as Record<string, unknown>)
-                : null;
-              const isFreshAccount =
-                !existingData ||
-                (existingData.uid === undefined && existingData.onboardingComplete === undefined);
+              // (RegisterPage/dieser Zweig schreiben es seit jeher). Fehlender
+              // Knoten und Rumpf-Knoten laufen damit auf dieselbe Bedingung
+              // hinaus: beide Felder fehlen.
+              const isFreshAccount = uidField === null && onboardingComplete === null;
 
               if (isFreshAccount) {
                 // Neuer Benutzer - nur grundlegende Daten setzen (Username wird in ProfileDialog gesetzt)
@@ -207,7 +218,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 await userRef.update(userData);
                 setOnboardingComplete(false);
 
-                writeWelcomeNotifications(user.uid);
+                void writeWelcomeNotifications(user.uid);
 
                 // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
                 void syncUserSearchIndex(user.uid, userData);
@@ -220,8 +231,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 );
               } else {
                 // Bestehender Benutzer - Online-Status aktualisieren
-                const existingData = snapshot.val();
-                setOnboardingComplete(existingData?.onboardingComplete !== false);
+                setOnboardingComplete(onboardingComplete !== false);
 
                 const updateData = {
                   lastActive: serverTimestamp(),
@@ -234,17 +244,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // (best-effort, wirft nie) — hält userSearchIndex für Bestands-
                 // nutzer aktuell, ohne dass ein Admin-Backfill nötig ist.
                 void syncUserSearchIndex(user.uid, {
-                  username: existingData?.username,
-                  displayName: existingData?.displayName,
-                  photoURL: existingData?.photoURL,
-                  bio: existingData?.bio,
+                  username: username ?? undefined,
+                  displayName: displayName ?? undefined,
+                  photoURL: photoURL ?? undefined,
+                  bio: bio ?? undefined,
                 });
 
-                // Cache aktualisierte User-Daten für Offline-Zugriff
-                const userData = snapshot.val();
+                // Nur die Profilfelder cachen. Frueher landete hier der ganze
+                // Nutzerknoten (mehrere MB) — gelesen hat den Eintrag nie
+                // jemand, geschrieben wurde er bei jedem Login.
                 await offlineFirebaseService.cacheData(
                   `users/${user.uid}`,
-                  { ...userData, ...updateData },
+                  { uid: uidField, username, displayName, photoURL, bio, ...updateData },
                   60 * 60 * 1000 // 1 Stunde Cache
                 );
               }

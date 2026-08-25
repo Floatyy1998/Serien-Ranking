@@ -21,8 +21,8 @@ beforeEach(() => {
 });
 
 describe('writeWelcomeNotifications', () => {
-  it('schreibt beide Meldungen unter festen Schlüsseln', () => {
-    writeWelcomeNotifications('abc');
+  it('schreibt beide Meldungen unter festen Schlüsseln', async () => {
+    await writeWelcomeNotifications('abc');
     const pfade = fb.sets.map((s) => s.path);
     expect(pfade).toEqual([
       'users/abc/notifications/welcome',
@@ -30,28 +30,28 @@ describe('writeWelcomeNotifications', () => {
     ]);
   });
 
-  it('legt sie ungelesen an', () => {
-    writeWelcomeNotifications('abc');
+  it('legt sie ungelesen an', async () => {
+    await writeWelcomeNotifications('abc');
     for (const s of fb.sets) expect(s.value.read).toBe(false);
   });
 
-  it('stellt die Willkommens-Meldung im Feed nach oben', () => {
-    writeWelcomeNotifications('abc');
+  it('stellt die Willkommens-Meldung im Feed nach oben', async () => {
+    await writeWelcomeNotifications('abc');
     const [willkommen, hinweis] = fb.sets;
     expect(Number(willkommen.value.timestamp)).toBeGreaterThan(Number(hinweis.value.timestamp));
   });
 
-  it('legt Sprachfassungen neben den deutschen Quelltext', () => {
-    writeWelcomeNotifications('abc');
+  it('legt Sprachfassungen neben den deutschen Quelltext', async () => {
+    await writeWelcomeNotifications('abc');
     const willkommen = fb.sets[0].value;
     expect(willkommen.title).toBe('Willkommen bei TV-Rank!');
     expect(willkommen.titleL).toBeTypeOf('object');
     expect(Object.keys(willkommen.titleL as object).length).toBeGreaterThan(0);
   });
 
-  it('verdoppelt nichts bei zweimaligem Aufruf (feste Schlüssel)', () => {
-    writeWelcomeNotifications('abc');
-    writeWelcomeNotifications('abc');
+  it('verdoppelt nichts bei zweimaligem Aufruf (feste Schlüssel)', async () => {
+    await writeWelcomeNotifications('abc');
+    await writeWelcomeNotifications('abc');
     expect(new Set(fb.sets.map((s) => s.path)).size).toBe(2);
   });
 });

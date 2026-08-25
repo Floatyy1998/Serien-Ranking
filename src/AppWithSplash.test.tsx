@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('./App', () => ({ App: () => <div>APP_SHELL</div> }));
 vi.mock('./components/ui/SplashScreen', () => ({
@@ -35,5 +35,15 @@ describe('AppWithSplash', () => {
     render(<AppWithSplash />);
     expect(screen.getByText('APP_SHELL')).toBeInTheDocument();
     expect(screen.queryByText('SPLASH_SCREEN')).not.toBeInTheDocument();
+  });
+
+  it('mounts the app shell behind the splash within a couple of frames', async () => {
+    localStorage.setItem('cachedUser', JSON.stringify({ uid: 'u1' }));
+    render(<AppWithSplash />);
+    // Frueher stand hier ein pauschaler 200ms-Timer — die App (und damit Theme,
+    // Firebase-Init und alle Daten-Provider) startete erst danach.
+    await waitFor(() => expect(screen.getByText('APP_SHELL')).toBeInTheDocument());
+    expect(screen.getByText('SPLASH_SCREEN')).toBeInTheDocument();
+    expect(screen.getByText('APP_SHELL').parentElement).toHaveStyle({ visibility: 'hidden' });
   });
 });

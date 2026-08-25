@@ -171,7 +171,7 @@ export async function sendImageMessage(
     body: preview,
     // Bildnachrichten haben statt Text ein Token („Bild"/„GIF") — nur das
     // gehört übersetzt, eine echte Bildunterschrift bleibt wie geschrieben.
-    ...(text ? {} : { bodyL: localizedVariants(preview) }),
+    ...(text ? {} : { bodyL: await localizedVariants(preview) }),
     url: `/chat/${myUid}`,
   });
 }

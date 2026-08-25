@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { dbRef, dbGet, dbUpdate, userPath, paths } from '../services/db/ref';
+import { dbRef, dbGet, dbUpdate, userPath } from '../services/db/ref';
 import { isDeletingAccount } from '../services/accountDeletionState';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
@@ -382,15 +382,21 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
     const syncProfile = async () => {
       try {
-        const currentUserData: Record<string, string | null | undefined> =
-          (await dbGet<Record<string, string | null | undefined>>(paths.user(user.uid))) || {};
+        // Gezielt die vier Profilfelder lesen statt paths.user(uid): der ganze
+        // Knoten haengt series, seriesWatch, movies & Co. mit dran — bei einem
+        // grossen Konto mehrere MB fuer vier Strings.
+        const [photoURL, displayName, username, email] = await Promise.all([
+          dbGet<string>(userPath(user.uid, 'photoURL')),
+          dbGet<string>(userPath(user.uid, 'displayName')),
+          dbGet<string>(userPath(user.uid, 'username')),
+          dbGet<string>(userPath(user.uid, 'email')),
+        ]);
 
         const update = {
-          photoURL: currentUserData.photoURL || user.photoURL || null,
-          displayName:
-            currentUserData.displayName || currentUserData.username || user.displayName || null,
-          username: currentUserData.username || null,
-          email: currentUserData.email || user.email || null,
+          photoURL: photoURL || user.photoURL || null,
+          displayName: displayName || username || user.displayName || null,
+          username: username || null,
+          email: email || user.email || null,
         };
 
         await Promise.all(

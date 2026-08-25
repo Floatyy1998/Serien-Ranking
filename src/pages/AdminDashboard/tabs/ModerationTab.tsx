@@ -216,7 +216,7 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
             ? 'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}'
             : 'Du wurdest bis {date} ausgeschlossen. Grund: {reason}';
         // Datum und Grund hängen an der Sprache — die Map wird deshalb Sprache
-        // für Sprache gebaut, nicht über localizedVariants().
+        // für Sprache gebaut, nicht über await localizedVariants().
         const messageFor = (locale: Locale) =>
           tLocale(locale, template, {
             date: new Date(until).toLocaleString(LOCALE_TAG[locale], {
@@ -232,7 +232,7 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
         await sendNotificationToUser(flag.userId, {
           type: 'moderation_ban',
           title: titleDe,
-          titleL: localizedVariants(titleDe),
+          titleL: await localizedVariants(titleDe),
           message: messageFor(SOURCE_LOCALE),
           messageL,
         });

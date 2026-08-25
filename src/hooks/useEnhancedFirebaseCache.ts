@@ -51,11 +51,20 @@ export function useEnhancedFirebaseCache<T = unknown>(
   } = options;
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(!!path); // Nur loading wenn es einen path gibt
+  // Delta-Sync liefert den Cache sofort (loading=false), der Abgleich mit
+  // Firebase laeuft aber noch. isSyncing macht genau dieses Fenster sichtbar,
+  // damit Aufrufer (Splashscreen-Gate) auf frische Daten warten koennen statt
+  // den veralteten Cache als "fertig" zu behandeln.
+  const [isSyncing, setIsSyncing] = useState(!!path && !!useDeltaSync);
   const [error, setError] = useState<string | null>(null);
   const [isStale, setIsStale] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const listenerRef = useRef<(() => void) | null>(null);
+  // Laufnummer je Effekt-Durchlauf: laeuft noch ein alter loadData, wenn der
+  // Effekt neu aufgesetzt wird, darf dessen finally isSyncing NICHT fuer den
+  // neuen Durchlauf zuruecksetzen — sonst faellt das Splash-Gate zu frueh.
+  const loadGenerationRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const loadFromCache = useCallback(
     (): Promise<T | null> => loadFromCacheIO<T>(path, enableOfflineSupport),
@@ -258,6 +267,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
     const loadData = async () => {
       setLoading(true);
       setError(null);
+      if (useDeltaSync) setIsSyncing(true);
       try {
         // Sofort Cache laden für bessere UX (auch offline)
         const cachedData = await loadFromCache();
@@ -268,7 +278,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         }
         if (navigator.onLine) {
           if (useDeltaSync) {
-            setupDeltaListener(cachedData);
+            await setupDeltaListener(cachedData);
           } else if (useRealtimeListener) {
             setupRealtimeListener();
           } else {
@@ -305,7 +315,12 @@ export function useEnhancedFirebaseCache<T = unknown>(
         setLoading(false);
       }
     };
-    loadData();
+    // isSyncing IMMER freigeben — auch im Offline- und Fehlerpfad, sonst
+    // wartet das Splashscreen-Gate bis zum Hard-Fallback.
+    const generation = ++loadGenerationRef.current;
+    void loadData().finally(() => {
+      if (loadGenerationRef.current === generation) setIsSyncing(false);
+    });
     return () => {
       if (listenerRef.current) {
         listenerRef.current();
@@ -327,6 +342,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
   return {
     data,
     loading,
+    isSyncing,
     error,
     isStale,
     isOffline,

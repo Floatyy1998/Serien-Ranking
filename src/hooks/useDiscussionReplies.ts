@@ -166,9 +166,9 @@ export const useDiscussionReplies = (
           await sendNotificationToUser(participantId, {
             type: 'discussion_reply',
             title: 'Neue Antwort',
-            titleL: localizedVariants('Neue Antwort'),
+            titleL: await localizedVariants('Neue Antwort'),
             message: tLocale('de', template, vars),
-            messageL: localizedVariants(template, vars),
+            messageL: await localizedVariants(template, vars),
             data: {
               discussionId,
               discussionPath,
@@ -279,13 +279,13 @@ export const useDiscussionReplies = (
           await sendNotificationToUser(reply.userId, {
             type: 'spoiler_flag',
             title: 'Spoiler-Markierung',
-            titleL: localizedVariants('Spoiler-Markierung'),
+            titleL: await localizedVariants('Spoiler-Markierung'),
             message: tLocale(
               'de',
               '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
               vars
             ),
-            messageL: localizedVariants(
+            messageL: await localizedVariants(
               '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
               vars
             ),
@@ -370,9 +370,9 @@ export const useDiscussionReplies = (
             await sendNotificationToUser(reply.userId, {
               type: 'discussion_like',
               title: 'Neue Reaktion',
-              titleL: localizedVariants('Neue Reaktion'),
+              titleL: await localizedVariants('Neue Reaktion'),
               message: tLocale('de', '{name} gefällt deine Antwort: "{snippet}"', vars),
-              messageL: localizedVariants('{name} gefällt deine Antwort: "{snippet}"', vars),
+              messageL: await localizedVariants('{name} gefällt deine Antwort: "{snippet}"', vars),
               data: {
                 discussionId,
                 discussionPath,

@@ -1,4 +1,4 @@
-import { dbGet, paths, userPath } from '../db/ref';
+import { dbGet, userPath } from '../db/ref';
 /** Minimal user shape accepted by getUserDisplayData (works with both compat and modular User). */
 interface AuthUserLike {
   uid: string;
@@ -17,12 +17,17 @@ interface UserDisplayData {
  * Falls back to auth user data, then email prefix, then 'Anonym'.
  */
 export async function getUserDisplayData(authUser: AuthUserLike): Promise<UserDisplayData> {
-  const data =
-    (await dbGet<{ displayName?: string; photoURL?: string }>(paths.user(authUser.uid))) || {};
+  // Gezielt die zwei Felder lesen statt paths.user(uid): der ganze Knoten
+  // enthaelt series, seriesWatch, movies, manga, wrapped … — bei einem grossen
+  // Konto mehrere MB, nur um zwei Strings zu bekommen.
+  const [displayName, photoURL] = await Promise.all([
+    dbGet<string>(userPath(authUser.uid, 'displayName')),
+    dbGet<string>(userPath(authUser.uid, 'photoURL')),
+  ]);
 
   return {
-    username: data.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonym',
-    photoURL: data.photoURL || authUser.photoURL || undefined,
+    username: displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonym',
+    photoURL: photoURL || authUser.photoURL || undefined,
   };
 }
 

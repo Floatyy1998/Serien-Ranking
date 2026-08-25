@@ -1,43 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { App } from './App';
 import { SplashScreen } from './components/ui/SplashScreen';
+import { APP_READY_EVENT, isAppReady } from './services/appReady';
 import { applyDisplayScale, getDisplayScale, watchWidthStep } from './services/displayScale';
-
-/**
- * Globaler Ready-Tracker
- * Andere Komponenten können window.appReadyStatus setzen
- */
-declare global {
-  interface Window {
-    appReadyStatus: {
-      theme: boolean;
-      auth: boolean;
-      firebase: boolean;
-      emailVerification: boolean;
-      initialData: boolean;
-      homeConfig: boolean;
-    };
-    setAppReady: (key: keyof Window['appReadyStatus'], value: boolean) => void;
-    splashScreenComplete: boolean;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.appReadyStatus = {
-    theme: false,
-    auth: false,
-    firebase: false,
-    emailVerification: false,
-    initialData: false,
-    homeConfig: false,
-  };
-
-  window.setAppReady = (key, value) => {
-    window.appReadyStatus[key] = value;
-  };
-
-  window.splashScreenComplete = false;
-}
 
 /**
  * Wrapper-Component die SOFORT den SplashScreen zeigt
@@ -47,7 +12,9 @@ export const AppWithSplash: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isAppMounted, setIsAppMounted] = useState(false);
   const [allSystemsReady, setAllSystemsReady] = useState(false);
-  const checkInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  // Waehrend der Splash ausblendet ist die App schon sichtbar — sonst schaut
+  // der Nutzer die Fade-Dauer lang auf einen leeren Hintergrund.
+  const [splashHiding, setSplashHiding] = useState(false);
 
   const currentPath = window.location.pathname;
   const isAuthPage =
@@ -59,63 +26,68 @@ export const AppWithSplash: React.FC = () => {
     // localStorage gesperrt (Private Mode) → lieber ohne Splash starten
   }
 
-  // Anzeigegröße (zoom) erst anwenden, wenn KEIN Splash sichtbar ist — der
-  // Splash soll nie mitskalieren. Sichtbarer Splash → Scale 1, danach echt.
+  // Anzeigegröße (zoom) anwenden, sobald der Splash ausblendet — die App liegt
+  // dann schon sichtbar darunter und soll nicht erst nach dem Fade umspringen.
+  // Der Splash selbst skaliert trotzdem nicht mit: SplashContainer gegen-zoomt
+  // ueber --display-scale.
   useEffect(() => {
-    const splashVisible = !isAuthPage && hasCachedUser && showSplash;
+    const splashVisible = !isAuthPage && hasCachedUser && showSplash && !splashHiding;
     applyDisplayScale(splashVisible ? 1 : getDisplayScale());
-  }, [isAuthPage, hasCachedUser, showSplash]);
+  }, [isAuthPage, hasCachedUser, showSplash, splashHiding]);
 
   // Breiten-Stufe (data-width) an Größenänderungen hängen — sie ist die
   // zoom-feste Alternative zu Media Queries.
   useEffect(watchWidthStep, []);
 
+  // App so frueh wie moeglich mounten: erst ab hier laufen Theme, Firebase-Init
+  // und alle Daten-Provider los. Zwei rAF reichen, damit der Splash vorher
+  // paintet (~32 ms statt der frueheren 200 ms Pauschal-Verzoegerung, die den
+  // gesamten Startvorgang nach hinten geschoben hat).
   useEffect(() => {
-    // Mount App im Hintergrund nach kurzer Verzögerung
-    const mountTimer = setTimeout(() => {
-      setIsAppMounted(true);
-    }, 200);
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setIsAppMounted(true));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, []);
 
-    checkInterval.current = setInterval(() => {
-      const status = window.appReadyStatus;
-      const isReady =
-        status.theme &&
-        status.auth &&
-        status.firebase &&
-        status.emailVerification &&
-        status.initialData &&
-        status.homeConfig;
+  const readyRef = useRef(false);
+  useEffect(() => {
+    const check = () => {
+      if (readyRef.current || !isAppReady()) return;
+      readyRef.current = true;
+      setAllSystemsReady(true);
+    };
+    check();
+    window.addEventListener(APP_READY_EVENT, check);
 
-      if (isReady && !allSystemsReady) {
-        setAllSystemsReady(true);
-        clearInterval(checkInterval.current);
-      }
-    }, 100);
+    // Sicherheitsnetz, falls ein Flag jemals ohne setAppReady gesetzt wird.
+    const safetyInterval = setInterval(check, 250);
 
     // Hard-Fallback: 8 s. Reicht fuer den seltenen Cold-Start ohne Cache,
     // verhindert aber dass User bei Edge-Cases (langsames Firebase, broken
     // Catalog-Fetch) ewig vor dem Splash sitzen.
     const fallbackTimeout = setTimeout(() => {
-      // Splash hat sich bereits selbst geschlossen (via SplashScreen.finish über
-      // progress=1) — kein Warning, kein lautes Re-Render.
-      if (window.splashScreenComplete) {
-        setAllSystemsReady(true);
-        return;
-      }
+      readyRef.current = true;
       setAllSystemsReady(true);
-      if (checkInterval.current) {
-        clearInterval(checkInterval.current);
-      }
     }, 8000);
 
     return () => {
-      clearTimeout(mountTimer);
+      window.removeEventListener(APP_READY_EVENT, check);
+      clearInterval(safetyInterval);
       clearTimeout(fallbackTimeout);
-      if (checkInterval.current) {
-        clearInterval(checkInterval.current);
-      }
     };
-  }, [allSystemsReady]);
+  }, []);
+
+  const handleHideStart = useCallback(() => setSplashHiding(true), []);
+  const handleComplete = useCallback(() => {
+    window.splashScreenComplete = true;
+    setShowSplash(false);
+  }, []);
+  const waitForCondition = useCallback(() => allSystemsReady, [allSystemsReady]);
 
   // Ausgeloggte Besucher (kein gecachter User) bekommen KEINEN Splash:
   // initialData/homeConfig werden ohne Login nie ready → sie säßen sonst
@@ -128,19 +100,16 @@ export const AppWithSplash: React.FC = () => {
     <>
       {showSplash && (
         <SplashScreen
-          onComplete={() => {
-            window.splashScreenComplete = true;
-            setShowSplash(false);
-          }}
-          waitForCondition={() => allSystemsReady}
-          minDisplayTime={2000}
+          onComplete={handleComplete}
+          onHideStart={handleHideStart}
+          waitForCondition={waitForCondition}
         />
       )}
-      {/* Eine App-Instanz: versteckt während Splash, sichtbar danach */}
+      {/* Eine App-Instanz: versteckt während Splash, sichtbar sobald er ausblendet */}
       {isAppMounted && (
         <div
           style={
-            showSplash
+            showSplash && !splashHiding
               ? {
                   position: 'fixed',
                   top: 0,

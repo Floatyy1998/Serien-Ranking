@@ -229,13 +229,13 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           await sendNotificationToUser(discussion.userId, {
             type: 'spoiler_flag',
             title: 'Spoiler-Markierung',
-            titleL: localizedVariants('Spoiler-Markierung'),
+            titleL: await localizedVariants('Spoiler-Markierung'),
             message: tLocale(
               'de',
               '{name} hat deine Diskussion "{title}" als Spoiler markiert',
               vars
             ),
-            messageL: localizedVariants(
+            messageL: await localizedVariants(
               '{name} hat deine Diskussion "{title}" als Spoiler markiert',
               vars
             ),
@@ -319,9 +319,9 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
             await sendNotificationToUser(discussion.userId, {
               type: 'discussion_like',
               title: 'Neue Reaktion',
-              titleL: localizedVariants('Neue Reaktion'),
+              titleL: await localizedVariants('Neue Reaktion'),
               message: tLocale('de', '{name} gefällt deine Diskussion "{title}"', vars),
-              messageL: localizedVariants('{name} gefällt deine Diskussion "{title}"', vars),
+              messageL: await localizedVariants('{name} gefällt deine Diskussion "{title}"', vars),
               data: {
                 discussionId,
                 itemId,

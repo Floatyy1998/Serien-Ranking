@@ -39,6 +39,9 @@ interface MergeCacheEntry {
   watchData: SeriesWatchData | undefined;
   view: Series;
 }
+/** Maximale Splash-Verlaengerung zugunsten frischer Watch-Daten. */
+const WATCH_SYNC_GRACE_MS = 1200;
+
 let mergeCacheUid: string | null = null;
 const mergeCache = new Map<string, MergeCacheEntry>();
 
@@ -88,7 +91,7 @@ function mergeAllSeriesCached(
 }
 
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth() || {};
+  const { user, authStateResolved } = useAuth() || {};
 
   const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>([]);
   const [inactiveSeries, setInactiveSeries] = useState<Series[]>([]);
@@ -99,6 +102,16 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const [animeMangaHandoffs, setAnimeMangaHandoffs] = useState<AnimeMangaHandoff[]>([]);
 
   const detectionRunRef = useRef(false);
+
+  // Zeitbudget fuer das Warten auf frische Watch-Daten. Der Splash soll dafuer
+  // kurz warten (sonst wischen fertige Serien direkt danach sichtbar aus den
+  // Listen), aber niemals lange: laeuft das Budget ab, rendert die App auf dem
+  // Cache-Stand und der Sync zieht im Hintergrund nach.
+  const [syncGraceOver, setSyncGraceOver] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setSyncGraceOver(true), WATCH_SYNC_GRACE_MS);
+    return () => clearTimeout(id);
+  }, []);
 
   // 1. User-Referenzen (klein, welche Serien hat der User + Ratings)
   const {
@@ -114,17 +127,29 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     syncOnReconnect: true,
   });
 
-  // 2. Watch-Daten (delta-sync auf seasons)
+  // 2. Watch-Daten (Delta-Sync auf Serien-Ebene)
+  //
+  // BEWUSST OHNE deltaSubKey: 'seasons'. Das hing pro Serie ZWEI Listener an
+  // (Serien-Knoten + dessen seasons), Firebase synchronisiert dann beides —
+  // die Staffeln also doppelt. Gemessen bei 433 Serien, pro App-Start:
+  //   mit Sub-Key:   1877 Listen-Anfragen, 4357 kB empfangen
+  //   ohne Sub-Key:   222 Listen-Anfragen, 1847 kB empfangen
+  // Also ~2,5 MB Firebase-Egress pro Start, bei unveraenderter Startzeit
+  // (1802-1870 ms gegenueber 1715-1846 ms — im Rauschen).
+  //
+  // Der Preis: eine Aenderung von einem anderen Geraet liefert jetzt den
+  // ganzen Watch-Knoten der Serie statt nur der Staffel, also wenige kB mehr
+  // pro Episode. Das holt die Ersparnis pro Start nicht annaehernd ein.
   const {
     data: watchDataMap,
     loading: watchLoading,
+    isSyncing: watchSyncing,
     refetch: refetchWatch,
   } = useEnhancedFirebaseCache<Record<string, SeriesWatchData>>(
     user ? paths.seriesWatch(user.uid) : '',
     {
       ttl: 24 * 60 * 60 * 1000,
       useDeltaSync: true,
-      deltaSubKey: 'seasons',
       versionPath: user ? paths.serienVersion(user.uid) : undefined,
       enableOfflineSupport: true,
       syncOnReconnect: true,
@@ -370,12 +395,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   //   4) Komplett-Loading durch (kein Fetch mehr aktiv) → ready, selbst wenn
   //      catalogMeta leer ist (z.B. Server hat IDs nicht). Lieber Skeleton-State
   //      zeigen als ewig auf Daten warten, die nicht kommen.
+  //
+  // blockOnSync verzoegert 2) und 4) kurz: der IndexedDB-Cache liefert sofort
+  // eine vollstaendige seriesList, die nach vielem Abhaken auf einem anderen
+  // Geraet aber veraltet ist. Ohne das Gate schliesst der Splash auf dem
+  // Alt-Stand und der Nutzer sieht danach zu, wie fertige Serien aus
+  // "Weiter schauen" rauswischen. Gedeckelt durch WATCH_SYNC_GRACE_MS, damit
+  // ein langsamer Sync den Start nicht ausbremst.
+  const blockOnSync = watchSyncing && !syncGraceOver;
   useEffect(() => {
+    // Solange der Login nicht aufgeloest ist, ist `user` null — und das hiess
+    // frueher faelschlich "kein Konto, also nichts zu laden". Das Flag ist
+    // monoton, also war der Daten-Gate des Splashscreens damit dauerhaft
+    // wirkungslos: er feuerte ~240 ms vor dem auth-Flag. Genau deshalb wischten
+    // fertige Serien erst NACH dem Splash aus den Listen.
+    if (!authStateResolved) return;
     if (!user) {
       window.setAppReady?.('initialData', true);
       return;
     }
-    if (seriesList.length > 0) {
+    if (seriesList.length > 0 && !blockOnSync) {
       window.setAppReady?.('initialData', true);
       return;
     }
@@ -385,17 +424,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       window.setAppReady?.('initialData', true);
       return;
     }
-    if (!loading) {
+    // userSeriesRefs !== null ist hier load-bearing: `loading` ist im ersten
+    // Render nach dem Login noch false, weil die Daten-Hooks ihr setLoading(true)
+    // erst im Effekt danach setzen. Ohne diese Bedingung feuerte der Fallback
+    // sofort — gemessen im selben Millisekundenwert wie das auth-Flag — und der
+    // Gate war wirkungslos. Haengen kann es trotzdem nicht: 8s-Cap im Splash.
+    if (userSeriesRefs !== null && !loading && !blockOnSync) {
       // Catalog-Fetch durch — auch wenn nichts da ist: App rendern lassen
       // (Skeleton-State). Sonst haengt der Splash bei broken-catalog ewig.
       window.setAppReady?.('initialData', true);
     }
-  }, [user, loading, refsLoading, userSeriesRefs, seriesList]);
+  }, [user, authStateResolved, loading, blockOnSync, refsLoading, userSeriesRefs, seriesList]);
 
   // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
   const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);
   useEffect(() => {
-    if (!user || !seriesList.length || !hasSeasons || isOffline || detectionRunRef.current) return;
+    // watchSyncing abwarten: die Detection laeuft ueber detectionRunRef genau
+    // EINMAL. Startet sie auf dem Cache-Stand, werden gerade erst auf dem Handy
+    // fertiggeschaute Serien nicht als abgeschlossen/unbewertet erkannt.
+    if (!user || !seriesList.length || !hasSeasons || isOffline || watchSyncing) return;
+    if (detectionRunRef.current) return;
 
     detectionRunRef.current = true;
     const abortController = new AbortController();
@@ -418,7 +466,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return () => {
       abortController.abort();
     };
-  }, [user, seriesList, hasSeasons, isOffline]);
+  }, [user, seriesList, hasSeasons, isOffline, watchSyncing]);
 
   // Reset bei User-Wechsel
   useEffect(() => {

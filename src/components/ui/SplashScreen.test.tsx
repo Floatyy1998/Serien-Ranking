@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { APP_READY_EVENT } from '../../services/appReady';
 import { SplashScreen } from './SplashScreen';
 
 function setAllReady(ready: boolean) {
@@ -39,8 +40,8 @@ describe('SplashScreen', () => {
     render(<SplashScreen onComplete={onComplete} />);
     act(() => {
       setAllReady(true);
-      // interval fires (finish), then hide (400ms), then complete (500ms)
-      vi.advanceTimersByTime(50 + 400 + 500 + 50);
+      // safety interval fires (finish), then hold (140ms), then fade (180ms)
+      vi.advanceTimersByTime(250 + 140 + 180 + 50);
     });
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
@@ -52,5 +53,37 @@ describe('SplashScreen', () => {
       vi.advanceTimersByTime(50 + 400 + 500 + 50);
     });
     expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('reacts to the ready event without waiting for the safety interval', () => {
+    const onComplete = vi.fn();
+    render(<SplashScreen onComplete={onComplete} />);
+    act(() => {
+      setAllReady(true);
+      window.dispatchEvent(new CustomEvent(APP_READY_EVENT));
+      // Nur Hold + Fade — bewusst WENIGER als der 250ms-Sicherheitstick.
+      vi.advanceTimersByTime(140 + 180);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('signals onHideStart before onComplete so the app can fade in underneath', () => {
+    const order: string[] = [];
+    render(
+      <SplashScreen
+        onHideStart={() => order.push('hideStart')}
+        onComplete={() => order.push('complete')}
+      />
+    );
+    act(() => {
+      setAllReady(true);
+      window.dispatchEvent(new CustomEvent(APP_READY_EVENT));
+      vi.advanceTimersByTime(140);
+    });
+    expect(order).toEqual(['hideStart']);
+    act(() => {
+      vi.advanceTimersByTime(180);
+    });
+    expect(order).toEqual(['hideStart', 'complete']);
   });
 });

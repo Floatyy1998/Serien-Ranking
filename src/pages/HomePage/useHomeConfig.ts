@@ -234,6 +234,17 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
       .then((snap) => {
         const data = snap.val();
         if (data) applyConfigData(data);
+        else {
+          // Kein gespeichertes Layout: trotzdem einen Cache-Marker setzen.
+          // Ohne den griff der Schnellpfad oben NIE, und jeder Start wartete
+          // erneut auf diesen Firebase-Roundtrip — gemessen ~700 ms nach dem
+          // Login, und homeConfig ist regelmaessig das letzte Flag.
+          try {
+            localStorage.setItem('homeConfig_cache', '{}');
+          } catch {
+            /* Quota-fragil — dann bleibt es beim Roundtrip */
+          }
+        }
       })
       .catch((err) => {
         console.warn('[homeConfig] firebase fetch failed', err);

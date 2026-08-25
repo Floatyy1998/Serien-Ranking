@@ -108,7 +108,7 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
           title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
-          titleL: localizedVariants(isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
+          titleL: await localizedVariants(isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
           message: `${displayName}: "${data.title}"`,
           data: { ticketId, ticketType: data.ticketType },
         });
@@ -160,9 +160,9 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
           title: 'Neuer Kommentar',
-          titleL: localizedVariants('Neuer Kommentar'),
+          titleL: await localizedVariants('Neuer Kommentar'),
           message: tLocale('de', '{name} hat auf "{title}" geantwortet', vars),
-          messageL: localizedVariants('{name} hat auf "{title}" geantwortet', vars),
+          messageL: await localizedVariants('{name} hat auf "{title}" geantwortet', vars),
           data: { ticketId, ticketType },
         });
 
@@ -224,9 +224,9 @@ export function useBugReportData() {
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_status',
           title: 'Ticket geschlossen',
-          titleL: localizedVariants('Ticket geschlossen'),
+          titleL: await localizedVariants('Ticket geschlossen'),
           message: tLocale('de', '{name} hat das Ticket "{title}" geschlossen', vars),
-          messageL: localizedVariants('{name} hat das Ticket "{title}" geschlossen', vars),
+          messageL: await localizedVariants('{name} hat das Ticket "{title}" geschlossen', vars),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
         return true;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { APP_READY_EVENT, APP_READY_KEYS, countAppReady } from '../../services/appReady';
 import { t } from '../../services/i18n';
 import {
   BackgroundMesh,
@@ -20,11 +21,17 @@ import {
 
 interface SplashScreenProps {
   onComplete?: () => void;
+  /** Feuert, sobald das Ausblenden startet — die App darunter wird dann sichtbar. */
+  onHideStart?: () => void;
   waitForCondition?: () => boolean;
-  minDisplayTime?: number;
 }
 
-export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps) => {
+/** Kurze Sichtbarkeit der vollen Fortschrittsleiste, bevor ausgeblendet wird. */
+const FULL_BAR_HOLD_MS = 140;
+/** Muss zur fadeOut-Dauer in SplashScreen.styled.tsx passen. */
+const FADE_OUT_MS = 180;
+
+export const SplashScreen = ({ onComplete, onHideStart, waitForCondition }: SplashScreenProps) => {
   const [isHiding, setIsHiding] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState(t('Initialisiere System'));
@@ -32,34 +39,26 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
   useEffect(() => {
     const startTime = Date.now();
     let completed = false;
+    let holdTimer: ReturnType<typeof setTimeout> | undefined;
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
 
     const finish = () => {
       if (completed) return;
       completed = true;
-      clearInterval(checkProgress);
+      cleanupWatchers();
       setLoadingProgress(1);
       setLoadingText(t('Start'));
-      setTimeout(() => {
+      holdTimer = setTimeout(() => {
         setIsHiding(true);
-        setTimeout(() => {
+        onHideStart?.();
+        fadeTimer = setTimeout(() => {
           onComplete?.();
-        }, 500);
-      }, 400);
+        }, FADE_OUT_MS);
+      }, FULL_BAR_HOLD_MS);
     };
 
-    const checkProgress = setInterval(() => {
-      const status = window.appReadyStatus || {};
-      const totalSystems = 6;
-      const readySystems = [
-        status.theme,
-        status.auth,
-        status.firebase,
-        status.emailVerification,
-        status.initialData,
-        status.homeConfig,
-      ].filter(Boolean).length;
-
-      const progress = readySystems / totalSystems;
+    const evaluate = () => {
+      const progress = countAppReady() / APP_READY_KEYS.length;
       setLoadingProgress(progress);
 
       if (progress < 0.2) {
@@ -92,10 +91,25 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
       if (Date.now() - startTime > 8000) {
         finish();
       }
-    }, 50);
+    };
 
-    return () => clearInterval(checkProgress);
-  }, [onComplete, waitForCondition]);
+    // Event-getrieben statt 50ms-Polling: das letzte Flag beendet den Splash
+    // sofort, statt im Schnitt einen halben Tick spaeter. Das Intervall bleibt
+    // nur als Sicherheitsnetz fuer den 8s-Fallback und fuer waitForCondition.
+    window.addEventListener(APP_READY_EVENT, evaluate);
+    const checkProgress = setInterval(evaluate, 250);
+    function cleanupWatchers() {
+      window.removeEventListener(APP_READY_EVENT, evaluate);
+      clearInterval(checkProgress);
+    }
+    evaluate();
+
+    return () => {
+      cleanupWatchers();
+      if (holdTimer) clearTimeout(holdTimer);
+      if (fadeTimer) clearTimeout(fadeTimer);
+    };
+  }, [onComplete, onHideStart, waitForCondition]);
 
   return (
     <SplashContainer isHiding={isHiding}>

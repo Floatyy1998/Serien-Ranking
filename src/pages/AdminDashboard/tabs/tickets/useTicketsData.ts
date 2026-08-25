@@ -106,9 +106,9 @@ export function useTicketsData(): UseTicketsDataResult {
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_status',
           title: 'Ticket-Status geändert',
-          titleL: localizedVariants('Ticket-Status geändert'),
+          titleL: await localizedVariants('Ticket-Status geändert'),
           message: tLocale('de', template, { title: ticket.title, status: statusRaw }),
-          messageL: localizedVariants(template, {
+          messageL: await localizedVariants(template, {
             title: ticket.title,
             status: tLocale('en', statusRaw),
           }),
@@ -143,9 +143,9 @@ export function useTicketsData(): UseTicketsDataResult {
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_reply',
           title: 'Antwort auf dein Ticket',
-          titleL: localizedVariants('Antwort auf dein Ticket'),
+          titleL: await localizedVariants('Antwort auf dein Ticket'),
           message: tLocale('de', template, vars),
-          messageL: localizedVariants(template, vars),
+          messageL: await localizedVariants(template, vars),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }

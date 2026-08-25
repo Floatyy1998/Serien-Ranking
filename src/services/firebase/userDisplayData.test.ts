@@ -3,9 +3,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const fb = vi.hoisted(() => {
   const store = new Map<string, unknown>();
   const throwPaths = new Set<string>();
+  // Wie echtes RTDB: ein Lesevorgang auf 'users/u1/displayName' liefert das
+  // Feld aus dem darueberliegenden Knoten. Ohne das trifft ein gezielter
+  // Feld-Lesevorgang den Store nicht und der Test misst nur den Mock.
+  const readPath = (path: string): unknown => {
+    if (store.has(path)) return store.get(path);
+    const cut = path.lastIndexOf('/');
+    if (cut === -1) return null;
+    const parent = store.get(path.slice(0, cut));
+    if (parent && typeof parent === 'object') {
+      const value = (parent as Record<string, unknown>)[path.slice(cut + 1)];
+      return value === undefined ? null : value;
+    }
+    return null;
+  };
   const onceMock = vi.fn(async (path: string) => {
     if (throwPaths.has(path)) throw new Error('permission_denied');
-    return { val: () => (store.has(path) ? store.get(path) : null) };
+    // Ein gesperrter Elternknoten sperrt auch seine Felder.
+    const cut = path.lastIndexOf('/');
+    if (cut !== -1 && throwPaths.has(path.slice(0, cut))) throw new Error('permission_denied');
+    return { val: () => readPath(path) };
   });
   const refMock = vi.fn((path: string) => ({ once: () => onceMock(path) }));
   return { store, throwPaths, onceMock, refMock };
@@ -44,7 +61,11 @@ describe('getUserDisplayData', () => {
       photoURL: 'auth.png',
     });
     expect(result).toEqual({ username: 'Auth-Name', photoURL: 'auth.png' });
-    expect(fb.refMock).toHaveBeenCalledWith('users/u2');
+    // Gezielt die beiden Felder, NICHT den ganzen Nutzerknoten: der haengt
+    // series/seriesWatch/movies mit dran und war bei grossen Konten mehrere MB.
+    expect(fb.refMock).toHaveBeenCalledWith('users/u2/displayName');
+    expect(fb.refMock).toHaveBeenCalledWith('users/u2/photoURL');
+    expect(fb.refMock).not.toHaveBeenCalledWith('users/u2');
   });
 
   it('faellt auf den Email-Prefix zurueck, wenn kein Name vorhanden', async () => {

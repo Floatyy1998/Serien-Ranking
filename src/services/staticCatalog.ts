@@ -201,10 +201,12 @@ async function setLocalVersion(v: number): Promise<void> {
   await idbSetVersioned<number>(LOCAL_VERSION_KEY, 0, v);
 }
 
-async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Promise<void> {
+async function invalidateLocalCaches(opts?: {
+  keepSeasonsBulk?: boolean;
+  keepMeta?: boolean;
+}): Promise<void> {
   await Promise.all([
-    idbRemove(LS_META_KEY),
-    idbRemove(LS_MOVIES_KEY),
+    ...(opts?.keepMeta ? [] : [idbRemove(LS_META_KEY), idbRemove(LS_MOVIES_KEY)]),
     ...(opts?.keepSeasonsBulk ? [] : [idbRemove(LS_SEASONS_BULK_KEY)]),
     idbRemove(LS_SEASONAL_ANIME_KEY),
     idbRemove(LS_ANIME_FILLER_KEY),
@@ -288,9 +290,44 @@ async function applySeasonsDelta(localV: number | null, remote: number): Promise
 }
 
 /**
- * Gemeinsame Bump-Behandlung: versucht erst den Seasons-Delta-Merge, dann
- * werden die restlichen (kleinen) Caches invalidiert und die lokale Version
- * nachgezogen. Gelingt der Delta, bleibt das grosse Seasons-Bulk erhalten.
+ * Laedt seriesMeta + moviesMeta fuer die neue Version, OHNE den alten Stand
+ * vorher wegzuwerfen. Gibt null zurueck, wenn seriesMeta nicht kommt — dann
+ * bleibt der alte Cache stehen.
+ */
+async function fetchMetaForVersion(remote: number): Promise<{
+  series: Record<string, CatalogSeries>;
+  movies: Record<string, CatalogMovie> | null;
+} | null> {
+  try {
+    const rawSeries = await fetchJson<unknown>('seriesMeta.json', { version: remote });
+    const series = expandProviders<CatalogSeries>(rawSeries);
+    if (!series || Object.keys(series).length === 0) return null;
+    let movies: Record<string, CatalogMovie> | null = null;
+    try {
+      movies = expandProviders<CatalogMovie>(
+        await fetchJson<unknown>('moviesMeta.json', {
+          version: remote,
+        })
+      );
+    } catch {
+      // Filme sind nicht startkritisch — Serien reichen fuer den Tausch.
+    }
+    return { series, movies };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Gemeinsame Bump-Behandlung: Seasons per Delta, Meta-Files per Austausch.
+ *
+ * WICHTIG — erst laden, dann tauschen: frueher wurden seriesMeta/moviesMeta
+ * hier einfach geloescht und die lokale Version hochgesetzt. Der naechste
+ * App-Start fand dann einen leeren Katalog vor und musste ~400 kB blockierend
+ * nachladen, bevor ueberhaupt etwas rendern konnte — genau das machte den
+ * Start nach jedem Backend-Cron-Lauf spuerbar langsam. Kommt der neue Stand
+ * nicht durch, bleibt der alte liegen UND die lokale Version stehen, damit es
+ * beim naechsten Mal erneut versucht wird.
  */
 async function handleVersionBump(localV: number | null, remote: number): Promise<void> {
   let seasonsDeltaOk: boolean;
@@ -299,10 +336,11 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   } catch {
     seasonsDeltaOk = false;
   }
-  memoryMeta = null;
-  memoryMovies = null;
+  const freshMeta = await fetchMetaForVersion(remote);
   memorySeasons.clear();
   if (!seasonsDeltaOk) memorySeasonsBulk = null;
+  memoryMeta = null;
+  memoryMovies = null;
   memorySeasonalAnime = null;
   memoryAnimeFiller = null;
   memoryAnimeManga = null;
@@ -314,7 +352,24 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryLangOverlay = undefined;
   memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
-  await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
+  // keepMeta ist hier IMMER true: den Katalog loeschen wir nur, wenn wir den
+  // Ersatz schon in der Hand haben (dann wird er unten ueberschrieben).
+  // Kam der neue Stand nicht durch, ist der alte allemal besser als ein leerer
+  // Cache, der den naechsten Start blockierend ~400 kB nachladen laesst.
+  await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk, keepMeta: true });
+
+  if (!freshMeta) {
+    // Alter Katalog bleibt nutzbar; Version NICHT hochsetzen, sonst gilt der
+    // veraltete Stand als aktuell und wird nie wieder nachgezogen.
+    return;
+  }
+
+  await idbSetVersioned(LS_META_KEY, remote, freshMeta.series);
+  memoryMeta = await withOverlays(freshMeta.series, 'series');
+  if (freshMeta.movies) {
+    await idbSetVersioned(LS_MOVIES_KEY, remote, freshMeta.movies);
+    memoryMovies = await withOverlays(freshMeta.movies, 'movies');
+  }
   await setLocalVersion(remote);
 }
 

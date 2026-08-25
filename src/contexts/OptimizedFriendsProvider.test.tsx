@@ -51,6 +51,7 @@ const cacheResult = vi.hoisted(
     ({
       data: {},
       loading: false,
+      isSyncing: false,
       error: null,
       isStale: false,
       isOffline: false,

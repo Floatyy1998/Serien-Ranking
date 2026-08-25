@@ -14,15 +14,18 @@ const CUSTOMIZE_MESSAGE =
  * dem authProvider (Social-Login legt den Knoten erst dort an), und
  * onAuthStateChanged kann beim Erstlogin doppelt feuern. set() auf denselben
  * Schluessel ueberschreibt, statt zu verdoppeln.
+ *
+ * async, weil die Uebersetzungen fuer den Empfaenger (localizedVariants) die
+ * Woerterbuecher nachladen. Aufrufer duerfen weiterhin fire-and-forget bleiben.
  */
-export const writeWelcomeNotifications = (uid: string): void => {
+export const writeWelcomeNotifications = async (uid: string): Promise<void> => {
   try {
     void dbRef(userPath(uid, 'notifications', 'welcome')).set({
       type: 'welcome',
       title: WELCOME_TITLE,
       message: WELCOME_MESSAGE,
-      titleL: localizedVariants(WELCOME_TITLE),
-      messageL: localizedVariants(WELCOME_MESSAGE),
+      titleL: await localizedVariants(WELCOME_TITLE),
+      messageL: await localizedVariants(WELCOME_MESSAGE),
       timestamp: Date.now(),
       read: false,
     });
@@ -31,8 +34,8 @@ export const writeWelcomeNotifications = (uid: string): void => {
       type: 'welcome',
       title: CUSTOMIZE_TITLE,
       message: CUSTOMIZE_MESSAGE,
-      titleL: localizedVariants(CUSTOMIZE_TITLE),
-      messageL: localizedVariants(CUSTOMIZE_MESSAGE),
+      titleL: await localizedVariants(CUSTOMIZE_TITLE),
+      messageL: await localizedVariants(CUSTOMIZE_MESSAGE),
       timestamp: Date.now() - 1000,
       read: false,
       data: { navigateTo: '/profile' },
