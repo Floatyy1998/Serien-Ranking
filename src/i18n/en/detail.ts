@@ -222,6 +222,15 @@ const dict: Record<string, string> = {
   // Franzoesisch sie ueberhaupt erreichen.
   'Top Actors': 'Top Actors',
   'Galaxy Map': 'Galaxy Map',
+  // Aussteiger-Radar
+  Aussteiger: 'Drop-off',
+  '{n} Bewertungen ausgewertet': '{n} viewers evaluated',
+  'schauen die Serie zu Ende.': 'finish the show.',
+  'Die meisten steigen in Staffel {n} aus.': 'Most people quit during season {n}.',
+  'Wer Folge {n} erreicht, schaut zu {p} zu Ende.':
+    'Of those who reach episode {n}, {p} finish the show.',
+  'Anonym aus dem Sehverhalten aller Nutzer, die diese Serie begonnen haben.':
+    'Anonymous, from the viewing behaviour of everyone who started this show.',
 };
 
 export default dict;

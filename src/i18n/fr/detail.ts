@@ -197,6 +197,15 @@ const dict: Record<string, string> = {
   'Fehler beim Löschen des Films.': 'Échec de la suppression du film.',
   'Top Actors': "Têtes d'affiche",
   'Galaxy Map': 'Carte galactique',
+  // Aussteiger-Radar
+  Aussteiger: 'Abandons',
+  '{n} Bewertungen ausgewertet': '{n} spectateurs analysés',
+  'schauen die Serie zu Ende.': 'terminent la série.',
+  'Die meisten steigen in Staffel {n} aus.': 'La plupart abandonnent en saison {n}.',
+  'Wer Folge {n} erreicht, schaut zu {p} zu Ende.':
+    "Parmi ceux qui atteignent l'épisode {n}, {p} terminent la série.",
+  'Anonym aus dem Sehverhalten aller Nutzer, die diese Serie begonnen haben.':
+    'Anonyme, à partir du comportement de tous ceux qui ont commencé cette série.',
 };
 
 export default dict;

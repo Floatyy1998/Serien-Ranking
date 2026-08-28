@@ -26,6 +26,7 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
+import { DropOffSection } from './DropOffSection';
 import { FeverCurveSection } from './FeverCurveSection';
 import { FriendsProgressStrip } from './FriendsProgressStrip';
 import { HeroSection } from './HeroSection';
@@ -557,6 +558,17 @@ export const SeriesDetailPage = memo(() => {
                 currentTheme={currentTheme}
                 isMobile={isMobile}
                 navigate={navigate}
+              />
+            </Deferred>
+          </div>
+
+          {/* Aussteiger-Radar — anonymes Abbruch-Aggregat (rendert nur mit Daten) */}
+          <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
+            <Deferred>
+              <DropOffSection
+                seriesId={series.id}
+                currentTheme={currentTheme}
+                isMobile={isMobile}
               />
             </Deferred>
           </div>

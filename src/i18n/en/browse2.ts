@@ -220,7 +220,7 @@ const dict: Record<string, string> = {
   Sparpotenzial: 'Potential savings',
   '/ Monat': '/ month',
   '/ Std.': '/ hr',
-  'Deine Abos sind gut ausgelastet 🎉': 'Your subscriptions are well used 🎉',
+  'Deine Abos sind gut ausgelastet': 'Your subscriptions are well used',
   '1 Abo mit schwachem Wert': '1 subscription with poor value',
   '{n} Abos mit schwachem Wert': '{n} subscriptions with poor value',
   'Bester Wert': 'Best value',
@@ -250,6 +250,17 @@ const dict: Record<string, string> = {
   'Schwellenwert in Tagen, ab denen ein Abo als ungenutzt gilt':
     'Threshold in days after which a subscription counts as unused',
   Tagen: 'days',
+  // Aufhol-Plan (Countdown)
+  'Rechtzeitig durch — fertig ca. {date}': 'Done in time — finished around {date}',
+  'Rechtzeitig durch': 'Done in time',
+  '{n} Wochen zu spät': '{n} weeks too late',
+  '{n} Tage zu spät': '{n} days too late',
+  '{n} Folgen offen, kein Tempo messbar': '{n} episodes left, no pace measurable',
+  '{open} Folgen offen · {need} Folgen/Woche nötig':
+    '{open} episodes left · {need} episodes/week needed',
+  'Ohne die {n} Filler-Folgen schaffst du es.': 'Skip the {n} filler episodes and you make it.',
+  'Ohne die {n} Filler-Folgen: noch {rest} Folgen.':
+    'Without the {n} filler episodes: {rest} left.',
 };
 
 export default dict;

@@ -213,7 +213,7 @@ const dict: Record<string, string> = {
   Sparpotenzial: 'Ahorro potencial',
   '/ Monat': '/ mes',
   '/ Std.': '/ h',
-  'Deine Abos sind gut ausgelastet 🎉': 'Aprovechas bien tus suscripciones',
+  'Deine Abos sind gut ausgelastet': 'Aprovechas bien tus suscripciones',
   '1 Abo mit schwachem Wert': '1 suscripción poco rentable',
   '{n} Abos mit schwachem Wert': '{n} suscripciones poco rentables',
   'Top-Wert': 'Máximo valor',
@@ -240,6 +240,17 @@ const dict: Record<string, string> = {
   '+ {n} weitere': '+ {n} más',
   Schwellenwert: 'Umbral',
   Tagen: 'días',
+  // Aufhol-Plan (Countdown)
+  'Rechtzeitig durch — fertig ca. {date}': 'A tiempo: terminas hacia el {date}',
+  'Rechtzeitig durch': 'A tiempo',
+  '{n} Wochen zu spät': '{n} semanas tarde',
+  '{n} Tage zu spät': '{n} días tarde',
+  '{n} Folgen offen, kein Tempo messbar': '{n} episodios pendientes, sin ritmo medible',
+  '{open} Folgen offen · {need} Folgen/Woche nötig':
+    '{open} episodios pendientes · {need} episodios/semana necesarios',
+  'Ohne die {n} Filler-Folgen schaffst du es.': 'Sáltate los {n} episodios de relleno y llegas.',
+  'Ohne die {n} Filler-Folgen: noch {rest} Folgen.':
+    'Sin los {n} episodios de relleno: quedan {rest}.',
 };
 
 export default dict;

@@ -197,6 +197,15 @@ const dict: Record<string, string> = {
   'Fehler beim Löschen des Films.': 'Error al eliminar la película.',
   'Top Actors': 'Actores destacados',
   'Galaxy Map': 'Mapa galáctico',
+  // Aussteiger-Radar
+  Aussteiger: 'Abandonos',
+  '{n} Bewertungen ausgewertet': '{n} espectadores analizados',
+  'schauen die Serie zu Ende.': 'terminan la serie.',
+  'Die meisten steigen in Staffel {n} aus.': 'La mayoría lo deja en la temporada {n}.',
+  'Wer Folge {n} erreicht, schaut zu {p} zu Ende.':
+    'De quienes llegan al episodio {n}, el {p} termina la serie.',
+  'Anonym aus dem Sehverhalten aller Nutzer, die diese Serie begonnen haben.':
+    'Anónimo, a partir del comportamiento de quienes empezaron esta serie.',
 };
 
 export default dict;

@@ -6,6 +6,9 @@ import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { t } from '../../services/i18n';
 import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
+import { useCatchUpPlans } from '../../hooks/useCatchUpPlans';
+import type { CatchUpPlan } from '../../lib/catchUpPlan';
+import { CatchUpPlanNote } from './CatchUpPlanNote';
 import { CountdownHeroCard } from './CountdownHeroCard';
 import { CountdownListItem } from './CountdownListItem';
 import './CountdownPage.css';
@@ -14,6 +17,7 @@ export const CountdownPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { countdowns, loading } = useSeriesCountdowns();
+  const catchUpPlans = useCatchUpPlans(countdowns);
 
   const hero = countdowns[0];
   const rest = countdowns.slice(1);
@@ -63,6 +67,9 @@ export const CountdownPage: React.FC = () => {
                   navigate(`/series/${hero.seriesId}`);
                 }}
               />
+              {catchUpPlans.has(hero.seriesId) && (
+                <CatchUpPlanNote plan={catchUpPlans.get(hero.seriesId) as CatchUpPlan} />
+              )}
             </motion.div>
 
             {rest.length > 0 && (
@@ -83,6 +90,12 @@ export const CountdownPage: React.FC = () => {
                         navigate(`/series/${item.seriesId}`);
                       }}
                     />
+                    {catchUpPlans.has(item.seriesId) && (
+                      <CatchUpPlanNote
+                        plan={catchUpPlans.get(item.seriesId) as CatchUpPlan}
+                        compact
+                      />
+                    )}
                   </motion.div>
                 ))}
               </>

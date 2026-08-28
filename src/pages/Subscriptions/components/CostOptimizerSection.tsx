@@ -160,7 +160,7 @@ export const CostOptimizerSection = ({
                 </p>
                 <p className="sub-opt-tile-sub" style={{ color: currentTheme.text.secondary }}>
                   {actionable.length === 0
-                    ? t('Deine Abos sind gut ausgelastet 🎉')
+                    ? t('Deine Abos sind gut ausgelastet')
                     : actionable.length === 1
                       ? t('1 Abo mit schwachem Wert')
                       : t('{n} Abos mit schwachem Wert', { n: actionable.length })}

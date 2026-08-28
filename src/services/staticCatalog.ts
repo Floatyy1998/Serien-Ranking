@@ -22,6 +22,7 @@
  *   4. Fetch-Timeout (15s) verhindert haengende Requests
  */
 
+import type { DropOffEntry } from '../lib/dropOff';
 import type { CatalogSeries, CatalogMovie, CatalogSeason } from '../types/CatalogTypes';
 import {
   idbGetVersioned,
@@ -47,6 +48,7 @@ const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
 const LS_SEASONS_BULK_KEY = LS_PREFIX + 'seasonsBulk';
 const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
 const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
+const LS_DROP_OFF_KEY = LS_PREFIX + 'dropOff';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 const LS_COMMUNITY_RATINGS_KEY = LS_PREFIX + 'communityRatings';
@@ -101,6 +103,7 @@ const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
 let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
+let memoryDropOff: Record<string, DropOffEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryCommunityRatings: CommunityRatings | null = null;
@@ -210,6 +213,7 @@ async function invalidateLocalCaches(opts?: {
     ...(opts?.keepSeasonsBulk ? [] : [idbRemove(LS_SEASONS_BULK_KEY)]),
     idbRemove(LS_SEASONAL_ANIME_KEY),
     idbRemove(LS_ANIME_FILLER_KEY),
+    idbRemove(LS_DROP_OFF_KEY),
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemove(LS_COMMUNITY_RATINGS_KEY),
@@ -343,6 +347,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryMovies = null;
   memorySeasonalAnime = null;
   memoryAnimeFiller = null;
+  memoryDropOff = null;
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
@@ -983,6 +988,43 @@ export async function fetchStaticAnimeFiller(): Promise<Record<
     // 404 = Backend noch nicht aktuell — Chips bleiben still.
     if (!String(e).includes('404')) {
       console.warn('[staticCatalog] anime-filler fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
+ * Laedt catalog/drop-off.json (tmdbId -> anonymes Abbruch-Aggregat). Vom
+ * Backend-Cron monatlich vorgerechnet: wie viele Nutzer eine Serie abgebrochen
+ * bzw. beendet haben und wo die Abbrueche liegen. Enthaelt keine Nutzer-IDs und
+ * nur Serien ueber der Mindestzahl an Entscheidungen.
+ *
+ * Returnt null, solange das Backend die Datei noch nicht erzeugt hat (404) —
+ * die Sektion bleibt dann still.
+ */
+export async function fetchStaticDropOff(): Promise<Record<string, DropOffEntry> | null> {
+  if (memoryDropOff) return memoryDropOff;
+
+  const cached = await idbGetAny<Record<string, DropOffEntry>>(LS_DROP_OFF_KEY);
+  if (cached) {
+    memoryDropOff = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: Record<string, DropOffEntry> }>('drop-off.json', {
+      version,
+    });
+    const entries = data.entries ?? {};
+    memoryDropOff = entries;
+    void idbSetVersioned(LS_DROP_OFF_KEY, version, entries);
+    return entries;
+  } catch (e) {
+    // 404 = Backend noch nicht aktuell — Sektion bleibt still.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] drop-off fetch failed', e);
     }
     return null;
   }
