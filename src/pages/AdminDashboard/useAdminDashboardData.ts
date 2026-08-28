@@ -24,6 +24,8 @@ export interface ReachStats {
   wau: number;
   /** Unterschiedliche Konten der letzten 30 Tage. */
   mau: number;
+  /** Zeitpunkt des Zaehllaufs — der Zaehler laeuft stuendlich. */
+  ts?: number;
 }
 
 export interface UserMeta {
@@ -202,6 +204,7 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
             dau: s?.dau ?? 0,
             wau: s?.wau ?? 0,
             mau: s?.mau ?? 0,
+            ts: s?.ts,
           }))
           .sort((a, b) => b.date.localeCompare(a.date));
         setReachStats(list);

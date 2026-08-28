@@ -72,19 +72,37 @@ describe('ReachSection', () => {
     expect(screen.getByText('Aktiv 30 Tage: 56')).toBeInTheDocument();
   });
 
-  it('nennt den Stand und weist auf den Zaehllauf hin, wenn er alt ist', () => {
+  it('datiert die Kacheln, wenn der Zaehler heute noch nicht gelaufen ist', () => {
+    const latest: ReachStats = { date: '2026-08-01', total: 72, dau: 9, wau: 27, mau: 56 };
+    render(<ReachSection data={makeData(latest)} theme={theme} />);
+
+    // "Aktiv heute" waere gelogen — die Zahl ist vom 01.08.
+    expect(screen.queryByText(/Aktiv heute/)).not.toBeInTheDocument();
+    expect(screen.getByText('Aktiv am 01.08.: 9')).toBeInTheDocument();
+    expect(screen.getByText('Aktiv 7 Tage (Stand 01.08.): 27')).toBeInTheDocument();
+    expect(screen.getByText('Aktiv 30 Tage (Stand 01.08.): 56')).toBeInTheDocument();
+  });
+
+  it('nennt die Uhrzeit des letzten Zaehllaufs', () => {
+    const latest: ReachStats = {
+      date: today,
+      total: 72,
+      dau: 9,
+      wau: 27,
+      mau: 56,
+      ts: new Date(2026, 7, 28, 14, 55).getTime(),
+    };
+    render(<ReachSection data={makeData(latest)} theme={theme} />);
+
+    expect(screen.getByText(/Stand 28\.08\., 14:55/)).toBeInTheDocument();
+    expect(screen.getByText(/stuendlich zur Minute 55/)).toBeInTheDocument();
+  });
+
+  it('faellt auf das Datum zurueck, wenn kein Zeitstempel vorliegt', () => {
     const latest: ReachStats = { date: '2026-08-01', total: 72, dau: 9, wau: 27, mau: 56 };
     render(<ReachSection data={makeData(latest)} theme={theme} />);
 
     expect(screen.getByText(/Stand 2026-08-01/)).toBeInTheDocument();
-    expect(screen.getByText(/taeglich um 23:55/)).toBeInTheDocument();
-  });
-
-  it('laesst den Hinweis auf den Zaehllauf weg, wenn die Zahlen von heute sind', () => {
-    const latest: ReachStats = { date: today, total: 72, dau: 9, wau: 27, mau: 56 };
-    render(<ReachSection data={makeData(latest)} theme={theme} />);
-
-    expect(screen.queryByText(/taeglich um 23:55/)).not.toBeInTheDocument();
   });
 
   it('macht die Quelle transparent', () => {
