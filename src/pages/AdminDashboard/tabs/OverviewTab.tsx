@@ -5,6 +5,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } 
 import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
+import { ReachSection } from './ReachSection';
 import { LivePulse } from '../components/LivePulse';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
@@ -42,10 +43,13 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
         )}
       </div>
 
+      {/* Reichweite: vollstaendig, unabhaengig vom Analytics-Hinweis */}
+      <ReachSection data={data} theme={theme} />
+
       {/* KPI Scorecards */}
       <div className="adm-grid">
         <KpiScorecard
-          title="DAU"
+          title="DAU (nur mit Zustimmung)"
           value={data.dauToday}
           delta={data.dauDelta}
           sparklineData={data.dauSparkline}

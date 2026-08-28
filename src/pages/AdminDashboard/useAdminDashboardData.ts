@@ -10,6 +10,22 @@ export interface DailyStats {
   newUsers: number;
 }
 
+/**
+ * Reichweite aus `analytics/reach/daily` — vom Backend-Cron gezaehlt, aus
+ * Firebase Auth statt aus dem Analytics-Consent. Deshalb vollstaendig: hier
+ * fehlen keine Nutzer, die den Cookie-Hinweis abgelehnt haben.
+ */
+export interface ReachStats {
+  date: string;
+  /** Konten insgesamt (Firebase Auth). */
+  total: number;
+  dau: number;
+  /** Unterschiedliche Konten der letzten 7 Tage. */
+  wau: number;
+  /** Unterschiedliche Konten der letzten 30 Tage. */
+  mau: number;
+}
+
 export interface UserMeta {
   uid: string;
   firstSeen: number;
@@ -80,6 +96,7 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
   );
   const [loading, setLoading] = useState(true);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
+  const [reachStats, setReachStats] = useState<ReachStats[]>([]);
   const [userMetas, setUserMetas] = useState<Record<string, UserMeta>>({});
   const [realtimeUsers, setRealtimeUsers] = useState<RealtimeUser[]>([]);
   const [userProfiles, setUserProfiles] = useState<
@@ -169,6 +186,34 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
   }, [daysRange, refreshKey, braucht]);
 
   // Load user metas + extension sessions for today in EINEM Read.
+  // Reichweite: ein flacher Knoten mit wenigen Zahlen je Tag — ein Read reicht.
+  useEffect(() => {
+    if (!braucht('daily')) return;
+    let abgebrochen = false;
+    dbRef('analytics/reach/daily')
+      .once('value')
+      .then((snap) => {
+        if (abgebrochen) return;
+        const val = (snap.val() || {}) as Record<string, Omit<ReachStats, 'date'>>;
+        const list = Object.entries(val)
+          .map(([date, s]) => ({
+            date,
+            total: s?.total ?? 0,
+            dau: s?.dau ?? 0,
+            wau: s?.wau ?? 0,
+            mau: s?.mau ?? 0,
+          }))
+          .sort((a, b) => b.date.localeCompare(a.date));
+        setReachStats(list);
+      })
+      .catch(() => {
+        if (!abgebrochen) setReachStats([]);
+      });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [refreshKey, braucht]);
+
   // Vorher liefen zwei separate once('value') auf analytics/users (haelfte
   // der Bytes gedoppelt). Beide States werden aus demselben Snapshot befuellt.
   useEffect(() => {
@@ -442,6 +487,18 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
     }
   }, []);
 
+  const reachLatest = reachStats[0] ?? null;
+
+  // Kurve chronologisch, auf den gewaehlten Zeitraum begrenzt.
+  const reachChartData = useMemo(
+    () =>
+      reachStats
+        .slice(0, daysRange)
+        .map((r) => ({ date: r.date.slice(5), dau: r.dau, wau: r.wau, mau: r.mau }))
+        .reverse(),
+    [reachStats, daysRange]
+  );
+
   return {
     loading,
     refresh,
@@ -472,5 +529,9 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
     loadAllRawEvents,
     // Daily stats
     dailyStats,
+    // Reichweite (consentfrei, aus Firebase Auth)
+    reachStats,
+    reachLatest,
+    reachChartData,
   };
 }

@@ -33,7 +33,8 @@ afterEach(cleanup);
 describe('OverviewTab', () => {
   it('renders the KPI scorecards and chart headings (smoke)', () => {
     render(<OverviewTab data={makeData()} theme={theme} />);
-    expect(screen.getByText('DAU')).toBeInTheDocument();
+    // Bewusst benannt: diese Kachel zaehlt nur Nutzer mit Analytics-Zustimmung.
+    expect(screen.getByText('DAU (nur mit Zustimmung)')).toBeInTheDocument();
     expect(screen.getByText('Nutzer gesamt')).toBeInTheDocument();
     expect(screen.getByText('Events heute')).toBeInTheDocument();
     expect(screen.getByText('Extension')).toBeInTheDocument();

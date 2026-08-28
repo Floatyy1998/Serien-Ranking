@@ -338,6 +338,7 @@ export default defineConfig({
         'src/pages/AdminDashboard/tabs/MessagesTab.tsx',
         'src/pages/AdminDashboard/tabs/NewEpisodesTab.tsx',
         'src/pages/AdminDashboard/tabs/OverviewTab.tsx',
+        'src/pages/AdminDashboard/tabs/ReachSection.tsx',
         'src/pages/AdminDashboard/tabs/PerformanceTab.tsx',
         'src/pages/AdminDashboard/tabs/RealtimeTab.tsx',
         'src/pages/AdminDashboard/tabs/TicketsTab.tsx',
