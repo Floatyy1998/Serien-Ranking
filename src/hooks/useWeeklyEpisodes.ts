@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { PRIORITY_PROVIDER_IDS, SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
+import { calculateOverallRating } from '../lib/rating/rating';
 import type { Series } from '../types/Series';
 import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
@@ -36,6 +37,8 @@ export interface WeeklyEpisode {
   runtime: number;
   providerNames: string[];
   providers: WeeklyEpisodeProvider[];
+  /** Eigenes Gesamt-Rating der Serie (0 = noch nicht bewertet). */
+  userRating: number;
   premiereType?: 'season-start' | 'mid-season-return';
   breakType?: 'season-finale' | 'season-break';
 }
@@ -109,6 +112,8 @@ export const useWeeklyEpisodes = (
     const visibleSeries = seriesList.filter((s) => !s.hidden && (!watchlistOnly || s.watchlist));
 
     for (const series of visibleSeries) {
+      const overall = parseFloat(calculateOverallRating(series));
+      const userRating = isNaN(overall) ? 0 : overall;
       const seasonsArray = Array.isArray(series.seasons)
         ? series.seasons
         : series.seasons
@@ -207,6 +212,7 @@ export const useWeeklyEpisodes = (
             runtime: ep.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
             providerNames: series.provider?.provider?.map((p) => p.name) || [],
             providers: prioritizeProviders(series.provider?.provider || []),
+            userRating,
             premiereType,
             breakType,
           };

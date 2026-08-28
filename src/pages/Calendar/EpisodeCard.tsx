@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ExpandMore } from '@mui/icons-material';
+import { Check, ExpandMore, Star, StarBorder } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
@@ -202,6 +202,55 @@ const PremiereOverlay = memo(
 );
 PremiereOverlay.displayName = 'PremiereOverlay';
 
+/**
+ * Eigene Serien-Bewertung: goldener Wert, wenn bewertet — sonst ein stiller
+ * Umriss-Stern. Ein Klick öffnet die Schnellbewertung, ohne die Karte zu
+ * verlassen. `variant="poster"` ist die Glas-Pille auf dem Desktop-Poster,
+ * `variant="inline"` sitzt auf Mobile in der Titelzeile.
+ */
+const RatingBadge = memo(
+  ({
+    seriesId,
+    rating,
+    variant,
+    onRate,
+  }: {
+    seriesId: number;
+    rating: number;
+    variant: 'poster' | 'inline';
+    onRate: (seriesId: number) => void;
+  }) => {
+    const { currentTheme } = useTheme();
+    const rated = rating > 0;
+    const color = rated ? currentTheme.status.warning : currentTheme.text.muted;
+    const label = rated
+      ? t('Deine Bewertung: {n}/10', { n: rating.toFixed(1) })
+      : t('Noch nicht bewertet');
+
+    return (
+      <button
+        type="button"
+        className={`cal-ep-rate cal-ep-rate--${variant}${rated ? ' is-rated' : ''}`}
+        title={`${label} — ${t('Bewertung bearbeiten')}`}
+        aria-label={`${label} — ${t('Bewertung bearbeiten')}`}
+        style={{ color: rated ? color : undefined }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRate(seriesId);
+        }}
+      >
+        {rated ? (
+          <Star className="cal-ep-rate__icon" />
+        ) : (
+          <StarBorder className="cal-ep-rate__icon" />
+        )}
+        {rated && rating.toFixed(1)}
+      </button>
+    );
+  }
+);
+RatingBadge.displayName = 'RatingBadge';
+
 // Watch-Status-Indikator (mobile)
 interface WatchIndicatorProps {
   watched: boolean;
@@ -252,6 +301,9 @@ interface PosterWrapProps {
   onMark?: () => void;
   provider?: WeeklyEpisodeProvider;
   searchTitle: string;
+  seriesId: number;
+  rating: number;
+  onRate: (seriesId: number) => void;
   children: React.ReactNode; // poster-info content
 }
 
@@ -264,6 +316,9 @@ const PosterWrap = memo(
     onMark,
     provider,
     searchTitle,
+    seriesId,
+    rating,
+    onRate,
     children,
   }: PosterWrapProps) => {
     const { currentTheme } = useTheme();
@@ -272,21 +327,27 @@ const PosterWrap = memo(
       <div className="cal-ep-poster-wrap">
         <img src={posterSrc} alt="" decoding="async" className="cal-ep-poster" loading="lazy" />
 
-        {premiereType && (
-          <PremiereOverlay type={premiereType} themePrimary={currentTheme.primary} />
-        )}
+        {/* Ecke oben links: Status-Overlay und Bewertung teilen sich eine Reihe,
+            damit die Bewertung bei Premiere/Pause nicht darunter verschwindet. */}
+        <div className="cal-ep-poster-topleft">
+          {premiereType && (
+            <PremiereOverlay type={premiereType} themePrimary={currentTheme.primary} />
+          )}
 
-        {!premiereType && breakType && (
-          <span
-            className="cal-ep-break-overlay"
-            style={{
-              background: breakColor(breakType),
-              color: getOptimalTextColor(breakColor(breakType)),
-            }}
-          >
-            {breakLabel(breakType)}
-          </span>
-        )}
+          {!premiereType && breakType && (
+            <span
+              className="cal-ep-break-overlay"
+              style={{
+                background: breakColor(breakType),
+                color: getOptimalTextColor(breakColor(breakType)),
+              }}
+            >
+              {breakLabel(breakType)}
+            </span>
+          )}
+
+          <RatingBadge seriesId={seriesId} rating={rating} variant="poster" onRate={onRate} />
+        </div>
 
         {watched ? (
           <div
@@ -364,10 +425,11 @@ interface SingleEpisodeCardProps {
   ep: WeeklyEpisode;
   backdropSrc: string | undefined;
   onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
+  onRateSeries: (seriesId: number) => void;
 }
 
 export const SingleEpisodeCard = memo(
-  ({ ep, backdropSrc, onMarkWatched }: SingleEpisodeCardProps) => {
+  ({ ep, backdropSrc, onMarkWatched, onRateSeries }: SingleEpisodeCardProps) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
     const { brandColor, hasNoActiveSub, displayProvider } = useProviderColoring(
@@ -416,6 +478,9 @@ export const SingleEpisodeCard = memo(
           onMark={!ep.watched ? handleMark : undefined}
           provider={provider}
           searchTitle={ep.seriesTitle}
+          seriesId={ep.seriesId}
+          rating={ep.userRating}
+          onRate={onRateSeries}
         >
           <span className="cal-ep-title">{ep.seriesTitle}</span>
           <span
@@ -464,8 +529,16 @@ export const SingleEpisodeCard = memo(
         {/* Mobile: poster + info */}
         <MobilePoster src={ep.poster} provider={provider} searchTitle={ep.seriesTitle} />
         <div className="cal-ep-info cal-ep-info-mobile">
-          <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
-            {ep.seriesTitle}
+          <span className="cal-ep-title-row">
+            <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
+              {ep.seriesTitle}
+            </span>
+            <RatingBadge
+              seriesId={ep.seriesId}
+              rating={ep.userRating}
+              variant="inline"
+              onRate={onRateSeries}
+            />
           </span>
           <span
             className="cal-ep-episode"
@@ -528,10 +601,18 @@ interface EpisodeGroupCardProps {
   isExpanded: boolean;
   onToggle: () => void;
   onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
+  onRateSeries: (seriesId: number) => void;
 }
 
 export const EpisodeGroupCard = memo(
-  ({ group, backdropSrc, isExpanded, onToggle, onMarkWatched }: EpisodeGroupCardProps) => {
+  ({
+    group,
+    backdropSrc,
+    isExpanded,
+    onToggle,
+    onMarkWatched,
+    onRateSeries,
+  }: EpisodeGroupCardProps) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
 
@@ -586,6 +667,9 @@ export const EpisodeGroupCard = memo(
             watched={allWatched}
             provider={provider}
             searchTitle={group.seriesTitle}
+            seriesId={group.seriesId}
+            rating={firstEp.userRating}
+            onRate={onRateSeries}
           >
             <span className="cal-ep-title">{group.seriesTitle}</span>
             <span
@@ -617,8 +701,16 @@ export const EpisodeGroupCard = memo(
           {/* Mobile: poster + info */}
           <MobilePoster src={firstEp.poster} provider={provider} searchTitle={group.seriesTitle} />
           <div className="cal-ep-info cal-ep-info-mobile">
-            <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
-              {group.seriesTitle}
+            <span className="cal-ep-title-row">
+              <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
+                {group.seriesTitle}
+              </span>
+              <RatingBadge
+                seriesId={group.seriesId}
+                rating={firstEp.userRating}
+                variant="inline"
+                onRate={onRateSeries}
+              />
             </span>
             <span
               className="cal-ep-episode"

@@ -5,6 +5,8 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
+import { useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
+import { calculateOverallRating } from '../../lib/rating/rating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -130,6 +132,26 @@ export const useCalendarData = () => {
     }
     return result;
   }, [schedule]);
+
+  // Schnellbewertung direkt aus dem Kalender
+
+  const { quickRatingOpen, quickRatingSeries, showQuickRating, closeQuickRating, saveQuickRating } =
+    useQuickSeasonRating();
+
+  const handleRateSeries = useCallback(
+    (seriesId: number) => {
+      const series = seriesList.find((s) => s.id === seriesId);
+      if (!series) return;
+      showQuickRating(series, (series.seasons?.length ?? 1) as number);
+    },
+    [seriesList, showQuickRating]
+  );
+
+  const quickRatingValue = useMemo(() => {
+    if (!quickRatingSeries) return 0;
+    const overall = parseFloat(calculateOverallRating(quickRatingSeries));
+    return isNaN(overall) ? 0 : Math.round(overall);
+  }, [quickRatingSeries]);
 
   // Mark watched
 
@@ -285,5 +307,13 @@ export const useCalendarData = () => {
 
     // Actions
     handleMarkWatched,
+
+    // Schnellbewertung
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingValue,
+    handleRateSeries,
+    closeQuickRating,
+    saveQuickRating,
   };
 };

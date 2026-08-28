@@ -37,6 +37,7 @@ const ep = (over: Partial<WeeklyEpisode> = {}): WeeklyEpisode => ({
   runtime: 40,
   providerNames: [],
   providers: [],
+  userRating: 0,
   ...over,
 });
 
@@ -66,6 +67,7 @@ describe('CalendarGrid', () => {
         expandedGroups={new Set()}
         onToggleGroup={vi.fn()}
         onMarkWatched={vi.fn()}
+        onRateSeries={vi.fn()}
       />
     );
     expect(screen.getByTestId('single-ep')).toBeInTheDocument();
@@ -80,6 +82,7 @@ describe('CalendarGrid', () => {
         expandedGroups={new Set()}
         onToggleGroup={vi.fn()}
         onMarkWatched={vi.fn()}
+        onRateSeries={vi.fn()}
       />
     );
     expect(screen.getByTestId('group-ep')).toBeInTheDocument();
@@ -94,6 +97,7 @@ describe('CalendarGrid', () => {
         expandedGroups={new Set()}
         onToggleGroup={vi.fn()}
         onMarkWatched={vi.fn()}
+        onRateSeries={vi.fn()}
       />
     );
     expect(container.querySelectorAll('.cal-day').length).toBe(2);

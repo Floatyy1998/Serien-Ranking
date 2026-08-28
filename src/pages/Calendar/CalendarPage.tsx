@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
+import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { hapticTap } from '../../lib/haptics';
 import { t } from '../../services/i18n';
 import { useCalendarData } from './useCalendarData';
@@ -33,6 +34,12 @@ export const CalendarPage = () => {
     expandedGroups,
     toggleGroup,
     handleMarkWatched,
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingValue,
+    handleRateSeries,
+    closeQuickRating,
+    saveQuickRating,
   } = useCalendarData();
 
   return (
@@ -153,11 +160,21 @@ export const CalendarPage = () => {
             expandedGroups={expandedGroups}
             onToggleGroup={toggleGroup}
             onMarkWatched={handleMarkWatched}
+            onRateSeries={handleRateSeries}
             onPrevWeek={goToPrevWeek}
             onNextWeek={goToNextWeek}
             weekStamp={`${weekOffset}`}
           />
         )}
+
+        <QuickRatingSheet
+          isOpen={quickRatingOpen}
+          onClose={closeQuickRating}
+          seriesTitle={quickRatingSeries?.title || ''}
+          eyebrow={t('Schnellbewertung')}
+          initialRating={quickRatingValue}
+          onRate={saveQuickRating}
+        />
       </div>
     </PageLayout>
   );

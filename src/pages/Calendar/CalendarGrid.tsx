@@ -25,6 +25,7 @@ interface DayCellProps {
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
   onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
+  onRateSeries: (seriesId: number) => void;
 }
 
 interface CalendarGridProps {
@@ -34,6 +35,7 @@ interface CalendarGridProps {
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
   onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
+  onRateSeries: (seriesId: number) => void;
   /** Mobile-Tagesansicht: Swipe über die Wochengrenze hinaus. */
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
@@ -49,7 +51,8 @@ function renderGroups(
   backdrops: Record<number, string>,
   expandedGroups: Set<string>,
   onToggleGroup: (groupKey: string) => void,
-  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void,
+  onRateSeries: (seriesId: number) => void
 ) {
   return groups.map((group) => {
     const groupKey = `${dateKey}-${group.seriesId}`;
@@ -60,6 +63,7 @@ function renderGroups(
           ep={group.episodes[0]}
           backdropSrc={backdrops[group.seriesId]}
           onMarkWatched={onMarkWatched}
+          onRateSeries={onRateSeries}
         />
       );
     }
@@ -71,6 +75,7 @@ function renderGroups(
         isExpanded={expandedGroups.has(groupKey)}
         onToggle={() => onToggleGroup(groupKey)}
         onMarkWatched={onMarkWatched}
+        onRateSeries={onRateSeries}
       />
     );
   });
@@ -89,6 +94,7 @@ const DayCell = memo(
         expandedGroups,
         onToggleGroup,
         onMarkWatched,
+        onRateSeries,
       },
       ref
     ) => {
@@ -139,7 +145,8 @@ const DayCell = memo(
                 backdrops,
                 expandedGroups,
                 onToggleGroup,
-                onMarkWatched
+                onMarkWatched,
+                onRateSeries
               )}
             </div>
           )}
@@ -158,6 +165,7 @@ export const CalendarGrid = memo(
     expandedGroups,
     onToggleGroup,
     onMarkWatched,
+    onRateSeries,
     onPrevWeek,
     onNextWeek,
     weekStamp,
@@ -218,6 +226,7 @@ export const CalendarGrid = memo(
               expandedGroups={expandedGroups}
               onToggleGroup={onToggleGroup}
               onMarkWatched={onMarkWatched}
+              onRateSeries={onRateSeries}
             />
           ))}
         </div>
@@ -299,7 +308,8 @@ export const CalendarGrid = memo(
                   backdrops,
                   expandedGroups,
                   onToggleGroup,
-                  onMarkWatched
+                  onMarkWatched,
+                  onRateSeries
                 )}
               </div>
             ) : (

@@ -1,6 +1,6 @@
 import { Save } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticSuccess } from '../../lib/haptics';
 import { t } from '../../services/i18n';
@@ -14,6 +14,10 @@ interface QuickRatingSheetProps {
   seriesTitle: string;
   seasonNumber?: number;
   onRate: (rating: number) => void;
+  /** Überschrift über dem Titel — Standard ist der Abspann-Fall. */
+  eyebrow?: string;
+  /** Vorbelegung, damit eine bestehende Bewertung nicht bei 0 startet. */
+  initialRating?: number;
 }
 
 export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
@@ -21,10 +25,18 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   onClose,
   seriesTitle,
   onRate,
+  eyebrow,
+  initialRating = 0,
 }) => {
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(initialRating);
+
+  // Das Sheet bleibt montiert — ohne diesen Abgleich zeigte der zweite Aufruf
+  // noch den Wert des vorherigen Titels.
+  useEffect(() => {
+    if (isOpen) setRating(initialRating);
+  }, [isOpen, initialRating]);
 
   const handleSave = () => {
     if (rating > 0) {
@@ -53,7 +65,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               color: accent,
             }}
           >
-            {t('Keine weiteren Folgen')}
+            {eyebrow ?? t('Keine weiteren Folgen')}
           </span>
           <h3
             style={{

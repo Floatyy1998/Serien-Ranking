@@ -257,6 +257,88 @@
   letter-spacing: 0.3px;
 }
 
+/* Titelzeile (Mobile): Titel links, eigene Bewertung rechts — die Flex-Zeile
+   hält den Stern auf der Höhe des Titels, ohne die Kartenhöhe zu ändern. */
+.cal-ep-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cal-ep-title-row .cal-ep-title {
+  min-width: 0;
+}
+
+/* Ecke oben links auf dem Poster — nur Desktop (siehe Media-Query weiter unten). */
+.cal-ep-poster-topleft {
+  display: none;
+}
+
+/* Eigene Serien-Bewertung. Die doppelte Klasse schlägt die globale
+   44px-Button-Regel (.mobile-app button), ohne sie mit !important auszuhebeln. */
+.cal-ep .cal-ep-rate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+  flex: none;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 2px;
+  border: none;
+  background: none;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Bewertet: voller Kontrast mit Wert — unbewertet bleibt der stille Umriss-Stern. */
+.cal-ep .cal-ep-rate.is-rated {
+  padding: 2px 6px 2px 4px;
+  opacity: 1;
+}
+
+.cal-ep .cal-ep-rate:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.cal-ep .cal-ep-rate:active {
+  transform: scale(0.94);
+}
+
+.cal-ep .cal-ep-rate:focus-visible {
+  outline: 2px solid var(--theme-primary, #ef6f8a);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.cal-ep .cal-ep-rate__icon {
+  font-size: 13px;
+}
+
+/* Trefferfläche vergrößern, ohne die Zeile aufzublähen — schmal gehalten,
+   damit Taps daneben weiter die Karte öffnen. */
+.cal-ep .cal-ep-rate::after {
+  content: '';
+  position: absolute;
+  inset: -9px -6px;
+}
+
 /* Desktop break overlay — hidden on mobile, shown on desktop */
 .cal-ep-break-overlay {
   display: none;
@@ -830,6 +912,55 @@
   .cal-ep-poster-info .cal-ep-name {
     color: rgba(255, 255, 255, 0.65);
     font-size: 12px;
+    display: none;
+  }
+
+  /* Ecke oben links: Premiere/Pause und Bewertung nebeneinander */
+  .cal-ep-poster-topleft {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 3;
+  }
+
+  /* In der Reihe positionieren die Overlays sich nicht mehr selbst */
+  .cal-ep-poster-topleft .cal-ep-premiere-overlay,
+  .cal-ep-poster-topleft .cal-ep-break-overlay {
+    position: static;
+    top: auto;
+    left: auto;
+  }
+
+  /* Bewertung auf dem Poster: Glas-Pille in derselben Höhe wie die Overlays */
+  .cal-ep .cal-ep-rate--poster {
+    padding: 5px;
+    border-radius: var(--radius-xs);
+    background: rgba(10, 14, 26, 0.72);
+    -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
+    box-shadow: var(--shadow-sm);
+    font-size: 12px;
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .cal-ep .cal-ep-rate--poster.is-rated {
+    padding: 5px 9px 5px 7px;
+  }
+
+  .cal-ep .cal-ep-rate--poster .cal-ep-rate__icon {
+    font-size: 15px;
+  }
+
+  .cal-ep .cal-ep-rate--poster:hover {
+    background: rgba(10, 14, 26, 0.9);
+  }
+
+  /* Auf dem Desktop trägt das Poster die Bewertung — die Titelzeile bleibt clean */
+  .cal-ep-poster-info .cal-ep-rate--inline {
     display: none;
   }
 

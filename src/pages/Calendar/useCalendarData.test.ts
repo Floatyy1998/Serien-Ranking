@@ -108,6 +108,26 @@ describe('useCalendarData', () => {
     expect(result.current.backdrops).toEqual({});
   });
 
+  it('opens the quick rating sheet with the current rating prefilled', () => {
+    ctx.seriesList = [mkSeries({ id: 1, watchlist: true, rating: { Drama: 8 } as never })];
+    const { result } = renderHook(() => useCalendarData());
+
+    expect(result.current.quickRatingOpen).toBe(false);
+    act(() => result.current.handleRateSeries(1));
+    expect(result.current.quickRatingOpen).toBe(true);
+    expect(result.current.quickRatingSeries?.id).toBe(1);
+    expect(result.current.quickRatingValue).toBe(8);
+
+    act(() => result.current.closeQuickRating());
+    expect(result.current.quickRatingOpen).toBe(false);
+  });
+
+  it('ignores a rating request for a series that is not in the list', () => {
+    const { result } = renderHook(() => useCalendarData());
+    act(() => result.current.handleRateSeries(999));
+    expect(result.current.quickRatingOpen).toBe(false);
+  });
+
   it('counts watched episodes', () => {
     ctx.seriesList = [
       mkSeries({

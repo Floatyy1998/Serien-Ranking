@@ -22,12 +22,21 @@ const { navigateMock, calState } = vi.hoisted(() => ({
     expandedGroups: new Set<string>(),
     toggleGroup: vi.fn(),
     handleMarkWatched: vi.fn(),
+    quickRatingOpen: false,
+    quickRatingSeries: null,
+    quickRatingValue: 0,
+    handleRateSeries: vi.fn(),
+    closeQuickRating: vi.fn(),
+    saveQuickRating: vi.fn(),
   },
 }));
 
 vi.mock('./useCalendarData', () => ({ useCalendarData: () => calState }));
 vi.mock('./CalendarToolbar', () => ({ CalendarToolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('./CalendarGrid', () => ({ CalendarGrid: () => <div data-testid="grid" /> }));
+vi.mock('../../components/ui/QuickRatingSheet', () => ({
+  QuickRatingSheet: () => <div data-testid="quick-rating" />,
+}));
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('@mui/icons-material', () => ({
   CalendarMonth: () => null,
