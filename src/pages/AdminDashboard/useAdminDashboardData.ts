@@ -28,6 +28,28 @@ export interface ReachStats {
   ts?: number;
 }
 
+/**
+ * Onboarding-Trichter aus `analytics/onboarding/funnel` — gezaehlt vom Cron
+ * `build-onboarding-funnel.js`. Reine Zahlen, keine UIDs.
+ */
+export interface OnboardingFunnel {
+  ts: number;
+  total: number;
+  done: number;
+  open: number;
+  /** Altkonten ohne Flag — gelten als fertig. */
+  legacy: number;
+  steps: Record<string, number>;
+  /** Offene Konten von vor der Schritt-Messung. */
+  ohneMarker: number;
+  ohneName: number;
+  mitPet: number;
+  /** Kein Token-Refresh nach der Anlage — sofort wieder weg. */
+  sofortWeg: number;
+  provider: Record<string, { angelegt: number; fertig: number; offen: number }>;
+  letzte30Tage: { angelegt: number; fertig: number };
+}
+
 export interface UserMeta {
   uid: string;
   firstSeen: number;
@@ -99,6 +121,7 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
   const [loading, setLoading] = useState(true);
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [reachStats, setReachStats] = useState<ReachStats[]>([]);
+  const [onboardingFunnel, setOnboardingFunnel] = useState<OnboardingFunnel | null>(null);
   const [userMetas, setUserMetas] = useState<Record<string, UserMeta>>({});
   const [realtimeUsers, setRealtimeUsers] = useState<RealtimeUser[]>([]);
   const [userProfiles, setUserProfiles] = useState<
@@ -211,6 +234,24 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
       })
       .catch(() => {
         if (!abgebrochen) setReachStats([]);
+      });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [refreshKey, braucht]);
+
+  // Onboarding-Trichter: ein flacher Knoten mit Zahlen — ein Read.
+  useEffect(() => {
+    if (!braucht('daily')) return;
+    let abgebrochen = false;
+    dbRef('analytics/onboarding/funnel')
+      .once('value')
+      .then((snap) => {
+        if (abgebrochen) return;
+        setOnboardingFunnel((snap.val() as OnboardingFunnel | null) ?? null);
+      })
+      .catch(() => {
+        if (!abgebrochen) setOnboardingFunnel(null);
       });
     return () => {
       abgebrochen = true;
@@ -536,5 +577,7 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
     reachStats,
     reachLatest,
     reachChartData,
+    // Onboarding-Trichter
+    onboardingFunnel,
   };
 }

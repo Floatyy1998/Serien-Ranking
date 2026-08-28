@@ -19,6 +19,8 @@ import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
 import { useApplyWatchProgress } from '../Onboarding/hooks/useApplyWatchProgress';
 import { useOnboardingSearch } from '../Onboarding/hooks/useOnboardingSearch';
 import { mapLimit } from '../../utils/mapLimit';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { markOnboardingStep } from '../../services/onboardingProgress';
 import { useWaitForBackendItem } from '../Onboarding/hooks/useWaitForBackendItem';
 import '../Onboarding/onboarding.css';
 
@@ -95,7 +97,14 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
       } catch (e) {
         console.error('[guest-resume] progress error', e);
       }
-      await dbRef(userPath(uid, 'onboardingComplete')).set(true);
+      await applyUserUpdate(
+        uid,
+        { [userPath(uid, 'onboardingComplete')]: true },
+        'Onboarding abgeschlossen (Gast)'
+      );
+      void markOnboardingStep(uid, 'finished', {
+        provider: user?.providerData?.[0]?.providerId,
+      });
       setOnboardingComplete?.(true);
       clearGuestPicks();
       navigate('/', { replace: true });

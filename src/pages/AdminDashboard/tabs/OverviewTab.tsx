@@ -6,6 +6,7 @@ import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveCo
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
 import { ReachSection } from './ReachSection';
+import { OnboardingFunnelSection } from './OnboardingFunnelSection';
 import { LivePulse } from '../components/LivePulse';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
@@ -45,6 +46,9 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
 
       {/* Reichweite: vollstaendig, unabhaengig vom Analytics-Hinweis */}
       <ReachSection data={data} theme={theme} />
+
+      {/* Onboarding: wo bleiben neue Konten stehen? */}
+      <OnboardingFunnelSection data={data} theme={theme} />
 
       {/* KPI Scorecards */}
       <div className="adm-grid">

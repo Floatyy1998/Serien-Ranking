@@ -44,6 +44,14 @@ vi.mock('./steps/CompletionStep', () => ({ CompletionStep: () => <div>completion
 vi.mock('firebase/compat/app', () => ({
   default: { database: () => ({ ref: () => ({ set: vi.fn(async () => {}) }) }) },
 }));
+// Offline-Queue haengt an einer initialisierten Firebase-App — im Test nur der Write.
+vi.mock('../../services/offline/queuedUpdate', () => ({
+  applyUserUpdate: vi.fn(async () => ({ queued: false })),
+}));
+vi.mock('../../services/onboardingProgress', () => ({
+  markOnboardingStep: vi.fn(async () => {}),
+  signupProvider: (id?: string) => id ?? 'unbekannt',
+}));
 vi.mock('firebase/compat/database', () => ({}));
 
 import { OnboardingPage } from './OnboardingPage';

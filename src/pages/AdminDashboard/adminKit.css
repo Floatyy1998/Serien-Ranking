@@ -790,3 +790,48 @@
   margin-top: 4px;
   font-size: var(--text-sm);
 }
+
+/* ── Trichter (Onboarding) ───────────────────────────────────────────── */
+.adm-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.adm-funnel__row {
+  display: grid;
+  grid-template-columns: 150px 1fr 40px;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.adm-funnel__row.is-muted {
+  color: var(--adm-muted);
+}
+
+.adm-funnel__label {
+  color: var(--adm-muted);
+}
+
+.adm-funnel__track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--adm-line-soft);
+  overflow: hidden;
+}
+
+.adm-funnel__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--theme-primary);
+}
+
+.adm-funnel__value {
+  text-align: right;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--adm-text);
+}

@@ -16,9 +16,11 @@ import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { petService } from '../../services/petService';
 import { hasGuestOnboarding } from '../../services/guestOnboarding';
+import { markOnboardingStep } from '../../services/onboardingProgress';
 import { GuestResumeOnboarding } from '../GuestOnboarding/GuestResumeOnboarding';
 import { t } from '../../services/i18n';
 import { showToast } from '../../lib/toast';
@@ -47,6 +49,17 @@ export const OnboardingPage: React.FC = () => {
   }, [onboardingComplete, navigate]);
 
   const [step, setStep] = useState<Step>('welcome');
+
+  // Erreichten Schritt festhalten — ohne ihn bleibt ein Abbruch ein Konto ohne
+  // alles, und niemand weiss, an welcher Stelle es geklemmt hat.
+  useEffect(() => {
+    const uid = user?.uid;
+    if (!uid) return;
+    void markOnboardingStep(uid, step, {
+      provider: user?.providerData?.[0]?.providerId,
+      first: step === 'welcome',
+    });
+  }, [step, user]);
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
   // Social-Sign-ups (Google/Apple) haben keinen selbst gewählten Namen —
   // der Welcome-Step fragt ihn dann ab, statt das Mail-Kürzel stehen zu lassen.
@@ -286,7 +299,12 @@ export const OnboardingPage: React.FC = () => {
       }
       tick();
 
-      await dbRef(userPath(uid, 'onboardingComplete')).set(true);
+      await applyUserUpdate(
+        uid,
+        { [userPath(uid, 'onboardingComplete')]: true },
+        'Onboarding abgeschlossen'
+      );
+      void markOnboardingStep(uid, 'finished');
       setOnboardingComplete?.(true);
       setCompletionProgress(100);
       setTimeout(() => navigate('/', { replace: true }), 500);
@@ -304,7 +322,12 @@ export const OnboardingPage: React.FC = () => {
         setCompletionProgress(0);
         return;
       }
-      await dbRef(userPath(uid, 'onboardingComplete')).set(true);
+      await applyUserUpdate(
+        uid,
+        { [userPath(uid, 'onboardingComplete')]: true },
+        'Onboarding abgeschlossen'
+      );
+      void markOnboardingStep(uid, 'finished');
       setOnboardingComplete?.(true);
       navigate('/', { replace: true });
     }
