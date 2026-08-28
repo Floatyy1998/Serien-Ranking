@@ -198,7 +198,18 @@ interface FirebaseSectionProps {
 
 export const FirebaseSection = memo(({ data }: FirebaseSectionProps) => {
   const { currentTheme } = useTheme();
-  const serviceKeys = ['auth', 'database', 'storage', 'analytics', 'hosting'] as const;
+  // Reihenfolge wie in der Erklaerung. `messaging` und `reach` fehlen in
+  // aelteren Fassungen auf dem Backend — deshalb wird jeder Abschnitt vor dem
+  // Rendern geprueft, statt hart auf sein Vorhandensein zu bauen.
+  const serviceKeys = [
+    'auth',
+    'database',
+    'storage',
+    'messaging',
+    'analytics',
+    'reach',
+    'hosting',
+  ] as const;
 
   return (
     <PrivacySection title={data.title}>
@@ -209,9 +220,10 @@ export const FirebaseSection = memo(({ data }: FirebaseSectionProps) => {
         {data.intro}
       </p>
 
-      {serviceKeys.map((key) => (
-        <FirebaseServiceBlock key={key} service={data.services[key]} />
-      ))}
+      {serviceKeys.map((key) => {
+        const service = data.services[key];
+        return service ? <FirebaseServiceBlock key={key} service={service} /> : null;
+      })}
 
       <p className="priv-privacy-footer" style={{ color: currentTheme.text.secondary }}>
         {data.privacyLink}{' '}

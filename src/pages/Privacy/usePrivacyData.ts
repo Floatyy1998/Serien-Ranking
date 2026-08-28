@@ -41,7 +41,11 @@ export interface PrivacyData {
         auth: FirebaseService;
         database: FirebaseService;
         storage: FirebaseService;
+        // Optional: aeltere Fassungen auf dem Backend kennen diese Abschnitte
+        // noch nicht — der Renderer laesst fehlende einfach aus.
+        messaging?: FirebaseService;
         analytics: FirebaseService;
+        reach?: FirebaseService;
         hosting: FirebaseService;
       };
       privacyLink: string;
