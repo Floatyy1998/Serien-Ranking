@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { dbRef, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
+import { onValue } from '../../services/db/subscribeValue';
 
 interface RawPet extends Omit<Pet, 'lastFed' | 'createdAt' | 'deathTime'> {
   lastFed?: string | number;
@@ -63,10 +64,10 @@ export function useFriendPet(friendUid: string | undefined): {
         });
         setLoading(false);
       };
-      petRef.on('value', petHandler);
+      onValue(petRef, petHandler);
     };
 
-    activePetRef.on('value', activeHandler);
+    onValue(activePetRef, activeHandler);
 
     return () => {
       activePetRef?.off('value', activeHandler);

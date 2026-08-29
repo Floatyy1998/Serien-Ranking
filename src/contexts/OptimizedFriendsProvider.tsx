@@ -13,6 +13,7 @@ import {
   updateUserActivityOp,
 } from './friendOperations';
 import { OptimizedFriendsContext } from './OptimizedFriendsContext';
+import { onValue } from '../services/db/subscribeValue';
 
 export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -63,8 +64,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     if (!user) return;
     const ref = dbRef(userPath(user.uid, 'readTimes'));
     let baselineWritten = false;
-    const listener = ref.on(
-      'value',
+    const listener = onValue(
+      ref,
       (snap) => {
         const data = snap.val() as { requests?: number; activities?: number } | null;
         if (data) {
@@ -85,12 +86,14 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           setReadTimesLoaded(true);
         }
       },
-      (error: Error) => {
-        console.error('Failed to load read times:', error);
-        const now = Date.now();
-        setLastReadRequestsTime(now);
-        setLastReadActivitiesTime(now);
-        setReadTimesLoaded(true);
+      {
+        onError: (error: Error) => {
+          console.error('Failed to load read times:', error);
+          const now = Date.now();
+          setLastReadRequestsTime(now);
+          setLastReadActivitiesTime(now);
+          setReadTimesLoaded(true);
+        },
       }
     );
     return () => ref.off('value', listener);
@@ -128,7 +131,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       .equalTo(user.uid)
       .limitToLast(50);
 
-    const incomingListener = incomingRef.on('value', (snapshot) => {
+    const incomingListener = onValue(incomingRef, (snapshot) => {
       const data = snapshot.val();
       const requests = data
         ? Object.keys(data).map((key) => ({
@@ -145,7 +148,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       setUnreadRequestsCount(unreadCount);
     });
 
-    const outgoingListener = outgoingRef.on('value', (snapshot) => {
+    const outgoingListener = onValue(outgoingRef, (snapshot) => {
       const data = snapshot.val();
       const requests = data
         ? Object.keys(data).map((key) => ({

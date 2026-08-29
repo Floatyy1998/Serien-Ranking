@@ -119,6 +119,24 @@ describe('updateWatchStreak', () => {
     expect(s.longestStreak).toBe(10);
   });
 
+  it('Datensatz ohne streaks-Feld stürzt nicht ab (Firebase speichert leere Arrays nicht)', async () => {
+    // Genau der Zustand aus dem Fehlerbericht: gespeichert sind nur die drei
+    // Zahlen, das leere Array fehlt — .push() lief vorher auf undefined.
+    fb.setAt(P2026, {
+      currentStreak: 5,
+      longestStreak: 8,
+      lastWatchDate: '2026-06-10',
+    } as unknown as WatchStreak);
+
+    await updateWatchStreak('u');
+
+    const s = fb.getAt(P2026) as WatchStreak;
+    expect(s.streaks).toHaveLength(1);
+    expect(s.streaks[0].length).toBe(5);
+    expect(s.currentStreak).toBe(1);
+    expect(s.lastWatchDate).toBe(TODAY);
+  });
+
   it('Lücke bei currentStreak > 1 → alte Streak wird archiviert, Zähler auf 1', async () => {
     fb.setAt(
       P2026,

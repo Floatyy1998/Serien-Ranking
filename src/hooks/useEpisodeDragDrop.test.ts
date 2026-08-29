@@ -58,7 +58,8 @@ describe('useEpisodeDragDrop – Firebase watchlist order load', () => {
     const { unmount } = renderHook(() =>
       useEpisodeDragDrop({ nextEpisodes: makeEpisodes([1, 2]), user: USER, editModeActive: true })
     );
-    expect(fb.onMock).toHaveBeenCalledWith('value', expect.any(Function));
+    // Dritter Parameter: Fehler-Callback aus onValue (siehe services/db/subscribeValue).
+    expect(fb.onMock).toHaveBeenCalledWith('value', expect.any(Function), expect.any(Function));
     unmount();
     expect(fb.offMock).toHaveBeenCalled();
   });

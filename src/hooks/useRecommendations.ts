@@ -10,6 +10,7 @@ import type {
   RecommendationMediaType,
   RecommendationStatus,
 } from '../types/Recommendation';
+import { onValue } from '../services/db/subscribeValue';
 
 interface SendRecommendationInput {
   recipientUids: string[];
@@ -62,7 +63,7 @@ export function useRecommendations(): UseRecommendationsReturn {
       setLoading(false);
     };
 
-    ref.on('value', handle);
+    onValue(ref, handle);
     return () => {
       ref.off('value', handle);
     };

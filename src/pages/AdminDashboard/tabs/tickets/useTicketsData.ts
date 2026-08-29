@@ -9,6 +9,7 @@ import { localizedVariants, tLocale } from '../../../../services/i18n';
 import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
 import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
+import { onValue } from '../../../../services/db/subscribeValue';
 
 interface UseTicketsDataResult {
   tickets: BugTicket[];
@@ -52,7 +53,7 @@ export function useTicketsData(): UseTicketsDataResult {
     // sind chronologisch). Spart massiv Egress, weil ein einzelner Ticket-Update
     // sonst den kompletten Tickets-Node neu herunterlaedt.
     const query = dbRef('bugTickets').orderByKey().limitToLast(100);
-    const handler = query.on('value', (snap) => {
+    const handler = onValue(query, (snap) => {
       const val = snap.val();
       if (val) {
         const list = Object.values(val) as BugTicket[];

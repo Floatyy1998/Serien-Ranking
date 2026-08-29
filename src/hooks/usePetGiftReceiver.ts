@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { dbRef, dbGet, userPath } from '../services/db/ref';
+import { onValue } from '../services/db/subscribeValue';
 
 /**
  * Listens for incoming pet_gift notifications and applies their effects
@@ -70,7 +71,7 @@ export function usePetGiftReceiver(): void {
       }
     };
 
-    notifRef.on('value', handler);
+    onValue(notifRef, handler);
     return () => {
       notifRef.off('value', handler);
     };

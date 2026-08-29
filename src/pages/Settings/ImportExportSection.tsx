@@ -16,6 +16,7 @@ import { parseImportFile, type ParsedImport } from '../../lib/import/parseImport
 import { tapScaleSmall } from '../../lib/motion';
 import { downloadFile } from '../../services/export/downloadFile';
 import { t } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
 
 interface ImportJobState {
   status: 'running' | 'done' | 'error';
@@ -59,7 +60,7 @@ export const ImportExportSection = () => {
         if (cancelled) return;
         ref = dbRef(`importJobs/${user.uid}`);
         listener = (snap) => setJob(snap.val());
-        ref.on('value', listener);
+        onValue(ref, listener);
       } catch {
         /* Rules evtl. noch nicht deployed */
       }

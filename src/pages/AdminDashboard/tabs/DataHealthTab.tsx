@@ -3,6 +3,7 @@ import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef, serverTimestamp } from '../../../services/db/ref';
 import { showToast } from '../../../lib/toast';
 import { copyTextToClipboard } from '../../../utils/clipboard';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface DataIssue {
   type?: string;
@@ -96,7 +97,7 @@ export function DataHealthTab({
 
   useEffect(() => {
     const ref = dbRef('admin/dataIntegrityIssues');
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       setIssuesByUser(snap.val() || {});
       setLoading(false);
     });
@@ -108,13 +109,13 @@ export function DataHealthTab({
   // zeigte jahrelang gruen, weil gar nichts mass.
   useEffect(() => {
     const ref = dbRef('admin/dataHealth');
-    const handler = ref.on('value', (snap) => setSummary(snap.val() || null));
+    const handler = onValue(ref, (snap) => setSummary(snap.val() || null));
     return () => ref.off('value', handler);
   }, []);
 
   useEffect(() => {
     const ref = dbRef('admin/config/forceTmdb');
-    const handler = ref.on('value', (snap) => setForceListe(snap.val() || {}));
+    const handler = onValue(ref, (snap) => setForceListe(snap.val() || {}));
     return () => ref.off('value', handler);
   }, []);
 

@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { dbRef } from '../services/db/ref';
 import type { DiscussionFeedEntry, DiscussionItemType } from '../types/Discussion';
+import { onValue } from '../services/db/subscribeValue';
 
 export type FeedFilterType = 'all' | DiscussionItemType;
 
@@ -30,8 +31,8 @@ export const useDiscussionFeed = (
       query = ref.orderByChild('createdAt').limitToLast(limit);
     }
 
-    const listener = query.on(
-      'value',
+    const listener = onValue(
+      query,
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val() as Record<string, Omit<DiscussionFeedEntry, 'id'>>;
@@ -49,10 +50,12 @@ export const useDiscussionFeed = (
         }
         setLoading(false);
       },
-      (err) => {
-        console.error('Error fetching discussion feed:', err);
-        setError('Fehler beim Laden des Diskussions-Feeds');
-        setLoading(false);
+      {
+        onError: (err) => {
+          console.error('Error fetching discussion feed:', err);
+          setError('Fehler beim Laden des Diskussions-Feeds');
+          setLoading(false);
+        },
       }
     );
 

@@ -6,6 +6,7 @@
  * Hintergründe gekoppelt (unlockedBackgrounds, über alle Pets synchron).
  */
 import { dbGet, dbRef, userPath } from '../db/ref';
+import { onValue } from '../../services/db/subscribeValue';
 
 export type BubbleRadius = 'round' | 'soft' | 'sharp';
 
@@ -39,13 +40,15 @@ export function subscribeBubbleStyle(
   cb: (style: ChatBubbleStyle | null) => void
 ): () => void {
   const ref = dbRef(userPath(uid, 'chatPrefs', 'bubbleStyle'));
-  const handler = ref.on(
-    'value',
+  const handler = onValue(
+    ref,
     (snap) => {
       const val = snap.val();
       cb(isValidBubbleStyle(val) ? val : null);
     },
-    () => cb(null)
+    {
+      onError: () => cb(null),
+    }
   );
   return () => ref.off('value', handler);
 }
@@ -83,13 +86,15 @@ export function subscribeChatWallpaper(
   cb: (wallpaperId: string | null) => void
 ): () => void {
   const ref = dbRef(userPath(uid, 'chatPrefs', pairId, 'bg'));
-  const handler = ref.on(
-    'value',
+  const handler = onValue(
+    ref,
     (snap) => {
       const val = snap.val();
       cb(typeof val === 'string' ? val : null);
     },
-    () => cb(null)
+    {
+      onError: () => cb(null),
+    }
   );
   return () => ref.off('value', handler);
 }

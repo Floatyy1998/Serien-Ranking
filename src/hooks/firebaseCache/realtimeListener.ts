@@ -6,6 +6,7 @@ import firebase from 'firebase/compat/app';
 import type { Dispatch, SetStateAction } from 'react';
 import { t } from '../../services/i18n';
 import { isNetworkErrorMessage } from './guards';
+import { onValue } from '../../services/db/subscribeValue';
 
 export interface RealtimeListenerDeps<T> {
   setData: Dispatch<SetStateAction<T | null>>;
@@ -39,8 +40,8 @@ export function attachRealtimeListener<T>(
   } = deps;
   try {
     const ref = firebase.database().ref(path);
-    const listener = ref.on(
-      'value',
+    const listener = onValue(
+      ref,
       async (snapshot) => {
         if (snapshot.exists()) {
           const newData = snapshot.val();
@@ -60,25 +61,27 @@ export function attachRealtimeListener<T>(
         }
         setLoading(false);
       },
-      (error) => {
-        // Bei Netzwerkfehlern auf Cache zurückfallen
-        const errorMessage = error?.message || error?.toString() || '';
-        if (isNetworkErrorMessage(errorMessage)) {
-          setIsOffline(true);
-          loadFromCache().then((cachedData) => {
-            if (cachedData) {
-              setData(cachedData);
-              setIsStale(true);
-              setError('Offline - zeige gecachte Daten');
-            } else {
-              setError(t('Keine Offline-Daten verfügbar'));
-            }
+      {
+        onError: (error) => {
+          // Bei Netzwerkfehlern auf Cache zurückfallen
+          const errorMessage = error?.message || error?.toString() || '';
+          if (isNetworkErrorMessage(errorMessage)) {
+            setIsOffline(true);
+            loadFromCache().then((cachedData) => {
+              if (cachedData) {
+                setData(cachedData);
+                setIsStale(true);
+                setError('Offline - zeige gecachte Daten');
+              } else {
+                setError(t('Keine Offline-Daten verfügbar'));
+              }
+              setLoading(false);
+            });
+          } else {
+            setError(errorMessage || 'Firebase Fehler');
             setLoading(false);
-          });
-        } else {
-          setError(errorMessage || 'Firebase Fehler');
-          setLoading(false);
-        }
+          }
+        },
       }
     );
     return () => ref.off('value', listener);

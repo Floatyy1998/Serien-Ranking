@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
+import { subscribeValue } from '../../services/db/subscribeValue';
 import { useAuth } from '../../contexts/AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
@@ -129,10 +130,7 @@ export function usePetsData() {
         });
       });
     };
-    ref.on('value', handler);
-    return () => {
-      ref.off('value', handler);
-    };
+    return subscribeValue(ref, handler, { label: 'pets' });
   }, [user]);
 
   const createPet = async () => {

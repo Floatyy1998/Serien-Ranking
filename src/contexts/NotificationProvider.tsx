@@ -6,6 +6,7 @@ import 'firebase/compat/database';
 import { dbRef, userPath } from '../services/db/ref';
 import { NotificationContext } from './NotificationContext';
 import type { AppNotification, NotificationContextType } from './NotificationContext';
+import { onValue } from '../services/db/subscribeValue';
 
 interface NotificationProviderProps {
   children: ReactNode;
@@ -80,7 +81,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       }
     };
 
-    notificationsRef.on('value', handleData);
+    onValue(notificationsRef, handleData);
 
     return () => {
       notificationsRef.off('value', handleData);

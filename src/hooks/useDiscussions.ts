@@ -16,6 +16,7 @@ import { ADMIN_UID } from '../config/admin';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
 import { localizedVariants, t, tLocale } from '../services/i18n';
+import { onValue } from '../services/db/subscribeValue';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';
@@ -63,8 +64,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
     const ref = dbRef(path);
 
-    const listener = ref.orderByChild('createdAt').on(
-      'value',
+    const listener = onValue(
+      ref.orderByChild('createdAt'),
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
@@ -88,10 +89,12 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         }
         setLoading(false);
       },
-      (err) => {
-        console.error('Error fetching discussions:', err);
-        setError(t('Fehler beim Laden der Diskussionen'));
-        setLoading(false);
+      {
+        onError: (err) => {
+          console.error('Error fetching discussions:', err);
+          setError(t('Fehler beim Laden der Diskussionen'));
+          setLoading(false);
+        },
       }
     );
 

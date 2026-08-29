@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { dbRef, paths } from './db/ref';
+import { onValue } from './db/subscribeValue';
 
 /**
  * Das eigene Profilbild als eine reaktive Quelle für die ganze App.
@@ -53,7 +54,7 @@ export const bindOwnPhotoURL = (uid: string | null | undefined): void => {
       const value = snapshot.val();
       setOwnPhotoURL(typeof value === 'string' && value ? value : null);
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     detach = () => ref.off('value', handler);
   } catch {
     /* offline oder Firebase noch nicht bereit — der optimistische Wert traegt */

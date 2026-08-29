@@ -4,6 +4,7 @@
  */
 import { dbRef, userPath } from '../db/ref';
 import { otherUidFromPairId, type ChatSummary } from './chatService';
+import { onValue } from '../db/subscribeValue';
 
 export interface UnreadChat {
   pairId: string;
@@ -43,14 +44,16 @@ export function subscribeUnreadChats(
     for (const pairId of Object.keys(index)) {
       if (summaryOffs.has(pairId)) continue;
       const ref = dbRef(`chats/${pairId}/summary`);
-      const handler = ref.on(
-        'value',
+      const handler = onValue(
+        ref,
         (snap) => {
           summaries[pairId] = (snap.val() || {}) as ChatSummary;
           emit();
         },
-        () => {
-          /* Chat evtl. gerade gelöscht — Eintrag bleibt einfach leer */
+        {
+          onError: () => {
+            /* Chat evtl. gerade gelöscht — Eintrag bleibt einfach leer */
+          },
         }
       );
       summaryOffs.set(pairId, () => ref.off('value', handler));
@@ -66,12 +69,12 @@ export function subscribeUnreadChats(
 
   const indexRef = dbRef(`chatIndex/${myUid}`);
   const stateRef = dbRef(userPath(myUid, 'chatState'));
-  const onIndex = indexRef.on('value', (snap) => {
+  const onIndex = onValue(indexRef, (snap) => {
     index = (snap.val() || {}) as Record<string, number>;
     syncSummaryListeners();
     emit();
   });
-  const onState = stateRef.on('value', (snap) => {
+  const onState = onValue(stateRef, (snap) => {
     readState = (snap.val() || {}) as Record<string, { lastReadAt?: number }>;
     emit();
   });

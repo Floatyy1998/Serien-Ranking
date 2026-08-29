@@ -33,6 +33,11 @@ export async function updateWatchStreak(userId: string): Promise<void> {
       };
     }
 
+    // Firebase speichert leere Arrays nicht: ein Datensatz ohne abgeschlossene
+    // Streak kommt ohne `streaks` zurueck, und das spaetere .push() lief auf
+    // undefined. Betrifft jeden, der noch keine abgeschlossene Streak hat.
+    if (!Array.isArray(currentStreak.streaks)) currentStreak.streaks = [];
+
     const lastDate = currentStreak.lastWatchDate;
 
     if (lastDate === today) return;

@@ -42,7 +42,8 @@ describe('useWrappedConfig', () => {
   it('registriert einen value-Listener auf config/wrapped und startet mit loading=true', () => {
     const { result } = renderHook(() => useWrappedConfig());
     expect(fb.ref).toHaveBeenCalledWith('config/wrapped');
-    expect(fb.on).toHaveBeenCalledWith('value', expect.any(Function));
+    // Dritter Parameter: Fehler-Callback aus onValue (siehe services/db/subscribeValue).
+    expect(fb.on).toHaveBeenCalledWith('value', expect.any(Function), expect.any(Function));
     expect(result.current.loading).toBe(true);
     expect(result.current.enabled).toBe(false);
     expect(result.current.year).toBe(2026);

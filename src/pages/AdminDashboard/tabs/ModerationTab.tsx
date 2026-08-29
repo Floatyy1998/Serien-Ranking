@@ -15,6 +15,7 @@ import {
   type Locale,
   type LocalizedMap,
 } from '../../../services/i18n';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface ModerationFlag {
   id: string;
@@ -106,19 +107,19 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
 
   useEffect(() => {
     const flagsRef = dbRef('moderation/flags');
-    const flagListener = flagsRef.on('value', (snap) => {
+    const flagListener = onValue(flagsRef, (snap) => {
       const val = snap.val() as Record<string, Omit<ModerationFlag, 'id'>> | null;
       const list = val ? Object.entries(val).map(([id, f]) => ({ ...f, id })) : [];
       list.sort((a, b) => (b.flaggedAt || 0) - (a.flaggedAt || 0));
       setFlags(list);
     });
     const bansRef = dbRef('moderation/bans');
-    const banListener = bansRef.on('value', (snap) => {
+    const banListener = onValue(bansRef, (snap) => {
       const val = snap.val() as Record<string, Omit<BanEntry, 'uid'>> | null;
       setBans(val ? Object.entries(val).map(([uid, b]) => ({ ...b, uid })) : []);
     });
     const strikesRef = dbRef('moderation/strikes');
-    const strikeListener = strikesRef.on('value', (snap) => {
+    const strikeListener = onValue(strikesRef, (snap) => {
       setStrikes((snap.val() as Record<string, StrikeEntry> | null) || {});
     });
     return () => {

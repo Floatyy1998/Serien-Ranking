@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { Speed, Timer, Storage, Cloud, CleaningServices } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface PhaseData {
   ms: number;
@@ -80,7 +81,7 @@ export function PerformanceTab({
 
   useEffect(() => {
     const ref = dbRef('admin/performance');
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       setData(snap.val() || {});
       setLoading(false);
     });
@@ -91,7 +92,7 @@ export function PerformanceTab({
   // wird es langsamer? Kommt die Trefferquote des Caches ins Rutschen?
   useEffect(() => {
     const ref = dbRef('admin/runs');
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       const val = (snap.val() || {}) as Record<string, Record<string, RunRecord>>;
       const proAction: Record<string, RunRecord[]> = {};
       for (const action of Object.keys(val)) {

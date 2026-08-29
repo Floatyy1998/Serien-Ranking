@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { dbRef } from '../../services/db/ref';
+import { onValue } from '../../services/db/subscribeValue';
 
 export interface DailyStats {
   date: string;
@@ -335,7 +336,7 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
     }
     const ref = dbRef('analytics/global/realtime/activeUsers');
 
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       const val = snap.val();
       if (!val) {
         setRealtimeUsers([]);

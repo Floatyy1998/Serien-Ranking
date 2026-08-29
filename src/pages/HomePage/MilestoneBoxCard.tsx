@@ -19,6 +19,7 @@ import {
 } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
 import { t } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
 
 // Bewusste Akzent-Konstanten für die Mystery Box: gamifizierte Lila/Magenta-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -70,7 +71,7 @@ export const MilestoneBoxCard: React.FC = () => {
 
       setLastOpenedBoxNumber(last);
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
 

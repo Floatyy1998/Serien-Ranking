@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { dbRef, paths } from '../../../services/db/ref';
+import { onValue } from '../../../services/db/subscribeValue';
 
 /**
  * Wartet bis das Backend einen Eintrag fuer eine TMDB-Id unter
@@ -37,7 +38,7 @@ export function useWaitForBackendItem() {
           cleanup();
           resolve(false);
         }, timeoutMs);
-        ref.on('value', handler);
+        onValue(ref, handler);
       });
     },
     [user?.uid]

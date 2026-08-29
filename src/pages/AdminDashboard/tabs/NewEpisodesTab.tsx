@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FiberNew, CheckCircle } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface NewEpisode {
   season: number;
@@ -99,7 +100,7 @@ export function NewEpisodesTab({
 
   useEffect(() => {
     const ref = dbRef('admin/newEpisodes');
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       setData(snap.val());
       setLoading(false);
     });

@@ -11,6 +11,7 @@ import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
 
 // Bewusste Akzent-Konstanten für das Glücksrad: gamifizierte Gold/Orange-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -36,7 +37,7 @@ export const DailySpinCard: React.FC = () => {
     const handler = (snap: firebase.database.DataSnapshot) => {
       setLastSpinDate(snap.val());
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
 
@@ -48,7 +49,7 @@ export const DailySpinCard: React.FC = () => {
       const data = snap.val();
       setStreakDays(data?.currentStreak || 0);
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
 
@@ -58,7 +59,7 @@ export const DailySpinCard: React.FC = () => {
     const handler = (snap: firebase.database.DataSnapshot) => {
       setTotalSpins(snap.val() || 0);
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
 

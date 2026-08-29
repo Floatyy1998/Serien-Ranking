@@ -6,6 +6,7 @@ import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
+import { onValue } from '../../services/db/subscribeValue';
 import { queueModerationScan } from '../../services/moderation/moderationScan';
 import { localizedVariants, t, tLocale } from '../../services/i18n';
 
@@ -20,21 +21,18 @@ export function useBugReportData() {
     if (!user) return;
 
     const ref = dbRef('bugTickets');
-    const handler = ref
-      .orderByChild('createdBy')
-      .equalTo(user.uid)
-      .limitToLast(30)
-      .on('value', (snap) => {
-        const val = snap.val();
-        if (val) {
-          const list = Object.values(val) as BugTicket[];
-          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          setTickets(list);
-        } else {
-          setTickets([]);
-        }
-        setLoading(false);
-      });
+    const abfrage = ref.orderByChild('createdBy').equalTo(user.uid).limitToLast(30);
+    const handler = onValue(abfrage, (snap) => {
+      const val = snap.val();
+      if (val) {
+        const list = Object.values(val) as BugTicket[];
+        list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setTickets(list);
+      } else {
+        setTickets([]);
+      }
+      setLoading(false);
+    });
 
     return () => ref.off('value', handler);
   }, [user]);

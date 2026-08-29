@@ -12,6 +12,7 @@ import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
 import { localizedVariants, t, tLocale } from '../services/i18n';
+import { onValue } from '../services/db/subscribeValue';
 
 interface EditReplyInput {
   content?: string;
@@ -48,8 +49,8 @@ export const useDiscussionReplies = (
 
     const ref = dbRef(repliesPath);
 
-    const listener = ref.orderByChild('createdAt').on(
-      'value',
+    const listener = onValue(
+      ref.orderByChild('createdAt'),
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
@@ -73,10 +74,12 @@ export const useDiscussionReplies = (
         }
         setLoading(false);
       },
-      (err) => {
-        console.error('Error fetching replies:', err);
-        setError(t('Fehler beim Laden der Antworten'));
-        setLoading(false);
+      {
+        onError: (err) => {
+          console.error('Error fetching replies:', err);
+          setError(t('Fehler beim Laden der Antworten'));
+          setLoading(false);
+        },
       }
     );
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AutoAwesome, PersonSearch } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { DataTable } from '../components/DataTable';
+import { onValue } from '../../../services/db/subscribeValue';
 
 const AI_BAN_DAYS = 30;
 
@@ -84,7 +85,7 @@ export const SuspiciousAccountsTab = () => {
       .catch(() => setAiUsage({}));
 
     const bansRef = dbRef('moderation/bans');
-    const listener = bansRef.on('value', (snap) => {
+    const listener = onValue(bansRef, (snap) => {
       const val = (snap.val() as Record<string, { aiUntil?: number }> | null) || {};
       const map: Record<string, number> = {};
       for (const [uid, entry] of Object.entries(val)) {

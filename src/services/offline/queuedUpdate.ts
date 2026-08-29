@@ -37,6 +37,7 @@ import { showToast } from '../../lib/toast';
 import { t } from '../i18n';
 import { isPermissionDenied, pendingWriteQueue } from './pendingWriteQueue';
 import type { PendingWriteEntry } from './pendingWriteQueue';
+import { onValue } from '../db/subscribeValue';
 
 /** Nach so vielen ms ohne Server-Ack gilt ein „Online“-Write als gescheitert. */
 const WRITE_TIMEOUT_MS = 8000;
@@ -119,7 +120,7 @@ function attachFirebaseListeners(attempt: number): void {
     return;
   }
   try {
-    dbRef('.info/connected').on('value', (snap) => {
+    onValue(dbRef('.info/connected'), (snap) => {
       const connected = snap.val() === true;
       const wasConnected = lastConnected;
       lastConnected = connected;

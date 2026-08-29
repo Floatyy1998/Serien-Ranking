@@ -12,6 +12,7 @@ import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySp
 import type { XpBoostItem } from '../../services/pet/dailySpinService';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
 
 /** Color based on total boost value (multiplier × episodes) */
 function getBoostColor(multiplier: number, episodes: number): string {
@@ -67,7 +68,7 @@ export const XpBoostHeaderButton: React.FC = () => {
         setActiveBoost(null);
       }
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
 

@@ -3,6 +3,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../services/db/ref';
 import { t } from '../services/i18n';
+import { onValue } from '../services/db/subscribeValue';
 
 export type PetReactionTone =
   | 'cheer'
@@ -226,7 +227,7 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
     if (!uid) return;
     const ref = dbRef(userPath(uid, 'petTrigger'));
     let lastSeenAt = 0;
-    const onValue = (snap: firebase.database.DataSnapshot) => {
+    const handleSnap = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as { tone?: PetReactionTone; at?: number } | null;
       if (!data?.at || !data.tone) return;
       if (data.at <= lastSeenAt) return;
@@ -235,9 +236,9 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
       if (Date.now() - data.at > 60_000) return;
       show(pickReaction(data.tone));
     };
-    ref.on('value', onValue);
+    onValue(ref, handleSnap);
     return () => {
-      ref.off('value', onValue);
+      ref.off('value', handleSnap);
     };
   }, [uid]);
 
@@ -247,7 +248,7 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
     const year = new Date().getFullYear();
     const ref = dbRef(userPath(uid, 'wrapped', year, 'streak'));
 
-    const onValue = (snap: firebase.database.DataSnapshot) => {
+    const handleSnap = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as { currentStreak?: number } | null;
       const current = data?.currentStreak ?? 0;
       const previous = prevStreakRef.current;
@@ -268,9 +269,9 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
       show(pickReaction('cheer'));
     };
 
-    ref.on('value', onValue);
+    onValue(ref, handleSnap);
     return () => {
-      ref.off('value', onValue);
+      ref.off('value', handleSnap);
     };
   }, [uid]);
 

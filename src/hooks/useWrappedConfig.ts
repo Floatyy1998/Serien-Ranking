@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { dbRef } from '../services/db/ref';
 import { FEATURES } from '../config/features';
+import { onValue } from '../services/db/subscribeValue';
 
 interface WrappedConfig {
   enabled: boolean;
@@ -23,7 +24,7 @@ export const useWrappedConfig = (): WrappedConfig => {
   useEffect(() => {
     const configRef = dbRef('config/wrapped');
 
-    const unsubscribe = configRef.on('value', async (snapshot) => {
+    const unsubscribe = onValue(configRef, async (snapshot) => {
       const data = snapshot.val();
 
       if (data) {

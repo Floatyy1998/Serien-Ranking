@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { copyTextToClipboard } from '../../../utils/clipboard';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface BackendError {
   timestamp: string;
@@ -93,7 +94,7 @@ export function BackendErrorsTab({
 
   useEffect(() => {
     const ref = dbRef('admin/backendErrors');
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       const data = snap.val();
       if (data && typeof data === 'object') {
         // Neues Format: { episodes: {...}, movies: {...}, all: {...} }
@@ -118,7 +119,7 @@ export function BackendErrorsTab({
       return;
     }
     const ref = dbRef(`admin/runs/${activeAction}`).limitToLast(20);
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       const val = (snap.val() || {}) as Record<string, RunRecord>;
       setRuns(
         Object.values(val).sort(

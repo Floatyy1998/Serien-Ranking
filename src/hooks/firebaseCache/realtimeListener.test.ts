@@ -149,13 +149,31 @@ describe('attachRealtimeListener — error handling', () => {
   it('non-network error → surfaces the message, no offline fallback', async () => {
     const deps = makeDeps();
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs?.error({ message: 'permission_denied' });
+    fb.state.onArgs?.error({ message: 'FIREBASE FATAL ERROR: invalid path' });
     await flush();
 
-    expect(deps.setError).toHaveBeenCalledWith('permission_denied');
+    expect(deps.setError).toHaveBeenCalledWith('FIREBASE FATAL ERROR: invalid path');
     expect(deps.setIsOffline).not.toHaveBeenCalled();
     expect(deps.setLoading).toHaveBeenCalledWith(false);
     expect(deps.loadFromCache).not.toHaveBeenCalled();
+  });
+
+  it('permission_denied → erst neu anhaengen, Fehler erst beim zweiten Mal zeigen', async () => {
+    // Der haeufigste Grund ist die Sekunde der Token-Erneuerung. Sofort einen
+    // Fehler anzuzeigen (und die Ansicht damit zu verlieren) waere falsch.
+    vi.useFakeTimers();
+    const deps = makeDeps();
+    attachRealtimeListener('users/u1/series', deps);
+
+    fb.state.onArgs?.error({ message: 'permission_denied at /users/u1/series' });
+    expect(deps.setError).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(3000);
+    fb.state.onArgs?.error({ message: 'permission_denied at /users/u1/series' });
+    vi.useRealTimers();
+    await flush();
+
+    expect(deps.setError).toHaveBeenCalledWith('permission_denied at /users/u1/series');
   });
 
   it('empty message + empty toString falls back to a generic label', async () => {

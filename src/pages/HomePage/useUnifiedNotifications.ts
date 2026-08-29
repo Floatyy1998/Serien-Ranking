@@ -9,6 +9,7 @@ import { subscribeUnreadChats, type UnreadChat } from '../../services/chat/chatU
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
 import { pickLocalized, t } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
 
 export interface RecommendationCardData {
   recId: string;
@@ -274,8 +275,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     const uid = user.uid;
     const ref = dbRef(userPath(uid, 'readTimes', 'announcements'));
     let baselineWritten = false;
-    const listener = ref.on(
-      'value',
+    const listener = onValue(
+      ref,
       (snap) => {
         const val = snap.val();
         if (typeof val === 'number') {
@@ -288,8 +289,10 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           ref.set(now).catch(() => {}); // bewusst still: Hydration-Write ist Best-effort
         }
       },
-      () => {
-        // offline — Badge faellt auf 0 zurueck statt faelschlich auf 5
+      {
+        onError: () => {
+          // offline — Badge faellt auf 0 zurueck statt faelschlich auf 5
+        },
       }
     );
     return () => ref.off('value', listener);

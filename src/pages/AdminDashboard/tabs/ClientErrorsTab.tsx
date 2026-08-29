@@ -6,6 +6,7 @@ import { copyTextToClipboard } from '../../../utils/clipboard';
 import { buildEnvRows, formatDuration } from '../../../lib/errorReport/envRows';
 import { groupReports, type ErrorGroup } from '../../../lib/errorReport/group';
 import type { BreadcrumbType, ErrorKind, ErrorReport } from '../../../types/ErrorReport';
+import { onValue } from '../../../services/db/subscribeValue';
 
 const KIND_LABEL: Record<ErrorKind, string> = {
   render: 'Render',
@@ -81,7 +82,7 @@ export function ClientErrorsTab() {
 
   useEffect(() => {
     const ref = dbRef('clientErrors').orderByChild('ts').limitToLast(300);
-    const handler = ref.on('value', (snap) => {
+    const handler = onValue(ref, (snap) => {
       const val = snap.val() as Record<string, ErrorReport> | null;
       setReports(val ? Object.values(val) : []);
       setLoading(false);

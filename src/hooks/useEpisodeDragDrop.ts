@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { dbRef, userPath } from '../services/db/ref';
 import type { NextEpisode } from './useWatchNextEpisodes';
+import { onValue } from '../services/db/subscribeValue';
 
 interface UseEpisodeDragDropOptions {
   nextEpisodes: NextEpisode[];
@@ -46,7 +47,7 @@ export const useEpisodeDragDrop = ({
     if (!user) return;
 
     const orderRef = dbRef(userPath(user.uid, 'watchlistOrder'));
-    orderRef.on('value', (snapshot) => {
+    onValue(orderRef, (snapshot) => {
       const order = snapshot.val();
       if (order && Array.isArray(order)) {
         setWatchlistOrder(order);

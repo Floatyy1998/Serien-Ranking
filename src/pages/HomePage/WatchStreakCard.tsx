@@ -4,6 +4,7 @@ import { Whatshot, Shield } from '@mui/icons-material';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
+import { subscribeValue } from '../../services/db/subscribeValue';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -72,30 +73,27 @@ export const WatchStreakCard: React.FC = () => {
       }
     };
 
-    ref.on('value', handler);
-    return () => ref.off('value', handler);
+    return subscribeValue(ref, handler, { label: 'wrapped/streak' });
   }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.uid) return;
 
     const activePetRef = dbRef(userPath(user.uid, 'petWidget', 'activePetId'));
-    let petRef: firebase.database.Reference | null = null;
-    let petHandler: ((s: firebase.database.DataSnapshot) => void) | null = null;
+    let petAbmelden: (() => void) | null = null;
 
     const activeHandler = (snapshot: firebase.database.DataSnapshot) => {
       const activePetId = snapshot.val();
-      if (petRef && petHandler) {
-        petRef.off('value', petHandler);
-      }
+      petAbmelden?.();
+      petAbmelden = null;
 
       if (!activePetId) {
         setPet(null);
         return;
       }
 
-      petRef = dbRef(userPath(user.uid, 'pets', activePetId));
-      petHandler = (petSnap: firebase.database.DataSnapshot) => {
+      const petRef = dbRef(userPath(user.uid, 'pets', activePetId));
+      const petHandler = (petSnap: firebase.database.DataSnapshot) => {
         const data = petSnap.val();
         if (data) {
           setPet({
@@ -109,15 +107,15 @@ export const WatchStreakCard: React.FC = () => {
           setPet(null);
         }
       };
-      petRef.on('value', petHandler);
+      petAbmelden = subscribeValue(petRef, petHandler, { label: 'pets/aktiv' });
     };
 
-    activePetRef.on('value', activeHandler);
+    const aktivAbmelden = subscribeValue(activePetRef, activeHandler, {
+      label: 'petWidget/activePetId',
+    });
     return () => {
-      activePetRef.off('value', activeHandler);
-      if (petRef && petHandler) {
-        petRef.off('value', petHandler);
-      }
+      aktivAbmelden();
+      petAbmelden?.();
     };
   }, [user?.uid]);
 

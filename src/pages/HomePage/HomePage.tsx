@@ -49,6 +49,7 @@ import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { NewOnSubscriptionsSection } from './sections/NewOnSubscriptionsSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
 import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
+import { onValue } from '../../services/db/subscribeValue';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -175,7 +176,7 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     const ref = dbRef(`admin/userMessages/${user.uid}/text`);
-    ref.on('value', (snap) => setAdminMessage(snap.val() || null));
+    onValue(ref, (snap) => setAdminMessage(snap.val() || null));
     return () => ref.off('value');
   }, [user]);
 

@@ -19,6 +19,7 @@ import { prepareChatImage } from '../../lib/imageCompress';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
 import { localizedVariants, t } from '../i18n';
 import { queuePush } from '../pushQueue';
+import { onValue } from '../db/subscribeValue';
 
 export interface ChatMessage {
   id: string;
@@ -197,7 +198,7 @@ export function subscribeMessages(
   limit = 200
 ): () => void {
   const query = dbRef(`chats/${pairId}/messages`).orderByChild('ts').limitToLast(limit);
-  const handler = query.on('value', (snap) => {
+  const handler = onValue(query, (snap) => {
     const val = (snap.val() || {}) as Record<
       string,
       {
@@ -234,7 +235,7 @@ export function subscribeChatIndex(
   cb: (entries: Array<{ pairId: string; lastMessageAt: number }>) => void
 ): () => void {
   const ref = dbRef(`chatIndex/${myUid}`);
-  const handler = ref.on('value', (snap) => {
+  const handler = onValue(ref, (snap) => {
     const val = (snap.val() || {}) as Record<string, number>;
     const list = Object.entries(val)
       .map(([pairId, ts]) => ({ pairId, lastMessageAt: typeof ts === 'number' ? ts : 0 }))
@@ -246,13 +247,13 @@ export function subscribeChatIndex(
 
 export function subscribeSummary(pairId: string, cb: (summary: ChatSummary) => void): () => void {
   const ref = dbRef(`chats/${pairId}/summary`);
-  const handler = ref.on('value', (snap) => cb((snap.val() || {}) as ChatSummary));
+  const handler = onValue(ref, (snap) => cb((snap.val() || {}) as ChatSummary));
   return () => ref.off('value', handler);
 }
 
 export function subscribeBlocked(pairId: string, cb: (blockedBy: string[]) => void): () => void {
   const ref = dbRef(`chats/${pairId}/blocked`);
-  const handler = ref.on('value', (snap) => cb(Object.keys(snap.val() || {})));
+  const handler = onValue(ref, (snap) => cb(Object.keys(snap.val() || {})));
   return () => ref.off('value', handler);
 }
 
@@ -261,7 +262,7 @@ export function subscribeChatState(
   cb: (state: Record<string, { lastReadAt?: number }>) => void
 ): () => void {
   const ref = dbRef(userPath(myUid, 'chatState'));
-  const handler = ref.on('value', (snap) =>
+  const handler = onValue(ref, (snap) =>
     cb((snap.val() || {}) as Record<string, { lastReadAt?: number }>)
   );
   return () => ref.off('value', handler);
@@ -282,7 +283,7 @@ export function subscribeReactions(
   cb: (reactions: Record<string, Record<string, string>>) => void
 ): () => void {
   const ref = dbRef(`chats/${pairId}/reactions`);
-  const handler = ref.on('value', (snap) =>
+  const handler = onValue(ref, (snap) =>
     cb((snap.val() || {}) as Record<string, Record<string, string>>)
   );
   return () => ref.off('value', handler);
@@ -303,7 +304,7 @@ export function subscribeTyping(
   cb: (otherTypingAt: number | null) => void
 ): () => void {
   const ref = dbRef(`chats/${pairId}/typing`);
-  const handler = ref.on('value', (snap) => {
+  const handler = onValue(ref, (snap) => {
     const val = (snap.val() || {}) as Record<string, number>;
     const other = Object.entries(val).find(([uid]) => uid !== myUid);
     cb(other ? other[1] : null);

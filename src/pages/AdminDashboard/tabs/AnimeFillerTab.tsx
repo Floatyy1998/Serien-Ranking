@@ -10,6 +10,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { dbRef } from '../../../services/db/ref';
+import { onValue } from '../../../services/db/subscribeValue';
 
 interface Counts {
   ok?: number;
@@ -63,7 +64,7 @@ export const AnimeFillerTab = () => {
       setMeta(snap.val() as MetaDoc | null);
       setLoading(false);
     };
-    ref.on('value', handler);
+    onValue(ref, handler);
     return () => ref.off('value', handler);
   }, []);
 
