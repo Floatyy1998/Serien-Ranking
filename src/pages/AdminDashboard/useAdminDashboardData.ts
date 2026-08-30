@@ -51,6 +51,35 @@ export interface OnboardingFunnel {
   letzte30Tage: { angelegt: number; fertig: number };
 }
 
+/**
+ * Bereinigte Nutzerzahlen aus `analytics/quality/latest` — gerechnet vom Cron
+ * `build-user-quality.js`. Jedes Konto steckt in genau einer Kohorte.
+ */
+export interface UserQuality {
+  ts: number;
+  /** Konten in Firebase Auth. */
+  gesamt: number;
+  echt: number;
+  /** War echt, aber lange nicht mehr gesehen. */
+  ruhend: number;
+  /** Zu jung fuer ein Urteil. */
+  neu: number;
+  angefangen: number;
+  abgebrochen: number;
+  /** Teil einer Registrier-Welle ohne Inhalte — gekaufte Tester. */
+  welle: number;
+  aktiv30: number;
+  /** Geraetezeitzone + Anzahl, Top 12. Liste, weil IANA-Namen "/" enthalten. */
+  laender: Array<{ tz: string; n: number }>;
+  wellen: Array<{ tag: string; konten: number; leer: number }>;
+  regeln: {
+    karenzTage: number;
+    minInhalte: number;
+    ruhendTage: number;
+    welleMinKonten: number;
+  };
+}
+
 export interface UserMeta {
   uid: string;
   firstSeen: number;
@@ -123,6 +152,10 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [reachStats, setReachStats] = useState<ReachStats[]>([]);
   const [onboardingFunnel, setOnboardingFunnel] = useState<OnboardingFunnel | null>(null);
+  const [userQuality, setUserQuality] = useState<UserQuality | null>(null);
+  const [qualityDaily, setQualityDaily] = useState<
+    Array<{ date: string; echt: number; gesamt: number }>
+  >([]);
   const [userMetas, setUserMetas] = useState<Record<string, UserMeta>>({});
   const [realtimeUsers, setRealtimeUsers] = useState<RealtimeUser[]>([]);
   const [userProfiles, setUserProfiles] = useState<
@@ -253,6 +286,38 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
       })
       .catch(() => {
         if (!abgebrochen) setOnboardingFunnel(null);
+      });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [refreshKey, braucht]);
+
+  // Bereinigte Nutzerzahlen: ein flacher Knoten mit Zahlen — ein Read.
+  useEffect(() => {
+    if (!braucht('daily')) return;
+    let abgebrochen = false;
+    dbRef('analytics/quality/latest')
+      .once('value')
+      .then((snap) => {
+        if (!abgebrochen) setUserQuality((snap.val() as UserQuality | null) ?? null);
+      })
+      .catch(() => {
+        if (!abgebrochen) setUserQuality(null);
+      });
+
+    dbRef('analytics/quality/daily')
+      .once('value')
+      .then((snap) => {
+        if (abgebrochen) return;
+        const val = (snap.val() || {}) as Record<string, { echt: number; gesamt: number }>;
+        setQualityDaily(
+          Object.entries(val)
+            .map(([date, v]) => ({ date, echt: v?.echt ?? 0, gesamt: v?.gesamt ?? 0 }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+        );
+      })
+      .catch(() => {
+        if (!abgebrochen) setQualityDaily([]);
       });
     return () => {
       abgebrochen = true;
@@ -534,6 +599,15 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
 
   const reachLatest = reachStats[0] ?? null;
 
+  // Kurve auf den gewaehlten Zeitraum begrenzen, Tagesteil als Label.
+  const qualityChartData = useMemo(
+    () =>
+      qualityDaily
+        .slice(-daysRange)
+        .map((d) => ({ date: d.date.slice(5), echt: d.echt, gesamt: d.gesamt })),
+    [qualityDaily, daysRange]
+  );
+
   // Kurve chronologisch, auf den gewaehlten Zeitraum begrenzt.
   const reachChartData = useMemo(
     () =>
@@ -580,5 +654,8 @@ export function useAdminDashboardData(daysRange = 30, activeTab = 'overview') {
     reachChartData,
     // Onboarding-Trichter
     onboardingFunnel,
+    // Bereinigte Nutzerzahlen
+    userQuality,
+    qualityChartData,
   };
 }
