@@ -349,18 +349,6 @@ export async function deleteChat(myUid: string, pairId: string): Promise<void> {
   }
 }
 
-/** Für die Konto-Löschung: alle Chats des Nutzers entfernen (best-effort). */
-export async function deleteAllChatsForUser(myUid: string): Promise<void> {
-  try {
-    const index = ((await dbGet(`chatIndex/${myUid}`)) || {}) as Record<string, number>;
-    for (const pairId of Object.keys(index)) {
-      await deleteChat(myUid, pairId).catch(() => {});
-    }
-  } catch {
-    /* best-effort — der Backend-Cron räumt Reste ab */
-  }
-}
-
 /**
  * Meldung an die Moderation: Auszug der Nachrichten des Gegenübers (+ eigener
  * Kontext) geht an chatReports und als Benachrichtigung an den Admin. Inhalte
