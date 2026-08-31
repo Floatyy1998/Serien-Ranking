@@ -24,6 +24,7 @@ import {
   getDisplayFormat,
   getEffectiveChapterCount,
   inferStatus,
+  shouldAutoComplete,
   STATUS_COLORS,
 } from './mangaUtils';
 import type { Manga } from '../../types/Manga';
@@ -129,6 +130,9 @@ export const MangaReadingListPage = () => {
   const handleComplete = useCallback(
     async (manga: Manga, direction: 'left' | 'right' = 'right') => {
       if (!user) return;
+      const totalChapters = getEffectiveChapterCount(manga);
+      // Nie ueber das letzte erschienene Kapitel hinaus abhaken.
+      if (totalChapters && manga.currentChapter >= totalChapters) return;
       const key = String(manga.anilistId);
       const newChapter = manga.currentChapter + 1;
 
@@ -150,11 +154,7 @@ export const MangaReadingListPage = () => {
         updates.readStatus = 'reading';
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
-      const effectiveTotal = getEffectiveChapterCount(manga);
-      // Nur auto-completen, wenn das Total wirklich plausibel ist:
-      // currentChapter muss vor dem Increment darunter gelegen haben.
-      // Schutz gegen stale chapters-Werte (z.B. Vagabond: AniList meldet 2).
-      if (effectiveTotal && manga.currentChapter < effectiveTotal && newChapter >= effectiveTotal) {
+      if (shouldAutoComplete(manga, totalChapters, manga.currentChapter, newChapter)) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
       }
@@ -396,6 +396,7 @@ export const MangaReadingListPage = () => {
                       : 0;
                   const format = getDisplayFormat(manga.countryOfOrigin, manga.format);
                   const isPlanned = manga.readStatus === 'planned';
+                  const isCaughtUp = !!effectiveTotal && manga.currentChapter >= effectiveTotal;
 
                   return (
                     <SwipeableEpisodeRow
@@ -408,7 +409,7 @@ export const MangaReadingListPage = () => {
                       isSwiping={swipingEpisodes.has(key)}
                       dragOffset={dragOffsets[key] || 0}
                       swipeDirection={swipeDirections[key]}
-                      canSwipe={true}
+                      canSwipe={!isCaughtUp}
                       onSwipeStart={() => setSwipingEpisodes((prev) => new Set(prev).add(key))}
                       onSwipeDrag={(offset) =>
                         setDragOffsets((prev) => ({ ...prev, [key]: offset }))
@@ -453,7 +454,7 @@ export const MangaReadingListPage = () => {
                             {t('Kap.')} {manga.currentChapter}
                             {effectiveTotal ? ` / ${effectiveTotal}` : ''}
                             {' · '}
-                            {format}
+                            {isCaughtUp ? t('Aktuell') : format}
                             {isPlanned && (
                               <span
                                 style={{

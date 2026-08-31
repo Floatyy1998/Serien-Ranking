@@ -291,6 +291,7 @@ const dict: Record<string, string> = {
   'Name Z-A': 'Nom Z-A',
   Journey: 'Parcours',
   'Manga Home': 'Accueil Manga',
+  Aktuell: 'À jour',
 };
 
 export default dict;

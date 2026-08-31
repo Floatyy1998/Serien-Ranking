@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { getMangaById } from '../services/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangaUpdatesService';
+import { shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 import { dbRef, paths, userPath } from '../services/db/ref';
 import { MangaListContext } from './MangaListContext';
@@ -87,8 +88,14 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           const live = Math.max(info.latestChapter || 0, latestFromReleases);
 
           const updates: Record<string, unknown> = {};
+          const persistedTotal = Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
           if (live > 0 && live > (manga.latestChapterAvailable || 0)) {
             updates.latestChapterAvailable = live;
+          }
+          // Neues Kapitel fuer einen aufgeholten "abgeschlossenen" Manga:
+          // zurueck auf "Lese ich", sonst bleibt er fuer immer aus der Liste.
+          if (shouldReopenCompleted(manga, persistedTotal, Math.max(persistedTotal, live))) {
+            updates.readStatus = 'reading';
           }
           // lastReleaseDate = juengstes valides Release. recentChapters sind
           // bereits durch den Renumbering-Filter im Service bereinigt.
@@ -141,6 +148,13 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           // Wert liefert. Null heisst meist "unbekannt" — alten Wert behalten.
           if (data.chapters && data.chapters !== manga.chapters) {
             updates.chapters = data.chapters;
+          }
+          if (data.chapters) {
+            const persistedTotal = Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
+            const nextTotal = Math.max(persistedTotal, data.chapters);
+            if (shouldReopenCompleted(manga, persistedTotal, nextTotal)) {
+              updates.readStatus = 'reading';
+            }
           }
           if (data.volumes && data.volumes !== manga.volumes) {
             updates.volumes = data.volumes;

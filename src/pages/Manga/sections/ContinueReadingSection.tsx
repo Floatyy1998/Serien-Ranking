@@ -12,7 +12,7 @@ import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
-import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';
+import { getDisplayFormat, getEffectiveChapterCount, shouldAutoComplete } from '../mangaUtils';
 import { dbRef, paths } from '../../../services/db/ref';
 import { t } from '../../../services/i18n';
 
@@ -51,6 +51,8 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
         if (!user) return;
         const manga = mangaList.find((m) => m.anilistId === item.anilistId);
         if (!manga) return;
+        // Nie ueber das letzte erschienene Kapitel hinaus abhaken.
+        if (item.totalChapters && item.currentChapter >= item.totalChapters) return;
 
         const key = String(item.anilistId);
         const newChapter = item.currentChapter + 1;
@@ -77,15 +79,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
           if (!manga.startedAt) updates.startedAt = new Date().toISOString();
         }
         const effectiveTotal = getEffectiveChapterCount(manga);
-        // Nur auto-completen, wenn das Total wirklich plausibel ist:
-        // currentChapter muss vor dem Increment darunter gelegen haben.
-        // Sonst ist effectiveTotal vermutlich stale (z.B. AniList chapters=2
-        // bei Vagabond, ohne dass latestChapterAvailable schon persistiert ist).
-        if (
-          effectiveTotal &&
-          manga.currentChapter < effectiveTotal &&
-          newChapter >= effectiveTotal
-        ) {
+        if (shouldAutoComplete(manga, effectiveTotal, manga.currentChapter, newChapter)) {
           updates.readStatus = 'completed';
           updates.completedAt = new Date().toISOString();
         }
@@ -122,6 +116,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
             {items.slice(0, 6).map((item) => {
               const key = String(item.anilistId);
               const effectiveTotal = item.totalChapters;
+              const isCaughtUp = !!effectiveTotal && item.currentChapter >= effectiveTotal;
               const format = getDisplayFormat(item.countryOfOrigin, item.format);
 
               return (
@@ -138,7 +133,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
                   isSwiping={swipingEpisodes.has(key)}
                   dragOffset={dragOffsets[key] || 0}
                   swipeDirection={swipeDirections[key]}
-                  canSwipe={true}
+                  canSwipe={!isCaughtUp}
                   onSwipeStart={() => setSwipingEpisodes((prev) => new Set(prev).add(key))}
                   onSwipeDrag={(offset) => setDragOffsets((prev) => ({ ...prev, [key]: offset }))}
                   onSwipeEnd={() => {
@@ -182,7 +177,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
                         {effectiveTotal ? ` / ${effectiveTotal}` : ''}
                         {effectiveTotal && item.currentChapter < effectiveTotal
                           ? ` · ${t('{n} übrig', { n: effectiveTotal - item.currentChapter })}`
-                          : ` · ${format}`}
+                          : ` · ${isCaughtUp ? t('Aktuell') : format}`}
                       </p>
                       <p
                         style={{

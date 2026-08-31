@@ -324,6 +324,7 @@ const dict: Record<string, string> = {
   'Name Z-A': 'Name Z-A',
   Journey: 'Journey',
   'Manga Home': 'Manga Home',
+  Aktuell: 'Up to date',
 };
 
 export default dict;

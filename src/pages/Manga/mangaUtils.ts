@@ -132,3 +132,67 @@ export function getEffectiveChapterCount(
   );
   return max > 0 ? max : null;
 }
+
+/**
+ * Laufende (oder noch nicht gestartete) Publikation. Bei denen heisst
+ * "letztes verfuegbares Kapitel gelesen" nur aufgeholt — nicht abgeschlossen.
+ */
+export function isOngoingPublication(status?: string): boolean {
+  return status === 'RELEASING' || status === 'HIATUS' || status === 'NOT_YET_RELEASED';
+}
+
+/**
+ * Darf das Erreichen von effectiveTotal den Manga auf "Abgeschlossen" setzen?
+ * Nur wenn die Publikation wirklich durch ist — sonst faellt der Manga nach
+ * jedem aufgeholten Kapitel aus Weiterlesen/Leseliste und kommt beim naechsten
+ * Release nicht von allein zurueck.
+ * Zusaetzlich der alte Schutz gegen stale Totals: der vorherige Stand muss
+ * noch darunter gelegen haben (AniList meldet z.B. chapters=2 fuer Vagabond).
+ */
+export function shouldAutoComplete(
+  manga: { status?: string },
+  effectiveTotal: number | null,
+  previousChapter: number,
+  newChapter: number
+): boolean {
+  if (!effectiveTotal || effectiveTotal <= 0) return false;
+  if (isOngoingPublication(manga.status)) return false;
+  return previousChapter < effectiveTotal && newChapter >= effectiveTotal;
+}
+
+/**
+ * Auto-Abschluss und Lesevorgang wurden im selben update() geschrieben,
+ * completedAt und lastReadAt liegen also Millisekunden auseinander. Ein
+ * manuell gesetzter Abschluss laesst lastReadAt unberuehrt.
+ */
+function wasAutoCompleted(manga: { completedAt?: string; lastReadAt?: string }): boolean {
+  if (!manga.completedAt || !manga.lastReadAt) return false;
+  const gap = Math.abs(
+    new Date(manga.completedAt).getTime() - new Date(manga.lastReadAt).getTime()
+  );
+  return Number.isFinite(gap) && gap < 5000;
+}
+
+/**
+ * Ein aufgeholter Manga, der als "Abgeschlossen" gilt, muss zurueck auf
+ * "Lese ich", sobald ein neues Kapitel erscheint. Ein bewusst gesetzter
+ * Abschluss bleibt unangetastet: lag das bisher bekannte Total ueber dem
+ * Lesestand, war es eine Nutzer-Entscheidung — es sei denn, die Zeitstempel
+ * verraten den alten Auto-Abschluss (Alt-Daten, deren Total inzwischen
+ * weitergelaufen ist).
+ */
+export function shouldReopenCompleted(
+  manga: {
+    readStatus?: string;
+    currentChapter?: number;
+    completedAt?: string;
+    lastReadAt?: string;
+  },
+  previousTotal: number,
+  newTotal: number
+): boolean {
+  const current = manga.currentChapter || 0;
+  if (manga.readStatus !== 'completed' || current <= 0) return false;
+  if (newTotal <= current) return false;
+  return previousTotal <= current || wasAutoCompleted(manga);
+}

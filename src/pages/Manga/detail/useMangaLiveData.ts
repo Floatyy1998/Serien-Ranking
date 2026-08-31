@@ -9,6 +9,7 @@ import {
 } from '../../../services/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { dbRef, paths } from '../../../services/db/ref';
+import { shouldReopenCompleted } from '../mangaUtils';
 
 interface UseMangaLiveDataArgs {
   user: firebase.User | null | undefined;
@@ -49,6 +50,11 @@ export const useMangaLiveData = ({
   const mangaStatus = manga?.status;
   const mangaLatestChapterAvailable = manga?.latestChapterAvailable;
   const mangaLastReleaseDate = manga?.lastReleaseDate;
+  const mangaChapters = manga?.chapters;
+  const mangaReadStatus = manga?.readStatus;
+  const mangaCurrentChapter = manga?.currentChapter;
+  const mangaCompletedAt = manga?.completedAt;
+  const mangaLastReadAt = manga?.lastReadAt;
   const shouldFetchLive = mangaStatus === 'RELEASING' || mangaStatus === 'HIATUS';
 
   useEffect(() => {
@@ -84,6 +90,23 @@ export const useMangaLiveData = ({
     if (newestRelease && newestRelease !== mangaLastReleaseDate) {
       updates.lastReleaseDate = newestRelease;
     }
+    // Neues Kapitel fuer einen aufgeholten "abgeschlossenen" Manga: zurueck
+    // auf "Lese ich", sonst taucht er in keiner Lese-Ansicht mehr auf.
+    const persistedTotal = Math.max(mangaChapters || 0, mangaLatestChapterAvailable || 0);
+    if (
+      shouldReopenCompleted(
+        {
+          readStatus: mangaReadStatus,
+          currentChapter: mangaCurrentChapter,
+          completedAt: mangaCompletedAt,
+          lastReadAt: mangaLastReadAt,
+        },
+        persistedTotal,
+        Math.max(persistedTotal, live)
+      )
+    ) {
+      updates.readStatus = 'reading';
+    }
     if (Object.keys(updates).length > 0) {
       dbRef(paths.mangaItem(user.uid, anilistId))
         .update(updates)
@@ -97,6 +120,11 @@ export const useMangaLiveData = ({
     chapterInfo,
     mangaLatestChapterAvailable,
     mangaLastReleaseDate,
+    mangaChapters,
+    mangaReadStatus,
+    mangaCurrentChapter,
+    mangaCompletedAt,
+    mangaLastReadAt,
     anilistId,
   ]);
 

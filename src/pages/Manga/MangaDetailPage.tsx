@@ -14,7 +14,7 @@ import { MangaDetailHero } from './detail/MangaDetailHero';
 import { MangaDetailPreview } from './detail/MangaDetailPreview';
 import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
-import { getEffectiveChapterCount } from './mangaUtils';
+import { getEffectiveChapterCount, shouldAutoComplete } from './mangaUtils';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
@@ -92,11 +92,7 @@ export const MangaDetailPage = () => {
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
 
-      // Nur auto-completen, wenn der vorherige Wert noch unter effectiveMax lag.
-      // Schutz gegen stale Total-Werte: wenn manga.currentChapter bereits >=
-      // effectiveMax, ist effectiveMax offensichtlich nicht aktuell (z.B.
-      // AniList chapters=2 bei Vagabond, bevor Live-Quellen ankommen).
-      if (effectiveMax && manga.currentChapter < effectiveMax && clamped >= effectiveMax) {
+      if (shouldAutoComplete(manga, effectiveMax, manga.currentChapter, clamped)) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
       }

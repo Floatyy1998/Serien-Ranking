@@ -11,6 +11,9 @@ import {
   getEffectiveChapterCount,
   getStatusLabel,
   inferStatus,
+  isOngoingPublication,
+  shouldAutoComplete,
+  shouldReopenCompleted,
 } from './mangaUtils';
 
 describe('getDisplayFormat', () => {
@@ -160,5 +163,72 @@ describe('getEffectiveChapterCount', () => {
     expect(getEffectiveChapterCount({ chapters: null, latestChapterAvailable: null })).toBeNull();
     expect(getEffectiveChapterCount({})).toBeNull();
     expect(getEffectiveChapterCount({ chapters: 0, latestChapterAvailable: 0 }, 0)).toBeNull();
+  });
+});
+
+describe('isOngoingPublication', () => {
+  it('erkennt laufende und noch nicht gestartete Publikationen', () => {
+    expect(isOngoingPublication('RELEASING')).toBe(true);
+    expect(isOngoingPublication('HIATUS')).toBe(true);
+    expect(isOngoingPublication('NOT_YET_RELEASED')).toBe(true);
+    expect(isOngoingPublication('FINISHED')).toBe(false);
+    expect(isOngoingPublication('CANCELLED')).toBe(false);
+    expect(isOngoingPublication(undefined)).toBe(false);
+  });
+});
+
+describe('shouldAutoComplete', () => {
+  it('schliesst einen abgeschlossenen Manga beim letzten Kapitel ab', () => {
+    expect(shouldAutoComplete({ status: 'FINISHED' }, 100, 99, 100)).toBe(true);
+  });
+
+  it('schliesst einen laufenden Manga nie ab', () => {
+    expect(shouldAutoComplete({ status: 'RELEASING' }, 156, 155, 156)).toBe(false);
+    expect(shouldAutoComplete({ status: 'HIATUS' }, 156, 155, 156)).toBe(false);
+  });
+
+  it('greift nicht bei stale Totals', () => {
+    expect(shouldAutoComplete({ status: 'FINISHED' }, 2, 59, 60)).toBe(false);
+  });
+
+  it('greift nicht ohne bekanntes Total', () => {
+    expect(shouldAutoComplete({ status: 'FINISHED' }, null, 5, 6)).toBe(false);
+    expect(shouldAutoComplete({ status: 'FINISHED' }, 0, 5, 6)).toBe(false);
+  });
+});
+
+describe('shouldReopenCompleted', () => {
+  const caughtUp = {
+    readStatus: 'completed',
+    currentChapter: 156,
+    completedAt: '2026-08-30T10:00:00.000Z',
+    lastReadAt: '2026-08-30T10:00:00.100Z',
+  };
+
+  it('oeffnet einen aufgeholten Manga bei neuem Kapitel wieder', () => {
+    expect(shouldReopenCompleted(caughtUp, 156, 157)).toBe(true);
+  });
+
+  it('laesst ihn zu, solange kein neues Kapitel da ist', () => {
+    expect(shouldReopenCompleted(caughtUp, 156, 156)).toBe(false);
+  });
+
+  it('fasst einen bewussten Abschluss mitten in der Serie nicht an', () => {
+    const manual = {
+      readStatus: 'completed',
+      currentChapter: 50,
+      completedAt: '2026-08-30T12:00:00.000Z',
+      lastReadAt: '2026-08-01T09:00:00.000Z',
+    };
+    expect(shouldReopenCompleted(manual, 300, 320)).toBe(false);
+  });
+
+  it('heilt Alt-Daten, deren Total dem Lesestand schon davongelaufen ist', () => {
+    expect(shouldReopenCompleted(caughtUp, 157, 158)).toBe(true);
+  });
+
+  it('ignoriert andere Lesestatus und ungelesene Manga', () => {
+    expect(shouldReopenCompleted({ ...caughtUp, readStatus: 'reading' }, 156, 157)).toBe(false);
+    expect(shouldReopenCompleted({ ...caughtUp, currentChapter: 0 }, 0, 5)).toBe(false);
   });
 });
