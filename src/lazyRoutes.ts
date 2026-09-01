@@ -76,14 +76,26 @@ const ChunkFailedPage: ComponentType = () =>
 // React.lazy itself constrains T to ComponentType<any>; we mirror that so the
 // retry wrapper accepts the same shapes (FC<{}>, ComponentType<Props>, ...).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+export function lazyWithRetry<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  // Ein Chunk kann erfolgreich laden und den Export trotzdem nicht liefern
+  // (abgebrochene WebView-Anfrage); React wirft dafuer sonst Fehler #306.
+  const load = async () => {
+    const mod = await factory();
+    const component = mod?.default as unknown;
+    if (!component || (typeof component !== 'function' && typeof component !== 'object')) {
+      throw new Error('lazy chunk resolved without component');
+    }
+    return mod;
+  };
   return lazy(async () => {
     try {
-      return await factory();
+      return await load();
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       try {
-        return await factory();
+        return await load();
       } catch {
         armBackgroundReload();
         return { default: ChunkFailedPage as unknown as T };
@@ -435,6 +447,11 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     // ein veralteter Tab das ueberhaupt bemerkt: Hintergrund-Reload scharf
     // machen, damit er sich beim naechsten Wegblenden erneuert.
     routes[i++]()
+      .then((mod) => {
+        // Leerer Namespace = der Chunk kam an, lief aber nicht durch. Dann
+        // faende React.lazy spaeter nur undefined vor (Fehler #306).
+        if (!mod || Object.keys(mod).length === 0) armBackgroundReload();
+      })
       .catch(() => armBackgroundReload())
       .finally(() => idle(loadNext, 3000));
   }

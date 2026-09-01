@@ -56,7 +56,7 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
 // betroffenen Wrapper — alle anderen Tab-Bäume bailen komplett aus
 const TabHost = memo(({ path, visible }: { path: string; visible: boolean }) => {
   const TabPage = TAB_COMPONENTS[path];
-  const child = useMemo(() => <TabPage />, [TabPage]);
+  const child = useMemo(() => (TabPage ? <TabPage /> : null), [TabPage]);
   return <div style={{ display: visible ? undefined : 'none' }}>{child}</div>;
 });
 TabHost.displayName = 'TabHost';
