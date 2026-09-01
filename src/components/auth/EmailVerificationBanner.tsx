@@ -37,6 +37,8 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             // Offline/Fehler: cached Daten verwenden
             setIsVerified(user.emailVerified);
           });
+      } else {
+        setIsVerified(user.emailVerified);
       }
     } else if (auth?.authStateResolved) {
       // Nur navigieren wenn Auth wirklich resolved ist und kein User da ist
@@ -49,14 +51,17 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
     let intervalId: NodeJS.Timeout;
     if (!isVerified && user) {
       intervalId = setInterval(() => {
-        if (user) {
-          user.reload().then(() => {
+        if (document.hidden || !navigator.onLine) return;
+        // reload() kann mit 503/Netzfehler abbrechen — dann beim nächsten Takt erneut
+        user
+          .reload()
+          .then(() => {
             if (user.emailVerified) {
               setIsVerified(true);
               clearInterval(intervalId);
             }
-          });
-        }
+          })
+          .catch(() => {});
       }, 5000);
     }
     return () => clearInterval(intervalId);

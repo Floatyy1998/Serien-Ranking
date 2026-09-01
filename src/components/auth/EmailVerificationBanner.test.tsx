@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { act, render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 interface FakeUser {
@@ -107,6 +107,29 @@ describe('EmailVerificationBanner', () => {
     );
 
     expect(screen.getByText('Email-Verifizierung erforderlich')).toBeInTheDocument();
+  });
+
+  it('verschluckt Fehler des 5s-Polls (identitytoolkit 503)', async () => {
+    vi.useFakeTimers();
+    const user = makeUser(false);
+    const rejected = vi.fn<() => Promise<void>>(async () => {
+      throw new Error('auth/the-service-is-currently-unavailable');
+    });
+    user.reload = rejected;
+    authState.user = user;
+    render(
+      <EmailVerificationBanner>
+        <div>protected area</div>
+      </EmailVerificationBanner>
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(rejected).toHaveBeenCalled();
+    expect(screen.getByText('protected area')).toBeInTheDocument();
+    vi.useRealTimers();
   });
 
   it('resends the verification link on click', () => {
