@@ -105,6 +105,9 @@ const dict: Record<string, string> = {
   'Entfernt...': 'Removendo...',
   Entfernen: 'Remover',
   Profil: 'Perfil',
+  'Bibliothek und Bewertungen sind öffentlich. Aktivität, Pet und Fortschritt sehen nur Freunde.':
+    'A biblioteca e as notas são públicas. Só os amigos veem a atividade, o mascote e o progresso.',
+  'Öffentliches Profil ansehen': 'Ver perfil público',
   'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.':
     'Este perfil é privado. Só os amigos veem a biblioteca, as notas e a atividade.',
   'Anfrage gesendet ✓': 'Pedido enviado ✓',

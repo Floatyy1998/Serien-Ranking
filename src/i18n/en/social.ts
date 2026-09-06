@@ -120,6 +120,9 @@ const dict: Record<string, string> = {
 
   // Friend profile
   Profil: 'Profile',
+  'Bibliothek und Bewertungen sind öffentlich. Aktivität, Pet und Fortschritt sehen nur Freunde.':
+    'Library and ratings are public. Only friends can see activity, pet and progress.',
+  'Öffentliches Profil ansehen': 'View public profile',
   'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.':
     'This profile is private. Only friends can see their library, ratings and activity.',
   'Anfrage gesendet ✓': 'Request sent ✓',

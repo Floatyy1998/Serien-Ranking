@@ -30,24 +30,36 @@ const { fpState } = vi.hoisted(() => ({
   },
 }));
 
-const { friendsState, dbGetMock } = vi.hoisted(() => ({
-  friendsState: {
-    friends: [{ uid: 'friend-1' }] as { uid: string }[],
-    loading: false,
-    sentRequests: [] as { toUserId: string; status: string }[],
-    sendFriendRequest: vi.fn(async () => true),
-  },
-  dbGetMock: vi.fn(async () => ({ username: 'mia', displayName: 'Mia', photoURL: '' })),
-}));
+const { friendsState, dbState, dbGetMock, navigateMock } = vi.hoisted(() => {
+  const dbState = { isPublicProfile: false as boolean, publicProfileId: '' };
+  return {
+    friendsState: {
+      friends: [{ uid: 'friend-1' }] as { uid: string }[],
+      loading: false,
+      sentRequests: [] as { toUserId: string; status: string }[],
+      sendFriendRequest: vi.fn(async () => true),
+    },
+    dbState,
+    dbGetMock: vi.fn(async (path: string) => {
+      if (path.endsWith('/isPublicProfile')) return dbState.isPublicProfile;
+      if (path.endsWith('/publicProfileId')) return dbState.publicProfileId || null;
+      return { username: 'mia', displayName: 'Mia', photoURL: '' };
+    }),
+    navigateMock: vi.fn(),
+  };
+});
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'me' } }),
 }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => friendsState,
 }));
-vi.mock('../../services/db/ref', () => ({ dbGet: dbGetMock }));
+vi.mock('../../services/db/ref', () => ({
+  dbGet: dbGetMock,
+  userPath: (uid: string, ...segments: string[]) => ['users', uid, ...segments].join('/'),
+}));
 vi.mock('./useFriendProfileData', () => ({
   useFriendProfileData: () => fpState,
   calculateFriendRating: () => '8.0',
@@ -151,6 +163,9 @@ beforeEach(() => {
   fpState.setActiveTab.mockReset();
   fpState.navigateToTasteMatch.mockReset();
   fpState.handleItemClick.mockReset();
+  dbState.isPublicProfile = false;
+  dbState.publicProfileId = '';
+  navigateMock.mockReset();
 });
 afterEach(() => cleanup());
 
@@ -199,6 +214,37 @@ describe('FriendProfilePage', () => {
     // Die uid entscheidet, der Name ist nur noch Beiwerk — sonst scheiterte die
     // Anfrage bei Konten ohne oder mit abweichendem Benutzernamen.
     expect(friendsState.sendFriendRequest).toHaveBeenCalledWith('mia', 'friend-1');
+  });
+
+  it('bietet Nicht-Freunden bei oeffentlichem Profil die oeffentliche Seite an', async () => {
+    // publicProfile true: Bibliothek und Bewertungen gibt schon die Regel frei,
+    // die Sperrseite behauptete trotzdem "privat".
+    friendsState.friends = [];
+    dbState.isPublicProfile = true;
+    dbState.publicProfileId = 'abc123';
+
+    render(<FriendProfilePage />);
+
+    expect(await screen.findByText('Öffentliches Profil ansehen')).toBeInTheDocument();
+    expect(screen.getByText(/Bibliothek und Bewertungen sind öffentlich/)).toBeInTheDocument();
+    expect(screen.queryByText(/Dieses Profil ist privat/)).not.toBeInTheDocument();
+    // Anfrage bleibt zusaetzlich moeglich
+    expect(screen.getByText('Freundschaftsanfrage senden')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Öffentliches Profil ansehen'));
+    expect(navigateMock).toHaveBeenCalledWith('/public/abc123');
+  });
+
+  it('bleibt bei privatem Profil bei der bisherigen Sperrseite', async () => {
+    friendsState.friends = [];
+    dbState.isPublicProfile = false;
+    dbState.publicProfileId = 'abc123';
+
+    render(<FriendProfilePage />);
+
+    await waitFor(() => expect(dbGetMock).toHaveBeenCalledWith('users/friend-1/isPublicProfile'));
+    expect(screen.getByText(/Dieses Profil ist privat/)).toBeInTheDocument();
+    expect(screen.queryByText('Öffentliches Profil ansehen')).not.toBeInTheDocument();
   });
 
   it('zeigt bei bereits gesendeter Anfrage den Gesendet-Status', () => {

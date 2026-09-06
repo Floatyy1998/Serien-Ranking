@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { dbGet } from '../../services/db/ref';
+import { dbGet, userPath } from '../../services/db/ref';
 import {
   BackButton,
   EmptyState,
@@ -89,6 +89,7 @@ export const FriendProfilePage = memo(() => {
   const restricted = !friendsLoading && !!friendId && !isSelf && !isFriend;
 
   const [restrictedProfile, setRestrictedProfile] = useState<RestrictedProfile | null>(null);
+  const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
   const [requestState, setRequestState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   useEffect(() => {
@@ -96,6 +97,29 @@ export const FriendProfilePage = memo(() => {
     dbGet<RestrictedProfile>(`userSearchIndex/${friendId}`)
       .then((p) => setRestrictedProfile(p))
       .catch(() => {});
+  }, [restricted, friendId]);
+
+  // Wer sein Profil oeffentlich geschaltet hat, ist auch ohne Freundschaft
+  // einsehbar — die Rules geben series/movies dann frei. Ohne diese Abfrage
+  // behauptete die Sperrseite auch bei solchen Konten "privat".
+  useEffect(() => {
+    if (!restricted || !friendId) {
+      setPublicProfileId(null);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([
+      dbGet<boolean>(userPath(friendId, 'isPublicProfile')),
+      dbGet<string>(userPath(friendId, 'publicProfileId')),
+    ])
+      .then(([isPublic, publicId]) => {
+        if (cancelled) return;
+        setPublicProfileId(isPublic === true && publicId ? publicId : null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [restricted, friendId]);
 
   const alreadyRequested =
@@ -158,10 +182,32 @@ export const FriendProfilePage = memo(() => {
           />
           <h2 style={{ margin: 0, color: currentTheme.text.primary, fontSize: 20 }}>{shownName}</h2>
           <p style={{ margin: 0, color: currentTheme.text.muted, maxWidth: 320, lineHeight: 1.5 }}>
-            {t(
-              'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
-            )}
+            {publicProfileId
+              ? t(
+                  'Bibliothek und Bewertungen sind öffentlich. Aktivität, Pet und Fortschritt sehen nur Freunde.'
+                )
+              : t(
+                  'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
+                )}
           </p>
+          {publicProfileId && (
+            <motion.button
+              whileTap={tapScale}
+              onClick={() => navigate(`/public/${publicProfileId}`)}
+              style={{
+                border: 'none',
+                borderRadius: 999,
+                padding: '12px 24px',
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: 'pointer',
+                color: onPrimary,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+              }}
+            >
+              {t('Öffentliches Profil ansehen')}
+            </motion.button>
+          )}
           <motion.button
             whileTap={tapScale}
             onClick={handleSendRequest}
@@ -169,20 +215,33 @@ export const FriendProfilePage = memo(() => {
               alreadyRequested || requestState === 'sending' || !restrictedProfile?.username
             }
             style={{
-              border: 'none',
               borderRadius: 999,
               padding: '12px 24px',
               fontWeight: 700,
               fontSize: 15,
               cursor: alreadyRequested ? 'default' : 'pointer',
-              color: '#000',
-              background: alreadyRequested
-                ? currentTheme.background.surface
-                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+              color: onPrimary,
+              background:
+                alreadyRequested || publicProfileId
+                  ? currentTheme.background.surface
+                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+              // Neben dem oeffentlichen Knopf ist die Anfrage die zweite Wahl
+              border:
+                publicProfileId && !alreadyRequested
+                  ? `1px solid ${currentTheme.primary}55`
+                  : 'none',
               opacity: alreadyRequested ? 0.7 : 1,
             }}
           >
-            <span style={{ color: alreadyRequested ? currentTheme.text.muted : '#000' }}>
+            <span
+              style={{
+                color: alreadyRequested
+                  ? currentTheme.text.muted
+                  : publicProfileId
+                    ? currentTheme.text.primary
+                    : onPrimary,
+              }}
+            >
               {alreadyRequested
                 ? t('Anfrage gesendet ✓')
                 : requestState === 'sending'
