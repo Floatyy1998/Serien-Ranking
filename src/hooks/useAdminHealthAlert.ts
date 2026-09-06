@@ -13,18 +13,23 @@ export function useAdminHealthAlert() {
     const IGNORED_TYPES = new Set(['missing-all-genre', 'missing-all-rating']);
 
     const ref = dbRef('admin/dataIntegrityIssues');
-    ref.once('value').then((snap) => {
-      const data = snap.val();
-      if (!data) return;
+    ref
+      .once('value')
+      .then((snap) => {
+        const data = snap.val();
+        if (!data) return;
 
-      const totalIssues = Object.values(data).reduce((sum: number, u: unknown) => {
-        const issues = (u as { issues?: { type?: string }[] }).issues || [];
-        return sum + issues.filter((i) => !IGNORED_TYPES.has(i.type || '')).length;
-      }, 0);
+        const totalIssues = Object.values(data).reduce((sum: number, u: unknown) => {
+          const issues = (u as { issues?: { type?: string }[] }).issues || [];
+          return sum + issues.filter((i) => !IGNORED_TYPES.has(i.type || '')).length;
+        }, 0);
 
-      if (totalIssues > 0) {
-        showToast(`${totalIssues} Data Health Probleme`, 3000);
-      }
-    });
+        if (totalIssues > 0) {
+          showToast(`${totalIssues} Data Health Probleme`, 3000);
+        }
+      })
+      .catch(() => {
+        // Best effort: ohne Antwort einfach kein Hinweis.
+      });
   }, [user]);
 }

@@ -181,6 +181,13 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
           setAlreadyClaimed(true);
           setPhase('reveal');
         }
+      })
+      .catch(() => {
+        // Read gescheitert (offline, Token-Erneuerung): lieber die Endkarte
+        // zeigen als im Ladezustand haengen zu bleiben. Nicht oeffnen ist die
+        // sichere Seite - der Drop bleibt erhalten.
+        setAlreadyClaimed(true);
+        setPhase('reveal');
       });
   }, [dropData, x, auth?.user?.uid]);
 

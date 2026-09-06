@@ -8,6 +8,8 @@ const fb = vi.hoisted(() => {
   const state = {
     dataByPath: {} as Record<string, unknown>,
     onceCalls: [] as string[],
+    // Pfade, deren naechster Read scheitert (Zahl = wie oft noch)
+    failuresLeft: {} as Record<string, number>,
   };
   const makeRef = (path: string) => {
     const refObj = {
@@ -17,6 +19,10 @@ const fb = vi.hoisted(() => {
       endAt: () => refObj,
       once: async (_event: string) => {
         state.onceCalls.push(path);
+        if ((state.failuresLeft[path] ?? 0) > 0) {
+          state.failuresLeft[path] -= 1;
+          throw new Error(`permission_denied at /${path}`);
+        }
         const data = state.dataByPath[path] ?? null;
         return { val: () => data };
       },
@@ -37,6 +43,7 @@ import { useDiscussionCount, useEpisodeDiscussionCounts } from './discussionCoun
 beforeEach(() => {
   fb.state.dataByPath = {};
   fb.state.onceCalls = [];
+  fb.state.failuresLeft = {};
 });
 
 afterEach(() => {
@@ -68,6 +75,31 @@ describe('useDiscussionCount', () => {
     renderHook(() => useDiscussionCount('series', 0));
     expect(fb.state.onceCalls).toHaveLength(0);
   });
+
+  it('faengt einen abgelehnten Read ab und fasst einmal nach', async () => {
+    // Aus der Praxis: nach dem Aufwachen aus dem Hintergrund lehnt die
+    // Regel (auth != null) den ersten Read ab, bevor das Token erneuert ist.
+    fb.state.failuresLeft['discussions/episode/302617_s1_e17'] = 1;
+    fb.state.dataByPath['discussions/episode/302617_s1_e17'] = { d1: {}, d2: {} };
+
+    const { result } = renderHook(() => useDiscussionCount('episode', 302617, 1, 17));
+
+    await waitFor(() => expect(result.current).toBe(2), { timeout: 4000 });
+    expect(
+      fb.state.onceCalls.filter((p) => p === 'discussions/episode/302617_s1_e17')
+    ).toHaveLength(2);
+  });
+
+  it('gibt nach dem zweiten Fehlschlag auf, ohne zu werfen', async () => {
+    fb.state.failuresLeft['discussions/series/13'] = 5;
+    const { result } = renderHook(() => useDiscussionCount('series', 13));
+
+    await waitFor(
+      () => expect(fb.state.onceCalls.filter((p) => p === 'discussions/series/13')).toHaveLength(2),
+      { timeout: 4000 }
+    );
+    expect(result.current).toBe(0);
+  });
 });
 
 describe('useEpisodeDiscussionCounts', () => {
@@ -88,6 +120,15 @@ describe('useEpisodeDiscussionCounts', () => {
     renderHook(() => useEpisodeDiscussionCounts(0, 1, 5));
     renderHook(() => useEpisodeDiscussionCounts(5, 1, 0));
     expect(fb.state.onceCalls).toHaveLength(0);
+  });
+
+  it('faengt einen abgelehnten Batch-Read ab und fasst einmal nach', async () => {
+    fb.state.failuresLeft['discussions/episode'] = 1;
+    fb.state.dataByPath['discussions/episode'] = { '77_s1_e1': { a: {} } };
+
+    const { result } = renderHook(() => useEpisodeDiscussionCounts(77, 1, 2));
+
+    await waitFor(() => expect(result.current[1]).toBe(1), { timeout: 4000 });
   });
 
   it('liefert ein leeres Objekt wenn keine Daten existieren', async () => {

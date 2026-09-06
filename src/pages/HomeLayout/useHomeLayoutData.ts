@@ -228,6 +228,9 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
           setHiddenSecondaryActions(
             filterValid(data.hiddenSecondaryActions, SECONDARY_ACTIONS_LABELS)
           );
+      })
+      .catch(() => {
+        // Best effort: schlaegt der Read fehl, bleibt die Standardanordnung.
       });
   }, [user]);
 
