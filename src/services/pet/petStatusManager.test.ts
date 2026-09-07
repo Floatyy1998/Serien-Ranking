@@ -172,6 +172,23 @@ describe('updatePetStatus — Decay', () => {
     expect(result?.isAlive).toBe(true);
   });
 
+  it('ausgeschaltetes Pet: ein Jahr Pause, kein Decay, kein Write', async () => {
+    fb.setAt('users/u1/petWidget/enabled', false);
+    petCore.getUserPet.mockResolvedValue(
+      makePet({
+        lastUpdated: new Date(NOW.getTime() - 365 * 24 * HOUR),
+        lastFed: new Date(NOW.getTime() - 365 * 24 * HOUR),
+        hunger: 20,
+        happiness: 80,
+      })
+    );
+    const result = await updatePetStatus('u1', 'p1');
+    expect(result?.hunger).toBe(20);
+    expect(result?.happiness).toBe(80);
+    expect(result?.isAlive).toBe(true);
+    expect(fb.getAt('users/u1/pets/p1/lastUpdated')).toBeUndefined();
+  });
+
   it('sehr hoher Hunger (>80) zieht zusaetzlich Happiness ab', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({

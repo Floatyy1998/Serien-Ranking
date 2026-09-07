@@ -98,6 +98,7 @@ vi.mock('./PublicProfileSection', () => ({
 vi.mock('./AppearanceSection', () => ({ AppearanceSection: () => <div>APPEARANCE_SECTION</div> }));
 vi.mock('./LegalSection', () => ({ LegalSection: () => <div>LEGAL_SECTION</div> }));
 vi.mock('./NotificationsSection', () => ({ NotificationsSection: () => <div>NOTIF_SECTION</div> }));
+vi.mock('./PetSection', () => ({ PetSection: () => <div>PET_SECTION</div> }));
 
 import { SettingsPage } from './SettingsPage';
 

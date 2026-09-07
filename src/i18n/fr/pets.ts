@@ -4,6 +4,10 @@ const dict: Record<string, string> = {
   Wiederbeleben: 'Ressusciter',
   'Wiederbeleben (−1 Level)': 'Ressusciter (−1 niveau)',
   'Meine Pets': 'Mes compagnons',
+  'Dein Pet ist ausgeschaltet': 'Ton compagnon est désactivé',
+  'Solange steht die Zeit für dein Pet still. Schalte es ein, um weiterzuspielen.':
+    'En attendant, le temps est figé pour ton compagnon. Active-le pour continuer à jouer.',
+  'Pet einschalten': 'Activer le compagnon',
   'Zur Adoption freigeben': "Proposer à l'adoption",
   Glück: 'Bonheur',
   Tot: 'Mort',

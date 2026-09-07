@@ -55,6 +55,8 @@ const dict: Record<string, string> = {
   Gestalt: 'Apparence',
   'gib ihm einen namen': 'donne-lui un nom',
   'weiter zur premiere': 'direction la première',
+  'ohne begleiter weiter': 'continuer sans compagnon',
+  'später in den einstellungen einschaltbar': 'activable plus tard dans les réglages',
   'Mein Pet': 'Mon compagnon',
   Katze: 'Chat',
   Hund: 'Chien',

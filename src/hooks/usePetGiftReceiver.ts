@@ -2,6 +2,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePetEnabled } from './usePetEnabled';
 import { dbRef, dbGet, userPath } from '../services/db/ref';
 import { onValue } from '../services/db/subscribeValue';
 
@@ -16,9 +17,10 @@ import { onValue } from '../services/db/subscribeValue';
  */
 export function usePetGiftReceiver(): void {
   const { user } = useAuth() || {};
+  const petEnabled = usePetEnabled();
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || !petEnabled) return;
     const uid = user.uid;
     const notifRef = dbRef(userPath(uid, 'notifications'))
       .orderByChild('timestamp')
@@ -75,7 +77,7 @@ export function usePetGiftReceiver(): void {
     return () => {
       notifRef.off('value', handler);
     };
-  }, [user?.uid]);
+  }, [user?.uid, petEnabled]);
 }
 
 interface RawGiftNotification {

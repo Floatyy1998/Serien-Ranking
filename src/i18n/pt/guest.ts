@@ -40,6 +40,8 @@ const dict: Record<string, string> = {
   'Er levelt mit jeder Folge, die du schaust. Gib ihm einen Namen und eine Gestalt.':
     'Ele sobe de nível a cada episódio que você assiste. Dê a ele um nome e uma forma.',
   'weiter zur premiere': 'ir para a estreia',
+  'ohne begleiter weiter': 'continuar sem companheiro',
+  'später in den einstellungen einschaltbar': 'pode ser ativado depois nas configurações',
   'Wo stehst du?': 'Por onde você está?',
   'Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.':
     'Toque em uma série e diga até onde você já assistiu.',

@@ -39,6 +39,7 @@ import { ActivityMarquee } from './ActivityMarquee';
 import { MilestoneBoxCard } from './MilestoneBoxCard';
 import { WrappedNotification } from './WrappedNotification';
 import { useHomeConfig } from './useHomeConfig';
+import { usePetEnabled } from '../../hooks/usePetEnabled';
 import { useRewatchHandler } from './useRewatchHandler';
 import { useUnifiedNotifications } from './useUnifiedNotifications';
 import { GreetingSection } from './sections/GreetingSection';
@@ -50,6 +51,9 @@ import { NewOnSubscriptionsSection } from './sections/NewOnSubscriptionsSection'
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
 import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
 import { onValue } from '../../services/db/subscribeValue';
+
+// „Für dich"-Karten, die nur mit eingeschaltetem Pet Sinn ergeben.
+const PET_FOR_YOU_CARDS = new Set(['daily-spin', 'milestone-box']);
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -102,6 +106,7 @@ export const HomePage: React.FC = () => {
   const { countdowns } = useSeriesCountdowns();
   const proactiveRecaps = useProactiveRecaps();
   const config = useHomeConfig(user?.uid ?? '');
+  const petEnabled = usePetEnabled();
   const notifs = useUnifiedNotifications();
   const { entries: unsubscribedNewSeasons, dismiss: dismissUnsubscribedNewSeasons } =
     useUnsubscribedNewSeasons(seriesWithNewSeasons);
@@ -261,7 +266,9 @@ export const HomePage: React.FC = () => {
           'streaming-reminder': <StreamingReminderCard key="streaming-reminder" />,
           'hidden-series': <HiddenSeriesCard key="hidden-series" />,
         };
-        const visible = config.forYouOrder.filter((id) => !config.hiddenForYou.includes(id));
+        const visible = config.forYouOrder.filter(
+          (id) => !config.hiddenForYou.includes(id) && (petEnabled || !PET_FOR_YOU_CARDS.has(id))
+        );
         if (visible.length === 0) return null;
         return (
           <section key="for-you" style={{ marginBottom: '32px' }}>
@@ -530,7 +537,9 @@ export const HomePage: React.FC = () => {
         onOpenCaseOpening={setCaseOpeningDrop}
       />
 
-      <CaseOpeningOverlay dropData={caseOpeningDrop} onClose={() => setCaseOpeningDrop(null)} />
+      {petEnabled && (
+        <CaseOpeningOverlay dropData={caseOpeningDrop} onClose={() => setCaseOpeningDrop(null)} />
+      )}
 
       <QuickRatingSheet
         isOpen={quickRatingOpen}

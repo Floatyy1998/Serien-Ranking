@@ -139,6 +139,11 @@ const dict: Record<string, string> = {
   Bewertungen: 'Notes',
   Benachrichtigungen: 'Notifications',
   'Push-Benachrichtigungen': 'Notifications push',
+  'Dein Pet': 'Ton compagnon',
+  'Pet-Begleiter': 'Compagnon',
+  'Widget, Reaktionen und Pet-Karten sind an.': 'Widget, réactions et cartes du compagnon activés.',
+  'Ausgeschaltet. Solange steht die Zeit für dein Pet still, es bekommt keinen Hunger.':
+    "Désactivé. En attendant, le temps est figé pour ton compagnon, il n'aura pas faim.",
   'Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy':
     "Les nouveaux épisodes de tes séries et les demandes d'amis directement sur ton téléphone",
   'Inaktive Serien': 'Séries inactives',

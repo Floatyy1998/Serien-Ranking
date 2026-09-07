@@ -4,6 +4,7 @@ import { PET_CONFIG } from './petConstants';
 import { toLocalDateString } from '../../lib/date/date.utils';
 import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
+import { getPetEnabled } from './petPreferences';
 
 // Fuettere das Pet
 export async function feedPet(userId: string, petId: string): Promise<Pet | null> {
@@ -49,6 +50,8 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
   if (!pet) return null;
 
   if (!pet.isAlive) return pet;
+  // Ausgeschaltet steht die Zeit still (petPreferences) — auch für Geräte, die das Aus noch nicht kennen.
+  if (!(await getPetEnabled(userId))) return pet;
 
   const now = new Date();
   const lastUpdated = pet.lastUpdated ? new Date(pet.lastUpdated) : new Date(pet.createdAt);

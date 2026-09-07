@@ -11,7 +11,7 @@ import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 
-export function usePetsData() {
+export function usePetsData(enabled = true) {
   const authContext = useAuth();
   const user = authContext?.user;
 
@@ -48,7 +48,7 @@ export function usePetsData() {
 
   // Pets beim Mount laden
   const loadPets = useCallback(async () => {
-    if (!user) return;
+    if (!user || !enabled) return;
     try {
       const updatedPets = await petService.updateAllPetsStatus(user.uid);
 
@@ -73,7 +73,7 @@ export function usePetsData() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, selectedPetIndex]);
+  }, [user, enabled, selectedPetIndex]);
 
   useEffect(() => {
     if (user) {

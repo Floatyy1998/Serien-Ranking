@@ -11,6 +11,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useIsNavRoot } from '../../hooks/useIsNavRoot';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useNavSlots } from '../../hooks/useNavConfig';
+import { usePetEnabled } from '../../hooks/usePetEnabled';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
 import { setAppBadge } from '../../services/nativeShell';
@@ -34,6 +35,7 @@ export const BottomNavigation = () => {
   const location = useLocation();
   useTheme();
   const { user } = useAuth() || {};
+  const petEnabled = usePetEnabled();
   const { unreadRequestsCount } = useOptimizedFriends();
   useNotifications();
 
@@ -208,7 +210,7 @@ export const BottomNavigation = () => {
 
   return (
     <>
-      <PetWidget />
+      {petEnabled && <PetWidget />}
 
       <nav className="mobile-bottom-navigation" aria-label={t('Hauptnavigation')}>
         <div

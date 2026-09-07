@@ -1322,3 +1322,40 @@
     margin-right: auto;
   }
 }
+
+/* Ausgeschaltet: eine Karte mit Einschalten-Knopf statt der Pet-Ansicht. */
+.pet-disabled-card {
+  margin: 24px 20px;
+  padding: 28px 20px;
+  border-radius: var(--radius-xl, 20px);
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.pet-disabled-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pet-disabled-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.pet-page .pet-disabled-cta {
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}

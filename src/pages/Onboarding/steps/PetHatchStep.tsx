@@ -11,6 +11,8 @@ interface Props {
   onNameChange: (name: string) => void;
   onTypeChange: (type: Pet['type']) => void;
   onNext: () => void;
+  /** Ohne Begleiter weiter — das Pet bleibt aus, bis es in den Einstellungen eingeschaltet wird. */
+  onSkip: () => void;
   onBack: () => void;
 }
 
@@ -57,6 +59,7 @@ export const PetHatchStep: React.FC<Props> = ({
   onNameChange,
   onTypeChange,
   onNext,
+  onSkip,
   onBack,
 }) => {
   const heroPet = useMemo(() => previewPet(type, name), [type, name]);
@@ -249,18 +252,33 @@ export const PetHatchStep: React.FC<Props> = ({
         </div>
       </div>
 
-      <button onClick={onNext} disabled={nameEmpty} className="ob-cta">
-        <span className="ob-cta__inner">
-          <span>{t('weiter zur premiere')}</span>
-          {nameEmpty && (
-            <>
-              <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
-              <span style={{ opacity: 0.55, fontSize: 11 }}>{t('gib ihm einen namen')}</span>
-            </>
-          )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button onClick={onNext} disabled={nameEmpty} className="ob-cta">
+          <span className="ob-cta__inner">
+            <span>{t('weiter zur premiere')}</span>
+            {nameEmpty && (
+              <>
+                <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
+                <span style={{ opacity: 0.55, fontSize: 11 }}>{t('gib ihm einen namen')}</span>
+              </>
+            )}
+          </span>
+          <span className="ob-cta__arrow">→</span>
+        </button>
+        <button
+          onClick={onSkip}
+          className="ob-link"
+          style={{ alignSelf: 'center', padding: '10px 0 0', fontSize: 11 }}
+        >
+          {t('ohne begleiter weiter')}
+        </button>
+        <span
+          className="ob-mono"
+          style={{ alignSelf: 'center', color: 'var(--ob-text-mute)', fontSize: 9, opacity: 0.8 }}
+        >
+          {t('später in den einstellungen einschaltbar')}
         </span>
-        <span className="ob-cta__arrow">→</span>
-      </button>
+      </div>
     </motion.div>
   );
 };

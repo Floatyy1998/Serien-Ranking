@@ -3,6 +3,10 @@
 const dict: Record<string, string> = {
   'Zur Adoption freigeben': 'Dar en adopción',
   'Meine Pets': 'Mis mascotas',
+  'Dein Pet ist ausgeschaltet': 'Tu mascota está desactivada',
+  'Solange steht die Zeit für dein Pet still. Schalte es ein, um weiterzuspielen.':
+    'Mientras tanto el tiempo se detiene para tu mascota. Actívala para seguir jugando.',
+  'Pet einschalten': 'Activar mascota',
   Glück: 'Felicidad',
   Tot: 'Muerta',
   'XP-Bonus aktiv: +50%': 'Bonus de XP activo: +50%',

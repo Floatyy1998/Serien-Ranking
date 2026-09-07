@@ -66,6 +66,8 @@ const dict: Record<string, string> = {
   Gestalt: 'Form',
   'gib ihm einen namen': 'give it a name',
   'weiter zur premiere': 'on to the premiere',
+  'ohne begleiter weiter': 'continue without a companion',
+  'später in den einstellungen einschaltbar': 'can be switched on later in settings',
   'Mein Pet': 'My pet',
   Katze: 'Cat',
   Hund: 'Dog',

@@ -21,6 +21,7 @@ import { RateAppSection } from './RateAppSection';
 import { LanguageSection } from './LanguageSection';
 import { ImportExportSection } from './ImportExportSection';
 import { NotificationsSection } from './NotificationsSection';
+import { PetSection } from './PetSection';
 import { SecuritySection } from './SecuritySection';
 import './SettingsPage.css';
 import { tapScaleSmall } from '../../lib/motion';
@@ -177,6 +178,8 @@ export const SettingsPage = () => {
         />
 
         <NotificationsSection />
+
+        <PetSection />
 
         <LanguageSection />
 

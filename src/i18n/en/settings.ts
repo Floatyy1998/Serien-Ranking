@@ -157,6 +157,11 @@ const settings: Record<string, string> = {
   // NotificationsSection
   Benachrichtigungen: 'Notifications',
   'Push-Benachrichtigungen': 'Push notifications',
+  'Dein Pet': 'Your pet',
+  'Pet-Begleiter': 'Pet companion',
+  'Widget, Reaktionen und Pet-Karten sind an.': 'Widget, reactions and pet cards are on.',
+  'Ausgeschaltet. Solange steht die Zeit für dein Pet still, es bekommt keinen Hunger.':
+    'Off. Meanwhile time stands still for your pet, it will not get hungry.',
   'Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy':
     'New episodes of your shows and friend requests straight to your phone',
   'Inaktive Serien': 'Inactive shows',

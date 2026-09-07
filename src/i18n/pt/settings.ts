@@ -139,6 +139,11 @@ const dict: Record<string, string> = {
   Bewertungen: 'Notas',
   Benachrichtigungen: 'Notificações',
   'Push-Benachrichtigungen': 'Notificações push',
+  'Dein Pet': 'Seu mascote',
+  'Pet-Begleiter': 'Mascote',
+  'Widget, Reaktionen und Pet-Karten sind an.': 'Widget, reações e cartões do mascote ativados.',
+  'Ausgeschaltet. Solange steht die Zeit für dein Pet still, es bekommt keinen Hunger.':
+    'Desativado. Enquanto isso o tempo para para o seu mascote, ele não sentirá fome.',
   'Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy':
     'Novos episódios das suas séries e pedidos de amizade direto no celular',
   'Inaktive Serien': 'Séries inativas',

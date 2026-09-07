@@ -3,6 +3,10 @@
 const dict: Record<string, string> = {
   // ── Pets page ──────────────────────────────────────────
   'Meine Pets': 'My Pets',
+  'Dein Pet ist ausgeschaltet': 'Your pet is switched off',
+  'Solange steht die Zeit für dein Pet still. Schalte es ein, um weiterzuspielen.':
+    'Meanwhile time stands still for your pet. Switch it on to keep playing.',
+  'Pet einschalten': 'Switch pet on',
   'Zur Adoption freigeben': 'Put up for adoption',
   Glück: 'Happiness',
   Tot: 'Dead',

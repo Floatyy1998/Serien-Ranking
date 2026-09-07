@@ -92,13 +92,16 @@ export const GuestOnboardingPage: React.FC = () => {
 
   // Vor dem Signup die gesamte Auswahl im Store sichern — nach dem Anmelden
   // übernimmt das große Onboarding sie und fragt nur noch den Fortschritt ab.
-  const goToSave = useCallback(() => {
-    clearGuestPicks();
-    for (const item of pendingItems.values()) addGuestPick(item);
-    setGuestSubscriptions(Array.from(selectedProviders));
-    setGuestPet(petName.trim() || petType ? { name: petName.trim(), type: petType } : null);
-    setStep('save');
-  }, [pendingItems, selectedProviders, petName, petType]);
+  const goToSave = useCallback(
+    (skipPet = false) => {
+      clearGuestPicks();
+      for (const item of pendingItems.values()) addGuestPick(item);
+      setGuestSubscriptions(Array.from(selectedProviders));
+      setGuestPet(skipPet ? null : { name: petName.trim(), type: petType });
+      setStep('save');
+    },
+    [pendingItems, selectedProviders, petName, petType]
+  );
 
   const pickList = Array.from(pendingItems.values());
   const coreIndex = CORE.indexOf(step);
@@ -300,7 +303,8 @@ export const GuestOnboardingPage: React.FC = () => {
               type={petType}
               onNameChange={setPetName}
               onTypeChange={setPetType}
-              onNext={goToSave}
+              onNext={() => goToSave(false)}
+              onSkip={() => goToSave(true)}
               onBack={() => setStep('subscriptions')}
             />
           )}

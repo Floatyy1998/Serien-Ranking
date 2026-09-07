@@ -19,6 +19,7 @@ import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { petService } from '../../services/petService';
+import { setPetEnabled } from '../../services/pet/petPreferences';
 import { hasGuestOnboarding } from '../../services/guestOnboarding';
 import { markOnboardingStep } from '../../services/onboardingProgress';
 import { GuestResumeOnboarding } from '../GuestOnboarding/GuestResumeOnboarding';
@@ -71,6 +72,7 @@ export const OnboardingPage: React.FC = () => {
   const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
   const [petName, setPetName] = useState('');
   const [petType, setPetType] = useState<Pet['type']>('cat');
+  const [petSkipped, setPetSkipped] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionProgress, setCompletionProgress] = useState(0);
 
@@ -289,9 +291,12 @@ export const OnboardingPage: React.FC = () => {
       }
 
       // Starter-Pet anlegen (best-effort — kein Blocker fürs Onboarding).
+      // Übersprungen: Pet-Feature aus, bis es in den Einstellungen eingeschaltet wird.
       try {
         const hasPet = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
-        if (!hasPet) {
+        if (petSkipped) {
+          if (!hasPet) await setPetEnabled(uid, false);
+        } else if (!hasPet) {
           await petService.createPet(uid, petName.trim() || t('Mein Pet'), petType);
         }
       } catch {
@@ -338,6 +343,7 @@ export const OnboardingPage: React.FC = () => {
     selectedProviders,
     petName,
     petType,
+    petSkipped,
     addToList,
     refetchCatalog,
     waitForBackendItem,
@@ -447,7 +453,14 @@ export const OnboardingPage: React.FC = () => {
               type={petType}
               onNameChange={setPetName}
               onTypeChange={setPetType}
-              onNext={() => setStep('done')}
+              onNext={() => {
+                setPetSkipped(false);
+                setStep('done');
+              }}
+              onSkip={() => {
+                setPetSkipped(true);
+                setStep('done');
+              }}
               onBack={() => setStep('subscriptions')}
             />
           )}

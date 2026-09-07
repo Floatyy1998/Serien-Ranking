@@ -7,6 +7,7 @@ import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Star from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePetEnabled } from '../../hooks/usePetEnabled';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
@@ -158,6 +159,7 @@ interface SecondaryActionsProps {
 
 export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ config, navigate }) => {
   const { currentTheme } = useTheme();
+  const petEnabled = usePetEnabled();
 
   const all: Record<
     string,
@@ -196,7 +198,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
     },
   };
   const visible = config.secondaryActionsOrder.filter(
-    (id) => !config.hiddenSecondaryActions.includes(id)
+    (id) => !config.hiddenSecondaryActions.includes(id) && (petEnabled || id !== 'pets')
   );
   if (visible.length === 0) return null;
   return (

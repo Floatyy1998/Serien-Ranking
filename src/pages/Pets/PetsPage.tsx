@@ -1,9 +1,14 @@
 /** Kompositions-Komponente — Logik in usePetsData, UI in Subkomponenten. */
 
-import React from 'react';
+import { Pets } from '@mui/icons-material';
+import React, { useState } from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePetEnabled } from '../../hooks/usePetEnabled';
 import { t } from '../../services/i18n';
+import { setPetEnabled } from '../../services/pet/petPreferences';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
@@ -17,6 +22,9 @@ import './PetsPage.css';
 
 export const PetsPage: React.FC = () => {
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const petEnabled = usePetEnabled();
+  const [enabling, setEnabling] = useState(false);
 
   const {
     pets,
@@ -53,7 +61,59 @@ export const PetsPage: React.FC = () => {
     closeReleaseConfirm,
     openReviveConfirm,
     closeReviveConfirm,
-  } = usePetsData();
+  } = usePetsData(petEnabled);
+
+  const enablePet = async () => {
+    if (!user || enabling) return;
+    setEnabling(true);
+    try {
+      await setPetEnabled(user.uid, true);
+    } catch (error) {
+      console.error('Enabling pet failed:', error);
+    } finally {
+      setEnabling(false);
+    }
+  };
+
+  if (!petEnabled) {
+    return (
+      <div className="pet-page" style={{ background: currentTheme.background.default }}>
+        <PageHeader
+          title={t('Meine Pets')}
+          gradientFrom={currentTheme.accent}
+          gradientTo={currentTheme.primary}
+        />
+        <div
+          className="pet-disabled-card"
+          style={{
+            background: currentTheme.background.surface,
+            borderColor: currentTheme.border.default,
+          }}
+        >
+          <Pets style={{ fontSize: '40px', color: currentTheme.primary }} />
+          <h2 className="pet-disabled-title" style={{ color: currentTheme.text.primary }}>
+            {t('Dein Pet ist ausgeschaltet')}
+          </h2>
+          <p className="pet-disabled-text" style={{ color: currentTheme.text.muted }}>
+            {t('Solange steht die Zeit für dein Pet still. Schalte es ein, um weiterzuspielen.')}
+          </p>
+          <button
+            type="button"
+            className="pet-disabled-cta"
+            onClick={enablePet}
+            disabled={enabling || !user}
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              color: getOptimalTextColor(currentTheme.primary),
+              opacity: enabling ? 0.7 : 1,
+            }}
+          >
+            {t('Pet einschalten')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Loading State
   if (isLoading) {
