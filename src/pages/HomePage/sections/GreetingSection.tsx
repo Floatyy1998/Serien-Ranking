@@ -263,7 +263,10 @@ export const GreetingSection = React.memo(function GreetingSection({
                   }}
                   style={{
                     cursor: 'pointer',
-                    textDecoration: greeting.title ? 'underline dotted' : 'none',
+                    // Nur Einzel-Properties: textDecoration wechselt mit dem Gruß, und
+                    // React warnt bei Kurz- und Einzelschreibweise auf demselben Element.
+                    textDecorationLine: greeting.title ? 'underline' : 'none',
+                    textDecorationStyle: 'dotted',
                     textDecorationColor: currentTheme.primary,
                     textUnderlineOffset: '3px',
                     overflow: isMobile ? 'visible' : 'hidden',
