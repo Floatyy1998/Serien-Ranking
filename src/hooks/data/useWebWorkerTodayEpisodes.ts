@@ -36,7 +36,7 @@ interface EpisodesWorkerInput {
 const INITIAL_EPISODES: TodayEpisode[] = [];
 
 const createEpisodesWorker = () =>
-  new Worker(new URL('../workers/stats.worker.ts', import.meta.url), { type: 'module' });
+  new Worker(new URL('../../workers/stats.worker.ts', import.meta.url), { type: 'module' });
 
 export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   const { seriesList } = useSeriesList();

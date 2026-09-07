@@ -40,7 +40,7 @@ const INITIAL_STATS: WorkerStats = {
 };
 
 const createStatsWorker = () =>
-  new Worker(new URL('../workers/stats.worker.ts', import.meta.url), { type: 'module' });
+  new Worker(new URL('../../workers/stats.worker.ts', import.meta.url), { type: 'module' });
 
 // Modul-level Cache: letzte berechnete Stats bleiben bei SPA-Navigation erhalten
 let _cachedStats: WorkerStats = INITIAL_STATS;
