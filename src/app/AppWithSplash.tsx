@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { App } from './App';
-import { SplashScreen } from './components/ui/overlay/SplashScreen';
-import { APP_READY_EVENT, isAppReady } from './services/app/appReady';
+import { SplashScreen } from '../components/ui/overlay/SplashScreen';
+import { APP_READY_EVENT, isAppReady } from '../services/app/appReady';
 import {
   applyDisplayScale,
   getDisplayScale,
   watchWidthStep,
-} from './services/settings/displayScale';
+} from '../services/settings/displayScale';
 
 /**
  * Wrapper-Component die SOFORT den SplashScreen zeigt

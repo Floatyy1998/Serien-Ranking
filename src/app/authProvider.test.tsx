@@ -13,27 +13,27 @@ const { onAuthStateChangedMock, initFirebaseMock } = vi.hoisted(() => ({
 vi.mock('firebase/compat/app', () => ({
   default: { auth: () => ({ onAuthStateChanged: onAuthStateChangedMock }) },
 }));
-vi.mock('./services/firebase/initFirebase', () => ({ initFirebase: initFirebaseMock }));
-vi.mock('./services/firebase/analytics', () => ({
+vi.mock('../services/firebase/initFirebase', () => ({ initFirebase: initFirebaseMock }));
+vi.mock('../services/firebase/analytics', () => ({
   initAnalyticsIfConsented: vi.fn(),
   setAnalyticsUser: vi.fn(),
 }));
-vi.mock('./services/offline/offlineFirebaseService', () => ({
+vi.mock('../services/offline/offlineFirebaseService', () => ({
   offlineFirebaseService: { cacheData: vi.fn<() => Promise<void>>() },
 }));
 vi.mock('./themeHelpers', () => ({
   adjustBrightness: () => '#ffffff',
   updateThemeColorMeta: vi.fn(),
 }));
-vi.mock('./features/badges/offlineBadgeSystem', () => ({
+vi.mock('../features/badges/offlineBadgeSystem', () => ({
   getOfflineBadgeSystem: () => ({
     checkForNewBadges: vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
   }),
 }));
-vi.mock('./services/firebase/userSearchIndex', () => ({ syncUserSearchIndex: vi.fn() }));
+vi.mock('../services/firebase/userSearchIndex', () => ({ syncUserSearchIndex: vi.fn() }));
 
 import { AuthProvider } from './authProvider';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Consumer = () => {
   const auth = useAuth();

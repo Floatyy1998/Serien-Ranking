@@ -12,16 +12,16 @@ vi.mock('react-router-dom', () => ({
   Route: () => null,
   Navigate: () => <div data-testid="redirect" />,
 }));
-vi.mock('./components/ErrorBoundary', () => ({
+vi.mock('../components/ErrorBoundary', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./components/layout', () => ({
+vi.mock('../components/layout', () => ({
   Layout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ScrollToTop: () => <div data-testid="scroll-top" />,
 }));
-vi.mock('./components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
-vi.mock('./contexts/AuthContext', () => ({ useAuth: () => authValue }));
-vi.mock('./contexts/OptimizedFriendsContext', () => ({
+vi.mock('../components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => authValue }));
+vi.mock('../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({
     unreadActivitiesCount: 0,
     unreadRequestsCount: 0,
@@ -29,24 +29,24 @@ vi.mock('./contexts/OptimizedFriendsContext', () => ({
     friendRequests: [],
   }),
 }));
-vi.mock('./contexts/NotificationContext', () => ({
+vi.mock('../contexts/NotificationContext', () => ({
   useNotifications: () => ({ unreadCount: 0, notifications: [] }),
 }));
-vi.mock('./hooks/admin/useAdminHealthAlert', () => ({ useAdminHealthAlert: () => {} }));
-vi.mock('./hooks/pet/usePetGiftReceiver', () => ({ usePetGiftReceiver: () => {} }));
-vi.mock('./hooks/platform/useNetworkStatus', () => ({ useNetworkStatus: () => {} }));
-vi.mock('./pages/BugReport/useBugReportData', () => ({ cleanupOldTickets: vi.fn() }));
-vi.mock('./services/notifications/pushNotifications', () => ({ initNativePush: vi.fn() }));
-vi.mock('./components/PushOptInPrompt', () => ({ PushOptInPrompt: () => null }));
-vi.mock('./components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost: () => null }));
-vi.mock('./features/tour', () => ({ PageTourHost: () => null }));
-vi.mock('./components/AvatarViewerHost', () => ({ AvatarViewerHost: () => null }));
+vi.mock('../hooks/admin/useAdminHealthAlert', () => ({ useAdminHealthAlert: () => {} }));
+vi.mock('../hooks/pet/usePetGiftReceiver', () => ({ usePetGiftReceiver: () => {} }));
+vi.mock('../hooks/platform/useNetworkStatus', () => ({ useNetworkStatus: () => {} }));
+vi.mock('../pages/BugReport/useBugReportData', () => ({ cleanupOldTickets: vi.fn() }));
+vi.mock('../services/notifications/pushNotifications', () => ({ initNativePush: vi.fn() }));
+vi.mock('../components/PushOptInPrompt', () => ({ PushOptInPrompt: () => null }));
+vi.mock('../components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost: () => null }));
+vi.mock('../features/tour', () => ({ PageTourHost: () => null }));
+vi.mock('../components/AvatarViewerHost', () => ({ AvatarViewerHost: () => null }));
 
-vi.mock('./pages/HomePage', () => ({ HomePage: () => <div /> }));
-vi.mock('./pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));
-vi.mock('./pages/Ratings', () => ({ RatingsPage: () => <div /> }));
-vi.mock('./pages/Profile', () => ({ ProfilePage: () => <div /> }));
-vi.mock('./pages/Search', () => ({ SearchPage: () => <div /> }));
+vi.mock('../pages/HomePage', () => ({ HomePage: () => <div /> }));
+vi.mock('../pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));
+vi.mock('../pages/Ratings', () => ({ RatingsPage: () => <div /> }));
+vi.mock('../pages/Profile', () => ({ ProfilePage: () => <div /> }));
+vi.mock('../pages/Search', () => ({ SearchPage: () => <div /> }));
 
 vi.mock('./lazyRoutes', () => {
   const Stub = () => <div />;

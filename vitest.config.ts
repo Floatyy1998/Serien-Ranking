@@ -30,11 +30,11 @@ export default defineConfig({
       // Allowlist getesteter Quelldateien (Legal-Seiten bewusst NICHT — laden
       // gitignored public/legal-Inhalt). ZWEI TIERS via per-glob thresholds.
       include: [
-        'src/App.tsx',
-        'src/AppProviders.tsx',
-        'src/AppWithSplash.tsx',
-        'src/MobileApp.tsx',
-        'src/authProvider.tsx',
+        'src/app/App.tsx',
+        'src/app/AppProviders.tsx',
+        'src/app/AppWithSplash.tsx',
+        'src/app/MobileApp.tsx',
+        'src/app/authProvider.tsx',
         'src/components/AvatarViewerHost.tsx',
         'src/components/BugFab.tsx',
         'src/components/CookieConsentBanner.tsx',
@@ -682,7 +682,7 @@ export default defineConfig({
         'src/services/wrapped/wrappedCalculator.ts',
         'src/theme/colorUtils.ts',
         'src/theme/colors.ts',
-        'src/themeHelpers.ts',
+        'src/app/themeHelpers.ts',
         'src/utils/episodeChips.ts',
         'src/utils/episodeDate.ts',
         'src/utils/genreMap.ts',

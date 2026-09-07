@@ -1,21 +1,21 @@
 import { CssBaseline } from '@mui/material';
 import { MotionConfig } from 'framer-motion';
 import { Suspense, useEffect, useState } from 'react';
-import { LoadingSpinner } from './components/ui/feedback/LoadingSpinner';
+import { LoadingSpinner } from '../components/ui/feedback/LoadingSpinner';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
-import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
+import { EmailVerificationBanner } from '../components/auth/EmailVerificationBanner';
 import { AppProviders } from './AppProviders';
-import { useGlobalImageRetry } from './hooks/platform/useGlobalImageRetry';
-import { DynamicThemeProvider } from './contexts/ThemeProvider';
-import { AppInstallBanner } from './components/AppInstallBanner';
-import { CookieConsentBanner } from './components/CookieConsentBanner';
-import { ElectronUpdateToast } from './components/ElectronUpdateToast';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { RouteTracker } from './components/RouteTracker';
+import { useGlobalImageRetry } from '../hooks/platform/useGlobalImageRetry';
+import { DynamicThemeProvider } from '../contexts/ThemeProvider';
+import { AppInstallBanner } from '../components/AppInstallBanner';
+import { CookieConsentBanner } from '../components/CookieConsentBanner';
+import { ElectronUpdateToast } from '../components/ElectronUpdateToast';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { RouteTracker } from '../components/RouteTracker';
 
-import './styles/performance.css';
+import '../styles/performance.css';
 import { AuthProvider } from './authProvider';
-import { AuthContext } from './contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { loadSavedTheme } from './themeHelpers';
 import { lazy, type ComponentType } from 'react';
 
@@ -44,47 +44,47 @@ const MobileApp = lazyWithRetry(() =>
   import('./MobileApp').then((m) => ({ default: m.MobileApp }))
 );
 const StartPage = lazyWithRetry(() =>
-  import('./pages/Start').then((m) => ({
+  import('../pages/Start').then((m) => ({
     default: m.StartPage,
   }))
 );
 const LoginPage = lazyWithRetry(() =>
-  import('./pages/Auth/LoginPage').then((m) => ({
+  import('../pages/Auth/LoginPage').then((m) => ({
     default: m.LoginPage,
   }))
 );
 const RegisterPage = lazyWithRetry(() =>
-  import('./pages/Auth/RegisterPage').then((m) => ({
+  import('../pages/Auth/RegisterPage').then((m) => ({
     default: m.RegisterPage,
   }))
 );
 const GuestOnboardingPage = lazyWithRetry(() =>
-  import('./pages/GuestOnboarding/GuestOnboardingPage').then((m) => ({
+  import('../pages/GuestOnboarding/GuestOnboardingPage').then((m) => ({
     default: m.GuestOnboardingPage,
   }))
 );
 const PublicProfilePage = lazyWithRetry(() =>
-  import('./pages/PublicProfile').then((m) => ({
+  import('../pages/PublicProfile').then((m) => ({
     default: m.PublicProfilePage,
   }))
 );
 const GuestMediaPage = lazyWithRetry(() =>
-  import('./pages/GuestMedia/GuestMediaPage').then((m) => ({
+  import('../pages/GuestMedia/GuestMediaPage').then((m) => ({
     default: m.GuestMediaPage,
   }))
 );
 const PrivacyPage = lazyWithRetry(() =>
-  import('./pages/Privacy').then((m) => ({
+  import('../pages/Privacy').then((m) => ({
     default: m.PrivacyPage,
   }))
 );
 const AccountDeletionPage = lazyWithRetry(() =>
-  import('./pages/AccountDeletion').then((m) => ({
+  import('../pages/AccountDeletion').then((m) => ({
     default: m.AccountDeletionPage,
   }))
 );
 const ImpressumPage = lazyWithRetry(() =>
-  import('./pages/Impressum').then((m) => ({
+  import('../pages/Impressum').then((m) => ({
     default: m.ImpressumPage,
   }))
 );

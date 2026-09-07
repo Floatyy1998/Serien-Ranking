@@ -1,4 +1,4 @@
-import { dbGet, paths } from './services/db/ref';
+import { dbGet, paths } from '../services/db/ref';
 
 // Funktion um eine Farbe heller oder dunkler zu machen
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;

@@ -4,11 +4,11 @@
 import './services/app/localStorageBootstrap';
 
 import ReactDOM from 'react-dom/client';
-import { AppWithSplash } from './AppWithSplash';
+import { AppWithSplash } from './app/AppWithSplash';
 import { installErrorReporting } from './services/errorReporting/errorReporter';
 import { ensureAllDictionaries } from './services/i18n';
 import { APP_READY_EVENT, isAppReady } from './services/app/appReady';
-import './index.css';
+import './styles/index.css';
 // Die Anzeigegröße (zoom) wird in AppWithSplash gesetzt — erst NACHDEM der
 // Splash verschwunden ist, damit der Splash nie mitskaliert.
 
@@ -37,7 +37,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
  */
 function warmCriticalChunks(): void {
   void import('./services/firebase/initFirebase').catch(() => {});
-  void import('./MobileApp').catch(() => {});
+  void import('./app/MobileApp').catch(() => {});
 }
 
 /**

@@ -1,25 +1,25 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { Layout, ScrollToTop } from './components/layout';
-import { MainTabs } from './components/layout/MainTabs';
-import { MAIN_TAB_PATHS } from './config/navItems';
-import { useAuth } from './contexts/AuthContext';
-import { ADMIN_UID } from './config/admin';
-import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
-import { useNotifications } from './contexts/NotificationContext';
-import { useAdminHealthAlert } from './hooks/admin/useAdminHealthAlert';
-import { usePetGiftReceiver } from './hooks/pet/usePetGiftReceiver';
-import { useNetworkStatus } from './hooks/platform/useNetworkStatus';
-import { t } from './services/i18n';
-import { LoadingSpinner } from './components/ui/feedback/LoadingSpinner';
-import { PushOptInPrompt } from './components/PushOptInPrompt';
-import { WidgetDataSync } from './components/WidgetDataSync';
-import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
-import { AvatarViewerHost } from './components/AvatarViewerHost';
-import { bindOwnPhotoURL } from './services/profile/ownProfilePhoto';
-import { PageTourHost } from './features/tour';
-import './styles/App.css';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { Layout, ScrollToTop } from '../components/layout';
+import { MainTabs } from '../components/layout/MainTabs';
+import { MAIN_TAB_PATHS } from '../config/navItems';
+import { useAuth } from '../contexts/AuthContext';
+import { ADMIN_UID } from '../config/admin';
+import { useOptimizedFriends } from '../contexts/OptimizedFriendsContext';
+import { useNotifications } from '../contexts/NotificationContext';
+import { useAdminHealthAlert } from '../hooks/admin/useAdminHealthAlert';
+import { usePetGiftReceiver } from '../hooks/pet/usePetGiftReceiver';
+import { useNetworkStatus } from '../hooks/platform/useNetworkStatus';
+import { t } from '../services/i18n';
+import { LoadingSpinner } from '../components/ui/feedback/LoadingSpinner';
+import { PushOptInPrompt } from '../components/PushOptInPrompt';
+import { WidgetDataSync } from '../components/WidgetDataSync';
+import { EpisodeRatingSheetHost } from '../components/EpisodeRatingSheetHost';
+import { AvatarViewerHost } from '../components/AvatarViewerHost';
+import { bindOwnPhotoURL } from '../services/profile/ownProfilePhoto';
+import { PageTourHost } from '../features/tour';
+import '../styles/App.css';
 
 // Haupt-Tabs leben in MainTabs (Keep-Alive) — hier nur die übrigen Routen
 import {
@@ -65,13 +65,13 @@ import {
 
 // Nur im Dev-Server: Vorschau aller neuen Pet-Inhalte unter /dev/pet-preview
 const DevPetPreviewPage = import.meta.env.DEV
-  ? lazy(() => import('./pages/DevPetPreview').then((m) => ({ default: m.DevPetPreviewPage })))
+  ? lazy(() => import('../pages/DevPetPreview').then((m) => ({ default: m.DevPetPreviewPage })))
   : null;
 
 // Nur im Dev-Server: Overlays und Sheets in mehreren Fensterbreiten unter
 // /dev/ui-preview — faengt Layout-Fehler, die nur auf breiten Fenstern auftreten.
 const DevUiPreviewPage = import.meta.env.DEV
-  ? lazy(() => import('./pages/DevUiPreview').then((m) => ({ default: m.DevUiPreviewPage })))
+  ? lazy(() => import('../pages/DevUiPreview').then((m) => ({ default: m.DevUiPreviewPage })))
   : null;
 
 // Themed Spinner statt rohem "Loading..."-Text — das hier ist der Suspense-
@@ -204,22 +204,22 @@ export const MobileApp = () => {
     // preloadRoutes() oben, das im selben Effekt laeuft.
     const quiet = () => {};
     if (user?.uid === ADMIN_UID) {
-      import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets()).catch(quiet);
+      import('../pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets()).catch(quiet);
     }
     if (user?.uid) {
-      import('./services/notifications/pushNotifications')
+      import('../services/notifications/pushNotifications')
         .then((m) => m.initNativePush(user.uid))
         .catch(quiet);
-      import('./services/settings/languageSync')
+      import('../services/settings/languageSync')
         .then((m) => m.syncAppLanguageToProfile(user.uid))
         .catch(quiet);
-      import('./services/settings/timezoneSync')
+      import('../services/settings/timezoneSync')
         .then((m) => m.syncTimezoneToProfile(user.uid))
         .catch(quiet);
-      import('./services/discussion/spoilerReveals')
+      import('../services/discussion/spoilerReveals')
         .then((m) => m.syncSpoilerReveals(user.uid))
         .catch(quiet);
-      import('./services/settings/spoilerMode')
+      import('../services/settings/spoilerMode')
         .then((m) => m.syncSpoilerLevel(user.uid))
         .catch(quiet);
     }

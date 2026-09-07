@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import '../global.css';
+import '../styles/global.css';
 import { colors } from './colors';
 
 // DEPRECATED als MUI-Theme-Quelle.

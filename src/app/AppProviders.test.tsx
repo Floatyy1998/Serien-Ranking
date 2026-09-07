@@ -2,28 +2,28 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
-vi.mock('./contexts/MangaListProvider', () => ({
+vi.mock('../contexts/MangaListProvider', () => ({
   MangaListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/MovieListProvider', () => ({
+vi.mock('../contexts/MovieListProvider', () => ({
   MovieListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/NotificationProvider', () => ({
+vi.mock('../contexts/NotificationProvider', () => ({
   NotificationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/OptimizedFriendsProvider', () => ({
+vi.mock('../contexts/OptimizedFriendsProvider', () => ({
   OptimizedFriendsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/SeriesListProvider', () => ({
+vi.mock('../contexts/SeriesListProvider', () => ({
   SeriesListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/RatingsStateProvider', () => ({
+vi.mock('../contexts/RatingsStateProvider', () => ({
   RatingsStateProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./features/badges/BadgeProvider', () => ({
+vi.mock('../features/badges/BadgeProvider', () => ({
   BadgeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./features/stats/StatsProvider', () => ({
+vi.mock('../features/stats/StatsProvider', () => ({
   StatsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

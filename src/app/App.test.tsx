@@ -9,27 +9,27 @@ vi.mock('@mui/material', () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   CssBaseline: () => null,
 }));
-vi.mock('./components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
-vi.mock('./components/auth/EmailVerificationBanner', () => ({
+vi.mock('../components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
+vi.mock('../components/auth/EmailVerificationBanner', () => ({
   EmailVerificationBanner: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./AppProviders', () => ({
   AppProviders: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./hooks/platform/useGlobalImageRetry', () => ({ useGlobalImageRetry: () => {} }));
-vi.mock('./contexts/ThemeProvider', () => ({
+vi.mock('../hooks/platform/useGlobalImageRetry', () => ({ useGlobalImageRetry: () => {} }));
+vi.mock('../contexts/ThemeProvider', () => ({
   DynamicThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./components/CookieConsentBanner', () => ({
+vi.mock('../components/CookieConsentBanner', () => ({
   CookieConsentBanner: () => <div data-testid="cookie-banner" />,
 }));
-vi.mock('./components/ElectronUpdateToast', () => ({ ElectronUpdateToast: () => null }));
-vi.mock('./components/AppInstallBanner', () => ({ AppInstallBanner: () => null }));
-vi.mock('./components/ErrorBoundary', () => ({
+vi.mock('../components/ElectronUpdateToast', () => ({ ElectronUpdateToast: () => null }));
+vi.mock('../components/AppInstallBanner', () => ({ AppInstallBanner: () => null }));
+vi.mock('../components/ErrorBoundary', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./components/RouteTracker', () => ({ RouteTracker: () => null }));
-vi.mock('./theme', () => ({ updateTheme: () => ({}) }));
+vi.mock('../components/RouteTracker', () => ({ RouteTracker: () => null }));
+vi.mock('../theme', () => ({ updateTheme: () => ({}) }));
 vi.mock('./authProvider', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

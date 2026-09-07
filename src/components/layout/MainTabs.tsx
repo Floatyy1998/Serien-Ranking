@@ -24,7 +24,7 @@ import {
   RecentlyWatchedPage,
   StatsPage,
   SubscriptionsPage,
-} from '../../lazyRoutes';
+} from '../../app/lazyRoutes';
 import { HomePage } from '../../pages/HomePage';
 import { ProfilePage } from '../../pages/Profile';
 import { RatingsPage } from '../../pages/Ratings';
