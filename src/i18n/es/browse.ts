@@ -30,6 +30,11 @@ const dict: Record<string, string> = {
   '{type} „{title}" öffnen': 'Abrir {type} «{title}»',
   '„{title}" zur Liste hinzufügen': 'Añadir «{title}» a tu lista',
   '„{title}" ist in deiner Liste': '«{title}» está en tu lista',
+  '„{title}" bewerten': 'Valorar «{title}»',
+  '„{title}" ist mit {rating} bewertet. Bewertung ändern':
+    'Has valorado «{title}» con {rating}. Cambiar valoración',
+  '„{title}" als gesehen markieren': 'Marcar «{title}» como visto',
+  '„{title}" hinzufügen und als gesehen markieren': 'Añadir «{title}» y marcarlo como visto',
   'Beliebte Suchen': 'Búsquedas populares',
   'Zuletzt gesucht': 'Búsquedas recientes',
   'Nach „{term}" suchen': 'Buscar «{term}»',

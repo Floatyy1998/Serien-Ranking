@@ -73,3 +73,22 @@ export const isMovieWatched = (movie: Movie): boolean => {
   const overall = parseFloat(calculateOverallRating(movie));
   return !isNaN(overall) && overall > 0;
 };
+
+/** Gesamtbewertung als Zahl mit einer Nachkommastelle (0 = unbewertet). */
+export const overallRatingValue = (item: Series | Movie): number => {
+  const value = parseFloat(calculateOverallRating(item));
+  return Number.isFinite(value) ? Math.round(value * 10) / 10 : 0;
+};
+
+/** „8" statt „8.0", sonst eine Nachkommastelle — für enge Poster-Badges. */
+export const formatRatingShort = (value: number): string =>
+  Number.isInteger(value) ? String(value) : value.toFixed(1);
+
+/** Genre-gefächerte Bewertung wie im Bewertungseditor; ohne Genres bleibt `General`. */
+export const buildGenreRatingMap = (
+  genres: string[] | undefined,
+  rating: number
+): Record<string, number> =>
+  genres && genres.length > 0
+    ? Object.fromEntries(genres.map((genre) => [genre, rating]))
+    : { General: rating };

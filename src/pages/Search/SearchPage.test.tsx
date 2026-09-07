@@ -56,6 +56,9 @@ const data = vi.hoisted(() => ({
   setSearchType: vi.fn(),
   onlyMyProviders: false,
   setOnlyMyProviders: vi.fn(),
+  quickRating: { open: false, title: '', afterWatched: false, initialRating: 0 },
+  saveQuickRating: vi.fn(),
+  closeQuickRating: vi.fn(),
 }));
 vi.mock('./useSearchPage', () => ({
   useSearchPage: () => ({
@@ -74,6 +77,12 @@ vi.mock('./useSearchPage', () => ({
     handleItemClick: vi.fn(),
     addToList: vi.fn(),
     pendingAddIds: new Set<string>(),
+    markWatched: vi.fn(),
+    pendingWatchedIds: new Set<string>(),
+    quickRating: data.quickRating,
+    openQuickRating: vi.fn(),
+    closeQuickRating: data.closeQuickRating,
+    saveQuickRating: data.saveQuickRating,
     removeRecentSearch: vi.fn(),
     onlyMyProviders: data.onlyMyProviders,
     setOnlyMyProviders: data.setOnlyMyProviders,
@@ -100,6 +109,29 @@ vi.mock('../../components/ui', () => ({
   SkeletonRatingsGrid: () => <div data-testid="skeleton-grid" />,
 }));
 
+vi.mock('../../components/ui/QuickRatingSheet', () => ({
+  QuickRatingSheet: ({
+    isOpen,
+    seriesTitle,
+    eyebrow,
+    onRate,
+  }: {
+    isOpen: boolean;
+    seriesTitle: string;
+    eyebrow?: string;
+    onRate: (rating: number) => void;
+  }) =>
+    isOpen ? (
+      <div data-testid="quick-rating">
+        <span>{eyebrow}</span>
+        <span>{seriesTitle}</span>
+        <button type="button" onClick={() => onRate(8)}>
+          rate
+        </button>
+      </div>
+    ) : null,
+}));
+
 vi.mock('./SearchResultCard', () => ({
   SearchResultCard: ({ item }: { item: SearchResult }) => <div data-testid="result">{item.id}</div>,
 }));
@@ -122,11 +154,28 @@ afterEach(() => {
   data.loading = false;
   data.searchResults = [];
   data.onlyMyProviders = false;
+  data.quickRating = { open: false, title: '', afterWatched: false, initialRating: 0 };
   subs.activeProviders = new Set();
   vi.clearAllMocks();
 });
 
 describe('SearchPage', () => {
+  it('renders the quick rating sheet with the watched eyebrow and forwards the rating', () => {
+    data.quickRating = { open: true, title: 'Heat', afterWatched: true, initialRating: 0 };
+    render(<SearchPage />);
+    expect(screen.getByTestId('quick-rating')).toBeInTheDocument();
+    expect(screen.getByText('Als gesehen markiert')).toBeInTheDocument();
+    expect(screen.getByText('Heat')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('rate'));
+    expect(data.saveQuickRating).toHaveBeenCalledWith(8);
+  });
+
+  it('uses the list eyebrow when rating from the poster', () => {
+    data.quickRating = { open: true, title: 'Dark', afterWatched: false, initialRating: 7 };
+    render(<SearchPage />);
+    expect(screen.getByText('In deiner Liste')).toBeInTheDocument();
+  });
+
   it('renders the header and suggestions when the query is empty', () => {
     render(<SearchPage />);
     expect(screen.getByText('Suche')).toBeInTheDocument();

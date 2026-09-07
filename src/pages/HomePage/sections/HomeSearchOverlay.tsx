@@ -7,7 +7,7 @@
  * Nutzt den schlanken useHomeQuickSearch (kein ?q= in der Home-URL). Per Portal
  * an document.body, damit kein transformierter Vorfahre das fixe Overlay schiebt.
  */
-import { Add, Check, Close, Search, Star } from '@mui/icons-material';
+import { Add, Close, Search, Star, Visibility } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -25,11 +25,21 @@ import { backendFetch } from '../../../services/backendApi';
 import { trackMovieAdded, trackSeriesAdded } from '../../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { Snackbar } from '../../../components/ui';
+import { QuickRatingSheet } from '../../../components/ui/QuickRatingSheet';
+import { useQuickRatingSheet } from '../../../hooks/useQuickRatingSheet';
+import { formatRatingShort, isMovieWatched, overallRatingValue } from '../../../lib/rating/rating';
+import { markMovieWatched } from '../../../services/quickRating';
+import type { Movie } from '../../../types/Movie';
+import type { Series } from '../../../types/Series';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
 import './HomeSearchOverlay.css';
 
 type Filter = 'all' | 'series' | 'movies';
+
+const keyOf = (item: QuickResult) => `${item.type}-${item.id}`;
+// Das Bewertungs-Sheet muss über dem Overlay liegen (.hso: z-index 1400).
+const OVERLAY_SHEET_Z = 1450;
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: t('Alle') },
@@ -78,25 +88,61 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
   } = useHomeQuickSearch(open);
   const [filter, setFilter] = useState<Filter>('all');
   const onPrimary = getOptimalTextColor(currentTheme.primary);
+  const onSuccess = getOptimalTextColor(currentTheme.status.success);
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
   const { movieList } = useMovieList();
+  // Optimistisch: hinzugefügt / gesehen, bis Katalog und Listen nachgezogen haben.
   const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<{ key: string; action: 'add' | 'watched' } | null>(null);
   const [snack, setSnack] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
   });
 
-  const keyOf = (item: QuickResult) => `${item.type}-${item.id}`;
+  const showSnack = useCallback((message: string) => {
+    setSnack({ open: true, message });
+    setTimeout(() => setSnack({ open: false, message: '' }), 2500);
+  }, []);
 
-  const isInList = useCallback(
-    (item: QuickResult) => {
-      if (addedKeys.has(keyOf(item))) return true;
-      const list = item.type === 'series' ? seriesList : movieList;
-      return list.some((x: { id?: number }) => x.id === item.id);
+  const { quickRating, openQuickRating, closeQuickRating, saveQuickRating } = useQuickRatingSheet({
+    onSaved: showSnack,
+    onError: showSnack,
+  });
+
+  const ownedOf = useCallback(
+    (item: QuickResult): Series | Movie | undefined =>
+      item.type === 'series'
+        ? seriesList.find((s: Series) => s.id === item.id)
+        : movieList.find((m: Movie) => m.id === item.id),
+    [seriesList, movieList]
+  );
+
+  const requestAdd = useCallback(
+    async (item: QuickResult, uid: string): Promise<'added' | 'exists' | 'failed'> => {
+      const res = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: import.meta.env.VITE_USER, id: item.id, uuid: uid }),
+      });
+      if (!res.ok) {
+        const data = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
+        const message = typeof data?.error === 'string' ? data.error : '';
+        return message.includes('bereits vorhanden') ? 'exists' : 'failed';
+      }
+      setAddedKeys((prev) => new Set(prev).add(keyOf(item)));
+      if (item.type === 'series') {
+        void refetchAfterAdd(item.id);
+        trackSeriesAdded(String(item.id), item.title, 'search');
+        await logSeriesAdded(uid, item.title, item.id, item.poster_path);
+      } else {
+        trackMovieAdded(String(item.id), item.title, 'search');
+        await logMovieAdded(uid, item.title, item.id, item.poster_path);
+      }
+      return 'added';
     },
-    [addedKeys, seriesList, movieList]
+    [refetchAfterAdd]
   );
 
   const addToList = useCallback(
@@ -104,33 +150,50 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
       e.stopPropagation(); // nicht zur Detailseite navigieren
       if (!user) return;
       const key = keyOf(item);
-      setPendingKey(key);
+      setPending({ key, action: 'add' });
       try {
-        const res = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user: import.meta.env.VITE_USER, id: item.id, uuid: user.uid }),
-        });
-        if (res.ok) {
-          setAddedKeys((prev) => new Set(prev).add(key));
-          setSnack({ open: true, message: t('„{title}" hinzugefügt', { title: item.title }) });
-          if (item.type === 'series') {
-            void refetchAfterAdd(item.id);
-            trackSeriesAdded(String(item.id), item.title, 'search');
-            await logSeriesAdded(user.uid, item.title, item.id, item.poster_path);
-          } else {
-            trackMovieAdded(String(item.id), item.title, 'search');
-            await logMovieAdded(user.uid, item.title, item.id, item.poster_path);
-          }
-          setTimeout(() => setSnack({ open: false, message: '' }), 2500);
+        if ((await requestAdd(item, user.uid)) === 'added') {
+          showSnack(t('„{title}" hinzugefügt', { title: item.title }));
         }
       } catch (err) {
         console.error('Add from search failed:', err);
       } finally {
-        setPendingKey(null);
+        setPending(null);
       }
     },
-    [user, refetchAfterAdd]
+    [user, requestAdd, showSnack]
+  );
+
+  // Film: bei Bedarf hinzufügen, als gesehen markieren, dann Schnellbewertung anbieten.
+  const markWatched = useCallback(
+    async (item: QuickResult, inList: boolean, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!user || item.type !== 'movie') return;
+      const key = keyOf(item);
+      setPending({ key, action: 'watched' });
+      try {
+        if (!inList && (await requestAdd(item, user.uid)) === 'failed') {
+          throw new Error('add failed');
+        }
+        await markMovieWatched(user.uid, item.id);
+        setWatchedKeys((prev) => new Set(prev).add(key));
+        openQuickRating({ id: item.id, type: item.type, title: item.title }, true);
+      } catch (err) {
+        console.error('Mark watched from search failed:', err);
+        showSnack(t('Der Gesehen-Status konnte nicht gespeichert werden.'));
+      } finally {
+        setPending(null);
+      }
+    },
+    [user, requestAdd, openQuickRating, showSnack]
+  );
+
+  const rateFromCard = useCallback(
+    (item: QuickResult, userRating: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      openQuickRating({ id: item.id, type: item.type, title: item.title, userRating });
+    },
+    [openQuickRating]
   );
 
   useEffect(() => {
@@ -151,13 +214,15 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
     if (!visible) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !quickRating.open) onClose();
+    };
     document.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
-  }, [visible, onClose]);
+  }, [visible, onClose, quickRating.open]);
 
   // Beim Schließen zurücksetzen, damit das nächste Öffnen frisch startet —
   // inklusive Scrollstand, der sonst aus der vorigen Suche stehen bliebe.
@@ -221,8 +286,15 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
   // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
   // Rating-Badge und Zur-Liste-Button), damit beide Grids gleich mächtig sind.
   const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
-    const added = isInList(item);
-    const pending = pendingKey === keyOf(item);
+    const owned = ownedOf(item);
+    const added = addedKeys.has(keyOf(item)) || owned !== undefined;
+    const ownRating = owned ? overallRatingValue(owned) : 0;
+    const showWatched =
+      item.type === 'movie' &&
+      !watchedKeys.has(keyOf(item)) &&
+      !(owned !== undefined && isMovieWatched(owned as Movie));
+    const busy = pending?.key === keyOf(item);
+    const busyAction = busy ? pending?.action : null;
     // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
     const displayRating = pickDisplayRating(
       communityMap,
@@ -285,28 +357,63 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
             {item.type === 'series' ? t('Serie') : t('Film')}
           </span>
 
-          {added ? (
-            <span
-              className="hso__added"
-              aria-label={t('In deiner Liste')}
-              style={{ background: currentTheme.status.success, color: '#fff' }}
+          {showWatched && (
+            <button
+              type="button"
+              className="hso__watched"
+              aria-label={
+                added
+                  ? t('„{title}" als gesehen markieren', { title: item.title })
+                  : t('„{title}" hinzufügen und als gesehen markieren', { title: item.title })
+              }
+              disabled={busy}
+              onClick={(e) => markWatched(item, added, e)}
+              style={{
+                border: `1px solid ${currentTheme.status.success}99`,
+                color: currentTheme.status.success,
+                cursor: busy ? 'wait' : 'pointer',
+                opacity: busyAction === 'watched' ? 0.7 : 1,
+              }}
             >
-              <Check style={{ fontSize: '18px' }} />
-            </span>
+              <Visibility style={{ fontSize: '18px' }} />
+            </button>
+          )}
+          {added ? (
+            <button
+              type="button"
+              className="hso__rate"
+              aria-label={
+                ownRating > 0
+                  ? t('„{title}" ist mit {rating} bewertet. Bewertung ändern', {
+                      title: item.title,
+                      rating: formatRatingShort(ownRating),
+                    })
+                  : t('„{title}" bewerten', { title: item.title })
+              }
+              onClick={(e) => rateFromCard(item, ownRating, e)}
+              style={{ background: currentTheme.status.success, color: onSuccess }}
+            >
+              {ownRating > 0 ? (
+                <span className="hso__rate-value">{formatRatingShort(ownRating)}</span>
+              ) : (
+                <Star style={{ fontSize: '20px' }} />
+              )}
+            </button>
           ) : (
             <button
               type="button"
               className="hso__add"
               aria-label={t('„{title}" zur Liste hinzufügen', { title: item.title })}
-              disabled={pending}
+              disabled={busy}
               onClick={(e) => addToList(item, e)}
               style={{
-                background: pending
-                  ? 'var(--glass-heavy)'
-                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                background:
+                  busyAction === 'add'
+                    ? 'var(--glass-heavy)'
+                    : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 color: onPrimary,
-                cursor: pending ? 'wait' : 'pointer',
-                opacity: pending ? 0.7 : 1,
+                cursor: busy ? 'wait' : 'pointer',
+                opacity: busyAction === 'add' ? 0.7 : 1,
               }}
             >
               <Add style={{ fontSize: '20px' }} />
@@ -596,6 +703,19 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
 
           <div onClick={(e) => e.stopPropagation()}>
             <Snackbar open={snack.open} message={snack.message} />
+          </div>
+
+          {/* Portal-Klicks bubbeln im React-Baum bis zum Backdrop-Handler — daher der Wrapper. */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <QuickRatingSheet
+              isOpen={quickRating.open}
+              onClose={closeQuickRating}
+              seriesTitle={quickRating.title}
+              eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
+              initialRating={quickRating.initialRating}
+              onRate={saveQuickRating}
+              zIndex={OVERLAY_SHEET_Z}
+            />
           </div>
         </motion.div>
       )}

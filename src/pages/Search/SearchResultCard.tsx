@@ -1,10 +1,11 @@
-import { Add, Check, Star } from '@mui/icons-material';
+import { Add, Star, Visibility } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
 import { t } from '../../services/i18n';
+import { formatRatingShort } from '../../lib/rating/rating';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SearchResult } from './useSearchPage';
 
@@ -12,19 +13,45 @@ export interface SearchResultCardProps {
   item: SearchResult;
   onItemClick: (item: SearchResult) => void;
   onAddToList: (item: SearchResult) => void;
+  /** Öffnet die Schnellbewertung für einen Titel, der schon in der Liste ist. */
+  onRate: (item: SearchResult) => void;
+  /** Nur Filme: hinzufügen (falls nötig) und als gesehen markieren. */
+  onMarkWatched: (item: SearchResult) => void;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   isDesktop: boolean;
   isPending?: boolean;
+  isWatchedPending?: boolean;
 }
+
+const Spinner = ({ size, color }: { size: number; color: string }) => (
+  <motion.div
+    animate={{ rotate: 360 }}
+    transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+    style={{
+      width: size,
+      height: size,
+      borderWidth: 2,
+      borderStyle: 'solid',
+      borderTopColor: color,
+      borderRightColor: `${color}40`,
+      borderBottomColor: `${color}40`,
+      borderLeftColor: `${color}40`,
+      borderRadius: '50%',
+    }}
+  />
+);
 
 export const SearchResultCard = memo(
   ({
     item,
     onItemClick,
     onAddToList,
+    onRate,
+    onMarkWatched,
     currentTheme,
     isDesktop,
     isPending = false,
+    isWatchedPending = false,
   }: SearchResultCardProps) => {
     const year = useMemo(() => {
       const date = item.release_date || item.first_air_date;
@@ -42,11 +69,20 @@ export const SearchResultCard = memo(
       item.vote_average
     );
     const accentGradient = `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
-    // WCAG-optimale Textfarbe auf der Primär-/Akzent-Gradientfläche (Type-Badge, Add-/Check-Button)
+    // WCAG-optimale Textfarbe auf der Primär-/Akzent-Gradientfläche (Type-Badge, Add-Button)
     const onAccent = useMemo(
       () => getOptimalTextColor(currentTheme.primary),
       [currentTheme.primary]
     );
+    const successColor = currentTheme.status.success;
+    const onSuccess = useMemo(() => getOptimalTextColor(successColor), [successColor]);
+
+    const busy = isPending || isWatchedPending;
+    const ownRating = item.userRating ?? 0;
+    const showWatchedButton = item.type === 'movie' && !item.watched;
+    const iconSize = isDesktop ? '20px' : '18px';
+    const spinnerSize = isDesktop ? 18 : 16;
+    const withDesktop = (base: string) => `${base} ${isDesktop ? `${base}--desktop` : ''}`;
 
     return (
       <div className="search-result-item" style={{ position: 'relative' }}>
@@ -58,9 +94,9 @@ export const SearchResultCard = memo(
             aria-label={t('{type} „{title}" öffnen', { type: typeLabel, title: label })}
           >
             {/* PosterFrame ohne onClick: der native Button bleibt das interaktive
-                Element (Add/Check ist bewusst ein Geschwister — nie interaktive
-                Elemente verschachteln). Eigener Scrim (50%, Theme-Navy) statt
-                PosterFrame-Default (60%), daher scrim={false}. */}
+                Element (die Aktions-Buttons sind bewusst Geschwister — nie
+                interaktive Elemente verschachteln). Eigener Scrim (50%, Theme-Navy)
+                statt PosterFrame-Default (60%), daher scrim={false}. */}
             <PosterFrame
               posterPath={item.poster_path}
               alt=""
@@ -96,62 +132,89 @@ export const SearchResultCard = memo(
             </PosterFrame>
           </button>
 
-          {/* Add/Check Button */}
+          {/* Gesehen-Button (nur Filme, solange nicht gesehen): fügt bei Bedarf
+              hinzu, markiert als gesehen und bietet danach die Schnellbewertung an. */}
+          {showWatchedButton && (
+            <button
+              type="button"
+              className={withDesktop('search-watched-btn')}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (busy) return;
+                onMarkWatched(item);
+              }}
+              disabled={busy}
+              aria-label={
+                item.inList
+                  ? t('„{title}" als gesehen markieren', { title: label })
+                  : t('„{title}" hinzufügen und als gesehen markieren', { title: label })
+              }
+              style={{
+                border: `1px solid ${successColor}99`,
+                boxShadow: `0 4px 12px rgba(0, 0, 0, 0.35)`,
+                cursor: busy ? 'wait' : 'pointer',
+              }}
+            >
+              {isWatchedPending ? (
+                <Spinner size={spinnerSize} color={successColor} />
+              ) : (
+                <Visibility style={{ fontSize: iconSize, color: successColor }} />
+              )}
+            </button>
+          )}
+
+          {/* Rechts unten: Hinzufügen — oder, sobald in der Liste, Bewerten */}
           {!item.inList ? (
             <button
               type="button"
-              className={`search-add-btn ${isDesktop ? 'search-add-btn--desktop' : ''}`}
+              className={withDesktop('search-add-btn')}
               onClick={(e) => {
                 e.stopPropagation();
-                if (isPending) return;
+                if (busy) return;
                 onAddToList(item);
               }}
-              disabled={isPending}
+              disabled={busy}
               aria-label={t('„{title}" zur Liste hinzufügen', { title: label })}
               style={{
                 background: accentGradient,
                 boxShadow: `0 4px 12px ${currentTheme.primary}50`,
-                cursor: isPending ? 'wait' : 'pointer',
+                cursor: busy ? 'wait' : 'pointer',
               }}
             >
               {isPending ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                  style={{
-                    width: isDesktop ? 18 : 16,
-                    height: isDesktop ? 18 : 16,
-                    border: `2px solid ${onAccent}40`,
-                    borderTopColor: onAccent,
-                    borderRadius: '50%',
-                  }}
-                />
+                <Spinner size={spinnerSize} color={onAccent} />
               ) : (
-                <Add
-                  style={{
-                    fontSize: isDesktop ? '20px' : '18px',
-                    color: onAccent,
-                  }}
-                />
+                <Add style={{ fontSize: iconSize, color: onAccent }} />
               )}
             </button>
           ) : (
-            <div
-              className={`search-check-badge ${isDesktop ? 'search-check-badge--desktop' : ''}`}
-              role="img"
-              aria-label={t('„{title}" ist in deiner Liste', { title: label })}
+            <button
+              type="button"
+              className={withDesktop('search-rate-btn')}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRate(item);
+              }}
+              aria-label={
+                ownRating > 0
+                  ? t('„{title}" ist mit {rating} bewertet. Bewertung ändern', {
+                      title: label,
+                      rating: formatRatingShort(ownRating),
+                    })
+                  : t('„{title}" bewerten', { title: label })
+              }
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status.success})`,
-                boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
+                background: successColor,
+                boxShadow: `0 4px 12px ${successColor}50`,
+                color: onSuccess,
               }}
             >
-              <Check
-                style={{
-                  fontSize: isDesktop ? '20px' : '18px',
-                  color: getOptimalTextColor(currentTheme.status.success),
-                }}
-              />
-            </div>
+              {ownRating > 0 ? (
+                <span className="search-rate-value">{formatRatingShort(ownRating)}</span>
+              ) : (
+                <Star style={{ fontSize: iconSize, color: onSuccess }} />
+              )}
+            </button>
           )}
         </div>
 

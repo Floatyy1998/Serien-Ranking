@@ -17,6 +17,8 @@ interface BottomSheetProps {
   dragThreshold?: number;
   ariaLabel?: string;
   ariaLabelledBy?: string;
+  /** Überstimmt --z-sheet, wenn das Sheet über einem höheren Overlay liegen muss. */
+  zIndex?: number | string;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -29,6 +31,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   dragThreshold = 100,
   ariaLabel,
   ariaLabelledBy,
+  zIndex,
 }) => {
   const { currentTheme } = useTheme();
   const dragControls = useDragControls();
@@ -66,7 +69,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
-            zIndex: 'var(--z-sheet)' as unknown as number,
+            zIndex: (zIndex ?? 'var(--z-sheet)') as unknown as number,
           }}
           onClick={onClose}
         >

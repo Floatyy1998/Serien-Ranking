@@ -18,6 +18,8 @@ interface QuickRatingSheetProps {
   eyebrow?: string;
   /** Vorbelegung, damit eine bestehende Bewertung nicht bei 0 startet. */
   initialRating?: number;
+  /** Durchgereicht an das BottomSheet (z. B. über dem Such-Overlay). */
+  zIndex?: number | string;
 }
 
 export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
@@ -27,6 +29,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   onRate,
   eyebrow,
   initialRating = 0,
+  zIndex,
 }) => {
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
@@ -52,8 +55,13 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel={t('Schnellbewertung')}>
-      <div style={{ padding: '8px 24px 32px' }}>
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={handleClose}
+      ariaLabel={t('Schnellbewertung')}
+      zIndex={zIndex}
+    >
+      <div style={{ padding: '8px 24px 32px', overflowY: 'auto', minHeight: 0 }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <span

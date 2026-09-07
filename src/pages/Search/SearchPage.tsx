@@ -16,6 +16,7 @@ import {
   ScrollToTopButton,
   Snackbar,
 } from '../../components/ui';
+import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchPage } from './useSearchPage';
@@ -45,6 +46,12 @@ export const SearchPage = memo(() => {
     handleItemClick,
     addToList,
     pendingAddIds,
+    markWatched,
+    pendingWatchedIds,
+    quickRating,
+    openQuickRating,
+    closeQuickRating,
+    saveQuickRating,
     removeRecentSearch,
     onlyMyProviders,
     setOnlyMyProviders,
@@ -246,9 +253,12 @@ export const SearchPage = memo(() => {
                     item={item}
                     onItemClick={handleItemClick}
                     onAddToList={addToList}
+                    onRate={openQuickRating}
+                    onMarkWatched={markWatched}
                     currentTheme={currentTheme}
                     isDesktop={isDesktop}
                     isPending={pendingAddIds.has(`${item.type}-${item.id}`)}
+                    isWatchedPending={pendingWatchedIds.has(`${item.type}-${item.id}`)}
                   />
                 ))}
               </div>
@@ -307,6 +317,15 @@ export const SearchPage = memo(() => {
         onClose={() => setDialog({ ...dialog, open: false })}
         message={dialog.message}
         type={dialog.type}
+      />
+
+      <QuickRatingSheet
+        isOpen={quickRating.open}
+        onClose={closeQuickRating}
+        seriesTitle={quickRating.title}
+        eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
+        initialRating={quickRating.initialRating}
+        onRate={saveQuickRating}
       />
 
       <ScrollToTopButton scrollContainerSelector=".mobile-content" />

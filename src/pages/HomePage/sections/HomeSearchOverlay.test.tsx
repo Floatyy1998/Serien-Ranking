@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { HomeSearchOverlay } from './HomeSearchOverlay';
 
 // Reaktiver Location-Store: HomeSearchOverlay ist memo(), ein reines rerender()
@@ -41,6 +41,7 @@ vi.mock('@mui/icons-material', () => ({
   Close: () => null,
   Search: () => null,
   Star: () => null,
+  Visibility: () => null,
 }));
 vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>
@@ -50,11 +51,19 @@ vi.mock('../../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('../../../contexts/SeriesListContext', () => ({
-  useSeriesList: () => ({ allSeriesList: [], refetchAfterAdd: vi.fn() }),
+// Konto + eigene Listen je Test umschaltbar (Poster-Aktionen brauchen einen Nutzer).
+const state = vi.hoisted(() => ({
+  user: null as { uid: string } | null,
+  series: [] as unknown[],
+  movies: [] as unknown[],
 }));
-vi.mock('../../../contexts/MovieListContext', () => ({ useMovieList: () => ({ movieList: [] }) }));
+vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
+vi.mock('../../../contexts/SeriesListContext', () => ({
+  useSeriesList: () => ({ allSeriesList: state.series, refetchAfterAdd: vi.fn() }),
+}));
+vi.mock('../../../contexts/MovieListContext', () => ({
+  useMovieList: () => ({ movieList: state.movies }),
+}));
 vi.mock('../../../hooks/useCommunityRatings', () => ({
   useCommunityRatingsMap: () => ({}),
   pickDisplayRating: () => null,
@@ -62,14 +71,46 @@ vi.mock('../../../hooks/useCommunityRatings', () => ({
 vi.mock('../../../hooks/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
 vi.mock('../../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#fff' }));
 vi.mock('../../../lib/motion', () => ({ tapScale: {} }));
-vi.mock('../../../services/backendApi', () => ({ backendFetch: vi.fn() }));
+const api = vi.hoisted(() => ({
+  backendFetch: vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>(),
+}));
+vi.mock('../../../services/backendApi', () => ({
+  backendFetch: (...a: unknown[]) => api.backendFetch(...a),
+}));
 vi.mock('../../../services/firebase/analytics', () => ({
   trackMovieAdded: vi.fn(),
   trackSeriesAdded: vi.fn(),
+  trackRatingSaved: vi.fn(),
 }));
 vi.mock('../../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: vi.fn(),
   logSeriesAdded: vi.fn(),
+  logRatingAdded: vi.fn(),
+}));
+const quick = vi.hoisted(() => ({
+  markMovieWatched: vi.fn<(...a: unknown[]) => Promise<void>>(async () => {}),
+  saveQuickRating: vi.fn<(...a: unknown[]) => Promise<void>>(async () => {}),
+}));
+vi.mock('../../../services/quickRating', () => ({
+  markMovieWatched: (...a: unknown[]) => quick.markMovieWatched(...a),
+  saveQuickRating: (...a: unknown[]) => quick.saveQuickRating(...a),
+}));
+vi.mock('../../../components/ui/QuickRatingSheet', () => ({
+  QuickRatingSheet: (p: {
+    isOpen: boolean;
+    seriesTitle: string;
+    eyebrow?: string;
+    onRate: (rating: number) => void;
+  }) =>
+    p.isOpen ? (
+      <div data-testid="quick-rating">
+        <span>{p.eyebrow}</span>
+        <span>{p.seriesTitle}</span>
+        <button type="button" onClick={() => p.onRate(7)}>
+          rate
+        </button>
+      </div>
+    ) : null,
 }));
 vi.mock('../../../components/ui', () => ({ Snackbar: () => null }));
 vi.mock('../../../services/i18n', () => ({ t: (s: string) => s }));
@@ -79,6 +120,7 @@ vi.mock('./useHomeQuickSearch', () => ({
     setQuery: vi.fn(),
     results: [
       { id: 1, type: 'series', title: 'Breaking Bad', year: '2008', poster_path: '/p.jpg' },
+      { id: 2, type: 'movie', title: 'Heat', year: '1995', poster_path: '/h.jpg' },
     ],
     loading: false,
     recent: [],
@@ -116,8 +158,19 @@ vi.mock('framer-motion', () => ({
 afterEach(() => {
   locationStore.set('/', 'home-1');
   navigateMock.mockClear();
+  state.user = null;
+  state.series = [];
+  state.movies = [];
+  api.backendFetch.mockReset();
+  quick.markMovieWatched.mockClear();
+  quick.saveQuickRating.mockClear();
   cleanup();
 });
+
+const cardOf = (title: string) =>
+  [...document.querySelectorAll('.hso__card')].find(
+    (c) => c.querySelector('.hso__card-title')?.textContent === title
+  ) as HTMLElement;
 
 const overlay = (): HTMLElement | null => document.querySelector('.hso');
 
@@ -169,5 +222,73 @@ describe('HomeSearchOverlay Detail-Rückkehr', () => {
     });
     expect(navigateMock).toHaveBeenCalledWith('/series/1');
     expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe('HomeSearchOverlay Poster-Aktionen', () => {
+  it('zeigt den Gesehen-Button nur bei Filmen', () => {
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    expect(cardOf('Heat').querySelector('.hso__watched')).not.toBeNull();
+    expect(cardOf('Breaking Bad').querySelector('.hso__watched')).toBeNull();
+    expect(cardOf('Heat').querySelector('.hso__add')).not.toBeNull();
+  });
+
+  it('fügt den Film hinzu, markiert ihn als gesehen und öffnet die Schnellbewertung', async () => {
+    state.user = { uid: 'u1' };
+    api.backendFetch.mockResolvedValue({ ok: true });
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    await act(async () => {
+      fireEvent.click(cardOf('Heat').querySelector('.hso__watched') as HTMLElement);
+    });
+    expect(api.backendFetch).toHaveBeenCalledWith(
+      '/addMovie',
+      expect.objectContaining({ method: 'POST' })
+    );
+    expect(quick.markMovieWatched).toHaveBeenCalledWith('u1', 2);
+    expect(navigateMock).not.toHaveBeenCalled();
+    const sheet = screen.getByTestId('quick-rating');
+    expect(sheet).toHaveTextContent('Als gesehen markiert');
+    expect(sheet).toHaveTextContent('Heat');
+    // Optimistisch: Auge weg, Bewerten-Button da.
+    expect(cardOf('Heat').querySelector('.hso__watched')).toBeNull();
+    expect(cardOf('Heat').querySelector('.hso__rate')).not.toBeNull();
+  });
+
+  it('markiert einen Film aus der Liste ohne Backend-Aufruf als gesehen', async () => {
+    state.user = { uid: 'u1' };
+    state.movies = [{ id: 2, title: 'Heat', rating: {}, genre: { genres: ['Krimi'] } }];
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    await act(async () => {
+      fireEvent.click(cardOf('Heat').querySelector('.hso__watched') as HTMLElement);
+    });
+    expect(api.backendFetch).not.toHaveBeenCalled();
+    expect(quick.markMovieWatched).toHaveBeenCalledWith('u1', 2);
+  });
+
+  it('zeigt bei Titeln aus der Liste die eigene Note und speichert über das Sheet', async () => {
+    state.user = { uid: 'u1' };
+    const owned = {
+      id: 1,
+      title: 'Breaking Bad',
+      rating: { Drama: 8 },
+      genre: { genres: ['Drama'] },
+    };
+    state.series = [owned];
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    const rate = cardOf('Breaking Bad').querySelector('.hso__rate') as HTMLElement;
+    expect(rate).toHaveTextContent('8');
+    fireEvent.click(rate);
+    expect(navigateMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('quick-rating')).toHaveTextContent('In deiner Liste');
+    await act(async () => {
+      fireEvent.click(screen.getByText('rate'));
+    });
+    expect(quick.saveQuickRating).toHaveBeenCalledWith(
+      'u1',
+      { id: 1, type: 'series', title: 'Breaking Bad', userRating: 8 },
+      7,
+      owned
+    );
+    expect(screen.queryByTestId('quick-rating')).toBeNull();
   });
 });

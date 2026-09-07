@@ -33,6 +33,11 @@ const dict: Record<string, string> = {
   '{type} „{title}" öffnen': 'Open {type} "{title}"',
   '„{title}" zur Liste hinzufügen': 'Add "{title}" to your list',
   '„{title}" ist in deiner Liste': '"{title}" is in your list',
+  '„{title}" bewerten': 'Rate "{title}"',
+  '„{title}" ist mit {rating} bewertet. Bewertung ändern':
+    'You rated "{title}" {rating}. Change rating',
+  '„{title}" als gesehen markieren': 'Mark "{title}" as watched',
+  '„{title}" hinzufügen und als gesehen markieren': 'Add "{title}" and mark it as watched',
   'Beliebte Suchen': 'Popular searches',
   'Zuletzt gesucht': 'Recent searches',
   'Nach „{term}" suchen': 'Search for "{term}"',

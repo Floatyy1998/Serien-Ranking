@@ -9,11 +9,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useQuickRatingSheet, type QuickRatingSheetState } from '../../hooks/useQuickRatingSheet';
 import { preloadImage } from '../../lib/preloadImage';
 import { backendFetch } from '../../services/backendApi';
 import { t } from '../../services/i18n';
+import { markMovieWatched } from '../../services/quickRating';
 import { tmdbFetch } from '../../services/tmdbClient';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { isMovieWatched, overallRatingValue } from '../../lib/rating/rating';
 import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
@@ -31,9 +34,31 @@ export interface SearchResult {
   media_type?: string;
   type: 'series' | 'movie';
   inList: boolean;
+  /** Eigene Gesamtbewertung (0 = unbewertet), live aus der eigenen Liste. */
+  userRating?: number;
+  /** Nur Filme: schon als gesehen markiert oder bewertet. */
+  watched?: boolean;
 }
 
 export type SearchTypeFilter = 'all' | 'series' | 'movies';
+
+type AddOutcome = 'added' | 'exists' | 'failed';
+
+const pendingKeyOf = (item: SearchResult) => `${item.type}-${item.id}`;
+const titleOf = (item: SearchResult) => item.title || item.name || '';
+
+const withKey = (prev: Set<string>, key: string) => {
+  const next = new Set(prev);
+  next.add(key);
+  return next;
+};
+
+const withoutKey = (prev: Set<string>, key: string) => {
+  if (!prev.has(key)) return prev;
+  const next = new Set(prev);
+  next.delete(key);
+  return next;
+};
 
 /** Schlanke TMDB-Search-Response (nur `results` wird gelesen). */
 interface TmdbSearchResponse {
@@ -68,6 +93,13 @@ export interface UseSearchPageResult {
   handleItemClick: (item: SearchResult) => void;
   addToList: (item: SearchResult) => Promise<void>;
   pendingAddIds: Set<string>;
+  /** Film: hinzufügen (falls nötig), als gesehen markieren, dann Schnellbewertung anbieten. */
+  markWatched: (item: SearchResult) => Promise<void>;
+  pendingWatchedIds: Set<string>;
+  quickRating: QuickRatingSheetState;
+  openQuickRating: (item: SearchResult) => void;
+  closeQuickRating: () => void;
+  saveQuickRating: (rating: number) => Promise<void>;
   removeRecentSearch: (term: string) => void;
   /** F7: "Läuft auf meinen Abos"-Filter. */
   onlyMyProviders: boolean;
@@ -167,6 +199,10 @@ export const useSearchPage = (
   // IDs der Items, die gerade hinzugefuegt werden — fuer Spinner-Anzeige.
   // Key: `${type}-${id}` damit Serie und Film mit gleicher TMDB-ID kollisionsfrei sind.
   const [pendingAddIds, setPendingAddIds] = useState<Set<string>>(new Set());
+  const [pendingWatchedIds, setPendingWatchedIds] = useState<Set<string>>(new Set());
+  // Optimistisch: hinzugefügt / gesehen, bis Katalog und Listen nachgezogen haben.
+  const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
+  const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
   const { isDesktop } = useDeviceType();
   const [popularSearches] = useState([
     'Breaking Bad',
@@ -206,15 +242,33 @@ export const useSearchPage = (
     });
   }, []);
 
-  // Live abgeleitete Sets der bereits hinzugefuegten IDs. Memoisiert damit
-  // der enrichedResults-Memo unten stabile Item-Refs liefern kann.
-  const inListIds = useMemo(
+  // Eigene Titel nach ID. Memoisiert, damit der enrichedResults-Memo unten
+  // stabile Item-Refs liefern kann.
+  const ownedById = useMemo(
     () => ({
-      series: new Set(seriesList.map((s: Series) => s.id)),
-      movies: new Set(movieList.map((m: MovieType) => m.id)),
+      series: new Map(seriesList.map((s: Series) => [s.id, s] as const)),
+      movies: new Map(movieList.map((m: MovieType) => [m.id, m] as const)),
     }),
     [seriesList, movieList]
   );
+
+  const showSnackbar = useCallback((message: string) => {
+    setSnackbar({ open: true, message });
+    setTimeout(() => {
+      setSnackbar({ open: false, message: '' });
+    }, 3000);
+  }, []);
+
+  const showError = useCallback((message: string) => {
+    setDialog({ open: true, message, type: 'error' });
+  }, []);
+
+  const {
+    quickRating,
+    openQuickRating: openSheet,
+    closeQuickRating,
+    saveQuickRating,
+  } = useQuickRatingSheet({ onSaved: showSnackbar, onError: showError });
 
   const searchTMDB = useCallback(
     async (query: string) => {
@@ -227,7 +281,7 @@ export const useSearchPage = (
       setError(null);
       saveToRecent(query);
 
-      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
+      const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
 
       try {
         const results: SearchResult[] = [];
@@ -330,15 +384,24 @@ export const useSearchPage = (
     [searchType, saveToRecent, onlyMyProviders, activeProviders]
   );
 
-  // inList live ableiten — nur betroffene Items kriegen einen neuen Ref,
-  // damit memo'd SearchResultCards nicht unnoetig re-rendern.
+  // inList/userRating/watched live ableiten — nur betroffene Items kriegen
+  // einen neuen Ref, damit memo'd SearchResultCards nicht unnoetig re-rendern.
   const enrichedResults = useMemo(() => {
     return searchResults.map((r) => {
-      const inList = r.type === 'series' ? inListIds.series.has(r.id) : inListIds.movies.has(r.id);
-      if (inList === r.inList) return r;
-      return { ...r, inList };
+      const key = pendingKeyOf(r);
+      const owned = r.type === 'series' ? ownedById.series.get(r.id) : ownedById.movies.get(r.id);
+      const inList = owned !== undefined || addedKeys.has(key);
+      const userRating = owned ? overallRatingValue(owned) : 0;
+      const watched =
+        r.type === 'movie'
+          ? watchedKeys.has(key) || (owned !== undefined && isMovieWatched(owned as MovieType))
+          : undefined;
+      if (inList === r.inList && userRating === (r.userRating ?? 0) && watched === r.watched) {
+        return r;
+      }
+      return { ...r, inList, userRating, watched };
     });
-  }, [searchResults, inListIds]);
+  }, [searchResults, ownedById, addedKeys, watchedKeys]);
 
   // Debounced search with skip-on-return logic. Ref statt State, damit das
   // einmalige "Skip" beim Re-Mount keine zusaetzliche Re-Render-Welle
@@ -382,6 +445,43 @@ export const useSearchPage = (
     [navigate]
   );
 
+  const requestAdd = useCallback(
+    async (item: SearchResult, uid: string): Promise<AddOutcome> => {
+      const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: import.meta.env.VITE_USER,
+          id: item.id,
+          uuid: uid,
+        }),
+      });
+
+      if (!response.ok) {
+        const data =
+          typeof response.json === 'function' ? await response.json().catch(() => null) : null;
+        const message = typeof data?.error === 'string' ? data.error : '';
+        return message.includes('bereits vorhanden') ? 'exists' : 'failed';
+      }
+
+      setAddedKeys((prev) => withKey(prev, pendingKeyOf(item)));
+      const posterPath = item.poster_path;
+      if (item.type === 'series') {
+        void refetchAfterAdd(item.id);
+        await logSeriesAdded(
+          uid,
+          item.name || item.title || 'Unbekannte Serie',
+          item.id,
+          posterPath
+        );
+      } else {
+        await logMovieAdded(uid, item.title || 'Unbekannter Film', item.id, posterPath);
+      }
+      return 'added';
+    },
+    [refetchAfterAdd]
+  );
+
   const addToList = useCallback(
     async (item: SearchResult) => {
       if (!user) {
@@ -393,66 +493,72 @@ export const useSearchPage = (
         return;
       }
 
-      const pendingKey = `${item.type}-${item.id}`;
-      setPendingAddIds((prev) => {
-        const next = new Set(prev);
-        next.add(pendingKey);
-        return next;
-      });
+      const pendingKey = pendingKeyOf(item);
+      setPendingAddIds((prev) => withKey(prev, pendingKey));
 
       try {
-        const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: import.meta.env.VITE_USER,
-            id: item.id,
-            uuid: user.uid,
-          }),
-        });
-
-        if (response.ok) {
-          // Nicht mehr aus searchResults filtern — der inList-Wert wird
-          // live aus den Contexts abgeleitet (enrichedResults), das Item
-          // bleibt sichtbar und der Add-Button wird zum Check-Badge sobald
-          // Firebase die neue Liste pusht.
-          const title = item.title || item.name || '';
-
-          setSnackbar({
-            open: true,
-            message: t('"{title}" wurde erfolgreich hinzugefügt!', { title }),
-          });
-
-          const posterPath = item.poster_path;
-          if (item.type === 'series') {
-            void refetchAfterAdd(item.id);
-            await logSeriesAdded(
-              user.uid,
-              item.name || item.title || 'Unbekannte Serie',
-              item.id,
-              posterPath
-            );
-          } else {
-            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
-          }
-
-          setTimeout(() => {
-            setSnackbar({ open: false, message: '' });
-          }, 3000);
+        // Nicht aus searchResults filtern — inList kommt live aus den Contexts
+        // (enrichedResults); der Add-Button wird zum Bewerten-Button, sobald
+        // Firebase die neue Liste pusht.
+        if ((await requestAdd(item, user.uid)) === 'added') {
+          showSnackbar(t('"{title}" wurde erfolgreich hinzugefügt!', { title: titleOf(item) }));
         }
       } catch (error) {
         console.error('Error adding item:', error);
         setDialog({ open: true, message: t('Fehler beim Hinzufügen des Inhalts.'), type: 'error' });
       } finally {
-        setPendingAddIds((prev) => {
-          if (!prev.has(pendingKey)) return prev;
-          const next = new Set(prev);
-          next.delete(pendingKey);
-          return next;
-        });
+        setPendingAddIds((prev) => withoutKey(prev, pendingKey));
       }
     },
-    [user, refetchAfterAdd]
+    [user, requestAdd, showSnackbar]
+  );
+
+  const markWatched = useCallback(
+    async (item: SearchResult) => {
+      if (item.type !== 'movie') return;
+      if (!user) {
+        setDialog({
+          open: true,
+          message: t('Bitte einloggen um Inhalte hinzuzufügen!'),
+          type: 'warning',
+        });
+        return;
+      }
+
+      const pendingKey = pendingKeyOf(item);
+      setPendingWatchedIds((prev) => withKey(prev, pendingKey));
+
+      try {
+        if (!item.inList && (await requestAdd(item, user.uid)) === 'failed') {
+          throw new Error('add failed');
+        }
+        await markMovieWatched(user.uid, item.id);
+        setWatchedKeys((prev) => withKey(prev, pendingKey));
+        openSheet({ id: item.id, type: item.type, title: titleOf(item) }, true);
+      } catch (error) {
+        console.error('Error marking movie as watched:', error);
+        setDialog({
+          open: true,
+          message: t('Der Gesehen-Status konnte nicht gespeichert werden.'),
+          type: 'error',
+        });
+      } finally {
+        setPendingWatchedIds((prev) => withoutKey(prev, pendingKey));
+      }
+    },
+    [user, requestAdd, openSheet]
+  );
+
+  const openQuickRating = useCallback(
+    (item: SearchResult) => {
+      openSheet({
+        id: item.id,
+        type: item.type,
+        title: titleOf(item),
+        userRating: item.userRating,
+      });
+    },
+    [openSheet]
   );
 
   const removeRecentSearch = useCallback(
@@ -482,6 +588,12 @@ export const useSearchPage = (
     handleItemClick,
     addToList,
     pendingAddIds,
+    markWatched,
+    pendingWatchedIds,
+    quickRating,
+    openQuickRating,
+    closeQuickRating,
+    saveQuickRating,
     removeRecentSearch,
     onlyMyProviders,
     setOnlyMyProviders,

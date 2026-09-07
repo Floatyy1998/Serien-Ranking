@@ -285,14 +285,21 @@
   font-size: 12px;
 }
 
-/* Add / Check Button */
+/* Poster-Aktionen: Hinzufügen bzw. Bewerten (rechts), Gesehen (links, nur Filme).
+   Zwei Klassen im Selektor, damit die globale 44px-Regel (.mobile-app button)
+   die Kreise nicht aufbläht — den 44px-Tap-Bereich liefert der ::before-Hit-Slop. */
 
-.search-add-btn {
+.search-page .search-add-btn,
+.search-page .search-rate-btn,
+.search-page .search-watched-btn {
   position: absolute;
   bottom: 6px;
   right: 6px;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -302,46 +309,59 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hit-slop: expand the tap target to >=44px without enlarging the visible circle. */
-.search-add-btn::before {
-  content: '';
-  position: absolute;
-  inset: -7px;
+.search-page .search-watched-btn {
+  right: auto;
+  left: 6px;
+  background: rgba(10, 14, 26, 0.85);
+  -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
 }
 
-.search-add-btn:active {
+/* Hit-slop: expand the tap target to >=44px without enlarging the visible circle. */
+.search-add-btn::before,
+.search-rate-btn::before,
+.search-watched-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.search-add-btn:active,
+.search-rate-btn:active,
+.search-watched-btn:active {
   transform: scale(0.9);
 }
 
-.search-add-btn:focus-visible {
+.search-add-btn:focus-visible,
+.search-rate-btn:focus-visible,
+.search-watched-btn:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
 
-.search-add-btn--desktop {
+.search-page .search-add-btn--desktop,
+.search-page .search-rate-btn--desktop,
+.search-page .search-watched-btn--desktop {
   bottom: 10px;
   right: 10px;
   width: 36px;
   height: 36px;
 }
 
-.search-check-badge {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.search-page .search-watched-btn--desktop {
+  right: auto;
+  left: 10px;
 }
 
-.search-check-badge--desktop {
-  bottom: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
+.search-rate-value {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.2px;
+}
+
+.search-rate-btn--desktop .search-rate-value {
+  font-size: 13px;
 }
 
 /* Title & Year */

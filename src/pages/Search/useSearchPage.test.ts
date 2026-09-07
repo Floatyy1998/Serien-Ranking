@@ -3,6 +3,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import type * as PathsModule from '../../services/db/paths';
 import { useSearchPage } from './useSearchPage';
 import { clearProviderCache } from '../Discover/watchProviderFilter';
 
@@ -49,9 +50,37 @@ vi.mock('../../services/backendApi', () => ({
 
 const logSeriesAdded = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
 const logMovieAdded = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
+const logRatingAdded = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logSeriesAdded: (...a: unknown[]) => logSeriesAdded(...a),
   logMovieAdded: (...a: unknown[]) => logMovieAdded(...a),
+  logRatingAdded: (...a: unknown[]) => logRatingAdded(...a),
+}));
+
+// RTDB-Writes (Gesehen-Status + Schnellbewertung)
+const db = vi.hoisted(() => ({
+  set: vi.fn(async () => {}),
+  updateWithSeriesVersion: vi.fn<(...a: unknown[]) => Promise<void>>(async () => {}),
+  lastSetPath: '' as string,
+}));
+vi.mock('../../services/db/ref', async () => {
+  const { paths } = await vi.importActual<typeof PathsModule>('../../services/db/paths');
+  return {
+    paths,
+    dbRef: (path: string) => {
+      db.lastSetPath = path;
+      return { set: db.set };
+    },
+    updateWithSeriesVersion: (...a: unknown[]) => db.updateWithSeriesVersion(...a),
+  };
+});
+const trackRatingSaved = vi.fn();
+vi.mock('../../services/firebase/analytics', () => ({
+  trackRatingSaved: (...a: unknown[]) => trackRatingSaved(...a),
+}));
+const logMovieWatch = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
+vi.mock('../../services/watchActivityService', () => ({
+  WatchActivityService: { logMovieWatch: (...a: unknown[]) => logMovieWatch(...a) },
 }));
 
 // fetch fixtures
@@ -83,6 +112,12 @@ describe('useSearchPage', () => {
     backendFetch.mockReset().mockResolvedValue({ ok: true });
     logSeriesAdded.mockClear();
     logMovieAdded.mockClear();
+    logRatingAdded.mockClear();
+    db.set.mockClear();
+    db.updateWithSeriesVersion.mockClear();
+    db.lastSetPath = '';
+    trackRatingSaved.mockClear();
+    logMovieWatch.mockClear();
     ctx.user = { uid: 'u1' };
     ctx.seriesList = [];
     ctx.movieList = [];
@@ -172,7 +207,36 @@ describe('useSearchPage', () => {
     expect(result.current.searchResults.length).toBeGreaterThan(0);
     const owned = result.current.searchResults.find((r) => r.id === 100);
     expect(owned?.inList).toBe(true);
+    expect(owned?.userRating).toBe(0);
     expect(result.current.searchResults.find((r) => r.id === 101)?.inList).toBe(false);
+  });
+
+  it('derives the own rating and the watched flag from the owned movie', async () => {
+    ctx.movieList = [
+      { id: 200, rating: { Action: 8, Thriller: 9 } } as unknown as Movie,
+      { id: 201, rating: {}, watched: true } as unknown as Movie,
+    ];
+    stubFetch((url) =>
+      url.includes('/search/movie')
+        ? jsonOk({
+            results: [
+              { id: 200, title: 'Sicario', popularity: 95 },
+              { id: 201, title: 'Heat', popularity: 90 },
+              { id: 202, title: 'Drive', popularity: 80 },
+            ],
+          })
+        : jsonOk({ results: [] })
+    );
+    const { result } = renderHook(() => useSearchPage());
+    act(() => result.current.setSearchType('movies'));
+    act(() => result.current.setSearchQuery('heat'));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    const byId = (id: number) => result.current.searchResults.find((r) => r.id === id);
+    expect(byId(200)).toMatchObject({ inList: true, userRating: 8.5, watched: true });
+    expect(byId(201)).toMatchObject({ inList: true, userRating: 0, watched: true });
+    expect(byId(202)).toMatchObject({ inList: false, userRating: 0, watched: false });
   });
 
   it('empties results and logs on fetch failure', async () => {
@@ -246,6 +310,190 @@ describe('useSearchPage', () => {
       expect.objectContaining({ method: 'POST' })
     );
     expect(logMovieAdded).toHaveBeenCalled();
+  });
+
+  it('markWatched adds a missing movie, writes the watched flag and opens the quick rating', async () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    await act(async () => {
+      await result.current.markWatched({ id: 200, type: 'movie', title: 'Sicario', inList: false });
+    });
+    expect(backendFetch).toHaveBeenCalledWith(
+      '/addMovie',
+      expect.objectContaining({ method: 'POST' })
+    );
+    expect(logMovieAdded).toHaveBeenCalled();
+    expect(db.updateWithSeriesVersion).toHaveBeenCalledWith(
+      'u1',
+      expect.objectContaining({
+        'users/u1/movies/200/watched': true,
+        'users/u1/movies/200/watchedAt': expect.any(String),
+      })
+    );
+    expect(result.current.quickRating).toMatchObject({
+      open: true,
+      title: 'Sicario',
+      afterWatched: true,
+      initialRating: 0,
+    });
+    expect(result.current.pendingWatchedIds.has('movie-200')).toBe(false);
+  });
+
+  it('markWatched skips the backend add when the movie is already in the list', async () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    await act(async () => {
+      await result.current.markWatched({ id: 200, type: 'movie', title: 'Sicario', inList: true });
+    });
+    expect(backendFetch).not.toHaveBeenCalled();
+    expect(db.updateWithSeriesVersion).toHaveBeenCalledTimes(1);
+    expect(result.current.quickRating.open).toBe(true);
+  });
+
+  it('markWatched shows an error and keeps the sheet closed when the add fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    backendFetch.mockResolvedValue({ ok: false });
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    await act(async () => {
+      await result.current.markWatched({ id: 200, type: 'movie', title: 'Sicario', inList: false });
+    });
+    expect(db.updateWithSeriesVersion).not.toHaveBeenCalled();
+    expect(result.current.quickRating.open).toBe(false);
+    expect(result.current.dialog).toMatchObject({ open: true, type: 'error' });
+  });
+
+  it('markWatched ignores series', async () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    await act(async () => {
+      await result.current.markWatched({ id: 100, type: 'series', name: 'Dark', inList: false });
+    });
+    expect(backendFetch).not.toHaveBeenCalled();
+    expect(db.updateWithSeriesVersion).not.toHaveBeenCalled();
+  });
+
+  it('saveQuickRating writes a genre-keyed series rating and logs the activity', async () => {
+    ctx.seriesList = [
+      {
+        id: 100,
+        title: 'Breaking Bad',
+        genre: { genres: ['Drama', 'Krimi'] },
+        rating: {},
+      } as Series,
+    ];
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    act(() =>
+      result.current.openQuickRating({
+        id: 100,
+        type: 'series',
+        name: 'Breaking Bad',
+        inList: true,
+      })
+    );
+    expect(result.current.quickRating).toMatchObject({
+      open: true,
+      title: 'Breaking Bad',
+      afterWatched: false,
+    });
+    await act(async () => {
+      await result.current.saveQuickRating(9);
+    });
+    expect(db.lastSetPath).toBe('users/u1/series/100/rating');
+    expect(db.set).toHaveBeenCalledWith({ Drama: 9, Krimi: 9 });
+    expect(db.updateWithSeriesVersion).not.toHaveBeenCalled();
+    expect(trackRatingSaved).toHaveBeenCalledWith('100', 'series', 9);
+    expect(logRatingAdded).toHaveBeenCalledWith('u1', 'Breaking Bad', 'series', 9, 100);
+    expect(result.current.quickRating.open).toBe(false);
+    expect(result.current.snackbar.open).toBe(true);
+  });
+
+  it('saveQuickRating writes the movie rating, watched flag and wrapped event atomically', async () => {
+    ctx.movieList = [
+      {
+        id: 200,
+        title: 'Sicario',
+        genre: { genres: ['Thriller'] },
+        rating: {},
+        runtime: 121,
+        watchedAt: '2026-01-01T00:00:00.000Z',
+      } as unknown as Movie,
+    ];
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    act(() =>
+      result.current.openQuickRating({ id: 200, type: 'movie', title: 'Sicario', inList: true })
+    );
+    await act(async () => {
+      await result.current.saveQuickRating(7);
+    });
+    expect(db.set).not.toHaveBeenCalled();
+    expect(db.updateWithSeriesVersion).toHaveBeenCalledWith('u1', {
+      'users/u1/movies/200/rating': { Thriller: 7 },
+      'users/u1/movies/200/ratedAt': expect.any(String),
+      'users/u1/movies/200/watched': true,
+      'users/u1/movies/200/watchedAt': '2026-01-01T00:00:00.000Z',
+    });
+    expect(logMovieWatch).toHaveBeenCalledWith(
+      'u1',
+      200,
+      'Sicario',
+      121,
+      7,
+      ['Thriller'],
+      undefined
+    );
+    expect(logRatingAdded).toHaveBeenCalledWith('u1', 'Sicario', 'movie', 7, 200);
+  });
+
+  it('saveQuickRating falls back to a General rating when the title has no genres yet', async () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    act(() =>
+      result.current.openQuickRating({ id: 300, type: 'movie', title: 'Neu', inList: true })
+    );
+    await act(async () => {
+      await result.current.saveQuickRating(6);
+    });
+    expect(db.updateWithSeriesVersion).toHaveBeenCalledWith(
+      'u1',
+      expect.objectContaining({ 'users/u1/movies/300/rating': { General: 6 } })
+    );
+  });
+
+  it('closeQuickRating and a zero rating never write', async () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    act(() =>
+      result.current.openQuickRating({ id: 100, type: 'series', name: 'Dark', inList: true })
+    );
+    act(() => result.current.closeQuickRating());
+    expect(result.current.quickRating.open).toBe(false);
+    act(() =>
+      result.current.openQuickRating({ id: 100, type: 'series', name: 'Dark', inList: true })
+    );
+    await act(async () => {
+      await result.current.saveQuickRating(0);
+    });
+    expect(db.set).not.toHaveBeenCalled();
+    expect(db.updateWithSeriesVersion).not.toHaveBeenCalled();
+    expect(result.current.quickRating.open).toBe(false);
+  });
+
+  it('opens the sheet with the exact own rating instead of a rounded one', () => {
+    stubFetch(() => jsonOk({ results: [] }));
+    const { result } = renderHook(() => useSearchPage());
+    act(() =>
+      result.current.openQuickRating({
+        id: 7,
+        type: 'movie',
+        title: 'Die Odyssee',
+        inList: true,
+        userRating: 8.4,
+      })
+    );
+    expect(result.current.quickRating.initialRating).toBe(8.4);
   });
 
   it('filters results to active abo providers when the toggle is on', async () => {

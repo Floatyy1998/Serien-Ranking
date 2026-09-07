@@ -286,8 +286,11 @@
   letter-spacing: 0.02em;
 }
 
-/* Add-Button / „in Liste"-Badge auf dem Poster. */
-.hso .hso__add {
+/* Poster-Aktionen rechts: Hinzufügen bzw. Bewerten unten, „Gesehen" (nur Filme)
+   darüber gestapelt. Zwei Klassen im Selektor gegen die globale 44px-Regel. */
+.hso .hso__add,
+.hso .hso__rate,
+.hso .hso__watched {
   position: absolute;
   bottom: 8px;
   right: 8px;
@@ -307,22 +310,28 @@
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.15s ease;
 }
-.hso .hso__add:active {
+.hso .hso__watched {
+  bottom: 56px;
+  right: 11px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  background: rgba(10, 14, 26, 0.85);
+  -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
+}
+.hso .hso__add:active,
+.hso .hso__rate:active,
+.hso .hso__watched:active {
   transform: scale(0.86);
 }
 
-.hso__added {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+.hso__rate-value {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.2px;
 }
 
 .hso__card-title {
@@ -513,6 +522,8 @@
 /* Fokus. */
 .hso__card:focus-visible,
 .hso__add:focus-visible,
+.hso__rate:focus-visible,
+.hso__watched:focus-visible,
 .hso__chip:focus-visible,
 .hso__filter:focus-visible,
 .hso__recent:focus-visible,
