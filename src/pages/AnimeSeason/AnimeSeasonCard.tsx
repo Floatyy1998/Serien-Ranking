@@ -21,17 +21,17 @@
  */
 
 import React, { useState } from 'react';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import {
   buildMetaLine,
   continuationLabel,
@@ -43,7 +43,7 @@ import {
   stripDescription,
 } from './animeFormat';
 import type { TmdbProviderInfo } from './resolveTmdbId';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { t } from '../../services/i18n';
 
 /**

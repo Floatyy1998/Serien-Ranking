@@ -58,10 +58,10 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../hooks/useAnimeFillerData', () => ({
+vi.mock('../../hooks/manga/useAnimeFillerData', () => ({
   useAnimeFillerData: () => ({ fillerByKey: new Map() }),
 }));
-vi.mock('../../services/animeFillerService', () => ({ fillerLookupKey: () => 'k' }));
+vi.mock('../../services/catalog/animeFillerService', () => ({ fillerLookupKey: () => 'k' }));
 
 const disc = vi.hoisted(() => ({
   loading: false,

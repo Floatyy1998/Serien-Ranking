@@ -8,9 +8,9 @@ import {
   ProfileMenuGroup,
   ProfileStats,
 } from './ProfileComponents';
-import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
-import { useAvatarUpload } from '../../hooks/useAvatarUpload';
-import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
+import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
+import { useAvatarUpload } from '../../hooks/profile/useAvatarUpload';
+import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 import { useProfileData } from './useProfileData';
 import { t } from '../../services/i18n';
 import './ProfilePage.css';

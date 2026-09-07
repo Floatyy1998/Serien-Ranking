@@ -12,7 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { getDisplayFormat, getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { t } from '../../services/i18n';
 

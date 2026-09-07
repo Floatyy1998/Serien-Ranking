@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TasteMatchResult } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/social/tasteMatchService';
 import type { TasteMatchData } from './useTasteMatchData';
 import { TasteMatchPage } from './TasteMatchPage';
 
@@ -23,13 +23,13 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: '/taste-match/f1' }),
 }));
 
-vi.mock('./ScoreHeader', () => ({ ScoreHeader: () => <div data-testid="score-header" /> }));
-vi.mock('./StatRing', () => ({ StatRing: () => <div data-testid="stat-ring" /> }));
-vi.mock('./OverviewTab', () => ({ OverviewTab: () => <div data-testid="overview-tab" /> }));
-vi.mock('./SeriesTab', () => ({ SeriesTab: () => <div data-testid="series-tab" /> }));
-vi.mock('./MoviesTab', () => ({ MoviesTab: () => <div data-testid="movies-tab" /> }));
-vi.mock('./GenresTab', () => ({ GenresTab: () => <div data-testid="genres-tab" /> }));
-vi.mock('./TasteMatchShareCard', () => ({
+vi.mock('./parts/ScoreHeader', () => ({ ScoreHeader: () => <div data-testid="score-header" /> }));
+vi.mock('./parts/StatRing', () => ({ StatRing: () => <div data-testid="stat-ring" /> }));
+vi.mock('./tabs/OverviewTab', () => ({ OverviewTab: () => <div data-testid="overview-tab" /> }));
+vi.mock('./tabs/SeriesTab', () => ({ SeriesTab: () => <div data-testid="series-tab" /> }));
+vi.mock('./tabs/MoviesTab', () => ({ MoviesTab: () => <div data-testid="movies-tab" /> }));
+vi.mock('./tabs/GenresTab', () => ({ GenresTab: () => <div data-testid="genres-tab" /> }));
+vi.mock('./parts/TasteMatchShareCard', () => ({
   TasteMatchShareSheet: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="share-sheet" /> : null,
 }));

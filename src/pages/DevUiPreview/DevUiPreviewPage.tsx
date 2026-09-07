@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ImageCropSheet } from '../../components/ui/ImageCropSheet';
+import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
 import { AvatarViewerHost } from '../../components/AvatarViewerHost';
-import { ZoomableImage } from '../../components/ui/ZoomableImage';
+import { ZoomableImage } from '../../components/ui/overlay/ZoomableImage';
 import { PageTourSheet } from '../../features/tour/PageTourSheet';
 import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
-import { showAvatar } from '../../lib/avatarViewer';
+import { showAvatar } from '../../lib/image/avatarViewer';
 import { CatchUpPreview, DropOffPreview } from './NewFeaturePreviews';
 
 /**

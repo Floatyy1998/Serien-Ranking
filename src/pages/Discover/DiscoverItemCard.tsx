@@ -6,11 +6,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { getImageUrl } from '../../utils/imageUrl';
-import { useItemProviders } from '../../hooks/useItemProviders';
+import { useItemProviders } from '../../hooks/provider/useItemProviders';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
-import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
 import type { ItemCardProps } from './discoverItemHelpers';
-import { PosterFrame } from '../../components/ui/PosterFrame';
+import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';

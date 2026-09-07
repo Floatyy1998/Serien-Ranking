@@ -6,7 +6,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';

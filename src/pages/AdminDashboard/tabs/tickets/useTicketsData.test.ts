@@ -56,7 +56,7 @@ const authState = vi.hoisted(() => ({
 vi.mock('../../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const notify = vi.hoisted(() => ({ sendNotificationToUser: vi.fn(async () => {}) }));
-vi.mock('../../../../hooks/useDiscussionHelpers', () => ({
+vi.mock('../../../../hooks/social/useDiscussionHelpers', () => ({
   sendNotificationToUser: notify.sendNotificationToUser,
 }));
 

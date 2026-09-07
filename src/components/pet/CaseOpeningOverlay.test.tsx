@@ -14,7 +14,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
 }));
 
 const claimAccessoryDrop = vi.hoisted(() => vi.fn());
-vi.mock('../../services/petService', () => ({
+vi.mock('../../services/pet/petService', () => ({
   petService: { claimAccessoryDrop },
 }));
 

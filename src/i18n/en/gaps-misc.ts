@@ -33,7 +33,7 @@ const dict: Record<string, string> = {
   Später: 'Later',
   'Update erfolgreich installiert': 'Update installed successfully',
 
-  // Undo-Toast (lib/toast.ts)
+  // Undo-Toast (lib/interaction/toast.ts)
   Rückgängig: 'Undo',
 
   // Poster-Platzhalter (lib/posterPlaceholder.ts, utils/themedPlaceholder.ts)

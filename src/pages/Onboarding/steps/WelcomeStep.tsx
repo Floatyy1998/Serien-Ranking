@@ -5,7 +5,7 @@ import { GenreTile } from '../components/GenreTile';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
 import { CURATED_GENRES, type CuratedGenre } from '../genres';
-import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import { t } from '../../../services/i18n';
 
 const MAX_GENRES = 4;

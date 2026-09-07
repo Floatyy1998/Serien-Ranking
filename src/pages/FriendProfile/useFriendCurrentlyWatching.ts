@@ -1,7 +1,10 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../services/staticCatalog';
+import {
+  fetchStaticCatalogSeries,
+  subscribeCatalogChange,
+} from '../../services/catalog/staticCatalog';
 import { readEventUniversal } from '../../services/watchActivity/compactEvent';
 import { t } from '../../services/i18n';
 import type { CatalogSeries } from '../../types/CatalogTypes';

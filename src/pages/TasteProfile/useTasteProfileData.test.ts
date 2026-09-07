@@ -27,13 +27,13 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: state.movieList }),
 }));
-vi.mock('../../services/watchJourneyService', () => ({
+vi.mock('../../services/watchJourney/watchJourneyService', () => ({
   calculateWatchJourney: () => Promise.resolve(null),
 }));
-vi.mock('../../services/watchActivityService', () => ({
+vi.mock('../../services/watchActivity/watchActivityService', () => ({
   getWatchStreak: () => Promise.resolve(null),
 }));
-vi.mock('../../services/backendApi', () => ({
+vi.mock('../../services/api/backendApi', () => ({
   backendFetch: (path: string, init?: RequestInit) => state.backendFetch(path, init),
 }));
 

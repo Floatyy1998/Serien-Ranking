@@ -36,10 +36,10 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user 
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: ctx.allSeriesList, refetchAfterAdd: vi.fn() }),
 }));
-vi.mock('../../hooks/discussionCountHooks', () => ({
+vi.mock('../../hooks/social/discussionCountHooks', () => ({
   useEpisodeDiscussionCounts: () => ({}),
 }));
-vi.mock('../../hooks/useQuickSeasonRating', () => ({
+vi.mock('../../hooks/rating/useQuickSeasonRating', () => ({
   shouldTriggerQuickRate: (...a: unknown[]) => ctx.shouldTriggerQuickRate(...a),
   useQuickSeasonRating: () => ({
     quickRatingOpen: false,
@@ -60,13 +60,13 @@ vi.mock('../../services/firebase/analytics', () => ({
 vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
 }));
-vi.mock('../../lib/toast', () => ({
+vi.mock('../../lib/interaction/toast', () => ({
   showToast: vi.fn(),
   showUndoToast: vi.fn(),
   showActionToast: vi.fn(),
 }));
-vi.mock('../../lib/haptics', () => ({ hapticSuccess: vi.fn() }));
-vi.mock('../SeriesDetail/fetchTmdbSeriesFallback', () => ({
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSuccess: vi.fn() }));
+vi.mock('../SeriesDetail/hooks/fetchTmdbSeriesFallback', () => ({
   fetchTmdbSeriesFallback: mocks.fetchTmdbSeriesFallback,
 }));
 const mocks = vi.hoisted(() => ({
@@ -76,8 +76,8 @@ const mocks = vi.hoisted(() => ({
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
-import { showActionToast, showUndoToast } from '../../lib/toast';
-import { hapticSuccess } from '../../lib/haptics';
+import { showActionToast, showUndoToast } from '../../lib/interaction/toast';
+import { hapticSuccess } from '../../lib/interaction/haptics';
 import { useEpisodeManagement } from './useEpisodeManagement';
 
 type Season = Series['seasons'][number];

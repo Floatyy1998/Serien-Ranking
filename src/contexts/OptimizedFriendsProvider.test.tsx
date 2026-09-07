@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EnhancedCacheResult } from '../hooks/firebaseCache/types';
+import type { EnhancedCacheResult } from '../hooks/data/firebaseCache/types';
 
 interface FakeSnapshot {
   val: () => unknown;
@@ -61,7 +61,7 @@ const cacheResult = vi.hoisted(
     }) as EnhancedCacheResult<Record<string, unknown>>
 );
 
-vi.mock('../hooks/useEnhancedFirebaseCache', () => ({
+vi.mock('../hooks/data/useEnhancedFirebaseCache', () => ({
   useEnhancedFirebaseCache: () => cacheResult,
 }));
 
@@ -84,7 +84,7 @@ vi.mock('./friendOperations', () => ({
 
 import { OptimizedFriendsProvider } from './OptimizedFriendsProvider';
 import { useOptimizedFriends } from './OptimizedFriendsContext';
-import { beginAccountDeletion, endAccountDeletion } from '../services/accountDeletionState';
+import { beginAccountDeletion, endAccountDeletion } from '../services/account/accountDeletionState';
 
 const Consumer = () => {
   const { friends, loading, unreadRequestsCount } = useOptimizedFriends();

@@ -1,0 +1,295 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { seededRandom } from '../../../utils/seededRandom';
+import type { DayStats } from '../../../types/Wrapped';
+import { dateLocale as appDateLocale, t } from '../../../services/i18n';
+
+interface RecordDaySlideProps {
+  mostActiveDay: DayStats;
+}
+
+// Trophy Icon
+const TrophyIcon = () => (
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
+    <path d="M6 9H3a1 1 0 01-1-1V5a1 1 0 011-1h3" stroke="#ffd700" strokeWidth="2" />
+    <path d="M18 9h3a1 1 0 001-1V5a1 1 0 00-1-1h-3" stroke="#ffd700" strokeWidth="2" />
+    <path d="M6 4h12v8a6 6 0 11-12 0V4z" fill="#ffd700" />
+    <path d="M9 21h6M12 17v4" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+// Pre-compute particle data outside the component for render purity
+const _randRD = seededRandom(123);
+const PARTICLE_DATA_RD = Array.from({ length: 12 }, () => ({
+  duration: 4 + _randRD() * 4,
+  delay: _randRD() * 4,
+  left: `${_randRD() * 100}%`,
+}));
+
+export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay }) => {
+  const particleData = PARTICLE_DATA_RD;
+  const totalItems = mostActiveDay.episodesWatched + mostActiveDay.moviesWatched;
+  const hours = Math.round(mostActiveDay.minutesWatched / 60);
+
+  // Formatiere das Datum schöner (ungültige Datumswerte nicht als "Invalid Date" rendern)
+  const dateObj = new Date(mostActiveDay.date);
+  const formattedDate = Number.isFinite(dateObj.getTime())
+    ? dateObj.toLocaleDateString(appDateLocale(), {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : mostActiveDay.date;
+
+  return (
+    <div
+      style={{
+        minHeight: 'var(--vh, 100vh)',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(180deg, #1a1a2e 0%, #4a1942 50%, #e94560 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+        padding: '40px 20px',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Confetti-like particles */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {particleData.map((p, i) => (
+          <motion.div
+            key={i}
+            animate={{
+              y: [-20, window.innerHeight + 20],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: p.duration,
+              repeat: Infinity,
+              delay: p.delay,
+              ease: 'linear',
+            }}
+            style={{
+              position: 'absolute',
+              top: '-20px',
+              left: p.left,
+              width: '8px',
+              height: '8px',
+              borderRadius: i % 2 === 0 ? '50%' : '2px',
+              background: ['#ffd700', '#e94560', '#fff', 'var(--theme-primary, #667eea)'][i % 4],
+              opacity: 0.4,
+            }}
+          />
+        ))}
+      </div>
+
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 0.7, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          color: 'white',
+          fontSize: '1rem',
+          letterSpacing: '3px',
+          textTransform: 'uppercase',
+          marginBottom: '20px',
+          zIndex: 1,
+        }}
+      >
+        {t('Dein Rekord-Tag')}
+      </motion.p>
+
+      {/* Trophy */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0, rotate: -20 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ delay: 0.4, type: 'spring', stiffness: 150 }}
+        style={{ marginBottom: '20px', zIndex: 1 }}
+      >
+        <TrophyIcon />
+      </motion.div>
+
+      {/* Date */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        style={{ textAlign: 'center', zIndex: 1, marginBottom: '30px' }}
+      >
+        <h2
+          style={{
+            color: 'white',
+            fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
+            marginBottom: '5px',
+          }}
+        >
+          {mostActiveDay.dayName}
+        </h2>
+        <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>{formattedDate}</p>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '12px',
+          width: '100%',
+          maxWidth: '400px',
+          zIndex: 1,
+        }}
+      >
+        {/* Episodes */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9 }}
+          style={{
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
+            borderRadius: '16px',
+            padding: '20px 10px',
+            textAlign: 'center',
+          }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="2"
+            style={{ marginBottom: '8px' }}
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8M12 17v4" strokeLinecap="round" />
+          </svg>
+          <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
+            {mostActiveDay.episodesWatched}
+          </p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Episoden')}
+          </p>
+        </motion.div>
+
+        {/* Movies */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          style={{
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
+            borderRadius: '16px',
+            padding: '20px 10px',
+            textAlign: 'center',
+          }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="2"
+            style={{ marginBottom: '8px' }}
+          >
+            <rect x="2" y="2" width="20" height="20" rx="2" />
+            <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
+          </svg>
+          <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
+            {mostActiveDay.moviesWatched}
+          </p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Filme')}
+          </p>
+        </motion.div>
+
+        {/* Hours */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.1 }}
+          style={{
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
+            borderRadius: '16px',
+            padding: '20px 10px',
+            textAlign: 'center',
+          }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="2"
+            style={{ marginBottom: '8px' }}
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" strokeLinecap="round" />
+          </svg>
+          <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
+            {hours}h
+          </p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Watchtime')}
+          </p>
+        </motion.div>
+      </motion.div>
+
+      {/* Big Number */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.3, type: 'spring', stiffness: 100 }}
+        style={{
+          marginTop: '30px',
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(233,69,96,0.2) 100%)',
+          borderRadius: '24px',
+          padding: '20px 40px',
+          zIndex: 1,
+          border: '1px solid rgba(255,215,0,0.3)',
+        }}
+      >
+        <p
+          style={{
+            color: 'white',
+            opacity: 0.8,
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            margin: '0 0 5px 0',
+          }}
+        >
+          {t('Insgesamt')}
+        </p>
+        <p
+          style={{
+            color: '#ffd700',
+            fontSize: 'clamp(2rem, 8vw, 3rem)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            margin: 0,
+            textShadow: '0 0 30px rgba(255,215,0,0.5)',
+          }}
+        >
+          {t('{n} Titel', { n: totalItems })}
+        </p>
+      </motion.div>
+    </div>
+  );
+};
+
+export default RecordDaySlide;

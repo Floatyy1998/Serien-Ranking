@@ -12,7 +12,7 @@ const { registerBadgeCallback, removeBadgeCallback, invalidateCache } = vi.hoist
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('../../components/ui', () => ({ CelebrationBurst: () => null }));
-vi.mock('../../lib/haptics', () => ({ hapticCelebrate: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticCelebrate: vi.fn() }));
 vi.mock('./BadgeNotification', () => ({ default: () => <div data-testid="badge-notification" /> }));
 vi.mock('./offlineBadgeSystem', () => ({
   getOfflineBadgeSystem: () => ({ invalidateCache }),

@@ -3,14 +3,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { hapticTap } from '../lib/haptics';
+import { hapticTap } from '../lib/interaction/haptics';
 import { tapScaleTight } from '../lib/motion';
 import {
   enableNativePush,
   getNativePushPermission,
   isNativePushAvailable,
   isNativePushEnabled,
-} from '../services/pushNotifications';
+} from '../services/notifications/pushNotifications';
 
 const DISMISS_KEY = 'pushPromptDismissed';
 

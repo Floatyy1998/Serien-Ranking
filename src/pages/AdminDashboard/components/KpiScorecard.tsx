@@ -2,7 +2,7 @@ import { TrendingDown, TrendingFlat, TrendingUp } from '@mui/icons-material';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import React, { useEffect } from 'react';
 import { Area, AreaChart } from 'recharts';
-import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
+import { SafeResponsiveContainer } from '../../../components/ui/layout/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 
 interface KpiScorecardProps {

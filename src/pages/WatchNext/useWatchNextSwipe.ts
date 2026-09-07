@@ -3,14 +3,14 @@ import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 import type { PanInfo } from 'framer-motion';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
-import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import type { NextEpisode } from '../../hooks/watch/useWatchNextEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
-import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
+import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
-import { showToast, showUndoToast } from '../../lib/toast';
-import { hapticSuccess } from '../../lib/haptics';
+import { showToast, showUndoToast } from '../../lib/interaction/toast';
+import { hapticSuccess } from '../../lib/interaction/haptics';
 
 interface UseWatchNextSwipeOptions {
   user: { uid: string } | null;

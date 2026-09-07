@@ -37,14 +37,14 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
-vi.mock('../../hooks/useDeviceType', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isDesktop: ctx.isDesktop, isMobile: !ctx.isDesktop }),
 }));
 const preloadImage = vi.fn();
-vi.mock('../../lib/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
+vi.mock('../../lib/image/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
 
 const backendFetch = vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>();
-vi.mock('../../services/backendApi', () => ({
+vi.mock('../../services/api/backendApi', () => ({
   backendFetch: (...a: unknown[]) => backendFetch(...a),
 }));
 
@@ -79,7 +79,7 @@ vi.mock('../../services/firebase/analytics', () => ({
   trackRatingSaved: (...a: unknown[]) => trackRatingSaved(...a),
 }));
 const logMovieWatch = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
-vi.mock('../../services/watchActivityService', () => ({
+vi.mock('../../services/watchActivity/watchActivityService', () => ({
   WatchActivityService: { logMovieWatch: (...a: unknown[]) => logMovieWatch(...a) },
 }));
 

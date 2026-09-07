@@ -52,7 +52,7 @@ vi.mock('../../contexts/OptimizedFriendsContext', () => ({
 vi.mock('../../features/badges/BadgeContext', () => ({
   useBadges: () => ({ unreadBadgesCount: state.unreadBadgesCount }),
 }));
-vi.mock('../../hooks/useEnhancedFirebaseCache', () => ({
+vi.mock('../../hooks/data/useEnhancedFirebaseCache', () => ({
   useEnhancedFirebaseCache: () => ({ data: state.userData }),
 }));
 

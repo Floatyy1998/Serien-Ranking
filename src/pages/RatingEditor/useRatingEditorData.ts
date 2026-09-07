@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { hapticSelect } from '../../lib/haptics';
+import { hapticSelect } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { WatchActivityService } from '../../services/watchActivityService';
+import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
 import type { Movie as MovieType } from '../../types/Movie';
 import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import type { Series } from '../../types/Series';

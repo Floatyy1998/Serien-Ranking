@@ -4,7 +4,7 @@ import { memo, useState } from 'react';
 import { DiscussionThread } from '../../components/Discussion';
 import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
-import { useSpoilerLevel } from '../../services/spoilerMode';
+import { useSpoilerLevel } from '../../services/settings/spoilerMode';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 

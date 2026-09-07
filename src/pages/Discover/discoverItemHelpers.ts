@@ -36,4 +36,4 @@ export interface ItemCardProps {
 // PLACEHOLDER_SVG + handleImgError leben jetzt zentral in lib/posterPlaceholder
 // (drei zuvor identische Kopien konsolidiert); hier re-exportiert für die
 // bestehenden Importer dieser Datei.
-export { PLACEHOLDER_SVG, handleImgError } from '../../lib/posterPlaceholder';
+export { PLACEHOLDER_SVG, handleImgError } from '../../lib/image/posterPlaceholder';

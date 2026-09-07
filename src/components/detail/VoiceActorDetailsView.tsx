@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../ui';
 import type { CharacterMediaEdge, VoiceActorDetailsData } from './CastCrew.types';
 import { tapScale } from '../../lib/motion';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
 
 interface VoiceActorDetailsViewProps {

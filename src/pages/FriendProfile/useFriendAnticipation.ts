@@ -5,7 +5,7 @@ import {
   fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
   subscribeCatalogChange,
-} from '../../services/staticCatalog';
+} from '../../services/catalog/staticCatalog';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { CatalogSeason, CatalogSeries } from '../../types/CatalogTypes';
 

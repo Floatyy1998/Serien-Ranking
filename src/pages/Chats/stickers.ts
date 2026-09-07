@@ -1,13 +1,13 @@
-import { drawAxolotl } from '../../components/pet/drawAxolotl';
-import { drawBird } from '../../components/pet/drawBird';
-import { drawCat } from '../../components/pet/drawCat';
-import { drawDog } from '../../components/pet/drawDog';
-import { drawDragon } from '../../components/pet/drawDragon';
-import { drawFox } from '../../components/pet/drawFox';
-import { drawOwl } from '../../components/pet/drawOwl';
-import { drawPanda } from '../../components/pet/drawPanda';
-import { drawPenguin } from '../../components/pet/drawPenguin';
-import { drawRabbit } from '../../components/pet/drawRabbit';
+import { drawAxolotl } from '../../components/pet/sprites/drawAxolotl';
+import { drawBird } from '../../components/pet/sprites/drawBird';
+import { drawCat } from '../../components/pet/sprites/drawCat';
+import { drawDog } from '../../components/pet/sprites/drawDog';
+import { drawDragon } from '../../components/pet/sprites/drawDragon';
+import { drawFox } from '../../components/pet/sprites/drawFox';
+import { drawOwl } from '../../components/pet/sprites/drawOwl';
+import { drawPanda } from '../../components/pet/sprites/drawPanda';
+import { drawPenguin } from '../../components/pet/sprites/drawPenguin';
+import { drawRabbit } from '../../components/pet/sprites/drawRabbit';
 
 export type StickerDrawFn = (
   ctx: CanvasRenderingContext2D,

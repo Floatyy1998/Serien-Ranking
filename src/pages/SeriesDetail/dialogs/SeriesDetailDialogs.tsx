@@ -1,0 +1,118 @@
+import { Dialog, Snackbar } from '../../../components/ui';
+import { DiscussionThread } from '../../../components/Discussion';
+import { calculateSeriesMetrics, getLastWatchedProgress } from '../../../lib/episode/seriesMetrics';
+import { EpisodeActionSheet } from './EpisodeActionSheet';
+import { t } from '../../../services/i18n';
+
+import type { Series } from '../../../types/Series';
+import type { SeriesEpisode } from '../types';
+
+interface RewatchDialogState {
+  show: boolean;
+  type: 'episode' | 'season';
+  item: SeriesEpisode | null;
+  seasonNumber?: number;
+  episodeNumber?: number;
+}
+
+interface DialogState {
+  open: boolean;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  onConfirm?: () => void;
+}
+
+interface SeriesDetailDialogsProps {
+  series: Series;
+  showRewatchDialog: RewatchDialogState;
+  setShowRewatchDialog: (val: RewatchDialogState) => void;
+  handleEpisodeRewatch: (episode: SeriesEpisode) => Promise<void>;
+  handleEpisodeUnwatch: (episode: SeriesEpisode) => Promise<void>;
+  handleEpisodeRate: (episode: SeriesEpisode, rating: number | null) => Promise<void>;
+  dialog: DialogState;
+  setDialog: (val: DialogState) => void;
+  snackbar: { open: boolean; message: string };
+  navigate: (path: string) => void;
+}
+
+export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
+  series,
+  showRewatchDialog,
+  setShowRewatchDialog,
+  handleEpisodeRewatch,
+  handleEpisodeUnwatch,
+  handleEpisodeRate,
+  dialog,
+  setDialog,
+  snackbar,
+  navigate,
+}) => (
+  <>
+    {/* Episode Action Sheet */}
+    <EpisodeActionSheet
+      isOpen={showRewatchDialog.show}
+      episode={showRewatchDialog.item}
+      seriesTitle={series?.title || series?.name || ''}
+      seasonNumber={showRewatchDialog.seasonNumber || 1}
+      episodeNumber={showRewatchDialog.episodeNumber || 1}
+      onRewatch={handleEpisodeRewatch}
+      onUnwatch={handleEpisodeUnwatch}
+      onRate={handleEpisodeRate}
+      onNavigateToDiscussion={() => {
+        const sn = showRewatchDialog.seasonNumber || 1;
+        const en = showRewatchDialog.episodeNumber || 1;
+        setShowRewatchDialog({ show: false, type: 'episode', item: null });
+        navigate(`/episode/${series?.id}/s/${sn}/e/${en}`);
+      }}
+      onClose={() => setShowRewatchDialog({ show: false, type: 'episode', item: null })}
+    />
+
+    {/* Discussion Thread */}
+    {series && (
+      <div style={{ padding: '0 20px 20px' }}>
+        <DiscussionThread
+          itemId={series.id}
+          itemType="series"
+          // Spoiler-Wall nur, wenn die Serie noch gar nicht begonnen wurde.
+          isWatched={calculateSeriesMetrics(series).progress > 0}
+          viewerProgress={getLastWatchedProgress(series) || { season: 0, episode: 0 }}
+          feedMetadata={{
+            itemTitle: series.title || series.name || 'Unbekannte Serie',
+            posterPath:
+              series.poster && typeof series.poster === 'object' ? series.poster.poster : undefined,
+          }}
+        />
+      </div>
+    )}
+
+    {/* Dialog */}
+    <Dialog
+      open={dialog.open}
+      onClose={() => setDialog({ ...dialog, open: false })}
+      title={
+        dialog.type === 'warning'
+          ? t('Bestätigung')
+          : dialog.type === 'error'
+            ? t('Fehler')
+            : t('Information')
+      }
+      message={dialog.message}
+      type={dialog.type}
+      actions={
+        dialog.onConfirm
+          ? [
+              {
+                label: t('Abbrechen'),
+                onClick: () => setDialog({ ...dialog, open: false }),
+                variant: 'secondary',
+              },
+              { label: t('Bestätigen'), onClick: dialog.onConfirm, variant: 'primary' },
+            ]
+          : []
+      }
+    />
+
+    {/* Snackbar (zentrales Toast-System) */}
+    <Snackbar open={snackbar.open} message={snackbar.message} />
+  </>
+);

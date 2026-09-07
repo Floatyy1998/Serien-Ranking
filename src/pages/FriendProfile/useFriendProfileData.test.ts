@@ -32,7 +32,7 @@ vi.mock('react-router-dom', () => ({
   useParams: () => routing.params,
   useNavigate: () => routing.navigate,
 }));
-vi.mock('../../services/staticCatalog', () => ({
+vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeries: () => Promise.resolve(catalog.series),
   fetchStaticCatalogMovies: () => Promise.resolve(catalog.movies),
 }));

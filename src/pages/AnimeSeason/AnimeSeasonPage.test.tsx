@@ -67,7 +67,7 @@ vi.mock('./resolveTmdbId', () => ({
       genres: [],
     }),
 }));
-vi.mock('../../services/anilistSeasonService', () => ({
+vi.mock('../../services/api/anilistSeasonService', () => ({
   fetchSeasonAnime: () => Promise.resolve({ media: [], hasNextPage: false }),
   fetchContinuingAnime: () => Promise.resolve([]),
   getCurrentSeason: () => ({ season: 'WINTER', year: 2026 }),
@@ -78,7 +78,7 @@ vi.mock('../../services/anilistSeasonService', () => ({
   seasonKey: (ref: { season: string; year: number }) => `${ref.season}-${ref.year}`,
   seasonLabel: (ref: { season: string; year: number }) => `${ref.season} ${ref.year}`,
 }));
-vi.mock('../../services/staticCatalog', () => ({
+vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeasonsBulk: () => Promise.resolve({}),
   fetchStaticSeasonalAnime: () => Promise.resolve({}),
   subscribeCatalogChange: () => () => {},
@@ -92,25 +92,25 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: vi.fn(),
   logSeriesAdded: vi.fn(),
 }));
-vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn() }));
-vi.mock('../../hooks/useProviderLogos', () => ({ tmdbLogoUrl: () => '' }));
-vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
-vi.mock('../../hooks/useScrollRestore', () => ({ useScrollRestore: () => {} }));
+vi.mock('../../services/api/backendApi', () => ({ backendFetch: vi.fn() }));
+vi.mock('../../hooks/provider/useProviderLogos', () => ({ tmdbLogoUrl: () => '' }));
+vi.mock('../../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../../hooks/ui/useScrollRestore', () => ({ useScrollRestore: () => {} }));
 vi.mock('../../services/detection/providerChangeDetection', () => ({
   normalizeProviderName: (n: string) => n,
 }));
-vi.mock('../../lib/haptics', () => ({
+vi.mock('../../lib/interaction/haptics', () => ({
   hapticSelect: vi.fn(),
   hapticSuccess: vi.fn(),
   hapticTap: vi.fn(),
 }));
-vi.mock('../../lib/toast', () => ({ showToast: vi.fn() }));
+vi.mock('../../lib/interaction/toast', () => ({ showToast: vi.fn() }));
 vi.mock('../../theme/colorUtils', () => ({
   getOptimalTextColor: () => '#000',
   lightenColor: () => '#fff',
 }));
 vi.mock('../../utils/episodeDate', () => ({ getEpisodeAirDate: () => null }));
-vi.mock('../../lib/providerMerge', () => ({ getProviderLogoUrl: () => '' }));
+vi.mock('../../lib/provider/providerMerge', () => ({ getProviderLogoUrl: () => '' }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {

@@ -11,8 +11,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { logChapterRead } from '../../services/readActivityService';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { logChapterRead } from '../../services/discussion/readActivityService';
 import {
   BackButton,
   GradientText,

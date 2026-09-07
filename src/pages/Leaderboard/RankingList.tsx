@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { showAvatar } from '../../lib/avatarViewer';
+import { showAvatar } from '../../lib/image/avatarViewer';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { NameBadges } from '../../components/ui/NameBadges';
+import { NameBadges } from '../../components/ui/display/NameBadges';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
 import { t } from '../../services/i18n';

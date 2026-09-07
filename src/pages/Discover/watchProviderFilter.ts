@@ -18,9 +18,9 @@
  */
 
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
-import { tmdbFetch } from '../../services/tmdbClient';
-import { pickProviderRegion } from '../../services/region';
-import type { TmdbWatchProvidersResponse } from '../../services/tmdb.types';
+import { tmdbFetch } from '../../services/api/tmdbClient';
+import { pickProviderRegion } from '../../services/settings/region';
+import type { TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 
 /** Minimal-Typ, den sowohl `DiscoverItem` als auch `SearchResult` erfüllen. */
 export interface ProviderFilterableItem {

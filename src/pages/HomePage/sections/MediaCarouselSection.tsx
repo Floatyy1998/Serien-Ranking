@@ -6,7 +6,7 @@ import {
   SkeletonPosterRow,
 } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { CinematicPosterCard } from './CinematicPosterCard';
 import { TrendingRankCard } from './TrendingRankCard';
 import type { MediaItem } from './mediaCarouselTypes';

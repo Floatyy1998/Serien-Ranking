@@ -15,11 +15,11 @@ import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, Skeleton } from '../../components/ui';
-import { FillerChip } from '../../components/ui/FillerChip';
+import { FillerChip } from '../../components/ui/display/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
-import { useSpoilerLevel } from '../../services/spoilerMode';
+import { useSpoilerLevel } from '../../services/settings/spoilerMode';
 import { tapScale } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];

@@ -3,12 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
-import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
-import { StarRatingSlider } from '../../components/ui/StarRatingSlider';
-import { setEpisodeRating } from '../../services/episodeRatingService';
-import { showToast } from '../../lib/toast';
-import { fillerLookupKey } from '../../services/animeFillerService';
+import { useAnimeFillerData } from '../../hooks/manga/useAnimeFillerData';
+import { useEpisodeRatings } from '../../hooks/rating/useCommunityRatings';
+import { StarRatingSlider } from '../../components/ui/input/StarRatingSlider';
+import { setEpisodeRating } from '../../services/rating/episodeRatingService';
+import { showToast } from '../../lib/interaction/toast';
+import { fillerLookupKey } from '../../services/catalog/animeFillerService';
 import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import {

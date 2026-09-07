@@ -18,7 +18,7 @@ vi.mock('./services/firebase/analytics', () => ({
   initAnalyticsIfConsented: vi.fn(),
   setAnalyticsUser: vi.fn(),
 }));
-vi.mock('./services/offlineFirebaseService', () => ({
+vi.mock('./services/offline/offlineFirebaseService', () => ({
   offlineFirebaseService: { cacheData: vi.fn<() => Promise<void>>() },
 }));
 vi.mock('./themeHelpers', () => ({

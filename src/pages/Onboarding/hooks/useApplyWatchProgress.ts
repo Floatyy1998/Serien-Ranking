@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { paths, updateWithSeriesVersion } from '../../../services/db/ref';
 import { useAuth } from '../../../contexts/AuthContext';
-import { fetchStaticCatalogSeasons } from '../../../services/staticCatalog';
+import { fetchStaticCatalogSeasons } from '../../../services/catalog/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
 
 type CatalogEpisode = CatalogSeason['episodes'][number];

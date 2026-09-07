@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AniListMangaSearchResult } from '../../types/Manga';
-import type { MangaDexInfo } from '../../services/mangaUpdatesService';
+import type { MangaDexInfo } from '../../services/api/mangaUpdatesService';
 
 // Firebase-Set einfangen (letzter Aufruf: Pfad + Wert).
 const fb = vi.hoisted(() => {
@@ -23,11 +23,11 @@ vi.mock('firebase/compat/app', () => ({
   },
 }));
 
-vi.mock('../../services/mangaUpdatesService', () => ({
+vi.mock('../../services/api/mangaUpdatesService', () => ({
   getMangaDexInfo: vi.fn<() => Promise<MangaDexInfo>>(),
 }));
 
-import { getMangaDexInfo } from '../../services/mangaUpdatesService';
+import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { addMangaToList } from './addMangaToList';
 
 const mockedGetInfo = vi.mocked(getMangaDexInfo);

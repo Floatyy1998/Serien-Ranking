@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { dateLocale, t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';

@@ -8,8 +8,8 @@ vi.mock('@mui/icons-material', () => ({
   KeyboardArrowDown: () => null,
   Search: () => null,
 }));
-vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
-vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn() }));
+vi.mock('../../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSelect: vi.fn() }));
 vi.mock('framer-motion', async () => {
   const React = await import('react');
   const skip = new Set(['initial', 'animate', 'exit', 'transition', 'whileTap']);

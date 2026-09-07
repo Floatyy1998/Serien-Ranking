@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { t } from '../../services/i18n';
 
 const MAX_MESSAGE_LENGTH = 240;

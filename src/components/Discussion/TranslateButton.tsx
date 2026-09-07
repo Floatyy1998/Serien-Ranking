@@ -1,6 +1,6 @@
 import { Translate } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { CommentTranslationState } from '../../hooks/useCommentTranslation';
+import type { CommentTranslationState } from '../../hooks/social/useCommentTranslation';
 import { t } from '../../services/i18n';
 
 /** Kleiner Text-Button unter Kommentaren: Übersetzen / Original anzeigen. */

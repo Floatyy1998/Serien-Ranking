@@ -4,8 +4,8 @@ import { CalendarToday, ChatBubbleOutlined, Check, History, PlayCircle } from '@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDiscussionCount } from '../../hooks/discussionCountHooks';
-import { EmptyState as UiEmptyState } from '../../components/ui/EmptyState';
+import { useDiscussionCount } from '../../hooks/social/discussionCountHooks';
+import { EmptyState as UiEmptyState } from '../../components/ui/feedback/EmptyState';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
 import type { WatchedEpisode } from './EpisodeDataManager';

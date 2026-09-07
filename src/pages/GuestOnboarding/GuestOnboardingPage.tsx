@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CoverWall } from '../../components/ui/CoverWall';
+import { CoverWall } from '../../components/ui/media/CoverWall';
 import { LetterReveal } from '../Onboarding/components/LetterReveal';
 import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
 import type { OnboardingItem } from '../Onboarding/hooks/useOnboardingSearch';
@@ -17,7 +17,7 @@ import {
   clearGuestPicks,
   setGuestPet,
   setGuestSubscriptions,
-} from '../../services/guestOnboarding';
+} from '../../services/account/guestOnboarding';
 import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 

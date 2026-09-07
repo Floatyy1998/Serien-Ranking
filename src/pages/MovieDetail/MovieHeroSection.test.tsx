@@ -60,7 +60,7 @@ vi.mock('../../components/detail', () => ({
 vi.mock('../../components/recommendations/RecommendButton', () => ({
   RecommendButton: () => <button aria-label="empfehlen" />,
 }));
-vi.mock('../../lib/providerMerge', () => ({ mergeProviders: () => [] }));
+vi.mock('../../lib/provider/providerMerge', () => ({ mergeProviders: () => [] }));
 vi.mock('../../utils/imageUrl', () => ({ getImageUrl: () => 'poster.jpg' }));
 vi.mock('../../utils/themedPlaceholder', () => ({ buildThemedPlaceholderDataUrl: () => 'ph.jpg' }));
 vi.mock('../../contexts/ThemeContext', () => {

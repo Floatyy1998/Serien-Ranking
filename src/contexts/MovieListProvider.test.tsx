@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EnhancedCacheResult } from '../hooks/firebaseCache/types';
+import type { EnhancedCacheResult } from '../hooks/data/firebaseCache/types';
 
 const cacheResult = vi.hoisted(
   () =>
@@ -18,7 +18,7 @@ const cacheResult = vi.hoisted(
     }) as EnhancedCacheResult<Record<string, unknown>>
 );
 
-vi.mock('../hooks/useEnhancedFirebaseCache', () => ({
+vi.mock('../hooks/data/useEnhancedFirebaseCache', () => ({
   useEnhancedFirebaseCache: () => cacheResult,
 }));
 
@@ -27,7 +27,7 @@ vi.mock('./AuthContext', () => ({
   useAuth: () => ({ user: authUser }),
 }));
 
-vi.mock('../services/staticCatalog', () => ({
+vi.mock('../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogMovies: vi.fn(async () => ({})),
   fetchStaticCatalogMoviesFresh: vi.fn(async () => ({})),
   clearStaticCatalogCache: vi.fn(),

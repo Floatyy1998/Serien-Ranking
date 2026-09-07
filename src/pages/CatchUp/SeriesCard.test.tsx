@@ -26,7 +26,7 @@ vi.mock('../../contexts/ThemeContext', () => {
 
 vi.mock('../../utils/imageUrl', () => ({ getImageUrl: () => 'https://img/x.jpg' }));
 vi.mock('../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#000000' }));
-vi.mock('../../hooks/markNextEpisode', () => ({ markNextEpisodeWatched: markNextMock }));
+vi.mock('../../hooks/watch/markNextEpisode', () => ({ markNextEpisodeWatched: markNextMock }));
 vi.mock('./GradientRing', () => ({ GradientRing: () => <div data-testid="ring" /> }));
 // Nur formatTimeString stubben – advanceCatchUpView (der optimistische Vorlauf)
 // bleibt die echte Implementierung, damit das Binge-Verhalten real getestet wird.

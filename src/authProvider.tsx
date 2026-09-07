@@ -2,13 +2,13 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initAnalyticsIfConsented, setAnalyticsUser } from './services/firebase/analytics';
 import { setErrorReporterUser } from './services/errorReporting/errorReporter';
-import { offlineFirebaseService } from './services/offlineFirebaseService';
+import { offlineFirebaseService } from './services/offline/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './contexts/AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
 import { dbGet, dbRef, paths, serverTimestamp, userPath } from './services/db/ref';
-import { writeWelcomeNotifications } from './services/welcomeNotifications';
+import { writeWelcomeNotifications } from './services/notifications/welcomeNotifications';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);

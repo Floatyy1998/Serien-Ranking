@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { adjustColor } from '../../components/pet/colorUtils';
-import { drawDragonWingsOverlay } from '../../components/pet/drawDragon';
+import { drawDragonWingsOverlay } from '../../components/pet/sprites/drawDragon';
 import { STICKER_DRAWERS } from './stickers';
 
 /** Rendert einen Pet-Sticker (transparenter Hintergrund) auf Canvas. */

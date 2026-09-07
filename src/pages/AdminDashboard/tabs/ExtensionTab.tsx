@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
-import { ExtensionCharts } from './ExtensionCharts';
-import { ExtensionSessionsList } from './ExtensionSessionsList';
+import { ExtensionCharts } from './parts/ExtensionCharts';
+import { ExtensionSessionsList } from './parts/ExtensionSessionsList';
 
 interface ExtensionTabProps {
   data: ReturnType<typeof useAdminDashboardData>;

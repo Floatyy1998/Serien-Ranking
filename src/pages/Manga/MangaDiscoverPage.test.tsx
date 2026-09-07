@@ -24,10 +24,12 @@ vi.mock('../../contexts/ThemeContext', () => ({
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
 
 const discoverManga = vi.hoisted(() => vi.fn());
-vi.mock('../../services/anilistService', () => ({ discoverManga }));
+vi.mock('../../services/api/anilistService', () => ({ discoverManga }));
 
 const addMangaToList = vi.hoisted(() => vi.fn());
 vi.mock('./addMangaToList', () => ({ addMangaToList }));

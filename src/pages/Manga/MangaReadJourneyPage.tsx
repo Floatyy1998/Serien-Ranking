@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';

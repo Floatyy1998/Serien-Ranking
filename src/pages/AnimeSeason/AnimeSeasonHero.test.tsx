@@ -1,18 +1,20 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 
 vi.mock('@mui/icons-material', () => ({ Add: () => null, CheckCircle: () => null }));
 vi.mock('@mui/material', () => ({ CircularProgress: () => null }));
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
-vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
+vi.mock('../../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
 vi.mock('../../theme/colorUtils', () => ({
   getOptimalTextColor: () => '#000000',
   lightenColor: () => '#ffffff',
 }));
 vi.mock('../../utils/themedPlaceholder', () => ({ useThemedPlaceholder: () => 'ph.jpg' }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../HomePage/sections/MiniProviderBadges', () => ({ MiniProviderBadges: () => null }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>

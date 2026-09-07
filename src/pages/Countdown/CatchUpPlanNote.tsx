@@ -6,7 +6,7 @@
 import { CheckCircleOutlined, FastForwardRounded, WarningAmberRounded } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { dateLocale, t } from '../../services/i18n';
-import type { CatchUpPlan } from '../../lib/catchUpPlan';
+import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
 
 const formatNumber = (value: number): string =>
   new Intl.NumberFormat(dateLocale(), { maximumFractionDigits: 1 }).format(value);

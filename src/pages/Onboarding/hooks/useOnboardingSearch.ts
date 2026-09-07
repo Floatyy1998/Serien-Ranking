@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { backendFetch } from '../../../services/backendApi';
+import { backendFetch } from '../../../services/api/backendApi';
 import { dbGet, paths } from '../../../services/db/ref';
-import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {

@@ -2,7 +2,7 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CatchUpPlanNote } from './CatchUpPlanNote';
-import type { CatchUpPlan, CatchUpVariant } from '../../lib/catchUpPlan';
+import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;

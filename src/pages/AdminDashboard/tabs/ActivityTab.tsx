@@ -10,8 +10,8 @@ import {
   toDateKey,
   type FilterType,
   type RawEvent,
-} from './ActivityEventConfig';
-import { ActivityFeed } from './ActivityFeedItem';
+} from './parts/ActivityEventConfig';
+import { ActivityFeed } from './parts/ActivityFeedItem';
 
 interface ActivityTabProps {
   data: ReturnType<typeof useAdminDashboardData>;

@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { GradientText, HorizontalScrollContainer } from '../../components/ui';
-import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import type { Actor, ActorConnection } from '../../hooks/discover/useActorUniverse';
 import './ActorUniversePage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';

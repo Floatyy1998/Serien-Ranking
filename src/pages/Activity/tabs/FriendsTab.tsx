@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
-import { NameBadges } from '../../../components/ui/NameBadges';
+import { NameBadges } from '../../../components/ui/display/NameBadges';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';

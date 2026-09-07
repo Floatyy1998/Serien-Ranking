@@ -27,17 +27,17 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
-vi.mock('../../hooks/useEnhancedFirebaseCache', () => ({
+vi.mock('../../hooks/data/useEnhancedFirebaseCache', () => ({
   useEnhancedFirebaseCache: () => ({ data: null }),
 }));
 
-vi.mock('../../hooks/useMangaTrending', () => ({
+vi.mock('../../hooks/manga/useMangaTrending', () => ({
   useMangaTrending: () => [],
   useMangaPopular: () => [],
   useMangaTopRated: () => [],
 }));
 
-vi.mock('../HomePage/useUnifiedNotifications', () => ({
+vi.mock('../HomePage/hooks/useUnifiedNotifications', () => ({
   useUnifiedNotifications: () => ({
     totalUnreadBadge: 0,
     unifiedNotifications: [],
@@ -51,7 +51,7 @@ vi.mock('../HomePage/useUnifiedNotifications', () => ({
   }),
 }));
 
-vi.mock('../HomePage/NotificationSheet', () => ({ NotificationSheet: () => null }));
+vi.mock('../HomePage/sheets/NotificationSheet', () => ({ NotificationSheet: () => null }));
 vi.mock('../../components/pet/CaseOpeningOverlay', () => ({ CaseOpeningOverlay: () => null }));
 
 vi.mock('./sections/ContinueReadingSection', () => ({ ContinueReadingSection: () => null }));
@@ -68,7 +68,7 @@ vi.mock('../../components/ui', () => ({
   SectionHeader: ({ title }: { title?: ReactNode }) => <div>{title}</div>,
 }));
 
-vi.mock('../../components/ui/LoadingSpinner', () => ({
+vi.mock('../../components/ui/feedback/LoadingSpinner', () => ({
   LoadingSpinner: ({ text }: { text?: ReactNode }) => <div>{text}</div>,
 }));
 

@@ -101,8 +101,12 @@ vi.mock('./bingeSessionTracking', () => ({
   updateBingeSession: mocks.updateBingeSession,
 }));
 vi.mock('./watchStreakTracking', () => ({ updateWatchStreak: mocks.updateWatchStreak }));
-vi.mock('../leaderboardService', () => ({ updateLeaderboardStats: mocks.updateLeaderboardStats }));
-vi.mock('../../hooks/usePetReactions', () => ({ triggerPetReaction: mocks.triggerPetReaction }));
+vi.mock('../social/leaderboardService', () => ({
+  updateLeaderboardStats: mocks.updateLeaderboardStats,
+}));
+vi.mock('../../hooks/pet/usePetReactions', () => ({
+  triggerPetReaction: mocks.triggerPetReaction,
+}));
 vi.mock('../../lib/episode/seriesMetrics', () => ({ DEFAULT_EPISODE_RUNTIME_MINUTES: 45 }));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logEpisodeWatchedActivity: mocks.logEpisodeWatchedActivity,

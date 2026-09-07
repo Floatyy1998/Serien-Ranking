@@ -13,22 +13,25 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useAndroidBack } from '../../../hooks/useAndroidBack';
+import { useAndroidBack } from '../../../hooks/ui/useAndroidBack';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
-import { pickDisplayRating, useCommunityRatingsMap } from '../../../hooks/useCommunityRatings';
+import {
+  pickDisplayRating,
+  useCommunityRatingsMap,
+} from '../../../hooks/rating/useCommunityRatings';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { tapScale } from '../../../lib/motion';
-import { backendFetch } from '../../../services/backendApi';
+import { backendFetch } from '../../../services/api/backendApi';
 import { trackMovieAdded, trackSeriesAdded } from '../../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { Snackbar } from '../../../components/ui';
-import { QuickRatingSheet } from '../../../components/ui/QuickRatingSheet';
-import { useQuickRatingSheet } from '../../../hooks/useQuickRatingSheet';
+import { QuickRatingSheet } from '../../../components/ui/overlay/QuickRatingSheet';
+import { useQuickRatingSheet } from '../../../hooks/rating/useQuickRatingSheet';
 import { formatRatingShort, isMovieWatched, overallRatingValue } from '../../../lib/rating/rating';
-import { markMovieWatched } from '../../../services/quickRating';
+import { markMovieWatched } from '../../../services/rating/quickRating';
 import type { Movie } from '../../../types/Movie';
 import type { Series } from '../../../types/Series';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';

@@ -3,8 +3,8 @@ import { memo, useMemo } from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useMovieCollection } from '../../hooks/useMovieCollection';
-import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
+import { useMovieCollection } from '../../hooks/discover/useMovieCollection';
+import { useTransitionNavigate } from '../../hooks/ui/useTransitionNavigate';
 import { isMovieWatched } from '../../lib/rating/rating';
 import { t } from '../../services/i18n';
 

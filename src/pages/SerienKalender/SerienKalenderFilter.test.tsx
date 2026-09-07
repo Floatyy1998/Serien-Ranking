@@ -34,8 +34,8 @@ const { theme } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
-vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
-vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn() }));
+vi.mock('../../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSelect: vi.fn() }));
 
 import { SerienKalenderFilter } from './SerienKalenderFilter';
 

@@ -15,10 +15,10 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { ADMIN_UID } from '../../config/admin';
-import { prepareChatImage } from '../../lib/imageCompress';
+import { prepareChatImage } from '../../lib/image/imageCompress';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
 import { localizedVariants, t } from '../i18n';
-import { queuePush } from '../pushQueue';
+import { queuePush } from '../notifications/pushQueue';
 import { onValue } from '../db/subscribeValue';
 
 export interface ChatMessage {

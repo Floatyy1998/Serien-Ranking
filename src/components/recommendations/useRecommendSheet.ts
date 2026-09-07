@@ -1,8 +1,8 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
-import { useRecommendations } from '../../hooks/useRecommendations';
-import { showToast } from '../../lib/toast';
+import { useRecommendations } from '../../hooks/discover/useRecommendations';
+import { showToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 

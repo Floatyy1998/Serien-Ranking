@@ -58,7 +58,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 vi.mock('../../theme/colorUtils', () => ({ getContrastRatio: () => contrastRef.current }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../../components/ui', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
   PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

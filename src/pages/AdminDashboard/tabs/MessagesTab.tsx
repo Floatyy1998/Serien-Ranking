@@ -1,6 +1,6 @@
 import { Delete, NotificationsActive, Send } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
-import { backendFetch } from '../../../services/backendApi';
+import { backendFetch } from '../../../services/api/backendApi';
 import { dbRef } from '../../../services/db/ref';
 import { LOCALES, LOCALE_LABEL, isLocale, type Locale } from '../../../services/i18n';
 

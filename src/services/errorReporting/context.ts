@@ -3,7 +3,7 @@
  * Bericht ohne Rückfrage beim Nutzer auswertbar ist: Route, Build, Plattform,
  * Fenstergröße, Verbindung, Speicherlage.
  */
-import { getDisplayScale } from '../displayScale';
+import { getDisplayScale } from '../settings/displayScale';
 import { appLocale } from '../i18n';
 import { getRoutes, sessionAgeMs } from './breadcrumbs';
 import type { ErrorEnvironment, ErrorPlatform } from '../../types/ErrorReport';

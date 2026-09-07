@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
-import { useNavSlots } from '../../hooks/useNavConfig';
+import { useNavSlots } from '../../hooks/ui/useNavConfig';
 import {
   ActivityPage,
   BadgesPage,

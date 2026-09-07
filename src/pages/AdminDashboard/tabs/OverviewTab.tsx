@@ -2,12 +2,12 @@ import { Extension, Groups, Insights, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
-import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
+import { SafeResponsiveContainer } from '../../../components/ui/layout/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
-import { ReachSection } from './ReachSection';
-import { OnboardingFunnelSection } from './OnboardingFunnelSection';
-import { UserQualitySection } from './UserQualitySection';
+import { ReachSection } from './parts/ReachSection';
+import { OnboardingFunnelSection } from './parts/OnboardingFunnelSection';
+import { UserQualitySection } from './parts/UserQualitySection';
 import { LivePulse } from '../components/LivePulse';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 

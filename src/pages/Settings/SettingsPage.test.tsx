@@ -90,15 +90,19 @@ vi.mock('../../components/ui', () => ({
 }));
 
 vi.mock('./useSettingsData', () => ({ useSettingsData: () => settingsData }));
-vi.mock('../../components/ui/ImageCropSheet', () => ({ ImageCropSheet: () => null }));
-vi.mock('./ProfileSection', () => ({ ProfileSection: () => <div>PROFILE_SECTION</div> }));
-vi.mock('./PublicProfileSection', () => ({
+vi.mock('../../components/ui/overlay/ImageCropSheet', () => ({ ImageCropSheet: () => null }));
+vi.mock('./sections/ProfileSection', () => ({ ProfileSection: () => <div>PROFILE_SECTION</div> }));
+vi.mock('./sections/PublicProfileSection', () => ({
   PublicProfileSection: () => <div>PUBLIC_SECTION</div>,
 }));
-vi.mock('./AppearanceSection', () => ({ AppearanceSection: () => <div>APPEARANCE_SECTION</div> }));
-vi.mock('./LegalSection', () => ({ LegalSection: () => <div>LEGAL_SECTION</div> }));
-vi.mock('./NotificationsSection', () => ({ NotificationsSection: () => <div>NOTIF_SECTION</div> }));
-vi.mock('./PetSection', () => ({ PetSection: () => <div>PET_SECTION</div> }));
+vi.mock('./sections/AppearanceSection', () => ({
+  AppearanceSection: () => <div>APPEARANCE_SECTION</div>,
+}));
+vi.mock('./sections/LegalSection', () => ({ LegalSection: () => <div>LEGAL_SECTION</div> }));
+vi.mock('./sections/NotificationsSection', () => ({
+  NotificationsSection: () => <div>NOTIF_SECTION</div>,
+}));
+vi.mock('./sections/PetSection', () => ({ PetSection: () => <div>PET_SECTION</div> }));
 
 import { SettingsPage } from './SettingsPage';
 

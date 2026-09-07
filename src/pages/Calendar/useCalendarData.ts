@@ -3,17 +3,17 @@ import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
-import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
-import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
-import { useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
+import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
+import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/watch/useWeeklyEpisodes';
+import { useQuickSeasonRating } from '../../hooks/rating/useQuickSeasonRating';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
-import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
+import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { dateLocale, t } from '../../services/i18n';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
-import { showToast, showUndoToast } from '../../lib/toast';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
+import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
 export function formatDate(date: Date): string {

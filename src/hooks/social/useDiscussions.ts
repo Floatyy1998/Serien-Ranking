@@ -1,0 +1,359 @@
+import { useCallback, useEffect, useState } from 'react';
+import { dbRef } from '../../services/db/ref';
+import { useAuth } from '../../contexts/AuthContext';
+import type {
+  CreateDiscussionInput,
+  Discussion,
+  DiscussionFeedMetadata,
+  DiscussionItemType,
+} from '../../types/Discussion';
+import {
+  writeDiscussionFeedEntry,
+  deleteDiscussionFeedEntries,
+} from '../../services/discussion/discussionFeedService';
+import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
+import { ADMIN_UID } from '../../config/admin';
+import { getUserDisplayData } from '../../services/firebase/userDisplayData';
+import { queueModerationScan } from '../../services/moderation/moderationScan';
+import { localizedVariants, t, tLocale } from '../../services/i18n';
+import { onValue } from '../../services/db/subscribeValue';
+
+// Re-export useDiscussionReplies so existing imports continue to work
+export { useDiscussionReplies } from './useDiscussionReplies';
+
+interface UseDiscussionsOptions {
+  itemId: number;
+  itemType: DiscussionItemType;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  feedMetadata?: DiscussionFeedMetadata;
+}
+
+interface EditDiscussionInput {
+  title?: string;
+  content?: string;
+  isSpoiler?: boolean;
+}
+
+interface UseDiscussionsResult {
+  discussions: Discussion[];
+  loading: boolean;
+  error: string | null;
+  createDiscussion: (
+    input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
+  ) => Promise<string | null>;
+  editDiscussion: (discussionId: string, input: EditDiscussionInput) => Promise<boolean>;
+  deleteDiscussion: (discussionId: string) => Promise<boolean>;
+  toggleLike: (discussionId: string) => Promise<void>;
+  refetch: () => void;
+}
+
+export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsResult => {
+  const { itemId, itemType, seasonNumber, episodeNumber, feedMetadata } = options;
+  const { user } = useAuth() || {};
+
+  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  const [loading, setLoading] = useState(!!itemId);
+  const [error, setError] = useState<string | null>(null);
+
+  const path = getDiscussionPath(itemType, itemId, seasonNumber, episodeNumber);
+
+  // Fetch discussions with realtime listener
+  useEffect(() => {
+    if (!itemId) return;
+
+    const ref = dbRef(path);
+
+    const listener = onValue(
+      ref.orderByChild('createdAt'),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const discussionList: Discussion[] = Object.entries(data as Record<string, Discussion>)
+            .map(([id, disc]) => ({
+              ...disc,
+              id,
+              likes: disc.likes ? Object.keys(disc.likes) : [],
+            }))
+            // KI-Quarantäne: versteckte Inhalte sehen nur Autor + Admin
+            .filter((disc) => !disc.hidden || disc.userId === user?.uid || user?.uid === ADMIN_UID);
+          // Sort by pinned first, then by createdAt (newest first)
+          discussionList.sort((a, b) => {
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+            return b.createdAt - a.createdAt;
+          });
+          setDiscussions(discussionList);
+        } else {
+          setDiscussions([]);
+        }
+        setLoading(false);
+      },
+      {
+        onError: (err) => {
+          console.error('Error fetching discussions:', err);
+          setError(t('Fehler beim Laden der Diskussionen'));
+          setLoading(false);
+        },
+      }
+    );
+
+    return () => {
+      ref.off('value', listener);
+      setLoading(true);
+      setError(null);
+    };
+  }, [path, itemId, user?.uid]);
+
+  // Create a new discussion
+  const createDiscussion = useCallback(
+    async (
+      input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
+    ): Promise<string | null> => {
+      if (!user?.uid) {
+        setError(t('Du musst eingeloggt sein um zu diskutieren'));
+        return null;
+      }
+
+      setError(null);
+      try {
+        const { username, photoURL } = await getUserDisplayData(user);
+
+        const newDiscussion: Omit<Discussion, 'id'> = {
+          itemId,
+          itemType,
+          ...(seasonNumber !== undefined && { seasonNumber }),
+          ...(episodeNumber !== undefined && { episodeNumber }),
+          userId: user.uid,
+          username,
+          // Firebase lehnt undefined-Werte ab — Feld nur setzen, wenn vorhanden
+          ...(photoURL && { userPhotoURL: photoURL }),
+          title: input.title,
+          content: input.content,
+          createdAt: Date.now(),
+          likes: [],
+          replyCount: 0,
+          isSpoiler: input.isSpoiler || false,
+          ...(input.refSeason !== undefined && { refSeason: input.refSeason }),
+          ...(input.refEpisode !== undefined && { refEpisode: input.refEpisode }),
+        };
+
+        const ref = dbRef(path);
+        const newRef = await ref.push(newDiscussion);
+
+        // KI-Moderations-Scan (fire-and-forget)
+        void queueModerationScan({
+          kind: 'discussion',
+          path: `${path}/${newRef.key}`,
+          text: input.content,
+          title: input.title,
+          userId: user.uid,
+          username,
+        });
+
+        // Write to discussion feed (fire-and-forget)
+        if (feedMetadata?.itemTitle) {
+          writeDiscussionFeedEntry({
+            type: 'discussion_created',
+            discussionId: newRef.key ?? '',
+            discussionTitle: input.title,
+            userId: user.uid,
+            username: newDiscussion.username,
+            ...(newDiscussion.userPhotoURL && { userPhotoURL: newDiscussion.userPhotoURL }),
+            itemType,
+            itemId,
+            itemTitle: feedMetadata.itemTitle,
+            ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
+            ...(seasonNumber !== undefined && { seasonNumber }),
+            ...(episodeNumber !== undefined && { episodeNumber }),
+            ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
+            contentPreview: input.content.substring(0, 100),
+            createdAt: Date.now(),
+          });
+        }
+
+        return newRef.key;
+      } catch (err) {
+        console.error('Error creating discussion:', err);
+        setError(t('Fehler beim Erstellen der Diskussion'));
+        return null;
+      }
+    },
+    [user, path, itemId, itemType, seasonNumber, episodeNumber, feedMetadata]
+  );
+
+  // Edit a discussion (owner can edit all, others can only mark as spoiler)
+  const editDiscussion = useCallback(
+    async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
+      if (!user?.uid) return false;
+
+      setError(null);
+      try {
+        const discussionRef = dbRef(`${path}/${discussionId}`);
+        const snapshot = await discussionRef.once('value');
+        const discussion = snapshot.val();
+
+        const isOwner = discussion?.userId === user.uid;
+
+        // Non-owners can only set isSpoiler to true (flag as spoiler)
+        if (!isOwner) {
+          if (input.title !== undefined || input.content !== undefined) {
+            setError(t('Du kannst nur eigene Diskussionen bearbeiten'));
+            return false;
+          }
+          // Non-owners can only add spoiler flag, not remove it
+          if (input.isSpoiler === false) {
+            setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+            return false;
+          }
+        }
+
+        const updates: Record<string, unknown> = {};
+
+        // Only set updatedAt if content/title changed (not just spoiler flag by others)
+        if (isOwner && (input.title !== undefined || input.content !== undefined)) {
+          updates.updatedAt = Date.now();
+          // Übersetzungs-Cache passt nach einer Textänderung nicht mehr
+          updates.translations = null;
+          updates.lang = null;
+        }
+
+        if (input.title !== undefined) updates.title = input.title;
+        if (input.content !== undefined) updates.content = input.content;
+        if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
+
+        await discussionRef.update(updates);
+
+        // Send notification to discussion owner if non-owner flagged as spoiler
+        if (!isOwner && input.isSpoiler === true && discussion?.userId) {
+          const { username } = await getUserDisplayData(user);
+
+          const vars = { name: username, title: discussion.title };
+          await sendNotificationToUser(discussion.userId, {
+            type: 'spoiler_flag',
+            title: 'Spoiler-Markierung',
+            titleL: await localizedVariants('Spoiler-Markierung'),
+            message: tLocale(
+              'de',
+              '{name} hat deine Diskussion "{title}" als Spoiler markiert',
+              vars
+            ),
+            messageL: await localizedVariants(
+              '{name} hat deine Diskussion "{title}" als Spoiler markiert',
+              vars
+            ),
+            data: {
+              discussionId,
+              itemId,
+              itemType,
+              seasonNumber,
+              episodeNumber,
+            },
+          });
+        }
+
+        return true;
+      } catch (err) {
+        console.error('Error editing discussion:', err);
+        setError(t('Fehler beim Bearbeiten der Diskussion'));
+        return false;
+      }
+    },
+    [user, path, itemId, itemType, seasonNumber, episodeNumber]
+  );
+
+  // Delete a discussion (only owner)
+  const deleteDiscussion = useCallback(
+    async (discussionId: string): Promise<boolean> => {
+      if (!user?.uid) return false;
+
+      setError(null);
+      try {
+        const discussionRef = dbRef(`${path}/${discussionId}`);
+        const snapshot = await discussionRef.once('value');
+        const discussion = snapshot.val();
+
+        if (discussion?.userId !== user.uid && user.uid !== ADMIN_UID) {
+          setError(t('Du kannst nur eigene Diskussionen löschen'));
+          return false;
+        }
+
+        await discussionRef.remove();
+        // Antworten-Cleanup ist best-effort: Rules erlauben Subtree-Delete nur dem
+        // Admin — verwaiste Antworten sind unsichtbar und stören nicht.
+        dbRef(`discussionReplies/${discussionId}`)
+          .remove()
+          .catch(() => {});
+        // Remove feed entries (fire-and-forget)
+        deleteDiscussionFeedEntries(discussionId);
+
+        return true;
+      } catch (err) {
+        console.error('Error deleting discussion:', err);
+        setError(t('Fehler beim Löschen der Diskussion'));
+        return false;
+      }
+    },
+    [user, path]
+  );
+
+  // Toggle like on a discussion
+  const toggleLike = useCallback(
+    async (discussionId: string): Promise<void> => {
+      if (!user?.uid) return;
+
+      setError(null);
+      try {
+        const likeRef = dbRef(`${path}/${discussionId}/likes/${user.uid}`);
+        const snapshot = await likeRef.once('value');
+
+        if (snapshot.exists()) {
+          await likeRef.remove();
+        } else {
+          await likeRef.set(true);
+
+          // Send notification to discussion author (if not self)
+          const discussionSnapshot = await dbRef(`${path}/${discussionId}`).once('value');
+          const discussion = discussionSnapshot.val();
+          if (discussion && discussion.userId !== user.uid) {
+            const { username } = await getUserDisplayData(user);
+
+            const vars = { name: username, title: discussion.title };
+            await sendNotificationToUser(discussion.userId, {
+              type: 'discussion_like',
+              title: 'Neue Reaktion',
+              titleL: await localizedVariants('Neue Reaktion'),
+              message: tLocale('de', '{name} gefällt deine Diskussion "{title}"', vars),
+              messageL: await localizedVariants('{name} gefällt deine Diskussion "{title}"', vars),
+              data: {
+                discussionId,
+                itemId,
+                itemType,
+                seasonNumber,
+                episodeNumber,
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling like:', err);
+      }
+    },
+    [user, path, itemId, itemType, seasonNumber, episodeNumber]
+  );
+
+  const refetch = useCallback(() => {
+    // Realtime listener handles this automatically
+  }, []);
+
+  return {
+    discussions,
+    loading,
+    error,
+    createDiscussion,
+    editDiscussion,
+    deleteDiscussion,
+    toggleLike,
+    refetch,
+  };
+};

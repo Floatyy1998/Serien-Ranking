@@ -48,7 +48,7 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../hooks/discussionCountHooks', () => ({ useDiscussionCount: () => 0 }));
+vi.mock('../../hooks/social/discussionCountHooks', () => ({ useDiscussionCount: () => 0 }));
 
 const episode = (over: Partial<WatchedEpisode> = {}): WatchedEpisode => ({
   seriesId: 1,

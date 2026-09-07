@@ -1,4 +1,4 @@
-import type { CommunityRatingEntry } from '../../services/staticCatalog';
+import type { CommunityRatingEntry } from '../../services/catalog/staticCatalog';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 

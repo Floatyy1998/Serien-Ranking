@@ -38,7 +38,7 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
-vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSelect: vi.fn() }));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logRatingAdded: vi.fn(async () => {}),
 }));
@@ -47,11 +47,11 @@ vi.mock('../../services/firebase/analytics', () => ({
   trackRatingDeleted: vi.fn(),
 }));
 const logMovieWatch = vi.hoisted(() => vi.fn());
-vi.mock('../../services/watchActivityService', () => ({
+vi.mock('../../services/watchActivity/watchActivityService', () => ({
   WatchActivityService: { logMovieWatch },
 }));
 
-import { hapticSelect } from '../../lib/haptics';
+import { hapticSelect } from '../../lib/interaction/haptics';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import { useRatingEditorData } from './useRatingEditorData';

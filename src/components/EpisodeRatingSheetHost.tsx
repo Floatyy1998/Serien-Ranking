@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { BottomSheet } from './ui';
-import { StarRatingSlider } from './ui/StarRatingSlider';
+import { StarRatingSlider } from './ui/input/StarRatingSlider';
 import { getOptimalTextColor } from '../theme/colorUtils';
-import { EPISODE_RATING_EVENT, type EpisodeRatingRequest } from '../lib/episodeRatingPrompt';
-import { setEpisodeRating } from '../services/episodeRatingService';
-import { showToast } from '../lib/toast';
+import { EPISODE_RATING_EVENT, type EpisodeRatingRequest } from '../lib/prompt/episodeRatingPrompt';
+import { setEpisodeRating } from '../services/rating/episodeRatingService';
+import { showToast } from '../lib/interaction/toast';
 import { t } from '../services/i18n';
 
 /**

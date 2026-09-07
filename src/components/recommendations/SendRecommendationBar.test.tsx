@@ -14,7 +14,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../hooks/useDeviceType', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isMobile: false, isDesktop: true }),
 }));
 

@@ -1,12 +1,12 @@
 import type firebase from 'firebase/compat/app';
 import { useEffect, useState } from 'react';
-import { getMangaById } from '../../../services/anilistService';
+import { getMangaById } from '../../../services/api/anilistService';
 import {
   getMangaDexChapterDates,
   getMangaDexInfo,
   type MangaDexChapterInfo,
   type MangaDexInfo,
-} from '../../../services/mangaUpdatesService';
+} from '../../../services/api/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { dbRef, paths } from '../../../services/db/ref';
 import { shouldReopenCompleted } from '../mangaUtils';

@@ -1,0 +1,142 @@
+import type firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import { dbGet, dbRef, paths, userPath } from '../../services/db/ref';
+import { queuePush } from '../../services/notifications/pushQueue';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { t } from '../../services/i18n';
+import type {
+  Recommendation,
+  RecommendationMediaType,
+  RecommendationStatus,
+} from '../../types/Recommendation';
+import { onValue } from '../../services/db/subscribeValue';
+
+interface SendRecommendationInput {
+  recipientUids: string[];
+  media: {
+    id: number;
+    type: RecommendationMediaType;
+    title: string;
+    posterPath?: string;
+    backdropPath?: string;
+  };
+  message?: string;
+}
+
+interface UseRecommendationsReturn {
+  recommendations: Recommendation[];
+  pendingCount: number;
+  loading: boolean;
+  send: (input: SendRecommendationInput) => Promise<number>;
+  accept: (id: string) => Promise<void>;
+  decline: (id: string) => Promise<void>;
+}
+
+export function useRecommendations(): UseRecommendationsReturn {
+  const { user } = useAuth() || {};
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setRecommendations([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const ref = dbRef(userPath(user.uid, 'recommendations'));
+
+    const handle = (snap: firebase.database.DataSnapshot) => {
+      const data = snap.val();
+      if (!data) {
+        setRecommendations([]);
+        setLoading(false);
+        return;
+      }
+      const list: Recommendation[] = Object.entries(
+        data as Record<string, Omit<Recommendation, 'id'>>
+      ).map(([id, rec]) => ({ id, ...rec }));
+      list.sort((a, b) => b.timestamp - a.timestamp);
+      setRecommendations(list);
+      setLoading(false);
+    };
+
+    onValue(ref, handle);
+    return () => {
+      ref.off('value', handle);
+    };
+  }, [user]);
+
+  const pendingCount = useMemo(
+    () => recommendations.filter((r) => r.status === 'pending').length,
+    [recommendations]
+  );
+
+  const send = useCallback(
+    async ({ recipientUids, media, message }: SendRecommendationInput): Promise<number> => {
+      if (!user || recipientUids.length === 0) return 0;
+
+      // DB-Profil hat Vorrang — Auth-Werte können das Google-/Apple-Profil sein
+      const [dbName, dbPhoto] = await Promise.all([
+        dbGet<string>(paths.displayName(user.uid)).catch(() => null),
+        dbGet<string>(paths.photoURL(user.uid)).catch(() => null),
+      ]);
+      const senderName =
+        dbName ||
+        (user.displayName && user.displayName.trim()) ||
+        (user.email && user.email.split('@')[0]) ||
+        t('Unbekannt');
+      const senderPhoto = dbPhoto || user.photoURL;
+
+      // Rules capen mediaTitle≤500 / senderName≤200 / message≤2000 — vorher
+      // kürzen, sonst wird der ganze Push mit PERMISSION_DENIED verworfen
+      const base: Omit<Recommendation, 'id'> = {
+        mediaId: media.id,
+        mediaType: media.type,
+        mediaTitle: media.title.slice(0, 500),
+        ...(media.posterPath ? { mediaPoster: media.posterPath } : {}),
+        ...(media.backdropPath ? { mediaBackdrop: media.backdropPath } : {}),
+        senderUid: user.uid,
+        senderName: senderName.slice(0, 200),
+        ...(senderPhoto ? { senderPhotoURL: senderPhoto } : {}),
+        ...(message && message.trim() ? { message: message.trim().slice(0, 2000) } : {}),
+        timestamp: Date.now(),
+        status: 'pending',
+      };
+
+      await Promise.all(
+        recipientUids.map((uid) => dbRef(userPath(uid, 'recommendations')).push(base))
+      );
+      const pushBody =
+        message && message.trim()
+          ? t('{title} — „{message}“', { title: media.title, message: message.trim() })
+          : media.title;
+      await Promise.all(
+        recipientUids.map((uid) =>
+          queuePush(uid, {
+            title: t('🎬 Empfehlung von {name}', { name: senderName }),
+            body: pushBody,
+            url: '/',
+          })
+        )
+      );
+      return recipientUids.length;
+    },
+    [user]
+  );
+
+  const updateStatus = useCallback(
+    async (id: string, status: RecommendationStatus): Promise<void> => {
+      if (!user) return;
+      await dbRef(userPath(user.uid, 'recommendations', id, 'status')).set(status);
+    },
+    [user]
+  );
+
+  const accept = useCallback((id: string) => updateStatus(id, 'accepted'), [updateStatus]);
+  const decline = useCallback((id: string) => updateStatus(id, 'declined'), [updateStatus]);
+
+  return { recommendations, pendingCount, loading, send, accept, decline };
+}

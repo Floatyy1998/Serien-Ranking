@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
-import type { TasteMatchResult } from '../../services/tasteMatchService';
-import { calculateTasteMatch } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/social/tasteMatchService';
+import { calculateTasteMatch } from '../../services/social/tasteMatchService';
 import { t } from '../../services/i18n';
 import { copyTextToClipboard } from '../../utils/clipboard';
 

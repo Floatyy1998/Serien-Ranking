@@ -1,5 +1,5 @@
-import { tmdbLogoUrl } from '../../../hooks/useProviderLogos';
-import { getProviderSearchUrl } from '../../../lib/providerLinks';
+import { tmdbLogoUrl } from '../../../hooks/provider/useProviderLogos';
+import { getProviderSearchUrl } from '../../../lib/provider/providerLinks';
 import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { ProviderBrand } from '../providerBrands';

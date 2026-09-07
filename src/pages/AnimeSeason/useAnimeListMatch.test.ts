@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import type { Series } from '../../types/Series';
 
 interface FbSnap {
@@ -26,7 +26,7 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 }));
 
 const filler = vi.hoisted(() => ({ cacheById: {} as Record<number, { malId: number | null }> }));
-vi.mock('../../services/animeFillerService', () => ({
+vi.mock('../../services/catalog/animeFillerService', () => ({
   readFillerCacheSync: (id: number) => filler.cacheById[id] ?? null,
 }));
 

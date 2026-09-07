@@ -12,13 +12,13 @@ import {
 } from 'framer-motion';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
-import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
-import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { useDetailRecommendations } from '../../hooks/discover/useDetailRecommendations';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
+import { useTransitionNavigate } from '../../hooks/ui/useTransitionNavigate';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
-import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
-import { PosterFrame } from '../ui/PosterFrame';
+import { HorizontalScrollContainer } from '../ui/layout/HorizontalScrollContainer';
+import { PosterFrame } from '../ui/media/PosterFrame';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
 

@@ -2,23 +2,23 @@ import { Bookmark, PlayCircle, TravelExplore } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
-import { FillerChip } from '../../../components/ui/FillerChip';
-import { NowPlayingIndicator } from '../../../components/ui/NowPlayingIndicator';
+import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { NowPlayingIndicator } from '../../../components/ui/media/NowPlayingIndicator';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import {
   buildFillerLookup,
   fillerEpisodesFromStatic,
   fillerLookupKey,
-} from '../../../services/animeFillerService';
-import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
+} from '../../../services/catalog/animeFillerService';
+import { useAnimeFillerCatalog } from '../../../hooks/manga/useAnimeFillerCatalog';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
-import { useDeviceType } from '../../../hooks/useDeviceType';
-import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
+import { useActiveSubscriptions } from '../../../hooks/provider/useActiveSubscriptions';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
-import { getProviderColor } from '../../../lib/providerColors';
-import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { getProviderColor } from '../../../lib/provider/providerColors';
+import { resolveProviderOverlay } from '../../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../../services/detection/providerChangeDetection';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';

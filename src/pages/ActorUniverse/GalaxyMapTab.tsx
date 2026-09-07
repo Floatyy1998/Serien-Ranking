@@ -3,7 +3,7 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 
-import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import type { Actor, ActorConnection } from '../../hooks/discover/useActorUniverse';
 import { seededRandom } from '../../utils/seededRandom';
 import { useActorPanZoom } from './useActorPanZoom';
 import { tapScaleTight } from '../../lib/motion';

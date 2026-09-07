@@ -24,9 +24,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { readFillerCacheSync } from '../../services/animeFillerService';
+import { readFillerCacheSync } from '../../services/catalog/animeFillerService';
 import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import type { Series } from '../../types/Series';
 
 const ENRICH_CACHE_KEY = 'animeSeasonMalIds:v1';

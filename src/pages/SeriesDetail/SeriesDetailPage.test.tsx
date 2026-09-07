@@ -66,8 +66,10 @@ vi.mock('../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
-vi.mock('./useSeriesData', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
+vi.mock('./hooks/useSeriesData', () => ({
   useSeriesData: () => ({
     series: seriesDataRef.current.series,
     localSeries: seriesDataRef.current.series ?? undefined,
@@ -82,7 +84,7 @@ vi.mock('./useSeriesData', () => ({
     tmdbOverview: null,
   }),
 }));
-vi.mock('./useSeriesActions', () => ({
+vi.mock('./hooks/useSeriesActions', () => ({
   useSeriesActions: () => ({
     isAdding: false,
     isDeleting: false,
@@ -102,7 +104,7 @@ vi.mock('./useSeriesActions', () => ({
     handleStopRewatch: vi.fn(),
   }),
 }));
-vi.mock('../../hooks/useRecapData', () => ({
+vi.mock('../../hooks/watch/useRecapData', () => ({
   useRecapData: () => ({
     recapEpisodes: [],
     loading: false,
@@ -118,7 +120,7 @@ vi.mock('../../hooks/useRecapData', () => ({
     questionLoading: false,
   }),
 }));
-vi.mock('../../hooks/useCharacterDescriptions', () => ({
+vi.mock('../../hooks/series/useCharacterDescriptions', () => ({
   useCharacterDescriptions: () => ({
     characters: [],
     loading: false,
@@ -130,7 +132,7 @@ vi.mock('../../hooks/useCharacterDescriptions', () => ({
     questionLoading: false,
   }),
 }));
-vi.mock('../../hooks/useAnimeFillerData', () => ({
+vi.mock('../../hooks/manga/useAnimeFillerData', () => ({
   useAnimeFillerData: () => ({
     enabled: false,
     loading: false,
@@ -139,14 +141,16 @@ vi.mock('../../hooks/useAnimeFillerData', () => ({
     fillerByKey: undefined,
   }),
 }));
-vi.mock('../../hooks/discussionCountHooks', () => ({ useEpisodeDiscussionCounts: () => ({}) }));
-vi.mock('./useFriendsSeriesProgress', () => ({
+vi.mock('../../hooks/social/discussionCountHooks', () => ({
+  useEpisodeDiscussionCounts: () => ({}),
+}));
+vi.mock('./hooks/useFriendsSeriesProgress', () => ({
   useFriendsSeriesProgress: () => ({ entries: [] }),
 }));
 vi.mock('../../lib/rating/rating', () => ({ calculateOverallRating: () => '8.00' }));
 vi.mock('../../utils/episodeDate', () => ({ hasEpisodeAired: () => true }));
 vi.mock('../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#ffffff' }));
-vi.mock('../../hooks/markNextEpisode', () => ({
+vi.mock('../../hooks/watch/markNextEpisode', () => ({
   findNextEpisode: () => null,
   markNextEpisodeWatched: vi.fn(),
 }));
@@ -158,19 +162,23 @@ vi.mock('../../lib/validation/rewatch.utils', () => ({
   getNextRewatchEpisode: () => null,
   hasActiveRewatch: () => false,
 }));
-vi.mock('./HeroSection', () => ({ HeroSection: () => <div data-testid="hero" /> }));
-vi.mock('./SeasonsSection', () => ({ SeasonsSection: () => <div data-testid="seasons" /> }));
-vi.mock('./SeriesDetailDialogs', () => ({
+vi.mock('./sections/HeroSection', () => ({ HeroSection: () => <div data-testid="hero" /> }));
+vi.mock('./sections/SeasonsSection', () => ({
+  SeasonsSection: () => <div data-testid="seasons" />,
+}));
+vi.mock('./dialogs/SeriesDetailDialogs', () => ({
   SeriesDetailDialogs: () => <div data-testid="dialogs" />,
 }));
-vi.mock('./FriendsProgressStrip', () => ({ FriendsProgressStrip: () => <div /> }));
-vi.mock('./CharacterGuide', () => ({ CharacterGuide: () => <div data-testid="char-guide" /> }));
-vi.mock('./AnimeFillerBanner', () => ({ AnimeFillerBanner: () => <div /> }));
+vi.mock('./sections/FriendsProgressStrip', () => ({ FriendsProgressStrip: () => <div /> }));
+vi.mock('./sections/CharacterGuide', () => ({
+  CharacterGuide: () => <div data-testid="char-guide" />,
+}));
+vi.mock('./sections/AnimeFillerBanner', () => ({ AnimeFillerBanner: () => <div /> }));
 vi.mock('../../components/detail', () => ({
   CastCrew: () => <div data-testid="cast" />,
   RecommendationsSection: () => <div data-testid="recs" />,
 }));
-vi.mock('../../components/ui/RecapSheet', () => ({ RecapSheet: () => <div /> }));
+vi.mock('../../components/ui/overlay/RecapSheet', () => ({ RecapSheet: () => <div /> }));
 
 import { SeriesDetailPage } from './SeriesDetailPage';
 

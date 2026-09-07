@@ -1,7 +1,7 @@
 import { Close, Timer } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
-import { Trophy3D } from '../../components/ui/Trophy3D';
+import { Trophy3D } from '../../components/ui/feedback/Trophy3D';
 import { useTheme } from '../../contexts/ThemeContext';
 import { seededRandom } from '../../utils/seededRandom';
 import type { CelebrationData } from './useLeaderboardData';

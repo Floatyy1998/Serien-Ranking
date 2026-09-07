@@ -85,8 +85,8 @@ const nav = vi.hoisted(() => ({
   setNavSlots: vi.fn(),
   resetNavSlots: vi.fn(),
 }));
-vi.mock('../../services/navConfig', () => nav);
-vi.mock('../../hooks/useNavConfig', () => ({ useNavSlots: () => ['watchnext'] }));
+vi.mock('../../services/settings/navConfig', () => nav);
+vi.mock('../../hooks/ui/useNavConfig', () => ({ useNavSlots: () => ['watchnext'] }));
 
 vi.mock('../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,

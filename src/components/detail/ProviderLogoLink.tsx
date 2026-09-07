@@ -3,7 +3,7 @@ import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { t } from '../../services/i18n';
 

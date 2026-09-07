@@ -6,9 +6,9 @@ import {
   getProviderTitleUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import { t } from '../../services/i18n';
-import { pickProviderRegion, watchRegion } from '../../services/region';
+import { pickProviderRegion, watchRegion } from '../../services/settings/region';
 
 interface Provider {
   provider_id?: number;

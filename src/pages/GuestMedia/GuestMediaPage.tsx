@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { detectAppInstallTarget } from '../../lib/appInstallTarget';
-import { addGuestPick } from '../../services/guestOnboarding';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { detectAppInstallTarget } from '../../lib/platform/appInstallTarget';
+import { addGuestPick } from '../../services/account/guestOnboarding';
 import { t } from '../../services/i18n';
-import { tmdbFetch } from '../../services/tmdbClient';
+import { tmdbFetch } from '../../services/api/tmdbClient';
 import { getImageUrl } from '../../utils/imageUrl';
 
 interface GuestMediaPageProps {

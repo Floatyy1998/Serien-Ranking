@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
-import type { AnimeMangaStaticEntry } from '../staticCatalog';
+import type { AnimeMangaStaticEntry } from '../catalog/staticCatalog';
 
 const fb = vi.hoisted(() => {
   const store = new Map<string, unknown>();
@@ -34,7 +34,7 @@ vi.mock('../../lib/settings/notificationSettings', () => settings);
 const catalog = vi.hoisted(() => ({
   fetchStaticAnimeManga: vi.fn(async () => ({}) as Record<string, AnimeMangaStaticEntry> | null),
 }));
-vi.mock('../staticCatalog', () => catalog);
+vi.mock('../catalog/staticCatalog', () => catalog);
 
 import { detectAnimeMangaHandoff } from './animeMangaHandoffDetection';
 

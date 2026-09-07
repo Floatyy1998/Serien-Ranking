@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
+import { sendNotificationToUser } from '../../hooks/social/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';

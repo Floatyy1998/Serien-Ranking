@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import type { WatchlistGap } from '../../../hooks/useSubscriptionsData';
+import type { WatchlistGap } from '../../../hooks/provider/useSubscriptionsData';
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 import { getProviderBrand } from '../providerBrands';

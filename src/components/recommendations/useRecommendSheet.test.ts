@@ -30,12 +30,12 @@ vi.mock('../../contexts/OptimizedFriendsContext', () => ({
 }));
 
 const sendMock = vi.hoisted(() => vi.fn<(input: unknown) => Promise<number>>());
-vi.mock('../../hooks/useRecommendations', () => ({
+vi.mock('../../hooks/discover/useRecommendations', () => ({
   useRecommendations: () => ({ send: sendMock }),
 }));
 
 const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
-vi.mock('../../lib/toast', () => ({ showToast: toast.showToast }));
+vi.mock('../../lib/interaction/toast', () => ({ showToast: toast.showToast }));
 
 import { useRecommendSheet } from './useRecommendSheet';
 

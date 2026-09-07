@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { getImageUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
 import type { RecommendSheetMedia } from './useRecommendSheet';

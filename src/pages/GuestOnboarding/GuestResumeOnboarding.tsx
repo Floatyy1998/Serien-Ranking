@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { invalidateActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
-import { petService } from '../../services/petService';
+import { petService } from '../../services/pet/petService';
 import { setPetEnabled } from '../../services/pet/petPreferences';
 import { t } from '../../services/i18n';
 import {
@@ -13,7 +13,7 @@ import {
   getGuestPicks,
   getGuestSubscriptions,
   type GuestPick,
-} from '../../services/guestOnboarding';
+} from '../../services/account/guestOnboarding';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { WatchStatusSheet } from '../Onboarding/components/WatchStatusSheet';
 import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
@@ -21,7 +21,7 @@ import { useApplyWatchProgress } from '../Onboarding/hooks/useApplyWatchProgress
 import { useOnboardingSearch } from '../Onboarding/hooks/useOnboardingSearch';
 import { mapLimit } from '../../utils/mapLimit';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
-import { markOnboardingStep } from '../../services/onboardingProgress';
+import { markOnboardingStep } from '../../services/account/onboardingProgress';
 import { useWaitForBackendItem } from '../Onboarding/hooks/useWaitForBackendItem';
 import '../Onboarding/onboarding.css';
 

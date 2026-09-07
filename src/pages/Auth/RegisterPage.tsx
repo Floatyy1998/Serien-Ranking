@@ -22,15 +22,15 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
-import { CoverWall } from '../../components/ui/CoverWall';
+import { CoverWall } from '../../components/ui/media/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackRegister } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
 import { SocialLoginButtons } from './SocialLoginButtons';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
-import { requestVerificationMail } from '../../services/authMails';
+import { requestVerificationMail } from '../../services/account/authMails';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
-import { writeWelcomeNotifications } from '../../services/welcomeNotifications';
+import { writeWelcomeNotifications } from '../../services/notifications/welcomeNotifications';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();

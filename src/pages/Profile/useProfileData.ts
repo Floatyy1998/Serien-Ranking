@@ -36,7 +36,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBadges } from '../../features/badges/BadgeContext';
-import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { t } from '../../services/i18n';
 import type { Movie as MovieType } from '../../types/Movie';

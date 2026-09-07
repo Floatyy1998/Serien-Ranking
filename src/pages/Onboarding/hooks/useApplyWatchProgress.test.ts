@@ -24,7 +24,7 @@ vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authSt
 const catalog = vi.hoisted(() => ({
   fetchStaticCatalogSeasons: vi.fn<(id: number) => Promise<Record<string, CatalogSeason> | null>>(),
 }));
-vi.mock('../../../services/staticCatalog', () => ({
+vi.mock('../../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeasons: catalog.fetchStaticCatalogSeasons,
 }));
 

@@ -2,16 +2,19 @@ import { useDeferredValue, useEffect, useMemo, useState, useTransition } from 'r
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
-import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
-import { usePersistedState } from '../../hooks/usePersistedState';
-import { useScrollRestore } from '../../hooks/useScrollRestore';
-import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
+import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
+import { useEpisodeDragDrop } from '../../hooks/watch/useEpisodeDragDrop';
+import { usePersistedState } from '../../hooks/data/usePersistedState';
+import { useScrollRestore } from '../../hooks/ui/useScrollRestore';
+import { useWatchNextEpisodes } from '../../hooks/watch/useWatchNextEpisodes';
 import { PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
-import { buildFillerLookup, fillerEpisodesFromStatic } from '../../services/animeFillerService';
-import { useAnimeFillerCatalog } from '../../hooks/useAnimeFillerCatalog';
+import {
+  buildFillerLookup,
+  fillerEpisodesFromStatic,
+} from '../../services/catalog/animeFillerService';
+import { useAnimeFillerCatalog } from '../../hooks/manga/useAnimeFillerCatalog';
 import { RewatchToggle } from './components/RewatchToggle';
 import { WatchNextEmptyState } from './components/WatchNextEmptyState';
 import { WatchNextEpisodeList } from './components/WatchNextEpisodeList';

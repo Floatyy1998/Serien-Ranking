@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import { PlayArrow, Search, Whatshot } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
 
 /**

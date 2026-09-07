@@ -16,7 +16,7 @@ vi.mock('../db/ref', () => ({
   }),
   userPath: (uid: string, ...segments: string[]) => ['users', uid, ...segments].join('/'),
 }));
-vi.mock('../pushQueue', () => ({
+vi.mock('../notifications/pushQueue', () => ({
   queuePush: vi.fn((_uid: string, payload: unknown) => {
     fb.pushes.push(payload);
   }),

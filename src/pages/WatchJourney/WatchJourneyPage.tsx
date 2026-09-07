@@ -1,12 +1,12 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
-import { ACCENT_COLORS } from './accentColors';
-import { useWatchJourneyData } from './useWatchJourneyData';
-import { WatchJourneyEmptyState } from './WatchJourneyEmptyState';
-import { WatchJourneyLoadingState } from './WatchJourneyLoadingState';
-import { WatchJourneyTabContent } from './WatchJourneyTabContent';
-import { WatchJourneyTabs } from './WatchJourneyTabs';
-import { WatchJourneyYearPicker } from './WatchJourneyYearPicker';
+import { ACCENT_COLORS } from './helpers/accentColors';
+import { useWatchJourneyData } from './hooks/useWatchJourneyData';
+import { WatchJourneyEmptyState } from './parts/WatchJourneyEmptyState';
+import { WatchJourneyLoadingState } from './parts/WatchJourneyLoadingState';
+import { WatchJourneyTabContent } from './tabs/WatchJourneyTabContent';
+import { WatchJourneyTabs } from './tabs/WatchJourneyTabs';
+import { WatchJourneyYearPicker } from './parts/WatchJourneyYearPicker';
 import { t } from '../../services/i18n';
 import './WatchJourneyPage.css';
 

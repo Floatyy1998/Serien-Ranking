@@ -3,7 +3,7 @@ import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { BackButton } from '../../components/ui';
-import { NameBadges } from '../../components/ui/NameBadges';
+import { NameBadges } from '../../components/ui/display/NameBadges';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';

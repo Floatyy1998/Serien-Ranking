@@ -13,19 +13,23 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { GradientText, HeaderActions, NavEscapeButtons, SectionHeader } from '../../components/ui';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
-import { NotificationSheet } from '../HomePage/NotificationSheet';
+import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
+import { NotificationSheet } from '../HomePage/sheets/NotificationSheet';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
-import { useUnifiedNotifications } from '../HomePage/useUnifiedNotifications';
+import { useUnifiedNotifications } from '../HomePage/hooks/useUnifiedNotifications';
 import { ContinueReadingSection } from './sections/ContinueReadingSection';
 import { HiddenMangaCard } from './sections/HiddenMangaCard';
 import { MangaCatchUpCard } from './sections/MangaCatchUpCard';
 import { MangaStatsSection } from './sections/MangaStatsSection';
 import { MangaCarouselSection } from './sections/MangaCarouselSection';
-import { useMangaTrending, useMangaPopular, useMangaTopRated } from '../../hooks/useMangaTrending';
+import {
+  useMangaTrending,
+  useMangaPopular,
+  useMangaTopRated,
+} from '../../hooks/manga/useMangaTrending';
 import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
 import type { Manga } from '../../types/Manga';
 import {
@@ -37,7 +41,7 @@ import {
 import './MangaPage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
-import { useOwnPhotoURL } from '../../services/ownProfilePhoto';
+import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 
 export const MangaPage = () => {
   const { currentTheme } = useTheme();

@@ -1,11 +1,11 @@
 import { CssBaseline } from '@mui/material';
 import { MotionConfig } from 'framer-motion';
 import { Suspense, useEffect, useState } from 'react';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { LoadingSpinner } from './components/ui/feedback/LoadingSpinner';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 import { AppProviders } from './AppProviders';
-import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
+import { useGlobalImageRetry } from './hooks/platform/useGlobalImageRetry';
 import { DynamicThemeProvider } from './contexts/ThemeProvider';
 import { AppInstallBanner } from './components/AppInstallBanner';
 import { CookieConsentBanner } from './components/CookieConsentBanner';

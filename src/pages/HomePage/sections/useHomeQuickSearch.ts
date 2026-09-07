@@ -6,7 +6,7 @@
  * localStorage-Verlauf.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { tmdbFetch } from '../../../services/tmdbClient';
+import { tmdbFetch } from '../../../services/api/tmdbClient';
 
 export interface QuickResult {
   id: number;

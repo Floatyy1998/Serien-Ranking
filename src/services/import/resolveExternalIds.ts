@@ -4,7 +4,7 @@
  * Auflösbares wird verworfen und gezählt.
  */
 import type { ParsedImport } from '../../lib/import/parseImport';
-import { tmdbFetch } from '../tmdbClient';
+import { tmdbFetch } from '../api/tmdbClient';
 
 interface FindResult {
   tv_results?: { id: number }[];

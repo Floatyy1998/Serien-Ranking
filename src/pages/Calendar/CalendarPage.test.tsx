@@ -34,7 +34,7 @@ const { navigateMock, calState } = vi.hoisted(() => ({
 vi.mock('./useCalendarData', () => ({ useCalendarData: () => calState }));
 vi.mock('./CalendarToolbar', () => ({ CalendarToolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('./CalendarGrid', () => ({ CalendarGrid: () => <div data-testid="grid" /> }));
-vi.mock('../../components/ui/QuickRatingSheet', () => ({
+vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({
   QuickRatingSheet: () => <div data-testid="quick-rating" />,
 }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));

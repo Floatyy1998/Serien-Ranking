@@ -59,7 +59,7 @@ const analytics = vi.hoisted(() => ({ trackLogout: vi.fn() }));
 vi.mock('../../services/firebase/analytics', () => ({ trackLogout: analytics.trackLogout }));
 
 const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
-vi.mock('../../lib/toast', () => ({ showToast: toast.showToast }));
+vi.mock('../../lib/interaction/toast', () => ({ showToast: toast.showToast }));
 
 const searchIndex = vi.hoisted(() => ({ syncUserSearchIndex: vi.fn(async () => {}) }));
 vi.mock('../../services/firebase/userSearchIndex', () => ({
@@ -71,7 +71,7 @@ const haptics = vi.hoisted(() => ({
   hapticSuccess: vi.fn(),
   hapticWarning: vi.fn(),
 }));
-vi.mock('../../lib/haptics', () => haptics);
+vi.mock('../../lib/interaction/haptics', () => haptics);
 
 import { useSettingsData } from './useSettingsData';
 

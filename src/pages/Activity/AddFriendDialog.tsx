@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { NameBadges } from '../../components/ui/NameBadges';
+import { NameBadges } from '../../components/ui/display/NameBadges';
 import {
   IconButton,
   EmptyState,

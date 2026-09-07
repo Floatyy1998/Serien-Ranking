@@ -1,4 +1,7 @@
-import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../services/staticCatalog';
+import {
+  fetchStaticCatalogSeries,
+  fetchStaticCatalogMovies,
+} from '../../services/catalog/staticCatalog';
 import { dbRef, dbGet, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

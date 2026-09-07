@@ -27,16 +27,16 @@
  */
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
-import { tmdbFetch } from '../../services/tmdbClient';
-import { pickProviderRegion } from '../../services/region';
-import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
-import { anilistLinkCountsForDe } from '../../services/anilistProviderFallback';
-import { getProviderLogoUrl } from '../../lib/providerMerge';
+import { tmdbFetch } from '../../services/api/tmdbClient';
+import { pickProviderRegion } from '../../services/settings/region';
+import { tmdbLogoUrl } from '../../hooks/provider/useProviderLogos';
+import { anilistLinkCountsForDe } from '../../services/api/anilistProviderFallback';
+import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
 import { normalizeTitle } from './useAnimeListMatch';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 
 // v11: App-relevante TMDB-Genres ergänzt (v10: Provider-Fallback) — Bump
 // lässt gecachte Einträge die Genres nachladen.

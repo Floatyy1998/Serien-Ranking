@@ -4,7 +4,7 @@ import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
 import { subscribeValue } from '../../services/db/subscribeValue';
 import { useAuth } from '../../contexts/AuthContext';
-import { petService } from '../../services/petService';
+import { petService } from '../../services/pet/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../components/pet/data/accessories';

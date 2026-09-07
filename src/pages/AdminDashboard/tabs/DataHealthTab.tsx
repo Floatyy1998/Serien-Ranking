@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef, serverTimestamp } from '../../../services/db/ref';
-import { showToast } from '../../../lib/toast';
+import { showToast } from '../../../lib/interaction/toast';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import { onValue } from '../../../services/db/subscribeValue';
 

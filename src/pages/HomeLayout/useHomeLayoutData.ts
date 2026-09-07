@@ -6,7 +6,7 @@
 import { dbRef, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { hapticSelect, hapticWarning } from '../../lib/haptics';
+import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 
 export const DEFAULT_SECTION_ORDER = [

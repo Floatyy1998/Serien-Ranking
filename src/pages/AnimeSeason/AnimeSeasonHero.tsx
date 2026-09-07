@@ -19,14 +19,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { useReducedMotion } from '../../hooks/ui/useReducedMotion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import {
   buildMetaLine,
@@ -40,7 +40,7 @@ import {
   stripDescription,
 } from './animeFormat';
 import type { TmdbProviderInfo } from './resolveTmdbId';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { t } from '../../services/i18n';
 
 interface AnimeSeasonHeroProps {

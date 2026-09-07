@@ -15,25 +15,27 @@ vi.mock('../../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
-vi.mock('../../../hooks/useTransitionNavigate', () => ({
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
+vi.mock('../../../hooks/ui/useTransitionNavigate', () => ({
   useTransitionNavigate: () => h.navigate,
 }));
-vi.mock('../../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({ getSeriesOverride: () => null }),
 }));
 vi.mock('../../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ seriesList: [] }),
 }));
-vi.mock('../../../services/animeFillerService', () => ({
+vi.mock('../../../services/catalog/animeFillerService', () => ({
   buildFillerLookup: () => new Map(),
   fillerLookupKey: () => '',
   fillerEpisodesFromStatic: () => [],
 }));
-vi.mock('../../../hooks/useAnimeFillerCatalog', () => ({
+vi.mock('../../../hooks/manga/useAnimeFillerCatalog', () => ({
   useAnimeFillerCatalog: () => null,
 }));
-vi.mock('../../../lib/providerMerge', () => ({
+vi.mock('../../../lib/provider/providerMerge', () => ({
   resolveProviderOverlay: () => undefined,
   pickPreferredProvider: () => undefined,
 }));
@@ -47,7 +49,7 @@ vi.mock('../../../components/detail/ProviderLogoLink', () => ({
 vi.mock('../../../components/Discussion', () => ({
   EpisodeDiscussionButton: () => <button type="button">discuss</button>,
 }));
-vi.mock('../../../components/ui/FillerChip', () => ({ FillerChip: () => <span /> }));
+vi.mock('../../../components/ui/display/FillerChip', () => ({ FillerChip: () => <span /> }));
 vi.mock('../../../components/ui', () => ({
   SectionHeader: ({ title, onSeeAll }: { title?: string; onSeeAll?: () => void }) => (
     <div>

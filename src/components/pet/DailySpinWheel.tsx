@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { hapticCelebrate, hapticTap } from '../../lib/haptics';
+import { hapticCelebrate, hapticTap } from '../../lib/interaction/haptics';
 import Bolt from '@mui/icons-material/Bolt';
 import Close from '@mui/icons-material/Close';
 import Whatshot from '@mui/icons-material/Whatshot';

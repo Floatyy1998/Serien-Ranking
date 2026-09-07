@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { PageTour } from '../../lib/pageTour';
+import type { PageTour } from '../../lib/interaction/pageTour';
 
 vi.mock('../../components/ui', () => ({
   BottomSheet: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>

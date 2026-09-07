@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ProviderLogo } from './ProviderLogo';
 import type { ProviderBrand } from '../providerBrands';
 
-vi.mock('../../../hooks/useProviderLogos', () => ({
+vi.mock('../../../hooks/provider/useProviderLogos', () => ({
   tmdbLogoUrl: (path?: string) => (path ? `https://image.tmdb.org/t/p/w92${path}` : undefined),
   useProviderLogos: () => ({}),
 }));

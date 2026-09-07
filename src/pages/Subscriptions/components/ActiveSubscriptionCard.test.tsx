@@ -18,7 +18,7 @@ vi.mock('@mui/icons-material', () => {
   );
 });
 
-vi.mock('../../../hooks/useProviderLogos', () => ({
+vi.mock('../../../hooks/provider/useProviderLogos', () => ({
   tmdbLogoUrl: (path?: string) => (path ? `https://image.tmdb.org/t/p/w92${path}` : undefined),
   useProviderLogos: () => ({}),
 }));

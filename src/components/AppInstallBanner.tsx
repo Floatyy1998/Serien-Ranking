@@ -2,7 +2,7 @@ import { Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { detectAppInstallTarget } from '../lib/appInstallTarget';
+import { detectAppInstallTarget } from '../lib/platform/appInstallTarget';
 import { tapScaleTight } from '../lib/motion';
 import { t } from '../services/i18n';
 

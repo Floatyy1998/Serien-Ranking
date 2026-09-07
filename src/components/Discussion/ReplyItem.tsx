@@ -6,12 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
-import { SpoilerReveal } from '../ui/SpoilerReveal';
-import { UserAvatar } from '../ui/UserAvatar';
-import { NameBadges } from '../ui/NameBadges';
+import { SpoilerReveal } from '../ui/display/SpoilerReveal';
+import { UserAvatar } from '../ui/media/UserAvatar';
+import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
-import { useCommentTranslation } from '../../hooks/useCommentTranslation';
+import { useCommentTranslation } from '../../hooks/social/useCommentTranslation';
 import { TranslateButton } from './TranslateButton';
 
 const ReplyItemInner: React.FC<{

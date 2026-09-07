@@ -9,7 +9,7 @@
  */
 
 import { toBlob } from 'html-to-image';
-import { showToast } from '../../lib/toast';
+import { showToast } from '../../lib/interaction/toast';
 
 /** Hintergrundfarbe aus dem aktiven Theme (CSS-Var), Fallback Schwarz. */
 function themeBackgroundColor(): string {

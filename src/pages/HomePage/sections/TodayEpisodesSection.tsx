@@ -2,21 +2,21 @@ import { NewReleases } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
-import { FillerChip } from '../../../components/ui/FillerChip';
+import { FillerChip } from '../../../components/ui/display/FillerChip';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
-import { useDeviceType } from '../../../hooks/useDeviceType';
-import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
-import { pickPreferredProvider, resolveProviderOverlay } from '../../../lib/providerMerge';
+import { useActiveSubscriptions } from '../../../hooks/provider/useActiveSubscriptions';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
+import { pickPreferredProvider, resolveProviderOverlay } from '../../../lib/provider/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import {
   buildFillerLookup,
   fillerEpisodesFromStatic,
   fillerLookupKey,
-} from '../../../services/animeFillerService';
-import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
+} from '../../../services/catalog/animeFillerService';
+import { useAnimeFillerCatalog } from '../../../hooks/manga/useAnimeFillerCatalog';
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 import { t } from '../../../services/i18n';

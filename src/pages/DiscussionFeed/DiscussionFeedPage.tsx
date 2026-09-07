@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import {
   PageLayout,
   PageHeader,
@@ -11,8 +11,8 @@ import {
   EmptyState,
   NameBadges,
 } from '../../components/ui';
-import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
-import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
+import type { FeedFilterType } from '../../hooks/social/useDiscussionFeed';
+import { useDiscussionFeed } from '../../hooks/social/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import { t } from '../../services/i18n';
 import type { DiscussionFeedEntry } from '../../types/Discussion';

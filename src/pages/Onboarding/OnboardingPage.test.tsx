@@ -32,7 +32,7 @@ vi.mock('./hooks/useWaitForBackendItem', () => ({
 vi.mock('./hooks/useApplyWatchProgress', () => ({
   useApplyWatchProgress: () => vi.fn(async () => {}),
 }));
-vi.mock('../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   invalidateActiveSubscriptions: vi.fn(),
 }));
 
@@ -48,7 +48,7 @@ vi.mock('firebase/compat/app', () => ({
 vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
 }));
-vi.mock('../../services/onboardingProgress', () => ({
+vi.mock('../../services/account/onboardingProgress', () => ({
   markOnboardingStep: vi.fn(async () => {}),
   signupProvider: (id?: string) => id ?? 'unbekannt',
 }));

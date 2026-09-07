@@ -24,7 +24,7 @@ vi.mock('@mui/icons-material', () => ({
   Check: () => null,
   Edit: () => null,
 }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../../lib/motion', () => ({ tapScaleTight: {} }));
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
@@ -44,7 +44,7 @@ const { getOverrideMock, setOverrideMock } = vi.hoisted(() => ({
   getOverrideMock: vi.fn(async () => null as string | null),
   setOverrideMock: vi.fn(async () => {}),
 }));
-vi.mock('../../services/providerOverride', () => ({
+vi.mock('../../services/settings/providerOverride', () => ({
   getSeriesProviderOverride: getOverrideMock,
   setSeriesProviderOverride: setOverrideMock,
 }));

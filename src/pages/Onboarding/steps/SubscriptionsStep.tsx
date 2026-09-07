@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { SUPPORTED_PROVIDERS } from '../../../config/menuItems';
 import { getProviderBrand } from '../../Subscriptions/providerBrands';
-import { getProviderLogoUrl } from '../../../lib/providerMerge';
-import { normalizeProviderName } from '../../../lib/providerName';
-import { watchRegion } from '../../../services/region';
-import { tmdbFetch } from '../../../services/tmdbClient';
+import { getProviderLogoUrl } from '../../../lib/provider/providerMerge';
+import { normalizeProviderName } from '../../../lib/provider/providerName';
+import { watchRegion } from '../../../services/settings/region';
+import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { TableOfContents } from '../components/TableOfContents';
 import { t } from '../../../services/i18n';
 

@@ -1,12 +1,12 @@
 export { adjustColor } from './colorUtils';
-export { drawAccessory } from './drawAccessory';
-export { drawBird } from './drawBird';
-export { drawCat } from './drawCat';
-export { drawDog } from './drawDog';
-export { drawDragon } from './drawDragon';
-export { drawFox } from './drawFox';
-export { drawRabbit } from './drawRabbit';
-export { drawPanda } from './drawPanda';
+export { drawAccessory } from './sprites/drawAccessory';
+export { drawBird } from './sprites/drawBird';
+export { drawCat } from './sprites/drawCat';
+export { drawDog } from './sprites/drawDog';
+export { drawDragon } from './sprites/drawDragon';
+export { drawFox } from './sprites/drawFox';
+export { drawRabbit } from './sprites/drawRabbit';
+export { drawPanda } from './sprites/drawPanda';
 
 export { EvolvingPixelPet } from './EvolvingPixelPet';
 export { PetHungerToast } from './PetHungerToast';

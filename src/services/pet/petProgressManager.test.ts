@@ -54,7 +54,7 @@ const acc = vi.hoisted(() => ({
 vi.mock('./petAccessoryManager', () => acc);
 
 const reactions = vi.hoisted(() => ({ triggerPetReaction: vi.fn() }));
-vi.mock('../../hooks/usePetReactions', () => reactions);
+vi.mock('../../hooks/pet/usePetReactions', () => reactions);
 
 import {
   watchedEpisode,

@@ -14,8 +14,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, KeyboardArrowDown, Search } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useReducedMotion } from '../../hooks/useReducedMotion';
-import { hapticSelect } from '../../lib/haptics';
+import { useReducedMotion } from '../../hooks/ui/useReducedMotion';
+import { hapticSelect } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 
 interface SerienKalenderFilterProps {

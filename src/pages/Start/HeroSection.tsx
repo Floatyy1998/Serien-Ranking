@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { DesktopWindows, Login, PersonAdd } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { GradientText } from '../../components/ui';
-import { CoverWall } from '../../components/ui/CoverWall';
+import { CoverWall } from '../../components/ui/media/CoverWall';
 import { HeroAppMock } from './HeroAppMock';
 import { t } from '../../services/i18n';
 

@@ -9,14 +9,14 @@ import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../componen
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
-import { mergeProviders } from '../../lib/providerMerge';
+import { mergeProviders } from '../../lib/provider/providerMerge';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from './useMovieData';
-import { useCommunityRating } from '../../hooks/useCommunityRatings';
+import { useCommunityRating } from '../../hooks/rating/useCommunityRatings';
 
 interface MovieHeroSectionProps {
   movie: Movie;

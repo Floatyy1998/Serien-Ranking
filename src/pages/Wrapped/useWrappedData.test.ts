@@ -17,10 +17,10 @@ const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const cfg = vi.hoisted(() => ({ value: { enabled: true, year: 2025, loading: false } }));
-vi.mock('../../hooks/useWrappedConfig', () => ({ useWrappedConfig: () => cfg.value }));
+vi.mock('../../hooks/wrapped/useWrappedConfig', () => ({ useWrappedConfig: () => cfg.value }));
 
 const calc = vi.hoisted(() => ({ calculateWrappedStats: vi.fn() }));
-vi.mock('../../services/wrappedCalculator', () => ({
+vi.mock('../../services/wrapped/wrappedCalculator', () => ({
   calculateWrappedStats: calc.calculateWrappedStats,
 }));
 
@@ -28,7 +28,7 @@ const wa = vi.hoisted(() => ({
   getEventsForYear: vi.fn(),
   getBingeSessionsForYear: vi.fn(),
 }));
-vi.mock('../../services/watchActivityService', () => ({
+vi.mock('../../services/watchActivity/watchActivityService', () => ({
   WatchActivityService: {
     getEventsForYear: wa.getEventsForYear,
     getBingeSessionsForYear: wa.getBingeSessionsForYear,

@@ -18,12 +18,12 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../hooks/discussionCountHooks', () => ({
+vi.mock('../../hooks/social/discussionCountHooks', () => ({
   useDiscussionCount: vi.fn(),
 }));
 
 import { EpisodeDiscussionButton } from './EpisodeDiscussionButton';
-import { useDiscussionCount } from '../../hooks/discussionCountHooks';
+import { useDiscussionCount } from '../../hooks/social/discussionCountHooks';
 
 const mockedCount = vi.mocked(useDiscussionCount);
 

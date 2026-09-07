@@ -7,7 +7,7 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 

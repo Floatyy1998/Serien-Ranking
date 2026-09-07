@@ -16,7 +16,7 @@ vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
 const haptics = vi.hoisted(() => ({ hapticSelect: vi.fn(), hapticWarning: vi.fn() }));
-vi.mock('../../lib/haptics', () => haptics);
+vi.mock('../../lib/interaction/haptics', () => haptics);
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));

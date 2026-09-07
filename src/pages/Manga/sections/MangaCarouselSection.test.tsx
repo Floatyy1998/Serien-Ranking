@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
+import type { MangaCarouselItem } from '../../../hooks/manga/useMangaTrending';
 import { MangaCarouselSection } from './MangaCarouselSection';
 
 vi.mock('../../../contexts/ThemeContext', () => ({
@@ -16,7 +16,9 @@ vi.mock('../../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
 
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));

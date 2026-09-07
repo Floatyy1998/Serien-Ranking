@@ -60,7 +60,7 @@ vi.mock('../../../contexts/ThemeContext', () => {
 vi.mock('../useActivityGrouping', () => ({
   useActivityGrouping: () => ({ formatTimeAgo: () => 'vor 1 Tag' }),
 }));
-vi.mock('../../../lib/toast', () => ({ showUndoToast: showUndoToastMock }));
+vi.mock('../../../lib/interaction/toast', () => ({ showUndoToast: showUndoToastMock }));
 
 import { RequestsTab } from './RequestsTab';
 

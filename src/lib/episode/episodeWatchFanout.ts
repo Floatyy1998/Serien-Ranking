@@ -10,8 +10,8 @@
  * Fehler werden bewusst NICHT geschluckt: Exceptions propagieren zu den
  * Call-Sites, die eigene try/catch- bzw. Undo-Toast-Behandlung haben.
  */
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
+import { petService } from '../../services/pet/petService';
+import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
 
 export interface EpisodeWatchFanoutParams {
   userId: string;

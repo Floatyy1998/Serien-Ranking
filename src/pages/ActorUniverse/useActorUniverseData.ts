@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
-import { useActorUniverse } from '../../hooks/useActorUniverse';
+import type { Actor, ActorConnection } from '../../hooks/discover/useActorUniverse';
+import { useActorUniverse } from '../../hooks/discover/useActorUniverse';
 
 export type TabId = 'map' | 'recommendations' | 'top';
 

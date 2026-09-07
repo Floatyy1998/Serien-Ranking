@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { TOURS_START } from '../../lib/pageTour';
+import { TOURS_START } from '../../lib/interaction/pageTour';
 
 const { pathnameRef, authRef } = vi.hoisted(() => ({
   pathnameRef: { current: '/' },
@@ -21,7 +21,7 @@ const { loadMock, writeMock } = vi.hoisted(() => ({
   writeMock: vi.fn(),
 }));
 
-vi.mock('../../services/pageTour', () => ({
+vi.mock('../../services/settings/pageTour', () => ({
   readSeenTours: () => ({}),
   loadSeenTours: loadMock,
   writeSeenTours: writeMock,

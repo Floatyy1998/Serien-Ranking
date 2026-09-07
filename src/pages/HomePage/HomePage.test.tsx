@@ -47,7 +47,7 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 }));
 
 // data hooks
-vi.mock('../../hooks/useEpisodeSwipeHandlers', () => ({
+vi.mock('../../hooks/watch/useEpisodeSwipeHandlers', () => ({
   useEpisodeSwipeHandlers: () => ({
     continueWatching: [],
     swipingContinueEpisodes: new Set<string>(),
@@ -73,7 +73,7 @@ vi.mock('../../hooks/useEpisodeSwipeHandlers', () => ({
     saveQuickRating: vi.fn(async () => {}),
   }),
 }));
-vi.mock('./useRewatchHandler', () => ({
+vi.mock('./hooks/useRewatchHandler', () => ({
   useRewatchHandler: () => ({
     rewatchEpisodes: [],
     completingRewatches: new Set<string>(),
@@ -87,10 +87,10 @@ vi.mock('./useRewatchHandler', () => ({
     handleRewatchSwipeEnd: vi.fn(),
   }),
 }));
-vi.mock('../../hooks/useProactiveRecaps', () => ({
+vi.mock('../../hooks/watch/useProactiveRecaps', () => ({
   useProactiveRecaps: () => ({ recaps: [], dismiss: vi.fn(), fetchRecap: vi.fn(async () => {}) }),
 }));
-vi.mock('../../hooks/useSeasonalRecommendations', () => ({
+vi.mock('../../hooks/discover/useSeasonalRecommendations', () => ({
   useSeasonalRecommendations: () => ({
     items: [],
     title: 'Saisonal',
@@ -98,17 +98,17 @@ vi.mock('../../hooks/useSeasonalRecommendations', () => ({
     loading: false,
   }),
 }));
-vi.mock('../../hooks/useSeriesCountdowns', () => ({
+vi.mock('../../hooks/watch/useSeriesCountdowns', () => ({
   useSeriesCountdowns: () => ({ countdowns: [] }),
 }));
-vi.mock('../../hooks/useUnsubscribedNewSeasons', () => ({
+vi.mock('../../hooks/watch/useUnsubscribedNewSeasons', () => ({
   useUnsubscribedNewSeasons: () => ({ entries: [], dismiss: vi.fn() }),
 }));
-vi.mock('../../hooks/useTMDBTrending', () => ({
+vi.mock('../../hooks/discover/useTMDBTrending', () => ({
   useTMDBTrending: () => ({ trending: [], loading: false }),
 }));
-vi.mock('../../hooks/useTopRated', () => ({ useTopRated: () => [] }));
-vi.mock('../../hooks/useWebWorkerStatsOptimized', () => ({
+vi.mock('../../hooks/discover/useTopRated', () => ({ useTopRated: () => [] }));
+vi.mock('../../hooks/data/useWebWorkerStatsOptimized', () => ({
   useWebWorkerStatsOptimized: () => ({
     watchedEpisodes: 0,
     totalMovies: 0,
@@ -116,7 +116,7 @@ vi.mock('../../hooks/useWebWorkerStatsOptimized', () => ({
     todayEpisodes: 0,
   }),
 }));
-vi.mock('./useHomeConfig', () => ({
+vi.mock('./hooks/useHomeConfig', () => ({
   useHomeConfig: () => ({
     visibleSections: [],
     forYouOrder: [],
@@ -127,7 +127,7 @@ vi.mock('./useHomeConfig', () => ({
     hiddenSecondaryActions: [],
   }),
 }));
-vi.mock('./useUnifiedNotifications', () => ({
+vi.mock('./hooks/useUnifiedNotifications', () => ({
   useUnifiedNotifications: () => ({
     unifiedNotifications: [],
     totalUnreadBadge: 0,
@@ -143,28 +143,28 @@ vi.mock('./useUnifiedNotifications', () => ({
 
 // child components: shallow stubs so nothing heavy mounts
 vi.mock('../../components/ui', () => ({ SectionHeader: () => null }));
-vi.mock('../../components/ui/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
+vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
 vi.mock('../../components/pet/CaseOpeningOverlay', () => ({ CaseOpeningOverlay: () => null }));
-vi.mock('./SeriesNotificationHub', () => ({ SeriesNotificationHub: () => null }));
-vi.mock('./CatchUpCard', () => ({ CatchUpCard: () => null }));
-vi.mock('./CountdownBanner', () => ({ CountdownBanner: () => null }));
-vi.mock('./HiddenSeriesCard', () => ({ HiddenSeriesCard: () => null }));
-vi.mock('./HomeActionSections', () => ({
+vi.mock('./sheets/SeriesNotificationHub', () => ({ SeriesNotificationHub: () => null }));
+vi.mock('./cards/CatchUpCard', () => ({ CatchUpCard: () => null }));
+vi.mock('./cards/CountdownBanner', () => ({ CountdownBanner: () => null }));
+vi.mock('./cards/HiddenSeriesCard', () => ({ HiddenSeriesCard: () => null }));
+vi.mock('./sections/HomeActionSections', () => ({
   QuickActionsSection: () => null,
   SecondaryActionsSection: () => null,
 }));
-vi.mock('./NotificationSheet', () => ({ NotificationSheet: () => null }));
-vi.mock('./PosterNavSheet', () => ({ PosterNavSheet: () => null }));
-vi.mock('./StatsGrid', () => ({ StatsGrid: () => null }));
-vi.mock('./TasteMatchCard', () => ({ TasteMatchCard: () => null }));
-vi.mock('./TasteProfileCard', () => ({ TasteProfileCard: () => null }));
-vi.mock('./WatchJourneyCard', () => ({ WatchJourneyCard: () => null }));
-vi.mock('./WatchStreakCard', () => ({ WatchStreakCard: () => null }));
-vi.mock('./DailySpinCard', () => ({ DailySpinCard: () => null }));
-vi.mock('./StreamingReminderCard', () => ({ StreamingReminderCard: () => null }));
-vi.mock('./ActivityMarquee', () => ({ ActivityMarquee: () => null }));
-vi.mock('./MilestoneBoxCard', () => ({ MilestoneBoxCard: () => null }));
-vi.mock('./WrappedNotification', () => ({ WrappedNotification: () => null }));
+vi.mock('./sheets/NotificationSheet', () => ({ NotificationSheet: () => null }));
+vi.mock('./sheets/PosterNavSheet', () => ({ PosterNavSheet: () => null }));
+vi.mock('./cards/StatsGrid', () => ({ StatsGrid: () => null }));
+vi.mock('./cards/TasteMatchCard', () => ({ TasteMatchCard: () => null }));
+vi.mock('./cards/TasteProfileCard', () => ({ TasteProfileCard: () => null }));
+vi.mock('./cards/WatchJourneyCard', () => ({ WatchJourneyCard: () => null }));
+vi.mock('./cards/WatchStreakCard', () => ({ WatchStreakCard: () => null }));
+vi.mock('./cards/DailySpinCard', () => ({ DailySpinCard: () => null }));
+vi.mock('./cards/StreamingReminderCard', () => ({ StreamingReminderCard: () => null }));
+vi.mock('./cards/ActivityMarquee', () => ({ ActivityMarquee: () => null }));
+vi.mock('./cards/MilestoneBoxCard', () => ({ MilestoneBoxCard: () => null }));
+vi.mock('./sheets/WrappedNotification', () => ({ WrappedNotification: () => null }));
 vi.mock('./sections/GreetingSection', () => ({
   GreetingSection: () => <div data-testid="greeting" />,
 }));

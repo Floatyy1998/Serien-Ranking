@@ -4,7 +4,7 @@ import { CalendarToday, Close, Movie, Search, Subscriptions } from '@mui/icons-m
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
@@ -16,7 +16,7 @@ import {
   ScrollToTopButton,
   Snackbar,
 } from '../../components/ui';
-import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
+import { QuickRatingSheet } from '../../components/ui/overlay/QuickRatingSheet';
 import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchPage } from './useSearchPage';

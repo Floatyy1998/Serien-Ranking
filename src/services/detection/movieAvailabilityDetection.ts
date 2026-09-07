@@ -10,7 +10,7 @@
  */
 
 import { dbGet, dbRef, userPath } from '../db/ref';
-import { mergeProviderNames } from '../../lib/providerMerge';
+import { mergeProviderNames } from '../../lib/provider/providerMerge';
 import { isMovieWatched } from '../../lib/rating/rating';
 import { t } from '../i18n';
 import type { Movie } from '../../types/Movie';

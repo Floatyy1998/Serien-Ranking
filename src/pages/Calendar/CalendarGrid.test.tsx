@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';
 
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isDesktop: true }) }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isDesktop: true }),
+}));
 vi.mock('./EpisodeCard', () => ({
   SingleEpisodeCard: () => <div data-testid="single-ep" />,
   EpisodeGroupCard: () => <div data-testid="group-ep" />,

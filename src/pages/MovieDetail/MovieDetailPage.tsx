@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
-import { Deferred } from '../../components/ui/Deferred';
+import { Deferred } from '../../components/ui/feedback/Deferred';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';

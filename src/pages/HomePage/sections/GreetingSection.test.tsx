@@ -19,7 +19,7 @@ vi.mock('../../../contexts/ThemeContext', () => {
 vi.mock('../../../lib/text/greetings', () => ({
   getGreeting: () => ({ text: 'Guten Morgen', lang: 'Deutsch', title: '', type: '' }),
 }));
-vi.mock('../LiveClock', () => ({ LiveClock: () => <span data-testid="clock" /> }));
+vi.mock('../cards/LiveClock', () => ({ LiveClock: () => <span data-testid="clock" /> }));
 vi.mock('./HomeSearchOverlay', () => ({
   HomeSearchOverlay: ({ open }: { open: boolean }) =>
     open ? <div data-testid="home-search-overlay" /> : null,

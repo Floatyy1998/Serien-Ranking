@@ -3,7 +3,7 @@ import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDiscussionCount } from '../../hooks/discussionCountHooks';
+import { useDiscussionCount } from '../../hooks/social/discussionCountHooks';
 import { t } from '../../services/i18n';
 
 export const EpisodeDiscussionButton: React.FC<{

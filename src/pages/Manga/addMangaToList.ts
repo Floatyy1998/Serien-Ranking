@@ -1,5 +1,5 @@
 import type { AniListMangaSearchResult } from '../../types/Manga';
-import { getMangaDexInfo } from '../../services/mangaUpdatesService';
+import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
 import { dbRef, paths } from '../../services/db/ref';
 

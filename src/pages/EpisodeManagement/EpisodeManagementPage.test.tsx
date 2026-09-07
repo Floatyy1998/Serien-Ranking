@@ -99,7 +99,7 @@ vi.mock('../../components/ui', () => ({
   CatchUpDialog: () => null,
   Dialog: () => null,
 }));
-vi.mock('../../components/ui/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
+vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
 vi.mock('./BulkActionBar', () => ({ BulkActionBar: () => <div data-testid="bulk" /> }));
 vi.mock('./EpisodeListItem', () => ({
   EpisodeListItem: ({ episode }: { episode: EpisodeStub }) => (

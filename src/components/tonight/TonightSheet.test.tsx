@@ -30,19 +30,19 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: [] }),
 }));
-vi.mock('../../services/recFeedbackService', () => ({
+vi.mock('../../services/rating/recFeedbackService', () => ({
   blockRecommendation: mocks.block,
   fetchBlockedRecommendations: mocks.fetchBlocked,
 }));
-vi.mock('../ui/BottomSheet', () => ({
+vi.mock('../ui/overlay/BottomSheet', () => ({
   BottomSheet: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
 }));
-vi.mock('../../services/tmdbClient', () => ({
+vi.mock('../../services/api/tmdbClient', () => ({
   tmdbFetch: mocks.tmdbFetch,
 }));
-vi.mock('../../services/region', () => ({ watchRegion: 'DE' }));
-vi.mock('../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../services/settings/region', () => ({ watchRegion: 'DE' }));
+vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
     activeProviders: new Set<string>(),
     hasAnySubscription: false,

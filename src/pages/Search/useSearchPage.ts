@@ -6,15 +6,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useQuickRatingSheet, type QuickRatingSheetState } from '../../hooks/useQuickRatingSheet';
-import { preloadImage } from '../../lib/preloadImage';
-import { backendFetch } from '../../services/backendApi';
+import {
+  useQuickRatingSheet,
+  type QuickRatingSheetState,
+} from '../../hooks/rating/useQuickRatingSheet';
+import { preloadImage } from '../../lib/image/preloadImage';
+import { backendFetch } from '../../services/api/backendApi';
 import { t } from '../../services/i18n';
-import { markMovieWatched } from '../../services/quickRating';
-import { tmdbFetch } from '../../services/tmdbClient';
+import { markMovieWatched } from '../../services/rating/quickRating';
+import { tmdbFetch } from '../../services/api/tmdbClient';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { isMovieWatched, overallRatingValue } from '../../lib/rating/rating';
 import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';

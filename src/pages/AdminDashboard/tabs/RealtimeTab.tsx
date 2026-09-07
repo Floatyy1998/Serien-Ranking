@@ -2,7 +2,7 @@ import { FiberManualRecord, Person } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
-import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
+import { SafeResponsiveContainer } from '../../../components/ui/layout/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 

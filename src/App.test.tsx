@@ -9,14 +9,14 @@ vi.mock('@mui/material', () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   CssBaseline: () => null,
 }));
-vi.mock('./components/ui/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
+vi.mock('./components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
 vi.mock('./components/auth/EmailVerificationBanner', () => ({
   EmailVerificationBanner: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./AppProviders', () => ({
   AppProviders: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./hooks/useGlobalImageRetry', () => ({ useGlobalImageRetry: () => {} }));
+vi.mock('./hooks/platform/useGlobalImageRetry', () => ({ useGlobalImageRetry: () => {} }));
 vi.mock('./contexts/ThemeProvider', () => ({
   DynamicThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

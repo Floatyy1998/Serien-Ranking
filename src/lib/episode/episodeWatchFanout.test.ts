@@ -7,11 +7,11 @@ const mocks = vi.hoisted(() => ({
   logEpisodeWatch: vi.fn(() => undefined),
 }));
 
-vi.mock('../../services/petService', () => ({
+vi.mock('../../services/pet/petService', () => ({
   petService: { watchedSeriesWithGenreAllPets: mocks.watchedSeriesWithGenreAllPets },
 }));
 
-vi.mock('../../services/watchActivityService', () => ({
+vi.mock('../../services/watchActivity/watchActivityService', () => ({
   WatchActivityService: { logEpisodeWatch: mocks.logEpisodeWatch },
 }));
 

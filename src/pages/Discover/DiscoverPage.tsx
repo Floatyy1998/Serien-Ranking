@@ -13,7 +13,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDiscoverFetch } from './useDiscoverFetch';

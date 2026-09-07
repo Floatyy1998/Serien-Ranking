@@ -36,7 +36,7 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'v
 vi.mock('firebase/compat/app', () => ({ default: { storage: () => ({}) } }));
 vi.mock('firebase/compat/storage', () => ({}));
 
-vi.mock('../../hooks/useDiscussions', () => ({
+vi.mock('../../hooks/social/useDiscussions', () => ({
   useDiscussionReplies: () => ({
     replies: repliesRef.current,
     loading: false,

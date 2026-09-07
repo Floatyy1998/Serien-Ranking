@@ -1,0 +1,383 @@
+/**
+ * animeFillerService – read-only client for anime filler/recap data.
+ *
+ * The frontend NEVER calls AniList or Jikan directly. The backend
+ * (update_anime_filler.js daily cron + /add fire-and-forget) populates
+ * `admin/animeFiller/{tmdbId}` in Firebase. The Detail-Page reload button
+ * hits a backend endpoint (`POST /refreshAnimeFiller`) which re-fetches
+ * server-side. This keeps API quotas and edge-case retries on a single
+ * authoritative host.
+ *
+ * Frontend responsibilities:
+ *   1. Read `admin/animeFiller/{tmdbId}` from Firebase
+ *   2. Cache the result in localStorage (7-day TTL, 1-h negative TTL)
+ *   3. On reload-button: POST to backend, then re-read Firebase
+ */
+
+import { dbGet } from '../db/ref';
+import { backendFetch } from '../api/backendApi';
+
+const CACHE_PREFIX = 'animeFiller_v4:';
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// Negatives expire fast – the backend may catch up on the next cron pass
+// or via a fresh /add trigger.
+const NEGATIVE_CACHE_TTL_MS = 60 * 60 * 1000;
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
+
+export interface FillerEpisode {
+  /** Absolute episode number across the whole anime (Jikan-style). */
+  malEpisodeNumber: number;
+  title: string;
+  filler: boolean;
+  recap: boolean;
+}
+
+export interface AnimeFillerData {
+  malId: number;
+  totalEpisodes: number | null;
+  fillerCount: number;
+  recapCount: number;
+  episodes: FillerEpisode[];
+  fetchedAt: number;
+}
+
+/**
+ * Lookup key shape: "s{seasonNumber}-e{episodeNumber}" using the user-facing
+ * (1-based) numbering. SeasonsSection and ContinueWatching both expose these
+ * numbers directly, so the consumer doesn't need to compute anything.
+ */
+export function fillerLookupKey(seasonNumber: number, episodeNumber: number): string {
+  return `s${seasonNumber}-e${episodeNumber}`;
+}
+
+interface SeasonLike {
+  seasonNumber?: number;
+  season_number?: number;
+  episodes?: unknown[];
+}
+
+/**
+ * Flatten the TMDB-style season tree to absolute episode numbers and match
+ * against the MAL list. Works for animes tracked under a single continuous
+ * MAL entry (One Piece, Naruto, Bleach …); per-season-MAL animes (AoT, JoJo)
+ * will only resolve the first season, which is the safe failure mode.
+ */
+export function buildFillerLookup(
+  seasons: SeasonLike[] | undefined,
+  fillerEpisodes: FillerEpisode[]
+): Map<string, FillerEpisode> {
+  const lookup = new Map<string, FillerEpisode>();
+  if (!seasons || fillerEpisodes.length === 0) return lookup;
+
+  const byMalNumber = new Map<number, FillerEpisode>();
+  for (const ep of fillerEpisodes) {
+    byMalNumber.set(ep.malEpisodeNumber, ep);
+  }
+
+  let absoluteIndex = 0;
+  for (const season of seasons) {
+    if (!season) continue;
+    const seasonNumber = (season.seasonNumber ?? season.season_number ?? 0) + 1;
+    const episodes = Array.isArray(season.episodes) ? season.episodes : [];
+    for (let epIdx = 0; epIdx < episodes.length; epIdx += 1) {
+      absoluteIndex += 1;
+      const match = byMalNumber.get(absoluteIndex);
+      if (!match) continue;
+      if (!match.filler && !match.recap) continue;
+      const episodeNumber = epIdx + 1;
+      lookup.set(fillerLookupKey(seasonNumber, episodeNumber), match);
+    }
+  }
+
+  return lookup;
+}
+
+/**
+ * Convert a compact static-catalog filler entry (`{ f:[…], r:[…] }` of absolute
+ * MAL episode numbers) into the `FillerEpisode[]` shape `buildFillerLookup`
+ * expects. Titles aren't shipped in the static file (the chip doesn't need
+ * them), so they come back empty.
+ */
+export function fillerEpisodesFromStatic(entry: { f?: number[]; r?: number[] }): FillerEpisode[] {
+  const episodes: FillerEpisode[] = [];
+  for (const n of entry.f ?? []) {
+    episodes.push({ malEpisodeNumber: n, title: '', filler: true, recap: false });
+  }
+  for (const n of entry.r ?? []) {
+    episodes.push({ malEpisodeNumber: n, title: '', filler: false, recap: true });
+  }
+  return episodes;
+}
+
+/**
+ * Synchronous cache read – returns whatever is already in localStorage.
+ * ContinueWatching uses this to decorate next-up posters without spawning
+ * Firebase reads per series.
+ */
+export function readFillerCacheSync(seriesId: number | string): AnimeFillerData | null {
+  const cached = readCache(String(seriesId));
+  return cached?.data ?? null;
+}
+
+interface CacheRecord {
+  data: AnimeFillerData | null;
+  fetchedAt: number;
+  /** Server's `admin/animeFiller/{tmdbId}/updatedAt` at the moment we wrote
+   *  this cache entry. Used by getAnimeFillerData() to revalidate cheaply
+   *  without a full re-read. */
+  backendUpdatedAt?: number;
+}
+
+function readCache(key: string): CacheRecord | null {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CacheRecord;
+    const ttl = parsed.data ? CACHE_TTL_MS : NEGATIVE_CACHE_TTL_MS;
+    if (Date.now() - parsed.fetchedAt > ttl) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key: string, record: CacheRecord): void {
+  try {
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(record));
+  } catch {
+    /* quota – ignore */
+  }
+}
+
+/** Wipe the cached entry for a single series. */
+export function clearAnimeFillerCacheForSeries(seriesId: number | string): void {
+  try {
+    localStorage.removeItem(CACHE_PREFIX + String(seriesId));
+    localStorage.removeItem('animeFiller_v3:' + String(seriesId));
+    // Legacy keys (v1 / v2) – clean those too so a forced reload starts fresh.
+    localStorage.removeItem('animeFiller_v2:' + String(seriesId));
+    localStorage.removeItem('animeFiller_v1:' + String(seriesId));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Wipe every cached entry. Useful escape hatch from DevTools. */
+export function clearAnimeFillerCache(): number {
+  let removed = 0;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i);
+      if (
+        k &&
+        (k.startsWith(CACHE_PREFIX) ||
+          k.startsWith('animeFiller_v3:') ||
+          k.startsWith('animeFiller_v2:') ||
+          k.startsWith('animeFiller_v1:'))
+      ) {
+        keys.push(k);
+      }
+    }
+    for (const k of keys) {
+      localStorage.removeItem(k);
+      removed += 1;
+    }
+  } catch {
+    /* ignore */
+  }
+  return removed;
+}
+
+/**
+ * Optional DevTools logging – activate with:
+ *   localStorage.setItem('debug:animeFiller', '1'); location.reload();
+ */
+function debug(...args: unknown[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem('debug:animeFiller') !== '1') return;
+  } catch {
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console.log('[animeFiller]', ...args);
+}
+
+type BackendFillerItem = number | { n: number; t?: string };
+
+interface BackendFillerRecord {
+  status?: string;
+  malId?: number;
+  totalEpisodes?: number;
+  fillerCount?: number;
+  recapCount?: number;
+  /** Either plain numbers (v3 format) or {n, t} objects (v4+). */
+  filler?: BackendFillerItem[];
+  recap?: BackendFillerItem[];
+  updatedAt?: number;
+  aniListTitles?: Record<string, string | null> | null;
+}
+
+function readBackendItem(item: BackendFillerItem): { n: number; t: string } {
+  if (typeof item === 'number') return { n: item, t: '' };
+  return { n: item.n, t: item.t ?? '' };
+}
+
+/**
+ * Tiny single-field read used to revalidate the cache. Returns the server's
+ * current `updatedAt` for this record (≈50 bytes payload).
+ */
+async function fetchBackendUpdatedAt(seriesId: number | string): Promise<number | null> {
+  try {
+    const v = await dbGet(`admin/animeFiller/${seriesId}/updatedAt`);
+    return typeof v === 'number' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The only network read this module performs. Backend keeps the upstream
+ * AniList/Jikan API calls on the server – frontend never touches them.
+ */
+async function fetchBackendFillerData(
+  seriesId: number | string
+): Promise<{ data: AnimeFillerData | null; backendUpdatedAt: number | null }> {
+  try {
+    const v = await dbGet<BackendFillerRecord>(`admin/animeFiller/${seriesId}`);
+    if (!v || v.status !== 'ok' || !v.malId) {
+      return { data: null, backendUpdatedAt: v?.updatedAt ?? null };
+    }
+    const episodes: FillerEpisode[] = [];
+    for (const item of v.filler ?? []) {
+      const { n, t } = readBackendItem(item);
+      episodes.push({ malEpisodeNumber: n, title: t, filler: true, recap: false });
+    }
+    for (const item of v.recap ?? []) {
+      const { n, t } = readBackendItem(item);
+      episodes.push({ malEpisodeNumber: n, title: t, filler: false, recap: true });
+    }
+    debug('backend hit', {
+      seriesId,
+      malId: v.malId,
+      fillerCount: v.fillerCount,
+      recapCount: v.recapCount,
+    });
+    return {
+      data: {
+        malId: v.malId,
+        totalEpisodes: v.totalEpisodes ?? null,
+        fillerCount: v.fillerCount ?? episodes.filter((e) => e.filler).length,
+        recapCount: v.recapCount ?? episodes.filter((e) => e.recap).length,
+        episodes,
+        fetchedAt: v.updatedAt ?? Date.now(),
+      },
+      backendUpdatedAt: v.updatedAt ?? null,
+    };
+  } catch (err) {
+    console.warn('[animeFiller] backend lookup failed', { seriesId, err });
+    return { data: null, backendUpdatedAt: null };
+  }
+}
+
+/** A grace window after a fresh cache write where we trust localStorage
+ *  without bothering the network. Avoids hammering Firebase when the user
+ *  navigates back and forth between detail pages within a short time. */
+const REVALIDATE_GRACE_MS = 60 * 1000;
+
+/**
+ * Get filler/recap data for a series. Reads localStorage first, then
+ * cheaply revalidates against the server's `updatedAt` so cron updates
+ * propagate within the same session — no version bump required.
+ */
+export async function getAnimeFillerData(
+  seriesId: number | string
+): Promise<AnimeFillerData | null> {
+  const key = String(seriesId);
+  const cached = readCache(key);
+
+  if (cached) {
+    if (Date.now() - cached.fetchedAt < REVALIDATE_GRACE_MS) {
+      debug('cache hit (grace)', { seriesId, hasData: !!cached.data });
+      return cached.data;
+    }
+    const serverUpdatedAt = await fetchBackendUpdatedAt(seriesId);
+    if (
+      serverUpdatedAt !== null &&
+      cached.backendUpdatedAt !== undefined &&
+      serverUpdatedAt === cached.backendUpdatedAt
+    ) {
+      // Server hasn't moved since our last write — extend the cache lifetime.
+      writeCache(key, { ...cached, fetchedAt: Date.now() });
+      debug('cache hit (revalidated)', { seriesId, serverUpdatedAt });
+      return cached.data;
+    }
+    debug('cache stale, refetching', {
+      seriesId,
+      cached: cached.backendUpdatedAt,
+      server: serverUpdatedAt,
+    });
+  }
+
+  const { data, backendUpdatedAt } = await fetchBackendFillerData(seriesId);
+  writeCache(key, {
+    data,
+    fetchedAt: Date.now(),
+    backendUpdatedAt: backendUpdatedAt ?? undefined,
+  });
+  return data;
+}
+
+/**
+ * Ask the backend to (re)fetch this series from AniList/Jikan, then re-read
+ * the result from Firebase. Used by the Detail-Page reload button.
+ */
+export async function refreshAnimeFillerViaBackend(
+  seriesId: number | string
+): Promise<AnimeFillerData | null> {
+  clearAnimeFillerCacheForSeries(seriesId);
+  if (!BACKEND_URL) {
+    console.warn('[animeFiller] no VITE_BACKEND_API_URL – cannot refresh');
+    return null;
+  }
+  try {
+    const res = await backendFetch('/refreshAnimeFiller', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: Number(seriesId) }),
+    });
+    if (!res.ok) {
+      console.warn('[animeFiller] backend refresh non-ok', { seriesId, status: res.status });
+      return null;
+    }
+    const json = (await res.json()) as { status?: string };
+    debug('backend refresh', { seriesId, status: json.status });
+  } catch (err) {
+    console.warn('[animeFiller] backend refresh threw', { seriesId, err });
+    return null;
+  }
+  // Backend may take a moment to commit the write – tiny delay before re-read.
+  await new Promise((r) => setTimeout(r, 300));
+  const { data, backendUpdatedAt } = await fetchBackendFillerData(seriesId);
+  writeCache(String(seriesId), {
+    data,
+    fetchedAt: Date.now(),
+    backendUpdatedAt: backendUpdatedAt ?? undefined,
+  });
+  return data;
+}
+
+// ── DevTools escape hatch ────────────────────────────────────────────────
+// Lets you debug straight from the browser console:
+//   animeFillerDebug.refresh(123)
+//   animeFillerDebug.clearFor(123)
+if (typeof window !== 'undefined') {
+  (window as unknown as Record<string, unknown>).animeFillerDebug = {
+    read: getAnimeFillerData,
+    refresh: refreshAnimeFillerViaBackend,
+    clearAll: clearAnimeFillerCache,
+    clearFor: clearAnimeFillerCacheForSeries,
+  };
+}

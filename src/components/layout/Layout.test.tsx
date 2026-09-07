@@ -9,7 +9,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const navRootState = vi.hoisted(() => ({ value: true }));
-vi.mock('../../hooks/useIsNavRoot', () => ({ useIsNavRoot: () => navRootState.value }));
+vi.mock('../../hooks/ui/useIsNavRoot', () => ({ useIsNavRoot: () => navRootState.value }));
 
 vi.mock('./BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-nav" />,

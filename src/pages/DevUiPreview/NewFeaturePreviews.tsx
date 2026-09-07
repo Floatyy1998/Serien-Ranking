@@ -6,9 +6,9 @@
 
 import { useTheme } from '../../contexts/ThemeContext';
 import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
-import { DropOffView } from '../SeriesDetail/DropOffSection';
-import type { CatchUpPlan, CatchUpVariant } from '../../lib/catchUpPlan';
-import type { DropOffInsight } from '../../lib/dropOff';
+import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
+import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
+import type { DropOffInsight } from '../../lib/watch/dropOff';
 import '../Countdown/CountdownPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

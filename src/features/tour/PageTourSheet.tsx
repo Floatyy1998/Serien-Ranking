@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import type { PageTour } from '../../lib/pageTour';
+import type { PageTour } from '../../lib/interaction/pageTour';
 import { getTourIcon } from './tourIcons';
 import { t } from '../../services/i18n';
 

@@ -20,7 +20,7 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material', () => ({ Refresh: () => null }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 
 import { ResetSection } from './ResetSection';
 

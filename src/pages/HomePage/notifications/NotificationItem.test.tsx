@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NotificationItem } from './NotificationItem';
 import { defaultDynamicTheme } from '../../../theme/dynamicTheme';
-import type { UnifiedNotification } from '../useUnifiedNotifications';
+import type { UnifiedNotification } from '../hooks/useUnifiedNotifications';
 
 // useUnifiedNotifications pulls in firebase + contexts at module load — stub it.
-vi.mock('../useUnifiedNotifications', () => ({
+vi.mock('../hooks/useUnifiedNotifications', () => ({
   formatNotificationTime: () => 'vor 1 Std',
 }));
 

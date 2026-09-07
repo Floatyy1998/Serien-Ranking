@@ -9,28 +9,32 @@ vi.mock('react-router-dom', () => ({
 }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => ({ seriesList: [] }) }));
-vi.mock('../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({ activeProviders: null, hasAnySubscription: false }),
 }));
-vi.mock('../../hooks/useEpisodeDragDrop', () => ({
+vi.mock('../../hooks/watch/useEpisodeDragDrop', () => ({
   useEpisodeDragDrop: () => ({
     containerRef: { current: null },
     draggedIndex: null,
     watchlistOrder: [],
   }),
 }));
-vi.mock('../../hooks/usePersistedState', async () => {
+vi.mock('../../hooks/data/usePersistedState', async () => {
   const React = await import('react');
   return { usePersistedState: (_k: string, init: unknown) => React.useState(init) };
 });
-vi.mock('../../hooks/useScrollRestore', () => ({ useScrollRestore: () => ({ saveNow: vi.fn() }) }));
-vi.mock('../../hooks/useWatchNextEpisodes', () => ({ useWatchNextEpisodes: () => state.episodes }));
+vi.mock('../../hooks/ui/useScrollRestore', () => ({
+  useScrollRestore: () => ({ saveNow: vi.fn() }),
+}));
+vi.mock('../../hooks/watch/useWatchNextEpisodes', () => ({
+  useWatchNextEpisodes: () => state.episodes,
+}));
 vi.mock('./useWatchNextSwipe', () => ({ useWatchNextSwipe: () => ({}) }));
-vi.mock('../../services/animeFillerService', () => ({
+vi.mock('../../services/catalog/animeFillerService', () => ({
   buildFillerLookup: () => new Map(),
   fillerEpisodesFromStatic: () => [],
 }));
-vi.mock('../../hooks/useAnimeFillerCatalog', () => ({
+vi.mock('../../hooks/manga/useAnimeFillerCatalog', () => ({
   useAnimeFillerCatalog: () => null,
 }));
 vi.mock('../../lib/validation/rewatch.utils', () => ({ hasActiveRewatch: () => false }));

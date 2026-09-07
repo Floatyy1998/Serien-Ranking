@@ -2,8 +2,8 @@ import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-mo
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { hapticCelebrate, hapticTap } from '../../lib/haptics';
-import { petService } from '../../services/petService';
+import { hapticCelebrate, hapticTap } from '../../lib/interaction/haptics';
+import { petService } from '../../services/pet/petService';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import { ACCESSORIES } from './data/accessories';

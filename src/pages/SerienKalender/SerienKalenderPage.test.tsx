@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 
 vi.mock('@mui/icons-material', () => ({
   CalendarMonth: () => null,
@@ -26,10 +26,10 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'm
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => ({ seriesList: [] }) }));
 vi.mock('../../services/firebase/analytics', () => ({ trackSeriesAdded: vi.fn() }));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({ logSeriesAdded: vi.fn() }));
-vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn() }));
-vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn(), hapticSuccess: vi.fn() }));
-vi.mock('../../lib/toast', () => ({ showToast: vi.fn() }));
-vi.mock('../../services/staticCatalog', () => ({
+vi.mock('../../services/api/backendApi', () => ({ backendFetch: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSelect: vi.fn(), hapticSuccess: vi.fn() }));
+vi.mock('../../lib/interaction/toast', () => ({ showToast: vi.fn() }));
+vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticTvPremieres: () => fetchRef.current(),
   subscribeCatalogChange: () => () => {},
 }));

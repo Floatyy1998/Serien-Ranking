@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
+import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 
 vi.mock(
   '@mui/icons-material',
@@ -52,7 +52,7 @@ const data = vi.hoisted(() => ({
   countdowns: [] as SeriesCountdown[],
   loading: false,
 }));
-vi.mock('../../hooks/useSeriesCountdowns', () => ({ useSeriesCountdowns: () => data }));
+vi.mock('../../hooks/watch/useSeriesCountdowns', () => ({ useSeriesCountdowns: () => data }));
 
 vi.mock('../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,

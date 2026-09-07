@@ -8,16 +8,16 @@
 
 import React, { useState } from 'react';
 import { Add, CheckCircle } from '@mui/icons-material';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import { parsePremiereDate, isSameDay, datePillText } from '../SerienKalender/tvPremiereFormat';
 import type { FilmReleaseEntry } from './filmReleaseData';
 import { t } from '../../services/i18n';

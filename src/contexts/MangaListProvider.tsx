@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { getMangaById } from '../services/anilistService';
-import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangaUpdatesService';
+import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
+import { getMangaById } from '../services/api/anilistService';
+import { getMangaDexChapterDates, getMangaDexInfo } from '../services/api/mangaUpdatesService';
 import { shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 import { dbRef, paths, userPath } from '../services/db/ref';

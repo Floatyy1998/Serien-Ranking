@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
 import { localizedVariants, tLocale } from '../../../../services/i18n';
-import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
+import { sendNotificationToUser } from '../../../../hooks/social/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
 import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
 import { onValue } from '../../../../services/db/subscribeValue';

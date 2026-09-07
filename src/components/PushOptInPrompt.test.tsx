@@ -19,7 +19,7 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material', () => ({ NotificationsActive: () => null }));
-vi.mock('../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../lib/motion', () => ({ tapScaleTight: {} }));
 
 vi.mock('../contexts/AuthContext', () => ({
@@ -45,7 +45,7 @@ const { availableMock, enabledMock, permissionMock, enablePushMock } = vi.hoiste
   enablePushMock: vi.fn(async () => true),
 }));
 
-vi.mock('../services/pushNotifications', () => ({
+vi.mock('../services/notifications/pushNotifications', () => ({
   isNativePushAvailable: availableMock,
   isNativePushEnabled: enabledMock,
   getNativePushPermission: permissionMock,

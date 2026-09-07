@@ -23,7 +23,9 @@ vi.mock('../../contexts/ThemeContext', () => ({
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
 
 const liveState = vi.hoisted(() => ({
   data: { anilistData: null, mangadexInfo: null, chapterInfo: null } as {
@@ -36,7 +38,7 @@ vi.mock('./detail/useMangaLiveData', () => ({ useMangaLiveData: () => liveState.
 
 vi.mock('./addMangaToList', () => ({ addMangaToList: vi.fn() }));
 
-vi.mock('../../services/readActivityService', () => ({
+vi.mock('../../services/discussion/readActivityService', () => ({
   logChapterRead: vi.fn(),
   logMangaRating: vi.fn(),
 }));

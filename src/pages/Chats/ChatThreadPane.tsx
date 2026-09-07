@@ -9,13 +9,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog } from '../../components/ui';
-import { NameBadges } from '../../components/ui/NameBadges';
-import { ZoomableImage } from '../../components/ui/ZoomableImage';
+import { NameBadges } from '../../components/ui/display/NameBadges';
+import { ZoomableImage } from '../../components/ui/overlay/ZoomableImage';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAndroidBack } from '../../hooks/useAndroidBack';
-import { hapticTap } from '../../lib/haptics';
-import { showToast } from '../../lib/toast';
+import { useAndroidBack } from '../../hooks/ui/useAndroidBack';
+import { hapticTap } from '../../lib/interaction/haptics';
+import { showToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
 import {
   chatPairId,
@@ -42,9 +42,9 @@ import {
   subscribeChatWallpaper,
   type ChatBubbleStyle,
 } from '../../services/chat/chatAppearance';
-import { queueDismiss } from '../../services/dismissQueue';
-import { clearDeliveredChatPushes } from '../../services/pushNotifications';
-import { MAX_IMAGE_BYTES } from '../../lib/imageCompress';
+import { queueDismiss } from '../../services/notifications/dismissQueue';
+import { clearDeliveredChatPushes } from '../../services/notifications/pushNotifications';
+import { MAX_IMAGE_BYTES } from '../../lib/image/imageCompress';
 import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';

@@ -9,7 +9,7 @@ const navSpy = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }));
 
 const device = vi.hoisted(() => ({ isDesktop: true }));
-vi.mock('../../hooks/useDeviceType', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isDesktop: device.isDesktop, isMobile: !device.isDesktop }),
 }));
 

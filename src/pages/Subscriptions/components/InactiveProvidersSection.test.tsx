@@ -9,7 +9,7 @@ vi.mock('@mui/icons-material', () => {
   return Object.fromEntries(['Add'].map((n) => [n, stub]));
 });
 
-vi.mock('../../../hooks/useProviderLogos', () => ({
+vi.mock('../../../hooks/provider/useProviderLogos', () => ({
   tmdbLogoUrl: (path?: string) => (path ? `https://image.tmdb.org/t/p/w45${path}` : undefined),
   useProviderLogos: () => ({}),
 }));

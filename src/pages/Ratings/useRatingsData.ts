@@ -9,7 +9,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { preloadImage } from '../../lib/preloadImage';
+import { preloadImage } from '../../lib/image/preloadImage';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
 import {
   getRating,

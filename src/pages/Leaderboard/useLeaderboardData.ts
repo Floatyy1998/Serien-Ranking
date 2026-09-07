@@ -8,7 +8,7 @@ import {
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
   seedLeaderboardStats,
-} from '../../services/leaderboardService';
+} from '../../services/social/leaderboardService';
 import type {
   GlobalLeaderboardEntry,
   LeaderboardCategory,

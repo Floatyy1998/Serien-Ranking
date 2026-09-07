@@ -2,7 +2,7 @@ import { Cancel, Check } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
-import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
+import { formatNotificationTime, type UnifiedNotification } from '../hooks/useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 import { tapScaleTight } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';

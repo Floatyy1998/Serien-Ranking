@@ -6,13 +6,13 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import { tapScaleTight } from '../../lib/motion';
-import { getProviderLogoUrl, KNOWN_PROVIDER_NAMES } from '../../lib/providerMerge';
+import { getProviderLogoUrl, KNOWN_PROVIDER_NAMES } from '../../lib/provider/providerMerge';
 import {
   getSeriesProviderOverride,
   setSeriesProviderOverride,
-} from '../../services/providerOverride';
+} from '../../services/settings/providerOverride';
 import { t } from '../../services/i18n';
 
 interface ProviderOverrideButtonProps {

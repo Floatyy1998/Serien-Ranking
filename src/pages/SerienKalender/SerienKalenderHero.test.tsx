@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 
 vi.mock('@mui/icons-material', () => ({ Add: () => null, CheckCircle: () => null }));
 
@@ -15,10 +15,12 @@ const { theme } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
-vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
+vi.mock('../../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
 vi.mock('../../utils/themedPlaceholder', () => ({ useThemedPlaceholder: () => 'placeholder.png' }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../HomePage/sections/MiniProviderBadges', () => ({
   MiniProviderBadges: () => <div data-testid="providers" />,
 }));

@@ -1,7 +1,7 @@
 import Check from '@mui/icons-material/Check';
 import IosShare from '@mui/icons-material/IosShare';
 import { useState } from 'react';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { shareLink } from '../../services/share/shareLink';

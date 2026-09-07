@@ -4,7 +4,7 @@ import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mu
 import { useTheme } from '../../contexts/ThemeContext';
 import { getContrastRatio } from '../../theme/colorUtils';
 import { PageHeader, PageLayout } from '../../components/ui';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';

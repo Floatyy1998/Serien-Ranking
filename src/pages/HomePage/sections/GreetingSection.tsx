@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HeaderActions } from '../../../components/ui';
-import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
 import { t } from '../../../services/i18n';
-import { tmdbFetch } from '../../../services/tmdbClient';
-import { LiveClock } from '../LiveClock';
+import { tmdbFetch } from '../../../services/api/tmdbClient';
+import { LiveClock } from '../cards/LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
 import { HomeSearchOverlay } from './HomeSearchOverlay';
 

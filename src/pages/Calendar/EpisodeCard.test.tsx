@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
@@ -12,7 +12,7 @@ vi.mock('@mui/icons-material', () => ({
   Star: () => <span data-testid="star-filled" />,
   StarBorder: () => <span data-testid="star-outline" />,
 }));
-vi.mock('../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
     activeProviders: new Set<string>(),
     getSeriesOverride: () => null,

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUrl';
-import { markNextEpisodeWatched } from '../../hooks/markNextEpisode';
+import { markNextEpisodeWatched } from '../../hooks/watch/markNextEpisode';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';

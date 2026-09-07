@@ -17,12 +17,12 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { requestPasswordResetMail } from '../../services/authMails';
+import { requestPasswordResetMail } from '../../services/account/authMails';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
-import { CoverWall } from '../../components/ui/CoverWall';
+import { CoverWall } from '../../components/ui/media/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackLogin } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';

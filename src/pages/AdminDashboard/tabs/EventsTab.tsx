@@ -2,7 +2,7 @@ import { FilterList, Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
-import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
+import { SafeResponsiveContainer } from '../../../components/ui/layout/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 

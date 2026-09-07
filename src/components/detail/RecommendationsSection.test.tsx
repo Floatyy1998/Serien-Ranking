@@ -27,13 +27,13 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../hooks/useDeviceType', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isMobile: true, isDesktop: false }),
 }));
-vi.mock('../../hooks/useTransitionNavigate', () => ({
+vi.mock('../../hooks/ui/useTransitionNavigate', () => ({
   useTransitionNavigate: () => navigateMock,
 }));
-vi.mock('../../hooks/useDetailRecommendations', () => ({
+vi.mock('../../hooks/discover/useDetailRecommendations', () => ({
   useDetailRecommendations: () => ({
     items: recsRef.current.items,
     loading: recsRef.current.loading,
@@ -42,7 +42,7 @@ vi.mock('../../hooks/useDetailRecommendations', () => ({
     addToList: addToListMock,
   }),
 }));
-vi.mock('../ui/HorizontalScrollContainer', () => ({
+vi.mock('../ui/layout/HorizontalScrollContainer', () => ({
   HorizontalScrollContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

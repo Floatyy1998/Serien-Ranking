@@ -1,4 +1,4 @@
-import type { SpoilerLevel } from '../../services/spoilerMode';
+import type { SpoilerLevel } from '../../services/settings/spoilerMode';
 
 export interface SpoilerMask {
   blurImage: boolean;

@@ -1,9 +1,9 @@
 import { EmojiEvents } from '@mui/icons-material';
-import { showAvatar } from '../../lib/avatarViewer';
+import { showAvatar } from '../../lib/image/avatarViewer';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { NameBadges } from '../../components/ui/NameBadges';
+import { NameBadges } from '../../components/ui/display/NameBadges';
 import type { MonthlyTrophy } from '../../types/Leaderboard';
 import { t } from '../../services/i18n';
 

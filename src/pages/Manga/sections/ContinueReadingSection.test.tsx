@@ -2,12 +2,12 @@
 import type { ReactNode } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ContinueReadingItem } from '../../../hooks/useContinueReading';
+import type { ContinueReadingItem } from '../../../hooks/manga/useContinueReading';
 import type { Manga } from '../../../types/Manga';
 import { ContinueReadingSection } from './ContinueReadingSection';
 
 const crState = vi.hoisted(() => ({ items: [] as ContinueReadingItem[] }));
-vi.mock('../../../hooks/useContinueReading', () => ({
+vi.mock('../../../hooks/manga/useContinueReading', () => ({
   useContinueReading: () => crState.items,
 }));
 
@@ -28,7 +28,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
 
 vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
-vi.mock('../../../services/readActivityService', () => ({ logChapterRead: vi.fn() }));
+vi.mock('../../../services/discussion/readActivityService', () => ({ logChapterRead: vi.fn() }));
 
 const fb = vi.hoisted(() => {
   const ref = { update: vi.fn().mockResolvedValue(undefined) };

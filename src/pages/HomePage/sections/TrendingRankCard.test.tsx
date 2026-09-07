@@ -16,8 +16,10 @@ vi.mock('../../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
-vi.mock('../../../hooks/useTransitionNavigate', () => ({
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
+vi.mock('../../../hooks/ui/useTransitionNavigate', () => ({
   useTransitionNavigate: () => navigateMock,
 }));
 vi.mock('../../../components/ui', () => ({

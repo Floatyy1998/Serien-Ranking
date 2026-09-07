@@ -6,7 +6,7 @@ import { BackButton, Dialog } from '../../components/ui';
 import { useRatingEditorData } from './useRatingEditorData';
 import { OverallRatingSection } from './OverallRatingSection';
 import { GenreRatingSection } from './GenreRatingSection';
-import { Snackbar } from '../../components/ui/Snackbar';
+import { Snackbar } from '../../components/ui/feedback/Snackbar';
 import './RatingEditorPage.css';
 import { tapScale } from '../../lib/motion';
 

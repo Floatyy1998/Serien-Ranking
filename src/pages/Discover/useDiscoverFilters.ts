@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverFiltersResult {

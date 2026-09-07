@@ -32,7 +32,9 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user 
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: vi.fn(async () => {}),
 }));
@@ -41,7 +43,7 @@ vi.mock('../../services/firebase/analytics', () => ({
   trackMovieDeleted: vi.fn(),
 }));
 const backendFetch = vi.hoisted(() => vi.fn());
-vi.mock('../../services/backendApi', () => ({ backendFetch }));
+vi.mock('../../services/api/backendApi', () => ({ backendFetch }));
 
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';

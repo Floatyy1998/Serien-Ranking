@@ -1,8 +1,8 @@
-import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
+import { tmdbLogoUrl } from '../../hooks/provider/useProviderLogos';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import type { Series } from '../../types/Series';
 import { t } from '../../services/i18n';
 import { dayLabel, isSameDay, relativeDayLabel } from './animeFormat';

@@ -1,6 +1,6 @@
 import type { Series } from '../../types/Series';
 import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
-import { watchRegion } from '../region';
+import { watchRegion } from '../settings/region';
 import {
   getProviderNotificationsEnabled,
   getSnoozedUntil,
@@ -41,8 +41,8 @@ const SHOWN_COOLDOWN = 3 * 24 * 60 * 60 * 1000;
 const DISMISSED_COOLDOWN = 30 * 24 * 60 * 60 * 1000;
 
 // normalizeProviderName wurde nach lib/providerName extrahiert (pure Helfer).
-export { normalizeProviderName } from '../../lib/providerName';
-import { normalizeProviderName } from '../../lib/providerName';
+export { normalizeProviderName } from '../../lib/provider/providerName';
+import { normalizeProviderName } from '../../lib/provider/providerName';
 
 const getKnownProviders = async (userId: string): Promise<KnownProviders> => {
   try {

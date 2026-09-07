@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContext';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
 

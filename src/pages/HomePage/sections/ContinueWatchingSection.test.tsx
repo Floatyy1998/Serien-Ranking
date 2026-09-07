@@ -18,29 +18,31 @@ vi.mock('../../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: false }) }));
-vi.mock('../../../hooks/useTransitionNavigate', () => ({
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: false }),
+}));
+vi.mock('../../../hooks/ui/useTransitionNavigate', () => ({
   useTransitionNavigate: () => h.navigate,
 }));
-vi.mock('../../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({ getSeriesOverride: () => null }),
 }));
 vi.mock('../../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ seriesList: h.seriesList }),
 }));
-vi.mock('../../../services/animeFillerService', () => ({
+vi.mock('../../../services/catalog/animeFillerService', () => ({
   buildFillerLookup: () => new Map(),
   fillerLookupKey: () => '',
   fillerEpisodesFromStatic: () => [],
 }));
-vi.mock('../../../hooks/useAnimeFillerCatalog', () => ({
+vi.mock('../../../hooks/manga/useAnimeFillerCatalog', () => ({
   useAnimeFillerCatalog: () => null,
 }));
 vi.mock('../../../lib/date/paceCalculation', () => ({
   calculateWatchingPace: () => ({ shouldShow: false }),
   formatPaceLine: () => '',
 }));
-vi.mock('../../../lib/providerMerge', () => ({ resolveProviderOverlay: () => undefined }));
+vi.mock('../../../lib/provider/providerMerge', () => ({ resolveProviderOverlay: () => undefined }));
 vi.mock('../../../utils/episodeDate', () => ({ hasEpisodeAired: () => true }));
 vi.mock('../../../utils/episodeChips', () => ({
   chipLabel: (t: string) => t,
@@ -52,8 +54,8 @@ vi.mock('../../../components/detail/ProviderLogoLink', () => ({
 vi.mock('../../../components/Discussion', () => ({
   EpisodeDiscussionButton: () => <button type="button">discuss</button>,
 }));
-vi.mock('../../../components/ui/FillerChip', () => ({ FillerChip: () => <span /> }));
-vi.mock('../../../components/ui/NowPlayingIndicator', () => ({
+vi.mock('../../../components/ui/display/FillerChip', () => ({ FillerChip: () => <span /> }));
+vi.mock('../../../components/ui/media/NowPlayingIndicator', () => ({
   NowPlayingIndicator: () => <span />,
 }));
 vi.mock('../../../components/ui', () => ({

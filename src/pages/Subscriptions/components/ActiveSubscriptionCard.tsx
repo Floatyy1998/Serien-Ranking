@@ -7,7 +7,7 @@ import {
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
-import type { UseSubscriptionsDataResult } from '../../../hooks/useSubscriptionsData';
+import type { UseSubscriptionsDataResult } from '../../../hooks/provider/useSubscriptionsData';
 import { t } from '../../../services/i18n';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';

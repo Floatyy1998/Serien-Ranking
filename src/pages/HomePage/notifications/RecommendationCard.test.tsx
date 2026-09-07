@@ -2,14 +2,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { RecommendationCard } from './RecommendationCard';
-import type { UnifiedNotification } from '../useUnifiedNotifications';
+import type { UnifiedNotification } from '../hooks/useUnifiedNotifications';
 
 vi.mock('../../../contexts/ThemeContext', async () => {
   const actual = await import('../../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };
 });
 
-vi.mock('../useUnifiedNotifications', () => ({
+vi.mock('../hooks/useUnifiedNotifications', () => ({
   formatNotificationTime: () => 'vor 2 Std',
 }));
 

@@ -7,7 +7,7 @@ import { buildUserSearchIndexEntry } from '../../../services/firebase/userSearch
 import type { UserSearchIndexEntry } from '../../../services/firebase/userSearchIndex';
 import { DataTable } from '../components/DataTable';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
-import { UserDeepDive } from './UserDeepDive';
+import { UserDeepDive } from './parts/UserDeepDive';
 
 interface UsersTabProps {
   data: ReturnType<typeof useAdminDashboardData>;

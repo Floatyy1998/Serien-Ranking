@@ -29,7 +29,9 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logSeriesAdded: vi.fn(async () => {}),
   logMovieAdded: vi.fn(async () => {}),
 }));
-vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn(async () => ({ ok: true })) }));
+vi.mock('../../services/api/backendApi', () => ({
+  backendFetch: vi.fn(async () => ({ ok: true })),
+}));
 
 // fetch helper
 type FetchResult = { ok: boolean; json: () => Promise<unknown> };

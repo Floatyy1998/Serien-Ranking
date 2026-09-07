@@ -21,7 +21,7 @@ vi.mock('framer-motion', async () => {
 });
 
 const providers = vi.hoisted(() => ({ list: [] as { name: string; logo: string }[] }));
-vi.mock('../../hooks/useItemProviders', () => ({
+vi.mock('../../hooks/provider/useItemProviders', () => ({
   useItemProviders: () => providers.list,
 }));
 

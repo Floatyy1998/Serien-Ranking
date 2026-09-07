@@ -1,0 +1,68 @@
+import React from 'react';
+import { useTheme } from '../../../contexts/ThemeContext';
+
+interface GradientTextProps {
+  children: React.ReactNode;
+  from?: string;
+  to?: string;
+  angle?: number;
+  as?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
+  style?: React.CSSProperties;
+  /** Animated shimmer sweep across the text */
+  shimmer?: boolean;
+  /** Slowly rotating gradient animation */
+  animatedGradient?: boolean;
+}
+
+export const GradientText: React.FC<GradientTextProps> = ({
+  children,
+  from,
+  to,
+  angle = 135,
+  as: Tag = 'span',
+  style,
+  shimmer = false,
+  animatedGradient = false,
+}) => {
+  // useTheme always called unconditionally; fallback via optional chaining
+  const themeContext = useTheme();
+  const currentTheme = themeContext?.currentTheme ?? null;
+
+  const fromColor = from || currentTheme?.primary || '#ef6f8a';
+  const toColor = to || currentTheme?.accent || '#f2a648';
+  const midColor = currentTheme?.accent || '#f2a648';
+
+  // Build CSS class list for animated variants
+  const classNames: string[] = ['gradient-text'];
+  if (animatedGradient) classNames.push('gradient-text-animated');
+  if (shimmer) classNames.push('gradient-shimmer');
+
+  // Enhanced gradients with smoother color transitions
+  const gradientBg =
+    shimmer || animatedGradient
+      ? `linear-gradient(${angle}deg, ${fromColor}, ${midColor}, ${toColor}, ${fromColor})`
+      : `linear-gradient(${angle}deg, ${fromColor} 0%, color-mix(in srgb, ${fromColor} 70%, ${toColor}) 50%, ${toColor} 100%)`;
+
+  return (
+    <Tag
+      className={classNames.join(' ')}
+      style={{
+        // backgroundImage statt der Kurzschreibweise `background`: Letztere
+        // setzt beim Aktualisieren alle Unter-Eigenschaften zurueck, also auch
+        // background-clip — React schreibt das unveraenderte clip aber nicht
+        // neu, und der Verlauf fuellt dann die Box statt der Schrift
+        // (sichtbar beim Theme-Wechsel, bis man neu laedt).
+        backgroundImage: gradientBg,
+        backgroundSize: shimmer ? '300% 100%' : animatedGradient ? '200% auto' : undefined,
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        filter:
+          'drop-shadow(0 0 12px color-mix(in srgb, var(--theme-primary, #ef6f8a) 25%, transparent))',
+        ...style,
+      }}
+    >
+      {children}
+    </Tag>
+  );
+};

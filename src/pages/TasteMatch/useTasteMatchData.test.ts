@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TasteMatchResult } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/social/tasteMatchService';
 
 /* firebase once (eigener User), fetchPublicUserFields (Freund),
  * calculateTasteMatch, useAuth, useParams gemockt. getScoreColor/-Message echt. */
@@ -31,7 +31,7 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.use
 vi.mock('../../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: () => Promise.resolve(state.friendFields),
 }));
-vi.mock('../../services/tasteMatchService', () => ({
+vi.mock('../../services/social/tasteMatchService', () => ({
   calculateTasteMatch: (a: string, b: string) => state.calc(a, b),
 }));
 

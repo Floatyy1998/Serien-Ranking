@@ -5,7 +5,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
-import { storageUrlOrNull } from '../../../lib/safeUrl';
+import { storageUrlOrNull } from '../../../lib/url/safeUrl';
 import { t } from '../../../services/i18n';
 import { formatDateTimeLabel, formatExactDateTime } from '../../../utils/timeLabels';
 

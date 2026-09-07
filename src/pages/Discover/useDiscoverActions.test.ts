@@ -23,7 +23,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
 }));
 
 const backendFetch = vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>();
-vi.mock('../../services/backendApi', () => ({
+vi.mock('../../services/api/backendApi', () => ({
   backendFetch: (...a: unknown[]) => backendFetch(...a),
 }));
 

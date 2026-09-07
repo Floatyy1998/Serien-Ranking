@@ -1,6 +1,6 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import { LOCALES, SOURCE_LOCALE, t, tLocale, type Locale, type LocalizedMap } from '../i18n';
-import { queuePush } from '../pushQueue';
+import { queuePush } from '../notifications/pushQueue';
 
 export type PetGiftType = 'snack' | 'toy';
 

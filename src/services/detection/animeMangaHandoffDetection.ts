@@ -6,7 +6,7 @@ import {
   isEpisodeWatched,
 } from '../../lib/episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { fetchStaticAnimeManga } from '../staticCatalog';
+import { fetchStaticAnimeManga } from '../catalog/staticCatalog';
 import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 /** Nur Staffeln melden, die in diesem Fenster fertig geschaut wurden. */

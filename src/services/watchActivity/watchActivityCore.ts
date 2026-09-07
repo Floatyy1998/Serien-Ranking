@@ -2,11 +2,11 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
-import { updateLeaderboardStats } from '../leaderboardService';
+import { updateLeaderboardStats } from '../social/leaderboardService';
 import { createEpisodeEventData, createMovieEventData, getEventsPath, saveEvent } from './shared';
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';
 import { updateWatchStreak } from './watchStreakTracking';
-import { triggerPetReaction } from '../../hooks/usePetReactions';
+import { triggerPetReaction } from '../../hooks/pet/usePetReactions';
 import { bumpSeriesVersion, dbGet, dbRef, paths } from '../db/ref';
 
 /** Einzel-Marks setzen die Serie auf die Watchlist („Weiterschauen"); Bulk-Abhaken bewusst nicht. */

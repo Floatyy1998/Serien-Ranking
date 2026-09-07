@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
 import type { Series } from '../types/Series';
 import type {
   CatalogSeries,
@@ -8,7 +8,7 @@ import type {
   UserSeriesRef,
   SeriesWatchData,
 } from '../types/CatalogTypes';
-import { mergeToSeriesView } from '../lib/seriesAdapter';
+import { mergeToSeriesView } from '../lib/series/seriesAdapter';
 import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeriesFresh,
@@ -16,7 +16,7 @@ import {
   fetchStaticCatalogSeasonsBulk,
   fetchStaticCatalogSeasonsBulkFresh,
   subscribeCatalogChange,
-} from '../services/staticCatalog';
+} from '../services/catalog/staticCatalog';
 
 import { dbRef, paths } from '../services/db/ref';
 import { bumpSeriesVersion } from '../services/firebase/seriesVersionBump';

@@ -7,8 +7,8 @@ import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { discoverManga, type DiscoverCategory } from '../../services/anilistService';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { discoverManga, type DiscoverCategory } from '../../services/api/anilistService';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';

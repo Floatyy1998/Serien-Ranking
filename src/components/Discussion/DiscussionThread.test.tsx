@@ -80,7 +80,7 @@ vi.mock('../ui', () => ({
   LoadingSpinner: ({ text }: { text?: string }) => <div>{text}</div>,
 }));
 
-vi.mock('../../hooks/useDiscussions', () => ({
+vi.mock('../../hooks/social/useDiscussions', () => ({
   useDiscussions: () => ({
     discussions: discussionsRef.current.discussions,
     loading: discussionsRef.current.loading,

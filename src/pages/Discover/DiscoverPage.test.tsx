@@ -96,7 +96,7 @@ vi.mock('./DiscoverContent', () => ({
 }));
 
 const subs = vi.hoisted(() => ({ activeProviders: new Set<string>() }));
-vi.mock('../../hooks/useActiveSubscriptions', () => ({
+vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
     activeProviders: subs.activeProviders,
     hasAnySubscription: subs.activeProviders.size > 0,

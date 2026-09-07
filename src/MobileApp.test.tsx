@@ -19,7 +19,7 @@ vi.mock('./components/layout', () => ({
   Layout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ScrollToTop: () => <div data-testid="scroll-top" />,
 }));
-vi.mock('./components/ui/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
+vi.mock('./components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
 vi.mock('./contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('./contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({
@@ -32,11 +32,11 @@ vi.mock('./contexts/OptimizedFriendsContext', () => ({
 vi.mock('./contexts/NotificationContext', () => ({
   useNotifications: () => ({ unreadCount: 0, notifications: [] }),
 }));
-vi.mock('./hooks/useAdminHealthAlert', () => ({ useAdminHealthAlert: () => {} }));
-vi.mock('./hooks/usePetGiftReceiver', () => ({ usePetGiftReceiver: () => {} }));
-vi.mock('./hooks/useNetworkStatus', () => ({ useNetworkStatus: () => {} }));
+vi.mock('./hooks/admin/useAdminHealthAlert', () => ({ useAdminHealthAlert: () => {} }));
+vi.mock('./hooks/pet/usePetGiftReceiver', () => ({ usePetGiftReceiver: () => {} }));
+vi.mock('./hooks/platform/useNetworkStatus', () => ({ useNetworkStatus: () => {} }));
 vi.mock('./pages/BugReport/useBugReportData', () => ({ cleanupOldTickets: vi.fn() }));
-vi.mock('./services/pushNotifications', () => ({ initNativePush: vi.fn() }));
+vi.mock('./services/notifications/pushNotifications', () => ({ initNativePush: vi.fn() }));
 vi.mock('./components/PushOptInPrompt', () => ({ PushOptInPrompt: () => null }));
 vi.mock('./components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost: () => null }));
 vi.mock('./features/tour', () => ({ PageTourHost: () => null }));

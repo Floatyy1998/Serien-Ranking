@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 import {
   buildMetaLine,
   dayLabel,

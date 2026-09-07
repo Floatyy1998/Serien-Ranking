@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchTmdbSeriesFallback } from '../SeriesDetail/fetchTmdbSeriesFallback';
+import { fetchTmdbSeriesFallback } from '../SeriesDetail/hooks/fetchTmdbSeriesFallback';
 import { dbUpdate, paths, serverTimestamp, updateWithSeriesVersion } from '../../services/db/ref';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
-import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
+import { useEpisodeDiscussionCounts } from '../../hooks/social/discussionCountHooks';
+import {
+  shouldTriggerQuickRate,
+  useQuickSeasonRating,
+} from '../../hooks/rating/useQuickSeasonRating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
-import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
+import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { filterBulkMarkable } from '../../lib/episode/releaseState';
@@ -17,12 +20,12 @@ import {
   trackEpisodeUnwatched,
   trackSeriesAdded,
 } from '../../services/firebase/analytics';
-import { backendFetch } from '../../services/backendApi';
+import { backendFetch } from '../../services/api/backendApi';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
-import { showActionToast, showToast, showUndoToast } from '../../lib/toast';
-import { hapticSuccess } from '../../lib/haptics';
+import { showActionToast, showToast, showUndoToast } from '../../lib/interaction/toast';
+import { hapticSuccess } from '../../lib/interaction/haptics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 

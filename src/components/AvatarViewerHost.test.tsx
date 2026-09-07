@@ -18,8 +18,8 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material/Close', () => ({ default: () => null }));
-vi.mock('../hooks/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
-vi.mock('../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
+vi.mock('../hooks/ui/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
+vi.mock('../hooks/ui/useReducedMotion', () => ({ useReducedMotion: () => true }));
 
 vi.mock('../contexts/ThemeContext', () => {
   const make = (): unknown =>
@@ -33,7 +33,7 @@ vi.mock('../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-import { showAvatar } from '../lib/avatarViewer';
+import { showAvatar } from '../lib/image/avatarViewer';
 import { AvatarViewerHost } from './AvatarViewerHost';
 
 const open = (url: string | null, name = 'Alice') =>

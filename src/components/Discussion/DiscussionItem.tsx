@@ -9,13 +9,13 @@ import { DiscussionActions } from './DiscussionActions';
 import { DiscussionEditForm } from './DiscussionEditForm';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
-import { SpoilerReveal } from '../ui/SpoilerReveal';
-import { UserAvatar } from '../ui/UserAvatar';
-import { NameBadges } from '../ui/NameBadges';
+import { SpoilerReveal } from '../ui/display/SpoilerReveal';
+import { UserAvatar } from '../ui/media/UserAvatar';
+import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
-import { useCommentTranslation } from '../../hooks/useCommentTranslation';
+import { useCommentTranslation } from '../../hooks/social/useCommentTranslation';
 import { TranslateButton } from './TranslateButton';
 
 const DiscussionItemInner: React.FC<{

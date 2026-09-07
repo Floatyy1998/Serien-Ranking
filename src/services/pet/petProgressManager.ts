@@ -9,7 +9,7 @@ import {
 } from './petAccessoryManager';
 import type { AccessoryDrop } from './petAccessoryManager';
 import { getActiveXpBoost, consumeXpBoostEpisode } from './dailySpinService';
-import { triggerPetReaction } from '../../hooks/usePetReactions';
+import { triggerPetReaction } from '../../hooks/pet/usePetReactions';
 
 // Update wenn Episode geschaut wurde
 export async function watchedEpisode(userId: string, petId: string): Promise<Pet | null> {

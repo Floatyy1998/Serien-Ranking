@@ -12,7 +12,7 @@
  * wiederverwendet statt kopiert.
  */
 
-import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 import { dateLocale, pickLocalized, t } from '../../services/i18n';
 
 // Reine Date-Helfer aus dem Anime-Kalender wiederverwenden (identische UI).

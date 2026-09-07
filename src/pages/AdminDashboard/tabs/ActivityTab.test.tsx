@@ -2,7 +2,7 @@
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateDynamicTheme, defaultThemeConfig } from '../../../theme/dynamicTheme';
-import type { RawEvent } from './ActivityEventConfig';
+import type { RawEvent } from './parts/ActivityEventConfig';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import { ActivityTab } from './ActivityTab';
 

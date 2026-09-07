@@ -4,17 +4,17 @@ import { PET_COLORS } from '../../types/pet.types';
 import { ACCESSORIES } from './data/accessories';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { adjustColor } from './colorUtils';
-import { drawAccessory } from './drawAccessory';
-import { drawCat } from './drawCat';
-import { drawDog } from './drawDog';
-import { drawDragon, drawDragonWingsOverlay } from './drawDragon';
-import { drawBird } from './drawBird';
-import { drawFox } from './drawFox';
-import { drawRabbit } from './drawRabbit';
-import { drawPanda } from './drawPanda';
-import { drawOwl } from './drawOwl';
-import { drawPenguin } from './drawPenguin';
-import { drawAxolotl } from './drawAxolotl';
+import { drawAccessory } from './sprites/drawAccessory';
+import { drawCat } from './sprites/drawCat';
+import { drawDog } from './sprites/drawDog';
+import { drawDragon, drawDragonWingsOverlay } from './sprites/drawDragon';
+import { drawBird } from './sprites/drawBird';
+import { drawFox } from './sprites/drawFox';
+import { drawRabbit } from './sprites/drawRabbit';
+import { drawPanda } from './sprites/drawPanda';
+import { drawOwl } from './sprites/drawOwl';
+import { drawPenguin } from './sprites/drawPenguin';
+import { drawAxolotl } from './sprites/drawAxolotl';
 
 interface EvolvingPixelPetProps {
   pet: Pet;

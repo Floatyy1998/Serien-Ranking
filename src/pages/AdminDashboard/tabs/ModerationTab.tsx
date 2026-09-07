@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { dbRef, serverIncrement } from '../../../services/db/ref';
-import { backendFetch } from '../../../services/backendApi';
-import { deleteDiscussionFeedEntries } from '../../../services/discussionFeedService';
-import { sendNotificationToUser } from '../../../hooks/useDiscussionHelpers';
+import { backendFetch } from '../../../services/api/backendApi';
+import { deleteDiscussionFeedEntries } from '../../../services/discussion/discussionFeedService';
+import { sendNotificationToUser } from '../../../hooks/social/useDiscussionHelpers';
 import {
   LOCALES,
   LOCALE_TAG,

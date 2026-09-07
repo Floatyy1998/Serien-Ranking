@@ -1,0 +1,80 @@
+import { useMemo } from 'react';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import type { Series } from '../../types/Series';
+import { getBackdropSize, upgradeBackdropUrl } from '../../utils/imageUrl';
+import { useDayKey } from '../platform/useDayKey';
+import { useWebWorker } from './useWebWorker';
+
+/** Episode die heute ausgestrahlt wird oder ausgestrahlt wurde und noch nicht gesehen wurde */
+export interface TodayEpisode {
+  seriesId: string;
+  seriesTitle: string;
+  poster: string;
+  /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork. */
+  backdrop?: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  seasonIndex: number;
+  episodeIndex: number;
+  episodeId: string;
+  /** Absolute Folgennummer — wird in die Watch-Daten mitgeschrieben. */
+  absoluteNumber?: number;
+  episodeName: string;
+  watched: boolean;
+  runtime: number;
+  seriesGenre?: string[];
+  seriesProviders?: string[];
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
+}
+
+interface EpisodesWorkerInput {
+  seriesList: Series[];
+}
+
+const INITIAL_EPISODES: TodayEpisode[] = [];
+
+const createEpisodesWorker = () =>
+  new Worker(new URL('../workers/stats.worker.ts', import.meta.url), { type: 'module' });
+
+export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
+  const { seriesList } = useSeriesList();
+  const dayKey = useDayKey();
+
+  // depsKey muss sich ändern wenn Episoden als watched markiert werden
+  const watchedCount = useMemo(() => {
+    let count = 0;
+    for (const s of seriesList) {
+      if (!s.seasons) continue;
+      for (const season of s.seasons) {
+        if (!season.episodes) continue;
+        for (const ep of season.episodes) {
+          if (ep.watched) count++;
+        }
+      }
+    }
+    return count;
+  }, [seriesList]);
+
+  // Der Tagesschlüssel muss mit rein, sonst bleibt „Heute neu" über Mitternacht
+  // auf den Folgen von gestern stehen.
+  const depsKey = `${seriesList.length}-${watchedCount}-${dayKey}`;
+
+  const workerInput = useMemo<EpisodesWorkerInput>(() => ({ seriesList }), [seriesList]);
+
+  const { data: episodes } = useWebWorker<EpisodesWorkerInput, TodayEpisode[]>(INITIAL_EPISODES, {
+    workerFactory: createEpisodesWorker,
+    messageType: 'PROCESS_EPISODES',
+    resultType: 'EPISODES_RESULT',
+    data: workerInput,
+    depsKey,
+    enabled: seriesList.length > 0,
+  });
+
+  // Worker liefert w1280; im Worker gibt es kein window für die Screen-Erkennung
+  return useMemo(() => {
+    if (getBackdropSize() !== 'original') return episodes;
+    return episodes.map((e) => ({ ...e, backdrop: upgradeBackdropUrl(e.backdrop) }));
+  }, [episodes]);
+};

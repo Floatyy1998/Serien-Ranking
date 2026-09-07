@@ -5,11 +5,11 @@
  * passenden Typs). Ergebnisse werden pro Session gecacht.
  */
 
-import { tmdbFetch } from '../../services/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../services/region';
+import { tmdbFetch } from '../../services/api/tmdbClient';
+import { pickProviderRegion, watchRegion } from '../../services/settings/region';
 import { isSupportedProvider } from '../../config/menuItems';
-import { getProviderLogoUrl } from '../../lib/providerMerge';
-import { normalizeProviderName } from '../../lib/providerName';
+import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
+import { normalizeProviderName } from '../../lib/provider/providerName';
 import { mapGenreIds } from '../../utils/genreMap';
 
 export type ReleaseMode = 'cinema' | 'digital';

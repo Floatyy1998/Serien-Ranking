@@ -64,17 +64,17 @@ vi.mock('../../../contexts/SeriesListContext', () => ({
 vi.mock('../../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: state.movies }),
 }));
-vi.mock('../../../hooks/useCommunityRatings', () => ({
+vi.mock('../../../hooks/rating/useCommunityRatings', () => ({
   useCommunityRatingsMap: () => ({}),
   pickDisplayRating: () => null,
 }));
-vi.mock('../../../hooks/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
+vi.mock('../../../hooks/ui/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
 vi.mock('../../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#fff' }));
 vi.mock('../../../lib/motion', () => ({ tapScale: {} }));
 const api = vi.hoisted(() => ({
   backendFetch: vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>(),
 }));
-vi.mock('../../../services/backendApi', () => ({
+vi.mock('../../../services/api/backendApi', () => ({
   backendFetch: (...a: unknown[]) => api.backendFetch(...a),
 }));
 vi.mock('../../../services/firebase/analytics', () => ({
@@ -91,11 +91,11 @@ const quick = vi.hoisted(() => ({
   markMovieWatched: vi.fn<(...a: unknown[]) => Promise<void>>(async () => {}),
   saveQuickRating: vi.fn<(...a: unknown[]) => Promise<void>>(async () => {}),
 }));
-vi.mock('../../../services/quickRating', () => ({
+vi.mock('../../../services/rating/quickRating', () => ({
   markMovieWatched: (...a: unknown[]) => quick.markMovieWatched(...a),
   saveQuickRating: (...a: unknown[]) => quick.saveQuickRating(...a),
 }));
-vi.mock('../../../components/ui/QuickRatingSheet', () => ({
+vi.mock('../../../components/ui/overlay/QuickRatingSheet', () => ({
   QuickRatingSheet: (p: {
     isOpen: boolean;
     seriesTitle: string;

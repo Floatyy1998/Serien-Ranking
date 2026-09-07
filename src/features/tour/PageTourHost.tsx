@@ -8,8 +8,8 @@ import {
   markTourSeen,
   type PageTour,
   type SeenTours,
-} from '../../lib/pageTour';
-import { loadSeenTours, readSeenTours, writeSeenTours } from '../../services/pageTour';
+} from '../../lib/interaction/pageTour';
+import { loadSeenTours, readSeenTours, writeSeenTours } from '../../services/settings/pageTour';
 import { PAGE_TOURS } from './data/pageTours';
 import { PageTourSheet } from './PageTourSheet';
 

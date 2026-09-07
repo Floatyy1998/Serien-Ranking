@@ -14,7 +14,7 @@ vi.mock('../../../contexts/SeriesListContext', () => ({
 const backend = vi.hoisted(() => ({
   backendFetch: vi.fn<(path: string, init?: unknown) => Promise<{ ok: boolean }>>(),
 }));
-vi.mock('../../../services/backendApi', () => ({ backendFetch: backend.backendFetch }));
+vi.mock('../../../services/api/backendApi', () => ({ backendFetch: backend.backendFetch }));
 
 const db = vi.hoisted(() => ({ dbGet: vi.fn(async () => null as unknown) }));
 vi.mock('../../../services/db/ref', () => ({

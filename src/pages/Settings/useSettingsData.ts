@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { trackLogout } from '../../services/firebase/analytics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
-import { useAvatarUpload } from '../../hooks/useAvatarUpload';
-import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
+import { useAvatarUpload } from '../../hooks/profile/useAvatarUpload';
+import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/interaction/haptics';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { shareLink } from '../../services/share/shareLink';
-import { showToast } from '../../lib/toast';
+import { showToast } from '../../lib/interaction/toast';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -58,7 +58,7 @@ export const useSettingsData = () => {
     loadUserData();
   }, [user]);
 
-  // Zentrales Toast-System (lib/toast): zentriert, gestapelt, aria-live.
+  // Zentrales Toast-System (lib/interaction/toast): zentriert, gestapelt, aria-live.
   const showSnackbar = useCallback((message: string) => {
     showToast(message, 3000);
   }, []);

@@ -7,7 +7,7 @@
  * die Hilfe noch einmal.
  */
 
-import type { PageTour } from '../../../lib/pageTour';
+import type { PageTour } from '../../../lib/interaction/pageTour';
 
 export const PAGE_TOURS: readonly PageTour[] = [
   {

@@ -6,7 +6,7 @@ vi.mock('../db/ref', () => ({
   dbUpdate: vi.fn(),
   userPath: (uid: string, ...segments: string[]) => ['users', uid, ...segments].join('/'),
 }));
-vi.mock('../pushQueue', () => ({ queuePush: vi.fn() }));
+vi.mock('../notifications/pushQueue', () => ({ queuePush: vi.fn() }));
 
 import { chatPairId, otherUidFromPairId } from './chatService';
 

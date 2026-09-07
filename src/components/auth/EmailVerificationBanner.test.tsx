@@ -46,7 +46,7 @@ vi.mock('firebase/compat/auth', () => ({}));
 const requestVerificationMail = vi.hoisted(() =>
   vi.fn<(user: unknown) => Promise<void>>(async () => {})
 );
-vi.mock('../../services/authMails', () => ({ requestVerificationMail }));
+vi.mock('../../services/account/authMails', () => ({ requestVerificationMail }));
 
 import { EmailVerificationBanner } from './EmailVerificationBanner';
 

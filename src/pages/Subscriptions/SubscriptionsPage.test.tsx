@@ -3,7 +3,7 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SubscriptionsPage } from './SubscriptionsPage';
 import type { ProviderInsight } from '../../types/Subscription';
-import type { UseSubscriptionsDataResult } from '../../hooks/useSubscriptionsData';
+import type { UseSubscriptionsDataResult } from '../../hooks/provider/useSubscriptionsData';
 
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
@@ -105,7 +105,7 @@ const firebaseMock = vi.hoisted(() => ({
 vi.mock('firebase/compat/app', () => firebaseMock);
 vi.mock('firebase/compat/database', () => ({}));
 
-vi.mock('../../hooks/useProviderLogos', () => ({
+vi.mock('../../hooks/provider/useProviderLogos', () => ({
   useProviderLogos: () => ({}),
   tmdbLogoUrl: () => undefined,
 }));
@@ -128,7 +128,7 @@ const netflix: ProviderInsight = {
   costPerHour: null,
 };
 
-vi.mock('../../hooks/useSubscriptionsData', () => ({
+vi.mock('../../hooks/provider/useSubscriptionsData', () => ({
   useSubscriptionsData: (): UseSubscriptionsDataResult =>
     ({
       loading: false,

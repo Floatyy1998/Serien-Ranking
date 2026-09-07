@@ -15,7 +15,7 @@
 import { Check } from '@mui/icons-material';
 import React, { useMemo, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
-import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
+import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/watch/markNextEpisode';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { PLACEHOLDER_SVG, ProviderBadgeArea } from './RatingItemCard';

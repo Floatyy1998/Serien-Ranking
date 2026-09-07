@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
 import { Badge, Section } from './ticketHelpers';
-import { storageUrlOrNull } from '../../../../lib/safeUrl';
+import { storageUrlOrNull } from '../../../../lib/url/safeUrl';
 import { copyTextToClipboard } from '../../../../utils/clipboard';
 import {
   formatAgoLabel,

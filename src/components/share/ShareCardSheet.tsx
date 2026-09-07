@@ -10,14 +10,14 @@
  */
 
 import { IosShare } from '@mui/icons-material';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { LoadingSpinner } from '../ui/feedback/LoadingSpinner';
 import { motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { hapticError, hapticTap } from '../../lib/haptics';
+import { hapticError, hapticTap } from '../../lib/interaction/haptics';
 import { tapScale } from '../../lib/motion';
 import { exportNodeAsImage, shareOrDownload } from '../../services/share/shareCard';
-import { showToast } from '../../lib/toast';
+import { showToast } from '../../lib/interaction/toast';
 import { BottomSheet } from '../ui';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from './ShareCardFrame';
 import { t } from '../../services/i18n';

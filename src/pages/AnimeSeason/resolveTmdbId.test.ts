@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { readResolveCacheSync, readResolvedTmdbInfoSync, resolveTmdbInfo } from './resolveTmdbId';
 
 const CACHE_KEY = 'animeSeasonTmdb:v11';

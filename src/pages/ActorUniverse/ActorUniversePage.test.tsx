@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Actor } from '../../hooks/useActorUniverse';
+import type { Actor } from '../../hooks/discover/useActorUniverse';
 import { ActorUniversePage } from './ActorUniversePage';
 
 vi.mock('@mui/icons-material', () => {

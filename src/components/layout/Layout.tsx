@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useIsNavRoot } from '../../hooks/useIsNavRoot';
+import { useIsNavRoot } from '../../hooks/ui/useIsNavRoot';
 import { BugFab } from '../BugFab';
 import { BottomNavigation } from './BottomNavigation';
 import './Layout.css';

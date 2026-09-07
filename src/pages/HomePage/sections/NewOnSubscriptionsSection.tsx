@@ -4,10 +4,10 @@ import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui
 import { useAuth } from '../../../contexts/AuthContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
-import { useDeviceType } from '../../../hooks/useDeviceType';
-import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
-import { getProviderLogoUrl } from '../../../lib/providerMerge';
+import { useActiveSubscriptions } from '../../../hooks/provider/useActiveSubscriptions';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
+import { getProviderLogoUrl } from '../../../lib/provider/providerMerge';
 import {
   detectMovieAvailability,
   type AvailableMovie,

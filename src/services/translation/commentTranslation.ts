@@ -42,7 +42,7 @@ async function doTranslate({
 }: TranslateOptions): Promise<TranslatedComment | null> {
   const texts = title ? [title, content] : [content];
   try {
-    const { backendFetch } = await import('../backendApi');
+    const { backendFetch } = await import('../api/backendApi');
     const response = await backendFetch('/ai/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

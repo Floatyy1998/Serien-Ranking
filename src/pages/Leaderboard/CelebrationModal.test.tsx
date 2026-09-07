@@ -20,7 +20,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('@mui/icons-material', () => ({ Close: () => null, Timer: () => null }));
-vi.mock('../../components/ui/Trophy3D', () => ({ Trophy3D: () => null }));
+vi.mock('../../components/ui/feedback/Trophy3D', () => ({ Trophy3D: () => null }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {

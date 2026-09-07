@@ -31,7 +31,7 @@ vi.mock('../../contexts/MovieListContext', () => ({
 }));
 
 const preloadImage = vi.fn();
-vi.mock('../../lib/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
+vi.mock('../../lib/image/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
 
 // fixtures
 type Episode = Series['seasons'][number]['episodes'][number];

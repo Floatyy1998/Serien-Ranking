@@ -13,12 +13,12 @@ vi.mock('react-router-dom', () => ({
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: {} }) }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({ useOptimizedFriends: () => ({}) }));
 vi.mock('../../contexts/NotificationContext', () => ({ useNotifications: () => ({}) }));
-vi.mock('../../hooks/useKeyboardNavigation', () => ({
+vi.mock('../../hooks/ui/useKeyboardNavigation', () => ({
   useKeyboardNavigation: () => ({ onKeyDown: vi.fn() }),
 }));
 // Der echte Hook liest window.location (jsdom immer '/') — hier an den
 // gemockten Router koppeln.
-vi.mock('../../hooks/useIsNavRoot', () => ({
+vi.mock('../../hooks/ui/useIsNavRoot', () => ({
   useIsNavRoot: () =>
     ['/', '/watchlist', '/calendar', '/ratings', '/manga', '/profile'].includes(
       routerState.pathname
@@ -26,7 +26,7 @@ vi.mock('../../hooks/useIsNavRoot', () => ({
 }));
 
 const todayEpisodes = vi.hoisted(() => ({ value: [] as Array<{ watched: boolean }> }));
-vi.mock('../../hooks/useTodayEpisodes', () => ({
+vi.mock('../../hooks/watch/useTodayEpisodes', () => ({
   useTodayEpisodes: () => todayEpisodes.value,
 }));
 

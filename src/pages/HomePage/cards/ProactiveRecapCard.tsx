@@ -1,0 +1,410 @@
+import { AutoAwesome, Close, ExpandMore, ExpandLess, ChevronRight } from '@mui/icons-material';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SpeakButton } from '../../../components/ui/input/SpeakButton';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useTextToSpeech } from '../../../hooks/platform/useTextToSpeech';
+import type { ProactiveRecap } from '../../../hooks/watch/useProactiveRecaps';
+import { t } from '../../../services/i18n';
+
+interface ProactiveRecapCardProps {
+  recaps: ProactiveRecap[];
+  onDismiss: (cacheKey: string) => void;
+  onFetchRecap: (cacheKey: string) => Promise<void>;
+}
+
+function parseBulletPoints(text: string): string[] {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => line.replace(/^[•\-*]\s*/, '').replace(/\*\*/g, ''));
+}
+
+// Memo: parent HomePage re-renders on many unrelated state changes; this
+// card only cares about recaps + theme via context. memo cuts the noise.
+export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
+  ({ recaps, onDismiss, onFetchRecap }) => {
+    const navigate = useNavigate();
+    const { currentTheme } = useTheme();
+    const { isMobile } = useDeviceType();
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [expanded, setExpanded] = useState(false);
+    const accent = currentTheme.accent || currentTheme.primary;
+    const tts = useTextToSpeech();
+
+    if (recaps.length === 0) return null;
+    const current = recaps[Math.min(currentIndex, recaps.length - 1)];
+    if (!current) return null;
+
+    const when = current.startsToday ? t('heute') : t('morgen');
+    const triggerLabel =
+      current.triggerType === 'new-season'
+        ? t('Staffel {n} startet {when}!', { n: current.seasonNumber, when })
+        : t('Staffel {n} wird {when} fortgesetzt!', { n: current.seasonNumber, when });
+
+    const hasContent = current.recap && !current.loading;
+    const points = hasContent ? parseBulletPoints(current.recap ?? '') : [];
+
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current.cacheKey}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            position: 'fixed',
+            top: '60px',
+            left: 0,
+            right: 0,
+            margin: '0 auto',
+            zIndex: 1000,
+            maxWidth: '480px',
+            width: 'calc(100% - 32px)',
+            borderRadius: '16px',
+            border: `1px solid ${accent}30`,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
+            background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee), ${currentTheme.background.default}`,
+            // Karte selbst scrollt NICHT mehr — sonst wandern Kopf +
+            // Schließen-Button beim langen Recap aus dem Bild. Der Recap-Text
+            // bekommt seinen eigenen scrollbaren Bereich (siehe unten).
+            overflow: 'hidden',
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => onDismiss(current.cacheKey)}
+            className="close-button"
+            style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              color: currentTheme.text.muted,
+              zIndex: 1,
+            }}
+          >
+            <Close style={{ fontSize: '18px' }} />
+          </button>
+
+          {/* Header */}
+          <div style={{ padding: isMobile ? '12px 12px 0' : '16px 16px 0' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: isMobile ? '8px' : '12px',
+                paddingRight: '28px',
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.15, 1], opacity: [1, 0.8, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                style={{ display: 'flex', flexShrink: 0 }}
+              >
+                <AutoAwesome style={{ fontSize: isMobile ? '22px' : '28px', color: accent }} />
+              </motion.div>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: isMobile ? '0.95rem' : '1.1rem',
+                  fontWeight: 800,
+                  color: accent,
+                  lineHeight: 1.2,
+                }}
+              >
+                {triggerLabel}
+              </h3>
+            </div>
+
+            {/* Series info */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: isMobile ? '10px' : '12px',
+                padding: '10px',
+                background: 'rgba(0,0,0,0.15)',
+                borderRadius: '14px',
+                marginBottom: '12px',
+              }}
+            >
+              {current.posterUrl && (
+                <img
+                  src={current.posterUrl}
+                  alt={current.seriesTitle}
+                  onClick={() => navigate(`/series/${current.seriesId}`)}
+                  style={{
+                    width: isMobile ? '44px' : '50px',
+                    height: isMobile ? '66px' : '75px',
+                    objectFit: 'cover',
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                  }}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div style={{ flex: 1, minWidth: isMobile ? '120px' : 0 }}>
+                <h4
+                  style={{
+                    margin: '0 0 6px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    color: currentTheme.text.secondary,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {current.seriesTitle}
+                </h4>
+                <p
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: 0,
+                    opacity: 0.9,
+                    fontSize: '0.85rem',
+                    color: currentTheme.text.muted,
+                  }}
+                >
+                  {current.loading
+                    ? t('Recap wird generiert...')
+                    : current.triggerType === 'new-season'
+                      ? t('Recap der vorherigen Staffel')
+                      : t('Recap vor der Fortsetzung')}
+                </p>
+              </div>
+              {/* Buttons: Desktop rechts als Spalte; Mobile als volle
+                  Zeile UNTER Poster+Titel (flex-basis 100% dank flexWrap). */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: '8px',
+                  ...(isMobile
+                    ? { flexBasis: '100%', width: '100%' }
+                    : { flexDirection: 'column', minWidth: '120px' }),
+                }}
+              >
+                <button
+                  onClick={() => navigate(`/series/${current.seriesId}`)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    flex: isMobile ? 1 : undefined,
+                    padding: isMobile ? '9px 12px' : '10px 16px',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontSize: isMobile ? '0.85rem' : '0.9rem',
+                    background: accent,
+                    color: currentTheme.background.default,
+                  }}
+                >
+                  <span>{t('Zur Serie')}</span>
+                  <ChevronRight style={{ fontSize: '20px' }} />
+                </button>
+                {!current.loading && (
+                  <button
+                    onClick={() => {
+                      if (!hasContent) {
+                        onFetchRecap(current.cacheKey);
+                        setExpanded(true);
+                      } else {
+                        setExpanded(!expanded);
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      flex: isMobile ? 1 : undefined,
+                      padding: isMobile ? '9px 12px' : '10px 16px',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      fontSize: isMobile ? '0.85rem' : '0.9rem',
+                      background: `${accent}20`,
+                      color: accent,
+                      backdropFilter: 'var(--blur-sm)',
+                      WebkitBackdropFilter: 'var(--blur-sm)',
+                    }}
+                  >
+                    <span>{expanded ? t('Einklappen') : t('Recap lesen')}</span>
+                    {expanded ? (
+                      <ExpandLess style={{ fontSize: '18px' }} />
+                    ) : (
+                      <ExpandMore style={{ fontSize: '18px' }} />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Loading indicator */}
+          {current.loading && (
+            <div
+              style={{
+                height: '3px',
+                background: `${accent}15`,
+                overflow: 'hidden',
+              }}
+            >
+              <motion.div
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                style={{ width: '40%', height: '100%', background: accent }}
+              />
+            </div>
+          )}
+
+          {/* Expandable recap */}
+          <AnimatePresence>
+            {expanded && hasContent && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div
+                  style={{
+                    padding: isMobile ? '4px 12px 12px' : '4px 16px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    // Recap-Text scrollt in einem begrenzten Bereich, damit die
+                    // Karte kompakt bleibt (kein Vollbild-Wall auf dem Handy).
+                    maxHeight: isMobile ? '42dvh' : '52vh',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '1px',
+                        flex: 1,
+                        background: `linear-gradient(90deg, transparent, ${accent}25, transparent)`,
+                      }}
+                    />
+                    <SpeakButton
+                      state={tts.state}
+                      onClick={() => tts.speak(current.recap ?? '')}
+                      accent={accent}
+                      size={26}
+                    />
+                  </div>
+                  {points.map((point, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}
+                    >
+                      <div
+                        style={{
+                          width: '3px',
+                          minHeight: '16px',
+                          height: '100%',
+                          borderRadius: '2px',
+                          background: accent,
+                          opacity: 0.4 + i * 0.1,
+                          flexShrink: 0,
+                          marginTop: '4px',
+                        }}
+                      />
+                      <p
+                        style={{
+                          fontSize: isMobile ? '13px' : '14px',
+                          lineHeight: isMobile ? 1.5 : 1.65,
+                          color: currentTheme.text.secondary,
+                          margin: 0,
+                        }}
+                      >
+                        {point}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation dots */}
+          {recaps.length > 1 && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '0 0 12px',
+              }}
+            >
+              <span style={{ fontSize: '0.85rem', opacity: 0.7, color: currentTheme.text.muted }}>
+                {t('{current} von {total}', { current: currentIndex + 1, total: recaps.length })}
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {recaps.map((_, i) => (
+                  <span
+                    key={i}
+                    onClick={() => {
+                      setCurrentIndex(i);
+                      setExpanded(false);
+                    }}
+                    style={{
+                      width: i === currentIndex ? '24px' : '8px',
+                      height: '8px',
+                      borderRadius: i === currentIndex ? '4px' : '50%',
+                      background: i === currentIndex ? accent : 'var(--glass-medium)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+);
+
+ProactiveRecapCard.displayName = 'ProactiveRecapCard';

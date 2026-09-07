@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type firebase from 'firebase/compat/app';
-import { showToast } from '../../lib/toast';
+import { showToast } from '../../lib/interaction/toast';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import { useAuth } from '../../contexts/AuthContext';
-import { useWrappedConfig } from '../../hooks/useWrappedConfig';
+import { useWrappedConfig } from '../../hooks/wrapped/useWrappedConfig';
 import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
 import { DEFAULT_SLIDE_CONFIG } from '../../types/Wrapped';
-import { calculateWrappedStats } from '../../services/wrappedCalculator';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
-import { WatchActivityService } from '../../services/watchActivityService';
+import { calculateWrappedStats } from '../../services/wrapped/wrappedCalculator';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
+import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
 import { t } from '../../services/i18n';
 
 // Standard-Jahr (jedes Jahr hier ändern)

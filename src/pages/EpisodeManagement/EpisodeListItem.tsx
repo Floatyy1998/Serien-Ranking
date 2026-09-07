@@ -9,7 +9,7 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
-import { useSpoilerLevel } from '../../services/spoilerMode';
+import { useSpoilerLevel } from '../../services/settings/spoilerMode';
 import type { Series } from '../../types/Series';
 import { tapScaleSmall } from '../../lib/motion';
 

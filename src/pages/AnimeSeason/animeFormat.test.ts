@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import {
   buildMetaLine,
   continuationLabel,

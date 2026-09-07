@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbRef, dbGet, dbUpdate, userPath } from '../services/db/ref';
-import { isDeletingAccount } from '../services/accountDeletionState';
+import { isDeletingAccount } from '../services/account/accountDeletionState';
 import { useAuth } from './AuthContext';
-import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
 import {
   sendFriendRequestOp,

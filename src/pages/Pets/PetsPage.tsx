@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { usePetEnabled } from '../../hooks/usePetEnabled';
+import { usePetEnabled } from '../../hooks/pet/usePetEnabled';
 import { t } from '../../services/i18n';
 import { setPetEnabled } from '../../services/pet/petPreferences';
 import { getOptimalTextColor } from '../../theme/colorUtils';

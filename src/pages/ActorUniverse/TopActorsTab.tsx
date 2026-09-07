@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { Actor } from '../../hooks/useActorUniverse';
+import type { Actor } from '../../hooks/discover/useActorUniverse';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
 

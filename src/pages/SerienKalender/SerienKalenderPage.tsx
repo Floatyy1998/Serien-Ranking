@@ -39,15 +39,15 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackSeriesAdded } from '../../services/firebase/analytics';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { backendFetch } from '../../services/backendApi';
-import { hapticSelect, hapticSuccess } from '../../lib/haptics';
-import { showToast } from '../../lib/toast';
+import { backendFetch } from '../../services/api/backendApi';
+import { hapticSelect, hapticSuccess } from '../../lib/interaction/haptics';
+import { showToast } from '../../lib/interaction/toast';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import {
   fetchStaticTvPremieres,
   subscribeCatalogChange,
   type TvPremiereStaticEntry,
-} from '../../services/staticCatalog';
+} from '../../services/catalog/staticCatalog';
 import { SerienKalenderCard } from './SerienKalenderCard';
 import { SerienKalenderHero } from './SerienKalenderHero';
 import { SerienKalenderFilter } from './SerienKalenderFilter';

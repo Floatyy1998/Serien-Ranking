@@ -12,7 +12,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('./useWatchJourneyData', () => ({
+vi.mock('./hooks/useWatchJourneyData', () => ({
   useWatchJourneyData: () => hookState.value,
 }));
 
@@ -25,19 +25,19 @@ vi.mock('../../components/ui', () => ({
   ),
 }));
 
-vi.mock('./WatchJourneyLoadingState', () => ({
+vi.mock('./parts/WatchJourneyLoadingState', () => ({
   WatchJourneyLoadingState: () => <div>loading-state</div>,
 }));
-vi.mock('./WatchJourneyEmptyState', () => ({
+vi.mock('./parts/WatchJourneyEmptyState', () => ({
   WatchJourneyEmptyState: () => <div>empty-state</div>,
 }));
-vi.mock('./WatchJourneyTabs', () => ({
+vi.mock('./tabs/WatchJourneyTabs', () => ({
   WatchJourneyTabs: () => <div>tabs</div>,
 }));
-vi.mock('./WatchJourneyTabContent', () => ({
+vi.mock('./tabs/WatchJourneyTabContent', () => ({
   WatchJourneyTabContent: () => <div>tab-content</div>,
 }));
-vi.mock('./WatchJourneyYearPicker', () => {
+vi.mock('./parts/WatchJourneyYearPicker', () => {
   const Picker = () => <div>year-picker</div>;
   Picker.Dropdown = () => <div>year-dropdown</div>;
   return { WatchJourneyYearPicker: Picker };

@@ -38,7 +38,7 @@ const svc = vi.hoisted(() => ({
   toggleAccessory: vi.fn<(uid: string, id: string, a: string) => Promise<Pet | null>>(),
   equipBackground: vi.fn<(uid: string, id: string, b: string | null) => Promise<Pet | null>>(),
 }));
-vi.mock('../../services/petService', () => ({ petService: svc }));
+vi.mock('../../services/pet/petService', () => ({ petService: svc }));
 
 vi.mock('../../services/pet/petMoodService', () => ({
   petMoodService: { calculateCurrentMood: () => 'happy' },

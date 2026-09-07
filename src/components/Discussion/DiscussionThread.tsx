@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDiscussions } from '../../hooks/useDiscussions';
-import { isPermanentBan, useModerationBan } from '../../hooks/useModerationBan';
+import { useDiscussions } from '../../hooks/social/useDiscussions';
+import { isPermanentBan, useModerationBan } from '../../hooks/social/useModerationBan';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
 import { ADMIN_UID } from '../../config/admin';
-import { isSpoilerRevealed, markSpoilerRevealed } from '../../services/spoilerReveals';
+import { isSpoilerRevealed, markSpoilerRevealed } from '../../services/discussion/spoilerReveals';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 

@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { backendFetch } from '../../services/backendApi';
+import { backendFetch } from '../../services/api/backendApi';
 import { t } from '../../services/i18n';
 import type { DiscoverItem } from './discoverItemHelpers';
 

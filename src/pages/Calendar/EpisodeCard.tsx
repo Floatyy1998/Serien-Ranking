@@ -2,14 +2,14 @@ import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore, Star, StarBorder } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
-import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
-import { getProviderLogoUrl } from '../../lib/providerMerge';
+import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
+import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/watch/useWeeklyEpisodes';
+import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';

@@ -5,11 +5,11 @@ import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { requestVerificationMail } from '../../services/authMails';
+import { requestVerificationMail } from '../../services/account/authMails';
 import { commonStyles } from '../../theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-import { showToast } from '../../lib/toast';
+import { showToast } from '../../lib/interaction/toast';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;

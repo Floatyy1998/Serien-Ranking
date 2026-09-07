@@ -8,16 +8,16 @@ import { useAuth } from './contexts/AuthContext';
 import { ADMIN_UID } from './config/admin';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContext';
-import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
-import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
-import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { useAdminHealthAlert } from './hooks/admin/useAdminHealthAlert';
+import { usePetGiftReceiver } from './hooks/pet/usePetGiftReceiver';
+import { useNetworkStatus } from './hooks/platform/useNetworkStatus';
 import { t } from './services/i18n';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { LoadingSpinner } from './components/ui/feedback/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
 import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from './components/AvatarViewerHost';
-import { bindOwnPhotoURL } from './services/ownProfilePhoto';
+import { bindOwnPhotoURL } from './services/profile/ownProfilePhoto';
 import { PageTourHost } from './features/tour';
 import './styles/App.css';
 
@@ -207,13 +207,21 @@ export const MobileApp = () => {
       import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets()).catch(quiet);
     }
     if (user?.uid) {
-      import('./services/pushNotifications').then((m) => m.initNativePush(user.uid)).catch(quiet);
-      import('./services/languageSync')
+      import('./services/notifications/pushNotifications')
+        .then((m) => m.initNativePush(user.uid))
+        .catch(quiet);
+      import('./services/settings/languageSync')
         .then((m) => m.syncAppLanguageToProfile(user.uid))
         .catch(quiet);
-      import('./services/timezoneSync').then((m) => m.syncTimezoneToProfile(user.uid)).catch(quiet);
-      import('./services/spoilerReveals').then((m) => m.syncSpoilerReveals(user.uid)).catch(quiet);
-      import('./services/spoilerMode').then((m) => m.syncSpoilerLevel(user.uid)).catch(quiet);
+      import('./services/settings/timezoneSync')
+        .then((m) => m.syncTimezoneToProfile(user.uid))
+        .catch(quiet);
+      import('./services/discussion/spoilerReveals')
+        .then((m) => m.syncSpoilerReveals(user.uid))
+        .catch(quiet);
+      import('./services/settings/spoilerMode')
+        .then((m) => m.syncSpoilerLevel(user.uid))
+        .catch(quiet);
     }
   }, [user?.uid]);
 

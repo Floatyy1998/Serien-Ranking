@@ -3,7 +3,7 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PanInfo } from 'framer-motion';
 import type { Series } from '../../types/Series';
-import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import type { NextEpisode } from '../../hooks/watch/useWatchNextEpisodes';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
 
 // ── firebase compat mock ──────────────────────────────────────────────
@@ -46,13 +46,13 @@ const undoOpts = vi.hoisted(() => ({
 const showUndoToast = vi.fn((_msg: string, opts: unknown) => {
   undoOpts.current = opts as { onUndo: () => Promise<void>; onCommit: () => Promise<void> };
 });
-vi.mock('../../lib/toast', () => ({
+vi.mock('../../lib/interaction/toast', () => ({
   showToast: (...a: unknown[]) => showToast(...a),
   showUndoToast: (msg: string, opts: unknown) => showUndoToast(msg, opts),
 }));
 
 const hapticSuccess = vi.fn();
-vi.mock('../../lib/haptics', () => ({ hapticSuccess: () => hapticSuccess() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticSuccess: () => hapticSuccess() }));
 
 // ── fixtures ──────────────────────────────────────────────────────────
 const series = {

@@ -10,18 +10,18 @@ import { Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { useTheme } from '../../contexts/ThemeContext';
-import { useDrawInProgress } from '../../hooks/useDrawInProgress';
+import { useDrawInProgress } from '../../hooks/ui/useDrawInProgress';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import { t } from '../../services/i18n';
 import type { PreparedItem } from './useRatingsData';
-import { PosterFrame } from '../../components/ui/PosterFrame';
+import { PosterFrame } from '../../components/ui/media/PosterFrame';
 // Aus lib/ importieren + fuer bestehende Importer (RatingCompactRow) re-exportieren.
-import { primaryGenre } from '../../lib/genreLabel';
-import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
+import { primaryGenre } from '../../lib/text/genreLabel';
+import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 export { PLACEHOLDER_SVG };
 
 // Provider-Badge mit Popup — auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.

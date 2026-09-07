@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EnhancedCacheResult } from '../hooks/firebaseCache/types';
+import type { EnhancedCacheResult } from '../hooks/data/firebaseCache/types';
 
 const cacheResult = vi.hoisted(
   () =>
@@ -18,7 +18,7 @@ const cacheResult = vi.hoisted(
     }) as EnhancedCacheResult<Record<string, unknown>>
 );
 
-vi.mock('../hooks/useEnhancedFirebaseCache', () => ({
+vi.mock('../hooks/data/useEnhancedFirebaseCache', () => ({
   useEnhancedFirebaseCache: () => cacheResult,
 }));
 
@@ -35,10 +35,10 @@ vi.mock('firebase/compat/app', () => ({
   },
 }));
 
-vi.mock('../services/anilistService', () => ({
+vi.mock('../services/api/anilistService', () => ({
   getMangaById: vi.fn(async () => null),
 }));
-vi.mock('../services/mangaUpdatesService', () => ({
+vi.mock('../services/api/mangaUpdatesService', () => ({
   getMangaDexInfo: vi.fn(async () => ({ latestChapter: 0 })),
   getMangaDexChapterDates: vi.fn(async () => ({ recentChapters: [] })),
 }));

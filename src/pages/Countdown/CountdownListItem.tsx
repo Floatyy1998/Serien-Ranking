@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
+import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';

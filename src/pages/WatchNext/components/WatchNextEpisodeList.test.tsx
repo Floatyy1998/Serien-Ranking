@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { NextEpisode } from '../../../hooks/useWatchNextEpisodes';
-import type { useEpisodeDragDrop } from '../../../hooks/useEpisodeDragDrop';
+import type { NextEpisode } from '../../../hooks/watch/useWatchNextEpisodes';
+import type { useEpisodeDragDrop } from '../../../hooks/watch/useEpisodeDragDrop';
 import type { useWatchNextSwipe } from '../useWatchNextSwipe';
 
 vi.mock('framer-motion', async () => {
@@ -27,15 +27,19 @@ vi.mock('../../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
 vi.mock('../../../components/Discussion', () => ({
   EpisodeDiscussionButton: () => <div data-testid="discussion-btn" />,
 }));
 vi.mock('../../../components/detail/ProviderLogoLink', () => ({
   ProviderLogoLink: () => <div data-testid="provider-logo" />,
 }));
-vi.mock('../../../components/ui/FillerChip', () => ({ FillerChip: () => <span>filler</span> }));
-vi.mock('../../../services/animeFillerService', () => ({
+vi.mock('../../../components/ui/display/FillerChip', () => ({
+  FillerChip: () => <span>filler</span>,
+}));
+vi.mock('../../../services/catalog/animeFillerService', () => ({
   fillerLookupKey: (s: number, e: number) => `${s}-${e}`,
 }));
 vi.mock('../../../utils/episodeChips', () => ({

@@ -12,7 +12,7 @@ import type {
 import { CastCrewListView } from './CastCrewListView';
 import { PersonDetailsView } from './PersonDetailsView';
 import { VoiceActorDetailsView } from './VoiceActorDetailsView';
-import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
 
 export const CastCrew: React.FC<CastCrewProps> = ({

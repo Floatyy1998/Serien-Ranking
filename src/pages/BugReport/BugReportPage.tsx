@@ -7,7 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { NewTicketForm } from './components/NewTicketForm';
 import { TicketCard } from './components/TicketCard';
 import { useBugReportData } from './useBugReportData';
-import { isPermanentBan, useModerationBan } from '../../hooks/useModerationBan';
+import { isPermanentBan, useModerationBan } from '../../hooks/social/useModerationBan';
 import { t } from '../../services/i18n';
 
 // Offene Tickets zuerst — der Rest wandert ins Archiv

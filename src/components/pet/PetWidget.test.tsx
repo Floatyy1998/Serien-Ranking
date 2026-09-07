@@ -24,9 +24,9 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../lib/toast', () => ({ showToast: vi.fn() }));
+vi.mock('../../lib/interaction/toast', () => ({ showToast: vi.fn() }));
 
-vi.mock('../../hooks/usePetReactions', () => ({
+vi.mock('../../hooks/pet/usePetReactions', () => ({
   usePetReactions: () => null,
   triggerPetReaction: vi.fn(),
 }));
@@ -45,7 +45,7 @@ const petSvc = vi.hoisted(() => ({
   updatePetStatus: vi.fn(),
   updateAllPetsStatus: vi.fn(),
 }));
-vi.mock('../../services/petService', () => ({ petService: petSvc }));
+vi.mock('../../services/pet/petService', () => ({ petService: petSvc }));
 
 // Kind-Komponenten (Canvas / MUI-Toast) durch schlanke Stubs ersetzen.
 vi.mock('./EvolvingPixelPet', () => ({

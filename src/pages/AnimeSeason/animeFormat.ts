@@ -4,7 +4,7 @@
  * Karten-Komponente, damit react-refresh nur Komponenten exportiert sieht).
  */
 
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { appLocale, dateLocale, t, type Locale } from '../../services/i18n';
 
 /** Datumsformatierung folgt der App-Sprache (Boot-fixiert wie t()). */

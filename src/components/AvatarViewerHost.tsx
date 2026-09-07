@@ -3,9 +3,9 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Close from '@mui/icons-material/Close';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAndroidBack } from '../hooks/useAndroidBack';
-import { useReducedMotion } from '../hooks/useReducedMotion';
-import { AVATAR_VIEW_EVENT, type AvatarViewRequest } from '../lib/avatarViewer';
+import { useAndroidBack } from '../hooks/ui/useAndroidBack';
+import { useReducedMotion } from '../hooks/ui/useReducedMotion';
+import { AVATAR_VIEW_EVENT, type AvatarViewRequest } from '../lib/image/avatarViewer';
 import { t } from '../services/i18n';
 
 /**

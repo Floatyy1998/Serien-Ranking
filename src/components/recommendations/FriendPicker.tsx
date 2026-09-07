@@ -1,7 +1,7 @@
 import Group from '@mui/icons-material/Group';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import type { Friend } from '../../types/Friend';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { t } from '../../services/i18n';

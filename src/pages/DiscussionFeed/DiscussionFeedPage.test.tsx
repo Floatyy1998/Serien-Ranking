@@ -46,7 +46,9 @@ vi.mock('../../components/ui', () => ({
   SkeletonListRow: () => <div data-testid="skeleton-row" />,
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
 }));
-vi.mock('../../hooks/useDiscussionFeed', () => ({ useDiscussionFeed: useDiscussionFeedMock }));
+vi.mock('../../hooks/social/useDiscussionFeed', () => ({
+  useDiscussionFeed: useDiscussionFeedMock,
+}));
 vi.mock('../../components/Discussion/utils', () => ({ formatRelativeTime: () => 'vor 1 Std' }));
 vi.mock('../../lib/motion', () => ({ tapScale: {}, tapScaleSmall: {} }));
 

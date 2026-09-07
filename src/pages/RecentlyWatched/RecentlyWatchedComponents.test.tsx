@@ -49,7 +49,9 @@ vi.mock('../../contexts/ThemeContext', () => {
 });
 
 const disc = vi.hoisted(() => ({ count: 0 }));
-vi.mock('../../hooks/discussionCountHooks', () => ({ useDiscussionCount: () => disc.count }));
+vi.mock('../../hooks/social/discussionCountHooks', () => ({
+  useDiscussionCount: () => disc.count,
+}));
 
 const episode = (over: Partial<WatchedEpisode> = {}): WatchedEpisode => ({
   seriesId: 1,

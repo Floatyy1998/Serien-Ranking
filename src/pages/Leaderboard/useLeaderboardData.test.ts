@@ -35,7 +35,7 @@ const svc = vi.hoisted(() => ({
   forceRebuildArchive: vi.fn(async () => {}),
   seedLeaderboardStats: vi.fn(async () => {}),
 }));
-vi.mock('../../services/leaderboardService', () => svc);
+vi.mock('../../services/social/leaderboardService', () => svc);
 
 import { useLeaderboardData } from './useLeaderboardData';
 

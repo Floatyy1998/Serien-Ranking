@@ -23,9 +23,11 @@ vi.mock('../../contexts/ThemeContext', () => ({
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
-vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: true }) }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isMobile: true }),
+}));
 
-vi.mock('../../services/readActivityService', () => ({ logChapterRead: vi.fn() }));
+vi.mock('../../services/discussion/readActivityService', () => ({ logChapterRead: vi.fn() }));
 
 const fb = vi.hoisted(() => {
   const ref = { update: vi.fn().mockResolvedValue(undefined) };

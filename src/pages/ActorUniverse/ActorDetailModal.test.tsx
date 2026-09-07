@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ActorDetailModal } from './ActorDetailModal';
-import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import type { Actor, ActorConnection } from '../../hooks/discover/useActorUniverse';
 
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;

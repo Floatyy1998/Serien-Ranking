@@ -11,7 +11,7 @@ const mark = vi.hoisted(() => ({
   findNextEpisode: vi.fn(),
   markNextEpisodeWatched: vi.fn(async () => true),
 }));
-vi.mock('../../hooks/markNextEpisode', () => mark);
+vi.mock('../../hooks/watch/markNextEpisode', () => mark);
 
 import { RatingCompactRow } from './RatingCompactRow';
 

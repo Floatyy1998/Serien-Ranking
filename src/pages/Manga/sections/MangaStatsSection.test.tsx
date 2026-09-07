@@ -23,7 +23,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
 vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
 const deviceState = vi.hoisted(() => ({ isDesktop: false }));
-vi.mock('../../../hooks/useDeviceType', () => ({
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isDesktop: deviceState.isDesktop }),
 }));
 

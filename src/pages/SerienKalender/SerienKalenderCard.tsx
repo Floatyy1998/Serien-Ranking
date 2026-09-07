@@ -12,17 +12,17 @@
  */
 
 import React, { useState } from 'react';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
-import { hapticTap } from '../../lib/haptics';
+import { hapticTap } from '../../lib/interaction/haptics';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
-} from '../../lib/providerLinks';
+} from '../../lib/provider/providerLinks';
 import {
   buildMetaLine,
   datePillText,
@@ -32,7 +32,7 @@ import {
   premiereOverview,
   premiereTitle,
 } from './tvPremiereFormat';
-import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 import { t } from '../../services/i18n';
 
 /** Provider-Logo mit sicherer (nicht-null) Logo-URL. */

@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
-import { tmdbFetch } from '../../services/tmdbClient';
+import { tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
 
 interface Video {

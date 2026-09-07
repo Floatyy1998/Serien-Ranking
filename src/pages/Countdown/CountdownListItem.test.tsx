@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
+import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 
 vi.mock(
   '@mui/icons-material',

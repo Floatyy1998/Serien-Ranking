@@ -37,7 +37,7 @@ export interface CatalogEpisode {
   /**
    * seasonNumber/episodeNumber werden serverseitig nicht mehr in jede Episode
    * geschrieben (Bulk-File-Slim-Down) — Consumer fallen auf den aeusseren
-   * Season-Key bzw. den Array-Index zurueck (siehe lib/seriesAdapter).
+   * Season-Key bzw. den Array-Index zurueck (siehe lib/series/seriesAdapter).
    */
   seasonNumber?: number;
   episodeNumber?: number;
@@ -111,7 +111,7 @@ export interface EpisodeWatchData {
  * Pre-Compact-Watch-Format ({episodes: {idx: {...}}}). Achtung: Season-Nodes
  * unter SeriesWatchData koennen auch im aktuellen ID-basierten Format ({eps})
  * oder im Legacy-Array-Format ({w: [...], c: [...]}) vorliegen — Erkennung via
- * lib/compactWatch (isEpidSeason/isLegacyArraySeason). `episodes` ist deshalb
+ * lib/watch/compactWatch (isEpidSeason/isLegacyArraySeason). `episodes` ist deshalb
  * optional.
  */
 export interface SeasonWatchData {

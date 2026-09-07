@@ -45,7 +45,7 @@ vi.mock('../../services/offline/queuedUpdate', () => ({
 }));
 const showToast = vi.fn<(...a: unknown[]) => void>();
 const showUndoToast = vi.fn<(...a: unknown[]) => void>();
-vi.mock('../../lib/toast', () => ({
+vi.mock('../../lib/interaction/toast', () => ({
   showToast: (...a: unknown[]) => showToast(...a),
   showUndoToast: (...a: unknown[]) => showUndoToast(...a),
 }));

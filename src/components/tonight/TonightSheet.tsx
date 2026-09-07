@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { filterItemsByActiveProviders } from '../../pages/Discover/watchProviderFilter';
 import {
   buildTonightCandidates,
@@ -21,17 +21,17 @@ import {
   type TonightSource,
   type TonightTime,
   type TonightType,
-} from '../../lib/tonightPicker';
+} from '../../lib/watch/tonightPicker';
 import {
   blockRecommendation,
   fetchBlockedRecommendations,
-} from '../../services/recFeedbackService';
+} from '../../services/rating/recFeedbackService';
 import { t } from '../../services/i18n';
-import { watchRegion } from '../../services/region';
-import { tmdbFetch } from '../../services/tmdbClient';
+import { watchRegion } from '../../services/settings/region';
+import { tmdbFetch } from '../../services/api/tmdbClient';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getImageUrl } from '../../utils/imageUrl';
-import { BottomSheet } from '../ui/BottomSheet';
+import { BottomSheet } from '../ui/overlay/BottomSheet';
 import './TonightSheet.css';
 
 const PREFS_KEY = 'tonightPrefs';

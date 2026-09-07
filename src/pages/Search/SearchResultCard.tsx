@@ -1,9 +1,9 @@
 import { Add, Star, Visibility } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
-import { PosterFrame } from '../../components/ui/PosterFrame';
+import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
-import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
 import { t } from '../../services/i18n';
 import { formatRatingShort } from '../../lib/rating/rating';
 import { getOptimalTextColor } from '../../theme/colorUtils';

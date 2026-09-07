@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WatchlistGapsSection } from './WatchlistGapsSection';
-import type { WatchlistGap } from '../../../hooks/useSubscriptionsData';
+import type { WatchlistGap } from '../../../hooks/provider/useSubscriptionsData';
 import type { Series } from '../../../types/Series';
 
 const navigate = vi.hoisted(() => vi.fn());

@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActorConnection, ActorUniverseData } from '../../hooks/useActorUniverse';
+import type { ActorConnection, ActorUniverseData } from '../../hooks/discover/useActorUniverse';
 
 const universe = vi.hoisted(() => ({
   value: {} as ActorUniverseData,
   lastArg: undefined as boolean | undefined,
 }));
 
-vi.mock('../../hooks/useActorUniverse', () => ({
+vi.mock('../../hooks/discover/useActorUniverse', () => ({
   useActorUniverse: (hide: boolean) => {
     universe.lastArg = hide;
     return universe.value;

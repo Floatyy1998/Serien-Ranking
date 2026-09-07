@@ -6,7 +6,7 @@ import type { MediaProvider } from './mediaCarouselTypes';
 
 const { clickMock } = vi.hoisted(() => ({ clickMock: vi.fn() }));
 
-vi.mock('../../../lib/providerLinks', () => ({
+vi.mock('../../../lib/provider/providerLinks', () => ({
   getProviderSearchUrl: (name: string) => `https://search/${name}`,
   handleProviderLinkClick: clickMock,
   providerNeedsClipboardCopy: () => false,

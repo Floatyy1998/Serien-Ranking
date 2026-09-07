@@ -66,22 +66,22 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { backendFetch } from '../../services/backendApi';
+import { backendFetch } from '../../services/api/backendApi';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useReducedMotion } from '../../hooks/useReducedMotion';
-import { useScrollRestore } from '../../hooks/useScrollRestore';
+import { useReducedMotion } from '../../hooks/ui/useReducedMotion';
+import { useScrollRestore } from '../../hooks/ui/useScrollRestore';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
-import { hapticSelect, hapticSuccess, hapticTap } from '../../lib/haptics';
-import { showToast } from '../../lib/toast';
+import { hapticSelect, hapticSuccess, hapticTap } from '../../lib/interaction/haptics';
+import { showToast } from '../../lib/interaction/toast';
 import { tapScaleSmall } from '../../lib/motion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import {
   fetchStaticCatalogSeasonsBulk,
   fetchStaticSeasonalAnime,
   subscribeCatalogChange,
-} from '../../services/staticCatalog';
-import type { SeasonalAnimeStaticEntry } from '../../services/staticCatalog';
-import { getProviderLogoUrl } from '../../lib/providerMerge';
+} from '../../services/catalog/staticCatalog';
+import type { SeasonalAnimeStaticEntry } from '../../services/catalog/staticCatalog';
+import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import type { CatalogSeason } from '../../types/CatalogTypes';
 import {
   fetchContinuingAnime,
@@ -90,8 +90,12 @@ import {
   seasonKey,
   seasonLabel,
   shiftSeason,
-} from '../../services/anilistSeasonService';
-import type { ContinuingAnime, SeasonAnime, SeasonRef } from '../../services/anilistSeasonService';
+} from '../../services/api/anilistSeasonService';
+import type {
+  ContinuingAnime,
+  SeasonAnime,
+  SeasonRef,
+} from '../../services/api/anilistSeasonService';
 import { AnimeSeasonCard } from './AnimeSeasonCard';
 import { AnimeSeasonHero } from './AnimeSeasonHero';
 import { AnimeSeasonStudioFilter } from './AnimeSeasonStudioFilter';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { SeasonAnime } from '../../services/anilistSeasonService';
+import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 
 vi.mock('@mui/icons-material', () => ({ Add: () => null, CheckCircle: () => null }));
 vi.mock('@mui/material', () => ({ CircularProgress: () => null }));
@@ -10,8 +10,8 @@ vi.mock('../../theme/colorUtils', () => ({
   lightenColor: () => '#ffffff',
 }));
 vi.mock('../../utils/themedPlaceholder', () => ({ useThemedPlaceholder: () => 'ph.jpg' }));
-vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
-vi.mock('../../lib/providerLinks', () => ({
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/provider/providerLinks', () => ({
   getProviderSearchUrl: () => 'https://x',
   handleProviderLinkClick: vi.fn(),
   providerNeedsClipboardCopy: () => false,

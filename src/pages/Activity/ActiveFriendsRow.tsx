@@ -7,7 +7,7 @@
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { NameBadges } from '../../components/ui/NameBadges';
+import { NameBadges } from '../../components/ui/display/NameBadges';
 import type { FriendActivity } from '../../types/Friend';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';

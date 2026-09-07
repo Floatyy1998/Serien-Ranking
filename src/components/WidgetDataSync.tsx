@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
-import { useSeriesCountdowns } from '../hooks/useSeriesCountdowns';
-import { useTodayEpisodes } from '../hooks/useTodayEpisodes';
-import { isNativeApp, setWidgetData } from '../services/nativeShell';
+import { useSeriesCountdowns } from '../hooks/watch/useSeriesCountdowns';
+import { useTodayEpisodes } from '../hooks/watch/useTodayEpisodes';
+import { isNativeApp, setWidgetData } from '../services/app/nativeShell';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
 

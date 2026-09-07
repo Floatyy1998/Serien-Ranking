@@ -44,7 +44,9 @@ vi.mock('../../components/ui', () => ({
   BackButton: () => <button>back</button>,
   Skeleton: () => <div data-testid="skeleton" />,
 }));
-vi.mock('../../components/ui/FillerChip', () => ({ FillerChip: () => <span>filler</span> }));
+vi.mock('../../components/ui/display/FillerChip', () => ({
+  FillerChip: () => <span>filler</span>,
+}));
 vi.mock('../../components/Discussion', () => ({ DiscussionThread: () => <div>thread</div> }));
 
 const makeTheme = (): Theme => {

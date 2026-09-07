@@ -4,7 +4,7 @@ import { IconContainer, SectionHeader } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import type { Manga } from '../../../types/Manga';
 import { getEffectiveChapterCount } from '../mangaUtils';
 import { t } from '../../../services/i18n';

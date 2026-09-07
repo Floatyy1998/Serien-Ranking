@@ -14,7 +14,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../hooks/useDeviceType', () => ({
+vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isMobile: false, isDesktop: true }),
 }));
 
@@ -24,7 +24,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const addGuestPickMock = vi.hoisted(() => vi.fn());
-vi.mock('../../services/guestOnboarding', () => ({
+vi.mock('../../services/account/guestOnboarding', () => ({
   addGuestPick: addGuestPickMock,
 }));
 

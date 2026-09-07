@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
 import type { Movie } from '../types/Movie';
 import type { CatalogMovie, UserMovieRef } from '../types/CatalogTypes';
-import { mergeToMovieView } from '../lib/seriesAdapter';
+import { mergeToMovieView } from '../lib/series/seriesAdapter';
 import { MovieListContext } from './MovieListContext';
 import {
   fetchStaticCatalogMovies,
   fetchStaticCatalogMoviesFresh,
   subscribeCatalogChange,
-} from '../services/staticCatalog';
+} from '../services/catalog/staticCatalog';
 
 export const MovieListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};

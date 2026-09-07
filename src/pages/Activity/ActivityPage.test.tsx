@@ -63,7 +63,7 @@ const { navigateMock, friendsValue, notificationsValue } = vi.hoisted(() => ({
 }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
-vi.mock('../../hooks/useScrollRestore', () => ({
+vi.mock('../../hooks/ui/useScrollRestore', () => ({
   useScrollRestore: () => ({ saveNow: vi.fn() }),
 }));
 vi.mock('../../contexts/NotificationContext', () => ({
