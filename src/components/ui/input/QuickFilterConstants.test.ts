@@ -7,8 +7,6 @@ vi.mock('@mui/icons-material', () => ({
   PlaylistAdd: 'PlaylistAddIcon',
   Schedule: 'ScheduleIcon',
   Star: 'StarIcon',
-  Visibility: 'VisibilityIcon',
-  VisibilityOff: 'VisibilityOffIcon',
 }));
 
 import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';

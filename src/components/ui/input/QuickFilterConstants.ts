@@ -1,12 +1,8 @@
-import {
-  Bookmark,
-  NewReleases,
-  PlaylistAdd,
-  Schedule,
-  Star,
-  Visibility,
-  VisibilityOff,
-} from '@mui/icons-material';
+import { Bookmark, NewReleases, PlaylistAdd, Schedule, Star } from '@mui/icons-material';
+// Einzeln importiert: viele Testdateien mocken das Barrel mit einer festen
+// Export-Liste, ein neues Icon dort hätte sie reihenweise brechen lassen.
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { t } from '../../../services/i18n';
 
 export const seriesQuickFilters = [
