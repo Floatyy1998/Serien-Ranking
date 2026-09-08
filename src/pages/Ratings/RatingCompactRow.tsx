@@ -45,7 +45,8 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
     );
 
     const yearGenres = [item.year, item.genres].filter(Boolean).join(' • ');
-    const isComplete = !item.isMovie && !next && item.progress === 100;
+    // Filme: „gesehen" ist der Endzustand; Serien: alle Folgen ab und keine offene nächste.
+    const isComplete = item.isMovie ? item.watched : !next && item.progress === 100;
     const inProgress = !item.isMovie && item.progress > 0 && item.progress < 100;
 
     const handleMark = async (e: React.MouseEvent) => {
@@ -104,7 +105,7 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
               )}
               {isComplete && (
                 <span className="ratings-row-done" style={{ color: theme.status.success }}>
-                  {t('✓ Komplett gesehen')}
+                  {item.isMovie ? t('✓ Gesehen') : t('✓ Komplett gesehen')}
                 </span>
               )}
               {inProgress && (

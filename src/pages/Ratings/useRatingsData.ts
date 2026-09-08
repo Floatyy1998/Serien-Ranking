@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/image/preloadImage';
+import { isMovieWatched } from '../../lib/rating/rating';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
 import {
   getRating,
@@ -265,6 +266,8 @@ export const useRatingsData = (): UseRatingsDataResult => {
         const progress = getSeriesProgress(s);
         return progress > 0 && progress < 100;
       });
+    } else if (quickFilter === 'watched') {
+      items = items.filter(({ s }) => getSeriesProgress(s) === 100);
     } else if (quickFilter === 'not-started') {
       items = items.filter(({ s }) => !hasWatchedEpisodes(s));
     } else if (quickFilter === 'ongoing') {
@@ -331,8 +334,12 @@ export const useRatingsData = (): UseRatingsDataResult => {
       items = items.filter(({ r }) => r === 0);
     } else if (quickFilter === 'started') {
       items = [];
+    } else if (quickFilter === 'watched') {
+      items = items.filter(({ m }) => isMovieWatched(m));
     } else if (quickFilter === 'not-started') {
-      items = items.filter(({ r }) => r === 0);
+      // Nicht über das Rating: ein ohne Bewertung als gesehen markierter Film
+      // ist nicht „noch nicht begonnen".
+      items = items.filter(({ m }) => !isMovieWatched(m));
     }
 
     items.sort((a, b) => {

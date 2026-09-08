@@ -202,7 +202,10 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
   // D1: --prog wird per rAF animiert ans Karten-Element geschrieben
   // (Draw-In des Fortschritts-Rings), nicht als statischer Inline-Style.
   const cardRef = useRef<HTMLDivElement>(null);
-  useDrawInProgress(cardRef, item.isMovie ? 0 : item.progress);
+  // Filme kennen keinen Fortschritt, aber „gesehen" ist derselbe Endzustand wie
+  // eine durchgeschaute Serie — beide bekommen denselben vollen Ring.
+  const ringProgress = item.isMovie ? (item.watched ? 100 : 0) : item.progress;
+  useDrawInProgress(cardRef, ringProgress);
 
   return (
     // data-poster is read by the grid's click handler so the Detail page poster
@@ -219,13 +222,13 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
       <div
         ref={cardRef}
         className={`ratings-card${
-          !item.isMovie && item.progress > 0
-            ? ` ratings-card--ring${item.progress === 100 ? ' ratings-card--ring-done' : ''}`
+          ringProgress > 0
+            ? ` ratings-card--ring${ringProgress === 100 ? ' ratings-card--ring-done' : ''}`
             : ''
         }`}
         style={
           {
-            '--ring-color': item.progress === 100 ? theme.status.success : theme.primary,
+            '--ring-color': ringProgress === 100 ? theme.status.success : theme.primary,
           } as React.CSSProperties
         }
       >
@@ -269,7 +272,7 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
                   <Tooltip title={t('Auf deiner Watchlist')} arrow>
                     <div
                       className="ratings-card-watchlist-badge"
-                      style={{ background: `${theme.status.info}dd` }}
+                      style={{ background: `${theme.status.info.main}dd` }}
                     >
                       <WatchLater style={{ fontSize: '13px', color: '#fff' }} />
                     </div>
@@ -302,17 +305,21 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
                 )}
               </div>
 
-              {/* Fortschritt (Serien): der Ring um die Karte trägt die Visualisierung,
-              hier bleibt nur der präzise Text (D1 ersetzt den alten Balken). */}
-              {!item.isMovie && item.progress > 0 && (
+              {/* Status: der Ring um die Karte trägt die Visualisierung, hier
+              bleibt nur der Text — Serien den Fortschritt, Filme „Gesehen". */}
+              {ringProgress > 0 && (
                 <div className="ratings-card-progress">
                   <span
                     className="ratings-card-progress-text"
                     style={{
-                      color: item.progress === 100 ? theme.status.success : theme.primary,
+                      color: ringProgress === 100 ? theme.status.success : theme.primary,
                     }}
                   >
-                    {item.progress === 100 ? t('Fertig') : `${Math.round(item.progress)}%`}
+                    {item.isMovie
+                      ? t('Gesehen')
+                      : ringProgress === 100
+                        ? t('Fertig')
+                        : `${Math.round(ringProgress)}%`}
                   </span>
                 </div>
               )}

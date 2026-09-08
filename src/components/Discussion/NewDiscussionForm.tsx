@@ -381,7 +381,7 @@ const NewDiscussionFormInner: React.FC<{
               border: 'none',
               background:
                 title.trim() && (content.trim() || previewImages.length > 0)
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`
                   : currentTheme.background.surface,
               color:
                 title.trim() && (content.trim() || previewImages.length > 0)

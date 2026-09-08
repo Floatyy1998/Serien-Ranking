@@ -23,6 +23,7 @@ const item: PreparedItem = {
   posterUrl: 'https://example.com/p.jpg',
   rating: 8.4,
   progress: 50,
+  watched: false,
   isMovie: false,
   watchlist: true,
   year: '2017',
@@ -80,10 +81,23 @@ describe('RatingItemCard', () => {
     expect(card.style.getPropertyValue('--ring-color')).toBe('#4cd137');
   });
 
-  it('D1: Filme bekommen keinen Ring', () => {
+  it('D1: ungesehene Filme bekommen keinen Ring', () => {
     const { container } = render(
       <RatingItemCard item={{ ...item, isMovie: true, progress: 0 }} theme={theme} />
     );
     expect(container.querySelector('.ratings-card')).not.toHaveClass('ratings-card--ring');
+    expect(screen.queryByText('Gesehen')).not.toBeInTheDocument();
+  });
+
+  it('markiert gesehene Filme wie fertige Serien: voller Ring + „Gesehen"', () => {
+    const { container } = render(
+      <RatingItemCard item={{ ...item, isMovie: true, progress: 0, watched: true }} theme={theme} />
+    );
+    const card = container.querySelector('.ratings-card') as HTMLElement;
+    expect(card).toHaveClass('ratings-card--ring');
+    expect(card).toHaveClass('ratings-card--ring-done');
+    expect(card.style.getPropertyValue('--ring-color')).toBe('#4cd137');
+    expect(card.style.getPropertyValue('--prog')).toBe('100');
+    expect(screen.getByText('Gesehen')).toBeInTheDocument();
   });
 });

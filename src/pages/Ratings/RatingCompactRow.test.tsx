@@ -30,6 +30,7 @@ const item: PreparedItem = {
   posterUrl: 'https://example.com/p.jpg',
   rating: 8.4,
   progress: 50,
+  watched: false,
   isMovie: false,
   watchlist: false,
   year: '2017',
@@ -74,6 +75,22 @@ describe('RatingCompactRow (D5)', () => {
     expect(screen.getByText(/2017 • Drama/)).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(mark.findNextEpisode).not.toHaveBeenCalled();
+  });
+
+  it('Filme: „Gesehen" nur wenn gesehen', () => {
+    const { rerender } = render(
+      <RatingCompactRow item={{ ...item, isMovie: true, progress: 0 }} uid="u1" theme={theme} />
+    );
+    expect(screen.queryByText(/Gesehen/)).not.toBeInTheDocument();
+
+    rerender(
+      <RatingCompactRow
+        item={{ ...item, isMovie: true, progress: 0, watched: true }}
+        uid="u1"
+        theme={theme}
+      />
+    );
+    expect(screen.getByText('✓ Gesehen')).toBeInTheDocument();
   });
 
   it('trägt die Grid-Delegations-Attribute (data-id, ratings-grid-item)', () => {

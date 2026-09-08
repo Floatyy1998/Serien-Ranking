@@ -54,6 +54,7 @@ const sampleItem: PreparedItem = {
   posterUrl: '',
   rating: 8,
   progress: 0,
+  watched: false,
   isMovie: false,
   watchlist: false,
   providers: [],

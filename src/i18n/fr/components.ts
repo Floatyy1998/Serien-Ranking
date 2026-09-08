@@ -87,7 +87,7 @@ const dict: Record<string, string> = {
   Begonnen: 'Commencé',
   'Zuletzt Hinzugefügt': 'Ajoutés récemment',
   Unveröffentlicht: 'Non sortis',
-  'Noch nicht begonnen': 'Pas encore commencé',
+  'Nicht gesehen': 'Non vu',
   Fortlaufend: 'En cours',
   'Filter & Sortierung': 'Filtres et tri',
   Suche: 'Recherche',

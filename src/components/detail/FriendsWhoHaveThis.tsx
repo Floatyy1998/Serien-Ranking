@@ -166,7 +166,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
                           backgroundSize: 'cover',
                         }
                       : {
-                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
+                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
                         }),
                     display: 'flex',
                     alignItems: 'center',

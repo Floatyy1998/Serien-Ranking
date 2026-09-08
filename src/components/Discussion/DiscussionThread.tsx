@@ -274,7 +274,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               padding: '10px 20px',
               borderRadius: '12px',
               border: 'none',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
               color: currentTheme.text.secondary,
               cursor: 'pointer',
               fontSize: '15px',

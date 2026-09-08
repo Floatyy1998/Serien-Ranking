@@ -1,5 +1,5 @@
 import type { useAuth } from '../../contexts/AuthContext';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -11,6 +11,8 @@ export interface PreparedItem {
   posterUrl: string;
   rating: number;
   progress: number;
+  /** Fertig geschaut: Serie zu 100 % gesehen bzw. Film als gesehen gewertet. */
+  watched: boolean;
   isMovie: boolean;
   watchlist: boolean;
   releaseDate?: string;
@@ -147,12 +149,14 @@ function getSeriesYear(s: Series): string | undefined {
 }
 
 export function prepareSeriesItem(s: Series, r: number): PreparedItem {
+  const progress = getSeriesProgress(s);
   return {
     id: s.id,
     title: s.title || '',
     posterUrl: getImageUrl(s.poster, 'w342'),
     rating: r,
-    progress: getSeriesProgress(s),
+    progress,
+    watched: progress === 100,
     isMovie: false,
     watchlist: s.watchlist === true,
     year: getSeriesYear(s),
@@ -168,6 +172,9 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
     posterUrl: getImageUrl(m.poster, 'w342'),
     rating: r,
     progress: 0,
+    // Filme haben keinen Fortschritt — „gesehen" kommt aus isMovieWatched
+    // (Flag ODER Bewertung), nie aus rating[uid].
+    watched: isMovieWatched(m),
     isMovie: true,
     watchlist: m.watchlist === true,
     releaseDate: m.release_date,

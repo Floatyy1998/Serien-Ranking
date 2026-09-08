@@ -338,7 +338,7 @@ export const RepliesSection: React.FC<{
                       flexShrink: 0,
                       background:
                         newReply.trim() || replyImages.length > 0
-                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`
                           : currentTheme.background.surface,
                       color:
                         newReply.trim() || replyImages.length > 0

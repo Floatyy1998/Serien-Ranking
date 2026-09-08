@@ -87,7 +87,7 @@ const dict: Record<string, string> = {
   'Neue Episoden': 'Nuevos episodios',
   Begonnen: 'Empezadas',
   Unveröffentlicht: 'Sin estrenar',
-  'Noch nicht begonnen': 'Aún sin empezar',
+  'Nicht gesehen': 'No visto',
   Fortlaufend: 'En emisión',
   'Filter & Sortierung': 'Filtros y orden',
   Suche: 'Buscar',

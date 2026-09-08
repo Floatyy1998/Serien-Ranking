@@ -95,6 +95,7 @@ const dict: Record<string, string> = {
   '{name} öffnen': 'Ouvrir {name}',
   'Auf deiner Watchlist': 'Dans ta liste',
   Fertig: 'Terminés',
+  '✓ Gesehen': '✓ Vu',
   '✓ Komplett gesehen': '✓ Entièrement vu',
   Watchlist: 'Ma liste',
   'Bewertung {rating}': 'Note {rating}',

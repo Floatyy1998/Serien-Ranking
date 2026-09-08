@@ -71,6 +71,7 @@ const dict: Record<string, string> = {
   'Info schließen': 'Fechar info',
   'Keine Beschreibung verfügbar.': 'Nenhuma descrição disponível.',
   Details: 'Detalhes',
+  '✓ Gesehen': '✓ Assistido',
   '✓ Komplett gesehen': '✓ Assistido por completo',
   'Zur Liste hinzufügen': 'Adicionar à lista',
   'Weil du „{title}" magst': 'Porque você curte "{title}"',

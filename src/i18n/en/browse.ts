@@ -101,6 +101,7 @@ const dict: Record<string, string> = {
   'Auf deiner Watchlist': 'On your watchlist',
   Fertig: 'Done',
   'Weiter: {episode}': 'Next: {episode}',
+  '✓ Gesehen': '✓ Watched',
   '✓ Komplett gesehen': '✓ Fully watched',
   Watchlist: 'Watchlist',
   'Bewertung {rating}': 'Rating {rating}',

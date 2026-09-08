@@ -168,6 +168,7 @@ describe('prepareSeriesItem', () => {
     expect(item.watchlist).toBe(true);
     expect(item.year).toBe('2008');
     expect(item.progress).toBe(100);
+    expect(item.watched).toBe(true);
     // "All" wird gefiltert, max 2 Genres
     expect(item.genres).toBe('Drama, Crime');
     expect(item.providers).toEqual([{ name: 'Netflix', logo: 'n.png' }]);
@@ -195,5 +196,17 @@ describe('prepareMovieItem', () => {
     expect(item.year).toBe('2010');
     expect(item.genres).toBe('Sci-Fi');
     expect(item.rating).toBe(9);
+    // Bewertung > 0 zählt als gesehen (isMovieWatched).
+    expect(item.watched).toBe(true);
+  });
+
+  it('wertet das watched-Flag ohne Bewertung als gesehen', () => {
+    const item = prepareMovieItem(makeMovie({ rating: {}, watched: true }), 0);
+    expect(item.watched).toBe(true);
+  });
+
+  it('unbewertet und nicht markiert bleibt ungesehen', () => {
+    const item = prepareMovieItem(makeMovie({ rating: {} }), 0);
+    expect(item.watched).toBe(false);
   });
 });

@@ -96,7 +96,7 @@ const dict: Record<string, string> = {
   Begonnen: 'Started',
   'Zuletzt Hinzugefügt': 'Recently added',
   Unveröffentlicht: 'Unreleased',
-  'Noch nicht begonnen': 'Not started',
+  'Nicht gesehen': 'Not watched',
   Fortlaufend: 'Ongoing',
   'Filter & Sortierung': 'Filter & sort',
   Suche: 'Search',

@@ -7,6 +7,8 @@ vi.mock('@mui/icons-material', () => ({
   PlaylistAdd: 'PlaylistAddIcon',
   Schedule: 'ScheduleIcon',
   Star: 'StarIcon',
+  Visibility: 'VisibilityIcon',
+  VisibilityOff: 'VisibilityOffIcon',
 }));
 
 import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';
@@ -42,6 +44,7 @@ describe('QuickFilterConstants', () => {
   it('ratings-Filter enthalten watchlist-spezifische Optionen', () => {
     const values = ratingsQuickFilters.map((f) => f.value);
     expect(values).toContain('watchlist');
+    expect(values).toContain('watched');
     expect(values).toContain('not-started');
     expect(values).toContain('ongoing');
   });
