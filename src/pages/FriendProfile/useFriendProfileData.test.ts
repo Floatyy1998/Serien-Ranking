@@ -14,10 +14,18 @@ const fb = vi.hoisted(() => {
   return { state, ref: (path: string) => makeRef(path) };
 });
 
-const routing = vi.hoisted(() => ({
-  params: {} as Record<string, string | undefined>,
-  navigate: vi.fn<(to: string) => void>(),
-}));
+const routing = vi.hoisted(() => {
+  const state = {
+    params: {} as Record<string, string | undefined>,
+    navigate: vi.fn<(to: string) => void>(),
+    searchParams: new URLSearchParams(),
+    setSearchParams: vi.fn<(next: URLSearchParams, opts?: { replace?: boolean }) => void>(),
+  };
+  state.setSearchParams.mockImplementation((next) => {
+    state.searchParams = next;
+  });
+  return state;
+});
 
 const catalog = vi.hoisted(() => ({
   series: null as Record<string, unknown> | null,
@@ -31,6 +39,7 @@ vi.mock('firebase/compat/database', () => ({}));
 vi.mock('react-router-dom', () => ({
   useParams: () => routing.params,
   useNavigate: () => routing.navigate,
+  useSearchParams: () => [routing.searchParams, routing.setSearchParams],
 }));
 vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeries: () => Promise.resolve(catalog.series),
@@ -43,6 +52,8 @@ beforeEach(() => {
   fb.state.dataByPath = {};
   routing.params = {};
   routing.navigate.mockReset();
+  routing.searchParams = new URLSearchParams();
+  routing.setSearchParams.mockClear();
   catalog.series = {};
   catalog.movies = {};
 });
@@ -132,6 +143,49 @@ describe('useFriendProfileData', () => {
     act(() => result.current.setFilters({}));
     act(() => result.current.setActiveTab('movies'));
     expect(result.current.currentItems[0].title).toBe('Inception');
+  });
+
+  it('übernimmt Tab und Filter aus der URL (Rückkehr von einer Detailseite)', async () => {
+    routing.params = { id: 'u6' };
+    routing.searchParams = new URLSearchParams('tab=movies&search=incep&sort=name-asc');
+    fb.state.dataByPath['users/u6/displayName'] = 'Erin';
+    fb.state.dataByPath['users/u6/series'] = { '1': { rating: { A: 7 } } };
+    fb.state.dataByPath['users/u6/movies'] = { '9': { rating: { A: 7 } } };
+    catalog.series = { '1': { title: 'Breaking Bad' } };
+    catalog.movies = { '9': { title: 'Inception' } };
+    const { result } = renderHook(() => useFriendProfileData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.activeTab).toBe('movies');
+    expect(result.current.filters.search).toBe('incep');
+    expect(result.current.filters.sortBy).toBe('name-asc');
+    expect(result.current.currentItems[0].title).toBe('Inception');
+  });
+
+  it('schreibt Tab und Filter in die URL, ohne einen History-Eintrag zu erzeugen', async () => {
+    routing.params = { id: 'u7' };
+    fb.state.dataByPath['users/u7/displayName'] = 'Frank';
+    fb.state.dataByPath['users/u7/series'] = {};
+    fb.state.dataByPath['users/u7/movies'] = {};
+    const { result } = renderHook(() => useFriendProfileData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Startzustand (Serien, ungefiltert) landet nicht in der URL.
+    expect(routing.setSearchParams).not.toHaveBeenCalled();
+
+    act(() => result.current.setActiveTab('movies'));
+    await waitFor(() => expect(routing.searchParams.get('tab')).toBe('movies'));
+    expect(routing.setSearchParams).toHaveBeenLastCalledWith(expect.anything(), {
+      replace: true,
+    });
+
+    act(() => result.current.setFilters({ search: 'dune', genre: 'Alle' }));
+    await waitFor(() => expect(routing.searchParams.get('search')).toBe('dune'));
+    // "Alle" ist der Standard und bleibt aus der URL raus.
+    expect(routing.searchParams.get('genre')).toBeNull();
+
+    act(() => result.current.setActiveTab('series'));
+    await waitFor(() => expect(routing.searchParams.get('tab')).toBeNull());
   });
 
   it('navigiert bei Item-Klick zur Detailseite und zu Taste-Match', async () => {

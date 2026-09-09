@@ -12,10 +12,18 @@ const fb = vi.hoisted(() => {
   return { state, ref: (path: string) => makeRef(path) };
 });
 
-const routing = vi.hoisted(() => ({
-  params: {} as Record<string, string | undefined>,
-  navigate: vi.fn<(to: string) => void>(),
-}));
+const routing = vi.hoisted(() => {
+  const state = {
+    params: {} as Record<string, string | undefined>,
+    navigate: vi.fn<(to: string) => void>(),
+    searchParams: new URLSearchParams(),
+    setSearchParams: vi.fn<(next: URLSearchParams, opts?: { replace?: boolean }) => void>(),
+  };
+  state.setSearchParams.mockImplementation((next) => {
+    state.searchParams = next;
+  });
+  return state;
+});
 
 const cat = vi.hoisted(() => ({
   series: {} as Record<string, unknown> | null,
@@ -29,6 +37,7 @@ vi.mock('firebase/compat/database', () => ({}));
 vi.mock('react-router-dom', () => ({
   useParams: () => routing.params,
   useNavigate: () => routing.navigate,
+  useSearchParams: () => [routing.searchParams, routing.setSearchParams],
 }));
 vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeries: () => Promise.resolve(cat.series),
@@ -47,6 +56,8 @@ beforeEach(() => {
   fb.state.dataByPath = {};
   routing.params = {};
   routing.navigate.mockReset();
+  routing.searchParams = new URLSearchParams();
+  routing.setSearchParams.mockClear();
   cat.series = {};
   cat.movies = {};
 });
@@ -102,6 +113,31 @@ describe('usePublicProfileData', () => {
     // averageRating berücksichtigt Serien + Filme: (9 + 4 + 7)/3
     expect(result.current.averageRating).toBeCloseTo((9 + 4 + 7) / 3, 5);
     expect(result.current.itemsWithRatingCount).toBe(3);
+  });
+
+  it('übernimmt Tab und Filter aus der URL und schreibt Änderungen zurück', async () => {
+    routing.params = { publicId: 'pub9' };
+    routing.searchParams = new URLSearchParams('tab=movies&search=movie');
+    fb.state.dataByPath['publicProfiles/pub9'] = { userId: 'u9' };
+    fb.state.dataByPath['users/u9/isPublicProfile'] = true;
+    fb.state.dataByPath['users/u9/username'] = 'Nina';
+    fb.state.dataByPath['users/u9/series'] = { '10': { rating: { Action: 9 } } };
+    fb.state.dataByPath['users/u9/movies'] = { '30': { rating: { Drama: 7 } } };
+    cat.series = { '10': { title: 'High' } };
+    cat.movies = { '30': { title: 'Movie X' } };
+
+    const { result } = renderHook(() => usePublicProfileData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.activeTab).toBe('movies');
+    expect(result.current.filters.search).toBe('movie');
+    expect(result.current.currentItems[0].title).toBe('Movie X');
+
+    act(() => result.current.setActiveTab('series'));
+    await waitFor(() => expect(routing.searchParams.get('tab')).toBeNull());
+    expect(routing.setSearchParams).toHaveBeenLastCalledWith(expect.anything(), {
+      replace: true,
+    });
   });
 
   it('navigiert bei Item-Klick zur Film-Detailseite', async () => {

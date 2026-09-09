@@ -4,7 +4,7 @@ import {
 } from '../../services/catalog/staticCatalog';
 import { dbRef, dbGet, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
 import type { Series } from '../../types/Series';
@@ -250,14 +250,42 @@ export interface UseFriendProfileDataReturn {
 export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   const { id: friendId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [friendName, setFriendName] = useState('');
   const [friendSeries, setFriendSeries] = useState<FriendItem[]>([]);
   const [friendMovies, setFriendMovies] = useState<FriendItem[]>([]);
-  const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
-  const [filters, setFilters] = useState<Filters>({});
+  // Tab und Filter leben in der URL (wie auf der eigenen Bewertungsseite): die
+  // Route wird beim Zurückkommen von einer Detailseite neu gemountet, reiner
+  // Component-State fiele dabei auf "Serien, ungefiltert, ganz oben" zurück.
+  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() =>
+    searchParams.get('tab') === 'movies' ? 'movies' : 'series'
+  );
+  const [filters, setFilters] = useState<Filters>(() => ({
+    genre: searchParams.get('genre') || undefined,
+    provider: searchParams.get('provider') || undefined,
+    quickFilter: searchParams.get('filter') || undefined,
+    search: searchParams.get('search') || undefined,
+    sortBy: searchParams.get('sort') || undefined,
+  }));
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    const sync = (key: string, value?: string) => {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    };
+    sync('tab', activeTab === 'movies' ? 'movies' : undefined);
+    sync('genre', filters.genre && filters.genre !== 'Alle' ? filters.genre : undefined);
+    sync('provider', filters.provider);
+    sync('filter', filters.quickFilter);
+    sync('search', filters.search);
+    sync('sort', filters.sortBy);
+    if (next.toString() === searchParams.toString()) return;
+    setSearchParams(next, { replace: true });
+  }, [activeTab, filters, searchParams, setSearchParams]);
 
   useEffect(() => {
     const loadFriendData = async () => {
