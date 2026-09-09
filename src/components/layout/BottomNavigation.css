@@ -40,6 +40,12 @@
   bottom: max(4px, calc(env(safe-area-inset-bottom) - 16px));
 }
 
+/* --dock-top muss der iOS-Sonderregel folgen, sonst schweben Filter-FAB und
+   Nach-oben-Pfeil dort zu hoch ueber dem Dock. */
+:root.native-ios {
+  --dock-top: calc(max(4px, env(safe-area-inset-bottom) - 16px) + var(--dock-height));
+}
+
 .nav-container {
   display: flex;
   justify-content: space-around;

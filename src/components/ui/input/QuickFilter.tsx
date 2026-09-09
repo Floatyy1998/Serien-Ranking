@@ -144,7 +144,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           onClick={() => setIsOpen(true)}
           style={{
             position: 'fixed',
-            bottom: hasBottomNav ? '95px' : '30px',
+            bottom: hasBottomNav ? 'calc(var(--dock-top) + 12px)' : '30px',
             right: '20px',
             background: `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`,
             border: 'none',

@@ -66,6 +66,11 @@
   --dock-height: 66px;
   --dock-gap: 12px;
   --dock-reserve: calc(var(--dock-height) + var(--dock-gap) * 2 + var(--safe-bottom));
+  /* Oberkante des Docks. Schwebende Buttons (Filter-FAB, Nach-oben-Pfeil)
+     setzen ihr bottom hierauf — feste Pixelwerte verschwinden sonst unter dem
+     Dock, sobald die Safe-Area waechst (Android-Edge-to-Edge mit
+     3-Tasten-Leiste). Spiegelt die bottom-Regel von .mobile-bottom-navigation. */
+  --dock-top: calc(var(--dock-gap) + var(--safe-bottom) + var(--dock-height));
   /* Atem-Raum am Seitenende. Die Shell reserviert den Dock-Platz bereits —
      Seiten setzen NUR noch diesen Wert, nie eigene 80–120px-Polster. */
   --page-bottom-gap: var(--space-6);

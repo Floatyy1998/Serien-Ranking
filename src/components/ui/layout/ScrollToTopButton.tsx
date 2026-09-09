@@ -63,9 +63,11 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
     }
   };
 
-  // navbar (~60px) + bottom offset (12px) + spacing (16px) = 88px with nav
-  const baseBottom = hasNav ? 88 : 24;
-  const bottom = `${baseBottom + bottomOffset}px`;
+  // Ueber dem Dock: --dock-top traegt Dock-Hoehe + Safe-Area, feste Pixel
+  // rutschten sonst darunter (Android-Edge-to-Edge mit 3-Tasten-Leiste).
+  const bottom = hasNav
+    ? `calc(var(--dock-top) + ${12 + bottomOffset}px)`
+    : `${24 + bottomOffset}px`;
 
   return (
     <AnimatePresence>
