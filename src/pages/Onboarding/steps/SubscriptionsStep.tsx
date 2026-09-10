@@ -7,6 +7,7 @@ import { normalizeProviderName } from '../../../lib/provider/providerName';
 import { watchRegion } from '../../../services/settings/region';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { TableOfContents } from '../components/TableOfContents';
+import { ACT_COUNT } from '../data/acts';
 import { t } from '../../../services/i18n';
 
 interface Props {
@@ -167,7 +168,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                     {t('Programm')}
                   </span>
                   <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                    {t('5 Akte')}
+                    {t('{n} Akte', { n: ACT_COUNT })}
                   </span>
                 </div>
                 <TableOfContents currentStep="subscriptions" variant="horizontal" delay={0.4} />
@@ -288,10 +289,11 @@ export const SubscriptionsStep: React.FC<Props> = ({
             gap: 12,
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '20px 0 24px 0',
+            padding: '32px 0 24px 0',
             position: 'sticky',
             bottom: 0,
-            background: 'linear-gradient(to top, var(--ob-stage, #2b1a2e) 60%, transparent)',
+            background:
+              'linear-gradient(to top, var(--ob-stage, #2b1a2e) 55%, color-mix(in srgb, var(--ob-stage, #2b1a2e) 70%, transparent) 80%, transparent)',
             marginTop: 'auto',
           }}
         >

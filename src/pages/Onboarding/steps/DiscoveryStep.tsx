@@ -4,6 +4,7 @@ import { ContentCard, type WatchSummary } from '../components/ContentCard';
 import { CoverWall } from '../components/CoverWall';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
+import { ACT_COUNT } from '../data/acts';
 import { WatchStatusSheet } from '../components/WatchStatusSheet';
 import type { WatchTarget } from '../hooks/useApplyWatchProgress';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
@@ -207,7 +208,10 @@ export const DiscoveryStep: React.FC<Props> = ({
                   ×
                 </button>
               )}
-              <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)', fontSize: 10 }}>
+              <span
+                className="ob-mono ob-search__count"
+                style={{ color: 'rgba(244,237,224,0.4)', fontSize: 10 }}
+              >
                 {addedCount.toString().padStart(2, '0')}
                 <span className="ob-search__count-label" style={{ opacity: 0.5 }}>
                   {' '}
@@ -252,7 +256,7 @@ export const DiscoveryStep: React.FC<Props> = ({
                   {t('Programm')}
                 </span>
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  {t('4 Akte')}
+                  {t('{n} Akte', { n: ACT_COUNT })}
                 </span>
               </div>
               <TableOfContents
@@ -349,8 +353,7 @@ export const DiscoveryStep: React.FC<Props> = ({
           style={{
             position: 'relative',
             zIndex: 3,
-            padding:
-              'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) calc(20px + var(--safe-bottom))',
+            padding: 'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) clamp(16px, 2.5vw, 24px)',
             background: 'linear-gradient(180deg, transparent 0%, var(--ob-stage) 50%)',
           }}
         >

@@ -423,8 +423,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
 
               <div
                 style={{
-                  padding:
-                    'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) calc(20px + env(safe-area-inset-bottom))',
+                  padding: 'clamp(14px, 2vw, 20px) clamp(20px, 5vw, 56px) clamp(16px, 2.5vw, 24px)',
                   background: 'linear-gradient(180deg, transparent 0%, var(--ob-stage) 55%)',
                 }}
               >

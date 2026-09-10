@@ -81,8 +81,9 @@ const dict: Record<string, string> = {
   'Was streamst du': 'What you stream',
   'Vorhang auf': 'Showtime',
   Programm: 'Program',
-  '4 Akte': '4 acts',
-  '5 Akte': '5 acts',
+  '{n} Akte': '{n} acts',
+  'Dein Begleiter': 'Your companion',
+  Pet: 'Pet',
 
   // --- Onboarding: Welcome ---
   '01 — Kuration': '01 — Curation',
@@ -168,7 +169,7 @@ const dict: Record<string, string> = {
   'Setup läuft …': 'Setting up …',
   'Wir bereiten': 'Preparing',
   'deine Bühne vor.': 'your stage.',
-  'Kapitel 04 — Premiere': 'Chapter 04 — Premiere',
+  'Kapitel 06 — Premiere': 'Chapter 06 — Premiere',
   Vorhang: 'Curtain',
   'auf.': 'up.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -228,7 +229,7 @@ const dict: Record<string, string> = {
   'Staffel 4 · Folge 12': 'Season 4 · Episode 12',
   // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
   // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
-  '04 — Premiere': '04 — Premiere',
+  '06 — Premiere': '06 — Premiere',
 };
 
 export default dict;

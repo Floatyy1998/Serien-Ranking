@@ -171,7 +171,7 @@ export const CompletionStep: React.FC<Props> = ({
             {t('← zurück')}
           </button>
           <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.55 }}>
-            {t('04 — Premiere')}
+            {t('06 — Premiere')}
           </span>
         </div>
 
@@ -182,7 +182,7 @@ export const CompletionStep: React.FC<Props> = ({
           className="ob-mono"
           style={{ color: 'rgba(244,237,224,0.55)' }}
         >
-          {t('Kapitel 04 — Premiere')}
+          {t('Kapitel 06 — Premiere')}
         </motion.span>
 
         <h1

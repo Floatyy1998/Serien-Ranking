@@ -77,8 +77,9 @@ const dict: Record<string, string> = {
   'Was läuft, was schaust, was willst du verfolgen?':
     "Qu'est-ce qui passe, qu'est-ce que tu regardes, qu'est-ce que tu veux suivre ?",
   Programm: 'Programme',
-  '4 Akte': '4 actes',
-  '5 Akte': '5 actes',
+  '{n} Akte': '{n} actes',
+  'Dein Begleiter': 'Ton compagnon',
+  Pet: 'Compagnon',
   'Wie dürfen wir dich nennen?': "Comment veux-tu qu'on t'appelle ?",
   'Dein Name': 'Ton nom',
   'So heißt du in der App — andere Nutzer können diesen Namen sehen.':
@@ -151,7 +152,7 @@ const dict: Record<string, string> = {
   überspringen: 'passer',
   'Wir bereiten': 'On prépare',
   'deine Bühne vor.': 'ta scène.',
-  'Kapitel 04 — Premiere': 'Chapitre 04 — Première',
+  'Kapitel 06 — Premiere': 'Chapitre 06 — Première',
   Vorhang: 'Lever',
   'auf.': 'de rideau.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -209,7 +210,7 @@ const dict: Record<string, string> = {
   'Staffel 2 · Folge 5': 'Saison 2 · Épisode 5',
   'Staffel 1 · Folge 8': 'Saison 1 · Épisode 8',
   'Staffel 4 · Folge 12': 'Saison 4 · Épisode 12',
-  '04 — Premiere': '04 — Première',
+  '06 — Premiere': '06 — Première',
 };
 
 export default dict;

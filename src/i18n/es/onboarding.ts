@@ -77,8 +77,9 @@ const dict: Record<string, string> = {
     'Así aparecerás en la app: otros usuarios podrán ver este nombre.',
   'wähle bis zu {max} richtungen': 'elige hasta {max} géneros',
   Programm: 'Programa',
-  '4 Akte': '4 actos',
-  '5 Akte': '5 actos',
+  '{n} Akte': '{n} actos',
+  'Dein Begleiter': 'Tu compañero',
+  Pet: 'Mascota',
   '01 — Kuration': '01 — Selección',
   'Wie dürfen wir dich nennen?': '¿Cómo te llamamos?',
   'Dein Name': 'Tu nombre',
@@ -153,7 +154,7 @@ const dict: Record<string, string> = {
   'Setup läuft …': 'Configurando …',
   'Wir bereiten': 'Estamos preparando',
   'deine Bühne vor.': 'tu escenario.',
-  'Kapitel 04 — Premiere': 'Capítulo 04 — Estreno',
+  'Kapitel 06 — Premiere': 'Capítulo 06 — Estreno',
   Vorhang: 'Se abre',
   'auf.': 'el telón.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -210,7 +211,7 @@ const dict: Record<string, string> = {
   'Staffel 2 · Folge 5': 'Temporada 2 · Episodio 5',
   'Staffel 1 · Folge 8': 'Temporada 1 · Episodio 8',
   'Staffel 4 · Folge 12': 'Temporada 4 · Episodio 12',
-  '04 — Premiere': '04 — Estreno',
+  '06 — Premiere': '06 — Estreno',
 };
 
 export default dict;

@@ -81,28 +81,33 @@ export const CoverWall = memo(({ tvGenreIds = [], rows = 3 }: Props) => {
 
   return (
     <>
-      <div className="ob-wall" aria-hidden>
-        {slices.map((row, idx) => {
-          const doubled = [...row, ...row];
-          return (
-            <div
-              key={idx}
-              className={`ob-wall-row ${idx % 2 === 1 ? 'ob-wall-row--rev' : ''}`}
-              style={{
-                animationDuration: `${110 + idx * 25}s`,
-                paddingLeft: idx === 1 ? '6%' : 0,
-              }}
-            >
-              {doubled.map((p, i) => (
-                <div
-                  key={`${idx}-${i}`}
-                  className="ob-wall-poster"
-                  style={{ backgroundImage: `url(https://image.tmdb.org/t/p/w342${p})` }}
-                />
-              ))}
-            </div>
-          );
-        })}
+      {/* Clip-Rahmen: die Wand ragt bewusst ueber den Rand hinaus. Ohne diesen
+          Rahmen zaehlt der Ueberstand zum scrollbaren Bereich des Elternteils —
+          auf dem Telefon liess sich die Seite dadurch weit nach rechts wischen. */}
+      <div className="ob-wall-clip" aria-hidden>
+        <div className="ob-wall">
+          {slices.map((row, idx) => {
+            const doubled = [...row, ...row];
+            return (
+              <div
+                key={idx}
+                className={`ob-wall-row ${idx % 2 === 1 ? 'ob-wall-row--rev' : ''}`}
+                style={{
+                  animationDuration: `${110 + idx * 25}s`,
+                  paddingLeft: idx === 1 ? '6%' : 0,
+                }}
+              >
+                {doubled.map((p, i) => (
+                  <div
+                    key={`${idx}-${i}`}
+                    className="ob-wall-poster"
+                    style={{ backgroundImage: `url(https://image.tmdb.org/t/p/w342${p})` }}
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div className="ob-vignette" />
     </>

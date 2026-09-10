@@ -4,6 +4,7 @@ import { CoverWall } from '../components/CoverWall';
 import { GenreTile } from '../components/GenreTile';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
+import { ACT_COUNT } from '../data/acts';
 import { CURATED_GENRES, type CuratedGenre } from '../genres';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import { t } from '../../../services/i18n';
@@ -98,13 +99,8 @@ export const WelcomeStep: React.FC<Props> = ({
       <CoverWall tvGenreIds={selectedGenres.map((g) => g.tvId)} />
 
       <div
+        className="ob-step__body"
         style={{
-          position: 'relative',
-          zIndex: 2,
-          flex: 1,
-          minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column',
           padding: 'clamp(20px, 5vw, 56px) clamp(20px, 5vw, 56px) 0',
           gap: 'clamp(24px, 4vw, 40px)',
         }}
@@ -229,7 +225,7 @@ export const WelcomeStep: React.FC<Props> = ({
                     {t('Programm')}
                   </span>
                   <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                    {t('4 Akte')}
+                    {t('{n} Akte', { n: ACT_COUNT })}
                   </span>
                 </div>
                 <TableOfContents currentStep="welcome" variant="horizontal" delay={1.1} />
@@ -275,18 +271,10 @@ export const WelcomeStep: React.FC<Props> = ({
 
       {/* Sticky bottom action */}
       <motion.div
+        className="ob-step__foot"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.6, duration: 0.5 }}
-        style={{
-          position: 'relative',
-          zIndex: 3,
-          padding:
-            'clamp(14px, 2vw, 22px) clamp(20px, 5vw, 56px) calc(20px + env(safe-area-inset-bottom))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-        }}
       >
         <button onClick={onNext} disabled={selectedCount === 0 || nameTooShort} className="ob-cta">
           <span className="ob-cta__inner">

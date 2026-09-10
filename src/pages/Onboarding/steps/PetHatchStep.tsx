@@ -206,7 +206,16 @@ export const PetHatchStep: React.FC<Props> = ({
         >
           {t('Gestalt')}
         </span>
-        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
+        {/* Raster statt Querleiste: die hinteren Gestalten lagen sonst
+            unsichtbar rechts ausserhalb des Bildschirms. */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))',
+            gap: 10,
+            paddingBottom: 6,
+          }}
+        >
           {TYPES.map((x) => {
             const active = type === x.type;
             const hex = PET_COLORS[x.color] ?? PET_COLORS.blau;
@@ -218,8 +227,7 @@ export const PetHatchStep: React.FC<Props> = ({
                 aria-label={t(x.label)}
                 aria-pressed={active}
                 style={{
-                  flexShrink: 0,
-                  width: 84,
+                  minWidth: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',

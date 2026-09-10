@@ -2,6 +2,14 @@
    wird auch von Start/Login/Registrierung genutzt). ob-Präfix beibehalten,
    damit das Onboarding unverändert weiterläuft. */
 
+.ob-wall-clip {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .ob-wall {
   position: absolute;
   inset: -10% -14% -6% -14%;

@@ -119,7 +119,7 @@ export const GuestOnboardingPage: React.FC = () => {
             className="ob-link"
             style={{
               position: 'absolute',
-              top: 'calc(env(safe-area-inset-top) + 16px)',
+              top: 16,
               right: 'clamp(20px, 5vw, 40px)',
               zIndex: 11,
               fontSize: 12,
