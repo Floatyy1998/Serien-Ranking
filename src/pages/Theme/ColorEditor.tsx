@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 
@@ -21,11 +21,14 @@ interface ColorEditorProps {
 export const ColorEditor = memo(
   ({ category, color, currentTheme, onColorChange }: ColorEditorProps) => {
     const [draft, setDraft] = useState(color);
+    const [syncedColor, setSyncedColor] = useState(color);
 
-    // Sync draft when color changes externally (preset, color picker)
-    useEffect(() => {
+    // Prop-Sync im Render statt im Effect: ein Effect-setState pro Commit trieb den
+    // Farbwähler-Drag auf iOS in React-Error #185 (Nested-Update-Zähler > 50).
+    if (color !== syncedColor) {
+      setSyncedColor(color);
       setDraft(color);
-    }, [color]);
+    }
 
     const handleTextChange = (value: string) => {
       setDraft(value);

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./AuthContext', () => ({
@@ -22,6 +22,19 @@ vi.mock('firebase/compat/database', () => ({}));
 import { DynamicThemeProvider } from './ThemeProvider';
 import { useTheme } from './ThemeContext';
 
+let updateCount = 0;
+const Updater = () => {
+  const { updateTheme } = useTheme();
+  return (
+    <button
+      data-testid="update"
+      onClick={() => updateTheme({ primaryColor: `#00000${++updateCount}` })}
+    >
+      update
+    </button>
+  );
+};
+
 const Consumer = () => {
   const { currentTheme, syncMode } = useTheme();
   return <div data-testid="theme-value">{`${currentTheme.primary}|${syncMode}`}</div>;
@@ -30,6 +43,7 @@ const Consumer = () => {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  updateCount = 0;
 });
 
 describe('DynamicThemeProvider', () => {
@@ -53,5 +67,52 @@ describe('DynamicThemeProvider', () => {
       </DynamicThemeProvider>
     );
     expect(screen.getByText('themed child')).toBeInTheDocument();
+  });
+  it('bundles rapid theme updates into a single persisted write', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <DynamicThemeProvider>
+          <Updater />
+        </DynamicThemeProvider>
+      );
+
+      const button = screen.getByTestId('update');
+      act(() => {
+        fireEvent.click(button);
+        fireEvent.click(button);
+        fireEvent.click(button);
+      });
+      expect(localStorage.getItem('customTheme')).toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      const saved = JSON.parse(localStorage.getItem('customTheme') ?? '{}');
+      expect(saved.primaryColor).toBe('#000003');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('flushes a pending write on unmount', () => {
+    vi.useFakeTimers();
+    try {
+      const { unmount } = render(
+        <DynamicThemeProvider>
+          <Updater />
+        </DynamicThemeProvider>
+      );
+      act(() => {
+        fireEvent.click(screen.getByTestId('update'));
+      });
+      expect(localStorage.getItem('customTheme')).toBeNull();
+
+      unmount();
+      const saved = JSON.parse(localStorage.getItem('customTheme') ?? '{}');
+      expect(saved.primaryColor).toBe('#000001');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -83,4 +83,48 @@ describe('ColorEditor', () => {
     });
     expect(onColorChange).toHaveBeenCalledWith('primaryColor', '#123456');
   });
+  it('takes over an externally changed color without an effect round-trip', () => {
+    const { rerender } = render(
+      <ColorEditor
+        category={category}
+        color="#3355ff"
+        currentTheme={currentTheme}
+        onColorChange={vi.fn()}
+      />
+    );
+    const hexField = screen.getByLabelText('Primär – Hex-Wert') as HTMLInputElement;
+    expect(hexField.value).toBe('#3355ff');
+
+    rerender(
+      <ColorEditor
+        category={category}
+        color="#00ff00"
+        currentTheme={currentTheme}
+        onColorChange={vi.fn()}
+      />
+    );
+    expect(hexField.value).toBe('#00ff00');
+  });
+
+  it('keeps an invalid draft while the prop stays unchanged', () => {
+    const { rerender } = render(
+      <ColorEditor
+        category={category}
+        color="#3355ff"
+        currentTheme={currentTheme}
+        onColorChange={vi.fn()}
+      />
+    );
+    const hexField = screen.getByLabelText('Primär – Hex-Wert') as HTMLInputElement;
+    fireEvent.change(hexField, { target: { value: '#33' } });
+    rerender(
+      <ColorEditor
+        category={category}
+        color="#3355ff"
+        currentTheme={currentTheme}
+        onColorChange={vi.fn()}
+      />
+    );
+    expect(hexField.value).toBe('#33');
+  });
 });

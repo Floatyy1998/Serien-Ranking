@@ -1,6 +1,6 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import type { UserThemeConfig } from '../theme/dynamicTheme';
 import {
@@ -197,8 +197,60 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     [syncMode, user?.uid]
   );
 
+  // Persistenz wird gebündelt: der Farbwähler feuert beim Ziehen im Sekundentakt
+  // dutzende Änderungen, die sonst je einen localStorage- und Firebase-Write auslösen.
+  const pendingSaveRef = useRef<UserThemeConfig | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveThemeConfigRef = useRef(saveThemeConfig);
+  useEffect(() => {
+    saveThemeConfigRef.current = saveThemeConfig;
+  }, [saveThemeConfig]);
+
+  const cancelPendingSave = useCallback(() => {
+    if (saveTimerRef.current !== null) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    pendingSaveRef.current = null;
+  }, []);
+
+  const flushPendingSave = useCallback(() => {
+    if (saveTimerRef.current !== null) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const pending = pendingSaveRef.current;
+    if (!pending) return;
+    pendingSaveRef.current = null;
+    void saveThemeConfigRef.current(pending);
+  }, []);
+
+  const queueSaveThemeConfig = useCallback(
+    (config: UserThemeConfig) => {
+      pendingSaveRef.current = config;
+      if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(flushPendingSave, 300);
+    },
+    [flushPendingSave]
+  );
+
+  // Ausstehende Änderung nicht verlieren, wenn die App weggeht oder unmountet
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushPendingSave();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', flushPendingSave);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', flushPendingSave);
+      flushPendingSave();
+    };
+  }, [flushPendingSave]);
+
   // Theme zurücksetzen
   const resetTheme = useCallback(async () => {
+    cancelPendingSave();
     setUserConfig(defaultThemeConfig);
     const newTheme = generateDynamicTheme(defaultThemeConfig);
     setCurrentTheme(newTheme);
@@ -213,7 +265,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
         // ignore — local reset is what the user actually sees, cloud cleanup is best-effort
       }
     }
-  }, [user?.uid, updateCSSVariables]);
+  }, [user?.uid, updateCSSVariables, cancelPendingSave]);
 
   // Theme laden (localStorage hat IMMER Priorität, dann Firebase als Fallback)
   const loadTheme = useCallback(async () => {
@@ -291,16 +343,17 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       // CSS-Variablen für dynamisches Styling setzen (mit Config übergeben)
       updateCSSVariables(newTheme, validatedConfig);
 
-      // Auto-save with the new config directly
-      saveThemeConfig(validatedConfig);
+      // Auto-save gebündelt, damit ein Drag im Farbwähler keine Write-Flut auslöst
+      queueSaveThemeConfig(validatedConfig);
     },
-    [userConfig, updateCSSVariables, saveThemeConfig]
+    [userConfig, updateCSSVariables, queueSaveThemeConfig]
   );
 
   // Theme speichern (verwendet aktuellen State)
   const saveTheme = useCallback(async () => {
+    cancelPendingSave();
     await saveThemeConfig(userConfig);
-  }, [saveThemeConfig, userConfig]);
+  }, [saveThemeConfig, userConfig, cancelPendingSave]);
 
   // Sync-Mode setzen und speichern
   const setSyncMode = useCallback((mode: 'local' | 'cloud') => {
