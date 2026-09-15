@@ -101,6 +101,16 @@ const dict: Record<string, string> = {
   Sortierung: 'Ordenar por',
   Alle: 'Todo',
   Schnellbewertung: 'Valoración rápida',
+  // Valoracion detallada (segundo nivel al arrastrar)
+  'Nach Genre': 'Por género',
+  'Jedes Genre einzeln bewerten': 'Valora cada género por separado',
+  Angleichen: 'Igualar',
+  'Gespeichert wird je Genre — gesamt ergibt das {wert}.':
+    'Se guarda por género: en total da {wert}.',
+  'Alle bewerteten Genres liegen auf {wert}. Zieh einen Regler für ein eigenes Urteil.':
+    'Todos los géneros valorados están en {wert}. Mueve un control para valorarlo aparte.',
+  'Genres des Titels': 'Géneros de este título',
+  'Weitere Genres': 'Más géneros',
   'Keine weiteren Folgen': 'No hay más episodios',
   '{titel} bewerten?': '¿Valorar {titel}?',
   'Schnell-Bewertung': 'Valoración rápida',

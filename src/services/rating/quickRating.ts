@@ -35,10 +35,12 @@ export async function saveQuickRating(
   uid: string,
   item: QuickRatingItem,
   rating: number,
-  owned?: Series | Movie
+  owned?: Series | Movie,
+  genreRatings?: Record<string, number>
 ): Promise<void> {
   const genres = owned?.genre?.genres ?? [];
-  const ratings = buildGenreRatingMap(genres, rating);
+  // Aufgeklappte Detailstufe liefert eigene Werte je Genre.
+  const ratings = genreRatings ? { ...genreRatings } : buildGenreRatingMap(genres, rating);
 
   if (item.type === 'series') {
     await dbRef(paths.seriesRating(uid, item.id)).set(ratings);

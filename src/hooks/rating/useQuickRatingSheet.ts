@@ -18,12 +18,22 @@ export interface QuickRatingSheetState {
   /** Sheet ging direkt nach „als gesehen markiert" auf. */
   afterWatched: boolean;
   initialRating: number;
+  /** Genres des Titels — Grundlage der aufklappbaren Detailstufe. */
+  genres: string[];
+  /** Serie oder Film — beide haben eigene Genre-Listen. */
+  mediaType: 'series' | 'movie';
+  /** Bereits gespeicherte Bewertung je Genre. */
+  genreRatings: Record<string, number>;
 }
 
 interface Options {
   onSaved?: (message: string) => void;
   onError?: (message: string) => void;
 }
+
+/** Stabile Leerwerte — sonst startet das Sheet bei jedem Render neu. */
+const EMPTY_GENRES: string[] = [];
+const EMPTY_RATINGS: Record<string, number> = {};
 
 /**
  * Zustand und Speichern des Schnellbewertungs-Sheets für Suchtreffer. Die
@@ -52,13 +62,13 @@ export function useQuickRatingSheet({ onSaved, onError }: Options = {}) {
   const closeQuickRating = useCallback(() => setTarget(null), []);
 
   const save = useCallback(
-    async (rating: number) => {
+    async (rating: number, genreRatings?: Record<string, number>) => {
       const current = target;
       setTarget(null);
       if (!current || !user || rating <= 0) return;
       const { item } = current;
       try {
-        await saveQuickRating(user.uid, item, rating, findOwned(item));
+        await saveQuickRating(user.uid, item, rating, findOwned(item), genreRatings);
         onSaved?.(t('Bewertung für "{title}" wurde gespeichert!', { title: item.title }));
       } catch (error) {
         console.error('Failed to save quick rating:', error);
@@ -68,16 +78,21 @@ export function useQuickRatingSheet({ onSaved, onError }: Options = {}) {
     [target, user, findOwned, onSaved, onError]
   );
 
-  const quickRating = useMemo<QuickRatingSheetState>(
-    () => ({
+  const quickRating = useMemo<QuickRatingSheetState>(() => {
+    const owned = target ? findOwned(target.item) : undefined;
+    const stored = owned?.rating;
+    return {
       open: target !== null,
       title: target?.item.title ?? '',
       afterWatched: target?.afterWatched ?? false,
       // Eine Nachkommastelle wie auf der Karte — der Regler arbeitet in 0,1-Schritten.
       initialRating: Math.round((target?.item.userRating ?? 0) * 10) / 10,
-    }),
-    [target]
-  );
+      genres: owned?.genre?.genres ?? EMPTY_GENRES,
+      mediaType: target?.item.type ?? 'series',
+      genreRatings:
+        stored && typeof stored === 'object' ? (stored as Record<string, number>) : EMPTY_RATINGS,
+    };
+  }, [target, findOwned]);
 
   return { quickRating, openQuickRating, closeQuickRating, saveQuickRating: save };
 }

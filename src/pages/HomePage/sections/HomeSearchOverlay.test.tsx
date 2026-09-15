@@ -287,7 +287,8 @@ describe('HomeSearchOverlay Poster-Aktionen', () => {
       'u1',
       { id: 1, type: 'series', title: 'Breaking Bad', userRating: 8 },
       7,
-      owned
+      owned,
+      undefined
     );
     expect(screen.queryByTestId('quick-rating')).toBeNull();
   });

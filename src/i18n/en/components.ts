@@ -111,6 +111,16 @@ const dict: Record<string, string> = {
 
   // QuickRatingSheet / RatingQueueSheet
   Schnellbewertung: 'Quick rating',
+  // Ausfuehrliche Bewertung (zweite Zieh-Stufe)
+  'Nach Genre': 'By genre',
+  'Jedes Genre einzeln bewerten': 'Rate each genre separately',
+  Angleichen: 'Level out',
+  'Gespeichert wird je Genre — gesamt ergibt das {wert}.':
+    'Saved per genre — that averages out to {wert}.',
+  'Alle bewerteten Genres liegen auf {wert}. Zieh einen Regler für ein eigenes Urteil.':
+    'Every rated genre sits at {wert}. Drag a slider to judge one on its own.',
+  'Genres des Titels': 'Genres of this title',
+  'Weitere Genres': 'More genres',
   'Keine weiteren Folgen': 'No more episodes',
   '{titel} bewerten?': 'Rate {titel}?',
   'Schnell-Bewertung': 'Quick rating',

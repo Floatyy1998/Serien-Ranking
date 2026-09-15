@@ -716,6 +716,9 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
               seriesTitle={quickRating.title}
               eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
               initialRating={quickRating.initialRating}
+              genres={quickRating.genres}
+              mediaType={quickRating.mediaType}
+              initialGenreRatings={quickRating.genreRatings}
               onRate={saveQuickRating}
               zIndex={OVERLAY_SHEET_Z}
             />

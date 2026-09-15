@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { dbRef, paths } from '../../services/db/ref';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { buildGenreRatingMap, calculateOverallRating } from '../../lib/rating/rating';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { trackRatingSaved } from '../../services/firebase/analytics';
 import type { Series } from '../../types/Series';
@@ -59,20 +59,16 @@ export const useQuickSeasonRating = () => {
   }, []);
 
   const saveQuickRating = useCallback(
-    async (rating: number) => {
+    async (rating: number, genreRatings?: Record<string, number>) => {
       if (!user || !state.series) return;
 
       const series = state.series;
       const genres = series.genre?.genres || [];
-      const ratingsToSave: Record<string, number> = {};
-
-      if (genres.length > 0) {
-        genres.forEach((genre) => {
-          ratingsToSave[genre] = rating;
-        });
-      } else {
-        ratingsToSave['General'] = rating;
-      }
+      // Aufgeklappte Detailstufe liefert eigene Werte je Genre; sonst wird der
+      // Gesamtwert über alle Genres gefächert.
+      const ratingsToSave: Record<string, number> = genreRatings
+        ? { ...genreRatings }
+        : buildGenreRatingMap(genres, rating);
 
       try {
         await dbRef(paths.seriesRating(user.uid, series.id)).set(ratingsToSave);

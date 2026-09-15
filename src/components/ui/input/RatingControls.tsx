@@ -163,8 +163,17 @@ export const RatingControls: React.FC<RatingControlsProps> = ({ value, onChange 
             onClick={() => handleChange(v)}
             whileTap={tapScaleTight}
             style={{
-              width: '32px',
-              height: '32px',
+              // Die globale 44px-Touch-Regel blies die Zahlen auf und schob 1
+              // und 10 aus dem Sheet — inline überstimmt sie, die Reihe teilt
+              // sich stattdessen die verfügbare Breite (gedeckelt, damit die
+              // Zahlen auf dem Desktop nicht auseinanderlaufen).
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: 0,
+              minWidth: 0,
+              maxWidth: '44px',
+              minHeight: 0,
+              height: '38px',
               borderRadius: 'var(--radius-sm)',
               border: 'none',
               background: Math.round(value) === v ? accent : currentTheme.background.surface,

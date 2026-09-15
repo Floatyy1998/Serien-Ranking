@@ -96,6 +96,16 @@ const dict: Record<string, string> = {
   'Beste zuerst': "Mieux notés d'abord",
   'Schlechteste zuerst': "Moins bien notés d'abord",
   'Neueste zuerst': "Plus récents d'abord",
+  // Note detaillee (deuxieme niveau)
+  'Nach Genre': 'Par genre',
+  'Jedes Genre einzeln bewerten': 'Noter chaque genre séparément',
+  Angleichen: 'Uniformiser',
+  'Gespeichert wird je Genre — gesamt ergibt das {wert}.':
+    'Enregistré par genre — au total, cela donne {wert}.',
+  'Alle bewerteten Genres liegen auf {wert}. Zieh einen Regler für ein eigenes Urteil.':
+    'Tous les genres notés sont à {wert}. Faites glisser un curseur pour en juger un séparément.',
+  'Genres des Titels': 'Genres de ce titre',
+  'Weitere Genres': 'Autres genres',
   'Keine weiteren Folgen': 'Plus aucun épisode',
   Schnellfilter: 'Filtres rapides',
   Sortierung: 'Trier par',

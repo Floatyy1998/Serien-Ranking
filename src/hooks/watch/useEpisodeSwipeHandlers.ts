@@ -50,7 +50,7 @@ interface EpisodeSwipeHandlersReturn {
   quickRatingSeries: Series | null;
   quickRatingSeasonNumber: number;
   closeQuickRating: () => void;
-  saveQuickRating: (rating: number) => Promise<void>;
+  saveQuickRating: (rating: number, genreRatings?: Record<string, number>) => Promise<void>;
   showQuickRating: (series: Series, seasonNumber: number) => void;
 }
 

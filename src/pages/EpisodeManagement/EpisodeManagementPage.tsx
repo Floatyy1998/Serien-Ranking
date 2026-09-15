@@ -156,6 +156,8 @@ export const EpisodeManagementPage = () => {
         onClose={closeQuickRating}
         seriesTitle={quickRatingSeries?.title || ''}
         seasonNumber={quickRatingSeasonNumber}
+        genres={quickRatingSeries?.genre?.genres}
+        initialGenreRatings={quickRatingSeries?.rating}
         onRate={saveQuickRating}
       />
 

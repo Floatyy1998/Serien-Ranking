@@ -549,8 +549,10 @@ export const HomePage: React.FC = () => {
         }}
         seriesTitle={quickRatingSeries?.title || ''}
         seasonNumber={quickRatingSeasonNumber}
-        onRate={async (rating) => {
-          await saveQuickRating(rating);
+        genres={quickRatingSeries?.genre?.genres}
+        initialGenreRatings={quickRatingSeries?.rating}
+        onRate={async (rating, genreRatings) => {
+          await saveQuickRating(rating, genreRatings);
           onRatedCallbackRef.current?.();
           onRatedCallbackRef.current = null;
         }}

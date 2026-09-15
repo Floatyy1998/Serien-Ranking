@@ -173,6 +173,8 @@ export const CalendarPage = () => {
           seriesTitle={quickRatingSeries?.title || ''}
           eyebrow={t('Schnellbewertung')}
           initialRating={quickRatingValue}
+          genres={quickRatingSeries?.genre?.genres}
+          initialGenreRatings={quickRatingSeries?.rating}
           onRate={saveQuickRating}
         />
       </div>
