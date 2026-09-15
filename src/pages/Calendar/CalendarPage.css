@@ -1283,6 +1283,7 @@
   .cal-mobile-header .cal-week-switcher {
     flex: 1;
     min-width: 0;
+    gap: 6px;
     /* Die Grundregel bringt 4px oben und 12px unten mit — damit saesse die
        Wochen-Nav hoeher als der zentrierte Toggle daneben. Der Abstand der
        Zeile kommt vom Kopf selbst. */
@@ -1348,6 +1349,16 @@
     font-size: 12.5px;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Ohne min-width bleibt der Chip so breit wie sein Text: die Zeile wuchs
+       damit ueber den Bildschirm hinaus und schob den Watchlist-Knopf raus.
+       Erst so greift auch das Ellipsis. */
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Die Pfeile behalten ihre Kantenlaenge, geschrumpft wird nur der Chip. */
+  .cal-mobile-header .cal-arrow-btn {
+    flex-shrink: 0;
   }
 }
 

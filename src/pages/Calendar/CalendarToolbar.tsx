@@ -109,7 +109,8 @@ const MobileWatchlistToggle = memo(({ watchlistOnly, onToggle }: FilterChipsProp
           : undefined
       }
     >
-      <Bookmark style={{ fontSize: 18 }} />
+      {/* 20px wie die Pfeile daneben — 18px liess das Icon kleiner wirken. */}
+      <Bookmark style={{ fontSize: 20 }} />
     </button>
   );
 });
