@@ -1283,8 +1283,14 @@
   .cal-mobile-header .cal-week-switcher {
     flex: 1;
     min-width: 0;
+    /* Die Grundregel bringt 4px oben und 12px unten mit — damit saesse die
+       Wochen-Nav hoeher als der zentrierte Toggle daneben. Der Abstand der
+       Zeile kommt vom Kopf selbst. */
+    padding: 0;
   }
 
+  /* Gehoert zur selben Zeile wie die Pfeile — also auch dieselbe Flaeche,
+     dieselbe Kantenlaenge und dieselbe Rundung. */
   .cal-wl-toggle {
     flex-shrink: 0;
     width: 44px;
@@ -1292,12 +1298,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: var(--glass-subtle);
-    border: 1px solid var(--glass-border-subtle);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--color-text-muted);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease;
+  }
+
+  .cal-wl-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .cal-wl-toggle:active {
+    transform: scale(0.92);
+  }
+
+  .cal-wl-toggle:focus-visible {
+    outline: 2px solid var(--theme-primary, #ef6f8a);
+    outline-offset: 2px;
   }
 
   .cal-entry-row {
