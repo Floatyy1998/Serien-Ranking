@@ -1,4 +1,5 @@
 import { Tune } from '@mui/icons-material';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { hapticSelect } from '../../../lib/interaction/haptics';
 import { t } from '../../../services/i18n';
@@ -35,6 +36,47 @@ const GENRE_COLORS: Record<string, string> = {
   Western: '#d9a066',
 };
 
+interface GenreRowProps {
+  genre: string;
+  value: number;
+  color: string;
+  mutedColor: string;
+  onChange: (genre: string, value: number) => void;
+}
+
+/**
+ * Eine Reihe für sich — sonst rendert jeder 0,1-Schritt am Regler alle Reihen
+ * neu und das Ziehen wird zäh.
+ */
+const GenreRow = memo(({ genre, value, color, mutedColor, onChange }: GenreRowProps) => (
+  <div className={`genre-detail-row${value > 0 ? '' : ' genre-detail-row--empty'}`}>
+    <div className="genre-detail-row-head">
+      <div className="genre-detail-name">
+        <i className="genre-detail-dot" style={{ background: color }} />
+        <span>{t(genre)}</span>
+      </div>
+      <span className="genre-detail-value" style={{ color: value > 0 ? color : mutedColor }}>
+        {value > 0 ? value.toFixed(1) : '–'}
+      </span>
+    </div>
+    <input
+      type="range"
+      min="0"
+      max="10"
+      step="0.1"
+      value={value}
+      onChange={(e) => onChange(genre, parseFloat(e.target.value))}
+      className="genre-detail-range"
+      aria-label={t('Bewertung {genre}', { genre: t(genre) })}
+      aria-valuetext={t('{value} von 10', { value: value.toFixed(1) })}
+      style={{
+        background: `linear-gradient(to right, ${color} 0%, ${color} ${value * 10}%, var(--color-background-surface) ${value * 10}%, var(--color-background-surface) 100%)`,
+      }}
+    />
+  </div>
+));
+GenreRow.displayName = 'GenreRow';
+
 interface GenreRatingDetailsProps {
   /** Genres des Titels — stehen oben und hängen am Gesamtregler. */
   ownGenres: string[];
@@ -69,45 +111,27 @@ export const GenreRatingDetails: React.FC<GenreRatingDetailsProps> = ({
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
 
-  const handleChange = (genre: string, next: number) => {
-    onChange(genre, next);
-    hapticSelect();
-  };
+  // Der Rückruf muss stabil bleiben, sonst greift das memo der Reihe nicht.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
-  const renderRow = (genre: string) => {
-    const color = GENRE_COLORS[genre] || accent;
-    const value = values[genre] ?? 0;
-    return (
-      <div key={genre} className={`genre-detail-row${value > 0 ? '' : ' genre-detail-row--empty'}`}>
-        <div className="genre-detail-row-head">
-          <div className="genre-detail-name">
-            <i className="genre-detail-dot" style={{ background: color }} />
-            <span>{t(genre)}</span>
-          </div>
-          <span
-            className="genre-detail-value"
-            style={{ color: value > 0 ? color : currentTheme.text.muted }}
-          >
-            {value > 0 ? value.toFixed(1) : '–'}
-          </span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="0.1"
-          value={value}
-          onChange={(e) => handleChange(genre, parseFloat(e.target.value))}
-          className="genre-detail-range"
-          aria-label={t('Bewertung {genre}', { genre: t(genre) })}
-          aria-valuetext={t('{value} von 10', { value: value.toFixed(1) })}
-          style={{
-            background: `linear-gradient(to right, ${color} 0%, ${color} ${value * 10}%, var(--color-background-surface) ${value * 10}%, var(--color-background-surface) 100%)`,
-          }}
-        />
-      </div>
-    );
-  };
+  const handleChange = useCallback((genre: string, next: number) => {
+    onChangeRef.current(genre, next);
+    hapticSelect();
+  }, []);
+
+  const renderRow = (genre: string) => (
+    <GenreRow
+      key={genre}
+      genre={genre}
+      value={values[genre] ?? 0}
+      color={GENRE_COLORS[genre] || accent}
+      mutedColor={currentTheme.text.muted}
+      onChange={handleChange}
+    />
+  );
 
   return (
     <div className="genre-detail">

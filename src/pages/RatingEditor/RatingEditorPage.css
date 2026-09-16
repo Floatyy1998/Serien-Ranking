@@ -288,6 +288,15 @@
   border-radius: var(--radius-lg);
 }
 
+/* Gleicher Grund wie im Schnellbewertungs-Sheet: eine Textauswahl neben dem
+   Regler laesst den naechsten Zug als natives Drag-and-Drop enden. */
+.rate-content,
+.rate-genre-item,
+.rate-slider-marks {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .rate-range,
 .rate-genre-range {
   width: 100%;

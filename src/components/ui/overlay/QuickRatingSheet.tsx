@@ -179,12 +179,19 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
       {/* Scrollbereich — die Aktionen bleiben darunter stehen, damit
           „Speichern" bei langer Genre-Liste nicht wegscrollt. */}
       <div
+        // Riegel gegen den Sperr-Cursor: faengt der Browser trotzdem einmal ein
+        // natives Drag an, wird es hier abgebrochen statt den Regler zu kapern.
+        onDragStart={(e) => e.preventDefault()}
         style={{
           flex: '1 1 auto',
           minHeight: 0,
           overflowY: 'auto',
           overscrollBehavior: 'contain',
           padding: '4px 24px 16px',
+          // Eine Textauswahl neben den Reglern laesst den naechsten Zug als
+          // natives Drag-and-Drop enden (Sperr-Cursor, Regler verliert den Zug).
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
         }}
       >
         {/* Header */}

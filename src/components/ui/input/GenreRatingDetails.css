@@ -1,6 +1,11 @@
 /* Ausführliche Bewertung im Schnellbewertungs-Sheet (zweite Zieh-Stufe). */
 
 .genre-detail {
+  /* Ohne das faengt ein Zug am Regler eine Textauswahl an. Zieht man beim
+     naechsten Mal ueber diese Auswahl, startet Chrome ein natives
+     Drag-and-Drop: Sperr-Cursor, und der Regler verliert den Zug. */
+  -webkit-user-select: none;
+  user-select: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -109,16 +114,14 @@
   opacity: 1;
 }
 
+/* Nur die Farbe haengt am Wert, nicht die Groesse: ein Griff, der beim
+   Ueberschreiten von 0 die Groesse wechselt, springt einem unter der Maus weg. */
 .genre-detail-row--empty .genre-detail-range::-webkit-slider-thumb {
-  width: 16px;
-  height: 16px;
   background: rgba(255, 255, 255, 0.55);
   box-shadow: none;
 }
 
 .genre-detail-row--empty .genre-detail-range::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
   background: rgba(255, 255, 255, 0.55);
   box-shadow: none;
 }

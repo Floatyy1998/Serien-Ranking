@@ -67,7 +67,11 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Schnell-Bewertung')}>
-      <div style={{ padding: '8px 24px 32px' }}>
+      {/* userSelect: siehe QuickRatingSheet — Textauswahl bricht den Regler-Zug. */}
+      <div
+        onDragStart={(e) => e.preventDefault()}
+        style={{ padding: '8px 24px 32px', userSelect: 'none', WebkitUserSelect: 'none' }}
+      >
         {current ? (
           <>
             {/* Progress */}
