@@ -61,7 +61,9 @@ vi.mock('../../../lib/settings/notificationSettings', () => ({
 vi.mock('../../../services/detection/newSeasonDetection', () => ({
   markMultipleSeasonsAsNotified: vi.fn(() => Promise.resolve()),
 }));
-vi.mock('../../../utils/episodeDate', () => ({ getEpisodeAirDate: () => null }));
+vi.mock('../../../utils/episodeDate', () => ({
+  getEpisodeAirDate: (ep?: { air_date?: string }) => (ep?.air_date ? new Date(ep.air_date) : null),
+}));
 
 const makeSeries = (over: Partial<Series> = {}): Series =>
   ({
@@ -88,6 +90,33 @@ describe('CarouselNotification', () => {
     );
     expect(screen.getByText(/Neue Staffel/)).toBeInTheDocument();
     expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+  });
+
+  it('nennt keinen Starttermin, wenn die angekündigte Staffel noch keine Folgen hat', () => {
+    // Katalog kennt nur Staffel 1 (seasonNumber 0), angekündigt ist Staffel 2.
+    const series = makeSeries({
+      seasonCount: 2,
+      seasons: [
+        { seasonNumber: 0, episodes: [{ air_date: '2024-01-05' }] },
+      ] as unknown as Series['seasons'],
+    });
+    render(<CarouselNotification series={[series]} onDismiss={vi.fn()} variant="new-season" />);
+    expect(screen.getByText(/Starttermin noch offen/)).toBeInTheDocument();
+    expect(screen.queryByText(/2024/)).not.toBeInTheDocument();
+  });
+
+  it('zeigt den Starttermin der angekündigten Staffel, sobald sie Folgen hat', () => {
+    const start = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+    const series = makeSeries({
+      seasonCount: 2,
+      seasons: [
+        { seasonNumber: 0, episodes: [{ air_date: '2024-01-05' }] },
+        { seasonNumber: 1, episodes: [{ air_date: start.toISOString().slice(0, 10) }] },
+      ] as unknown as Series['seasons'],
+    });
+    render(<CarouselNotification series={[series]} onDismiss={vi.fn()} variant="new-season" />);
+    expect(screen.queryByText(/Starttermin noch offen/)).not.toBeInTheDocument();
+    expect(screen.getByText(new RegExp(String(start.getFullYear())))).toBeInTheDocument();
   });
 
   it('renders the completed variant header', () => {

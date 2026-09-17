@@ -39,9 +39,11 @@ import './CarouselNotification.css';
 const NOTIF_DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Startdatum der neuesten Staffel (höchste Staffelnummer mit Episoden). Die
- * NewSeason-Detection triggert schon, sobald TMDB die Staffel *ankündigt* — das
- * erste Ep kann also noch in der Zukunft liegen.
+ * Startdatum der angekündigten Staffel (`seasonCount`). Die NewSeason-Detection
+ * triggert schon bei der Ankündigung — das erste Ep kann also noch in der
+ * Zukunft liegen, oder die Staffel hat im Katalog noch gar keine Episoden.
+ * In dem Fall null: das Datum einer älteren Staffel wäre hier eine Falschaussage
+ * ("Staffel 2 · läuft seit <Start von Staffel 1>").
  */
 const getNewestSeasonStart = (series: Series): Date | null => {
   if (!series.seasons?.length) return null;
@@ -55,7 +57,10 @@ const getNewestSeasonStart = (series: Series): Date | null => {
       target = season;
     }
   }
-  return target ? getEpisodeAirDate(target.episodes[0]) : null;
+  if (!target) return null;
+  // `seasonNumber` ist 0-basiert, `seasonCount` zählt ab 1.
+  if (typeof series.seasonCount === 'number' && targetNum + 1 < series.seasonCount) return null;
+  return getEpisodeAirDate(target.episodes[0]);
 };
 
 /** Detail-Zeile der NewSeason-Karte: Staffelnummer + wann sie startet bzw. läuft. */
