@@ -101,7 +101,7 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
                   userId={friend.uid}
                   username={name}
                   photoURL={friend.photoURL}
-                  size={28}
+                  size={42}
                   navigable={false}
                   bordered={false}
                 />

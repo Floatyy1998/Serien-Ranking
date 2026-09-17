@@ -24,12 +24,16 @@
 .cal-friendchip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
   flex-shrink: 0;
-  /* Feste Höhe: sonst ist der Avatar-Chip höher als der Text-Chip daneben. */
-  height: 30px;
-  padding: 0 13px;
-  font-size: 13px;
+  /* 44px kommt ohnehin von `.mobile-app button` (App.css) und ist die Höhe
+     aller übrigen Bedienelemente der Leiste — Filter-Chips, Wochen-Chip,
+     Pfeile. Hier nur festgeschrieben, damit sie ohne diese Regel gleich ist. */
+  height: 44px;
+  /* Breiter als hoch: bei 44px Höhe wirkt ein kurzes Wort wie „Ich" sonst
+     kreisrund statt als Pille. */
+  padding: 0 18px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1;
   border-radius: 9999px;
@@ -42,7 +46,7 @@
 }
 
 .cal-friendchip--avatar {
-  /* Bündig: der Avatar ist genau so hoch wie der Chip innen (30px minus
+  /* Bündig: der Avatar ist genau so hoch wie der Chip innen (44px minus
      Rahmen) und füllt damit dessen linke Rundung exakt aus. */
   padding-left: 0;
 }
@@ -52,12 +56,20 @@
   /* Der Avatar ist im Chip reine Dekoration — der Chip selbst schaltet um. */
   pointer-events: none;
   border-radius: 50%;
-  /* Der eigene 2px-Rahmen des Avatars trennt ihn schon vom Chip — ein
-     zusätzlicher Ring würde hier doppelt liegen. */
+  /* Der eigene Rahmen des Avatars ist aus (bordered={false}) — der Chip-Rahmen
+     ist die einzige Kontur, sonst läge ein Ring um den Ring. */
+}
+
+/* `UserAvatar` ist ein <button> und faengt sich sonst die 44x44 aus
+   `.mobile-app button` ein — der Kreis sprengt dann den Chip. Die Groesse
+   kommt aus dem size-Prop; hier wird nur die Mindestgroesse aufgehoben. */
+.mobile-app .cal-friendchip__avatar button {
+  min-width: 0;
+  min-height: 0;
 }
 
 .cal-friendchip--edit {
-  padding: 0 9px;
+  padding: 0 12px;
   opacity: 0.6;
 }
 

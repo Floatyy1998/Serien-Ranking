@@ -343,7 +343,6 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                               borderRadius: 6,
                               objectFit: 'cover',
                               boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                              border: '1.5px solid rgba(15,20,35,1)',
                             }}
                           />
                         )}

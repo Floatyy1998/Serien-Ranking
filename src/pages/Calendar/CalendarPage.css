@@ -474,8 +474,12 @@
   height: 24px;
   border-radius: var(--radius-xs);
   object-fit: cover;
+  /* Kein Rahmen: er trug ein fest verdrahtetes Marineblau aus einem früheren
+     Theme und stand seit den frei wählbaren Farben als schwarzer Rand im Bild.
+     Eine Theme-Variable würde zwar mitwandern, könnte aber höchstens den
+     Seitenhintergrund treffen — die Karte darüber ist `--glass-light` und damit
+     immer etwas heller. Der Schatten trennt das Logo ausreichend vom Poster. */
   box-shadow: var(--shadow-sm);
-  border: 2px solid rgba(15, 20, 35, 1);
 }
 
 /* Provider-Badge ist ein Link: die Sizing-Klasse (oben, .cal-ep-provider-badge
