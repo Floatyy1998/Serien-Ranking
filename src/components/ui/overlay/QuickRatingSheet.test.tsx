@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QuickRatingSheet } from './QuickRatingSheet';
 
 if (typeof window !== 'undefined' && !window.matchMedia) {
@@ -31,7 +31,24 @@ vi.mock('../../../contexts/ThemeContext', async () => {
   return { useTheme: () => ({ currentTheme }) };
 });
 
+const social = vi.hoisted(() => ({
+  favoriteFriends: [] as { uid: string; displayName: string }[],
+}));
+vi.mock('../../../contexts/OptimizedFriendsContext', () => ({
+  useOptimizedFriends: () => ({ favoriteFriends: social.favoriteFriends }),
+}));
+
+vi.mock('../../social/FriendRatingsPanel', () => ({
+  FriendRatingsPanel: ({ itemId }: { itemId?: number | string }) => (
+    <div data-testid="friend-panel">{String(itemId)}</div>
+  ),
+}));
+
 afterEach(cleanup);
+
+beforeEach(() => {
+  social.favoriteFriends = [];
+});
 
 describe('QuickRatingSheet', () => {
   it('renders nothing visible when closed (smoke)', () => {
@@ -140,6 +157,23 @@ describe('QuickRatingSheet', () => {
     expect(screen.getByLabelText('Bewertung Drama')).toHaveValue('9');
   });
 
+  it('shows the prefilled rating instead of re-averaging the genre values', () => {
+    render(
+      <QuickRatingSheet
+        isOpen
+        onClose={() => {}}
+        seriesTitle="Dexter"
+        genres={['Drama', 'Crime']}
+        initialRating={7.5}
+        initialGenreRatings={{ Drama: 9, Crime: 7 }}
+        onRate={() => {}}
+      />
+    );
+    // Der Wert der aufrufenden Karte gewinnt — sonst weicht die Zahl im Sheet
+    // von der Zahl daneben ab.
+    expect(screen.getByText('7.5')).toBeInTheDocument();
+  });
+
   it('levels every genre back to the overall rating', () => {
     const onRate = vi.fn<(rating: number, genreRatings?: Record<string, number>) => void>();
     render(
@@ -155,5 +189,42 @@ describe('QuickRatingSheet', () => {
     fireEvent.click(screen.getByRole('button', { name: /Angleichen/ }));
     fireEvent.click(screen.getByRole('button', { name: /Speichern/ }));
     expect(onRate).toHaveBeenCalledWith(8, { Drama: 8, Crime: 8 });
+  });
+
+  it('hides the friends tab without favorites', () => {
+    render(
+      <QuickRatingSheet
+        isOpen
+        onClose={() => {}}
+        seriesTitle="Dexter"
+        itemId={42}
+        onRate={() => {}}
+      />
+    );
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+  });
+
+  it('shows the friends tab once favorites exist and switches to it', () => {
+    social.favoriteFriends = [{ uid: 'f1', displayName: 'Flo' }];
+    render(
+      <QuickRatingSheet
+        isOpen
+        onClose={() => {}}
+        seriesTitle="Dexter"
+        itemId={42}
+        onRate={() => {}}
+      />
+    );
+    expect(screen.queryByTestId('friend-panel')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /Freunde/ }));
+    expect(screen.getByTestId('friend-panel')).toHaveTextContent('42');
+    // Die Genre-Stufe gehört zum Bewerten-Reiter und verschwindet mit ihm.
+    expect(screen.queryByRole('button', { name: 'Alle Genres' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the tab hidden without an item id', () => {
+    social.favoriteFriends = [{ uid: 'f1', displayName: 'Flo' }];
+    render(<QuickRatingSheet isOpen onClose={() => {}} seriesTitle="Dexter" onRate={() => {}} />);
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { PRIORITY_PROVIDER_IDS, SEASON_BREAK_GAP_DAYS } from '../../lib/episode/constants';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { overallRatingValue } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import { getEpisodeAirDate, getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -112,8 +112,9 @@ export const useWeeklyEpisodes = (
     const visibleSeries = seriesList.filter((s) => !s.hidden && (!watchlistOnly || s.watchlist));
 
     for (const series of visibleSeries) {
-      const overall = parseFloat(calculateOverallRating(series));
-      const userRating = isNaN(overall) ? 0 : overall;
+      // Eine Nachkommastelle wie die Anzeige — sonst weicht der Wert im
+      // Bewertungs-Sheet von der Zahl auf der Karte ab.
+      const userRating = overallRatingValue(series);
       const seasonsArray = Array.isArray(series.seasons)
         ? series.seasons
         : series.seasons

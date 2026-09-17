@@ -81,6 +81,54 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('September 2026 – Deine Favoriten unter den Freunden'),
+      date: '2026-09-17',
+      features: [
+        {
+          icon: <PeopleAlt />,
+          color: currentTheme.primary,
+          title: t('Freunde als Favorit markieren'),
+          description: t(
+            'In deiner Freundesliste sitzt jetzt ein Stern neben jedem Namen. Wen du markierst, rückt in der Liste nach oben — und nur von diesen Leuten zeigt dir die App Bewertungen und Kalender. Du entscheidest also selbst, wessen Meinung dich interessiert.'
+          ),
+          link: { label: t('Freunde öffnen'), path: '/activity' },
+        },
+        {
+          icon: <Visibility />,
+          color: currentTheme.secondary,
+          title: t('Sehen, wie deine Favoriten eine Serie fanden'),
+          description: t(
+            'Beim Bewerten gibt es einen zweiten Reiter: dort stehen die Bewertungen deiner Favoriten zu genau diesem Titel — samt Fortschritt, also ob jemand die Staffel zu Ende geschaut hat oder mittendrin steckt. Praktisch, wenn du überlegst, ob sich das Dranbleiben lohnt. Am Rechner reicht das Zeigen auf den Stern im Kalender.'
+          ),
+        },
+        {
+          icon: <CalendarMonth />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Den Kalender eines Favoriten ansehen'),
+          description: t(
+            'Über dem Wochenraster kannst du auf einen Favoriten umschalten und dessen Woche sehen: seine Serien, sein Fortschritt, seine Bewertungen. Nur zum Ansehen — abhaken und bewerten kannst du dort nichts.'
+          ),
+          link: { label: t('Zum Kalender'), path: '/calendar' },
+        },
+        {
+          icon: <Tune />,
+          color: currentTheme.secondary,
+          title: t('Bewerten nach Genre, jetzt überall'),
+          description: t(
+            'Die aufklappbare Bewertung je Genre gab es bisher nur an manchen Stellen. Sie steckt jetzt auch in der Bewerten-Karte auf der Startseite — damit musst du für eine feinere Bewertung nicht mehr in deine Sammlung wechseln.'
+          ),
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.primary,
+          title: t('Kleinere Korrekturen'),
+          description: t(
+            'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('August 2026 – TV-Rank spricht vier Sprachen'),
       date: '2026-08-06',
       features: [

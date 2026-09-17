@@ -2,11 +2,13 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useFriendSeriesList } from '../../hooks/social/useFriendSeriesList';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/watch/useWeeklyEpisodes';
 import { useQuickSeasonRating } from '../../hooks/rating/useQuickSeasonRating';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { overallRatingValue } from '../../lib/rating/rating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -43,7 +45,27 @@ export type GroupedSchedule = Map<string, SeriesGroup[]>;
 
 export const useCalendarData = () => {
   const { user } = useAuth() || {};
-  const { seriesList, loading } = useSeriesList();
+  const { seriesList: ownSeriesList, loading: ownLoading } = useSeriesList();
+  const { favoriteFriends } = useOptimizedFriends();
+
+  // Freundes-Modus: null = eigener Kalender.
+  const [viewedFriendUid, setViewedFriendUid] = useState<string | null>(null);
+  const viewedFriend = useMemo(
+    () => favoriteFriends.find((friend) => friend.uid === viewedFriendUid) ?? null,
+    [favoriteFriends, viewedFriendUid]
+  );
+
+  // Fällt der Favorit weg, während man in seinem Kalender steht, springt die
+  // Ansicht zurück statt eine leere Woche zu zeigen.
+  useEffect(() => {
+    if (viewedFriendUid && !viewedFriend) setViewedFriendUid(null);
+  }, [viewedFriendUid, viewedFriend]);
+
+  const { seriesList: friendSeriesList, loading: friendLoading } =
+    useFriendSeriesList(viewedFriendUid);
+
+  const seriesList = viewedFriendUid ? friendSeriesList : ownSeriesList;
+  const loading = viewedFriendUid ? friendLoading : ownLoading;
 
   // Week navigation
   const [weekOffset, setWeekOffset] = useState(0);
@@ -140,24 +162,27 @@ export const useCalendarData = () => {
 
   const handleRateSeries = useCallback(
     (seriesId: number) => {
+      // Im Freundes-Kalender wird nichts geschrieben — weder abgehakt noch bewertet.
+      if (viewedFriendUid) return;
       const series = seriesList.find((s) => s.id === seriesId);
       if (!series) return;
       showQuickRating(series, (series.seasons?.length ?? 1) as number);
     },
-    [seriesList, showQuickRating]
+    [seriesList, showQuickRating, viewedFriendUid]
   );
 
-  const quickRatingValue = useMemo(() => {
-    if (!quickRatingSeries) return 0;
-    const overall = parseFloat(calculateOverallRating(quickRatingSeries));
-    return isNaN(overall) ? 0 : Math.round(overall);
-  }, [quickRatingSeries]);
+  // Exakt der Wert des Badges: eine ganze Zahl zog beim Öffnen die noch
+  // unbewerteten Genres auf den gerundeten Wert und verschob den Durchschnitt.
+  const quickRatingValue = useMemo(
+    () => (quickRatingSeries ? overallRatingValue(quickRatingSeries) : 0),
+    [quickRatingSeries]
+  );
 
   // Mark watched
 
   const handleMarkWatched = useCallback(
     async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
-      if (!user) return;
+      if (!user || viewedFriendUid) return;
       const series = seriesList.find((s) => s.id === seriesId);
       const episode = series?.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
       const episodeId = episode?.id;
@@ -264,7 +289,7 @@ export const useCalendarData = () => {
         showToast(t('Fehler beim Speichern'), 3000, 'error');
       }
     },
-    [user, seriesList]
+    [user, seriesList, viewedFriendUid]
   );
 
   // Week navigation helpers
@@ -280,6 +305,12 @@ export const useCalendarData = () => {
   }, []);
 
   return {
+    // Freundes-Modus
+    viewedFriend,
+    viewedFriendUid,
+    setViewedFriendUid,
+    favoriteFriends,
+
     // Week navigation
     weekOffset,
     goToPrevWeek,

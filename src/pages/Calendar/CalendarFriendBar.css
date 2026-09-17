@@ -1,0 +1,85 @@
+/* Freundes-Umschalter über dem Wochenraster. Übernimmt bewusst die Optik von
+   .cal-filter-chip — die Leiste steht direkt darunter und darf keine zweite
+   Formensprache aufmachen. Waagerecht scrollbar, weil bei vielen Favoriten am
+   Telefon sonst umgebrochen würde. */
+.cal-friendbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cal-friendbar::-webkit-scrollbar {
+  display: none;
+}
+
+.cal-friendbar__icon {
+  flex-shrink: 0;
+  margin-right: 2px;
+  opacity: 0.45;
+}
+
+.cal-friendchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  /* Feste Höhe: sonst ist der Avatar-Chip höher als der Text-Chip daneben. */
+  height: 30px;
+  padding: 0 13px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.cal-friendchip--avatar {
+  /* Bündig: der Avatar ist genau so hoch wie der Chip innen (30px minus
+     Rahmen) und füllt damit dessen linke Rundung exakt aus. */
+  padding-left: 0;
+}
+
+.cal-friendchip__avatar {
+  display: inline-flex;
+  /* Der Avatar ist im Chip reine Dekoration — der Chip selbst schaltet um. */
+  pointer-events: none;
+  border-radius: 50%;
+  /* Der eigene 2px-Rahmen des Avatars trennt ihn schon vom Chip — ein
+     zusätzlicher Ring würde hier doppelt liegen. */
+}
+
+.cal-friendchip--edit {
+  padding: 0 9px;
+  opacity: 0.6;
+}
+
+.cal-friendchip--edit:hover {
+  opacity: 1;
+}
+
+.cal-friendchip:hover:not(.is-active) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cal-friendchip:active {
+  transform: scale(0.95);
+}
+
+.cal-friendchip:focus-visible {
+  outline: 2px solid var(--theme-primary, #ef6f8a);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1024px) {
+  .cal-friendbar {
+    padding: 0 20px 10px;
+  }
+}

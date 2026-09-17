@@ -1,5 +1,6 @@
 import { CalendarMonth, ChevronRight, LiveTv, LocalMovies } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
@@ -9,6 +10,9 @@ import { t } from '../../services/i18n';
 import { useCalendarData } from './useCalendarData';
 import { CalendarToolbar } from './CalendarToolbar';
 import { CalendarGrid } from './CalendarGrid';
+import { CalendarFriendBar } from './CalendarFriendBar';
+import { CalendarViewModeContext } from './calendarViewMode';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import './CalendarPage.css';
 
 export const CalendarPage = () => {
@@ -40,7 +44,13 @@ export const CalendarPage = () => {
     handleRateSeries,
     closeQuickRating,
     saveQuickRating,
+    viewedFriend,
+    viewedFriendUid,
+    setViewedFriendUid,
+    favoriteFriends,
   } = useCalendarData();
+  const { friends } = useOptimizedFriends();
+  const viewMode = useMemo(() => ({ readOnly: viewedFriendUid !== null }), [viewedFriendUid]);
 
   return (
     <PageLayout>
@@ -69,6 +79,13 @@ export const CalendarPage = () => {
           onToggle={toggleWatchlistOnly}
           totalEpisodes={totalEpisodes}
           watchedCount={watchedCount}
+        />
+
+        <CalendarFriendBar
+          favoriteFriends={favoriteFriends}
+          hasFriends={friends.length > 0}
+          viewedFriendUid={viewedFriendUid}
+          onSelect={setViewedFriendUid}
         />
 
         {/* Einstiege in Anime-Season + Serien-Kalender — Desktop nebeneinander */}
@@ -142,9 +159,15 @@ export const CalendarPage = () => {
           <EmptyState
             icon={<CalendarMonth style={{ fontSize: 48 }} />}
             title={t('Keine Episoden in dieser Woche')}
-            description={t(
-              'In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an.'
-            )}
+            description={
+              viewedFriend
+                ? t('In dieser Woche stehen keine Folgen aus der Liste von {name} an.', {
+                    name: viewedFriend.displayName || viewedFriend.username || t('Freund'),
+                  })
+                : t(
+                    'In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an.'
+                  )
+            }
             iconColor={currentTheme.text.secondary}
             action={
               weekOffset !== 0
@@ -153,18 +176,20 @@ export const CalendarPage = () => {
             }
           />
         ) : (
-          <CalendarGrid
-            groupedSchedule={groupedSchedule}
-            todayKey={todayKey}
-            backdrops={backdrops}
-            expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroup}
-            onMarkWatched={handleMarkWatched}
-            onRateSeries={handleRateSeries}
-            onPrevWeek={goToPrevWeek}
-            onNextWeek={goToNextWeek}
-            weekStamp={`${weekOffset}`}
-          />
+          <CalendarViewModeContext.Provider value={viewMode}>
+            <CalendarGrid
+              groupedSchedule={groupedSchedule}
+              todayKey={todayKey}
+              backdrops={backdrops}
+              expandedGroups={expandedGroups}
+              onToggleGroup={toggleGroup}
+              onMarkWatched={handleMarkWatched}
+              onRateSeries={handleRateSeries}
+              onPrevWeek={goToPrevWeek}
+              onNextWeek={goToNextWeek}
+              weekStamp={`${viewedFriendUid ?? 'me'}-${weekOffset}`}
+            />
+          </CalendarViewModeContext.Provider>
         )}
 
         <QuickRatingSheet
@@ -175,6 +200,7 @@ export const CalendarPage = () => {
           initialRating={quickRatingValue}
           genres={quickRatingSeries?.genre?.genres}
           initialGenreRatings={quickRatingSeries?.rating}
+          itemId={quickRatingSeries?.id}
           onRate={saveQuickRating}
         />
       </div>

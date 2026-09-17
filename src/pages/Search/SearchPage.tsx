@@ -327,6 +327,7 @@ export const SearchPage = memo(() => {
         initialRating={quickRating.initialRating}
         genres={quickRating.genres}
         mediaType={quickRating.mediaType}
+        itemId={quickRating.itemId}
         initialGenreRatings={quickRating.genreRatings}
         onRate={saveQuickRating}
       />

@@ -12,8 +12,9 @@ interface FriendAvatarButtonProps {
   friend: Friend;
   isSelected: boolean;
   /** Freund hat das Medium bereits in der Library — dann nicht auswählbar. */
-  alreadyHas: boolean;
-  mediaType: RecommendationMediaType;
+  alreadyHas?: boolean;
+  /** Nur für den `alreadyHas`-Hinweis; außerhalb der Empfehlung nicht nötig. */
+  mediaType?: RecommendationMediaType;
   onToggle: (uid: string) => void;
 }
 
@@ -21,7 +22,7 @@ interface FriendAvatarButtonProps {
 export const FriendAvatarButton: React.FC<FriendAvatarButtonProps> = ({
   friend,
   isSelected,
-  alreadyHas,
+  alreadyHas = false,
   mediaType,
   onToggle,
 }) => {

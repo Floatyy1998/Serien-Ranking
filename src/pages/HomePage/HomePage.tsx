@@ -551,6 +551,7 @@ export const HomePage: React.FC = () => {
         seasonNumber={quickRatingSeasonNumber}
         genres={quickRatingSeries?.genre?.genres}
         initialGenreRatings={quickRatingSeries?.rating}
+        itemId={quickRatingSeries?.id}
         onRate={async (rating, genreRatings) => {
           await saveQuickRating(rating, genreRatings);
           onRatedCallbackRef.current?.();

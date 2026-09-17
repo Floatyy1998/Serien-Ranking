@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbRef, dbGet, dbUpdate, userPath } from '../services/db/ref';
+import { paths } from '../services/db/paths';
 import { isDeletingAccount } from '../services/account/accountDeletionState';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
@@ -10,9 +11,12 @@ import {
   declineFriendRequestOp,
   cancelFriendRequestOp,
   removeFriendOp,
+  setFavoriteFriendOp,
   updateUserActivityOp,
 } from './friendOperations';
 import { OptimizedFriendsContext } from './OptimizedFriendsContext';
+import { clearFriendSeriesCache } from '../hooks/social/useFriendSeriesList';
+import { clearFriendTitleRatingsCache } from '../hooks/social/useFriendTitleRatings';
 import { onValue } from '../services/db/subscribeValue';
 
 export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNode }) => {
@@ -52,9 +56,54 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     lastReadRequestsTimeRef.current = lastReadRequestsTime;
   }, [lastReadRequestsTime]);
 
-  const friends: Friend[] = useMemo(
-    () => (friendsData ? Object.values(friendsData) : []),
-    [friendsData]
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
+
+  // Die Freundes-Caches sind modulweit. Beim Kontowechsel oder Abmelden müssen
+  // sie weg, sonst zeigt der nächste Nutzer die Daten des vorherigen.
+  useEffect(() => {
+    clearFriendSeriesCache();
+    clearFriendTitleRatingsCache();
+  }, [user?.uid]);
+
+  // Eigener Mini-Knoten statt eines Feldes in `friends/$id`: dort darf laut
+  // Rules auch der Freund selbst schreiben, und `acceptFriendRequestOp` ersetzt
+  // den Eintrag per Multipath-set — das Flag wäre beim Neu-Befreunden weg.
+  useEffect(() => {
+    if (!user) {
+      setFavoriteIds(new Set());
+      return;
+    }
+    const ref = dbRef(paths.favoriteFriends(user.uid));
+    const listener = onValue(
+      ref,
+      (snap) => {
+        const data = snap.val() as Record<string, boolean> | null;
+        setFavoriteIds(new Set(Object.keys(data ?? {}).filter((id) => data?.[id])));
+      },
+      {
+        onError: (error: Error) => {
+          console.error('Failed to load favorite friends:', error);
+          setFavoriteIds(new Set());
+        },
+      }
+    );
+    return () => ref.off('value', listener);
+  }, [user]);
+
+  // Favoriten zuerst — die Reihenfolge wirkt überall, wo die Liste hängt
+  // (Freundesliste, Picker, Taste-Match-Karte).
+  const friends: Friend[] = useMemo(() => {
+    const list = friendsData ? Object.values(friendsData) : [];
+    return [...list].sort((a, b) => {
+      const favDiff = Number(favoriteIds.has(b.uid)) - Number(favoriteIds.has(a.uid));
+      if (favDiff !== 0) return favDiff;
+      return (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '');
+    });
+  }, [friendsData, favoriteIds]);
+
+  const favoriteFriends: Friend[] = useMemo(
+    () => friends.filter((friend) => favoriteIds.has(friend.uid)),
+    [friends, favoriteIds]
   );
 
   // Lesezeiten aus Firebase per Realtime-Listener — so wandert ein „als gelesen
@@ -500,6 +549,26 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     [user, refetchFriends]
   );
 
+  const toggleFavoriteFriend = useCallback(
+    async (friendId: string): Promise<void> => {
+      if (!user) return;
+      const next = !favoriteIds.has(friendId);
+      // Optimistisch: der Stern schaltet sofort um, der Listener zieht nach.
+      setFavoriteIds((prev) => {
+        const updated = new Set(prev);
+        if (next) updated.add(friendId);
+        else updated.delete(friendId);
+        return updated;
+      });
+      try {
+        await setFavoriteFriendOp(user.uid, friendId, next);
+      } catch (error) {
+        console.error('Failed to toggle favorite friend:', error);
+      }
+    },
+    [user, favoriteIds]
+  );
+
   const updateUserActivity = useCallback(
     async (
       activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
@@ -522,6 +591,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const contextValue = useMemo(
     () => ({
       friends,
+      favoriteFriends,
+      favoriteIds,
+      toggleFavoriteFriend,
       friendRequests,
       sentRequests,
       friendActivities,
@@ -541,6 +613,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     }),
     [
       friends,
+      favoriteFriends,
+      favoriteIds,
+      toggleFavoriteFriend,
       friendRequests,
       sentRequests,
       friendActivities,

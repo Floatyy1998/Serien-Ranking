@@ -9,7 +9,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
-import { calculateCorrectAverageRating, calculateOverallRating, isMovieWatched } from './rating';
+import {
+  averageRating,
+  calculateCorrectAverageRating,
+  calculateOverallRating,
+  isMovieWatched,
+  ratingsDiffer,
+} from './rating';
 
 /** Baut ein minimales Series-Objekt mit beliebiger rating-Form (bewusst untypisiert). */
 const mk = (rating: unknown): Series => ({ rating }) as unknown as Series;
@@ -221,5 +227,23 @@ describe('isMovieWatched', () => {
   it('liest NICHT rating[uid] (Movie-rating ist genre-keyed, nicht uid-keyed)', () => {
     // Eine uid als Key mit 0 (typisch für „nur angelegt") darf nicht als gesehen zählen.
     expect(isMovieWatched(movie({ rating: { someUid: 0 } }))).toBe(false);
+  });
+});
+
+describe('averageRating / ratingsDiffer', () => {
+  it('mittelt nur die bewerteten Werte auf eine Nachkommastelle', () => {
+    expect(averageRating([9, 7, 0])).toBe(8);
+    expect(averageRating([8, 7.9, 7.4])).toBe(7.8);
+  });
+
+  it('0 ohne jeden bewerteten Wert', () => {
+    expect(averageRating([])).toBe(0);
+    expect(averageRating([0, 0])).toBe(0);
+  });
+
+  it('erkennt auseinanderlaufende Werte, ignoriert dabei unbewertete', () => {
+    expect(ratingsDiffer([8, 8, 0])).toBe(false);
+    expect(ratingsDiffer([8, 7.5])).toBe(true);
+    expect(ratingsDiffer([])).toBe(false);
   });
 });

@@ -316,6 +316,25 @@ const dict: Record<string, string> = {
   'Diskussionen über Sprachgrenzen hinweg': 'Discussions across language barriers',
   'Kommentare in einer fremden Sprache bekommen einen Übersetzen-Knopf — auf Wunsch übersetzt die App sie automatisch in deine. Datenschutzerklärung und Impressum liegen ebenfalls auf Spanisch und Französisch vor; rechtlich verbindlich bleibt die deutsche Fassung.':
     'Comments in another language get a Translate button — or let the app translate them for you automatically. The privacy policy and legal notice are available in Spanish and French too; the German version remains legally binding.',
+  // September 2026 – Favoriten-Freunde
+  'September 2026 – Deine Favoriten unter den Freunden': 'September 2026 – Your Favourite Friends',
+  'Freunde als Favorit markieren': 'Mark friends as favourites',
+  'In deiner Freundesliste sitzt jetzt ein Stern neben jedem Namen. Wen du markierst, rückt in der Liste nach oben — und nur von diesen Leuten zeigt dir die App Bewertungen und Kalender. Du entscheidest also selbst, wessen Meinung dich interessiert.':
+    'There is now a star next to every name in your friends list. Whoever you mark moves to the top, and only those people show up when the app shows you ratings and calendars. So you decide whose opinion you care about.',
+  'Freunde öffnen': 'Open friends',
+  'Sehen, wie deine Favoriten eine Serie fanden': 'See what your favourites thought',
+  'Beim Bewerten gibt es einen zweiten Reiter: dort stehen die Bewertungen deiner Favoriten zu genau diesem Titel — samt Fortschritt, also ob jemand die Staffel zu Ende geschaut hat oder mittendrin steckt. Praktisch, wenn du überlegst, ob sich das Dranbleiben lohnt. Am Rechner reicht das Zeigen auf den Stern im Kalender.':
+    'When you rate something there is now a second tab showing what your favourites gave that exact title, including how far they got — whether someone finished the season or stopped halfway. Handy when you are weighing up whether to keep watching. On a computer, just hover the star in the calendar.',
+  'Den Kalender eines Favoriten ansehen': 'Look at a favourite’s calendar',
+  'Über dem Wochenraster kannst du auf einen Favoriten umschalten und dessen Woche sehen: seine Serien, sein Fortschritt, seine Bewertungen. Nur zum Ansehen — abhaken und bewerten kannst du dort nichts.':
+    'Above the weekly grid you can switch to a favourite and see their week: their shows, their progress, their ratings. Read-only — you cannot tick anything off or rate there.',
+  'Zum Kalender': 'Open calendar',
+  'Bewerten nach Genre, jetzt überall': 'Rating by genre, now everywhere',
+  'Die aufklappbare Bewertung je Genre gab es bisher nur an manchen Stellen. Sie steckt jetzt auch in der Bewerten-Karte auf der Startseite — damit musst du für eine feinere Bewertung nicht mehr in deine Sammlung wechseln.':
+    'The expandable per-genre rating was only available in some places. It is now part of the rating card on the home screen too, so you no longer have to go into your collection for a more detailed rating.',
+  'Kleinere Korrekturen': 'Smaller fixes',
+  'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.':
+    'In the calendar, the rating shown next to a show could differ slightly from the one in the rating dialog — both now calculate it the same way. And a movie rated from the home screen reliably shows up in your statistics again.',
 };
 
 export default dict;

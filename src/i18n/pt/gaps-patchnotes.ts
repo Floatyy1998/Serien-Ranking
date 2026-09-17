@@ -300,6 +300,25 @@ const dict: Record<string, string> = {
   'Diskussionen über Sprachgrenzen hinweg': 'Discussões sem barreiras de idioma',
   'Kommentare in einer fremden Sprache bekommen einen Übersetzen-Knopf — auf Wunsch übersetzt die App sie automatisch in deine. Datenschutzerklärung und Impressum liegen ebenfalls auf Spanisch und Französisch vor; rechtlich verbindlich bleibt die deutsche Fassung.':
     'Os comentários em outro idioma ganham um botão de traduzir — e, se você quiser, o app os traduz automaticamente para o seu. A política de privacidade e as informações legais também estão em espanhol e francês; a versão alemã continua sendo a juridicamente vinculante.',
+  // September 2026 – Favoriten-Freunde
+  'September 2026 – Deine Favoriten unter den Freunden': 'Setembro 2026 – Os teus amigos favoritos',
+  'Freunde als Favorit markieren': 'Marcar amigos como favoritos',
+  'In deiner Freundesliste sitzt jetzt ein Stern neben jedem Namen. Wen du markierst, rückt in der Liste nach oben — und nur von diesen Leuten zeigt dir die App Bewertungen und Kalender. Du entscheidest also selbst, wessen Meinung dich interessiert.':
+    'Agora há uma estrela ao lado de cada nome na tua lista de amigos. Quem marcares sobe para o topo da lista e só dessas pessoas é que a app te mostra avaliações e calendários. Assim decides tu de quem te interessa a opinião.',
+  'Freunde öffnen': 'Abrir amigos',
+  'Sehen, wie deine Favoriten eine Serie fanden': 'Vê o que acharam os teus favoritos',
+  'Beim Bewerten gibt es einen zweiten Reiter: dort stehen die Bewertungen deiner Favoriten zu genau diesem Titel — samt Fortschritt, also ob jemand die Staffel zu Ende geschaut hat oder mittendrin steckt. Praktisch, wenn du überlegst, ob sich das Dranbleiben lohnt. Am Rechner reicht das Zeigen auf den Stern im Kalender.':
+    'Ao avaliar aparece um segundo separador com as avaliações dos teus favoritos para esse mesmo título, incluindo o progresso: se alguém terminou a temporada ou ficou a meio. Prático quando estás na dúvida se vale a pena continuar. No computador basta passar o rato pela estrela no calendário.',
+  'Den Kalender eines Favoriten ansehen': 'Ver o calendário de um favorito',
+  'Über dem Wochenraster kannst du auf einen Favoriten umschalten und dessen Woche sehen: seine Serien, sein Fortschritt, seine Bewertungen. Nur zum Ansehen — abhaken und bewerten kannst du dort nichts.':
+    'Por cima da grelha semanal podes mudar para um favorito e ver a semana dele: as séries, o progresso e as avaliações. Apenas para consultar — aí não podes marcar episódios nem avaliar.',
+  'Zum Kalender': 'Ver calendário',
+  'Bewerten nach Genre, jetzt überall': 'Avaliar por género, agora em todo o lado',
+  'Die aufklappbare Bewertung je Genre gab es bisher nur an manchen Stellen. Sie steckt jetzt auch in der Bewerten-Karte auf der Startseite — damit musst du für eine feinere Bewertung nicht mehr in deine Sammlung wechseln.':
+    'A avaliação por género que se desdobra só existia nalguns sítios. Agora também está no cartão de avaliar do ecrã inicial, por isso já não precisas de ir à tua coleção para afinar uma avaliação.',
+  'Kleinere Korrekturen': 'Correções menores',
+  'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.':
+    'No calendário, a avaliação ao lado de uma série podia diferir ligeiramente da da janela de avaliação — agora ambas são calculadas da mesma forma. E um filme avaliado a partir do ecrã inicial volta a aparecer nas tuas estatísticas.',
 };
 
 export default dict;

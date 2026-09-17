@@ -2,7 +2,13 @@ import { Delete, NotificationsActive, Send } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { backendFetch } from '../../../services/api/backendApi';
 import { dbRef } from '../../../services/db/ref';
-import { LOCALES, LOCALE_LABEL, isLocale, type Locale } from '../../../services/i18n';
+import {
+  LOCALES,
+  LOCALE_LABEL,
+  SOURCE_LOCALE,
+  isLocale,
+  type Locale,
+} from '../../../services/i18n';
 
 interface UserMessage {
   text: string;
@@ -18,6 +24,17 @@ interface UserProfile {
 }
 
 type LangFilter = 'all' | Locale | 'unknown';
+
+/** Leere Felder fliegen raus — sonst ueberschreibt ein Leerstring die Quelle. */
+const trimmedMap = (map: Partial<Record<Locale, string>>): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(map)
+      .map(([lang, value]) => [lang, (value || '').trim()])
+      .filter(([, value]) => value.length > 0)
+  );
+
+/** Sprachen ohne die Quellsprache — Deutsch steht in den Feldern darueber. */
+const TRANSLATABLE = LOCALES.filter((code) => code !== SOURCE_LOCALE);
 
 interface MessagesTabProps {
   theme: {
@@ -43,7 +60,14 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   const [notifTargets, setNotifTargets] = useState<Record<string, string>>({});
   const [notifTitle, setNotifTitle] = useState('');
   const [notifMessage, setNotifMessage] = useState('');
+  // Uebersetzungen je Sprache. Deutsch ist die Quelle oben; was hier fehlt,
+  // faellt beim Empfaenger auf den deutschen Text zurueck (Backend-Verhalten).
+  const [notifLangOpen, setNotifLangOpen] = useState(false);
+  const [notifTitleL, setNotifTitleL] = useState<Partial<Record<Locale, string>>>({});
+  const [notifMessageL, setNotifMessageL] = useState<Partial<Record<Locale, string>>>({});
   const [notifPush, setNotifPush] = useState(false);
+  // Ziel des Pushes. Das Backend laesst nur app-interne Pfade durch.
+  const [notifUrl, setNotifUrl] = useState('/');
   const [notifSending, setNotifSending] = useState(false);
   const [notifResult, setNotifResult] = useState('');
 
@@ -145,6 +169,10 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     setNotifTargets(all);
   };
 
+  const translatedCount = TRANSLATABLE.filter(
+    (code) => (notifTitleL[code] || '').trim() && (notifMessageL[code] || '').trim()
+  ).length;
+
   const handleSendNotification = async () => {
     const uids = Object.keys(notifTargets);
     if (!uids.length || !notifTitle.trim() || !notifMessage.trim() || notifSending) return;
@@ -162,7 +190,16 @@ export function MessagesTab({ theme }: MessagesTabProps) {
             uids: uids.slice(i, i + 200),
             title: notifTitle.trim(),
             message: notifMessage.trim(),
+            // Sprach-Maps: das Backend waehlt je Empfaenger die passende
+            // Fassung — fuer die In-App-Meldung und fuer den Push.
+            ...(Object.keys(trimmedMap(notifTitleL)).length
+              ? { titleL: trimmedMap(notifTitleL) }
+              : {}),
+            ...(Object.keys(trimmedMap(notifMessageL)).length
+              ? { messageL: trimmedMap(notifMessageL) }
+              : {}),
             withPush: notifPush,
+            ...(notifUrl.trim() && notifUrl.trim() !== '/' ? { url: notifUrl.trim() } : {}),
           }),
         });
         const data = (await res.json()) as {
@@ -189,6 +226,9 @@ export function MessagesTab({ theme }: MessagesTabProps) {
         setNotifTargets({});
         setNotifTitle('');
         setNotifMessage('');
+        setNotifTitleL({});
+        setNotifMessageL({});
+        setNotifUrl('/');
         setNotifPush(false);
       }
     } catch (e) {
@@ -380,7 +420,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           value={notifTitle}
           onChange={(e) => setNotifTitle(e.target.value)}
           maxLength={120}
-          placeholder="Titel..."
+          placeholder="Titel (Deutsch)..."
           className="adm-input"
           style={{ marginBottom: '8px' }}
         />
@@ -388,11 +428,77 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           value={notifMessage}
           onChange={(e) => setNotifMessage(e.target.value)}
           maxLength={1000}
-          placeholder="Nachricht..."
+          placeholder="Nachricht (Deutsch)..."
           rows={3}
           className="adm-input"
           style={{ resize: 'vertical', marginBottom: '8px' }}
         />
+
+        {/* Uebersetzungen: ohne sie bekommt jeder den deutschen Text. */}
+        <button
+          type="button"
+          className="adm-btn adm-btn--ghost"
+          onClick={() => setNotifLangOpen((open) => !open)}
+          style={{ marginBottom: '8px' }}
+        >
+          {notifLangOpen ? 'Übersetzungen ausblenden' : 'Übersetzungen'}
+          {translatedCount > 0 ? ` (${translatedCount}/${TRANSLATABLE.length})` : ''}
+        </button>
+
+        {notifLangOpen && (
+          <div style={{ marginBottom: '8px' }}>
+            <p style={{ fontSize: '12px', color: theme.text.muted, margin: '0 0 8px' }}>
+              Leer gelassene Sprachen bekommen den deutschen Text. Gilt für die In-App-Meldung und
+              für den Push.
+            </p>
+            {TRANSLATABLE.map((code) => (
+              <div key={code} style={{ marginBottom: '10px' }}>
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: theme.text.secondary,
+                    marginBottom: '4px',
+                  }}
+                >
+                  {LOCALE_LABEL[code]}
+                </div>
+                <input
+                  type="text"
+                  value={notifTitleL[code] || ''}
+                  onChange={(e) => setNotifTitleL((prev) => ({ ...prev, [code]: e.target.value }))}
+                  maxLength={120}
+                  placeholder={`Titel (${LOCALE_LABEL[code]})...`}
+                  className="adm-input"
+                  style={{ marginBottom: '4px' }}
+                />
+                <textarea
+                  value={notifMessageL[code] || ''}
+                  onChange={(e) =>
+                    setNotifMessageL((prev) => ({ ...prev, [code]: e.target.value }))
+                  }
+                  maxLength={1000}
+                  placeholder={`Nachricht (${LOCALE_LABEL[code]})...`}
+                  rows={3}
+                  className="adm-input"
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {notifPush && (
+          <input
+            type="text"
+            value={notifUrl}
+            onChange={(e) => setNotifUrl(e.target.value)}
+            maxLength={120}
+            placeholder="Ziel des Pushes, z. B. /patch-notes"
+            className="adm-input"
+            style={{ marginBottom: '8px' }}
+          />
+        )}
 
         <div
           style={{

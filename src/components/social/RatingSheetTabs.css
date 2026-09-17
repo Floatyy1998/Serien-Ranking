@@ -1,0 +1,58 @@
+/* Zwei gleich breite Reiter mit einem gleitenden Marker.
+   Bewusst KEIN framer-`layoutId`: das misst Bildschirmkoordinaten, und beim
+   Reiterwechsel ändert sich gleichzeitig die Höhe des Sheets. Der Marker startete
+   dadurch an seiner alten, inzwischen falschen Position und wanderte diagonal.
+   Ein Transform innerhalb der Leiste kennt nur sein eigenes Koordinatensystem
+   und bleibt damit immer waagerecht. */
+.rating-tabs {
+  position: relative;
+  display: flex;
+  gap: 0;
+  padding: 4px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  isolation: isolate;
+}
+
+.rating-tabs__marker {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: calc(var(--radius-md) - 4px);
+  transform: translateX(0);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+.rating-tabs__marker.is-second {
+  transform: translateX(100%);
+}
+
+.rating-tabs__tab {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 9px 8px;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-md) - 4px);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rating-tabs__tab:focus-visible {
+  outline: 2px solid var(--theme-primary, #ef6f8a);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rating-tabs__marker {
+    transition: none;
+  }
+}

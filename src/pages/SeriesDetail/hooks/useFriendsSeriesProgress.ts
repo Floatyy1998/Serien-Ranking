@@ -1,6 +1,12 @@
 import { dbGet, paths } from '../../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
+import {
+  analyzeFriendWatch,
+  buildSeasonMaps,
+  type EpPosition,
+  type SeriesWatchSnap,
+} from '../../../lib/series/friendWatchProgress';
 import type { Series } from '../../../types/Series';
 
 export interface FriendSeriesProgress {
@@ -13,93 +19,6 @@ export interface FriendSeriesProgress {
   latestEpisode: number | null;
   hasStarted: boolean;
   completed: boolean;
-}
-
-interface SeriesWatchSnap {
-  seasons?: Record<string, SeasonWatch | null>;
-}
-
-interface SeasonWatch {
-  eps?: Record<string, { w?: number }>;
-  w?: number[];
-}
-
-interface EpPosition {
-  seasonNumber: number;
-  episodeNumber: number;
-  absIndex: number;
-}
-
-/**
- * Build maps:
- *  - epIdToPos: TMDB episode-id → its position (used by the compact {eps} format)
- *  - seasonNumberArrPositions: season-key → [{s, e, absIndex}] sorted, indexed
- *    by within-season order (used by the legacy {w[]} array format)
- */
-function buildSeasonMaps(seasons: Series['seasons'] | null | undefined): {
-  epIdToPos: Map<number, EpPosition>;
-  seasonArrayPositions: Map<string, EpPosition[]>;
-} {
-  const epIdToPos = new Map<number, EpPosition>();
-  const seasonArrayPositions = new Map<string, EpPosition[]>();
-  if (!seasons) return { epIdToPos, seasonArrayPositions };
-  let absIndex = 0;
-  for (const season of seasons) {
-    if (!season?.episodes) continue;
-    const sn = (season.seasonNumber ?? 0) + 1;
-    const arr: EpPosition[] = [];
-    season.episodes.forEach((ep, idx) => {
-      absIndex += 1;
-      const pos: EpPosition = {
-        seasonNumber: sn,
-        episodeNumber: idx + 1,
-        absIndex,
-      };
-      arr.push(pos);
-      if (typeof ep?.id === 'number') epIdToPos.set(ep.id, pos);
-    });
-    seasonArrayPositions.set(String(season.seasonNumber ?? 0), arr);
-  }
-  return { epIdToPos, seasonArrayPositions };
-}
-
-/**
- * Walk a friend's seriesWatch snapshot, counting watched episodes AND tracking
- * the most-advanced one (latest by season×episode order). Supports both compact
- * ({eps} keyed by episode-id) and legacy ({w[]} indexed by position).
- */
-function analyzeFriendWatch(
-  data: SeriesWatchSnap | null,
-  epIdToPos: Map<number, EpPosition>,
-  seasonArrayPositions: Map<string, EpPosition[]>
-): { watched: number; latest: EpPosition | null } {
-  if (!data?.seasons) return { watched: 0, latest: null };
-  let watched = 0;
-  let latest: EpPosition | null = null;
-  const consider = (pos: EpPosition | undefined | null) => {
-    if (!pos) return;
-    if (!latest || pos.absIndex > latest.absIndex) latest = pos;
-  };
-
-  for (const [seasonKey, season] of Object.entries(data.seasons)) {
-    if (!season) continue;
-    if (season.eps && typeof season.eps === 'object') {
-      for (const [epIdStr, ep] of Object.entries(season.eps)) {
-        if (ep?.w !== 1) continue;
-        watched += 1;
-        const epId = parseInt(epIdStr, 10);
-        if (!isNaN(epId)) consider(epIdToPos.get(epId));
-      }
-    } else if (Array.isArray(season.w)) {
-      const positions = seasonArrayPositions.get(seasonKey);
-      season.w.forEach((flag, idx) => {
-        if (flag !== 1) return;
-        watched += 1;
-        if (positions && positions[idx]) consider(positions[idx]);
-      });
-    }
-  }
-  return { watched, latest };
 }
 
 /**
@@ -135,8 +54,7 @@ export function useFriendsSeriesProgress(
           try {
             const analyzed = analyzeFriendWatch(
               await dbGet<SeriesWatchSnap>(paths.seriesWatchItem(f.uid, seriesId)),
-              maps.epIdToPos,
-              maps.seasonArrayPositions
+              maps
             );
             return [f.uid, analyzed] as const;
           } catch (err) {

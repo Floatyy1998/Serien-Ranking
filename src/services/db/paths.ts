@@ -36,6 +36,12 @@ export const paths = {
   manga: (uid: string) => `${user(uid)}/manga`,
   mangaItem: (uid: string, anilistId: string | number) => `${user(uid)}/manga/${anilistId}`,
 
+  // Freunde
+  friends: (uid: string) => `${user(uid)}/friends`,
+  friendItem: (uid: string, friendId: string) => `${user(uid)}/friends/${friendId}`,
+  favoriteFriends: (uid: string) => `${user(uid)}/favoriteFriends`,
+  favoriteFriend: (uid: string, friendId: string) => `${user(uid)}/favoriteFriends/${friendId}`,
+
   // Profil / Sonstiges
   displayName: (uid: string) => `${user(uid)}/displayName`,
   photoURL: (uid: string) => `${user(uid)}/photoURL`,

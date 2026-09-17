@@ -2,7 +2,12 @@ import { createContext, useContext } from 'react';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
 
 export interface OptimizedFriendsContextType {
+  /** Favoriten zuerst, danach alphabetisch. */
   friends: Friend[];
+  /** Nur die als Favorit markierten — Grundlage für Kalender-Leiste und Sheet-Tab. */
+  favoriteFriends: Friend[];
+  favoriteIds: Set<string>;
+  toggleFavoriteFriend: (friendId: string) => Promise<void>;
   friendRequests: FriendRequest[];
   sentRequests: FriendRequest[];
   friendActivities: FriendActivity[];
@@ -25,6 +30,9 @@ export interface OptimizedFriendsContextType {
 
 export const OptimizedFriendsContext = createContext<OptimizedFriendsContextType>({
   friends: [],
+  favoriteFriends: [],
+  favoriteIds: new Set(),
+  toggleFavoriteFriend: async () => {},
   friendRequests: [],
   sentRequests: [],
   friendActivities: [],

@@ -84,6 +84,17 @@ export const overallRatingValue = (item: Series | Movie): number => {
 export const formatRatingShort = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(1);
 
+/** Durchschnitt der bewerteten Werte, eine Nachkommastelle — wie der Bewertungseditor. */
+export const averageRating = (values: number[]): number => {
+  const rated = values.filter((value) => value > 0);
+  if (rated.length === 0) return 0;
+  return Math.round((rated.reduce((sum, value) => sum + value, 0) / rated.length) * 10) / 10;
+};
+
+/** Laufen die bewerteten Werte auseinander (auf eine Nachkommastelle gesehen)? */
+export const ratingsDiffer = (values: number[]): boolean =>
+  new Set(values.filter((value) => value > 0).map((value) => value.toFixed(1))).size > 1;
+
 /** Genre-gefächerte Bewertung wie im Bewertungseditor; ohne Genres bleibt `General`. */
 export const buildGenreRatingMap = (
   genres: string[] | undefined,

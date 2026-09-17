@@ -22,6 +22,8 @@ export interface QuickRatingSheetState {
   genres: string[];
   /** Serie oder Film — beide haben eigene Genre-Listen. */
   mediaType: 'series' | 'movie';
+  /** TMDB-ID für den Freundes-Reiter. */
+  itemId: number | undefined;
   /** Bereits gespeicherte Bewertung je Genre. */
   genreRatings: Record<string, number>;
 }
@@ -89,6 +91,7 @@ export function useQuickRatingSheet({ onSaved, onError }: Options = {}) {
       initialRating: Math.round((target?.item.userRating ?? 0) * 10) / 10,
       genres: owned?.genre?.genres ?? EMPTY_GENRES,
       mediaType: target?.item.type ?? 'series',
+      itemId: target?.item.id,
       genreRatings:
         stored && typeof stored === 'object' ? (stored as Record<string, number>) : EMPTY_RATINGS,
     };

@@ -2,6 +2,8 @@ import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore, Star, StarBorder } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { FriendRatingsTooltip } from '../../components/social/FriendRatingsTooltip';
+import { useCalendarViewMode } from './calendarViewMode';
 import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/watch/useWeeklyEpisodes';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
@@ -221,31 +223,43 @@ const RatingBadge = memo(
     onRate: (seriesId: number) => void;
   }) => {
     const { currentTheme } = useTheme();
+    const { readOnly } = useCalendarViewMode();
     const rated = rating > 0;
     const color = rated ? currentTheme.status.warning : currentTheme.text.muted;
-    const label = rated
-      ? t('Deine Bewertung: {n}/10', { n: rating.toFixed(1) })
-      : t('Noch nicht bewertet');
+    // Im Freundes-Kalender steht hier dessen Bewertung — nichts zum Bearbeiten.
+    const label = readOnly
+      ? rated
+        ? t('Bewertung: {n}/10', { n: rating.toFixed(1) })
+        : t('Nicht bewertet')
+      : rated
+        ? t('Deine Bewertung: {n}/10', { n: rating.toFixed(1) })
+        : t('Noch nicht bewertet');
+
+    // Unbewertet im fremden Kalender ist keine Information wert.
+    if (readOnly && !rated) return null;
 
     return (
-      <button
-        type="button"
-        className={`cal-ep-rate cal-ep-rate--${variant}${rated ? ' is-rated' : ''}`}
-        title={`${label} — ${t('Bewertung bearbeiten')}`}
-        aria-label={`${label} — ${t('Bewertung bearbeiten')}`}
-        style={{ color: rated ? color : undefined }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onRate(seriesId);
-        }}
-      >
-        {rated ? (
-          <Star className="cal-ep-rate__icon" />
-        ) : (
-          <StarBorder className="cal-ep-rate__icon" />
-        )}
-        {rated && rating.toFixed(1)}
-      </button>
+      <FriendRatingsTooltip itemId={seriesId} mediaType="series">
+        <button
+          type="button"
+          className={`cal-ep-rate cal-ep-rate--${variant}${rated ? ' is-rated' : ''}`}
+          // Kein title-Attribut: der native Tooltip läge sonst über dem
+          // Freundes-Tooltip. aria-label trägt die Beschriftung.
+          aria-label={`${label} — ${t('Bewertung bearbeiten')}`}
+          style={{ color: rated ? color : undefined }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRate(seriesId);
+          }}
+        >
+          {rated ? (
+            <Star className="cal-ep-rate__icon" />
+          ) : (
+            <StarBorder className="cal-ep-rate__icon" />
+          )}
+          {rated && rating.toFixed(1)}
+        </button>
+      </FriendRatingsTooltip>
     );
   }
 );
@@ -260,6 +274,7 @@ interface WatchIndicatorProps {
 
 const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) => {
   const { currentTheme } = useTheme();
+  const { readOnly } = useCalendarViewMode();
 
   if (watched) {
     return (
@@ -276,6 +291,9 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
       </div>
     );
   }
+
+  // Fremder Kalender: offene Folgen bleiben einfach offen.
+  if (readOnly) return null;
 
   return (
     <button

@@ -3,10 +3,13 @@ import PersonRounded from '@mui/icons-material/PersonRounded';
 import PersonRemoveRounded from '@mui/icons-material/PersonRemoveRounded';
 import GroupRounded from '@mui/icons-material/GroupRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
+import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
 import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import { NameBadges } from '../../../components/ui/display/NameBadges';
@@ -31,6 +34,7 @@ export const FriendsTab = ({
 }: FriendsTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { favoriteIds, toggleFavoriteFriend } = useOptimizedFriends();
   const [query, setQuery] = useState('');
 
   const resolved = useMemo(
@@ -221,6 +225,44 @@ export const FriendsTab = ({
                   {username ? `@${username}` : isOnline ? t('Online') : t('Freund')}
                 </p>
               </div>
+
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={(e) => {
+                  // Die ganze Karte navigiert — ohne das hier landet man im Profil.
+                  e.stopPropagation();
+                  void toggleFavoriteFriend(friend.uid);
+                }}
+                aria-pressed={favoriteIds.has(friend.uid)}
+                aria-label={
+                  favoriteIds.has(friend.uid)
+                    ? t('{name} nicht mehr als Favorit', { name: displayName })
+                    : t('{name} als Favorit markieren', { name: displayName })
+                }
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '11px',
+                  background: favoriteIds.has(friend.uid)
+                    ? `${currentTheme.status.warning}1f`
+                    : `${currentTheme.text.muted}12`,
+                  border: 'none',
+                  color: favoriteIds.has(friend.uid)
+                    ? currentTheme.status.warning
+                    : currentTheme.text.muted,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                {favoriteIds.has(friend.uid) ? (
+                  <StarRounded style={{ fontSize: '18px' }} />
+                ) : (
+                  <StarBorderRounded style={{ fontSize: '18px' }} />
+                )}
+              </motion.button>
 
               <motion.button
                 whileTap={tapScaleTight}

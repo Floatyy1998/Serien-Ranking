@@ -301,6 +301,25 @@ const dict: Record<string, string> = {
     "Ce n'est pas seulement l'interface qui est traduite : les titres et les descriptions de tes séries et films s'affichent dans ta langue, ainsi que les noms des épisodes. Idem pour la recherche, les genres et la liste des tendances.",
   'Benachrichtigungen, Push und E-Mails': 'Notifications, push et e-mails',
   'Diskussionen über Sprachgrenzen hinweg': 'Des discussions sans barrière de langue',
+  // September 2026 – Favoriten-Freunde
+  'September 2026 – Deine Favoriten unter den Freunden': 'Septembre 2026 – Tes amis favoris',
+  'Freunde als Favorit markieren': 'Marquer des amis comme favoris',
+  'In deiner Freundesliste sitzt jetzt ein Stern neben jedem Namen. Wen du markierst, rückt in der Liste nach oben — und nur von diesen Leuten zeigt dir die App Bewertungen und Kalender. Du entscheidest also selbst, wessen Meinung dich interessiert.':
+    'Une étoile apparaît désormais à côté de chaque nom dans ta liste d’amis. Les personnes que tu marques remontent en haut de la liste, et seules celles-ci apparaissent quand l’app te montre des notes et des calendriers. C’est donc toi qui choisis les avis qui t’intéressent.',
+  'Freunde öffnen': 'Ouvrir les amis',
+  'Sehen, wie deine Favoriten eine Serie fanden': 'Vois ce qu’en ont pensé tes favoris',
+  'Beim Bewerten gibt es einen zweiten Reiter: dort stehen die Bewertungen deiner Favoriten zu genau diesem Titel — samt Fortschritt, also ob jemand die Staffel zu Ende geschaut hat oder mittendrin steckt. Praktisch, wenn du überlegst, ob sich das Dranbleiben lohnt. Am Rechner reicht das Zeigen auf den Stern im Kalender.':
+    'Au moment de noter, un second onglet affiche les notes de tes favoris pour ce titre précis, avec leur avancement : ont-ils terminé la saison ou se sont-ils arrêtés en route ? Pratique quand tu hésites à continuer. Sur ordinateur, il suffit de survoler l’étoile dans le calendrier.',
+  'Den Kalender eines Favoriten ansehen': 'Consulter le calendrier d’un favori',
+  'Über dem Wochenraster kannst du auf einen Favoriten umschalten und dessen Woche sehen: seine Serien, sein Fortschritt, seine Bewertungen. Nur zum Ansehen — abhaken und bewerten kannst du dort nichts.':
+    'Au-dessus de la grille hebdomadaire, tu peux basculer sur un favori et voir sa semaine : ses séries, son avancement, ses notes. En lecture seule : impossible d’y cocher un épisode ou de noter.',
+  'Zum Kalender': 'Voir le calendrier',
+  'Bewerten nach Genre, jetzt überall': 'Noter par genre, désormais partout',
+  'Die aufklappbare Bewertung je Genre gab es bisher nur an manchen Stellen. Sie steckt jetzt auch in der Bewerten-Karte auf der Startseite — damit musst du für eine feinere Bewertung nicht mehr in deine Sammlung wechseln.':
+    'La note dépliable par genre n’existait qu’à certains endroits. Elle est maintenant aussi dans la carte de notation de l’écran d’accueil : plus besoin de passer par ta collection pour affiner une note.',
+  'Kleinere Korrekturen': 'Corrections mineures',
+  'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.':
+    'Dans le calendrier, la note affichée à côté d’une série pouvait légèrement différer de celle de la fenêtre de notation : les deux se calculent désormais de la même façon. Et un film noté depuis l’écran d’accueil réapparaît bien dans tes statistiques.',
 };
 
 export default dict;

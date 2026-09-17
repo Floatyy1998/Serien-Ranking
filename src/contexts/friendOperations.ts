@@ -1,4 +1,5 @@
 import { dbRef, dbGet, dbUpdate, serverTimestamp, userPath } from '../services/db/ref';
+import { paths } from '../services/db/paths';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import type { FriendActivity, FriendRequest } from '../types/Friend';
 
@@ -209,6 +210,15 @@ export async function cancelFriendRequestOp(
   setSentRequests((prev) => prev.filter((req) => req.id !== requestId));
 }
 
+/** Favoriten-Markierung setzen oder entfernen (`null` löscht den Schlüssel). */
+export async function setFavoriteFriendOp(
+  userId: string,
+  friendId: string,
+  favorite: boolean
+): Promise<void> {
+  await dbRef(paths.favoriteFriend(userId, friendId)).set(favorite ? true : null);
+}
+
 export async function removeFriendOp(
   userId: string,
   friendId: string,
@@ -217,6 +227,10 @@ export async function removeFriendOp(
   await dbRef(userPath(userId, 'friends', friendId)).remove();
 
   await dbRef(userPath(friendId, 'friends', userId)).remove();
+
+  // Sonst bleibt eine tote ID in den Favoriten stehen und die Kalender-Leiste
+  // zeigt einen Freund, den es nicht mehr gibt.
+  await dbRef(paths.favoriteFriend(userId, friendId)).remove();
 
   refetchFriends();
 }

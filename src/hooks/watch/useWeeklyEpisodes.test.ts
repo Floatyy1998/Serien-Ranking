@@ -70,6 +70,14 @@ describe('useWeeklyEpisodes', () => {
     });
   });
 
+  it('liefert die Gesamtbewertung mit einer Nachkommastelle', () => {
+    const { schedule } = call([
+      seriesWithTodayEpisode({ id: 5, rating: { Drama: 7.9, Crime: 7 } as never }),
+    ]);
+    // Genau die Zahl, die das Badge anzeigt — das Sheet setzt darauf auf.
+    expect([...schedule.values()].flat()[0].userRating).toBe(7.5);
+  });
+
   it('zählt gesehene Episoden in watchedCount', () => {
     const s = seriesWithTodayEpisode({ id: 6 });
     s.seasons[0].episodes[0].watched = true;

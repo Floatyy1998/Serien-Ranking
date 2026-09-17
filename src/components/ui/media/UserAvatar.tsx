@@ -12,6 +12,11 @@ interface UserAvatarProps {
   photoURL?: string;
   size?: number;
   navigable?: boolean;
+  /**
+   * Eigener Rahmen des Avatars. Aus, wenn er bündig in einem Element sitzt,
+   * das schon einen Rahmen hat — sonst liegt ein Ring um den Ring.
+   */
+  bordered?: boolean;
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({
@@ -20,6 +25,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   photoURL,
   size = 40,
   navigable = true,
+  bordered = true,
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -57,7 +63,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         borderRadius: '50%',
         flexShrink: 0,
         cursor: navigable || zoomable ? 'pointer' : 'default',
-        border: `2px solid ${borderColor}`,
+        border: bordered ? `2px solid ${borderColor}` : 'none',
         boxShadow: size >= 36 ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
         padding: 0,
         overflow: 'hidden',

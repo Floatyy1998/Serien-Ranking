@@ -31,6 +31,21 @@ vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ seriesList: ctx.seriesList, allSeriesList: ctx.seriesList }),
 }));
 
+const social = vi.hoisted(() => ({
+  favoriteFriends: [] as { uid: string; displayName: string }[],
+  friendSeries: [] as unknown[],
+}));
+vi.mock('../../contexts/OptimizedFriendsContext', () => ({
+  useOptimizedFriends: () => ({ favoriteFriends: social.favoriteFriends }),
+}));
+vi.mock('../../hooks/social/useFriendSeriesList', () => ({
+  useFriendSeriesList: (uid: string | null) => ({
+    loading: false,
+    seriesList: uid ? social.friendSeries : [],
+    error: false,
+  }),
+}));
+
 const trackEpisodeWatched = vi.fn<(...a: unknown[]) => void>();
 vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeWatched: (...a: unknown[]) => trackEpisodeWatched(...a),
@@ -76,6 +91,8 @@ describe('useCalendarData', () => {
     vi.setSystemTime(new Date(2026, 6, 1, 12, 0, 0));
     ctx.user = { uid: 'u1' };
     ctx.seriesList = [mkSeries({ id: 1, watchlist: true })];
+    social.favoriteFriends = [{ uid: 'f1', displayName: 'Flo' }];
+    social.friendSeries = [];
     fb.state.snapshot = null;
     fb.setSpy.mockClear();
     fb.removeSpy.mockClear();
@@ -120,6 +137,47 @@ describe('useCalendarData', () => {
 
     act(() => result.current.closeQuickRating());
     expect(result.current.quickRatingOpen).toBe(false);
+  });
+
+  it('prefills the sheet with the decimal shown on the badge, not a whole number', () => {
+    // 7,45 stand als 7,5 auf der Karte, im Sheet aber als 7 — und zog beim
+    // Öffnen die unbewerteten Genres mit nach unten.
+    ctx.seriesList = [
+      mkSeries({ id: 1, watchlist: true, rating: { Drama: 7.9, Crime: 7 } as never }),
+    ];
+    const { result } = renderHook(() => useCalendarData());
+    act(() => result.current.handleRateSeries(1));
+    expect(result.current.quickRatingValue).toBe(7.5);
+  });
+
+  it('switches to a favorite calendar and writes nothing there', async () => {
+    social.friendSeries = [mkSeries({ id: 7, watchlist: true })];
+    const { result } = renderHook(() => useCalendarData());
+
+    act(() => result.current.setViewedFriendUid('f1'));
+    expect(result.current.viewedFriend?.displayName).toBe('Flo');
+    const groups = Array.from(result.current.groupedSchedule.values()).flat();
+    expect(groups.some((g) => g.seriesId === 7)).toBe(true);
+
+    // Fremder Kalender ist schreibgeschützt — weder abhaken noch bewerten.
+    await act(async () => {
+      await result.current.handleMarkWatched(7, 0, 0);
+    });
+    expect(applyUserUpdate).not.toHaveBeenCalled();
+    act(() => result.current.handleRateSeries(7));
+    expect(result.current.quickRatingOpen).toBe(false);
+  });
+
+  it('falls back to the own calendar when the favorite is dropped', () => {
+    const { result, rerender } = renderHook(() => useCalendarData());
+    act(() => result.current.setViewedFriendUid('f1'));
+    expect(result.current.viewedFriendUid).toBe('f1');
+
+    // Entfreundet, während man in seinem Kalender steht.
+    social.favoriteFriends = [];
+    rerender();
+    expect(result.current.viewedFriendUid).toBe(null);
+    expect(result.current.viewedFriend).toBe(null);
   });
 
   it('ignores a rating request for a series that is not in the list', () => {

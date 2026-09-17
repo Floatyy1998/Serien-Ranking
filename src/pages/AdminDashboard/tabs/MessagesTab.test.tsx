@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessagesTab } from './MessagesTab';
 
@@ -24,6 +24,20 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
+const backendFetch = vi.hoisted(() =>
+  vi.fn((_path: string, _init: { body: string }) =>
+    Promise.resolve({ ok: true, json: () => Promise.resolve({ sent: 1, results: [] }) })
+  )
+);
+
+/** Body des ersten Aufrufs — die Sprach-Maps sind genau das, was hier zählt. */
+const sentBody = (): Record<string, unknown> => {
+  const call = backendFetch.mock.calls[0];
+  if (!call) throw new Error('backendFetch wurde nicht aufgerufen');
+  return JSON.parse(call[1].body) as Record<string, unknown>;
+};
+vi.mock('../../../services/api/backendApi', () => ({ backendFetch }));
+
 const theme = {
   primary: '#00d123',
   text: { secondary: '#ccc', muted: '#888' },
@@ -33,6 +47,7 @@ const theme = {
 
 beforeEach(() => {
   for (const k of Object.keys(fb.store)) delete fb.store[k];
+  backendFetch.mockClear();
 });
 
 afterEach(cleanup);
@@ -55,5 +70,56 @@ describe('MessagesTab', () => {
     expect(await screen.findByText('Hallo Welt')).toBeInTheDocument();
     expect(screen.getByText('Max')).toBeInTheDocument();
     expect(screen.getByText('Aktive Nachrichten (1)')).toBeInTheDocument();
+  });
+
+  it('sends per-language texts as maps and drops empty ones', async () => {
+    fb.store['users'] = { u1: { displayName: 'Max', username: 'max', language: 'es' } };
+    render(<MessagesTab theme={theme} />);
+
+    // Empfaenger waehlen
+    fireEvent.click(await screen.findByRole('button', { name: /Alle auswählen/ }));
+
+    fireEvent.change(screen.getByPlaceholderText('Titel (Deutsch)...'), {
+      target: { value: 'Neu: Favoriten' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Nachricht (Deutsch)...'), {
+      target: { value: 'Markiere Freunde als Favorit.' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Übersetzungen/ }));
+    fireEvent.change(screen.getByPlaceholderText('Titel (Español)...'), {
+      target: { value: 'Nuevo: favoritos' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Nachricht (Español)...'), {
+      target: { value: 'Marca amigos como favoritos.' },
+    });
+    // Franzoesisch bleibt leer und darf nicht mitgeschickt werden.
+
+    fireEvent.click(screen.getByRole('button', { name: /Notification senden/ }));
+
+    await waitFor(() => expect(backendFetch).toHaveBeenCalled());
+    const body = sentBody() as { title: string; titleL: Record<string, string>; messageL: unknown };
+    expect(body.title).toBe('Neu: Favoriten');
+    expect(body.titleL).toEqual({ es: 'Nuevo: favoritos' });
+    expect(body.messageL).toEqual({ es: 'Marca amigos como favoritos.' });
+    expect(body.titleL.fr).toBeUndefined();
+  });
+
+  it('omits the language maps entirely when nothing is translated', async () => {
+    fb.store['users'] = { u1: { displayName: 'Max', username: 'max', language: 'de' } };
+    render(<MessagesTab theme={theme} />);
+    fireEvent.click(await screen.findByRole('button', { name: /Alle auswählen/ }));
+    fireEvent.change(screen.getByPlaceholderText('Titel (Deutsch)...'), {
+      target: { value: 'Nur Deutsch' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Nachricht (Deutsch)...'), {
+      target: { value: 'Text' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Notification senden/ }));
+
+    await waitFor(() => expect(backendFetch).toHaveBeenCalled());
+    const body = sentBody();
+    expect(body).not.toHaveProperty('titleL');
+    expect(body).not.toHaveProperty('messageL');
   });
 });
