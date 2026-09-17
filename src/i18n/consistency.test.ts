@@ -47,3 +47,42 @@ describe.each(TRANSLATION_LOCALES)('Wörterbuch %s', (lang) => {
     expect(conflicts).toEqual([]);
   });
 });
+
+/**
+ * Die Freigabe-Oberflaeche (Freigaben, Favoriten, Freundes-Kalender) kam in
+ * einem Rutsch dazu und wurde beim ersten Anlauf komplett ohne Uebersetzungen
+ * ausgeliefert. Dieser Test haelt fest, dass ihre Texte in JEDER Sprache
+ * ankommen — und zwar uebersetzt, nicht als deutscher Rueckfall.
+ */
+const FREIGABE_TEXTE = [
+  'Wer meine Serien sieht',
+  'Aktuell sieht niemand deine Serien.',
+  'Allen {n} Freunden freigeben',
+  'Entziehen',
+  'Einblick anfragen',
+  'Bitten um Einblick',
+  '{name} möchte deine Serien sehen',
+  '{name} teilt {was} nicht',
+  'seine Serien',
+  'Favoriten wählen',
+  'Favoriten bearbeiten',
+  'Kalender wählen',
+  'Wartet auf Freigabe',
+  'wartet',
+  'durchgeschaut',
+  'noch nicht gestartet',
+  'unbewertet',
+  'Etwas Neues',
+  'Keiner deiner Favoriten hat die Serie in der Liste.',
+];
+
+describe.each(TRANSLATION_LOCALES)('Freigabe-Oberflaeche %s', (lang) => {
+  it('uebersetzt jeden Text', () => {
+    const alle: Record<string, string> = {};
+    for (const [, dict] of filesFor(lang)) Object.assign(alle, dict);
+
+    const fehlend = FREIGABE_TEXTE.filter((q) => !alle[q]);
+    const unuebersetzt = FREIGABE_TEXTE.filter((q) => alle[q] === q);
+    expect({ fehlend, unuebersetzt }).toEqual({ fehlend: [], unuebersetzt: [] });
+  });
+});

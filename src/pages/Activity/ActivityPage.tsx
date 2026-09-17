@@ -8,7 +8,7 @@ import PersonAddRounded from '@mui/icons-material/PersonAddRounded';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useScrollRestore } from '../../hooks/ui/useScrollRestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -46,6 +46,7 @@ export const ActivityPage = () => {
     declineFriendRequest,
     cancelFriendRequest,
     removeFriend,
+    shareRequests,
   } = useOptimizedFriends();
 
   const { notifications, markAsRead } = useNotifications();
@@ -63,7 +64,16 @@ export const ActivityPage = () => {
   );
 
   const { user } = useAuth() || {};
-  const [activeTab, setActiveTab] = useState<TabId>('activity');
+  // Der Reiter kommt aus der URL, damit eine Benachrichtigung direkt dorthin
+  // fuehrt. Ohne das landete ein Push zu einer Anfrage im Verlauf-Reiter und
+  // die Seite wirkte leer.
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    tabParam === 'requests' || tabParam === 'friends' || tabParam === 'discussions'
+      ? tabParam
+      : 'activity'
+  );
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
 
@@ -114,6 +124,8 @@ export const ActivityPage = () => {
     [removeFriend]
   );
 
+  const offeneAnfragen = unreadRequestsCount + shareRequests.length;
+
   const tabs = [
     {
       id: 'activity' as const,
@@ -130,7 +142,9 @@ export const ActivityPage = () => {
       id: 'requests' as const,
       icon: <MarkEmailUnreadRounded style={{ fontSize: '21px' }} />,
       label: t('Anfragen'),
-      badgeCount: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
+      // Bitten um Einblick zaehlen mit — sonst sieht man am Reiter nicht,
+      // dass dort etwas liegt.
+      badgeCount: offeneAnfragen > 0 ? offeneAnfragen : undefined,
     },
     {
       id: 'discussions' as const,

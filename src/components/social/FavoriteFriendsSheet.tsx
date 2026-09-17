@@ -72,25 +72,39 @@ export const FavoriteFriendsSheet: React.FC<FavoriteFriendsSheetProps> = ({
             }}
           >
             {friends.map((friend) => {
-              const wartet = favoriteIds.has(friend.uid) && shareState(friend.uid) !== 'granted';
+              const favorit = favoriteIds.has(friend.uid);
+              const zustand = shareState(friend.uid);
+              // Der Auswahl-Ring stand bisher auch bei offener Bitte — er sah
+              // aus wie „freigegeben". Nur ein tatsaechlicher Einblick zaehlt.
+              const sichtbar = favorit && zustand === 'granted';
+              const hinweis = !favorit
+                ? null
+                : zustand === 'pending'
+                  ? t('wartet')
+                  : zustand === 'none'
+                    ? t('kein Zugriff')
+                    : null;
               return (
                 <div key={friend.uid} style={{ position: 'relative' }}>
-                  <FriendAvatarButton
-                    friend={friend}
-                    isSelected={favoriteIds.has(friend.uid)}
-                    onToggle={(uid) => void toggleFavoriteFriend(uid)}
-                  />
-                  {wartet && (
+                  <div style={{ opacity: favorit && !sichtbar ? 0.55 : 1 }}>
+                    <FriendAvatarButton
+                      friend={friend}
+                      isSelected={sichtbar}
+                      onToggle={(uid) => void toggleFavoriteFriend(uid)}
+                    />
+                  </div>
+                  {hinweis && (
                     <span
                       style={{
                         display: 'block',
                         textAlign: 'center',
                         fontSize: 11,
-                        color: currentTheme.text.muted,
+                        fontWeight: 600,
+                        color: zustand === 'none' ? currentTheme.primary : currentTheme.text.muted,
                         marginTop: -4,
                       }}
                     >
-                      {t('wartet')}
+                      {hinweis}
                     </span>
                   )}
                 </div>

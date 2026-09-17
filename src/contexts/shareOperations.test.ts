@@ -138,6 +138,22 @@ describe('Freigabe erteilen und entziehen', () => {
     });
   });
 
+  it('hakt offene Bitten beim Freigeben an alle mit ab', async () => {
+    // Sonst bleibt die Anfrage stehen und der Absender erfaehrt nichts: die
+    // Zusage-Meldung haengt am Statuswechsel, nicht am Freigabe-Knoten.
+    db.values.set('shareRequests?toUserId=me', {
+      r1: { fromUserId: 'a', toUserId: 'me', status: 'pending' },
+      r2: { fromUserId: 'fremd', toUserId: 'me', status: 'pending' },
+      r3: { fromUserId: 'b', toUserId: 'me', status: 'declined' },
+    });
+    await shareWithAllOp('me', ['a', 'b']);
+    expect(db.updates[0]).toEqual({
+      'users/me/shares/a': true,
+      'users/me/shares/b': true,
+      'shareRequests/r1/status': 'accepted',
+    });
+  });
+
   it('schreibt nichts ohne Freunde', async () => {
     await shareWithAllOp('me', []);
     expect(db.updates).toHaveLength(0);

@@ -43,8 +43,10 @@ vi.mock('framer-motion', async () => {
   };
 });
 
-const { navigateMock, friendsValue, notificationsValue } = vi.hoisted(() => ({
+const { navigateMock, friendsValue, notificationsValue, routeState } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
+  /** Query-Parameter der Route — der Push landet mit ?tab=requests hier. */
+  routeState: { search: '' },
   friendsValue: {
     friends: [],
     friendRequests: [],
@@ -58,11 +60,15 @@ const { navigateMock, friendsValue, notificationsValue } = vi.hoisted(() => ({
     declineFriendRequest: vi.fn(),
     cancelFriendRequest: vi.fn(),
     removeFriend: vi.fn<() => Promise<void>>(),
+    shareRequests: [] as { id: string; fromUserId: string }[],
   },
   notificationsValue: { notifications: [], markAsRead: vi.fn() },
 }));
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+  useSearchParams: () => [new URLSearchParams(routeState.search)],
+}));
 vi.mock('../../hooks/ui/useScrollRestore', () => ({
   useScrollRestore: () => ({ saveNow: vi.fn() }),
 }));
@@ -112,6 +118,9 @@ import { ActivityPage } from './ActivityPage';
 
 beforeEach(() => {
   navigateMock.mockReset();
+  routeState.search = '';
+  friendsValue.shareRequests = [];
+  friendsValue.unreadRequestsCount = 0;
 });
 
 afterEach(() => cleanup());
@@ -135,5 +144,22 @@ describe('ActivityPage', () => {
     render(<ActivityPage />);
     fireEvent.click(screen.getByRole('tab', { name: 'Freunde' }));
     expect(screen.getByText('FRIENDS_TAB')).toBeInTheDocument();
+  });
+
+  it('öffnet den Anfragen-Reiter, wenn die URL ihn nennt', () => {
+    // Genau der Weg aus dem Push: /activity?tab=requests. Ohne das landete man
+    // im Verlauf und die Seite wirkte leer, obwohl eine Anfrage vorlag.
+    routeState.search = '?tab=requests';
+    render(<ActivityPage />);
+    expect(screen.getByText('REQUESTS_TAB')).toBeInTheDocument();
+    expect(screen.queryByText('FEED_TAB')).not.toBeInTheDocument();
+  });
+
+  it('zählt Bitten um Einblick in den Zähler am Anfragen-Reiter', () => {
+    friendsValue.shareRequests = [{ id: 'r1', fromUserId: 'f1' }];
+    friendsValue.unreadRequestsCount = 2;
+    render(<ActivityPage />);
+    // 2 Freundschaftsanfragen + 1 Bitte um Einblick
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 });

@@ -92,10 +92,37 @@ export async function revokeShareOp(ownUid: string, friendId: string): Promise<v
   await dbRef(paths.share(ownUid, friendId)).remove();
 }
 
-/** „Allen bestehenden Freunden freigeben" — ein Tipp statt N Bestätigungen. */
+/** Offene Bitten AN MICH, nach Absender. */
+async function pendingToMe(ownUid: string): Promise<Map<string, string>> {
+  const snap = await dbRef('shareRequests')
+    .orderByChild('toUserId')
+    .equalTo(ownUid)
+    .once('value')
+    .catch(() => null);
+  const all = (snap?.val() ?? null) as Record<string, ShareRequest> | null;
+  const byFrom = new Map<string, string>();
+  if (!all) return byFrom;
+  for (const [id, req] of Object.entries(all)) {
+    if (req?.status === 'pending' && req.fromUserId) byFrom.set(req.fromUserId, id);
+  }
+  return byFrom;
+}
+
+/**
+ * „Allen bestehenden Freunden freigeben" — ein Tipp statt N Bestätigungen.
+ *
+ * Offene Bitten werden dabei mit abgehakt. Ohne das bliebe die Anfrage stehen,
+ * der Absender müsste erneut warten und bekäme keine Nachricht: die Zusage-
+ * Meldung hängt am Statuswechsel der Anfrage, nicht am Freigabe-Knoten.
+ */
 export async function shareWithAllOp(ownUid: string, friendIds: string[]): Promise<void> {
   if (friendIds.length === 0) return;
+  const offene = await pendingToMe(ownUid);
   const updates: Record<string, unknown> = {};
-  for (const id of friendIds) updates[paths.share(ownUid, id)] = true;
+  for (const id of friendIds) {
+    updates[paths.share(ownUid, id)] = true;
+    const requestId = offene.get(id);
+    if (requestId) updates[`shareRequests/${requestId}/status`] = 'accepted';
+  }
   await dbUpdate(updates);
 }

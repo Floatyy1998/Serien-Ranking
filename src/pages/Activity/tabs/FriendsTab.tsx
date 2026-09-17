@@ -27,28 +27,22 @@ interface FriendsTabProps {
 }
 
 /**
- * Ein Stern, drei Zustaende: nicht vorgemerkt, vorgemerkt und auf Freigabe
- * wartend, vorgemerkt mit Einblick. Der mittlere Zustand ist wichtig — sonst
- * tippt man den Stern und scheinbar passiert nichts.
+ * Der Stern merkt vor — und daneben steht, wie es um den Einblick steht.
+ * Bewusst getrennt: frueher zeigte der Stern selbst eine Sanduhr fuer alles,
+ * was nicht freigegeben war, also auch fuer abgelehnte Bitten. Dieser Zustand
+ * loeste sich nie auf und war von "wartet" nicht zu unterscheiden.
  */
 const FavoriteStar = ({
   isFavorite,
-  access,
   name,
   onToggle,
 }: {
   isFavorite: boolean;
-  access: 'granted' | 'pending' | 'none';
   name: string;
   onToggle: () => void;
 }) => {
   const { currentTheme } = useTheme();
-  const wartet = isFavorite && access !== 'granted';
-  const farbe = !isFavorite
-    ? currentTheme.text.muted
-    : wartet
-      ? currentTheme.text.secondary
-      : currentTheme.status.warning;
+  const farbe = isFavorite ? currentTheme.status.warning : currentTheme.text.muted;
 
   return (
     <motion.button
@@ -61,12 +55,9 @@ const FavoriteStar = ({
       aria-pressed={isFavorite}
       aria-label={
         isFavorite
-          ? wartet
-            ? t('{name} wurde um Einblick gebeten — antippen zum Zurückziehen', { name })
-            : t('{name} nicht mehr als Favorit', { name })
+          ? t('{name} nicht mehr als Favorit', { name })
           : t('{name} als Favorit markieren und um Einblick bitten', { name })
       }
-      title={wartet ? t('Wartet auf Freigabe') : undefined}
       style={{
         width: '36px',
         height: '36px',
@@ -81,14 +72,72 @@ const FavoriteStar = ({
         flexShrink: 0,
       }}
     >
-      {!isFavorite ? (
-        <StarBorderRounded style={{ fontSize: '18px' }} />
-      ) : wartet ? (
-        <HourglassTopRounded style={{ fontSize: '17px' }} />
-      ) : (
+      {isFavorite ? (
         <StarRounded style={{ fontSize: '18px' }} />
+      ) : (
+        <StarBorderRounded style={{ fontSize: '18px' }} />
       )}
     </motion.button>
+  );
+};
+
+/**
+ * Zustand des Einblicks als eigenes, immer lesbares Zeichen. „Kein Zugriff"
+ * ist antippbar und fragt erneut — so gibt es keinen Zustand, aus dem man
+ * nicht wieder herauskommt.
+ */
+const ShareStatus = ({
+  access,
+  name,
+  onAsk,
+}: {
+  access: 'granted' | 'pending' | 'none';
+  name: string;
+  onAsk: () => Promise<void>;
+}) => {
+  const { currentTheme } = useTheme();
+  const [sending, setSending] = useState(false);
+
+  if (access === 'granted') return null;
+
+  if (access === 'pending') {
+    return (
+      <span
+        className="ft-share-chip"
+        title={t('Wartet auf Freigabe')}
+        style={{ color: currentTheme.text.muted, borderColor: `${currentTheme.text.muted}40` }}
+      >
+        <HourglassTopRounded style={{ fontSize: '13px' }} />
+        {t('wartet')}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="ft-share-chip ft-share-chip--ask"
+      disabled={sending}
+      aria-label={t('{name} erneut um Einblick bitten', { name })}
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (sending) return;
+        setSending(true);
+        try {
+          await onAsk();
+        } finally {
+          setSending(false);
+        }
+      }}
+      style={{
+        color: currentTheme.primary,
+        borderColor: `${currentTheme.primary}50`,
+        cursor: sending ? 'default' : 'pointer',
+        opacity: sending ? 0.6 : 1,
+      }}
+    >
+      {sending ? t('Wird gesendet …') : t('Kein Zugriff · fragen')}
+    </button>
   );
 };
 
@@ -101,7 +150,7 @@ export const FriendsTab = ({
 }: FriendsTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { favoriteIds, toggleFavoriteFriend, shareState } = useOptimizedFriends();
+  const { favoriteIds, toggleFavoriteFriend, shareState, requestShare } = useOptimizedFriends();
   const [query, setQuery] = useState('');
 
   const resolved = useMemo(
@@ -293,9 +342,16 @@ export const FriendsTab = ({
                 </p>
               </div>
 
+              <ShareStatus
+                access={shareState(friend.uid)}
+                name={displayName}
+                onAsk={async () => {
+                  await requestShare(friend.uid);
+                }}
+              />
+
               <FavoriteStar
                 isFavorite={favoriteIds.has(friend.uid)}
-                access={shareState(friend.uid)}
                 name={displayName}
                 onToggle={() => void toggleFavoriteFriend(friend.uid)}
               />

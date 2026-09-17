@@ -70,13 +70,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set());
 
-  // Die Freundes-Caches sind modulweit. Beim Kontowechsel oder Abmelden müssen
-  // sie weg, sonst zeigt der nächste Nutzer die Daten des vorherigen.
-  useEffect(() => {
-    clearFriendSeriesCache();
-    clearFriendTitleRatingsCache();
-  }, [user?.uid]);
-
   // Eigener Mini-Knoten statt eines Feldes in `friends/$id`: dort darf laut
   // Rules auch der Freund selbst schreiben, und `acceptFriendRequestOp` ersetzt
   // den Eintrag per Multipath-set — das Flag wäre beim Neu-Befreunden weg.
@@ -160,27 +153,58 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     grantedRef.current = grantedToMe;
   }, [grantedToMe]);
+
+  // Die Freundes-Caches sind modulweit. Sie müssen weg beim Kontowechsel
+  // (sonst sieht der nächste Nutzer die Daten des vorherigen) UND bei jeder
+  // Änderung der Freigaben — ein Entzug wirkt sonst erst, wenn der Cache von
+  // allein abläuft.
+  const grantedCacheKey = [...grantedToMe].sort().join(',');
+  useEffect(() => {
+    clearFriendSeriesCache();
+    clearFriendTitleRatingsCache();
+  }, [user?.uid, grantedCacheKey]);
+
   const friendUidKey = useMemo(() => friendIdsOf(friendsData).join(','), [friendsData]);
 
+  // Ein Abo je Freund auf `users/$freund/shares/$ich` — kein einmaliger Abruf.
+  // Vorher blieb der Zustand stehen: nahm jemand die Bitte an oder entzog er
+  // sie wieder, erfuhr man es bis zum naechsten Neuladen nicht, und die
+  // Sanduhr am Stern lief ins Leere.
   useEffect(() => {
     if (!user || !friendUidKey) {
       setGrantedToMe(new Set());
       return;
     }
-    let cancelled = false;
     const ids = friendUidKey.split(',');
-    (async () => {
-      const granted = await Promise.all(
-        ids.map(async (id) => {
-          const value = await dbGet<boolean>(paths.share(id, user.uid)).catch(() => null);
-          return value === true ? id : null;
-        })
-      );
-      if (cancelled) return;
-      setGrantedToMe(new Set(granted.filter((id): id is string => id !== null)));
-    })();
+    const refs = ids.map((id) => ({ id, ref: dbRef(paths.share(id, user.uid)) }));
+    const listeners = refs.map(({ id, ref }) =>
+      onValue(
+        ref,
+        (snap) => {
+          const erlaubt = snap.val() === true;
+          setGrantedToMe((prev) => {
+            if (prev.has(id) === erlaubt) return prev;
+            const next = new Set(prev);
+            if (erlaubt) next.add(id);
+            else next.delete(id);
+            return next;
+          });
+        },
+        {
+          onError: () => {
+            // Kein Leserecht heisst schlicht: nicht freigegeben.
+            setGrantedToMe((prev) => {
+              if (!prev.has(id)) return prev;
+              const next = new Set(prev);
+              next.delete(id);
+              return next;
+            });
+          },
+        }
+      )
+    );
     return () => {
-      cancelled = true;
+      refs.forEach(({ ref }, i) => ref.off('value', listeners[i]));
     };
   }, [user, friendUidKey]);
 
@@ -363,6 +387,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         const cached = JSON.parse(rawCached) as {
           savedAt: number;
           friendIds: string[];
+          grantedIds?: string[];
           activities: FriendActivity[];
         };
         const friendIdsKey = friends
@@ -370,9 +395,17 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           .sort()
           .join(',');
         const cachedIdsKey = [...cached.friendIds].sort().join(',');
+        // Der Freigabe-Stand gehoert in die Pruefung: sonst zeigt der Cache
+        // nach einem Entzug bis zu fuenf Minuten weiter Titel, die der Nutzer
+        // gerade verborgen hat. Alter Bestand ohne das Feld faellt raus.
+        const grantedKey = [...grantedRef.current].sort().join(',');
+        const cachedGrantedKey = Array.isArray(cached.grantedIds)
+          ? [...cached.grantedIds].sort().join(',')
+          : null;
         if (
           Date.now() - cached.savedAt < cacheTTL &&
           friendIdsKey === cachedIdsKey &&
+          cachedGrantedKey === grantedKey &&
           Array.isArray(cached.activities)
         ) {
           setFriendActivities(cached.activities);
@@ -451,6 +484,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           JSON.stringify({
             savedAt: Date.now(),
             friendIds: friends.map((f) => f.uid),
+            grantedIds: [...grantedRef.current],
             activities: recentActivities,
           })
         );

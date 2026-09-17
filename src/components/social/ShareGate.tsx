@@ -20,15 +20,22 @@ export const ShareGate: React.FC<ShareGateProps> = ({ friendId, friendName, what
   const { currentTheme } = useTheme();
   const { shareState, requestShare } = useOptimizedFriends();
   const [sending, setSending] = useState(false);
+  // „Gerade abgeschickt" haelt den Knopf sofort verschwunden, auch bevor der
+  // Listener die neue Anfrage meldet. Ohne das laesst sich der Knopf in der
+  // Zwischenzeit mehrfach druecken.
+  const [justSent, setJustSent] = useState(false);
   const state = shareState(friendId);
 
   if (state === 'granted') return <>{children}</>;
 
+  const wartend = state === 'pending' || justSent;
+
   const handleAsk = async () => {
-    if (sending) return;
+    if (sending || wartend) return;
     setSending(true);
     try {
       await requestShare(friendId);
+      setJustSent(true);
     } finally {
       setSending(false);
     }
@@ -64,7 +71,7 @@ export const ShareGate: React.FC<ShareGateProps> = ({ friendId, friendName, what
           lineHeight: 1.5,
         }}
       >
-        {state === 'pending'
+        {wartend
           ? t('Deine Anfrage liegt bei {name}. Sobald sie angenommen ist, siehst du alles hier.', {
               name: friendName,
             })
@@ -72,7 +79,7 @@ export const ShareGate: React.FC<ShareGateProps> = ({ friendId, friendName, what
               name: friendName,
             })}
       </p>
-      {state === 'none' && (
+      {!wartend && (
         <button
           type="button"
           onClick={handleAsk}

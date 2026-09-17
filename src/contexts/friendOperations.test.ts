@@ -141,6 +141,40 @@ afterEach(() => {
 });
 
 describe('sendFriendRequestOp', () => {
+  it('legt keine zweite Anfrage an dasselbe Ziel an', async () => {
+    // Im Bestand lagen Paare 73 Sekunden auseinander — ein Doppelklick ohne
+    // jeden Schutz. Der Empfaenger sah daraufhin zwei identische Karten.
+    fb.setByPath('userSearchIndex', {
+      target: { usernameLower: 'spixi', username: 'Spixi' },
+    });
+    fb.setByPath('users/target', { username: 'Spixi', email: 't@x.de' });
+    fb.setByPath('users/me', { username: 'MeName', email: 'me@x.de' });
+    fb.setByPath('friendRequests', {
+      alt: { fromUserId: 'me', toUserId: 'target', status: 'pending', sentAt: 1 },
+    });
+
+    const ok = await sendFriendRequestOp(me, 'SpiXi');
+    expect(ok).toBe(true);
+
+    const reqs = fb.getByPath('friendRequests') as Record<string, unknown>;
+    expect(Object.keys(reqs)).toEqual(['alt']);
+  });
+
+  it('legt nach einer abgelehnten Anfrage wieder eine neue an', async () => {
+    fb.setByPath('userSearchIndex', {
+      target: { usernameLower: 'spixi', username: 'Spixi' },
+    });
+    fb.setByPath('users/target', { username: 'Spixi', email: 't@x.de' });
+    fb.setByPath('users/me', { username: 'MeName', email: 'me@x.de' });
+    fb.setByPath('friendRequests', {
+      alt: { fromUserId: 'me', toUserId: 'target', status: 'declined', sentAt: 1 },
+    });
+
+    await sendFriendRequestOp(me, 'SpiXi');
+    const reqs = fb.getByPath('friendRequests') as Record<string, unknown>;
+    expect(Object.keys(reqs)).toHaveLength(2);
+  });
+
   it('findet den Ziel-User über den userSearchIndex und legt eine friendRequest an', async () => {
     fb.setByPath('userSearchIndex', {
       target: { usernameLower: 'spixi', username: 'Spixi' },

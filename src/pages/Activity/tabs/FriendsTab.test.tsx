@@ -47,6 +47,21 @@ import type { Friend } from '../../../types/Friend';
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
+
+const social = vi.hoisted(() => ({
+  favoriteIds: new Set<string>(),
+  zustand: 'granted' as 'granted' | 'pending' | 'none',
+  toggleFavoriteFriend: vi.fn(async () => {}),
+  requestShare: vi.fn(async () => true),
+}));
+vi.mock('../../../contexts/OptimizedFriendsContext', () => ({
+  useOptimizedFriends: () => ({
+    favoriteIds: social.favoriteIds,
+    toggleFavoriteFriend: social.toggleFavoriteFriend,
+    requestShare: social.requestShare,
+    shareState: () => social.zustand,
+  }),
+}));
 vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
@@ -84,7 +99,25 @@ const friend = (uid: string, name: string): Friend => ({
   friendsSince: 0,
 });
 
-beforeEach(() => navigateMock.mockReset());
+/** Ein Freund, damit die Zustands-Anzeige neben ihm geprueft werden kann. */
+const renderTab = () =>
+  render(
+    <FriendsTab
+      friends={[friend('f1', 'Frank')]}
+      friendProfiles={{}}
+      saveScrollPosition={vi.fn()}
+      onAddFriend={vi.fn()}
+      onRemoveFriend={vi.fn()}
+    />
+  );
+
+beforeEach(() => {
+  navigateMock.mockReset();
+  social.favoriteIds = new Set();
+  social.zustand = 'granted';
+  social.toggleFavoriteFriend.mockClear();
+  social.requestShare.mockClear();
+});
 afterEach(() => cleanup());
 
 describe('FriendsTab', () => {
@@ -137,5 +170,31 @@ describe('FriendsTab', () => {
     );
     fireEvent.click(screen.getByLabelText('Frank entfernen'));
     expect(onRemoveFriend).toHaveBeenCalledWith({ uid: 'u1', name: 'Frank' });
+  });
+
+  it('zeigt bei offener Bitte „wartet" und keinen Frage-Knopf', () => {
+    social.favoriteIds = new Set(['f1']);
+    social.zustand = 'pending';
+    renderTab();
+    expect(screen.getByText('wartet')).toBeInTheDocument();
+    expect(screen.queryByText(/Kein Zugriff/)).not.toBeInTheDocument();
+  });
+
+  it('bietet nach einer Absage erneutes Fragen an — kein toter Zustand', () => {
+    // Genau die Falle: frueher blieb hier ewig die Sanduhr stehen.
+    social.favoriteIds = new Set(['f1']);
+    social.zustand = 'none';
+    renderTab();
+    expect(screen.queryByText('wartet')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Kein Zugriff/));
+    expect(social.requestShare).toHaveBeenCalledWith('f1');
+  });
+
+  it('zeigt bei erteiltem Einblick gar keinen Hinweis', () => {
+    social.favoriteIds = new Set(['f1']);
+    social.zustand = 'granted';
+    renderTab();
+    expect(screen.queryByText('wartet')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Kein Zugriff/)).not.toBeInTheDocument();
   });
 });

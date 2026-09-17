@@ -52,6 +52,28 @@ export async function sendFriendRequestOp(
     dbGet<string>(userPath(user.uid, 'email')).catch(() => null),
   ]);
 
+  // Schon eine offene Anfrage an denselben Empfaenger? Dann nichts Neues
+  // anlegen. Ohne diese Pruefung erzeugte jeder weitere Klick eine weitere
+  // Karte beim Empfaenger (im Bestand fanden sich Paare 73 Sekunden auseinander).
+  // Bewusst als Query ueber `fromUserId` — der Wurzelknoten ist ohne Query per
+  // Rules nicht lesbar.
+  try {
+    const offene = await dbRef('friendRequests')
+      .orderByChild('fromUserId')
+      .equalTo(user.uid)
+      .once('value');
+    const vorhanden = (offene.val() || {}) as Record<
+      string,
+      { toUserId?: string; status?: string }
+    >;
+    for (const eintrag of Object.values(vorhanden)) {
+      if (eintrag?.toUserId === targetUserId && eintrag?.status === 'pending') return true;
+    }
+  } catch {
+    // Lesefehler darf das Senden nicht verhindern — im Zweifel lieber eine
+    // Anfrage zu viel als gar keine.
+  }
+
   const requestKey = dbRef('friendRequests').push().key;
   if (!requestKey) return false;
 
