@@ -52,6 +52,7 @@ const dict: Record<string, string> = {
   'Kein Zugriff · fragen': 'No access · ask',
   'kein Zugriff': 'no access',
   '{name} erneut um Einblick bitten': 'Ask {name} for access again',
+  'Vorgemerkt — sichtbar nach der Freigabe': 'Marked — visible once access is granted',
 };
 
 export default dict;

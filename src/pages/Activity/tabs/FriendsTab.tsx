@@ -34,15 +34,25 @@ interface FriendsTabProps {
  */
 const FavoriteStar = ({
   isFavorite,
+  access,
   name,
   onToggle,
 }: {
   isFavorite: boolean;
+  access: 'granted' | 'pending' | 'none';
   name: string;
   onToggle: () => void;
 }) => {
   const { currentTheme } = useTheme();
-  const farbe = isFavorite ? currentTheme.status.warning : currentTheme.text.muted;
+  // Gold nur, wenn es auch wirklich etwas zu sehen gibt. Ein goldener Stern
+  // neben „Kein Zugriff" liest sich als Erfolgsmeldung und widerspricht dem
+  // Hinweis daneben — vorgemerkt ohne Einblick ist deshalb gedaempft.
+  const wirksam = isFavorite && access === 'granted';
+  const farbe = wirksam
+    ? currentTheme.status.warning
+    : isFavorite
+      ? currentTheme.text.secondary
+      : currentTheme.text.muted;
 
   return (
     <motion.button
@@ -58,11 +68,12 @@ const FavoriteStar = ({
           ? t('{name} nicht mehr als Favorit', { name })
           : t('{name} als Favorit markieren und um Einblick bitten', { name })
       }
+      title={isFavorite && !wirksam ? t('Vorgemerkt — sichtbar nach der Freigabe') : undefined}
       style={{
         width: '36px',
         height: '36px',
         borderRadius: '11px',
-        background: isFavorite ? `${farbe}1f` : `${currentTheme.text.muted}12`,
+        background: wirksam ? `${farbe}1f` : `${currentTheme.text.muted}12`,
         border: 'none',
         color: farbe,
         cursor: 'pointer',
@@ -87,10 +98,12 @@ const FavoriteStar = ({
  * nicht wieder herauskommt.
  */
 const ShareStatus = ({
+  isFavorite,
   access,
   name,
   onAsk,
 }: {
+  isFavorite: boolean;
   access: 'granted' | 'pending' | 'none';
   name: string;
   onAsk: () => Promise<void>;
@@ -98,7 +111,10 @@ const ShareStatus = ({
   const { currentTheme } = useTheme();
   const [sending, setSending] = useState(false);
 
-  if (access === 'granted') return null;
+  // Nur bei Vorgemerkten. Sonst traegt jeder Freund ohne Einblick einen
+  // Hinweis, und die Liste wird zur Wand aus Chips — wer nicht vorgemerkt ist,
+  // fragt ueber den Stern.
+  if (!isFavorite || access === 'granted') return null;
 
   if (access === 'pending') {
     return (
@@ -343,6 +359,7 @@ export const FriendsTab = ({
               </div>
 
               <ShareStatus
+                isFavorite={favoriteIds.has(friend.uid)}
                 access={shareState(friend.uid)}
                 name={displayName}
                 onAsk={async () => {
@@ -352,6 +369,7 @@ export const FriendsTab = ({
 
               <FavoriteStar
                 isFavorite={favoriteIds.has(friend.uid)}
+                access={shareState(friend.uid)}
                 name={displayName}
                 onToggle={() => void toggleFavoriteFriend(friend.uid)}
               />

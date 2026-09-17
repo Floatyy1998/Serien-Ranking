@@ -197,4 +197,20 @@ describe('FriendsTab', () => {
     expect(screen.queryByText('wartet')).not.toBeInTheDocument();
     expect(screen.queryByText(/Kein Zugriff/)).not.toBeInTheDocument();
   });
+
+  it('faerbt den Stern nur bei tatsaechlichem Einblick golden', () => {
+    // Ein goldener Stern neben „Kein Zugriff" liest sich als Erfolgsmeldung
+    // und widerspricht dem Hinweis daneben.
+    social.favoriteIds = new Set(['f1']);
+    social.zustand = 'granted';
+    const { unmount } = renderTab();
+    const gold = screen.getByLabelText(/nicht mehr als Favorit/).getAttribute('style');
+    unmount();
+
+    social.zustand = 'none';
+    renderTab();
+    const gedaempft = screen.getByLabelText(/nicht mehr als Favorit/).getAttribute('style');
+
+    expect(gedaempft).not.toEqual(gold);
+  });
 });
