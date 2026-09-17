@@ -16,6 +16,8 @@ const state = vi.hoisted(() => ({
   },
   matchResult: null as TasteMatchResult | null,
   calc: vi.fn<(a: string, b: string) => Promise<TasteMatchResult>>(),
+  /** Freigaben des Freundes an mich — ohne sie wird nicht gerechnet. */
+  grantedToMe: new Set<string>(),
 }));
 
 vi.mock('firebase/compat/app', () => ({
@@ -28,6 +30,9 @@ vi.mock('firebase/compat/app', () => ({
 vi.mock('firebase/compat/database', () => ({}));
 vi.mock('react-router-dom', () => ({ useParams: () => state.params }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
+vi.mock('../../contexts/OptimizedFriendsContext', () => ({
+  useOptimizedFriends: () => ({ grantedToMe: state.grantedToMe }),
+}));
 vi.mock('../../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: () => Promise.resolve(state.friendFields),
 }));
@@ -48,6 +53,7 @@ const sampleResult = (): TasteMatchResult => ({
 
 beforeEach(() => {
   state.user = { uid: 'me', displayName: 'Me Long', photoURL: 'me.jpg' };
+  state.grantedToMe = new Set(['friend1']);
   state.params = { friendId: 'friend1' };
   state.currentUser = { displayName: 'MeDb Name', photoURL: 'db.jpg' };
   state.friendFields = { username: null, displayName: 'Friendy McFriend', photoURL: 'f.jpg' };
@@ -101,5 +107,14 @@ describe('useTasteMatchData', () => {
 
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText.mock.calls[0][0]).toContain('Friendy');
+  });
+
+  it('rechnet ohne Freigabe gar nicht erst', async () => {
+    state.grantedToMe = new Set();
+    const { result } = renderHook(() => useTasteMatchData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(state.calc).not.toHaveBeenCalled();
+    expect(result.current.shared).toBe(false);
+    expect(result.current.result).toBe(null);
   });
 });

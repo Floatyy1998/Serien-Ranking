@@ -34,9 +34,14 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 const social = vi.hoisted(() => ({
   favoriteFriends: [] as { uid: string; displayName: string }[],
   friendSeries: [] as unknown[],
+  /** Wer mir Einblick gegeben hat — ohne das taucht ein Favorit nicht auf. */
+  grantedToMe: new Set<string>(),
 }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
-  useOptimizedFriends: () => ({ favoriteFriends: social.favoriteFriends }),
+  useOptimizedFriends: () => ({
+    favoriteFriends: social.favoriteFriends,
+    grantedToMe: social.grantedToMe,
+  }),
 }));
 vi.mock('../../hooks/social/useFriendSeriesList', () => ({
   useFriendSeriesList: (uid: string | null) => ({
@@ -92,6 +97,7 @@ describe('useCalendarData', () => {
     ctx.user = { uid: 'u1' };
     ctx.seriesList = [mkSeries({ id: 1, watchlist: true })];
     social.favoriteFriends = [{ uid: 'f1', displayName: 'Flo' }];
+    social.grantedToMe = new Set(['f1']);
     social.friendSeries = [];
     fb.state.snapshot = null;
     fb.setSpy.mockClear();
@@ -175,9 +181,18 @@ describe('useCalendarData', () => {
 
     // Entfreundet, während man in seinem Kalender steht.
     social.favoriteFriends = [];
+    social.grantedToMe = new Set();
     rerender();
     expect(result.current.viewedFriendUid).toBe(null);
     expect(result.current.viewedFriend).toBe(null);
+  });
+
+  it('blendet einen Favoriten ohne Freigabe aus der Leiste aus', () => {
+    // Favorit ja, Einblick nein — dann darf kein Chip auf einen leeren
+    // Kalender führen.
+    social.grantedToMe = new Set();
+    const { result } = renderHook(() => useCalendarData());
+    expect(result.current.favoriteFriends).toEqual([]);
   });
 
   it('ignores a rating request for a series that is not in the list', () => {

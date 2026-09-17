@@ -23,6 +23,19 @@ export interface FriendRequest {
   respondedAt?: number;
 }
 
+/**
+ * Anfrage auf Einblick in die Serien eines Freundes. Bewusst derselbe Aufbau
+ * wie `FriendRequest` — die Rules und der Abgleich im Provider sind gespiegelt.
+ */
+export interface ShareRequest {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  fromUsername?: string;
+  status: 'pending' | 'accepted' | 'declined';
+  sentAt: number;
+}
+
 export interface FriendActivity {
   id: string;
   userId: string;
@@ -43,6 +56,8 @@ export interface FriendActivity {
     | 'movie_added_to_watchlist'
     | 'movie_removed_from_watchlist';
   itemTitle: string;
+  /** Aus dem titellosen Teaser — der Freund hat keinen Einblick gegeben. */
+  redacted?: boolean;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
   itemId?: number | string; // Fallback-ID wenn tmdbId fehlt
   itemType?: 'series' | 'movie'; // Typ des Items

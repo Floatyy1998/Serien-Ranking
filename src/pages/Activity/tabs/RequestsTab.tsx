@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
+import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
+import { ShareRequestList } from './ShareRequestList';
 import { NameBadges } from '../../../components/ui/display/NameBadges';
 import { showUndoToast } from '../../../lib/interaction/toast';
 import { t } from '../../../services/i18n';
@@ -67,10 +69,14 @@ export const RequestsTab = ({
     });
   };
 
+  const { shareRequests } = useOptimizedFriends();
   const visibleIncoming = friendRequests.filter((r) => !pendingRemoval.has(r.id));
   const visibleSent = sentRequests.filter((r) => !pendingRemoval.has(r.id));
 
-  const isEmpty = visibleIncoming.length === 0 && visibleSent.length === 0;
+  // Bitten um Einblick zaehlen mit — sonst steht „keine offenen Anfragen“,
+  // waehrend darunter eine liegt.
+  const isEmpty =
+    visibleIncoming.length === 0 && visibleSent.length === 0 && shareRequests.length === 0;
 
   if (isEmpty) {
     return (
@@ -96,6 +102,8 @@ export const RequestsTab = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -16 }}
     >
+      <ShareRequestList />
+
       {visibleIncoming.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <SectionLabel color={currentTheme.text.secondary}>

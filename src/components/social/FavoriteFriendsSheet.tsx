@@ -24,7 +24,7 @@ export const FavoriteFriendsSheet: React.FC<FavoriteFriendsSheetProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
-  const { friends, favoriteIds, toggleFavoriteFriend } = useOptimizedFriends();
+  const { friends, favoriteIds, toggleFavoriteFriend, shareState } = useOptimizedFriends();
 
   return (
     <BottomSheet
@@ -46,7 +46,7 @@ export const FavoriteFriendsSheet: React.FC<FavoriteFriendsSheetProps> = ({
             {t('Favoriten wählen')}
           </h3>
           <p style={{ fontSize: '13px', color: currentTheme.text.secondary, margin: 0 }}>
-            {t('Von ihnen siehst du Bewertungen und Kalender.')}
+            {t('Wen du wählst, wird um Einblick gebeten — sichtbar wird es nach der Zusage.')}
           </p>
         </div>
 
@@ -71,14 +71,31 @@ export const FavoriteFriendsSheet: React.FC<FavoriteFriendsSheetProps> = ({
               gap: 14,
             }}
           >
-            {friends.map((friend) => (
-              <FriendAvatarButton
-                key={friend.uid}
-                friend={friend}
-                isSelected={favoriteIds.has(friend.uid)}
-                onToggle={(uid) => void toggleFavoriteFriend(uid)}
-              />
-            ))}
+            {friends.map((friend) => {
+              const wartet = favoriteIds.has(friend.uid) && shareState(friend.uid) !== 'granted';
+              return (
+                <div key={friend.uid} style={{ position: 'relative' }}>
+                  <FriendAvatarButton
+                    friend={friend}
+                    isSelected={favoriteIds.has(friend.uid)}
+                    onToggle={(uid) => void toggleFavoriteFriend(uid)}
+                  />
+                  {wartet && (
+                    <span
+                      style={{
+                        display: 'block',
+                        textAlign: 'center',
+                        fontSize: 11,
+                        color: currentTheme.text.muted,
+                        marginTop: -4,
+                      }}
+                    >
+                      {t('wartet')}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

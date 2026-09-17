@@ -1,7 +1,7 @@
 import { Person, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { dbGet, userPath } from '../../services/db/ref';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -25,7 +25,16 @@ interface FriendsWhoHaveThisProps {
 
 const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
   const { user } = useAuth() || {};
-  const { friends } = useOptimizedFriends();
+  const { friends: alleFreunde, grantedToMe } = useOptimizedFriends();
+  // Seit der Freigabe-Pflicht zaehlen nur Freunde, die Einblick gegeben haben.
+  // Schluessel statt Set-Identitaet: ein frisch gebautes Set bei jedem Render
+  // wuerde die abhaengigen Effekte endlos neu ausloesen.
+  const grantedKey = [...grantedToMe].sort().join(',');
+  const friends = useMemo(
+    () => alleFreunde.filter((friend: { uid: string }) => grantedToMe.has(friend.uid)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [alleFreunde, grantedKey]
+  );
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const [friendsWithItem, setFriendsWithItem] = useState<FriendWithItem[]>([]);

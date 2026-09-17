@@ -29,7 +29,11 @@ vi.mock('../../contexts/ThemeContext', () => {
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
-  useOptimizedFriends: () => ({ friends: friendsRef.current }),
+  useOptimizedFriends: () => ({
+    friends: friendsRef.current,
+    // Freigabe-Pflicht: nur wer Einblick gegeben hat, wird abgefragt.
+    grantedToMe: new Set(friendsRef.current.map((f: { uid: string }) => f.uid)),
+  }),
 }));
 
 vi.mock('firebase/compat/app', () => ({

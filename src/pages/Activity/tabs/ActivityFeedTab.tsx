@@ -87,6 +87,12 @@ export const ActivityFeedTab = ({
   const openItem = useCallback(
     (activity: FriendActivity) => {
       const tmdbId = activity.tmdbId || activity.itemId;
+      // Titellose Eintraege fuehren nirgendwohin — es gibt keine ID.
+      if (activity.redacted) {
+        saveScrollPosition();
+        navigate(`/friend/${activity.userId}`);
+        return;
+      }
       if (!tmdbId) return;
       saveScrollPosition();
       navigate(isMovieActivity(activity) ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
@@ -95,8 +101,12 @@ export const ActivityFeedTab = ({
   );
 
   const titleOf = useCallback(
-    (activity: FriendActivity) =>
-      activity.itemTitle || getItemDetails(activity)?.title || t('Unbekannt'),
+    (activity: FriendActivity) => {
+      // Ohne Freigabe kommt der Eintrag aus dem titellosen Teaser — dann steht
+      // hier bewusst kein Titel, sondern der Hinweis darauf.
+      if (activity.redacted) return t('Etwas Neues');
+      return activity.itemTitle || getItemDetails(activity)?.title || t('Unbekannt');
+    },
     [getItemDetails]
   );
 

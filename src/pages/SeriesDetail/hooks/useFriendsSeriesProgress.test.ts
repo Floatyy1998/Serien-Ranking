@@ -22,9 +22,17 @@ interface Friend {
   username?: string;
   photoURL?: string;
 }
-const ctx = vi.hoisted(() => ({ friends: [] as Friend[] }));
+const ctx = vi.hoisted(() => ({
+  friends: [] as Friend[],
+  /** Stabil halten — ein neues Set je Render dreht die Effekte im Kreis. */
+  grantedToMe: new Set<string>(),
+}));
 vi.mock('../../../contexts/OptimizedFriendsContext', () => ({
-  useOptimizedFriends: () => ({ friends: ctx.friends }),
+  useOptimizedFriends: () => ({
+    friends: ctx.friends,
+    // Freigabe-Pflicht: nur freigegebene Freunde werden abgefragt.
+    grantedToMe: ctx.grantedToMe,
+  }),
 }));
 
 import { useFriendsSeriesProgress } from './useFriendsSeriesProgress';
@@ -59,6 +67,7 @@ function routeSnapshots(byUid: Record<string, unknown>) {
 
 beforeEach(() => {
   ctx.friends = [];
+  ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
   fb.onceMock.mockReset();
   fb.refMock.mockClear();
   fb.onceMock.mockResolvedValue({ val: () => null });
@@ -71,6 +80,7 @@ afterEach(() => {
 describe('useFriendsSeriesProgress', () => {
   it('returns empty and not-loading when there is no series id', async () => {
     ctx.friends = [{ uid: 'f1' }];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     const { result } = renderHook(() => useFriendsSeriesProgress(undefined, 3, SEASONS));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.entries).toEqual([]);
@@ -79,6 +89,7 @@ describe('useFriendsSeriesProgress', () => {
 
   it('returns empty when the friend list is empty', async () => {
     ctx.friends = [];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     const { result } = renderHook(() => useFriendsSeriesProgress(5, 3, SEASONS));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.entries).toEqual([]);
@@ -86,6 +97,7 @@ describe('useFriendsSeriesProgress', () => {
 
   it('counts watched episodes (compact {eps} format) and tracks the latest position', async () => {
     ctx.friends = [{ uid: 'f1', displayName: 'Fiona' }];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     routeSnapshots({
       f1: {
         seasons: {
@@ -114,6 +126,7 @@ describe('useFriendsSeriesProgress', () => {
 
   it('supports the legacy {w[]} array format keyed by within-season position', async () => {
     ctx.friends = [{ uid: 'f1', username: 'legacyfan' }];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     routeSnapshots({
       f1: { seasons: { '0': { w: [1, 0] } } }, // only first episode of season 0 watched
     });
@@ -138,6 +151,7 @@ describe('useFriendsSeriesProgress', () => {
       { uid: 'low', displayName: 'Low' },
       { uid: 'high', displayName: 'High' },
     ];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     routeSnapshots({
       none: { seasons: {} },
       low: { seasons: { '0': { eps: { '11': { w: 1 } } } } }, // 1/3
@@ -152,6 +166,7 @@ describe('useFriendsSeriesProgress', () => {
 
   it('recovers from a per-friend read failure without dropping the batch', async () => {
     ctx.friends = [{ uid: 'boom' }];
+    ctx.grantedToMe = new Set(ctx.friends.map((f) => f.uid));
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     fb.onceMock.mockRejectedValue(new Error('read failed'));
 

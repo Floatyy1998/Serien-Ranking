@@ -251,6 +251,20 @@ export async function updateUserActivityOp(
       timestamp: serverTimestamp(),
     });
 
+    // Titelloser Zwilling fuer Freunde ohne Freigabe. Muss ein eigener Knoten
+    // sein: RTDB-Regeln vererben sich nach unten, ein einzelnes Feld laesst
+    // sich innerhalb von `activities` nicht strenger schuetzen.
+    // Eigener try-Block: ein Fehlschlag hier darf die Deckelung unten nicht
+    // ueberspringen — der Teaser ist Beiwerk, die Begrenzung nicht.
+    try {
+      await dbRef(`${userPath(user.uid, 'activityTeaser')}/${newActivityRef.key}`).set({
+        type: activity.type,
+        timestamp: serverTimestamp(),
+      });
+    } catch {
+      // Beiwerk — der Verlauf selbst steht bereits.
+    }
+
     // Limit to max 30 activities per user
     const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
     const activities = snapshot.val();
@@ -271,6 +285,12 @@ export async function updateUserActivityOp(
         });
 
         await activitiesRef.update(updates);
+        // Der Teaser traegt dieselben Schluessel und wird mitgekuerzt.
+        try {
+          await dbRef(userPath(user.uid, 'activityTeaser')).update(updates);
+        } catch {
+          // Siehe oben — Beiwerk.
+        }
       }
     }
   } catch {

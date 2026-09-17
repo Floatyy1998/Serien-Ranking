@@ -1,7 +1,8 @@
 import { dbRef, paths } from '../../services/db/ref';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/social/tasteMatchService';
 import { calculateTasteMatch } from '../../services/social/tasteMatchService';
@@ -25,6 +26,9 @@ export const getScoreMessage = (score: number): string => {
 export interface TasteMatchData {
   loading: boolean;
   result: TasteMatchResult | null;
+  friendId: string | undefined;
+  /** Hat der Freund mir Einblick gegeben? Ohne das wird gar nicht gerechnet. */
+  shared: boolean;
   friendName: string;
   friendPhoto: string | null;
   userName: string;
@@ -36,6 +40,12 @@ export interface TasteMatchData {
 
 export const useTasteMatchData = (): TasteMatchData => {
   const { friendId } = useParams<{ friendId: string }>();
+  const { grantedToMe } = useOptimizedFriends();
+  const grantedRef = useRef(grantedToMe);
+  useEffect(() => {
+    grantedRef.current = grantedToMe;
+  }, [grantedToMe]);
+  const shared = friendId ? grantedToMe.has(friendId) : false;
   const { user } = useAuth() || {};
 
   const [loading, setLoading] = useState(true);
@@ -51,6 +61,12 @@ export const useTasteMatchData = (): TasteMatchData => {
   useEffect(() => {
     const loadData = async () => {
       if (!user || !friendId) return;
+      // Ohne Freigabe sind die Listen des Freundes nicht lesbar — gar nicht
+      // erst rechnen, die Seite zeigt stattdessen die Anfrage.
+      if (!grantedRef.current.has(friendId)) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -110,6 +126,8 @@ export const useTasteMatchData = (): TasteMatchData => {
   return {
     loading,
     result,
+    friendId,
+    shared,
     friendName,
     friendPhoto,
     userName,

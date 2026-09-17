@@ -4,7 +4,7 @@ import { paths } from '../services/db/paths';
 import { isDeletingAccount } from '../services/account/accountDeletionState';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
-import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
+import type { Friend, FriendActivity, FriendRequest, ShareRequest } from '../types/Friend';
 import {
   sendFriendRequestOp,
   acceptFriendRequestOp,
@@ -14,10 +14,22 @@ import {
   setFavoriteFriendOp,
   updateUserActivityOp,
 } from './friendOperations';
+import {
+  acceptShareOp,
+  declineShareOp,
+  requestShareOp,
+  revokeShareOp,
+  shareWithAllOp,
+  withdrawShareRequestOp,
+} from './shareOperations';
 import { OptimizedFriendsContext } from './OptimizedFriendsContext';
 import { clearFriendSeriesCache } from '../hooks/social/useFriendSeriesList';
 import { clearFriendTitleRatingsCache } from '../hooks/social/useFriendTitleRatings';
 import { onValue } from '../services/db/subscribeValue';
+
+/** Stabile, sortierte UID-Liste — der Rohknoten ist bei jedem Delta neu. */
+const friendIdsOf = (data: Record<string, Friend> | null | undefined): string[] =>
+  data ? Object.keys(data).sort() : [];
 
 export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -89,6 +101,88 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     );
     return () => ref.off('value', listener);
   }, [user]);
+
+  // Wem ich Einblick gegeben habe, plus die offenen Anfragen in beide Richtungen.
+  const [shareIds, setShareIds] = useState<Set<string>>(() => new Set());
+  const [shareRequests, setShareRequests] = useState<ShareRequest[]>([]);
+  const [sentShareRequests, setSentShareRequests] = useState<ShareRequest[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setShareIds(new Set());
+      return;
+    }
+    const ref = dbRef(paths.shares(user.uid));
+    const listener = onValue(
+      ref,
+      (snap) => {
+        const data = snap.val() as Record<string, boolean> | null;
+        setShareIds(new Set(Object.keys(data ?? {}).filter((id) => data?.[id])));
+      },
+      {
+        onError: (error: Error) => {
+          console.error('Failed to load shares:', error);
+          setShareIds(new Set());
+        },
+      }
+    );
+    return () => ref.off('value', listener);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const incoming = dbRef('shareRequests').orderByChild('toUserId').equalTo(user.uid);
+    const outgoing = dbRef('shareRequests').orderByChild('fromUserId').equalTo(user.uid);
+    const toList = (snap: { val: () => Record<string, ShareRequest> | null }): ShareRequest[] => {
+      const data = snap.val();
+      if (!data) return [];
+      return Object.keys(data)
+        .map((id) => ({ ...data[id], id }))
+        .filter((r) => r.status === 'pending');
+    };
+    const inListener = onValue(incoming, (snap) => setShareRequests(toList(snap)));
+    const outListener = onValue(outgoing, (snap) => setSentShareRequests(toList(snap)));
+    return () => {
+      incoming.off('value', inListener);
+      outgoing.off('value', outListener);
+      setShareRequests([]);
+      setSentShareRequests([]);
+    };
+  }, [user]);
+
+  // Umgekehrte Richtung: wer hat MIR Einblick gegeben? Das steht im Knoten des
+  // jeweiligen Freundes, ist also je Freund ein gezielter Punkt-Read (dieselbe
+  // Bauart wie `FriendsWhoHaveThis`) statt eines Abos auf fremde Daten.
+  const [grantedToMe, setGrantedToMe] = useState<Set<string>>(() => new Set());
+  // Der Aktivitaets-Lader laeuft in einem eigenen Effect und darf nicht bei
+  // jeder Freigabe-Aenderung neu aufgesetzt werden.
+  const grantedRef = useRef(grantedToMe);
+  useEffect(() => {
+    grantedRef.current = grantedToMe;
+  }, [grantedToMe]);
+  const friendUidKey = useMemo(() => friendIdsOf(friendsData).join(','), [friendsData]);
+
+  useEffect(() => {
+    if (!user || !friendUidKey) {
+      setGrantedToMe(new Set());
+      return;
+    }
+    let cancelled = false;
+    const ids = friendUidKey.split(',');
+    (async () => {
+      const granted = await Promise.all(
+        ids.map(async (id) => {
+          const value = await dbGet<boolean>(paths.share(id, user.uid)).catch(() => null);
+          return value === true ? id : null;
+        })
+      );
+      if (cancelled) return;
+      setGrantedToMe(new Set(granted.filter((id): id is string => id !== null)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, friendUidKey]);
 
   // Favoriten zuerst — die Reihenfolge wirkt überall, wo die Liste hängt
   // (Freundesliste, Picker, Taste-Match-Karte).
@@ -302,8 +396,12 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const activityPromises = friends.map(async (friend) => {
+        // Ohne Freigabe nur den titellosen Zwilling lesen: „hat eine Folge
+        // gesehen" statt des Titels. Der volle Knoten ist per Rules gesperrt.
+        const freigegeben = grantedRef.current.has(friend.uid);
+        const knoten = freigegeben ? 'activities' : 'activityTeaser';
         try {
-          const activitiesRef = dbRef(userPath(friend.uid, 'activities'))
+          const activitiesRef = dbRef(userPath(friend.uid, knoten))
             .orderByChild('timestamp')
             .startAt(sevenDaysAgo)
             .limitToLast(30);
@@ -317,6 +415,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
               userId: friend.uid,
               userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
               ...data[key],
+              // Der Teaser traegt keinen Titel — die Anzeige erkennt das daran.
+              ...(freigegeben ? {} : { redacted: true, itemTitle: '' }),
             }));
           }
           return [];
@@ -549,6 +649,14 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     [user, refetchFriends]
   );
 
+  /**
+   * Ein Stern, zwei Wirkungen: er merkt den Freund vor UND bittet ihn um
+   * Einblick, falls der noch fehlt. Getrennt waere es zwei Gesten fuer einen
+   * Wunsch — und der Stern fuehrte in eine Sperre.
+   *
+   * Geht der Stern wieder aus, wird eine noch offene Bitte zurueckgezogen.
+   * Eine bereits erteilte Freigabe bleibt: die gehoert dem anderen.
+   */
   const toggleFavoriteFriend = useCallback(
     async (friendId: string): Promise<void> => {
       if (!user) return;
@@ -565,8 +673,63 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       } catch (error) {
         console.error('Failed to toggle favorite friend:', error);
       }
+      try {
+        if (next) {
+          if (!grantedToMe.has(friendId)) await requestShareOp(user, friendId);
+        } else {
+          await withdrawShareRequestOp(user.uid, friendId);
+        }
+      } catch (error) {
+        console.error('Failed to sync share request:', error);
+      }
     },
-    [user, favoriteIds]
+    [user, favoriteIds, grantedToMe]
+  );
+
+  const requestShare = useCallback(
+    async (friendId: string): Promise<boolean> => {
+      if (!user) return false;
+      return requestShareOp(user, friendId);
+    },
+    [user]
+  );
+
+  const acceptShare = useCallback(
+    async (requestId: string, fromUserId: string): Promise<void> => {
+      if (!user) return;
+      await acceptShareOp(user.uid, requestId, fromUserId);
+    },
+    [user]
+  );
+
+  const declineShare = useCallback(async (requestId: string): Promise<void> => {
+    await declineShareOp(requestId);
+  }, []);
+
+  const revokeShare = useCallback(
+    async (friendId: string): Promise<void> => {
+      if (!user) return;
+      await revokeShareOp(user.uid, friendId);
+    },
+    [user]
+  );
+
+  const shareWithAllFriends = useCallback(async (): Promise<void> => {
+    if (!user) return;
+    await shareWithAllOp(
+      user.uid,
+      friends.map((f) => f.uid)
+    );
+  }, [user, friends]);
+
+  /** Sehe ich die Serien dieses Freundes? Sein `shares` steht in seinem Knoten. */
+  const shareState = useCallback(
+    (friendId: string): 'granted' | 'pending' | 'none' => {
+      if (grantedToMe.has(friendId)) return 'granted';
+      if (sentShareRequests.some((r) => r.toUserId === friendId)) return 'pending';
+      return 'none';
+    },
+    [grantedToMe, sentShareRequests]
   );
 
   const updateUserActivity = useCallback(
@@ -594,6 +757,16 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       favoriteFriends,
       favoriteIds,
       toggleFavoriteFriend,
+      shareIds,
+      grantedToMe,
+      shareRequests,
+      sentShareRequests,
+      requestShare,
+      acceptShare,
+      declineShare,
+      revokeShare,
+      shareWithAllFriends,
+      shareState,
       friendRequests,
       sentRequests,
       friendActivities,
@@ -616,6 +789,16 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       favoriteFriends,
       favoriteIds,
       toggleFavoriteFriend,
+      shareIds,
+      grantedToMe,
+      shareRequests,
+      sentShareRequests,
+      requestShare,
+      acceptShare,
+      declineShare,
+      revokeShare,
+      shareWithAllFriends,
+      shareState,
       friendRequests,
       sentRequests,
       friendActivities,

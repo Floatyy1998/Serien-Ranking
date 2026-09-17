@@ -5,6 +5,7 @@ import GroupRounded from '@mui/icons-material/GroupRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
 import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
+import HourglassTopRounded from '@mui/icons-material/HourglassTopRounded';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +26,72 @@ interface FriendsTabProps {
   onRemoveFriend: (friend: { uid: string; name: string }) => void;
 }
 
+/**
+ * Ein Stern, drei Zustaende: nicht vorgemerkt, vorgemerkt und auf Freigabe
+ * wartend, vorgemerkt mit Einblick. Der mittlere Zustand ist wichtig — sonst
+ * tippt man den Stern und scheinbar passiert nichts.
+ */
+const FavoriteStar = ({
+  isFavorite,
+  access,
+  name,
+  onToggle,
+}: {
+  isFavorite: boolean;
+  access: 'granted' | 'pending' | 'none';
+  name: string;
+  onToggle: () => void;
+}) => {
+  const { currentTheme } = useTheme();
+  const wartet = isFavorite && access !== 'granted';
+  const farbe = !isFavorite
+    ? currentTheme.text.muted
+    : wartet
+      ? currentTheme.text.secondary
+      : currentTheme.status.warning;
+
+  return (
+    <motion.button
+      whileTap={tapScaleTight}
+      onClick={(e) => {
+        // Die ganze Karte navigiert — ohne das hier landet man im Profil.
+        e.stopPropagation();
+        onToggle();
+      }}
+      aria-pressed={isFavorite}
+      aria-label={
+        isFavorite
+          ? wartet
+            ? t('{name} wurde um Einblick gebeten — antippen zum Zurückziehen', { name })
+            : t('{name} nicht mehr als Favorit', { name })
+          : t('{name} als Favorit markieren und um Einblick bitten', { name })
+      }
+      title={wartet ? t('Wartet auf Freigabe') : undefined}
+      style={{
+        width: '36px',
+        height: '36px',
+        borderRadius: '11px',
+        background: isFavorite ? `${farbe}1f` : `${currentTheme.text.muted}12`,
+        border: 'none',
+        color: farbe,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      {!isFavorite ? (
+        <StarBorderRounded style={{ fontSize: '18px' }} />
+      ) : wartet ? (
+        <HourglassTopRounded style={{ fontSize: '17px' }} />
+      ) : (
+        <StarRounded style={{ fontSize: '18px' }} />
+      )}
+    </motion.button>
+  );
+};
+
 export const FriendsTab = ({
   friends,
   friendProfiles,
@@ -34,7 +101,7 @@ export const FriendsTab = ({
 }: FriendsTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { favoriteIds, toggleFavoriteFriend } = useOptimizedFriends();
+  const { favoriteIds, toggleFavoriteFriend, shareState } = useOptimizedFriends();
   const [query, setQuery] = useState('');
 
   const resolved = useMemo(
@@ -226,43 +293,12 @@ export const FriendsTab = ({
                 </p>
               </div>
 
-              <motion.button
-                whileTap={tapScaleTight}
-                onClick={(e) => {
-                  // Die ganze Karte navigiert — ohne das hier landet man im Profil.
-                  e.stopPropagation();
-                  void toggleFavoriteFriend(friend.uid);
-                }}
-                aria-pressed={favoriteIds.has(friend.uid)}
-                aria-label={
-                  favoriteIds.has(friend.uid)
-                    ? t('{name} nicht mehr als Favorit', { name: displayName })
-                    : t('{name} als Favorit markieren', { name: displayName })
-                }
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '11px',
-                  background: favoriteIds.has(friend.uid)
-                    ? `${currentTheme.status.warning}1f`
-                    : `${currentTheme.text.muted}12`,
-                  border: 'none',
-                  color: favoriteIds.has(friend.uid)
-                    ? currentTheme.status.warning
-                    : currentTheme.text.muted,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                {favoriteIds.has(friend.uid) ? (
-                  <StarRounded style={{ fontSize: '18px' }} />
-                ) : (
-                  <StarBorderRounded style={{ fontSize: '18px' }} />
-                )}
-              </motion.button>
+              <FavoriteStar
+                isFavorite={favoriteIds.has(friend.uid)}
+                access={shareState(friend.uid)}
+                name={displayName}
+                onToggle={() => void toggleFavoriteFriend(friend.uid)}
+              />
 
               <motion.button
                 whileTap={tapScaleTight}

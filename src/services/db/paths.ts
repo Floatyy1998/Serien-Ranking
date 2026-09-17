@@ -42,6 +42,12 @@ export const paths = {
   favoriteFriends: (uid: string) => `${user(uid)}/favoriteFriends`,
   favoriteFriend: (uid: string, friendId: string) => `${user(uid)}/favoriteFriends/${friendId}`,
 
+  /** Wem ich Einblick in meine Serien gegeben habe. Nur ich schreibe hier. */
+  shares: (uid: string) => `${user(uid)}/shares`,
+  share: (uid: string, friendId: string) => `${user(uid)}/shares/${friendId}`,
+  /** Aktivitäten ohne Titel — für Freunde ohne Freigabe sichtbar. */
+  activityTeaser: (uid: string) => `${user(uid)}/activityTeaser`,
+
   // Profil / Sonstiges
   displayName: (uid: string) => `${user(uid)}/displayName`,
   photoURL: (uid: string) => `${user(uid)}/photoURL`,

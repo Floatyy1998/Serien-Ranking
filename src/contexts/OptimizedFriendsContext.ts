@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
+import type { Friend, FriendActivity, FriendRequest, ShareRequest } from '../types/Friend';
 
 export interface OptimizedFriendsContextType {
   /** Favoriten zuerst, danach alphabetisch. */
@@ -8,6 +8,19 @@ export interface OptimizedFriendsContextType {
   favoriteFriends: Friend[];
   favoriteIds: Set<string>;
   toggleFavoriteFriend: (friendId: string) => Promise<void>;
+  /** Wem ich Einblick in meine Serien gegeben habe. */
+  shareIds: Set<string>;
+  /** Wer mir Einblick gegeben hat — Grundlage aller Freundes-Ansichten. */
+  grantedToMe: Set<string>;
+  shareRequests: ShareRequest[];
+  sentShareRequests: ShareRequest[];
+  requestShare: (friendId: string) => Promise<boolean>;
+  acceptShare: (requestId: string, fromUserId: string) => Promise<void>;
+  declineShare: (requestId: string) => Promise<void>;
+  revokeShare: (friendId: string) => Promise<void>;
+  shareWithAllFriends: () => Promise<void>;
+  /** Sehe ich die Serien dieses Freundes schon, ist eine Anfrage offen, oder nichts? */
+  shareState: (friendId: string) => 'granted' | 'pending' | 'none';
   friendRequests: FriendRequest[];
   sentRequests: FriendRequest[];
   friendActivities: FriendActivity[];
@@ -33,6 +46,16 @@ export const OptimizedFriendsContext = createContext<OptimizedFriendsContextType
   favoriteFriends: [],
   favoriteIds: new Set(),
   toggleFavoriteFriend: async () => {},
+  shareIds: new Set(),
+  grantedToMe: new Set(),
+  shareRequests: [],
+  sentShareRequests: [],
+  requestShare: async () => false,
+  acceptShare: async () => {},
+  declineShare: async () => {},
+  revokeShare: async () => {},
+  shareWithAllFriends: async () => {},
+  shareState: () => 'none',
   friendRequests: [],
   sentRequests: [],
   friendActivities: [],

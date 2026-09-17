@@ -36,7 +36,16 @@ export function useFriendsSeriesProgress(
   totalEpisodes: number,
   seasons: Series['seasons'] | null | undefined
 ): { loading: boolean; entries: FriendSeriesProgress[] } {
-  const { friends } = useOptimizedFriends();
+  const { friends: alleFreunde, grantedToMe } = useOptimizedFriends();
+  // Seit der Freigabe-Pflicht zaehlen nur Freunde, die Einblick gegeben haben.
+  // Schluessel statt Set-Identitaet: ein frisch gebautes Set bei jedem Render
+  // wuerde die abhaengigen Effekte endlos neu ausloesen.
+  const grantedKey = [...grantedToMe].sort().join(',');
+  const friends = useMemo(
+    () => alleFreunde.filter((friend) => grantedToMe.has(friend.uid)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [alleFreunde, grantedKey]
+  );
   const [rawByUid, setRawByUid] = useState<Record<string, RawFriendResult> | null>(null);
 
   const maps = useMemo(() => buildSeasonMaps(seasons), [seasons]);

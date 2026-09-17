@@ -46,7 +46,15 @@ export type GroupedSchedule = Map<string, SeriesGroup[]>;
 export const useCalendarData = () => {
   const { user } = useAuth() || {};
   const { seriesList: ownSeriesList, loading: ownLoading } = useSeriesList();
-  const { favoriteFriends } = useOptimizedFriends();
+  const { favoriteFriends: alleFavoriten, grantedToMe } = useOptimizedFriends();
+  // Nur wer mir Einblick gegeben hat, taucht in der Leiste auf — sonst stünde
+  // dort ein Chip, der auf einen leeren Kalender führt.
+  const grantedKey = [...grantedToMe].sort().join(',');
+  const favoriteFriends = useMemo(
+    () => alleFavoriten.filter((friend) => grantedToMe.has(friend.uid)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [alleFavoriten, grantedKey]
+  );
 
   // Freundes-Modus: null = eigener Kalender.
   const [viewedFriendUid, setViewedFriendUid] = useState<string | null>(null);

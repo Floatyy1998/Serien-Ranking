@@ -38,6 +38,11 @@ const { friendsState, dbState, dbGetMock, navigateMock } = vi.hoisted(() => {
       loading: false,
       sentRequests: [] as { toUserId: string; status: string }[],
       sendFriendRequest: vi.fn(async () => true),
+      // Freigabe-Pflicht: ohne Einblick zeigt die Seite die Anfrage statt der
+      // Einblicke. Standardfall in den Tests ist „freigegeben".
+      grantedToMe: new Set(['friend-1']),
+      shareState: (() => 'granted') as () => 'granted' | 'pending' | 'none',
+      requestShare: vi.fn(async () => true),
     },
     dbState,
     dbGetMock: vi.fn(async (path: string) => {
@@ -159,6 +164,8 @@ beforeEach(() => {
   friendsState.loading = false;
   friendsState.sentRequests = [];
   friendsState.sendFriendRequest.mockClear();
+  friendsState.grantedToMe = new Set(['friend-1']);
+  friendsState.shareState = () => 'granted';
   fpState.currentItems = [{ id: 1, title: 'Fringe', poster: '/p.jpg', seasons: [{}] }];
   fpState.setActiveTab.mockReset();
   fpState.navigateToTasteMatch.mockReset();
@@ -252,5 +259,14 @@ describe('FriendProfilePage', () => {
     friendsState.sentRequests = [{ toUserId: 'friend-1', status: 'pending' }];
     render(<FriendProfilePage />);
     expect(screen.getByText('Anfrage gesendet ✓')).toBeInTheDocument();
+  });
+
+  it('bietet die Anfrage an, statt die Einblicke leer zu lassen', async () => {
+    // Genau der Weg, auf dem ein titelloser Feed-Eintrag hier landet.
+    friendsState.grantedToMe = new Set<string>();
+    friendsState.shareState = () => 'none';
+    render(<FriendProfilePage />);
+    expect(await screen.findByText(/teilt seine Serien nicht/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Einblick anfragen/ })).toBeInTheDocument();
   });
 });

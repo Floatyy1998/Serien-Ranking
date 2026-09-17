@@ -44,6 +44,7 @@ import { useFriendPet } from './useFriendPet';
 import { FriendCurrentlyWatchingCard } from './FriendCurrentlyWatchingCard';
 import { FriendAnticipationSection } from './FriendAnticipationSection';
 import { FriendPetCard } from './FriendPetCard';
+import { ShareGate } from '../../components/social/ShareGate';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
 
@@ -63,6 +64,7 @@ export const FriendProfilePage = memo(() => {
     loading: friendsLoading,
     sentRequests,
     sendFriendRequest,
+    grantedToMe,
   } = useOptimizedFriends();
 
   const {
@@ -135,8 +137,13 @@ export const FriendProfilePage = memo(() => {
     setRequestState(ok ? 'sent' : 'error');
   };
 
-  const currentlyWatching = useFriendCurrentlyWatching(restricted ? undefined : friendId);
-  const anticipation = useFriendAnticipation(restricted ? undefined : friendId);
+  // Einblick ist seit der Freigabe-Pflicht eine eigene Bedingung: befreundet
+  // sein reicht nicht mehr, um zu sehen, was jemand schaut.
+  const darfSehen = !!friendId && grantedToMe.has(friendId);
+  const currentlyWatching = useFriendCurrentlyWatching(
+    restricted || !darfSehen ? undefined : friendId
+  );
+  const anticipation = useFriendAnticipation(restricted || !darfSehen ? undefined : friendId);
   const friendPet = useFriendPet(restricted ? undefined : friendId);
 
   const [insightsOpen, setInsightsOpen] = useState<boolean>(() => {
@@ -392,8 +399,20 @@ export const FriendProfilePage = memo(() => {
                   style={{ overflow: 'hidden' }}
                 >
                   <div className="fp-insights-content">
+                    {!darfSehen && friendId && (
+                      <div style={{ marginBottom: 12 }}>
+                        <ShareGate
+                          friendId={friendId}
+                          friendName={friendName}
+                          what={t('seine Serien')}
+                        >
+                          <span />
+                        </ShareGate>
+                      </div>
+                    )}
+
                     <div className="fp-insights-row">
-                      {currentlyWatching.data ? (
+                      {!darfSehen ? null : currentlyWatching.data ? (
                         <FriendCurrentlyWatchingCard
                           friendName={friendName}
                           data={currentlyWatching.data}

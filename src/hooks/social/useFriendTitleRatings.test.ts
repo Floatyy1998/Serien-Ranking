@@ -3,9 +3,16 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Friend } from '../../types/Friend';
 
-const ctx = vi.hoisted(() => ({ favoriteFriends: [] as Friend[] }));
+const ctx = vi.hoisted(() => ({
+  favoriteFriends: [] as Friend[],
+  /** Stabiles Set — ein frisch gebautes je Render dreht die Effekte im Kreis. */
+  grantedToMe: new Set<string>(),
+}));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
-  useOptimizedFriends: () => ({ favoriteFriends: ctx.favoriteFriends }),
+  useOptimizedFriends: () => ({
+    favoriteFriends: ctx.favoriteFriends,
+    grantedToMe: ctx.grantedToMe,
+  }),
 }));
 
 const db = vi.hoisted(() => ({
@@ -39,6 +46,7 @@ beforeEach(() => {
   db.values.clear();
   db.get.mockClear();
   ctx.favoriteFriends = [friend('f1', 'Flo'), friend('f2', 'Anna')];
+  ctx.grantedToMe = new Set(['f1', 'f2']);
   catalog.seasons = { '0': { episodes: [{ id: 11 }, { id: 12 }] } };
 });
 afterEach(cleanup);
@@ -75,6 +83,7 @@ describe('useFriendTitleRatings', () => {
     db.values.set('users/f1/series/42', { rating: { Drama: 8 } });
     db.values.set('users/f1/seriesWatch/42', { seasons: { '0': { eps: { '11': { w: 1 } } } } });
     ctx.favoriteFriends = [friend('f1', 'Flo')];
+    ctx.grantedToMe = new Set(['f1']);
 
     const { result } = renderHook(() => useFriendTitleRatings(42, 'series', true));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -93,6 +102,7 @@ describe('useFriendTitleRatings', () => {
       seasons: { '0': { eps: { '11': { w: 1 }, '12': { w: 1 } } } },
     });
     ctx.favoriteFriends = [friend('f1', 'Flo')];
+    ctx.grantedToMe = new Set(['f1']);
 
     const { result } = renderHook(() => useFriendTitleRatings(42, 'series', true));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -102,6 +112,7 @@ describe('useFriendTitleRatings', () => {
   it('leaves progress out for movies and reads the movies node', async () => {
     db.values.set('users/f1/movies/7', { rating: { Action: 6 } });
     ctx.favoriteFriends = [friend('f1', 'Flo')];
+    ctx.grantedToMe = new Set(['f1']);
 
     const { result } = renderHook(() => useFriendTitleRatings(7, 'movie', true));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -112,6 +123,7 @@ describe('useFriendTitleRatings', () => {
 
   it('stays empty without favorites', async () => {
     ctx.favoriteFriends = [];
+    ctx.grantedToMe = new Set();
     const { result } = renderHook(() => useFriendTitleRatings(42, 'series', true));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.entries).toEqual([]);
@@ -121,6 +133,7 @@ describe('useFriendTitleRatings', () => {
   it('serves a second mount from the session cache', async () => {
     db.values.set('users/f1/series/42', { rating: { Drama: 8 } });
     ctx.favoriteFriends = [friend('f1', 'Flo')];
+    ctx.grantedToMe = new Set(['f1']);
 
     const first = renderHook(() => useFriendTitleRatings(42, 'series', true));
     await waitFor(() => expect(first.result.current.loading).toBe(false));
@@ -129,5 +142,16 @@ describe('useFriendTitleRatings', () => {
     const second = renderHook(() => useFriendTitleRatings(42, 'series', true));
     await waitFor(() => expect(second.result.current.loading).toBe(false));
     expect(db.get.mock.calls.length).toBe(callsAfterFirst);
+  });
+
+  it('ignoriert Favoriten ohne Freigabe', async () => {
+    db.values.set('users/f1/series/42', { rating: { Drama: 8 } });
+    ctx.favoriteFriends = [friend('f1', 'Flo')];
+    ctx.grantedToMe = new Set();
+
+    const { result } = renderHook(() => useFriendTitleRatings(42, 'series', true));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.entries).toEqual([]);
+    expect(db.get).not.toHaveBeenCalled();
   });
 });

@@ -23,6 +23,9 @@ const social = vi.hoisted(() => ({
   friends: [] as Friend[],
   favoriteIds: new Set<string>(),
   toggleFavoriteFriend: vi.fn(async () => {}),
+  /** Wer mir schon Einblick gegeben hat — der Rest wartet. */
+  granted: new Set<string>(),
+  shareState: (uid: string) => (social.granted.has(uid) ? 'granted' : 'pending'),
 }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => social,
@@ -46,6 +49,7 @@ const friend = (uid: string, displayName: string): Friend =>
 beforeEach(() => {
   social.friends = [friend('f1', 'Flo'), friend('f2', 'Anna')];
   social.favoriteIds = new Set(['f1']);
+  social.granted = new Set(['f1']);
   social.toggleFavoriteFriend.mockClear();
   navigate.mockClear();
 });
@@ -74,5 +78,13 @@ describe('FavoriteFriendsSheet', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Freunde finden' }));
     expect(onClose).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith('/activity');
+  });
+
+  it('kennzeichnet Favoriten, die noch auf die Freigabe warten', () => {
+    // Stern gesetzt, Zusage steht aus — sonst tippt man und sieht nichts.
+    social.favoriteIds = new Set(['f1', 'f2']);
+    social.granted = new Set(['f1']);
+    render(<FavoriteFriendsSheet isOpen onClose={() => {}} />);
+    expect(screen.getAllByText('wartet')).toHaveLength(1);
   });
 });
