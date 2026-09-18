@@ -506,7 +506,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       return;
     }
 
-    // 1. Einmaliger initialer Load
+    // 1. Initialer Load. Laeuft auch neu, sobald sich die Freigaben aendern:
+    //    die Abos auf `shares` loesen erst NACH dem ersten Durchlauf aus, sonst
+    //    bliebe der Feed titellos, obwohl jemand laengst freigegeben hat.
     loadFriendActivitiesRef.current?.();
 
     // 2. Periodischer Poll alle 5 Min statt N child_added-Listener.
@@ -546,7 +548,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       document.removeEventListener('visibilitychange', onVisibility);
       stop();
     };
-  }, [user, friends, readTimesLoaded]);
+  }, [user, friends, readTimesLoaded, grantedCacheKey]);
 
   // Sync eigenes Profil (photoURL, displayName, username) in die friend-Einträge
   // bei allen Freunden. Der Snapshot in users/{friend}/friends/{user} wird sonst
