@@ -34,6 +34,12 @@ const { navigateMock, calState } = vi.hoisted(() => ({
 vi.mock('./useCalendarData', () => ({ useCalendarData: () => calState }));
 vi.mock('./CalendarToolbar', () => ({ CalendarToolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('./CalendarGrid', () => ({ CalendarGrid: () => <div data-testid="grid" /> }));
+// Das Nav-Sheet zieht das ganze BottomSheet samt framer-Drag herein — hier
+// nur die Auswahl abbilden, die dieser Test braucht.
+vi.mock('../../components/ui/overlay/PosterNavSheet', () => ({
+  PosterNavSheet: ({ posterNav }: { posterNav: { open: boolean; title: string } }) =>
+    posterNav.open ? <div data-testid="poster-nav">{posterNav.title}</div> : null,
+}));
 vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({
   QuickRatingSheet: () => <div data-testid="quick-rating" />,
 }));

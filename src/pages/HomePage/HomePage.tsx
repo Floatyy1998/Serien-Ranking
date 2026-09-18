@@ -27,7 +27,7 @@ import { CountdownBanner } from './cards/CountdownBanner';
 import { HiddenSeriesCard } from './cards/HiddenSeriesCard';
 import { QuickActionsSection, SecondaryActionsSection } from './sections/HomeActionSections';
 import { NotificationSheet } from './sheets/NotificationSheet';
-import { PosterNavSheet } from './sheets/PosterNavSheet';
+import { PosterNavSheet } from '../../components/ui/overlay/PosterNavSheet';
 import { StatsGrid } from './cards/StatsGrid';
 import { TasteMatchCard } from './cards/TasteMatchCard';
 import { TasteProfileCard } from './cards/TasteProfileCard';

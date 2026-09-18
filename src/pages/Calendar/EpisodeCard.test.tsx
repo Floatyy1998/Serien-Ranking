@@ -32,6 +32,7 @@ vi.mock('../../contexts/ThemeContext', () => {
 });
 
 import { SingleEpisodeCard, EpisodeGroupCard } from './EpisodeCard';
+import { CalendarViewModeContext } from './calendarViewMode';
 
 const ep = (over: Partial<WeeklyEpisode> = {}): WeeklyEpisode => ({
   seriesId: 42,
@@ -199,5 +200,36 @@ describe('EpisodeGroupCard', () => {
       />
     );
     expect(screen.getByText('E04')).toBeInTheDocument();
+  });
+
+  it('fragt nach Folge oder Serie, statt direkt zu springen', () => {
+    // Wie bei „Heute neu" und „Weiterschauen": der Klick oeffnet erst die Wahl.
+    const onEpisodeNav = vi.fn();
+    const { container } = render(
+      <CalendarViewModeContext.Provider value={{ readOnly: false, onEpisodeNav }}>
+        <SingleEpisodeCard
+          ep={ep()}
+          backdropSrc={undefined}
+          onMarkWatched={vi.fn()}
+          onRateSeries={vi.fn()}
+        />
+      </CalendarViewModeContext.Provider>
+    );
+    fireEvent.click(container.querySelector('.cal-ep') as Element);
+    expect(onEpisodeNav).toHaveBeenCalledWith(42, 'Severance', '/episode/42/s/2/e/3');
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('springt ohne Handler weiterhin direkt zur Folge', () => {
+    const { container } = render(
+      <SingleEpisodeCard
+        ep={ep()}
+        backdropSrc={undefined}
+        onMarkWatched={vi.fn()}
+        onRateSeries={vi.fn()}
+      />
+    );
+    fireEvent.click(container.querySelector('.cal-ep') as Element);
+    expect(navigateMock).toHaveBeenCalledWith('/episode/42/s/2/e/3');
   });
 });

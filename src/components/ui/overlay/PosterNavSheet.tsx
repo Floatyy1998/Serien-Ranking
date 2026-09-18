@@ -1,7 +1,7 @@
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import Tv from '@mui/icons-material/Tv';
 import { motion } from 'framer-motion';
-import { BottomSheet } from '../../../components/ui';
+import { BottomSheet } from './BottomSheet';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import { t } from '../../../services/i18n';

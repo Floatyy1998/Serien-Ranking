@@ -449,6 +449,7 @@ interface SingleEpisodeCardProps {
 export const SingleEpisodeCard = memo(
   ({ ep, backdropSrc, onMarkWatched, onRateSeries }: SingleEpisodeCardProps) => {
     const navigate = useNavigate();
+    const { onEpisodeNav } = useCalendarViewMode();
     const { currentTheme } = useTheme();
     const { brandColor, hasNoActiveSub, displayProvider } = useProviderColoring(
       ep.seriesId,
@@ -461,8 +462,9 @@ export const SingleEpisodeCard = memo(
     const stripColor: string | null = brandColor;
     const borderColor = stripColor ?? currentTheme.primary;
 
+    const episodePath = `/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`;
     const handleClick = () =>
-      navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
+      onEpisodeNav ? onEpisodeNav(ep.seriesId, ep.seriesTitle, episodePath) : navigate(episodePath);
     const handleMark = () => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex);
     const airTime = formatAirTime(ep.airstamp);
     const provider = displayProvider ?? undefined;
@@ -632,6 +634,7 @@ export const EpisodeGroupCard = memo(
     onRateSeries,
   }: EpisodeGroupCardProps) => {
     const navigate = useNavigate();
+    const { onEpisodeNav } = useCalendarViewMode();
     const { currentTheme } = useTheme();
 
     const firstEp = group.episodes[0];
@@ -798,8 +801,11 @@ export const EpisodeGroupCard = memo(
         {isExpanded && (
           <div className="cal-ep-group-list">
             {group.episodes.map((ep) => {
-              const openEpisode = () =>
-                navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
+              const openEpisode = () => {
+                const pfad = `/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`;
+                if (onEpisodeNav) onEpisodeNav(ep.seriesId, ep.seriesTitle, pfad);
+                else navigate(pfad);
+              };
               return (
                 <div
                   key={`${ep.seriesId}-${ep.seasonIndex}-${ep.episodeIndex}`}

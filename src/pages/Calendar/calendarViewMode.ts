@@ -6,6 +6,12 @@ export interface CalendarViewMode {
    * des Freundes und die Haken seinen Fortschritt — beides nur zum Ansehen.
    */
   readOnly: boolean;
+  /**
+   * Antippen einer Folge. Gesetzt fragt die Seite erst, ob es zur Folge oder
+   * zur Serie gehen soll — wie auf der Startseite. Ohne Handler springt die
+   * Karte direkt zur Folge.
+   */
+  onEpisodeNav?: (seriesId: number, title: string, episodePath: string) => void;
 }
 
 const DEFAULT: CalendarViewMode = { readOnly: false };

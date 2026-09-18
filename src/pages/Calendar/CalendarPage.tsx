@@ -1,6 +1,6 @@
 import { CalendarMonth, ChevronRight, LiveTv, LocalMovies } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
@@ -12,6 +12,7 @@ import { CalendarToolbar } from './CalendarToolbar';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarFriendBar } from './CalendarFriendBar';
 import { CalendarViewModeContext } from './calendarViewMode';
+import { PosterNavSheet } from '../../components/ui/overlay/PosterNavSheet';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import './CalendarPage.css';
 
@@ -50,7 +51,23 @@ export const CalendarPage = () => {
     favoriteFriends,
   } = useCalendarData();
   const { friends } = useOptimizedFriends();
-  const viewMode = useMemo(() => ({ readOnly: viewedFriendUid !== null }), [viewedFriendUid]);
+  // Antippen einer Folge fragt erst, ob es zur Folge oder zur Serie gehen soll
+  // — dasselbe Sheet wie bei „Heute neu" und „Weiterschauen" auf der Startseite.
+  const [posterNav, setPosterNav] = useState({
+    open: false,
+    seriesId: 0,
+    title: '',
+    episodePath: '',
+  });
+
+  const viewMode = useMemo(
+    () => ({
+      readOnly: viewedFriendUid !== null,
+      onEpisodeNav: (seriesId: number, title: string, episodePath: string) =>
+        setPosterNav({ open: true, seriesId, title, episodePath }),
+    }),
+    [viewedFriendUid]
+  );
 
   return (
     <PageLayout>
@@ -191,6 +208,11 @@ export const CalendarPage = () => {
             />
           </CalendarViewModeContext.Provider>
         )}
+
+        <PosterNavSheet
+          posterNav={posterNav}
+          onClose={() => setPosterNav((prev) => ({ ...prev, open: false }))}
+        />
 
         <QuickRatingSheet
           isOpen={quickRatingOpen}
