@@ -97,6 +97,23 @@ describe('runSequentialDetections', () => {
     expect(onUpdate).not.toHaveBeenCalled();
   });
 
+  it('trennt Provider-Wechsel ausgeblendeter Serien in einen eigenen Topf', async () => {
+    const sichtbar = { series: series(1), addedProviders: ['Netflix'] };
+    const versteckt = { series: { ...series(2), hidden: true }, addedProviders: ['Disney+'] };
+    mocks.detectProviderChanges.mockResolvedValue([sichtbar, versteckt]);
+
+    const partials: Record<string, unknown>[] = [];
+    await runSequentialDetections([series(1)], UID, (p) => partials.push(p), signal(), [
+      { ...series(2), hidden: true } as Series,
+    ]);
+
+    expect(mocks.detectProviderChanges).toHaveBeenCalledWith(
+      [series(1), { ...series(2), hidden: true }],
+      UID
+    );
+    expect(partials).toEqual([{ providerChanges: [sichtbar], hiddenProviderChanges: [versteckt] }]);
+  });
+
   it('kombiniert nur die nicht-leeren Teile von inactive/rewatch', async () => {
     mocks.detectInactiveRewatches.mockResolvedValue([series(3)]);
     const partials: Record<string, unknown>[] = [];

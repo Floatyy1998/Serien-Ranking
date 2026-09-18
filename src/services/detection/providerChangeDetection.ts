@@ -93,7 +93,8 @@ function getCatalogProviders(series: Series): string[] {
 }
 
 /**
- * Erkennt Provider-Änderungen für Serien auf der Watchlist.
+ * Erkennt Provider-Änderungen für Serien auf der Watchlist — und für
+ * ausgeblendete Serien, denen so das Wiedereinblenden angeboten wird.
  *
  * Verhalten:
  * - Beim ersten Lauf (kein `known`-Eintrag): nur speichern, keine Notification.
@@ -105,7 +106,9 @@ function getCatalogProviders(series: Series): string[] {
  *     überspringe — sonst springt sie bei jedem Reload sofort wieder.
  *   • DISMISSED_COOLDOWN (30 Tage): wurde sie aktiv weggeklickt, akzeptiere die neuen
  *     Provider als bekannten Stand und ruh 30 Tage.
- * - Cleanup: Einträge für nicht mehr auf der Watchlist liegende Serien werden entfernt.
+ * - Ausgeblendete Serien melden nur NEUE Provider: dass eine abgebrochene Serie
+ *   irgendwo verschwindet, ist kein Anlass, sie wieder einzublenden.
+ * - Cleanup: Einträge für nicht mehr beobachtete Serien werden entfernt.
  */
 export const detectProviderChanges = async (
   seriesList: Series[],
@@ -114,7 +117,9 @@ export const detectProviderChanges = async (
   const enabled = await getProviderNotificationsEnabled(userId);
   if (!enabled) return [];
 
-  const watchlistSeries = seriesList.filter((s) => s && s.watchlist && s.id);
+  // Ausgeblendete Serien laufen bewusst mit, auch ohne Watchlist-Flag: fuer sie
+  // ist der Provider-Wechsel der Anlass, das Wiedereinblenden anzubieten.
+  const trackedSeries = seriesList.filter((s) => s && s.id && (s.watchlist || s.hidden));
 
   const [knownProvidersStored, states, snoozed, baselineRegion] = await Promise.all([
     getKnownProviders(userId),
@@ -134,7 +139,7 @@ export const detectProviderChanges = async (
   const now = new Date().toISOString();
   const nowMs = Date.now();
 
-  for (const series of watchlistSeries) {
+  for (const series of trackedSeries) {
     const key = series.id.toString();
     const currentProviders = getCatalogProviders(series);
 
@@ -170,6 +175,12 @@ export const detectProviderChanges = async (
       continue;
     }
 
+    // Ausgeblendete Serie ohne neuen Provider: nichts anzubieten, Stand annehmen.
+    if (series.hidden && addedProviders.length === 0) {
+      updatedKnown[key] = { providers: currentProviders, lastChecked: now };
+      continue;
+    }
+
     // Diff erkannt — Cooldowns prüfen
     const state = states[key];
     const dismissedAt = getEffectiveDismissedAt(state);
@@ -194,19 +205,20 @@ export const detectProviderChanges = async (
     changes.push({ series, addedProviders, removedProviders, currentProviders });
   }
 
+  const trackedIds = new Set(trackedSeries.map((s) => s.id.toString()));
+
   // Cleanup + Persistenz als Pfad-basiertes Update, damit gemischte Set/Null-Operationen
   // funktionieren (set + delete im selben Multi-Path-Update).
   try {
-    const watchlistIds = new Set(watchlistSeries.map((s) => s.id.toString()));
     const updates: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(updatedKnown)) {
-      if (watchlistIds.has(key)) {
+      if (trackedIds.has(key)) {
         updates[userPath(userId, 'knownProviders', key)] = value;
       }
     }
     for (const key of Object.keys(knownProvidersStored)) {
-      if (!watchlistIds.has(key)) {
+      if (!trackedIds.has(key)) {
         updates[userPath(userId, 'knownProviders', key)] = null;
       }
     }
@@ -214,7 +226,7 @@ export const detectProviderChanges = async (
       updates[userPath(userId, 'knownProvidersRegion')] = watchRegion;
     }
     for (const key of Object.keys(states)) {
-      if (!watchlistIds.has(key)) {
+      if (!trackedIds.has(key)) {
         updates[userPath(userId, 'providerChangeNotifications', key)] = null;
       }
     }
@@ -225,7 +237,7 @@ export const detectProviderChanges = async (
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to store providers:', error);
   }
-  await cleanupSnoozes('provider', userId, new Set(watchlistSeries.map((s) => s.id.toString())));
+  await cleanupSnoozes('provider', userId, trackedIds);
 
   return changes;
 };

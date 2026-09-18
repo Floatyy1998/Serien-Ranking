@@ -72,6 +72,8 @@ export interface DetectionResults {
   completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
+  /** Provider-Wechsel bei ausgeblendeten Serien — Angebot zum Wiedereinblenden. */
+  hiddenProviderChanges: ProviderChangeInfo[];
   animeMangaHandoffs: AnimeMangaHandoff[];
 }
 
@@ -84,7 +86,8 @@ export async function runSequentialDetections(
   seriesList: Series[],
   userId: string,
   onUpdate: (partial: Partial<DetectionResults>) => void,
-  _signal: AbortSignal
+  _signal: AbortSignal,
+  hiddenSeriesList: Series[] = []
 ): Promise<void> {
   // _signal früher zum Cancel benutzt — aber Abort vor Step 2 hat dazu geführt,
   // dass Detection nie fertig wurde, wenn seriesList sich während des Runs änderte
@@ -138,11 +141,18 @@ export async function runSequentialDetections(
     console.error('Error detecting unrated series:', error);
   }
 
-  // 5. Provider-Änderungen (niedrigste Priorität, TMDB API calls)
+  // 5. Provider-Änderungen (niedrigste Priorität, TMDB API calls).
+  //    Ausgeblendete Serien laufen mit, landen aber in einem eigenen Topf:
+  //    dort lautet das Angebot „wieder einblenden" statt „ansehen".
   try {
-    const changes = await detectProviderChanges(seriesList, userId);
-    if (changes.length > 0) {
-      onUpdate({ providerChanges: changes });
+    const changes = await detectProviderChanges([...seriesList, ...hiddenSeriesList], userId);
+    const visible = changes.filter((c) => c.series?.hidden !== true);
+    const hidden = changes.filter((c) => c.series?.hidden === true);
+    if (visible.length > 0 || hidden.length > 0) {
+      onUpdate({
+        ...(visible.length > 0 ? { providerChanges: visible } : {}),
+        ...(hidden.length > 0 ? { hiddenProviderChanges: hidden } : {}),
+      });
     }
   } catch (error) {
     console.error('Error detecting provider changes:', error);

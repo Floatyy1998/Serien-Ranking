@@ -18,6 +18,7 @@ import {
   NewReleases,
   StarOutlined,
   SwapHoriz,
+  Visibility,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
@@ -38,6 +39,7 @@ type CategoryKey =
   | 'recap'
   | 'new-season'
   | 'provider'
+  | 'provider-hidden'
   | 'unsubscribed'
   | 'inactive'
   | 'inactive-rewatch'
@@ -59,6 +61,12 @@ const CATEGORY_DEFS: CategoryDef[] = [
     key: 'provider',
     label: 'Provider',
     Icon: SwapHoriz,
+    color: (t) => t.accent || t.primary,
+  },
+  {
+    key: 'provider-hidden',
+    label: t('Ausgeblendet'),
+    Icon: Visibility,
     color: (t) => t.accent || t.primary,
   },
   {
@@ -99,6 +107,9 @@ interface SeriesNotificationHubProps {
   onDismissUnsubscribed: () => void;
   providerChanges: ProviderChangeInfo[];
   onDismissProvider: () => void;
+  hiddenProviderChanges: ProviderChangeInfo[];
+  onDismissHiddenProvider: () => void;
+  onUnhideSeries: (seriesId: number) => void | Promise<void>;
   seriesWithNewSeasons: Series[];
   onDismissNewSeasons: () => void;
   inactiveSeries: Series[];
@@ -119,6 +130,9 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   onDismissUnsubscribed,
   providerChanges,
   onDismissProvider,
+  hiddenProviderChanges,
+  onDismissHiddenProvider,
+  onUnhideSeries,
   seriesWithNewSeasons,
   onDismissNewSeasons,
   inactiveSeries,
@@ -139,6 +153,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       recap: proactiveRecaps.recaps.length,
       'new-season': seriesWithNewSeasons.length,
       provider: providerChanges.length,
+      'provider-hidden': hiddenProviderChanges.length,
       unsubscribed: unsubscribedNewSeasons.length,
       inactive: inactiveSeries.length,
       'inactive-rewatch': inactiveRewatches.length,
@@ -150,6 +165,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       proactiveRecaps.recaps.length,
       seriesWithNewSeasons.length,
       providerChanges.length,
+      hiddenProviderChanges.length,
       unsubscribedNewSeasons.length,
       inactiveSeries.length,
       inactiveRewatches.length,
@@ -207,6 +223,15 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       case 'provider':
         return (
           <ProviderChangeNotification changes={providerChanges} onDismiss={onDismissProvider} />
+        );
+      case 'provider-hidden':
+        return (
+          <ProviderChangeNotification
+            variant="hidden"
+            changes={hiddenProviderChanges}
+            onDismiss={onDismissHiddenProvider}
+            onUnhide={onUnhideSeries}
+          />
         );
       case 'new-season':
         return (

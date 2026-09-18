@@ -6,6 +6,7 @@ import {
   SnoozeOutlined,
   SwapHoriz,
   Tv,
+  Visibility,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
@@ -35,18 +36,25 @@ interface ProviderChangeNotificationProps {
   changes: ProviderChangeInfo[];
   onDismiss: () => void;
   onCollapse?: () => void;
+  /** `hidden`: die Serien sind ausgeblendet — statt „Ansehen" wird das
+   *  Wiedereinblenden angeboten. */
+  variant?: 'default' | 'hidden';
+  onUnhide?: (seriesId: number) => void | Promise<void>;
 }
 
 export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProps> = ({
   changes,
   onDismiss,
   onCollapse,
+  variant = 'default',
+  onUnhide,
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [currentIndex, setCurrentIndex] = useState(0);
   const [snoozeOpen, setSnoozeOpen] = useState(false);
+  const [unhiding, setUnhiding] = useState(false);
   const dotsContainerRef = useRef<HTMLDivElement>(null);
   const snoozeMenuRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +96,20 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
     dismiss([change]);
     navigate(`/series/${change.series.id}`);
     onDismiss();
+  };
+
+  // Wiedereinblenden quittiert diese eine Aenderung und schliesst die Karte —
+  // genau wie das Antippen von „Ansehen".
+  const handleUnhide = async (change: ProviderChangeInfo) => {
+    if (!onUnhide || unhiding) return;
+    setUnhiding(true);
+    try {
+      await onUnhide(change.series.id);
+      await dismiss([change]);
+      onDismiss();
+    } finally {
+      setUnhiding(false);
+    }
   };
 
   const handleDismissAll = async () => {
@@ -148,8 +170,14 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
   const current = changes[safeIndex];
   if (!current) return null;
 
+  const isHiddenVariant = variant === 'hidden';
   const hasAdded = current.addedProviders.length > 0;
-  const HeaderIcon = hasAdded ? Add : SwapHoriz;
+  const HeaderIcon = isHiddenVariant ? Visibility : hasAdded ? Add : SwapHoriz;
+  const headline = isHiddenVariant
+    ? t('Wieder einblenden?')
+    : changes.length > 1
+      ? t('Provider-Änderungen')
+      : t('Provider-Änderung');
   const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%), rgb(15, 17, 21)`;
   const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
 
@@ -192,9 +220,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
               <HeaderIcon />
             </motion.div>
           </div>
-          <h3 className="series-notification-title">
-            {changes.length > 1 ? t('Provider-Änderungen') : t('Provider-Änderung')}
-          </h3>
+          <h3 className="series-notification-title">{headline}</h3>
           {changes.length > 1 && (
             <span
               className="series-notification-count-pill"
@@ -274,18 +300,45 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
 
           {/* Action-Bar */}
           <div className="series-notification-actions">
-            <button
-              className="series-notification-btn series-notification-btn--primary"
-              onClick={() => handleNavigate(current)}
-              style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: currentTheme.background.default,
-                flex: 1,
-              }}
-            >
-              <span>{t('Ansehen')}</span>
-              <ChevronRight />
-            </button>
+            {isHiddenVariant ? (
+              <>
+                <button
+                  className="series-notification-btn series-notification-btn--primary"
+                  onClick={() => void handleUnhide(current)}
+                  disabled={unhiding}
+                  aria-busy={unhiding}
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                    color: currentTheme.background.default,
+                    flex: 1,
+                  }}
+                >
+                  <span>{t('Wieder einblenden')}</span>
+                </button>
+                <Tooltip title={t('Ansehen')} arrow>
+                  <button
+                    className="series-notification-btn series-notification-btn--icon"
+                    onClick={() => handleNavigate(current)}
+                    aria-label={t('Ansehen')}
+                  >
+                    <Tv />
+                  </button>
+                </Tooltip>
+              </>
+            ) : (
+              <button
+                className="series-notification-btn series-notification-btn--primary"
+                onClick={() => handleNavigate(current)}
+                style={{
+                  background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                  color: currentTheme.background.default,
+                  flex: 1,
+                }}
+              >
+                <span>{t('Ansehen')}</span>
+                <ChevronRight />
+              </button>
+            )}
 
             <div style={{ position: 'relative' }} ref={snoozeMenuRef}>
               <Tooltip title={t('Später erinnern')} arrow>

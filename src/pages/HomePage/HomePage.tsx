@@ -1,11 +1,12 @@
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Campaign from '@mui/icons-material/Campaign';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { t } from '../../services/i18n';
+import { showToast } from '../../lib/interaction/toast';
 import { SectionHeader } from '../../components/ui';
 import { SeriesNotificationHub } from './sheets/SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
@@ -99,6 +100,9 @@ export const HomePage: React.FC = () => {
     clearUnratedSeries,
     providerChanges,
     clearProviderChanges,
+    hiddenProviderChanges,
+    clearHiddenProviderChanges,
+    toggleHideSeries,
     animeMangaHandoffs,
     clearAnimeMangaHandoffs,
   } = useSeriesList();
@@ -110,6 +114,18 @@ export const HomePage: React.FC = () => {
   const notifs = useUnifiedNotifications();
   const { entries: unsubscribedNewSeasons, dismiss: dismissUnsubscribedNewSeasons } =
     useUnsubscribedNewSeasons(seriesWithNewSeasons);
+
+  const handleUnhideSeries = useCallback(
+    async (seriesId: number) => {
+      try {
+        await toggleHideSeries(seriesId, false);
+        showToast(t('Serie wird wieder angezeigt'), 2500, 'success');
+      } catch {
+        showToast(t('Fehler beim Ändern des Status.'), 2500, 'error');
+      }
+    },
+    [toggleHideSeries]
+  );
 
   const {
     continueWatching,
@@ -468,6 +484,9 @@ export const HomePage: React.FC = () => {
         onDismissUnsubscribed={dismissUnsubscribedNewSeasons}
         providerChanges={providerChanges}
         onDismissProvider={clearProviderChanges}
+        hiddenProviderChanges={hiddenProviderChanges}
+        onDismissHiddenProvider={clearHiddenProviderChanges}
+        onUnhideSeries={handleUnhideSeries}
         seriesWithNewSeasons={seriesWithNewSeasons}
         onDismissNewSeasons={clearNewSeasons}
         inactiveSeries={inactiveSeries}

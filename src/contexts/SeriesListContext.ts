@@ -13,6 +13,7 @@ export interface SeriesListContextType {
   completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
+  hiddenProviderChanges: ProviderChangeInfo[];
   animeMangaHandoffs: AnimeMangaHandoff[];
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
@@ -20,6 +21,7 @@ export interface SeriesListContextType {
   clearCompletedSeries: () => void;
   clearUnratedSeries: () => void;
   clearProviderChanges: () => void;
+  clearHiddenProviderChanges: () => void;
   clearAnimeMangaHandoffs: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
@@ -43,6 +45,7 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   completedSeries: [],
   unratedSeries: [],
   providerChanges: [],
+  hiddenProviderChanges: [],
   animeMangaHandoffs: [],
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
@@ -50,6 +53,7 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   clearCompletedSeries: () => {},
   clearUnratedSeries: () => {},
   clearProviderChanges: () => {},
+  clearHiddenProviderChanges: () => {},
   clearAnimeMangaHandoffs: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
