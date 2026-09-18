@@ -7,7 +7,12 @@ import { PageTourSheet } from '../../features/tour/PageTourSheet';
 import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
-import { CatchUpPreview, DropOffPreview } from './NewFeaturePreviews';
+import {
+  CatchUpPreview,
+  DropOffPreview,
+  FriendAddCardPreview,
+  UnhideProviderPreview,
+} from './NewFeaturePreviews';
 
 /**
  * Nur im Dev-Server: Overlays und Sheets in mehreren Fensterbreiten nebeneinander.
@@ -114,6 +119,8 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'tour', label: 'Seitenhilfe', render: () => <PageTourPreview /> },
   { id: 'catchup', label: 'Aufhol-Plan', render: () => <CatchUpPreview /> },
   { id: 'dropoff', label: 'Aussteiger-Radar', render: () => <DropOffPreview /> },
+  { id: 'unhide', label: 'Wieder einblenden', render: () => <UnhideProviderPreview /> },
+  { id: 'friendadd', label: 'Freundesprofil-Karten', render: () => <FriendAddCardPreview /> },
 ];
 
 export const DevUiPreviewPage = () => {

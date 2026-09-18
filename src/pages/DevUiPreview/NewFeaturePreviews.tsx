@@ -5,6 +5,9 @@
  */
 
 import { useTheme } from '../../contexts/ThemeContext';
+import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
+import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
+import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
@@ -160,6 +163,122 @@ export const DropOffPreview = () => {
 
       <Case label="Zu wenig Daten (rendert nichts)">
         <DropOffView insight={null} currentTheme={currentTheme} isMobile={false} />
+      </Case>
+    </div>
+  );
+};
+
+/* Provider-Wechsel bei ausgeblendeten Serien — Angebot zum Wiedereinblenden. */
+
+const POSTER = PLACEHOLDER_SVG;
+
+const hiddenChange = (id: number, title: string, providers: string[]) => ({
+  series: { id, title, poster: { poster: POSTER } },
+  addedProviders: providers,
+  removedProviders: [],
+  currentProviders: providers,
+});
+
+export const UnhideProviderPreview = () => (
+  <div style={{ padding: 16 }}>
+    <Case label="Eine ausgeblendete Serie ist zurueck">
+      <ProviderChangeNotification
+        variant="hidden"
+        changes={[hiddenChange(1, 'The Expanse', ['Amazon Prime Video'])]}
+        onDismiss={() => {}}
+        onUnhide={() => {}}
+      />
+    </Case>
+
+    <Case label="Mehrere — mit Karussell und langem Titel">
+      <ProviderChangeNotification
+        variant="hidden"
+        changes={[
+          hiddenChange(2, 'Der Herr der Ringe: Die Ringe der Macht', ['Amazon Prime Video']),
+          hiddenChange(3, 'Dark', ['Netflix', 'Joyn Plus']),
+          hiddenChange(4, 'Fringe', ['Disney Plus']),
+        ]}
+        onDismiss={() => {}}
+        onUnhide={() => {}}
+      />
+    </Case>
+
+    <Case label="Zum Vergleich: normaler Provider-Wechsel">
+      <ProviderChangeNotification
+        changes={[hiddenChange(5, 'Severance', ['Apple TV Plus'])]}
+        onDismiss={() => {}}
+      />
+    </Case>
+  </div>
+);
+
+/* Freundesprofil: Titel des Freundes in die eigene Liste uebernehmen. */
+
+const provider = (name: string) => ({ id: 1, name, logo: POSTER });
+
+export const FriendAddCardPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div style={{ padding: 16 }}>
+      <Case label="Karten-Raster wie auf dem Freundesprofil">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+            gap: 12,
+          }}
+        >
+          <ProfileItemCard
+            title="Dark"
+            posterUrl={POSTER}
+            isMovie={false}
+            rating={9.1}
+            progress={64}
+            providers={[provider('Netflix')]}
+            year="2017"
+            genres="Mystery"
+            currentTheme={currentTheme}
+            onClick={() => {}}
+            onAdd={() => {}}
+          />
+          <ProfileItemCard
+            title="Severance"
+            posterUrl={POSTER}
+            isMovie={false}
+            rating={8.7}
+            providers={[provider('Apple TV Plus'), provider('Netflix')]}
+            year="2022"
+            genres="Drama"
+            currentTheme={currentTheme}
+            onClick={() => {}}
+            inList
+            onAdd={() => {}}
+          />
+          <ProfileItemCard
+            title="Der Herr der Ringe: Die Gefaehrten"
+            posterUrl={POSTER}
+            isMovie
+            rating={9.4}
+            providers={[]}
+            year="2001"
+            genres="Fantasy"
+            currentTheme={currentTheme}
+            onClick={() => {}}
+            adding
+            onAdd={() => {}}
+          />
+          <ProfileItemCard
+            title="Ohne Hinzufuegen-Knopf"
+            posterUrl={POSTER}
+            isMovie={false}
+            rating={7.2}
+            providers={[provider('Disney Plus')]}
+            year="2019"
+            genres="Action"
+            currentTheme={currentTheme}
+            onClick={() => {}}
+          />
+        </div>
       </Case>
     </div>
   );

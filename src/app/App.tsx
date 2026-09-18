@@ -94,6 +94,9 @@ const ImpressumPage = lazyWithRetry(() =>
 // nur Share-Ziele sind public, der Rest führt zur StartPage).
 const GuestRouteSwitch = () => {
   const { pathname } = useLocation();
+  // Die Dev-Vorschauen brauchen kein Konto — sonst laufen sie beim Screenshot-
+  // Durchlauf auf der StartPage statt auf der Komponente, die geprueft wird.
+  if (import.meta.env.DEV && pathname.startsWith('/dev/')) return <MobileApp />;
   const match = pathname.match(/^\/(series|movie)\/(\d+)/);
   if (match) {
     return (
