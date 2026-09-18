@@ -38,6 +38,7 @@ import {
   calculateProgress,
   useFriendProfileData,
 } from './useFriendProfileData';
+import { friendAddKey, useFriendAddToList } from './useFriendAddToList';
 import { useFriendCurrentlyWatching } from './useFriendCurrentlyWatching';
 import { useFriendAnticipation } from './useFriendAnticipation';
 import { useFriendPet } from './useFriendPet';
@@ -84,6 +85,8 @@ export const FriendProfilePage = memo(() => {
     handleItemClick,
     navigateToTasteMatch,
   } = useFriendProfileData();
+
+  const { addingKey, isInOwnList, addToOwnList } = useFriendAddToList();
 
   const isSelf = !!user?.uid && user.uid === friendId;
   const friendEntry = friends.find((f) => f.uid === friendId);
@@ -549,6 +552,8 @@ export const FriendProfilePage = memo(() => {
                   const year =
                     isMovie && item.release_date ? item.release_date.slice(0, 4) : undefined;
 
+                  const addType = isMovie ? 'movie' : 'series';
+
                   return (
                     <ProfileItemCard
                       key={item.id}
@@ -562,7 +567,10 @@ export const FriendProfilePage = memo(() => {
                       genres={genres}
                       index={index}
                       currentTheme={currentTheme}
-                      onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
+                      onClick={() => handleItemClick(item, addType)}
+                      inList={isInOwnList(addType, item.id)}
+                      adding={addingKey === friendAddKey(addType, item.id)}
+                      onAdd={isSelf ? undefined : () => void addToOwnList(item, addType)}
                     />
                   );
                 })}

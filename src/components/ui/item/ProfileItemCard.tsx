@@ -6,13 +6,14 @@
  * episode-level watch state).
  */
 
-import { Star } from '@mui/icons-material';
+import { Add, CheckCircle, Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { primaryGenre } from '../../../lib/text/genreLabel';
 import { PLACEHOLDER_SVG } from '../../../lib/image/posterPlaceholder';
 import { t } from '../../../services/i18n';
 import { PosterFrame } from '../media/PosterFrame';
+import { LoadingSpinner } from '../feedback/LoadingSpinner';
 import './ProfileItemCard.css';
 
 export interface ProfileCardProvider {
@@ -181,6 +182,11 @@ interface ProfileItemCardProps {
   index?: number;
   currentTheme: CardTheme;
   onClick: () => void;
+  /** Liegt der Titel schon in der eigenen Liste? Zeigt statt „+" einen Haken. */
+  inList?: boolean;
+  /** Ohne Handler bleibt die Ecke leer — Karten ohne Hinzufügen-Funktion. */
+  onAdd?: () => void;
+  adding?: boolean;
 }
 
 export const ProfileItemCard = React.memo<ProfileItemCardProps>(
@@ -195,6 +201,9 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
     genres,
     currentTheme,
     onClick,
+    inList,
+    onAdd,
+    adding,
   }) => {
     const warningColor = currentTheme.status?.warning ?? '#ffc107';
     const successColor = currentTheme.status?.success ?? '#10b981';
@@ -227,6 +236,42 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
                   />
                 )}
               </div>
+              {onAdd &&
+                (inList ? (
+                  <span
+                    className="pic-card-inlist"
+                    style={{
+                      background: `${currentTheme.background.default}dd`,
+                      color: successColor,
+                    }}
+                    title={t('In deiner Liste')}
+                  >
+                    <CheckCircle className="pic-card-add-icon" />
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="pic-card-add"
+                    style={{
+                      background: `${currentTheme.background.default}dd`,
+                      color: accentColor,
+                    }}
+                    title={t('Zur Liste hinzufügen')}
+                    aria-label={t('{title} zur Liste hinzufügen', { title })}
+                    aria-busy={adding}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (adding) return;
+                      onAdd();
+                    }}
+                  >
+                    {adding ? (
+                      <LoadingSpinner inline size={12} borderWidth={2} color={accentColor} />
+                    ) : (
+                      <Add className="pic-card-add-icon" />
+                    )}
+                  </button>
+                ))}
             </div>
 
             <div className="pic-card-bottom">

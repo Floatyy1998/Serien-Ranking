@@ -72,6 +72,47 @@
   flex: 1 1 auto;
 }
 
+/* Hinzufuegen-Ecke. Die 44px-Touch-Regel (.mobile-app button) wuerde den Knopf
+   auf Posterbreite aufblasen — darum explizit ueberschrieben. */
+.pic-card-add,
+.mobile-app button.pic-card-add,
+.pic-card-inlist {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border-medium);
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.pic-card-inlist {
+  cursor: default;
+}
+
+.pic-card-add:hover {
+  transform: scale(1.08);
+  box-shadow: var(--glow-primary);
+}
+
+.pic-card-add:active {
+  transform: scale(0.92);
+}
+
+.pic-card-add-icon {
+  font-size: 18px;
+}
+
 /* ─── Bottom Section ──────────────────────────────────────────────── */
 
 .pic-card-bottom {
