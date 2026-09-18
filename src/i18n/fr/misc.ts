@@ -105,6 +105,12 @@ const dict: Record<string, string> = {
   'E-Mail:': 'E-mail :',
   'Rechtliche Informationen konnten nicht geladen werden.':
     'Impossible de charger les informations légales.',
+  // Ausgeblendete Serien wieder aktiv schalten
+  Ausgeblendet: 'Masquée',
+  'Wieder einblenden': 'Réafficher',
+  'Wieder einblenden?': 'La réafficher ?',
+  'Serie wird wieder angezeigt': 'La série est de nouveau affichée',
+  '„{title}" wird wieder angezeigt': '« {title} » est de nouveau affichée',
 };
 
 export default dict;

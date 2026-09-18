@@ -166,6 +166,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
           genres: series.genre?.genres,
           providers,
           episodeAirDate: airDate,
+          seriesHidden: series.hidden,
           wrappedEvent: previousCount === 0,
         });
       },

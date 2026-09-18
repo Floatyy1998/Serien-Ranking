@@ -286,6 +286,7 @@ export const useCalendarData = () => {
                 genres: series.genre?.genres,
                 providers: series.provider?.provider?.map((p: { name: string }) => p.name),
                 episodeAirDate: episode?.air_date,
+                seriesHidden: series.hidden,
                 petXp: false,
                 wrappedEvent: prevCount === 0,
               });

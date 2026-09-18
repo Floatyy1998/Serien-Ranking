@@ -11,6 +11,7 @@
  * Call-Sites, die eigene try/catch- bzw. Undo-Toast-Behandlung haben.
  */
 import { petService } from '../../services/pet/petService';
+import { unhideSeriesOnWatch } from '../../services/series/hiddenSeries';
 import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
 
 export interface EpisodeWatchFanoutParams {
@@ -26,6 +27,8 @@ export interface EpisodeWatchFanoutParams {
   genres?: string[];
   providers?: string[];
   episodeAirDate?: string;
+  /** Serie ist als „nicht weiterschauen" markiert → wird hier wieder eingeblendet. */
+  seriesHidden?: boolean;
   /** Feature-Gates — default true; nur setzen wo eine Call-Site abweicht. */
   petXp?: boolean;
   badgeCounters?: boolean;
@@ -33,6 +36,12 @@ export interface EpisodeWatchFanoutParams {
 }
 
 export async function runEpisodeWatchFanout(p: EpisodeWatchFanoutParams): Promise<void> {
+  // 0. Ausgeblendete Serie wieder aktiv schalten — wer weiterschaut, will sie
+  //    in Watchlist und Kalender zurueck.
+  if (p.seriesHidden) {
+    await unhideSeriesOnWatch(p.userId, p.seriesId, p.seriesTitle);
+  }
+
   // 1. Pet-XP für alle lebenden Pets (genre-gewichtet)
   if (p.petXp !== false) {
     await petService.watchedSeriesWithGenreAllPets(p.userId, p.genres || []);

@@ -18,8 +18,8 @@ import {
   subscribeCatalogChange,
 } from '../services/catalog/staticCatalog';
 
-import { dbRef, paths } from '../services/db/ref';
-import { bumpSeriesVersion } from '../services/firebase/seriesVersionBump';
+import { paths } from '../services/db/ref';
+import { setSeriesHidden } from '../services/series/hiddenSeries';
 import {
   fixMissingFirstWatchedAt,
   runSequentialDetections,
@@ -99,6 +99,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const [completedSeries, setCompletedSeries] = useState<Series[]>([]);
   const [unratedSeries, setUnratedSeries] = useState<Series[]>([]);
   const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>([]);
+  const [hiddenProviderChanges, setHiddenProviderChanges] = useState<ProviderChangeInfo[]>([]);
   const [animeMangaHandoffs, setAnimeMangaHandoffs] = useState<AnimeMangaHandoff[]>([]);
 
   const detectionRunRef = useRef(false);
@@ -458,15 +459,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
         if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
         if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+        if (partial.hiddenProviderChanges) setHiddenProviderChanges(partial.hiddenProviderChanges);
         if (partial.animeMangaHandoffs) setAnimeMangaHandoffs(partial.animeMangaHandoffs);
       },
-      abortController.signal
+      abortController.signal,
+      hiddenSeriesList
     );
 
     return () => {
       abortController.abort();
     };
-  }, [user, seriesList, hasSeasons, isOffline, watchSyncing]);
+  }, [user, seriesList, hiddenSeriesList, hasSeasons, isOffline, watchSyncing]);
 
   // Reset bei User-Wechsel
   useEffect(() => {
@@ -479,6 +482,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setCompletedSeries([]);
       setUnratedSeries([]);
       setProviderChanges([]);
+      setHiddenProviderChanges([]);
       setAnimeMangaHandoffs([]);
       detectionRunRef.current = false;
     };
@@ -508,6 +512,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setProviderChanges([]);
   }, []);
 
+  const clearHiddenProviderChanges = useCallback(() => {
+    setHiddenProviderChanges([]);
+  }, []);
+
   const clearAnimeMangaHandoffs = useCallback(() => {
     setAnimeMangaHandoffs([]);
   }, []);
@@ -520,6 +528,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setCompletedSeries([]);
     setUnratedSeries([]);
     setProviderChanges([]);
+    setHiddenProviderChanges([]);
     setAnimeMangaHandoffs([]);
 
     if (user && seriesList.length > 0) {
@@ -535,11 +544,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
           if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
           if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
           if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+          if (partial.hiddenProviderChanges)
+            setHiddenProviderChanges(partial.hiddenProviderChanges);
         },
-        abortController.signal
+        abortController.signal,
+        hiddenSeriesList
       );
     }
-  }, [user, seriesList]);
+  }, [user, seriesList, hiddenSeriesList]);
 
   const refetchSeries = useCallback(() => {
     refetchRefs();
@@ -618,13 +630,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (!user) return;
       const series = allSeries.find((s) => s.id === tmdbId);
       if (!series) return;
-      const ref = dbRef(`${paths.seriesItem(user.uid, series.id)}/hidden`);
-      if (hidden) {
-        await ref.set(true);
-      } else {
-        await ref.remove();
-      }
-      bumpSeriesVersion(user.uid);
+      await setSeriesHidden(user.uid, series.id, hidden);
     },
     [user, allSeries]
   );
@@ -669,6 +675,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       completedSeries,
       unratedSeries,
       providerChanges,
+      hiddenProviderChanges,
       animeMangaHandoffs,
       clearNewSeasons,
       clearInactiveSeries,
@@ -676,6 +683,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
+      clearHiddenProviderChanges,
       clearAnimeMangaHandoffs,
       recheckForNewSeasons,
       refetchSeries,
@@ -696,6 +704,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       completedSeries,
       unratedSeries,
       providerChanges,
+      hiddenProviderChanges,
       animeMangaHandoffs,
       clearNewSeasons,
       clearInactiveSeries,
@@ -703,6 +712,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
+      clearHiddenProviderChanges,
       clearAnimeMangaHandoffs,
       recheckForNewSeasons,
       refetchSeries,

@@ -395,6 +395,7 @@ export const useEpisodeDiscussion = () => {
           isRewatch: false,
           genres: series.genre?.genres,
           providers: series.provider?.provider?.map((p) => p.name),
+          seriesHidden: series.hidden,
           badgeCounters: false,
         });
       }

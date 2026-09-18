@@ -299,6 +299,7 @@ export function useSeriesActions(
               genres: series.genre?.genres,
               providers: series.provider?.provider?.map((p) => p.name),
               episodeAirDate: episode.air_date,
+              seriesHidden: series.hidden,
             });
           },
         });
@@ -544,6 +545,7 @@ export function useSeriesActions(
                 genres: series.genre?.genres,
                 providers: series.provider?.provider?.map((p) => p.name),
                 episodeAirDate: episode.air_date,
+                seriesHidden: series.hidden,
               });
               if (willAutoAddToWatchlist) {
                 const { logWatchlistAdded } =

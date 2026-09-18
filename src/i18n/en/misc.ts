@@ -124,6 +124,12 @@ const dict: Record<string, string> = {
   'Kontakt:': 'Contact:',
   'E-Mail:': 'Email:',
   'Rechtliche Informationen konnten nicht geladen werden.': "Couldn't load legal information.",
+  // Ausgeblendete Serien wieder aktiv schalten
+  Ausgeblendet: 'Hidden',
+  'Wieder einblenden': 'Unhide',
+  'Wieder einblenden?': 'Unhide it?',
+  'Serie wird wieder angezeigt': 'Show is visible again',
+  '„{title}" wird wieder angezeigt': '"{title}" is visible again',
 };
 
 export default dict;

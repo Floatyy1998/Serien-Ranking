@@ -183,6 +183,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
               genres: series.genre?.genres,
               providers: series.provider?.provider?.map((p) => p.name),
               episodeAirDate: episode.airDate,
+              seriesHidden: series.hidden,
             });
           },
         }

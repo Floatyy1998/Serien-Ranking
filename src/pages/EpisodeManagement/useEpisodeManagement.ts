@@ -21,6 +21,7 @@ import {
   trackSeriesAdded,
 } from '../../services/firebase/analytics';
 import { backendFetch } from '../../services/api/backendApi';
+import { autoUnhideUpdates, shouldAutoUnhide } from '../../lib/series/autoUnhide';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
@@ -403,6 +404,7 @@ export const useEpisodeManagement = () => {
               genres: series.genre?.genres,
               providers: [...new Set(series.provider?.provider?.map((p) => p.name))],
               episodeAirDate: episode.air_date,
+              seriesHidden: series.hidden,
             });
             if (willAutoAddToWatchlist) {
               const { logWatchlistAdded } =
@@ -422,6 +424,7 @@ export const useEpisodeManagement = () => {
               genres: series.genre?.genres,
               providers: [...new Set(series.provider?.provider?.map((p) => p.name))],
               episodeAirDate: episode.air_date,
+              seriesHidden: series.hidden,
               petXp: false,
             });
           }
@@ -557,6 +560,7 @@ export const useEpisodeManagement = () => {
       return;
     }
     const willAutoAddToWatchlist = mode !== 'unwatch' && shouldAutoEnableWatchlist(series);
+    const willAutoUnhide = mode !== 'unwatch' && shouldAutoUnhide(series);
 
     // Massen-Abhaken zählt nicht für Mystery-Boxen (kein Box-Schwall beim
     // Eintragen bereits geschauter Serien). Delta = Änderung der Unique-Watched.
@@ -574,6 +578,7 @@ export const useEpisodeManagement = () => {
       const seasonPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${seasonIndex}`;
       const updates: Record<string, unknown> = {
         ...(willAutoAddToWatchlist ? autoWatchlistUpdates(user.uid, series) : {}),
+        ...(willAutoUnhide ? autoUnhideUpdates(user.uid, series) : {}),
       };
 
       seasonEps.forEach((ep) => {
@@ -688,6 +693,9 @@ export const useEpisodeManagement = () => {
       if (willAutoAddToWatchlist) {
         const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
         await logWatchlistAdded(user.uid, series.title, series.id);
+      }
+      if (willAutoUnhide) {
+        showToast(t('„{title}" wird wieder angezeigt', { title: series.title }), 2500, 'info');
       }
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);

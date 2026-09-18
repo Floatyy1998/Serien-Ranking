@@ -241,6 +241,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
         runtimeMinutes: 0, // ungenutzt, solange wrappedEvent aus ist
         isRewatch: true,
         genres: series?.genre?.genres,
+        seriesHidden: series?.hidden,
         badgeCounters: false,
         wrappedEvent: false,
       });
