@@ -7,10 +7,16 @@ const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('@mui/icons-material', () => ({
+  Add: () => <span data-testid="add-icon" />,
+  PlaylistAddCheck: () => <span data-testid="inlist-icon" />,
   Check: () => null,
   ExpandMore: () => null,
   Star: () => <span data-testid="star-filled" />,
   StarBorder: () => <span data-testid="star-outline" />,
+}));
+// framer-motion stirbt in jsdom beim Abbauen des Spinners.
+vi.mock('../../components/ui/feedback/LoadingSpinner', () => ({
+  LoadingSpinner: () => <span data-testid="spinner" />,
 }));
 vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
@@ -231,5 +237,90 @@ describe('EpisodeGroupCard', () => {
     );
     fireEvent.click(container.querySelector('.cal-ep') as Element);
     expect(navigateMock).toHaveBeenCalledWith('/episode/42/s/2/e/3');
+  });
+});
+
+describe('Zur eigenen Liste hinzufuegen', () => {
+  const addToList = (over: Partial<{ inList: boolean; adding: boolean }> = {}) => ({
+    inList: () => over.inList ?? false,
+    adding: () => over.adding ?? false,
+    add: vi.fn(),
+  });
+
+  const renderCard = (value: Parameters<typeof CalendarViewModeContext.Provider>[0]['value']) =>
+    render(
+      <CalendarViewModeContext.Provider value={value}>
+        <SingleEpisodeCard
+          ep={ep()}
+          backdropSrc={undefined}
+          onMarkWatched={vi.fn()}
+          onRateSeries={vi.fn()}
+        />
+      </CalendarViewModeContext.Provider>
+    );
+
+  it('bleibt im eigenen Kalender unsichtbar', () => {
+    const { container } = renderCard({ readOnly: false });
+    expect(container.querySelector('.cal-ep-add')).toBeNull();
+  });
+
+  it('holt die Serie in die eigene Liste, ohne die Karte zu oeffnen', () => {
+    const slot = addToList();
+    const { container } = renderCard({ readOnly: true, addToList: slot });
+    const btn = container.querySelector('button.cal-ep-add--inline') as HTMLElement;
+    fireEvent.click(btn);
+    expect(slot.add).toHaveBeenCalledWith(42, 'Severance');
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('zeigt statt des Knopfes einen Haken, wenn die Serie schon drin ist', () => {
+    const slot = addToList({ inList: true });
+    const { container } = renderCard({ readOnly: true, addToList: slot });
+    expect(container.querySelector('button.cal-ep-add')).toBeNull();
+    expect(container.querySelector('.cal-ep-add.is-in-list')).not.toBeNull();
+  });
+
+  it('sperrt den Knopf, solange das Hinzufuegen laeuft', () => {
+    const slot = addToList({ adding: true });
+    const { container } = renderCard({ readOnly: true, addToList: slot });
+    const btn = container.querySelector('button.cal-ep-add--inline') as HTMLElement;
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    fireEvent.click(btn);
+    expect(slot.add).not.toHaveBeenCalled();
+  });
+});
+
+describe('Fremder Kalender zeigt Fortschritt ohne Schaltflaechen', () => {
+  const readOnly = (over: Partial<WeeklyEpisode> = {}) =>
+    render(
+      <CalendarViewModeContext.Provider value={{ readOnly: true }}>
+        <SingleEpisodeCard
+          ep={ep(over)}
+          backdropSrc={undefined}
+          onMarkWatched={vi.fn()}
+          onRateSeries={vi.fn()}
+        />
+      </CalendarViewModeContext.Provider>
+    );
+
+  it('zeigt „offen" als Ecke am Poster statt als Knopf', () => {
+    const { container } = readOnly();
+    expect(container.querySelector('button.cal-ep-mark')).toBeNull();
+    expect(container.querySelector('button.cal-ep-mark-overlay')).toBeNull();
+    expect(container.querySelector('.cal-ep-poster-status.is-open')).not.toBeNull();
+    expect(container.querySelector('.cal-ep-mark-overlay.is-static')).not.toBeNull();
+  });
+
+  it('zeigt den Haken, wenn der Freund die Folge gesehen hat', () => {
+    const { container } = readOnly({ watched: true });
+    expect(container.querySelector('.cal-ep-poster-status.is-watched')).not.toBeNull();
+    expect(container.querySelector('.cal-ep-poster-status.is-open')).toBeNull();
+  });
+
+  it('zeigt die Bewertung des Freundes als reine Anzeige', () => {
+    const { container } = readOnly({ userRating: 8.5 });
+    expect(container.querySelector('button.cal-ep-rate')).toBeNull();
+    const chip = container.querySelector('.cal-ep-rate.is-static') as HTMLElement;
+    expect(chip.textContent).toContain('8.5');
   });
 });

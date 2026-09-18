@@ -1,8 +1,8 @@
 /**
- * „Auch hinzufügen" auf dem Freundesprofil: der Titel, den der Freund bewertet
- * hat, landet über denselben /add-Pfad wie Suche und Discover in der eigenen
- * Liste. `inList` kommt aus den eigenen Kontexten, damit die Karten sofort den
- * Haken zeigen, sobald der RTDB-Listener den neuen Eintrag liefert.
+ * „Auch hinzufügen": ein Titel aus fremden Ansichten (Freundesprofil,
+ * Freundes-Kalender) landet über denselben /add-Pfad wie Suche und Discover in
+ * der eigenen Liste. `inList` kommt aus den eigenen Kontexten, damit die Karten
+ * den Haken zeigen, sobald der RTDB-Listener den neuen Eintrag liefert.
  */
 import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,13 +12,18 @@ import { showToast } from '../../lib/interaction/toast';
 import { backendFetch } from '../../services/api/backendApi';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
-import type { FriendItem } from './useFriendProfileData';
 
 export type FriendAddType = 'series' | 'movie';
 
+/** Mehr als Kennung und Titel braucht das Hinzufügen nicht. */
+export interface AddableTitle {
+  id: number;
+  title: string;
+}
+
 export const friendAddKey = (type: FriendAddType, id: number) => `${type}-${id}`;
 
-export const useFriendAddToList = () => {
+export const useFriendAddToList = (source = 'friend_profile') => {
   const { user } = useAuth() || {};
   const { allSeriesList, refetchAfterAdd } = useSeriesList();
   const { movieList } = useMovieList();
@@ -38,7 +43,7 @@ export const useFriendAddToList = () => {
   );
 
   const addToOwnList = useCallback(
-    async (item: FriendItem, type: FriendAddType) => {
+    async (item: AddableTitle, type: FriendAddType) => {
       if (!user) {
         showToast(t('Bitte einloggen, um Inhalte hinzuzufügen'), 2500, 'info');
         return;
@@ -56,23 +61,23 @@ export const useFriendAddToList = () => {
 
         if (type === 'series') {
           void refetchAfterAdd(item.id);
-          trackSeriesAdded(String(item.id), item.title, 'friend_profile');
+          trackSeriesAdded(String(item.id), item.title, source);
           const { logSeriesAdded } = await import('../../features/badges/minimalActivityLogger');
           await logSeriesAdded(user.uid, item.title, item.id);
         } else {
-          trackMovieAdded(String(item.id), item.title, 'friend_profile');
+          trackMovieAdded(String(item.id), item.title, source);
           const { logMovieAdded } = await import('../../features/badges/minimalActivityLogger');
           await logMovieAdded(user.uid, item.title, item.id);
         }
         showToast(t('„{title}" hinzugefügt', { title: item.title }), 2500, 'success');
       } catch (error) {
-        console.error('Add from friend profile failed:', error);
+        console.error('Add to own list failed:', error);
         showToast(t('Hinzufügen fehlgeschlagen'), 2500, 'error');
       } finally {
         setAddingKey(null);
       }
     },
-    [user, addingKey, isInOwnList, refetchAfterAdd]
+    [user, addingKey, isInOwnList, refetchAfterAdd, source]
   );
 
   return { addingKey, isInOwnList, addToOwnList };

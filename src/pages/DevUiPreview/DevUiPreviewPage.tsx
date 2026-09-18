@@ -11,6 +11,7 @@ import {
   CatchUpPreview,
   DropOffPreview,
   FriendAddCardPreview,
+  FriendCalendarAddPreview,
   UnhideProviderPreview,
 } from './NewFeaturePreviews';
 
@@ -121,6 +122,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'dropoff', label: 'Aussteiger-Radar', render: () => <DropOffPreview /> },
   { id: 'unhide', label: 'Wieder einblenden', render: () => <UnhideProviderPreview /> },
   { id: 'friendadd', label: 'Freundesprofil-Karten', render: () => <FriendAddCardPreview /> },
+  {
+    id: 'calendaradd',
+    label: 'Freundes-Kalender: hinzufügen',
+    render: () => <FriendCalendarAddPreview />,
+  },
 ];
 
 export const DevUiPreviewPage = () => {

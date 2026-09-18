@@ -14,6 +14,7 @@ import { CalendarFriendBar } from './CalendarFriendBar';
 import { CalendarViewModeContext } from './calendarViewMode';
 import { PosterNavSheet } from '../../components/ui/overlay/PosterNavSheet';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { friendAddKey, useFriendAddToList } from '../../hooks/social/useFriendAddToList';
 import './CalendarPage.css';
 
 export const CalendarPage = () => {
@@ -60,13 +61,25 @@ export const CalendarPage = () => {
     episodePath: '',
   });
 
+  const { addingKey, isInOwnList, addToOwnList } = useFriendAddToList('friend_calendar');
+
   const viewMode = useMemo(
     () => ({
       readOnly: viewedFriendUid !== null,
       onEpisodeNav: (seriesId: number, title: string, episodePath: string) =>
         setPosterNav({ open: true, seriesId, title, episodePath }),
+      // Nur im fremden Kalender: der eigene braucht nichts hinzuzufuegen.
+      addToList:
+        viewedFriendUid !== null
+          ? {
+              inList: (seriesId: number) => isInOwnList('series', seriesId),
+              adding: (seriesId: number) => addingKey === friendAddKey('series', seriesId),
+              add: (seriesId: number, title: string) =>
+                void addToOwnList({ id: seriesId, title }, 'series'),
+            }
+          : undefined,
     }),
-    [viewedFriendUid]
+    [viewedFriendUid, addingKey, isInOwnList, addToOwnList]
   );
 
   return (

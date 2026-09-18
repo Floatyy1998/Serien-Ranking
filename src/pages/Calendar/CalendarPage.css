@@ -312,12 +312,12 @@
   opacity: 1;
 }
 
-.cal-ep .cal-ep-rate:hover {
+.cal-ep .cal-ep-rate:hover:not(.is-static) {
   opacity: 1;
   transform: scale(1.08);
 }
 
-.cal-ep .cal-ep-rate:active {
+.cal-ep .cal-ep-rate:active:not(.is-static) {
   transform: scale(0.94);
 }
 
@@ -417,6 +417,7 @@
 .cal-ep-premiere-overlay,
 .cal-ep-status-overlay,
 .cal-ep-mark-overlay,
+.cal-ep-poster-topright,
 .cal-ep-poster-info {
   display: none;
 }
@@ -464,6 +465,25 @@
 .cal-ep-poster-mobile-wrap {
   position: relative;
   flex-shrink: 0;
+}
+
+/* Fortschritt des Freundes auf der Poster-Ecke — gegenueber dem Provider-Logo. */
+.cal-ep-poster-status {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.cal-ep-poster-status.is-open {
+  border: 2px solid;
+  background: rgba(10, 14, 26, 0.55);
 }
 
 .cal-ep-provider-badge-mobile {
@@ -545,6 +565,16 @@
 
 .cal-ep-mark:active {
   transform: scale(0.85);
+}
+
+/* Reine Anzeigen erben sonst den Zeigefinger der anklickbaren Karte. */
+.cal-ep-mark.is-static,
+.cal-ep-mark-overlay.is-static,
+.cal-ep-rate.is-static,
+.cal-ep-status,
+.cal-ep-status-overlay {
+  cursor: default;
+  transform: none;
 }
 
 /* Optisch klein (34/24px), aber ≥44px Tap-Fläche via transparentem Slop. */
@@ -629,7 +659,85 @@
 .cal-ep-mobile-status {
   display: flex;
   align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+/* „Zur Liste hinzufuegen" — nur im fremden Kalender. Mobile: runder Knopf an
+   der Stelle, an der im eigenen Kalender der Haken sitzt. */
+.cal-ep-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.25s var(--ease-default);
+}
+
+.cal-ep-add.is-in-list {
+  cursor: default;
+}
+
+.cal-ep-add.is-busy {
+  cursor: wait;
+}
+
+.cal-ep-add.is-busy .cal-ep-add__icon {
+  animation: cal-add-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cal-add-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+}
+
+.cal-ep-add__icon {
+  font-size: 18px !important;
+}
+
+.cal-ep-add:focus-visible {
+  outline: 2px solid var(--theme-primary, #ef6f8a);
+  outline-offset: 2px;
+}
+
+/* Mobile-Variante: 34px-Kreis wie der Haken, Beschriftung traegt aria-label. */
+.cal-ep-add--inline {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  max-width: 34px;
+  max-height: 34px;
+  border-radius: 50%;
+}
+
+.cal-ep-add--inline .cal-ep-add__label {
+  display: none;
+}
+
+.cal-ep-add--inline::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+}
+
+button.cal-ep-add--inline:active {
+  transform: scale(0.85);
 }
 
 /* Expand button area (mobile groups) */
@@ -959,7 +1067,7 @@
     font-size: 15px;
   }
 
-  .cal-ep .cal-ep-rate--poster:hover {
+  .cal-ep .cal-ep-rate--poster:hover:not(.is-static) {
     background: rgba(10, 14, 26, 0.9);
   }
 
@@ -1005,17 +1113,72 @@
   }
 
   /* Watch status overlay — top right */
-  .cal-ep-status-overlay {
+  /* Ecke oben rechts: Haken/Markieren und der Hinzufuegen-Knopf untereinander,
+     rechtsbuendig — so kann die Pille nach links aufklappen. */
+  .cal-ep-poster-topright {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
     position: absolute;
     top: 6px;
     right: 6px;
     z-index: 3;
+  }
+
+  .cal-ep-status-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 3;
     width: 34px;
     height: 34px;
     border-radius: 50%;
+  }
+
+  /* Desktop-Variante: eingeklappt ein 34px-Kreis, beim Ueberfahren der Karte
+     waechst die Beschriftung nach links heraus. */
+  .cal-ep-add--inline {
+    display: none;
+  }
+
+  .cal-ep-add--overlay {
+    height: 34px;
+    max-height: 34px;
+    /* Gegen die globale 44px-Regel fuer Buttons in .mobile-app. */
+    min-width: 34px !important;
+    min-height: 34px !important;
+    padding: 0 8px;
+    border-radius: 17px;
+    background: rgba(10, 14, 26, 0.55);
+    -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
+    white-space: nowrap;
+  }
+
+  button.cal-ep-add--overlay:hover {
+    background: rgba(10, 14, 26, 0.75);
+  }
+
+  .cal-ep-add--overlay .cal-ep-add__label {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 600;
+    transition:
+      max-width 0.28s var(--ease-default),
+      margin-left 0.28s var(--ease-default),
+      opacity 0.18s var(--ease-default);
+  }
+
+  .cal-ep:hover .cal-ep-add--overlay .cal-ep-add__label,
+  .cal-ep-add--overlay:focus-visible .cal-ep-add__label {
+    max-width: 160px;
+    margin-left: 6px;
+    opacity: 1;
   }
 
   .cal-ep-status-overlay svg {
@@ -1027,9 +1190,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 6px;
-    right: 6px;
+    position: relative;
     z-index: 3;
     width: 34px;
     height: 34px;
@@ -1051,7 +1212,7 @@
     transition: all 0.3s var(--ease-default);
   }
 
-  .cal-ep-mark-overlay:hover {
+  .cal-ep-mark-overlay:hover:not(.is-static) {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
   }

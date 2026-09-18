@@ -38,7 +38,7 @@ import {
   calculateProgress,
   useFriendProfileData,
 } from './useFriendProfileData';
-import { friendAddKey, useFriendAddToList } from './useFriendAddToList';
+import { friendAddKey, useFriendAddToList } from '../../hooks/social/useFriendAddToList';
 import { useFriendCurrentlyWatching } from './useFriendCurrentlyWatching';
 import { useFriendAnticipation } from './useFriendAnticipation';
 import { useFriendPet } from './useFriendPet';

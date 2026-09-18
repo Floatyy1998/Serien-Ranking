@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore, Star, StarBorder } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { FriendRatingsTooltip } from '../../components/social/FriendRatingsTooltip';
+import { AddToListButton } from './AddToListButton';
 import { useCalendarViewMode } from './calendarViewMode';
 import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/watch/useWeeklyEpisodes';
@@ -238,6 +239,23 @@ const RatingBadge = memo(
     // Unbewertet im fremden Kalender ist keine Information wert.
     if (readOnly && !rated) return null;
 
+    // Fremder Kalender: nur Anzeige — ein Knopf, der nichts tut, waere irrefuehrend.
+    if (readOnly) {
+      return (
+        <FriendRatingsTooltip itemId={seriesId} mediaType="series">
+          <span
+            className={`cal-ep-rate cal-ep-rate--${variant} is-rated is-static`}
+            role="img"
+            aria-label={label}
+            style={{ color }}
+          >
+            <Star className="cal-ep-rate__icon" />
+            {rating.toFixed(1)}
+          </span>
+        </FriendRatingsTooltip>
+      );
+    }
+
     return (
       <FriendRatingsTooltip itemId={seriesId} mediaType="series">
         <button
@@ -292,8 +310,19 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
     );
   }
 
-  // Fremder Kalender: offene Folgen bleiben einfach offen.
-  if (readOnly) return null;
+  // Fremder Kalender: der Ring bleibt stehen, nur ohne Funktion — sonst waere
+  // „noch nicht gesehen" von „keine Angabe" nicht zu unterscheiden. Klein, weil
+  // er kein Tippziel ist und der Titel den Platz braucht.
+  if (readOnly) {
+    return (
+      <div
+        className="cal-ep-mark is-static small"
+        role="img"
+        aria-label={t('Nicht gesehen')}
+        style={{ borderColor: `${currentTheme.text.muted}40` }}
+      />
+    );
+  }
 
   return (
     <button
@@ -317,6 +346,8 @@ interface PosterWrapProps {
   breakType?: WeeklyEpisode['breakType'];
   watched: boolean;
   onMark?: () => void;
+  /** Fremder Kalender: leerer Ring statt Knopf, damit „offen" sichtbar bleibt. */
+  openRing?: boolean;
   provider?: WeeklyEpisodeProvider;
   searchTitle: string;
   seriesId: number;
@@ -332,6 +363,7 @@ const PosterWrap = memo(
     breakType,
     watched,
     onMark,
+    openRing,
     provider,
     searchTitle,
     seriesId,
@@ -367,30 +399,43 @@ const PosterWrap = memo(
           <RatingBadge seriesId={seriesId} rating={rating} variant="poster" onRate={onRate} />
         </div>
 
-        {watched ? (
-          <div
-            className="cal-ep-status-overlay"
-            role="img"
-            aria-label={t('Gesehen')}
-            style={{
-              background: `${currentTheme.status.success}cc`,
-              color: currentTheme.text.secondary,
-            }}
-          >
-            <Check style={{ fontSize: '15px' }} />
-          </div>
-        ) : onMark ? (
-          <button
-            type="button"
-            aria-label={t('Als gesehen markieren')}
-            className="cal-ep-mark-overlay"
-            onClick={(e) => {
-              e.stopPropagation();
-              onMark();
-            }}
-            style={{ borderColor: `${currentTheme.text.muted}80` }}
-          />
-        ) : null}
+        {/* Ecke oben rechts: Haken/Markieren und — im fremden Kalender — der
+            Knopf fuer die eigene Liste teilen sich eine Spalte. */}
+        <div className="cal-ep-poster-topright">
+          {watched ? (
+            <div
+              className="cal-ep-status-overlay"
+              role="img"
+              aria-label={t('Gesehen')}
+              style={{
+                background: `${currentTheme.status.success}cc`,
+                color: currentTheme.text.secondary,
+              }}
+            >
+              <Check style={{ fontSize: '15px' }} />
+            </div>
+          ) : onMark ? (
+            <button
+              type="button"
+              aria-label={t('Als gesehen markieren')}
+              className="cal-ep-mark-overlay"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMark();
+              }}
+              style={{ borderColor: `${currentTheme.text.muted}80` }}
+            />
+          ) : openRing ? (
+            <div
+              className="cal-ep-mark-overlay is-static"
+              role="img"
+              aria-label={t('Nicht gesehen')}
+              style={{ borderColor: `${currentTheme.text.muted}80` }}
+            />
+          ) : null}
+
+          <AddToListButton seriesId={seriesId} title={searchTitle} variant="overlay" />
+        </div>
 
         <div className={`cal-ep-poster-info${provider ? ' has-provider' : ''}`}>
           {children}
@@ -414,28 +459,52 @@ const MobilePoster = memo(
     src,
     provider,
     searchTitle,
+    status,
   }: {
     src: string;
     provider?: WeeklyEpisodeProvider;
     searchTitle: string;
-  }) => (
-    <div className="cal-ep-poster-mobile-wrap">
-      <img
-        src={src}
-        alt=""
-        decoding="async"
-        className="cal-ep-poster cal-ep-poster-mobile"
-        loading="lazy"
-      />
-      {provider && (
-        <ProviderBadge
-          provider={provider}
-          className="cal-ep-provider-badge-mobile"
-          searchTitle={searchTitle}
+    /** Fremder Kalender: sein Fortschritt sitzt auf dem Poster statt in der
+        rechten Spalte — die braucht der Titel. */
+    status?: 'watched' | 'open';
+  }) => {
+    const { currentTheme } = useTheme();
+    return (
+      <div className="cal-ep-poster-mobile-wrap">
+        <img
+          src={src}
+          alt=""
+          decoding="async"
+          className="cal-ep-poster cal-ep-poster-mobile"
+          loading="lazy"
         />
-      )}
-    </div>
-  )
+        {status && (
+          <span
+            className={`cal-ep-poster-status is-${status}`}
+            role="img"
+            aria-label={status === 'watched' ? t('Gesehen') : t('Nicht gesehen')}
+            style={
+              status === 'watched'
+                ? {
+                    background: currentTheme.status.success,
+                    color: getOptimalTextColor(currentTheme.status.success),
+                  }
+                : { borderColor: `${currentTheme.text.muted}80` }
+            }
+          >
+            {status === 'watched' && <Check style={{ fontSize: '13px' }} />}
+          </span>
+        )}
+        {provider && (
+          <ProviderBadge
+            provider={provider}
+            className="cal-ep-provider-badge-mobile"
+            searchTitle={searchTitle}
+          />
+        )}
+      </div>
+    );
+  }
 );
 MobilePoster.displayName = 'MobilePoster';
 
@@ -449,7 +518,7 @@ interface SingleEpisodeCardProps {
 export const SingleEpisodeCard = memo(
   ({ ep, backdropSrc, onMarkWatched, onRateSeries }: SingleEpisodeCardProps) => {
     const navigate = useNavigate();
-    const { onEpisodeNav } = useCalendarViewMode();
+    const { onEpisodeNav, readOnly } = useCalendarViewMode();
     const { currentTheme } = useTheme();
     const { brandColor, hasNoActiveSub, displayProvider } = useProviderColoring(
       ep.seriesId,
@@ -495,7 +564,8 @@ export const SingleEpisodeCard = memo(
           premiereType={ep.premiereType}
           breakType={ep.breakType}
           watched={ep.watched}
-          onMark={!ep.watched ? handleMark : undefined}
+          onMark={!ep.watched && !readOnly ? handleMark : undefined}
+          openRing={readOnly && !ep.watched}
           provider={provider}
           searchTitle={ep.seriesTitle}
           seriesId={ep.seriesId}
@@ -547,7 +617,12 @@ export const SingleEpisodeCard = memo(
         </PosterWrap>
 
         {/* Mobile: poster + info */}
-        <MobilePoster src={ep.poster} provider={provider} searchTitle={ep.seriesTitle} />
+        <MobilePoster
+          src={ep.poster}
+          provider={provider}
+          searchTitle={ep.seriesTitle}
+          status={readOnly ? (ep.watched ? 'watched' : 'open') : undefined}
+        />
         <div className="cal-ep-info cal-ep-info-mobile">
           <span className="cal-ep-title-row">
             <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
@@ -607,7 +682,8 @@ export const SingleEpisodeCard = memo(
 
         {/* Mobile: watch status */}
         <div className="cal-ep-mobile-status">
-          <WatchIndicator watched={ep.watched} onMark={handleMark} />
+          {!readOnly && <WatchIndicator watched={ep.watched} onMark={handleMark} />}
+          <AddToListButton seriesId={ep.seriesId} title={ep.seriesTitle} variant="inline" />
         </div>
       </div>
     );
@@ -634,7 +710,7 @@ export const EpisodeGroupCard = memo(
     onRateSeries,
   }: EpisodeGroupCardProps) => {
     const navigate = useNavigate();
-    const { onEpisodeNav } = useCalendarViewMode();
+    const { onEpisodeNav, readOnly } = useCalendarViewMode();
     const { currentTheme } = useTheme();
 
     const firstEp = group.episodes[0];
@@ -720,7 +796,12 @@ export const EpisodeGroupCard = memo(
           </PosterWrap>
 
           {/* Mobile: poster + info */}
-          <MobilePoster src={firstEp.poster} provider={provider} searchTitle={group.seriesTitle} />
+          <MobilePoster
+            src={firstEp.poster}
+            provider={provider}
+            searchTitle={group.seriesTitle}
+            status={readOnly && allWatched ? 'watched' : undefined}
+          />
           <div className="cal-ep-info cal-ep-info-mobile">
             <span className="cal-ep-title-row">
               <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
@@ -774,7 +855,7 @@ export const EpisodeGroupCard = memo(
 
           {/* Mobile: expand toggle */}
           <div className="cal-ep-expand-mobile">
-            {allWatched && (
+            {allWatched && !readOnly && (
               <div
                 className="cal-ep-status"
                 role="img"
@@ -787,6 +868,7 @@ export const EpisodeGroupCard = memo(
                 <Check style={{ fontSize: '16px' }} />
               </div>
             )}
+            <AddToListButton seriesId={group.seriesId} title={group.seriesTitle} variant="inline" />
             <ExpandMore
               className={`cal-ep-expand-icon ${isExpanded ? 'is-open' : ''}`}
               style={{

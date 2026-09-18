@@ -12,7 +12,11 @@ import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 import type { DropOffInsight } from '../../lib/watch/dropOff';
+import { SingleEpisodeCard, EpisodeGroupCard } from '../Calendar/EpisodeCard';
+import { CalendarViewModeContext } from '../Calendar/calendarViewMode';
+import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
 import '../Countdown/CountdownPage.css';
+import '../Calendar/CalendarPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const inDays = (days: number) => new Date(Date.now() + days * DAY_MS);
@@ -283,3 +287,83 @@ export const FriendAddCardPreview = () => {
     </div>
   );
 };
+
+const folge = (over: Partial<WeeklyEpisode> = {}): WeeklyEpisode => ({
+  seriesId: 95396,
+  seriesTitle: 'Severance',
+  poster: PLACEHOLDER_SVG,
+  seasonNumber: 2,
+  episodeNumber: 7,
+  episodeName: 'Chikhai Bardo',
+  airDate: '2026-09-18',
+  watched: false,
+  seasonIndex: 1,
+  episodeIndex: 6,
+  runtime: 48,
+  providerNames: [],
+  providers: [],
+  userRating: 0,
+  ...over,
+});
+
+const addSlot = (zustand: 'frei' | 'laeuft' | 'drin') => ({
+  inList: () => zustand === 'drin',
+  adding: () => zustand === 'laeuft',
+  add: () => {},
+});
+
+/** Fremder Kalender: der Knopf, der eine Serie in die eigene Liste holt. */
+export const FriendCalendarAddPreview = () => (
+  <div style={{ padding: 16 }}>
+    {(['frei', 'laeuft', 'drin'] as const).map((zustand) => (
+      <Case
+        key={zustand}
+        label={
+          zustand === 'frei'
+            ? 'Noch nicht in meiner Liste'
+            : zustand === 'laeuft'
+              ? 'Wird hinzugefügt'
+              : 'Schon in meiner Liste'
+        }
+      >
+        <CalendarViewModeContext.Provider value={{ readOnly: true, addToList: addSlot(zustand) }}>
+          <div className="cal-day-episodes" style={{ display: 'grid', gap: 10, maxWidth: 300 }}>
+            <SingleEpisodeCard
+              ep={folge({ userRating: 8.4 })}
+              backdropSrc={undefined}
+              onMarkWatched={() => {}}
+              onRateSeries={() => {}}
+            />
+            <SingleEpisodeCard
+              ep={folge({ watched: true, episodeNumber: 6, episodeName: 'Attila' })}
+              backdropSrc={undefined}
+              onMarkWatched={() => {}}
+              onRateSeries={() => {}}
+            />
+            <EpisodeGroupCard
+              group={{
+                seriesId: 1396,
+                seriesTitle: 'Breaking Bad',
+                episodes: [
+                  folge({ seriesId: 1396, seriesTitle: 'Breaking Bad', episodeNumber: 3 }),
+                  folge({
+                    seriesId: 1396,
+                    seriesTitle: 'Breaking Bad',
+                    episodeNumber: 4,
+                    episodeIndex: 3,
+                    watched: true,
+                  }),
+                ],
+              }}
+              backdropSrc={undefined}
+              isExpanded={false}
+              onToggle={() => {}}
+              onMarkWatched={() => {}}
+              onRateSeries={() => {}}
+            />
+          </div>
+        </CalendarViewModeContext.Provider>
+      </Case>
+    ))}
+  </div>
+);
