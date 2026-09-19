@@ -11,6 +11,7 @@ import { UserAvatar } from '../ui/media/UserAvatar';
 import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useCommentTranslation } from '../../hooks/social/useCommentTranslation';
 import { TranslateButton } from './TranslateButton';
 
@@ -246,7 +247,7 @@ const ReplyItemInner: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.primary,
-                    color: currentTheme.text.primary,
+                    color: getOptimalTextColor(currentTheme.primary),
                     cursor: 'pointer',
                     fontSize: '13px',
                   }}

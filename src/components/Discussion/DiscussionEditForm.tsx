@@ -2,6 +2,7 @@ import { Warning } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface DiscussionEditFormProps {
   editTitle: string;
@@ -135,7 +136,9 @@ export const DiscussionEditForm: React.FC<DiscussionEditFormProps> = ({
               borderRadius: '8px',
               border: 'none',
               background: editTitle.trim() ? currentTheme.primary : currentTheme.background.surface,
-              color: editTitle.trim() ? currentTheme.text.primary : currentTheme.text.muted,
+              color: editTitle.trim()
+                ? getOptimalTextColor(currentTheme.primary)
+                : currentTheme.text.muted,
               cursor: editTitle.trim() ? 'pointer' : 'default',
               fontSize: '14px',
               fontWeight: 600,

@@ -12,6 +12,7 @@ import type { DiscussionThreadProps } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { isSpoilerRevealed, markSpoilerRevealed } from '../../services/discussion/spoilerReveals';
 import { t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale } from '../../lib/motion';
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
@@ -275,7 +276,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               borderRadius: '12px',
               border: 'none',
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
-              color: currentTheme.text.secondary,
+              color: getOptimalTextColor(currentTheme.primary),
               cursor: 'pointer',
               fontSize: '15px',
               fontWeight: 700,

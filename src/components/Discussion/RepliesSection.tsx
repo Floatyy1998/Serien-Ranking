@@ -19,6 +19,7 @@ import { useDiscussionReplies } from '../../hooks/social/useDiscussions';
 import { useModerationBan } from '../../hooks/social/useModerationBan';
 import { ADMIN_UID } from '../../config/admin';
 import { t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { ReplyItem } from './ReplyItem';
 
 export const RepliesSection: React.FC<{
@@ -342,7 +343,7 @@ export const RepliesSection: React.FC<{
                           : currentTheme.background.surface,
                       color:
                         newReply.trim() || replyImages.length > 0
-                          ? currentTheme.text.primary
+                          ? getOptimalTextColor(currentTheme.primary)
                           : currentTheme.text.muted,
                       cursor: newReply.trim() || replyImages.length > 0 ? 'pointer' : 'default',
                       display: 'flex',

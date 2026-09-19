@@ -1,6 +1,7 @@
 import Group from '@mui/icons-material/Group';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import type { Friend } from '../../types/Friend';
 import type { RecommendationMediaType } from '../../types/Recommendation';
@@ -95,7 +96,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
                 padding: '5px 12px',
                 borderRadius: 999,
                 background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                color: currentTheme.text.secondary,
+                color: getOptimalTextColor(currentTheme.primary),
                 boxShadow: `0 6px 16px -6px ${currentTheme.primary}99`,
                 letterSpacing: '0.02em',
               }}

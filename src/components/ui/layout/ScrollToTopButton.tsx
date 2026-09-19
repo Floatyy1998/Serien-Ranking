@@ -2,6 +2,7 @@ import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { tapScaleTight } from '../../../lib/motion';
 
 interface ScrollToTopButtonProps {
@@ -90,7 +91,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
             boxShadow: `0 4px 16px ${currentTheme.primary}60, 0 0 20px ${currentTheme.accent || currentTheme.primary}20`,
             backdropFilter: 'var(--blur-md)',
             WebkitBackdropFilter: 'var(--blur-md)',
-            color: currentTheme.text.secondary,
+            color: getOptimalTextColor(currentTheme.primary),
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale } from '../../lib/motion';
@@ -65,7 +66,7 @@ export const PetSelector = memo(function PetSelector({
           className="pet-selector-add-btn"
           style={{
             background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-            color: currentTheme.text.secondary,
+            color: getOptimalTextColor(currentTheme.primary),
             boxShadow: `0 4px 15px ${currentTheme.primary}40`,
           }}
         >

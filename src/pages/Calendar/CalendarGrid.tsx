@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState, forwardRef } from 'react';
 import { Check } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { hapticTap } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
@@ -122,7 +123,10 @@ const DayCell = memo(
               className={`cal-day-number ${isToday ? 'is-today' : ''}`}
               style={
                 isToday
-                  ? { background: currentTheme.primary, color: currentTheme.text.secondary }
+                  ? {
+                      background: currentTheme.primary,
+                      color: getOptimalTextColor(currentTheme.primary),
+                    }
                   : { color: currentTheme.text.primary }
               }
             >

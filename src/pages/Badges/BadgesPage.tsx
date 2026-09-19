@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
 import { badgeCounterService } from '../../features/badges/badgeCounterService';
@@ -186,7 +187,7 @@ export const BadgesPage = () => {
               disabled={loading}
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                color: currentTheme.text.secondary,
+                color: getOptimalTextColor(currentTheme.primary),
                 border: 'none',
                 borderRadius: '12px',
                 padding: '10px 16px',

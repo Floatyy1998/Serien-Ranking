@@ -615,7 +615,7 @@ export const SeriesDetailPage = memo(() => {
               background: `linear-gradient(135deg, ${currentTheme.primary}cc 0%, ${currentTheme.accent}cc 100%)`,
               border: `1px solid ${currentTheme.primary}80`,
               borderRadius: '12px',
-              color: currentTheme.text.secondary,
+              color: getOptimalTextColor(currentTheme.primary),
               fontSize: '16px',
               fontWeight: 600,
               cursor: isAdding ? 'not-allowed' : 'pointer',

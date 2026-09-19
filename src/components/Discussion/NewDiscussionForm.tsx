@@ -6,6 +6,7 @@ import { memo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale } from '../../lib/motion';
 
 const NewDiscussionFormInner: React.FC<{
@@ -385,7 +386,7 @@ const NewDiscussionFormInner: React.FC<{
                   : currentTheme.background.surface,
               color:
                 title.trim() && (content.trim() || previewImages.length > 0)
-                  ? currentTheme.text.primary
+                  ? getOptimalTextColor(currentTheme.primary)
                   : currentTheme.text.muted,
               cursor:
                 title.trim() && (content.trim() || previewImages.length > 0)
