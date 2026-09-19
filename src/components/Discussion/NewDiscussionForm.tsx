@@ -1,10 +1,8 @@
 import { AddPhotoAlternate, Close, Warning } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
 import { memo, useRef, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDiscussionImages } from '../../hooks/social/useDiscussionImages';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale } from '../../lib/motion';
@@ -23,7 +21,6 @@ const NewDiscussionFormInner: React.FC<{
   defaultRef?: { season: number; episode: number };
 }> = ({ onSubmit, onCancel, enableEpisodeRef = false, defaultRef }) => {
   const { currentTheme } = useTheme();
-  const { user } = useAuth() || {};
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSpoiler, setIsSpoiler] = useState(false);
@@ -31,40 +28,15 @@ const NewDiscussionFormInner: React.FC<{
   const [refSeason, setRefSeason] = useState(defaultRef?.season || 1);
   const [refEpisode, setRefEpisode] = useState(defaultRef?.episode || 1);
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const {
+    images: previewImages,
+    uploading: uploadingImage,
+    handleFileSelect,
+    handlePaste,
+    removeImage,
+    reset: resetImages,
+  } = useDiscussionImages();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = async (file: File) => {
-    if (!user?.uid || uploadingImage) return;
-
-    setUploadingImage(true);
-    try {
-      const timestamp = Date.now();
-      const storageRef = firebase
-        .storage()
-        .ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
-      await storageRef.put(file);
-      const downloadURL = await storageRef.getDownloadURL();
-      setPreviewImages((prev) => [...prev, downloadURL]);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-    e.target.value = '';
-  };
-
-  const removeImage = (imageUrl: string) => {
-    setPreviewImages((prev) => prev.filter((img) => img !== imageUrl));
-  };
 
   const handleSubmit = async () => {
     if (!title.trim() || (!content.trim() && previewImages.length === 0) || submitting) return;
@@ -84,7 +56,7 @@ const NewDiscussionFormInner: React.FC<{
       setContent('');
       setIsSpoiler(false);
       setRefActive(false);
-      setPreviewImages([]);
+      resetImages();
       onCancel();
     }
     setSubmitting(false);
@@ -199,6 +171,7 @@ const NewDiscussionFormInner: React.FC<{
           }
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onPaste={handlePaste}
           rows={previewImages.length > 0 ? 2 : 4}
           style={{
             width: '100%',

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAX_IMAGE_BYTES, prepareChatImage } from './imageCompress';
+import { MAX_IMAGE_BYTES, prepareImageForUpload } from './imageCompress';
 
 /**
  * jsdom hat weder Canvas noch createImageBitmap — beides wird ersetzt, damit
@@ -56,17 +56,17 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('prepareChatImage', () => {
+describe('prepareImageForUpload', () => {
   it('weist Nicht-Bilder und zu große Dateien ab', async () => {
-    await expect(prepareChatImage(makeFile(1000, 'application/pdf'))).rejects.toThrow(
+    await expect(prepareImageForUpload(makeFile(1000, 'application/pdf'))).rejects.toThrow(
       'not-an-image'
     );
-    await expect(prepareChatImage(makeFile(MAX_IMAGE_BYTES + 1))).rejects.toThrow('too-large');
+    await expect(prepareImageForUpload(makeFile(MAX_IMAGE_BYTES + 1))).rejects.toThrow('too-large');
   });
 
   it('lässt GIFs unangetastet, damit die Animation bleibt', async () => {
     const file = makeFile(500 * 1024, 'image/gif');
-    const result = await prepareChatImage(file);
+    const result = await prepareImageForUpload(file);
 
     expect(result.blob).toBe(file);
     expect(result.isGif).toBe(true);
@@ -76,7 +76,7 @@ describe('prepareChatImage', () => {
 
   it('sendet kleine Bilder unverändert — kein Neucodieren, keine Matschschrift', async () => {
     const file = makeFile(400 * 1024);
-    const result = await prepareChatImage(file);
+    const result = await prepareImageForUpload(file);
 
     expect(result.blob).toBe(file);
     expect(result.contentType).toBe('image/png');
@@ -88,7 +88,7 @@ describe('prepareChatImage', () => {
     natural = { width: 4000, height: 3000 };
     encodedSizes = [300 * 1024];
 
-    const result = await prepareChatImage(makeFile(5 * 1024 * 1024, 'image/jpeg'));
+    const result = await prepareImageForUpload(makeFile(5 * 1024 * 1024, 'image/jpeg'));
 
     expect(result).toMatchObject({ width: 2560, height: 1920, contentType: 'image/webp' });
     expect(encodeCalls).toEqual([0.94]); // erste Stufe reicht
@@ -98,7 +98,7 @@ describe('prepareChatImage', () => {
     natural = { width: 4000, height: 3000 };
     encodedSizes = [4 * 1024 * 1024, 900 * 1024];
 
-    await prepareChatImage(makeFile(6 * 1024 * 1024, 'image/jpeg'));
+    await prepareImageForUpload(makeFile(6 * 1024 * 1024, 'image/jpeg'));
 
     expect(encodeCalls).toEqual([0.94, 0.88]);
   });
@@ -109,7 +109,7 @@ describe('prepareChatImage', () => {
     const file = makeFile(1000 * 1024);
     encodedSizes = [1200 * 1024, 1100 * 1024, 1050 * 1024];
 
-    const result = await prepareChatImage(file);
+    const result = await prepareImageForUpload(file);
 
     expect(result.blob).toBe(file);
     expect(result.contentType).toBe('image/png');

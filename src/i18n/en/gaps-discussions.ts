@@ -1,5 +1,6 @@
 /** Englische Übersetzungen: Diskussionen (Fehler + Notifications). */
 const dict: Record<string, string> = {
+  'Bild konnte nicht hochgeladen werden.': 'Image could not be uploaded.',
   'Fehler beim Laden der Antworten': 'Failed to load replies',
   '{name} hat auf deine Diskussion "{title}" geantwortet':
     '{name} replied to your discussion "{title}"',

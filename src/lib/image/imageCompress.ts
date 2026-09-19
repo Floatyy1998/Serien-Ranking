@@ -1,5 +1,5 @@
 /**
- * Bild-Aufbereitung für den Chat.
+ * Bild-Aufbereitung für Uploads (Chat, Diskussionen).
  *
  * Leitgedanke: **so wenig anfassen wie möglich.** Jedes Neucodieren kostet
  * Schärfe, und seit man das Bild im Chat groß zoomen kann, sieht man das auch.
@@ -115,7 +115,7 @@ async function encodeWithinBudget(canvas: HTMLCanvasElement): Promise<Blob> {
   return last;
 }
 
-export async function prepareChatImage(file: File): Promise<PreparedImage> {
+export async function prepareImageForUpload(file: File): Promise<PreparedImage> {
   if (!file.type.startsWith('image/')) throw new Error('not-an-image');
   if (file.size > MAX_IMAGE_BYTES) throw new Error('too-large');
 

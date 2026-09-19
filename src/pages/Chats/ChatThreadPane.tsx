@@ -45,6 +45,7 @@ import {
 import { queueDismiss } from '../../services/notifications/dismissQueue';
 import { clearDeliveredChatPushes } from '../../services/notifications/pushNotifications';
 import { MAX_IMAGE_BYTES } from '../../lib/image/imageCompress';
+import { extractClipboardImage, resolveClipboardImage } from '../../services/media/clipboardImage';
 import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
@@ -308,23 +309,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     });
   }, []);
 
-  // Kopierte GIFs landen als Standbild in der Zwischenablage — die echte
-  // GIF-URL steckt im mitkopierten HTML. Erst das Original versuchen.
   const handlePastedImage = useCallback(
     async (file: File | null, gifUrl: string | null) => {
-      if (gifUrl) {
-        try {
-          const res = await fetch(gifUrl.replace(/&amp;/g, '&'));
-          const blob = await res.blob();
-          if (blob.type === 'image/gif' && blob.size <= MAX_IMAGE_BYTES) {
-            openImagePreview(new File([blob], 'clipboard.gif', { type: 'image/gif' }));
-            return;
-          }
-        } catch {
-          /* CORS o. ä. — dann eben das Standbild */
-        }
-      }
-      if (file) openImagePreview(file);
+      const resolved = await resolveClipboardImage(file, gifUrl);
+      if (resolved) openImagePreview(resolved);
     },
     [openImagePreview]
   );
@@ -767,13 +755,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             }
             onChange={(e) => handleDraftChange(e.target.value)}
             onPaste={(e) => {
-              const files = e.clipboardData?.files;
-              const html = e.clipboardData?.getData('text/html') || '';
-              const gifUrl = /<img[^>]+src="([^"]+\.gif[^"]*)"/i.exec(html)?.[1] || null;
-              const file =
-                files && files.length > 0
-                  ? Array.from(files).find((f) => f.type.startsWith('image/')) || null
-                  : null;
+              const { file, gifUrl } = extractClipboardImage(e.clipboardData);
               if (file || gifUrl) {
                 e.preventDefault();
                 void handlePastedImage(file, gifUrl);

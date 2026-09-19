@@ -1,6 +1,7 @@
 /** Französische Übersetzungen: Diskussionen (Fehler + Notifications). */
 
 const dict: Record<string, string> = {
+  'Bild konnte nicht hochgeladen werden.': "L'image n'a pas pu être envoyée.",
   'Fehler beim Laden der Antworten': 'Impossible de charger les réponses',
   'Fehler beim Erstellen der Antwort': 'Impossible de publier la réponse',
   'Fehler beim Bearbeiten der Antwort': 'Impossible de modifier la réponse',

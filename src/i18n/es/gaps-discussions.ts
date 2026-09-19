@@ -1,6 +1,7 @@
 /** Spanische Übersetzungen: Diskussionen (Fehler + Notifications). */
 
 const dict: Record<string, string> = {
+  'Bild konnte nicht hochgeladen werden.': 'No se pudo subir la imagen.',
   'Du musst eingeloggt sein um zu diskutieren': 'Tienes que iniciar sesión para participar',
   'Übersetzung fehlgeschlagen – erneut versuchen': 'No se ha podido traducir – inténtalo de nuevo',
   'Fehler beim Laden der Antworten': 'Error al cargar las respuestas',

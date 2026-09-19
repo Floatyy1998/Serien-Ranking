@@ -1,6 +1,7 @@
 /** Portugiesische Übersetzungen: Diskussionen (Fehler + Notifications). */
 
 const dict: Record<string, string> = {
+  'Bild konnte nicht hochgeladen werden.': 'Não foi possível carregar a imagem.',
   'Du musst eingeloggt sein um zu diskutieren': 'Você precisa entrar para participar',
   'Übersetzung fehlgeschlagen – erneut versuchen': 'Falha na tradução – tente de novo',
   'Fehler beim Laden der Antworten': 'Erro ao carregar as respostas',

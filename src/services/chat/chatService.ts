@@ -15,7 +15,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { ADMIN_UID } from '../../config/admin';
-import { prepareChatImage } from '../../lib/image/imageCompress';
+import { prepareImageForUpload } from '../../lib/image/imageCompress';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
 import { localizedVariants, t } from '../i18n';
 import { queuePush } from '../notifications/pushQueue';
@@ -138,7 +138,7 @@ export async function sendImageMessage(
   myName: string,
   caption = ''
 ): Promise<void> {
-  const prepared = await prepareChatImage(file);
+  const prepared = await prepareImageForUpload(file);
   const pairId = await ensureChat(myUid, friendUid);
   const msgId = dbRef(`chats/${pairId}/messages`).push().key;
   if (!msgId) return;

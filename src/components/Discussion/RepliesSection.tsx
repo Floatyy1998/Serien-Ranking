@@ -8,13 +8,12 @@ import {
   VisibilityOff,
   Warning,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionFeedMetadata } from '../../types/Discussion';
+import { useDiscussionImages } from '../../hooks/social/useDiscussionImages';
 import { useDiscussionReplies } from '../../hooks/social/useDiscussions';
 import { useModerationBan } from '../../hooks/social/useModerationBan';
 import { ADMIN_UID } from '../../config/admin';
@@ -34,9 +33,15 @@ export const RepliesSection: React.FC<{
   const ban = useModerationBan();
   const [isExpanded, setIsExpanded] = useState(false);
   const [newReply, setNewReply] = useState('');
-  const [replyImages, setReplyImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const {
+    images: replyImages,
+    uploading: uploadingImage,
+    handleFileSelect,
+    handlePaste,
+    removeImage: removeReplyImage,
+    reset: resetReplyImages,
+  } = useDiscussionImages();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -57,37 +62,6 @@ export const RepliesSection: React.FC<{
     );
   const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
 
-  const handleImageUpload = async (file: File) => {
-    if (!user?.uid || uploadingImage) return;
-
-    setUploadingImage(true);
-    try {
-      const timestamp = Date.now();
-      const storageRef = firebase
-        .storage()
-        .ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
-      await storageRef.put(file);
-      const downloadURL = await storageRef.getDownloadURL();
-      setReplyImages((prev) => [...prev, downloadURL]);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-    e.target.value = '';
-  };
-
-  const removeReplyImage = (imageUrl: string) => {
-    setReplyImages((prev) => prev.filter((img) => img !== imageUrl));
-  };
-
   const handleSubmitReply = async () => {
     if ((!newReply.trim() && replyImages.length === 0) || submitting) return;
     setSubmitting(true);
@@ -96,7 +70,7 @@ export const RepliesSection: React.FC<{
     const success = await createReply(fullContent, newReplyIsSpoiler);
     if (success) {
       setNewReply('');
-      setReplyImages([]);
+      resetReplyImages();
       setNewReplyIsSpoiler(false);
     }
     setSubmitting(false);
@@ -259,6 +233,7 @@ export const RepliesSection: React.FC<{
                       }
                       value={newReply}
                       onChange={(e) => setNewReply(e.target.value)}
+                      onPaste={handlePaste}
                       rows={1}
                       style={{
                         width: '100%',
