@@ -11,7 +11,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { t } from '../../services/i18n';
 import { EpisodeDataManager } from './EpisodeDataManager';
-import type { DateGroup, WatchedEpisode, WatchedMovie } from './EpisodeDataManager';
+import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
 
 export interface TimeRange {
   days: number;
@@ -52,8 +52,6 @@ export interface UseRecentlyWatchedResult {
     seasonNumber: number,
     episodeNumber: number
   ) => void;
-  getRelativeDateLabel: (episode: WatchedEpisode) => string;
-  getMovieDateLabel: (movie: WatchedMovie) => string;
   groupEpisodesBySeries: (episodes: WatchedEpisode[]) => { [seriesId: number]: WatchedEpisode[] };
 }
 
@@ -308,20 +306,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}?tab=discussions`);
   };
 
-  const relativeDateLabel = (daysAgo: number) => {
-    if (daysAgo === 0) return t('Heute');
-    if (daysAgo === 1) return t('Gestern');
-    if (daysAgo === 2) return t('Vorgestern');
-    if (daysAgo <= 7) return t('Vor {n} Tagen', { n: daysAgo });
-    if (daysAgo <= 14) return t('Letzte Woche');
-    if (daysAgo <= 30) return t('Vor {n} Wochen', { n: Math.floor(daysAgo / 7) });
-    return t('Vor {n} Monaten', { n: Math.floor(daysAgo / 30) });
-  };
-
-  const getRelativeDateLabel = (episode: WatchedEpisode) => relativeDateLabel(episode.daysAgo);
-
-  const getMovieDateLabel = (movie: WatchedMovie) => relativeDateLabel(movie.daysAgo);
-
   const groupEpisodesBySeries = (episodes: WatchedEpisode[]) => {
     const grouped: { [seriesId: number]: WatchedEpisode[] } = {};
     for (const episode of episodes) {
@@ -356,8 +340,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     navigateToMovie,
     navigateToEpisode,
     navigateToEpisodeDiscussion,
-    getRelativeDateLabel,
-    getMovieDateLabel,
     groupEpisodesBySeries,
   };
 };

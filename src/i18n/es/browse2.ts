@@ -50,6 +50,8 @@ const dict: Record<string, string> = {
   Vorgestern: 'Anteayer',
   '{n} Ep.': '{n} eps.',
   '{title}, {n} Episoden': '{title}, {n} episodios',
+  'Folgen anzeigen': 'Mostrar episodios',
+  'Folgen ausblenden': 'Ocultar episodios',
   '{n} Episoden': '{n} episodios',
   'Zur Episode S{s} E{e} springen': 'Ir al episodio S{s} E{e}',
   zuletzt: 'último',

@@ -34,6 +34,7 @@ export interface WatchedMovie {
   daysAgo: number;
   rating: number;
   runtime?: number;
+  year?: string;
   /** `rated`: kein watchedAt vorhanden, das Bewertungsdatum vertritt es. */
   dateSource: 'watched' | 'rated';
 }
@@ -270,6 +271,7 @@ export class EpisodeDataManager {
         daysAgo: Math.floor((today.getTime() - watchedTime) / (1000 * 60 * 60 * 24)),
         rating: rating > 0 ? rating : 0,
         runtime: movie.runtime,
+        year: movie.release_date?.slice(0, 4),
         dateSource: movie.watchedAt ? 'watched' : 'rated',
       });
     }

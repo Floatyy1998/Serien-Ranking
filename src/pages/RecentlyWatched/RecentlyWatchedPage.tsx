@@ -44,7 +44,6 @@ export const RecentlyWatchedPage = memo(() => {
     navigateToMovie,
     navigateToEpisode,
     navigateToEpisodeDiscussion,
-    getRelativeDateLabel,
     groupEpisodesBySeries,
   } = useRecentlyWatched();
 
@@ -117,7 +116,7 @@ export const RecentlyWatchedPage = memo(() => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: groupIndex * 0.05 }}
-                      style={{ marginBottom: '24px' }}
+                      className="rw-group"
                     >
                       <DateGroupHeader
                         displayDate={dateGroup.displayDate}
@@ -125,7 +124,7 @@ export const RecentlyWatchedPage = memo(() => {
                         movieCount={dateGroup.movies.length}
                       />
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="rw-cards">
                         {Object.entries(groupedBySeries).map(([seriesId, episodes]) => {
                           if (episodes.length === 1) {
                             const episode = episodes[0];
@@ -152,7 +151,6 @@ export const RecentlyWatchedPage = memo(() => {
                               dateKey={dateGroup.date}
                               isExpanded={isSeriesExpanded(dateGroup.date, Number(seriesId))}
                               completingEpisodes={completingEpisodes}
-                              relativeDateLabel={getRelativeDateLabel(episodes[0])}
                               onToggle={toggleSeriesExpanded}
                               onRewatch={handleRewatchEpisode}
                               onNavigateToSeries={navigateToSeries}

@@ -75,7 +75,6 @@ const baseProps = {
   episodes,
   dateKey: '2024-01-01',
   completingEpisodes: new Set<string>(),
-  relativeDateLabel: 'vor 1 Tag',
   onToggle: vi.fn(),
   onRewatch: vi.fn(),
   onNavigateToSeries: vi.fn(),

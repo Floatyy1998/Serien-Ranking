@@ -22,36 +22,62 @@
 
 .rw-search-input {
   width: 100%;
-  padding: 12px 12px 12px 44px;
-  border-radius: var(--radius-md);
+  padding: 13px 44px 13px 44px;
+  border-radius: var(--radius-full);
   font-size: 15px;
   outline: none;
   /* icon placeholder via absolute positioned Search icon in the parent */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: 14px center;
-  background-size: 20px 20px;
+  background-position: 16px center;
+  background-size: 18px 18px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.rw-search-clear {
+.rw-search-input:focus {
+  border-color: var(--theme-primary-40) !important;
+  box-shadow: 0 0 0 3px var(--theme-primary-10);
+}
+
+/* Das Kreuz sitzt IM Feld. Ohne die eigene Groesse blaeht die globale
+   44px-Regel fuer .mobile-app button es zum grauen Klotz auf. */
+.rw-search-clear,
+.mobile-app button.rw-search-clear {
   position: absolute;
-  right: 34px;
+  right: 31px;
   top: 50%;
   transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
   border: none;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  background: transparent;
   cursor: pointer;
-  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   line-height: 1;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
-/* Hit-slop: keep the visible circle at 20px but expand the tap target to 44px */
+.rw-search-clear:hover,
+.rw-search-clear:focus-visible {
+  background: var(--theme-primary-15);
+}
+
+.rw-search-clear:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+/* Hit-slop: der sichtbare Kreis bleibt klein, die Trefferflaeche wird 44px */
 .rw-search-clear::before {
   content: '';
   position: absolute;
@@ -93,199 +119,311 @@
   z-index: 1;
 }
 
-/* Date group header */
+/* Tagesgruppe: Zeitstrahl-Punkt, Titel, Zaehler */
 
-.rw-date-header {
+.rw-group {
+  position: relative;
+  margin-bottom: 26px;
+  padding-left: 22px;
+}
+
+/* Die Linie des Zeitstrahls laeuft vom Punkt nach unten und verliert sich. */
+.rw-group::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 18px;
+  bottom: -14px;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--theme-primary-30),
+    color-mix(in srgb, var(--theme-primary) 6%, transparent)
+  );
+}
+
+.rw-group:last-of-type::before {
+  bottom: 12px;
+}
+
+.rw-day {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: baseline;
+  gap: 10px;
   margin-bottom: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
+  min-height: 24px;
 }
 
-.rw-date-title {
-  font-size: 15px;
-  font-weight: 700;
+.rw-day__dot {
+  position: absolute;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--theme-background);
+  border: 2px solid var(--theme-primary-40);
+  margin-top: 5px;
+}
+
+.rw-day--today .rw-day__dot {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  box-shadow: 0 0 0 4px var(--theme-primary-15);
+}
+
+.rw-day__title {
+  font-size: 17px;
+  font-weight: 800;
   font-family: var(--font-display);
+  letter-spacing: -0.01em;
   margin: 0;
+  line-height: 1.2;
 }
 
-.rw-date-count {
+.rw-day--today .rw-day__title {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.rw-day__counts {
   margin-left: auto;
-  font-size: 13px;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-weight: 600;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-/* Episode card (single) */
+.rw-day__count {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
 
-.rw-episode-card {
+/* Karten: gemeinsames Geruest fuer Folge, Serie und Film */
+
+.rw-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rw-card {
+  position: relative;
+  border: 1px solid var(--theme-primary-12);
   display: flex;
   gap: 12px;
-  padding: 12px;
-  border-radius: var(--radius-lg);
+  padding: 11px 12px 11px 15px;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
   box-shadow: var(--shadow-md);
   content-visibility: auto;
-  contain-intrinsic-block-size: auto 90px;
-  transition: transform var(--duration-fast) var(--ease-default);
+  contain-intrinsic-block-size: auto 114px;
+  transition:
+    border-color var(--duration-fast, 150ms) var(--ease-default, ease),
+    box-shadow var(--duration-fast, 150ms) var(--ease-default, ease);
 }
 
-.rw-episode-card:active {
-  transform: scale(0.98);
+/* Farbkante links: sagt auf einen Blick, was die Zeile ist. */
+.rw-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--rw-accent, var(--theme-primary));
 }
 
-.rw-episode-poster {
-  width: 52px;
-  height: 78px;
+.rw-card--movie {
+  --rw-accent: linear-gradient(to bottom, var(--theme-primary), var(--theme-accent));
+}
+
+@media (hover: hover) {
+  .rw-card:hover {
+    border-color: var(--theme-primary-30);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.rw-card__poster {
+  width: 62px;
+  height: 93px;
+  flex-shrink: 0;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.6);
 }
 
-.rw-episode-series-name {
-  font-size: 15px;
+.rw-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+}
+
+.rw-card__title {
+  font-size: 16px;
   font-weight: 700;
-  margin: 0 0 4px 0;
-  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rw-episode-info {
-  font-size: 14px;
-  margin: 0 0 6px 0;
-  cursor: pointer;
+.rw-card__sub {
+  font-size: 13.5px;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rw-episode-badges {
+.rw-card__chips {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  margin-top: 1px;
 }
 
-.rw-badge-watch-count {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-weight: 600;
+.rw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
-.rw-badge-date-source {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
-  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
-  color: var(--theme-accent);
+.rw-chip--tap {
+  cursor: pointer;
 }
 
-.rw-episode-actions {
+.rw-card__actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-}
-
-.rw-rewatch-btn {
-  border-radius: 10px;
-  padding: 8px;
-  min-width: 44px;
-  min-height: 44px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
   justify-content: center;
-}
-
-.rw-rewatch-btn-small {
-  border-radius: 8px;
-  padding: 6px;
-  min-width: 44px;
-  min-height: 44px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Series accordion (multi-episode) */
-
-.rw-accordion {
-  /* Native virtualization: skip layout/paint of offscreen accordions.
-     108px = collapsed header height; `auto` remembers the real (expanded) size. */
-  content-visibility: auto;
-  contain-intrinsic-block-size: auto 108px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-}
-
-.rw-accordion-header {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  cursor: pointer;
-}
-
-.rw-accordion-poster {
-  width: 56px;
-  height: 84px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.rw-accordion-series-name {
-  font-size: 15px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
-}
-
-.rw-accordion-meta {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
-.rw-accordion-count {
-  font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.rw-accordion-date {
-  font-size: 13px;
-  margin: 0;
-}
-
-.rw-accordion-episode {
+.rw-action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background var(--duration-fast, 150ms) var(--ease-default, ease),
+    transform var(--duration-fast, 150ms) var(--ease-default, ease);
+}
+
+/* Aufklappbare Serie: Kopf + Folgenliste */
+
+.rw-card--group {
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  contain-intrinsic-block-size: auto 118px;
+}
+
+.rw-group-head {
+  display: flex;
   gap: 12px;
-  padding: 10px;
+  padding: 11px 12px 11px 15px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.rw-group-episodes {
+  overflow: hidden;
+}
+
+.rw-group-episode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px 9px 15px;
+}
+
+.rw-group-episode + .rw-group-episode {
+  border-top: 1px solid var(--theme-primary-08);
+}
+
+.rw-group-episode__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.rw-group-episode__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rw-action-btn--sm {
   border-radius: 12px;
 }
 
-.rw-accordion-episode-name {
-  font-size: 14px;
-  margin: 0;
-  cursor: pointer;
-  font-weight: 500;
+.rw-chevron {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: transform 0.25s var(--ease-default, ease);
 }
 
-.rw-accordion-watch-count {
-  font-size: 12px;
-  margin: 2px 0 0 0;
+.rw-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Breite Fenster: die Karten fuellen die Flaeche in mehreren Spalten,
+   statt eine schmale Spalte mit viel Luft rechts zu lassen. */
+@media (min-width: 1000px) {
+  .rw-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    align-items: start;
+  }
+
+  .rw-card--group {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) {
+  .rw-card__poster {
+    width: 72px;
+    height: 108px;
+  }
+
+  .rw-card__title {
+    font-size: 17px;
+  }
+
+  .rw-day__title {
+    font-size: 19px;
+  }
 }
 
 /* Bottom spacer */
@@ -298,14 +436,12 @@
 
 .rw-search-input:focus-visible,
 .rw-search-clear:focus-visible,
-.rw-episode-poster:focus-visible,
-.rw-episode-series-name:focus-visible,
-.rw-episode-info:focus-visible,
-.rw-rewatch-btn:focus-visible,
-.rw-rewatch-btn-small:focus-visible,
-.rw-accordion-header:focus-visible,
-.rw-accordion-poster:focus-visible,
-.rw-accordion-episode-name:focus-visible {
+.rw-card:focus-visible,
+.rw-card__poster:focus-visible,
+.rw-chip--tap:focus-visible,
+.rw-action-btn:focus-visible,
+.rw-group-head:focus-visible,
+.rw-group-episode__name:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }

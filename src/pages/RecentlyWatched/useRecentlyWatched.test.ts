@@ -178,20 +178,12 @@ describe('useRecentlyWatched', () => {
     expect(grouped[2]).toHaveLength(1);
   });
 
-  it('produces relative date labels', () => {
-    const { result } = renderHook(() => useRecentlyWatched());
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 0 }))).toBe('Heute');
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 1 }))).toBe('Gestern');
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 2 }))).toBe('Vorgestern');
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 5 }))).toBe('Vor 5 Tagen');
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 20 }))).toContain('Wochen');
-    expect(result.current.getRelativeDateLabel(watchedEp({ daysAgo: 90 }))).toContain('Monaten');
-  });
-
   it('navigation helpers push the expected routes', () => {
     const { result } = renderHook(() => useRecentlyWatched());
     act(() => result.current.navigateToSeries(1));
     expect(router.navigate).toHaveBeenCalledWith('/series/1');
+    act(() => result.current.navigateToMovie(42));
+    expect(router.navigate).toHaveBeenCalledWith('/movie/42');
     act(() => result.current.navigateToEpisode(1, 2, 3));
     expect(router.navigate).toHaveBeenCalledWith('/episode/1/s/2/e/3');
     act(() => result.current.navigateToEpisodeDiscussion(1, 2, 3));

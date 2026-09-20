@@ -4,6 +4,7 @@
  * bzw. das Backend das Abbruch-Aggregat schreibt.
  */
 
+import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
@@ -16,7 +17,10 @@ import { SingleEpisodeCard, EpisodeGroupCard } from '../Calendar/EpisodeCard';
 import {
   DateGroupHeader,
   MovieCard,
+  SearchBar as HistorySearchBar,
+  SeriesAccordion,
   SingleEpisodeCard as HistoryEpisodeCard,
+  TimeRangeChips as HistoryTimeChips,
 } from '../RecentlyWatched/RecentlyWatchedComponents';
 import type { WatchedEpisode, WatchedMovie } from '../RecentlyWatched/EpisodeDataManager';
 import { CalendarViewModeContext } from '../Calendar/calendarViewMode';
@@ -399,45 +403,105 @@ const historyMovie = (over: Partial<WatchedMovie> = {}): WatchedMovie => ({
   daysAgo: 0,
   rating: 9.2,
   runtime: 167,
+  year: '2024',
   dateSource: 'watched',
   ...over,
 });
 
-export const HistoryMoviesPreview = () => (
-  <div style={{ padding: 16 }}>
-    {/* content-visibility haelt die Karten im Screenshot leer */}
-    <style>{'.rw-episode-card { content-visibility: visible; }'}</style>
-    <Case label="Tag mit Folge und Filmen">
-      <DateGroupHeader displayDate="Heute" episodeCount={1} movieCount={2} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <HistoryEpisodeCard
-          episode={historyEpisode}
-          isCompleting={false}
-          onRewatch={() => {}}
-          onNavigateToSeries={() => {}}
-          onNavigateToEpisode={() => {}}
-          onNavigateToDiscussion={() => {}}
-        />
-        <MovieCard movie={historyMovie()} onNavigateToMovie={() => {}} />
-        <MovieCard
-          movie={historyMovie({
-            movieId: 27205,
-            title: 'Ein sehr langer Filmtitel, der umbrechen müsste',
-            rating: 0,
-            runtime: undefined,
-            dateSource: 'rated',
-          })}
-          onNavigateToMovie={() => {}}
+export const HistoryMoviesPreview = () => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('dune');
+  const [days, setDays] = useState(30);
+  const group = [
+    { ...historyEpisode, episodeName: 'Fly', episodeNumber: 10, episodeIndex: 9 },
+    { ...historyEpisode, episodeName: 'Half Measures', episodeNumber: 12, episodeIndex: 11 },
+    {
+      ...historyEpisode,
+      episodeName: 'Full Measure',
+      episodeNumber: 13,
+      episodeIndex: 12,
+      watchCount: 3,
+    },
+  ];
+
+  return (
+    <div style={{ padding: 16 }}>
+      {/* content-visibility haelt die Karten im Screenshot leer */}
+      <style>{'.rw-card { content-visibility: visible; }'}</style>
+
+      <div style={{ margin: '0 -16px 18px' }}>
+        <HistorySearchBar searchQuery={query} onSearchChange={setQuery} />
+        <HistoryTimeChips
+          timeRanges={[
+            { days: 7, label: '7 Tage' },
+            { days: 30, label: '30 Tage' },
+            { days: 90, label: '3 Monate' },
+          ]}
+          daysToShow={days}
+          onTimeRangeChange={setDays}
         />
       </div>
-    </Case>
 
-    <Case label="Tag nur mit Filmen">
-      <DateGroupHeader displayDate="Gestern" episodeCount={0} movieCount={1} />
-      <MovieCard
-        movie={historyMovie({ movieId: 155, title: 'The Dark Knight', rating: 8.7 })}
-        onNavigateToMovie={() => {}}
-      />
-    </Case>
-  </div>
-);
+      <div className="rw-group">
+        <DateGroupHeader displayDate="Heute" episodeCount={1} movieCount={2} />
+        <div className="rw-cards">
+          <HistoryEpisodeCard
+            episode={{
+              ...historyEpisode,
+              seriesName: 'Die Verräter — Vertraue Niemandem',
+              episodeName: 'Folge 8',
+              seasonNumber: 4,
+              episodeNumber: 8,
+            }}
+            isCompleting={false}
+            onRewatch={() => {}}
+            onNavigateToSeries={() => {}}
+            onNavigateToEpisode={() => {}}
+            onNavigateToDiscussion={() => {}}
+          />
+          <HistoryEpisodeCard
+            episode={historyEpisode}
+            isCompleting={false}
+            onRewatch={() => {}}
+            onNavigateToSeries={() => {}}
+            onNavigateToEpisode={() => {}}
+            onNavigateToDiscussion={() => {}}
+          />
+          <MovieCard movie={historyMovie()} onNavigateToMovie={() => {}} />
+          <MovieCard
+            movie={historyMovie({
+              movieId: 27205,
+              title: 'Ein sehr langer Filmtitel, der umbrechen müsste',
+              rating: 0,
+              runtime: undefined,
+              dateSource: 'rated',
+            })}
+            onNavigateToMovie={() => {}}
+          />
+        </div>
+      </div>
+
+      <div className="rw-group">
+        <DateGroupHeader displayDate="Gestern" episodeCount={3} movieCount={1} />
+        <div className="rw-cards">
+          <SeriesAccordion
+            seriesId={1396}
+            episodes={group}
+            dateKey="gestern"
+            isExpanded={!open}
+            completingEpisodes={new Set()}
+            onToggle={() => setOpen((v) => !v)}
+            onRewatch={() => {}}
+            onNavigateToSeries={() => {}}
+            onNavigateToEpisode={() => {}}
+            onNavigateToDiscussion={() => {}}
+          />
+          <MovieCard
+            movie={historyMovie({ movieId: 155, title: 'The Dark Knight', rating: 8.7 })}
+            onNavigateToMovie={() => {}}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
