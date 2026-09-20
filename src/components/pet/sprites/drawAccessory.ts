@@ -245,12 +245,23 @@ function getAnchors(
       };
     case 'owl': {
       // Ei-Silhouette: Körper-Oben = Kopf (Top ~10.1), Augen bei y≈14.7 (cx±2.6)
-      const s = level >= 50 ? 1.18 : level >= 20 ? 1.12 : level >= 10 ? 1.05 : 1;
+      const s =
+        level >= 50
+          ? 1.18
+          : level >= 20
+            ? 1.12
+            : level >= 15
+              ? 1.08
+              : level >= 10
+                ? 1.05
+                : level >= 5
+                  ? 1.02
+                  : 1;
       return {
         headTopY: 17.5 - 7.4 * s,
         headCenterX: cx,
-        headHalfWidth: 5 * s,
-        eyeY: 17.5 - 7.4 * s * 0.38 - 2,
+        headHalfWidth: 5.6 * s,
+        eyeY: 17.5 - 7.4 * s * 0.38,
         eyeLeftX: -3.6,
         eyeRightX: 1.6,
         eyeWidth: 2,
