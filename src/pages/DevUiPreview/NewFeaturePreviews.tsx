@@ -13,10 +13,17 @@ import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 import type { DropOffInsight } from '../../lib/watch/dropOff';
 import { SingleEpisodeCard, EpisodeGroupCard } from '../Calendar/EpisodeCard';
+import {
+  DateGroupHeader,
+  MovieCard,
+  SingleEpisodeCard as HistoryEpisodeCard,
+} from '../RecentlyWatched/RecentlyWatchedComponents';
+import type { WatchedEpisode, WatchedMovie } from '../RecentlyWatched/EpisodeDataManager';
 import { CalendarViewModeContext } from '../Calendar/calendarViewMode';
 import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
 import '../Countdown/CountdownPage.css';
 import '../Calendar/CalendarPage.css';
+import '../RecentlyWatched/RecentlyWatchedPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const inDays = (days: number) => new Date(Date.now() + days * DAY_MS);
@@ -365,5 +372,72 @@ export const FriendCalendarAddPreview = () => (
         </CalendarViewModeContext.Provider>
       </Case>
     ))}
+  </div>
+);
+
+/** Verlauf: ein Tag mit Folgen und Filmen nebeneinander. */
+const historyEpisode: WatchedEpisode = {
+  seriesId: 1396,
+  seriesName: 'Breaking Bad',
+  seriesPoster: PLACEHOLDER_SVG,
+  seasonIndex: 2,
+  episodeIndex: 6,
+  episodeName: 'Fly',
+  episodeNumber: 10,
+  seasonNumber: 3,
+  firstWatchedAt: new Date(),
+  watchCount: 1,
+  daysAgo: 0,
+  dateSource: 'firstWatched',
+};
+
+const historyMovie = (over: Partial<WatchedMovie> = {}): WatchedMovie => ({
+  movieId: 693134,
+  title: 'Dune: Part Two',
+  poster: PLACEHOLDER_SVG,
+  watchedAt: new Date(),
+  daysAgo: 0,
+  rating: 9.2,
+  runtime: 167,
+  dateSource: 'watched',
+  ...over,
+});
+
+export const HistoryMoviesPreview = () => (
+  <div style={{ padding: 16 }}>
+    {/* content-visibility haelt die Karten im Screenshot leer */}
+    <style>{'.rw-episode-card { content-visibility: visible; }'}</style>
+    <Case label="Tag mit Folge und Filmen">
+      <DateGroupHeader displayDate="Heute" episodeCount={1} movieCount={2} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <HistoryEpisodeCard
+          episode={historyEpisode}
+          isCompleting={false}
+          onRewatch={() => {}}
+          onNavigateToSeries={() => {}}
+          onNavigateToEpisode={() => {}}
+          onNavigateToDiscussion={() => {}}
+        />
+        <MovieCard movie={historyMovie()} onNavigateToMovie={() => {}} />
+        <MovieCard
+          movie={historyMovie({
+            movieId: 27205,
+            title: 'Ein sehr langer Filmtitel, der umbrechen müsste',
+            rating: 0,
+            runtime: undefined,
+            dateSource: 'rated',
+          })}
+          onNavigateToMovie={() => {}}
+        />
+      </div>
+    </Case>
+
+    <Case label="Tag nur mit Filmen">
+      <DateGroupHeader displayDate="Gestern" episodeCount={0} movieCount={1} />
+      <MovieCard
+        movie={historyMovie({ movieId: 155, title: 'The Dark Knight', rating: 8.7 })}
+        onNavigateToMovie={() => {}}
+      />
+    </Case>
   </div>
 );

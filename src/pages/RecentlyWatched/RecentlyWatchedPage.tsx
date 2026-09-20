@@ -1,5 +1,5 @@
 /**
- * Timeline der zuletzt gesehenen Episoden. Kompositions-Komponente:
+ * Timeline der zuletzt gesehenen Folgen und Filme. Kompositions-Komponente:
  * Logik in useRecentlyWatched, Daten in EpisodeDataManager,
  * UI-Blöcke in RecentlyWatchedComponents.
  */
@@ -14,6 +14,7 @@ import {
   DateGroupHeader,
   EmptyState,
   EpisodeCountBadge,
+  MovieCard,
   SearchBar,
   SeriesAccordion,
   SingleEpisodeCard,
@@ -32,6 +33,7 @@ export const RecentlyWatchedPage = memo(() => {
     completingEpisodes,
     loadedDateGroups,
     totalEpisodes,
+    totalMovies,
     headerHeight,
     headerRef,
     handleRewatchEpisode,
@@ -39,6 +41,7 @@ export const RecentlyWatchedPage = memo(() => {
     isSeriesExpanded,
     handleTimeRangeChange,
     navigateToSeries,
+    navigateToMovie,
     navigateToEpisode,
     navigateToEpisodeDiscussion,
     getRelativeDateLabel,
@@ -62,7 +65,9 @@ export const RecentlyWatchedPage = memo(() => {
           gradientTo={currentTheme.status.success}
           sticky={false}
           actions={
-            totalEpisodes > 0 ? <EpisodeCountBadge totalEpisodes={totalEpisodes} /> : undefined
+            totalEpisodes > 0 || totalMovies > 0 ? (
+              <EpisodeCountBadge totalEpisodes={totalEpisodes} totalMovies={totalMovies} />
+            ) : undefined
           }
         />
 
@@ -93,7 +98,7 @@ export const RecentlyWatchedPage = memo(() => {
                   <SkeletonListRow key={i} avatarShape="card" />
                 ))}
               </motion.div>
-            ) : totalEpisodes === 0 ? (
+            ) : totalEpisodes === 0 && totalMovies === 0 ? (
               <EmptyState
                 searchQuery={searchQuery}
                 daysToShow={daysToShow}
@@ -102,7 +107,7 @@ export const RecentlyWatchedPage = memo(() => {
             ) : (
               <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 {loadedDateGroups.map((dateGroup, groupIndex) => {
-                  if (dateGroup.episodes.length === 0) return null;
+                  if (dateGroup.episodes.length === 0 && dateGroup.movies.length === 0) return null;
 
                   const groupedBySeries = groupEpisodesBySeries(dateGroup.episodes);
 
@@ -117,6 +122,7 @@ export const RecentlyWatchedPage = memo(() => {
                       <DateGroupHeader
                         displayDate={dateGroup.displayDate}
                         episodeCount={dateGroup.episodes.length}
+                        movieCount={dateGroup.movies.length}
                       />
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -155,6 +161,14 @@ export const RecentlyWatchedPage = memo(() => {
                             />
                           );
                         })}
+
+                        {dateGroup.movies.map((movie) => (
+                          <MovieCard
+                            key={`movie-${movie.movieId}`}
+                            movie={movie}
+                            onNavigateToMovie={navigateToMovie}
+                          />
+                        ))}
                       </div>
                     </motion.div>
                   );

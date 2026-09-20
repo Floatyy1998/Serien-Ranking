@@ -6,11 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { t } from '../../services/i18n';
 import { EpisodeDataManager } from './EpisodeDataManager';
-import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
+import type { DateGroup, WatchedEpisode, WatchedMovie } from './EpisodeDataManager';
 
 export interface TimeRange {
   days: number;
@@ -34,6 +35,7 @@ export interface UseRecentlyWatchedResult {
   completingEpisodes: Set<string>;
   loadedDateGroups: DateGroup[];
   totalEpisodes: number;
+  totalMovies: number;
   headerHeight: number;
   headerRef: React.RefObject<HTMLDivElement | null>;
 
@@ -43,6 +45,7 @@ export interface UseRecentlyWatchedResult {
   isSeriesExpanded: (date: string, seriesId: number) => boolean;
   handleTimeRangeChange: (days: number) => void;
   navigateToSeries: (seriesId: number) => void;
+  navigateToMovie: (movieId: number) => void;
   navigateToEpisode: (seriesId: number, seasonNumber: number, episodeNumber: number) => void;
   navigateToEpisodeDiscussion: (
     seriesId: number,
@@ -50,6 +53,7 @@ export interface UseRecentlyWatchedResult {
     episodeNumber: number
   ) => void;
   getRelativeDateLabel: (episode: WatchedEpisode) => string;
+  getMovieDateLabel: (movie: WatchedMovie) => string;
   groupEpisodesBySeries: (episodes: WatchedEpisode[]) => { [seriesId: number]: WatchedEpisode[] };
 }
 
@@ -57,6 +61,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
+  const { movieList } = useMovieList();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
@@ -115,8 +120,8 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   }, [searchQuery]);
 
   const dataManager = useMemo(() => {
-    return new EpisodeDataManager(seriesList, daysToShow, debouncedSearchQuery);
-  }, [seriesList, daysToShow, debouncedSearchQuery]);
+    return new EpisodeDataManager(seriesList, movieList, daysToShow, debouncedSearchQuery);
+  }, [seriesList, movieList, daysToShow, debouncedSearchQuery]);
 
   // Reset on search/days change
   useEffect(() => {
@@ -287,6 +292,10 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     navigate(`/series/${seriesId}`);
   };
 
+  const navigateToMovie = (movieId: number) => {
+    navigate(`/movie/${movieId}`);
+  };
+
   const navigateToEpisode = (seriesId: number, seasonNumber: number, episodeNumber: number) => {
     navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}`);
   };
@@ -299,15 +308,19 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}?tab=discussions`);
   };
 
-  const getRelativeDateLabel = (episode: WatchedEpisode) => {
-    if (episode.daysAgo === 0) return t('Heute');
-    if (episode.daysAgo === 1) return t('Gestern');
-    if (episode.daysAgo === 2) return t('Vorgestern');
-    if (episode.daysAgo <= 7) return t('Vor {n} Tagen', { n: episode.daysAgo });
-    if (episode.daysAgo <= 14) return t('Letzte Woche');
-    if (episode.daysAgo <= 30) return t('Vor {n} Wochen', { n: Math.floor(episode.daysAgo / 7) });
-    return t('Vor {n} Monaten', { n: Math.floor(episode.daysAgo / 30) });
+  const relativeDateLabel = (daysAgo: number) => {
+    if (daysAgo === 0) return t('Heute');
+    if (daysAgo === 1) return t('Gestern');
+    if (daysAgo === 2) return t('Vorgestern');
+    if (daysAgo <= 7) return t('Vor {n} Tagen', { n: daysAgo });
+    if (daysAgo <= 14) return t('Letzte Woche');
+    if (daysAgo <= 30) return t('Vor {n} Wochen', { n: Math.floor(daysAgo / 7) });
+    return t('Vor {n} Monaten', { n: Math.floor(daysAgo / 30) });
   };
+
+  const getRelativeDateLabel = (episode: WatchedEpisode) => relativeDateLabel(episode.daysAgo);
+
+  const getMovieDateLabel = (movie: WatchedMovie) => relativeDateLabel(movie.daysAgo);
 
   const groupEpisodesBySeries = (episodes: WatchedEpisode[]) => {
     const grouped: { [seriesId: number]: WatchedEpisode[] } = {};
@@ -321,6 +334,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   };
 
   const totalEpisodes = loadedDateGroups.reduce((sum, group) => sum + group.episodes.length, 0);
+  const totalMovies = loadedDateGroups.reduce((sum, group) => sum + group.movies.length, 0);
 
   return {
     searchQuery,
@@ -331,6 +345,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     completingEpisodes,
     loadedDateGroups,
     totalEpisodes,
+    totalMovies,
     headerHeight,
     headerRef,
     handleRewatchEpisode,
@@ -338,9 +353,11 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     isSeriesExpanded,
     handleTimeRangeChange,
     navigateToSeries,
+    navigateToMovie,
     navigateToEpisode,
     navigateToEpisodeDiscussion,
     getRelativeDateLabel,
+    getMovieDateLabel,
     groupEpisodesBySeries,
   };
 };

@@ -12,6 +12,7 @@ import {
   DropOffPreview,
   FriendAddCardPreview,
   FriendCalendarAddPreview,
+  HistoryMoviesPreview,
   UnhideProviderPreview,
 } from './NewFeaturePreviews';
 
@@ -122,6 +123,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'dropoff', label: 'Aussteiger-Radar', render: () => <DropOffPreview /> },
   { id: 'unhide', label: 'Wieder einblenden', render: () => <UnhideProviderPreview /> },
   { id: 'friendadd', label: 'Freundesprofil-Karten', render: () => <FriendAddCardPreview /> },
+  { id: 'historymovies', label: 'Verlauf: Filme', render: () => <HistoryMoviesPreview /> },
   {
     id: 'calendaradd',
     label: 'Freundes-Kalender: hinzufügen',

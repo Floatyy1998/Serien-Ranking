@@ -1,6 +1,14 @@
 /** Memoized Subkomponenten der RecentlyWatchedPage. */
 
-import { CalendarToday, ChatBubbleOutlined, Check, History, PlayCircle } from '@mui/icons-material';
+import {
+  CalendarToday,
+  ChatBubbleOutlined,
+  Check,
+  History,
+  Movie,
+  PlayCircle,
+  StarRounded,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -8,7 +16,7 @@ import { useDiscussionCount } from '../../hooks/social/discussionCountHooks';
 import { EmptyState as UiEmptyState } from '../../components/ui/feedback/EmptyState';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
-import type { WatchedEpisode } from './EpisodeDataManager';
+import type { WatchedEpisode, WatchedMovie } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 
@@ -59,43 +67,89 @@ export const EpisodeDiscussionIndicator: React.FC<{
 });
 EpisodeDiscussionIndicator.displayName = 'EpisodeDiscussionIndicator';
 
-// Episode count badge (header action)
-export const EpisodeCountBadge = memo<{ totalEpisodes: number }>(({ totalEpisodes }) => {
-  const { currentTheme } = useTheme();
+// Discussion indicator badge (movie)
+export const MovieDiscussionIndicator: React.FC<{ movieId: number; onClick?: () => void }> = memo(
+  ({ movieId, onClick }) => {
+    const { currentTheme } = useTheme();
+    const count = useDiscussionCount('movie', movieId);
 
-  if (totalEpisodes <= 0) return null;
+    if (count === 0) return null;
 
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      style={{ display: 'flex', gap: '8px' }}
-    >
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
+        title={count === 1 ? t('1 Diskussion') : t('{n} Diskussionen', { n: count })}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          padding: '4px 8px',
+          background: `${currentTheme.primary}15`,
+          border: `1px solid ${currentTheme.primary}30`,
+          borderRadius: '8px',
+          color: currentTheme.primary,
+          cursor: 'pointer',
+          fontSize: '13px',
+          fontWeight: 600,
+        }}
+      >
+        <ChatBubbleOutlined style={DISCUSSION_ICON_STYLE} />
+        {count}
+      </button>
+    );
+  }
+);
+MovieDiscussionIndicator.displayName = 'MovieDiscussionIndicator';
+
+// Episode + movie count badges (header action)
+export const EpisodeCountBadge = memo<{ totalEpisodes: number; totalMovies?: number }>(
+  ({ totalEpisodes, totalMovies = 0 }) => {
+    const { currentTheme } = useTheme();
+
+    if (totalEpisodes <= 0 && totalMovies <= 0) return null;
+
+    const chip = (color: string, icon: React.ReactNode, value: number) => (
       <div
         style={{
           padding: '6px 12px',
           borderRadius: '12px',
-          background: `${currentTheme.status.success}15`,
-          border: `1px solid ${currentTheme.status.success}30`,
+          background: `${color}15`,
+          border: `1px solid ${color}30`,
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
         }}
       >
-        <PlayCircle style={{ fontSize: 16, color: currentTheme.status.success }} />
-        <span
-          style={{
-            fontSize: '15px',
-            fontWeight: 700,
-            color: currentTheme.status.success,
-          }}
-        >
-          {totalEpisodes}
-        </span>
+        {icon}
+        <span style={{ fontSize: '15px', fontWeight: 700, color }}>{value}</span>
       </div>
-    </motion.div>
-  );
-});
+    );
+
+    return (
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        style={{ display: 'flex', gap: '8px' }}
+      >
+        {totalEpisodes > 0 &&
+          chip(
+            currentTheme.status.success,
+            <PlayCircle style={{ fontSize: 16, color: currentTheme.status.success }} />,
+            totalEpisodes
+          )}
+        {totalMovies > 0 &&
+          chip(
+            currentTheme.primary,
+            <Movie style={{ fontSize: 16, color: currentTheme.primary }} />,
+            totalMovies
+          )}
+      </motion.div>
+    );
+  }
+);
 EpisodeCountBadge.displayName = 'EpisodeCountBadge';
 
 // Search bar
@@ -109,8 +163,8 @@ export const SearchBar = memo<{
     <div className="rw-search-bar">
       <input
         type="text"
-        placeholder={t('Serie suchen...')}
-        aria-label={t('Serie suchen')}
+        placeholder={t('Serie oder Film suchen...')}
+        aria-label={t('Serie oder Film suchen')}
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         className="rw-search-input"
@@ -195,11 +249,11 @@ export const EmptyState = memo<{
     <UiEmptyState
       icon={<History style={{ fontSize: '48px' }} />}
       iconColor={currentTheme.text.muted}
-      title={t('Keine Episoden gefunden')}
+      title={t('Nichts gefunden')}
       description={
         searchQuery
           ? t('Keine Ergebnisse für "{query}"', { query: searchQuery })
-          : t('In den letzten {n} Tagen keine Episoden gesehen', { n: daysToShow })
+          : t('In den letzten {n} Tagen nichts gesehen', { n: daysToShow })
       }
       action={searchQuery ? { label: t('Suche löschen'), onClick: onClearSearch } : undefined}
     />
@@ -211,7 +265,8 @@ EmptyState.displayName = 'EmptyState';
 export const DateGroupHeader = memo<{
   displayDate: string;
   episodeCount: number;
-}>(({ displayDate, episodeCount }) => {
+  movieCount?: number;
+}>(({ displayDate, episodeCount, movieCount = 0 }) => {
   const { currentTheme } = useTheme();
   const isToday = displayDate === t('Heute');
   const isYesterday = displayDate === t('Gestern');
@@ -247,7 +302,16 @@ export const DateGroupHeader = memo<{
           background: `${currentTheme.text.muted}15`,
         }}
       >
-        {t('{n} Ep.', { n: episodeCount })}
+        {[
+          episodeCount > 0 ? t('{n} Ep.', { n: episodeCount }) : null,
+          movieCount > 0
+            ? movieCount === 1
+              ? t('1 Film')
+              : t('{n} Filme', { n: movieCount })
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
       </span>
     </div>
   );
@@ -404,3 +468,93 @@ export const SingleEpisodeCard = memo<{
   }
 );
 SingleEpisodeCard.displayName = 'SingleEpisodeCard';
+
+// Single movie card
+export const MovieCard = memo<{
+  movie: WatchedMovie;
+  onNavigateToMovie: (movieId: number) => void;
+}>(({ movie, onNavigateToMovie }) => {
+  const { currentTheme } = useTheme();
+  const open = () => onNavigateToMovie(movie.movieId);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="rw-episode-card"
+      style={{
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
+      }}
+    >
+      <img
+        src={movie.poster}
+        alt={movie.title}
+        loading="lazy"
+        decoding="async"
+        role="button"
+        tabIndex={0}
+        aria-label={t('{title} öffnen', { title: movie.title })}
+        onClick={open}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+          }
+        }}
+        className="rw-episode-poster"
+      />
+
+      <div style={CARD_BODY_STYLE}>
+        <h3
+          role="button"
+          tabIndex={0}
+          aria-label={t('{title} öffnen', { title: movie.title })}
+          onClick={open}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              open();
+            }
+          }}
+          className="rw-episode-series-name"
+          style={{ color: currentTheme.text.primary }}
+        >
+          {movie.title}
+        </h3>
+
+        <p className="rw-episode-info" style={{ color: currentTheme.text.secondary }}>
+          {t('Film')}
+          {movie.runtime ? ` • ${t('{n} Min.', { n: movie.runtime })}` : ''}
+        </p>
+
+        <div className="rw-episode-badges">
+          {movie.rating > 0 && (
+            <span
+              className="rw-badge-watch-count"
+              style={{
+                background: `${currentTheme.primary}15`,
+                color: currentTheme.primary,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+              }}
+            >
+              <StarRounded style={{ fontSize: '14px' }} />
+              {movie.rating.toFixed(1)}
+            </span>
+          )}
+          {movie.dateSource === 'rated' && (
+            <span className="rw-badge-date-source">{t('bewertet')}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="rw-episode-actions">
+        <MovieDiscussionIndicator movieId={movie.movieId} onClick={open} />
+      </div>
+    </motion.div>
+  );
+});
+MovieCard.displayName = 'MovieCard';

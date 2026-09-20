@@ -87,7 +87,7 @@ describe('RecentlyWatched SearchBar', () => {
   it('propagates typed input', () => {
     const onSearchChange = vi.fn();
     render(<SearchBar searchQuery="" onSearchChange={onSearchChange} />);
-    fireEvent.change(screen.getByPlaceholderText('Serie suchen...'), {
+    fireEvent.change(screen.getByPlaceholderText('Serie oder Film suchen...'), {
       target: { value: 'bear' },
     });
     expect(onSearchChange).toHaveBeenCalledWith('bear');

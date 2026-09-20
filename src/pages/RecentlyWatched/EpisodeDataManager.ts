@@ -1,9 +1,11 @@
-/** Caching, Datums-Gruppierung und Episoden-Extraktion aus den Seriendaten. */
+/** Caching, Datums-Gruppierung und Extraktion gesehener Folgen und Filme. */
 import {
   isEpisodeWatched,
   normalizeSeasons,
   normalizeEpisodes,
 } from '../../lib/episode/seriesMetrics';
+import { calculateOverallRating } from '../../lib/rating/rating';
+import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { dateLocale, t } from '../../services/i18n';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
@@ -24,10 +26,23 @@ export interface WatchedEpisode {
   dateSource: 'firstWatched' | 'lastWatched' | 'airDate' | 'estimated';
 }
 
+export interface WatchedMovie {
+  movieId: number;
+  title: string;
+  poster: string;
+  watchedAt: Date;
+  daysAgo: number;
+  rating: number;
+  runtime?: number;
+  /** `rated`: kein watchedAt vorhanden, das Bewertungsdatum vertritt es. */
+  dateSource: 'watched' | 'rated';
+}
+
 export interface DateGroup {
   date: string;
   displayDate: string;
   episodes: WatchedEpisode[];
+  movies: WatchedMovie[];
   loaded: boolean;
   loading: boolean;
 }
@@ -38,6 +53,7 @@ export class EpisodeDataManager {
 
   constructor(
     private seriesList: Series[],
+    private movieList: Movie[],
     private daysToShow: number,
     private searchQuery: string
   ) {
@@ -59,6 +75,7 @@ export class EpisodeDataManager {
         date: dateKey,
         displayDate,
         episodes: [],
+        movies: [],
         loaded: false,
         loading: false,
       });
@@ -189,29 +206,76 @@ export class EpisodeDataManager {
     this.cache.set(cacheKey, episodes);
 
     for (const episode of episodes) {
-      const dateKey = episode.firstWatchedAt.toDateString();
-      let group = this.dateGroups.get(dateKey);
-
-      if (!group) {
-        const date = new Date(episode.firstWatchedAt);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const daysAgo = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-        const displayDate = this.getDisplayDate(date, daysAgo);
-
-        group = {
-          date: dateKey,
-          displayDate,
-          episodes: [],
-          loaded: true,
-          loading: false,
-        };
-        this.dateGroups.set(dateKey, group);
-      }
-
-      group.episodes.push(episode);
+      this.groupFor(episode.firstWatchedAt).episodes.push(episode);
     }
+
+    for (const movie of this.collectMovies(start, end)) {
+      this.groupFor(movie.watchedAt).movies.push(movie);
+    }
+  }
+
+  private groupFor(date: Date): DateGroup {
+    const dateKey = date.toDateString();
+    let group = this.dateGroups.get(dateKey);
+    if (group) return group;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysAgo = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+    group = {
+      date: dateKey,
+      displayDate: this.getDisplayDate(new Date(date), daysAgo),
+      episodes: [],
+      movies: [],
+      loaded: true,
+      loading: false,
+    };
+    this.dateGroups.set(dateKey, group);
+    return group;
+  }
+
+  /**
+   * Filme ohne Zeitstempel bleiben draussen: ein geratenes Datum waere im
+   * Verlauf schlicht falsch.
+   */
+  private collectMovies(start: Date, end: Date): WatchedMovie[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const query = this.searchQuery.toLowerCase();
+    const movies: WatchedMovie[] = [];
+
+    for (const movie of this.movieList) {
+      if (query && !movie.title?.toLowerCase().includes(query)) continue;
+
+      const rating = Number(calculateOverallRating(movie));
+      if (movie.watched !== true && !(rating > 0)) continue;
+
+      const stamp = movie.watchedAt || movie.ratedAt;
+      if (!stamp) continue;
+
+      const watchedDate = new Date(stamp);
+      if (isNaN(watchedDate.getTime())) continue;
+      watchedDate.setHours(0, 0, 0, 0);
+
+      const watchedTime = watchedDate.getTime();
+      if (watchedTime < start.getTime() || watchedTime > end.getTime()) continue;
+
+      movies.push({
+        movieId: movie.id,
+        title: movie.title || '',
+        poster: this.getImageUrl(movie.poster),
+        watchedAt: watchedDate,
+        daysAgo: Math.floor((today.getTime() - watchedTime) / (1000 * 60 * 60 * 24)),
+        rating: rating > 0 ? rating : 0,
+        runtime: movie.runtime,
+        dateSource: movie.watchedAt ? 'watched' : 'rated',
+      });
+    }
+
+    movies.sort((a, b) => b.watchedAt.getTime() - a.watchedAt.getTime());
+    return movies;
   }
 
   getEpisodesForDate(dateKey: string): WatchedEpisode[] {

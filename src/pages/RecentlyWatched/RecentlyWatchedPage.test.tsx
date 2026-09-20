@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { WatchedEpisode } from './EpisodeDataManager';
+import type { WatchedEpisode, WatchedMovie } from './EpisodeDataManager';
 
 vi.mock('framer-motion', async () => {
   const React = await import('react');
@@ -47,9 +47,20 @@ const episode: WatchedEpisode = {
   dateSource: 'firstWatched',
 };
 
+const movie: WatchedMovie = {
+  movieId: 42,
+  title: 'Dune',
+  poster: 'm.jpg',
+  watchedAt: new Date('2024-01-01'),
+  daysAgo: 0,
+  rating: 8.5,
+  dateSource: 'watched',
+};
+
 const data = vi.hoisted(() => ({
   isLoading: false,
   totalEpisodes: 1,
+  totalMovies: 1,
 }));
 vi.mock('./useRecentlyWatched', () => ({
   TIME_RANGES: [{ days: 7, label: '7 Tage' }],
@@ -59,8 +70,16 @@ vi.mock('./useRecentlyWatched', () => ({
     daysToShow: 7,
     isLoading: data.isLoading,
     completingEpisodes: new Set<string>(),
-    loadedDateGroups: [{ date: '2024-01-01', displayDate: 'Heute', episodes: [episode] }],
+    loadedDateGroups: [
+      {
+        date: '2024-01-01',
+        displayDate: 'Heute',
+        episodes: data.totalEpisodes > 0 ? [episode] : [],
+        movies: data.totalMovies > 0 ? [movie] : [],
+      },
+    ],
     totalEpisodes: data.totalEpisodes,
+    totalMovies: data.totalMovies,
     headerHeight: 100,
     headerRef: { current: null },
     handleRewatchEpisode: vi.fn(),
@@ -68,10 +87,12 @@ vi.mock('./useRecentlyWatched', () => ({
     isSeriesExpanded: () => false,
     handleTimeRangeChange: vi.fn(),
     navigateToSeries: vi.fn(),
+    navigateToMovie: vi.fn(),
     navigateToEpisode: vi.fn(),
     navigateToEpisodeDiscussion: vi.fn(),
     getRelativeDateLabel: () => 'vor 1 Tag',
-    groupEpisodesBySeries: () => ({ '1': [episode] }),
+    getMovieDateLabel: () => 'vor 1 Tag',
+    groupEpisodesBySeries: () => (data.totalEpisodes > 0 ? { '1': [episode] } : {}),
   }),
 }));
 
@@ -86,6 +107,9 @@ vi.mock('./RecentlyWatchedComponents', () => ({
   DateGroupHeader: ({ displayDate }: { displayDate: string }) => <div>{displayDate}</div>,
   EmptyState: () => <div data-testid="empty" />,
   EpisodeCountBadge: () => <div data-testid="count-badge" />,
+  MovieCard: ({ movie: m }: { movie: WatchedMovie }) => (
+    <div data-testid="movie-card">{m.title}</div>
+  ),
   SearchBar: () => <div data-testid="search-bar" />,
   SeriesAccordion: () => <div data-testid="accordion" />,
   SingleEpisodeCard: ({ episode: ep }: { episode: WatchedEpisode }) => (
@@ -100,6 +124,7 @@ afterEach(() => {
   cleanup();
   data.isLoading = false;
   data.totalEpisodes = 1;
+  data.totalMovies = 1;
 });
 
 describe('RecentlyWatchedPage', () => {
@@ -118,8 +143,21 @@ describe('RecentlyWatchedPage', () => {
 
   it('renders the empty state when there are no episodes', () => {
     data.totalEpisodes = 0;
+    data.totalMovies = 0;
     render(<RecentlyWatchedPage />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
+  });
+
+  it('renders watched movies next to the episodes of a day', () => {
+    render(<RecentlyWatchedPage />);
+    expect(screen.getByTestId('movie-card')).toHaveTextContent('Dune');
+  });
+
+  it('keeps a day with only movies visible', () => {
+    data.totalEpisodes = 0;
+    render(<RecentlyWatchedPage />);
+    expect(screen.queryByTestId('empty')).not.toBeInTheDocument();
+    expect(screen.getByTestId('movie-card')).toBeInTheDocument();
   });
 
   it('renders a single-episode card for a solo watch', () => {
