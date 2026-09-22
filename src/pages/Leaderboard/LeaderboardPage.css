@@ -94,17 +94,43 @@
   color: var(--theme-primary);
 }
 
-/* Kategorien: umbrechende Chips, kein horizontaler Streifen */
+/* Schmale Geraete (S7 & Co.): vier Segmente nebeneinander lassen neben dem
+   Icon keinen Platz mehr fuer "Freunde" — dort traegt der Umschalter nur Text. */
+@media (max-width: 430px) {
+  .lb-deck-row {
+    gap: 10px;
+  }
+  .lb-seg .lb-seg-btn {
+    gap: 0;
+    padding: 8px 6px;
+    font-size: 12.5px;
+  }
+  .lb-seg .lb-seg-btn svg {
+    display: none;
+  }
+}
+
+/* Kategorien: auf dem Handy eine Reihe aus Icon-Kacheln, nur die aktive
+   traegt Text (den Namen sagt ohnehin der Untertitel der Kopfzeile). Mit
+   Beschriftung brauchten vier bis fuenf Chips drei Reihen. */
 .lb-cats {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
 }
+.lb-cat span {
+  display: none;
+}
+.lb-cat--active span {
+  display: inline;
+}
 .lb-cat {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 13px;
+  flex: 0 0 auto;
+  padding: 9px 13px;
   border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-full);
   background: var(--glass-subtle);
@@ -693,6 +719,13 @@
 
 /* ══ Tablet ══ */
 @media (min-width: 640px) {
+  .lb-cat span {
+    display: inline;
+  }
+  .lb-cat {
+    flex: 0 0 auto;
+    padding: 8px 13px;
+  }
   .lb-champ {
     padding: 16px;
     gap: 14px;

@@ -5,10 +5,10 @@ const dict: Record<string, string> = {
     'Tout ce que tu as déjà regardé — sans classement',
   'Zählt am 1. wieder bei null · Nachgetragene Folgen zählen nicht':
     'Remise à zéro le 1er · Les épisodes rattrapés ne comptent pas',
-  'Ein Freund hat noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.':
-    'Un ami n’a pas encore de données globales — elles apparaîtront dès la prochaine ouverture de l’app.',
-  '{n} Freunde haben noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.':
-    '{n} amis n’ont pas encore de données globales — elles apparaîtront dès leur prochaine ouverture de l’app.',
+  'Ein Freund hat noch keine Gesamtdaten — die Zahlen erscheinen nach dem nächsten Öffnen der App.':
+    'Un ami n’a pas encore de données globales — les chiffres apparaîtront à sa prochaine ouverture de l’app.',
+  '{n} Freunde haben noch keine Gesamtdaten — die Zahlen erscheinen, sobald sie die App wieder öffnen.':
+    '{n} amis n’ont pas encore de données globales — les chiffres apparaîtront dès qu’ils rouvriront l’app.',
   'Wie die Rangliste zählt': 'Comment le classement compte',
   'Der Wettbewerb läuft monatlich: Am Monatsersten starten alle wieder bei null, der Vormonat wandert in die Trophäen.':
     'La compétition est mensuelle : le 1er du mois, tout le monde repart de zéro et le mois précédent rejoint les trophées.',

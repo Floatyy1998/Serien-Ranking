@@ -123,6 +123,10 @@ export const LeaderboardPage = () => {
             key={cat.id}
             whileTap={tapScale}
             onClick={() => setActiveCategory(cat.id)}
+            // Auf dem Handy traegt nur die aktive Kachel ihren Text, die
+            // uebrigen nur das Icon — daher der Name auch als Label.
+            aria-label={cat.label}
+            title={cat.label}
             className={`lb-cat ${cat.id === activeCategory ? 'lb-cat--active' : ''}`}
           >
             {cat.icon}
@@ -226,10 +230,10 @@ export const LeaderboardPage = () => {
           <p className="lb-missing-note">
             {missingTotals === 1
               ? t(
-                  'Ein Freund hat noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.'
+                  'Ein Freund hat noch keine Gesamtdaten — die Zahlen erscheinen nach dem nächsten Öffnen der App.'
                 )
               : t(
-                  '{n} Freunde haben noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.',
+                  '{n} Freunde haben noch keine Gesamtdaten — die Zahlen erscheinen, sobald sie die App wieder öffnen.',
                   { n: missingTotals }
                 )}
           </p>

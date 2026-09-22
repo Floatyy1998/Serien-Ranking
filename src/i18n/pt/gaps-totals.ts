@@ -4,10 +4,10 @@ const dict: Record<string, string> = {
   'Alles, was du je gesehen hast — ohne Wertung': 'Tudo o que você já assistiu — sem pontuação',
   'Zählt am 1. wieder bei null · Nachgetragene Folgen zählen nicht':
     'Zera no dia 1 · Episódios marcados em lote não contam',
-  'Ein Freund hat noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.':
-    'Um amigo ainda não tem dados totais — eles aparecem assim que o app for aberto novamente.',
-  '{n} Freunde haben noch keine Gesamtdaten — sie erscheinen, sobald die App wieder geöffnet wird.':
-    '{n} amigos ainda não têm dados totais — eles aparecem assim que o app for aberto novamente.',
+  'Ein Freund hat noch keine Gesamtdaten — die Zahlen erscheinen nach dem nächsten Öffnen der App.':
+    'Um amigo ainda não tem dados totais — os números aparecem na próxima vez que abrir o app.',
+  '{n} Freunde haben noch keine Gesamtdaten — die Zahlen erscheinen, sobald sie die App wieder öffnen.':
+    '{n} amigos ainda não têm dados totais — os números aparecem assim que abrirem o app novamente.',
   'Wie die Rangliste zählt': 'Como o ranking conta',
   'Der Wettbewerb läuft monatlich: Am Monatsersten starten alle wieder bei null, der Vormonat wandert in die Trophäen.':
     'A competição é mensal: no dia 1 todos começam do zero e o mês anterior vai para os troféus.',
