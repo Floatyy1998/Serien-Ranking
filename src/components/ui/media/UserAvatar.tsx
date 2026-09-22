@@ -39,12 +39,16 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   // zeigt ein Tipp das Bild groß, statt gar nichts zu tun.
   const zoomable = !navigable && !!src;
 
-  const handleClick = () => {
+  // Der Klick darf nicht zusaetzlich an eine klickbare Zeile durchgereicht
+  // werden: sonst oeffnet sich das Bild UND die Zeile navigiert (Rangliste).
+  const handleClick = (event: React.MouseEvent) => {
     if (navigable) {
+      event.stopPropagation();
       navigate(`/friend/${userId}`);
       return;
     }
-    showAvatar(src, username);
+    // Ohne Bild passiert hier nichts — dann soll die Zeile den Klick bekommen.
+    if (showAvatar(src, username)) event.stopPropagation();
   };
 
   return (

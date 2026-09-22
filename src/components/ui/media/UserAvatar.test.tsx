@@ -106,4 +106,50 @@ describe('UserAvatar', () => {
     expect(navigate).not.toHaveBeenCalled();
     expect(viewed).toEqual(['https://x/p.jpg']);
   });
+
+  // In der Rangliste sitzt der Avatar in einer klickbaren Zeile: ohne
+  // stopPropagation oeffnete sich das Bild UND die Zeile navigierte.
+  describe('Klick in einer klickbaren Zeile', () => {
+    it('laesst den Klick nicht zur Zeile durch, wenn das Bild gross geht', () => {
+      const rowClick = vi.fn();
+      render(
+        <div onClick={rowClick}>
+          <UserAvatar userId="u1" username="Bob" photoURL="https://x/p.jpg" navigable={false} />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Profilbild von Bob' }));
+
+      expect(viewed).toEqual(['https://x/p.jpg']);
+      expect(rowClick).not.toHaveBeenCalled();
+    });
+
+    it('laesst den Klick nicht zur Zeile durch, wenn der Avatar selbst navigiert', () => {
+      const rowClick = vi.fn();
+      render(
+        <div onClick={rowClick}>
+          <UserAvatar userId="u1" username="Bob" photoURL="https://x/p.jpg" />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Profil von Bob öffnen' }));
+
+      expect(navigate).toHaveBeenCalledWith('/friend/u1');
+      expect(rowClick).not.toHaveBeenCalled();
+    });
+
+    it('reicht den Klick durch, wenn es gar kein Bild zu zeigen gibt', () => {
+      const rowClick = vi.fn();
+      render(
+        <div onClick={rowClick}>
+          <UserAvatar userId="u1" username="Bob" navigable={false} />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Profilbild von Bob' }));
+
+      expect(viewed).toEqual([]);
+      expect(rowClick).toHaveBeenCalled();
+    });
+  });
 });
