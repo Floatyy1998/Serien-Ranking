@@ -19,6 +19,10 @@ vi.mock('framer-motion', async () => {
     motion: new Proxy({} as Record<string, unknown>, { get: (_t, tag) => make(String(tag)) }),
   };
 });
+vi.mock('../../components/ui/media/UserAvatar', () => ({
+  UserAvatar: ({ username }: { username: string }) => <span>{username?.charAt(0)}</span>,
+}));
+vi.mock('@mui/icons-material', () => ({ WorkspacePremium: () => null }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
@@ -62,7 +66,9 @@ describe('PodiumSection', () => {
     // Voller Name: die Kuerzung uebernimmt die CSS-Ellipse, nicht ein split(' ').
     expect(screen.getByText('Alice Wonder')).toBeInTheDocument();
     expect(screen.getByText('Bob Builder')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
+    // Platz 1 traegt seine Rolle, die Verfolger ihre Platznummer.
+    expect(screen.getByText('Spitzenreiter')).toBeInTheDocument();
+    expect(screen.getByText('Platz 2')).toBeInTheDocument();
     expect(screen.getByText('42')).toBeInTheDocument();
   });
 

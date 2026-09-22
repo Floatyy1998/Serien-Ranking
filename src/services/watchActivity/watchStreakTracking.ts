@@ -9,7 +9,12 @@ import type { WatchStreak } from '../../types/WatchActivity';
 import { toLocalDateString } from '../../lib/date/date.utils';
 import { getStreakPath } from './shared';
 
-export async function updateWatchStreak(userId: string): Promise<void> {
+/**
+ * Schreibt die Tages-Streak fort und gibt den neuen Stand zurueck. Der
+ * Rueckgabewert ist die EINE Wahrheit fuer die Streak — die Rangliste spiegelt
+ * ihn, statt ihn ein zweites Mal zu rechnen.
+ */
+export async function updateWatchStreak(userId: string): Promise<WatchStreak | null> {
   try {
     const now = new Date();
     const year = now.getFullYear();
@@ -40,7 +45,8 @@ export async function updateWatchStreak(userId: string): Promise<void> {
 
     const lastDate = currentStreak.lastWatchDate;
 
-    if (lastDate === today) return;
+    // Heute schon gezaehlt: nichts schreiben, aber den Stand melden.
+    if (lastDate === today) return currentStreak;
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -75,9 +81,11 @@ export async function updateWatchStreak(userId: string): Promise<void> {
 
     currentStreak.lastWatchDate = today;
     await streakRef.set(currentStreak);
+    return currentStreak;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[WatchActivity] Failed to update watch streak: ${message}`);
+    return null;
   }
 }
 

@@ -1,18 +1,15 @@
 import { EmojiEvents } from '@mui/icons-material';
-import { showAvatar } from '../../lib/image/avatarViewer';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 import { NameBadges } from '../../components/ui/display/NameBadges';
-import type { MonthlyTrophy } from '../../types/Leaderboard';
+import { UserAvatar } from '../../components/ui/media/UserAvatar';
+import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import type { MonthlyTrophy } from '../../types/Leaderboard';
 
-const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
-const MEDAL_GRADIENTS = [
-  'linear-gradient(135deg, #FFD700, #FFC300, #FFE066)',
-  'linear-gradient(135deg, #E0E0E0, #B8B8B8, #D8D8D8)',
-  'linear-gradient(135deg, #CD7F32, #E09050, #D4944A)',
-];
+/** Nur als Kante und Ziffernfarbe — gefuellte Medaillen werden auf dunklem
+ *  Grund zu Braun-Matsch. */
+const MEDAL_COLORS = ['#f3c969', '#cfd6df', '#d79663'];
 
 const MONTH_NAMES: Record<string, string> = {
   '01': t('Januar'),
@@ -57,154 +54,57 @@ export const TrophyHistory = React.memo(function TrophyHistory({
   if (trophies.length === 0) return null;
 
   return (
-    <div style={{ paddingTop: '32px' }}>
-      <div className="lb-trophy-header">
-        <div className="lb-trophy-icon-wrap">
-          <EmojiEvents style={{ fontSize: '18px', color: currentTheme.background.default }} />
-        </div>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: 800,
-            fontFamily: 'var(--font-display)',
-            color: currentTheme.text.secondary,
-          }}
-        >
-          {t('Trophäen')}
-        </h2>
-      </div>
+    <section>
+      <h2 className="lb-trophy-header">
+        <EmojiEvents style={{ fontSize: 16, color: MEDAL_COLORS[0] }} />
+        {t('Trophäen')}
+      </h2>
 
-      <div className="lb-trophy-scroll">
+      <div className="lb-trophy-grid">
         {trophies.map((trophy, trophyIdx) => (
           <motion.div
             key={trophy.monthKey}
             className="lb-trophy-card"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: trophyIdx * 0.1 }}
-            style={{
-              background: 'var(--glass-light)',
-              border: '1px solid var(--glass-border-light)',
-            }}
+            transition={{ duration: 0.35, delay: Math.min(trophyIdx, 8) * 0.06 }}
           >
-            <div className="lb-trophy-card-header">
-              <div>
-                <div
-                  style={{ fontSize: '16px', fontWeight: 800, color: currentTheme.text.secondary }}
-                >
-                  {formatMonthLabel(trophy.monthKey)}
+            <span className="lb-trophy-month" style={{ color: currentTheme.text.secondary }}>
+              {formatMonthLabel(trophy.monthKey)}
+            </span>
+
+            {([trophy.first, trophy.second, trophy.third] as const).map((entry, idx) => {
+              if (!entry) return null;
+
+              return (
+                <div key={entry.uid} className="lb-trophy-row">
+                  <span className="lb-trophy-place" style={{ color: MEDAL_COLORS[idx] }}>
+                    {idx + 1}
+                  </span>
+
+                  <UserAvatar
+                    userId={entry.uid}
+                    username={entry.displayName}
+                    photoURL={entry.photoURL}
+                    size={26}
+                    navigable={false}
+                    bordered={false}
+                  />
+
+                  <span className="lb-trophy-name" style={{ color: currentTheme.text.secondary }}>
+                    {entry.uid === currentUserId ? t('Du') : entry.displayName}
+                    <NameBadges uid={entry.uid} compact />
+                  </span>
+
+                  <span className="lb-trophy-score" style={{ color: currentTheme.text.muted }}>
+                    {formatWatchtime(entry.score)}
+                  </span>
                 </div>
-                <div style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '2px' }}>
-                  {t('Watchtime Rangliste')}
-                </div>
-              </div>
-              <EmojiEvents style={{ fontSize: '24px', color: 'rgba(255, 215, 0, 0.55)' }} />
-            </div>
-
-            <div className="lb-trophy-entries">
-              {([trophy.first, trophy.second, trophy.third] as const).map((entry, idx) => {
-                if (!entry) return null;
-                const medal = MEDAL_COLORS[idx];
-                const isFirst = idx === 0;
-                const avatarSize = isFirst ? 34 : 28;
-                const medalSize = isFirst ? 28 : 24;
-
-                return (
-                  <div
-                    key={entry.uid}
-                    className="lb-trophy-entry"
-                    style={{
-                      background: isFirst ? `${medal}15` : 'transparent',
-                      marginBottom: idx < 2 ? '4px' : 0,
-                      padding: isFirst ? '10px 12px' : '8px 12px',
-                    }}
-                  >
-                    <div
-                      className="lb-trophy-medal"
-                      style={{
-                        width: medalSize,
-                        height: medalSize,
-                        background: MEDAL_GRADIENTS[idx],
-                        boxShadow: `0 2px 8px ${medal}40`,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: isFirst ? '14px' : '12px',
-                          fontWeight: 900,
-                          color: currentTheme.background.default,
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                    </div>
-
-                    <div
-                      className="lb-trophy-avatar"
-                      style={{
-                        width: avatarSize,
-                        height: avatarSize,
-                        border: `2px solid ${medal}60`,
-                        background: currentTheme.background.default,
-                        cursor: entry.photoURL ? 'pointer' : undefined,
-                      }}
-                      onClick={(e) => {
-                        if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();
-                      }}
-                    >
-                      {entry.photoURL ? (
-                        <img
-                          src={entry.photoURL}
-                          alt={entry.displayName}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <span
-                          style={{
-                            fontSize: isFirst ? 14 : 11,
-                            fontWeight: 700,
-                            color: currentTheme.text.secondary,
-                          }}
-                        >
-                          {entry.displayName.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: isFirst ? '14px' : '13px',
-                        fontWeight: isFirst ? 700 : 600,
-                        color: currentTheme.text.secondary,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {entry.uid === currentUserId ? t('Du') : entry.displayName}
-                      <NameBadges uid={entry.uid} compact />
-                    </span>
-
-                    <span
-                      style={{
-                        fontSize: isFirst ? '14px' : '12px',
-                        fontWeight: 700,
-                        color: medal,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {formatWatchtime(entry.score)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+              );
+            })}
           </motion.div>
         ))}
       </div>
-    </div>
+    </section>
   );
 });

@@ -204,7 +204,7 @@ describe('updateWatchStreak', () => {
 
   it('fängt Firebase-Fehler ab (kein Throw)', async () => {
     fb.state.fail = true;
-    await expect(updateWatchStreak('u')).resolves.toBeUndefined();
+    await expect(updateWatchStreak('u')).resolves.toBeNull();
   });
 });
 

@@ -80,6 +80,10 @@ vi.mock('./useFriendPet', () => ({ useFriendPet: () => ({ pet: null, loading: fa
 vi.mock('./FriendCurrentlyWatchingCard', () => ({ FriendCurrentlyWatchingCard: () => null }));
 vi.mock('./FriendAnticipationSection', () => ({ FriendAnticipationSection: () => null }));
 vi.mock('./FriendPetCard', () => ({ FriendPetCard: () => null }));
+vi.mock('./FriendComparisonCard', () => ({ FriendComparisonCard: () => null }));
+vi.mock('./useFriendComparison', () => ({
+  useFriendComparison: () => ({ own: {}, friend: null, loading: false }),
+}));
 vi.mock('@mui/icons-material', () => ({
   ChatBubbleOutlined: () => null,
   CompareArrows: () => null,

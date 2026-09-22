@@ -17,6 +17,7 @@ import gapsErrors from './gaps-errors';
 import gapsMisc from './gaps-misc';
 import gapsPatchnotes from './gaps-patchnotes';
 import gapsSharing from './gaps-sharing';
+import gapsTotals from './gaps-totals';
 import gapsWrapped from './gaps-wrapped';
 import genres from './genres';
 import guest from './guest';
@@ -44,6 +45,7 @@ const en: Record<string, string> = {
   ...gapsMisc,
   ...gapsPatchnotes,
   ...gapsSharing,
+  ...gapsTotals,
   ...gapsWrapped,
   ...genres,
   ...guest,

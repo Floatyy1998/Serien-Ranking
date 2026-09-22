@@ -192,6 +192,114 @@
   margin-bottom: 22px;
 }
 
+/* ── Gesamtvergleich (Duell-Karte) ── */
+.fp-compare {
+  margin: 0 var(--fp-x) 22px;
+  padding: 16px 16px 8px;
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--glass-subtle);
+}
+.fp-compare--empty {
+  padding: 16px;
+  font-size: 13px;
+  text-align: center;
+}
+.fp-compare-head {
+  margin-bottom: 14px;
+}
+.fp-compare-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.fp-compare-names {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.fp-compare-names span {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fp-compare-row {
+  margin-bottom: 14px;
+}
+.fp-compare-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.fp-compare-duel {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.fp-compare-side {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* Die linke Seite waechst zur Mitte hin — beide Balken treffen sich dort. */
+.fp-compare-side--left {
+  align-items: flex-end;
+  text-align: right;
+}
+.fp-compare-side--right {
+  align-items: flex-start;
+  text-align: left;
+}
+.fp-compare-value {
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.fp-compare-track {
+  width: 100%;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--glass-light);
+  overflow: hidden;
+  display: flex;
+}
+.fp-compare-side--left .fp-compare-track {
+  justify-content: flex-end;
+}
+.fp-compare-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+.fp-compare-detail {
+  font-size: 10px;
+  line-height: 1.2;
+}
+.fp-compare-cta {
+  width: 100%;
+  padding: 10px 0 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .fp-search-wrap {
   padding: 0 var(--fp-x);
   margin-bottom: 16px;

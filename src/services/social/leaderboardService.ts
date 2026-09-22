@@ -1,4 +1,4 @@
-import { dbRef, dbUpdate, userPath, paths } from '../db/ref';
+import { dbGet, dbRef, dbUpdate, userPath, paths } from '../db/ref';
 import type {
   GlobalLeaderboardEntry,
   LeaderboardStats,
@@ -91,6 +91,10 @@ export async function updateLeaderboardStats(
     episodesWatched?: number;
     moviesWatched?: number;
     watchtimeMinutes?: number;
+    /** Stand aus dem Streak-Tracker (`wrapped/$jahr/streak`) — die eine
+     *  Wahrheit. Ohne ihn faellt die Funktion auf ihre eigene Datumsrechnung
+     *  zurueck (Aufrufer ausserhalb des Watch-Flows). */
+    streak?: { current: number; longest: number };
   }
 ): Promise<void> {
   try {
@@ -173,8 +177,19 @@ export async function updateLeaderboardStats(
       current.watchtimeThisMonth += update.watchtimeMinutes;
     }
 
-    // Streak-Berechnung (unabhängig von Homepage-Streak)
-    if (current.lastStreakDate !== today) {
+    // Streak: den Stand des Trackers spiegeln. Eine zweite, eigene Zählung
+    // lief auseinander — Nachtrag-Tage (Bulk) erreichten diese Funktion früher
+    // gar nicht und rissen die Kette, während die Startseite weiterzählte.
+    if (update.streak) {
+      current.streakCurrent = update.streak.current;
+      current.streakAllTime = Math.max(current.streakAllTime || 0, update.streak.longest);
+      const dayOfMonth = new Date().getDate();
+      const streakInMonth = Math.min(update.streak.current, dayOfMonth);
+      if (streakInMonth > (current.streakThisMonth || 0)) {
+        current.streakThisMonth = streakInMonth;
+      }
+      current.lastStreakDate = today;
+    } else if (current.lastStreakDate !== today) {
       if (current.lastStreakDate === yesterday) {
         // Streak geht weiter
         current.streakCurrent = (current.streakCurrent || 0) + 1;
@@ -221,6 +236,58 @@ export async function updateLeaderboardStats(
  * in den öffentlichen /leaderboardStats Knoten, falls dort noch kein aktueller Eintrag existiert.
  * Wird einmalig beim Laden der Leaderboard-Seite aufgerufen.
  */
+/**
+ * Zieht die Streak-Werte der Rangliste auf den Stand des Trackers nach.
+ *
+ * Hintergrund: die Rangliste zählte die Streak früher selbst, und ein Tag, an
+ * dem nur nachgetragen wurde, riss diese Kette. Bestehende Konten tragen
+ * deshalb eine zu kleine `streakAllTime`. Beim Öffnen der Rangliste wird sie
+ * einmalig korrigiert.
+ */
+export async function syncStreakFromTracker(userId: string): Promise<void> {
+  try {
+    const year = new Date().getFullYear();
+    const tracker =
+      (await dbGet<{ currentStreak?: number; longestStreak?: number; lastWatchDate?: string }>(
+        userPath(userId, 'wrapped', year, 'streak')
+      )) ??
+      (await dbGet<{ currentStreak?: number; longestStreak?: number; lastWatchDate?: string }>(
+        userPath(userId, 'wrapped', year - 1, 'streak')
+      ));
+    if (!tracker) return;
+
+    const longest = Math.max(tracker.longestStreak || 0, tracker.currentStreak || 0);
+    if (longest <= 0) return;
+
+    const statsPath = userPath(userId, 'leaderboard', 'stats');
+    const stats = await dbGet<LeaderboardStats>(statsPath);
+    if (!stats) return;
+
+    // Die laufende Streak zählt nur, solange sie nicht abgerissen ist.
+    const today = getTodayStr();
+    const stillRunning =
+      tracker.lastWatchDate === today || tracker.lastWatchDate === getYesterdayStr();
+    const currentStreak = stillRunning ? tracker.currentStreak || 0 : 0;
+
+    const nextAllTime = Math.max(stats.streakAllTime || 0, longest);
+    if (
+      nextAllTime === (stats.streakAllTime || 0) &&
+      currentStreak === (stats.streakCurrent || 0)
+    ) {
+      return;
+    }
+
+    await dbUpdate({
+      [`${statsPath}/streakAllTime`]: nextAllTime,
+      [`${statsPath}/streakCurrent`]: currentStreak,
+      [`leaderboardStats/${userId}/streakAllTime`]: nextAllTime,
+      [`leaderboardStats/${userId}/streakCurrent`]: currentStreak,
+    });
+  } catch {
+    // Best-effort: die Rangliste ist Gamification, kein Beleg.
+  }
+}
+
 export async function seedLeaderboardStats(
   currentUserId: string,
   friendUids: string[]

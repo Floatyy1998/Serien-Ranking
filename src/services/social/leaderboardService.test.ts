@@ -173,6 +173,7 @@ import {
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
   seedLeaderboardStats,
+  syncStreakFromTracker,
   updateLeaderboardStats,
 } from './leaderboardService';
 
@@ -301,6 +302,159 @@ describe('updateLeaderboardStats', () => {
     fb.state.failOnce.add('users/u1/leaderboard/stats');
     await expect(updateLeaderboardStats('u1', { episodesWatched: 1 })).resolves.toBeUndefined();
     expect(errSpy).toHaveBeenCalled();
+  });
+
+  // Die Streak gehört dem Tracker (wrapped/$jahr/streak). Zählt die Rangliste
+  // selbst, läuft sie an Nachtrag-Tagen auseinander — genau der Fall, in dem
+  // die Startseite 200 Tage zeigte und die Rangliste 128.
+  describe('Streak aus dem Tracker', () => {
+    it('übernimmt den Stand des Trackers, statt selbst zu zählen', async () => {
+      seedProfile('u1', 'Alice');
+      fb.setByPath('users/u1/leaderboard/stats', {
+        monthKey: '2026-07',
+        episodesThisMonth: 0,
+        moviesThisMonth: 0,
+        watchtimeThisMonth: 0,
+        streakThisMonth: 1,
+        streakAllTime: 128,
+        streakCurrent: 1,
+        lastStreakDate: '2026-07-01',
+        lastUpdated: 0,
+      });
+
+      await updateLeaderboardStats('u1', {
+        episodesWatched: 1,
+        streak: { current: 205, longest: 205 },
+      });
+
+      const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+      expect(stats.streakCurrent).toBe(205);
+      expect(stats.streakAllTime).toBe(205);
+      expect(stats.streakThisMonth).toBe(4); // min(205, Tag im Monat)
+    });
+
+    it('senkt einen bereits höheren Rekord nicht ab', async () => {
+      seedProfile('u1', 'Alice');
+      fb.setByPath('users/u1/leaderboard/stats', {
+        monthKey: '2026-07',
+        episodesThisMonth: 0,
+        moviesThisMonth: 0,
+        watchtimeThisMonth: 0,
+        streakThisMonth: 1,
+        streakAllTime: 300,
+        streakCurrent: 1,
+        lastStreakDate: '2026-07-01',
+        lastUpdated: 0,
+      });
+
+      await updateLeaderboardStats('u1', { streak: { current: 5, longest: 12 } });
+
+      const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+      expect(stats.streakAllTime).toBe(300);
+      expect(stats.streakCurrent).toBe(5);
+    });
+
+    it('zählt ohne Tracker-Wert weiter wie bisher', async () => {
+      seedProfile('u1', 'Alice');
+      fb.setByPath('users/u1/leaderboard/stats', {
+        monthKey: '2026-07',
+        episodesThisMonth: 0,
+        moviesThisMonth: 0,
+        watchtimeThisMonth: 0,
+        streakThisMonth: 3,
+        streakAllTime: 4,
+        streakCurrent: 4,
+        lastStreakDate: '2026-07-03',
+        lastUpdated: 0,
+      });
+
+      await updateLeaderboardStats('u1', { episodesWatched: 1 });
+
+      const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+      expect(stats.streakCurrent).toBe(5);
+    });
+  });
+});
+
+describe('syncStreakFromTracker', () => {
+  const seedStats = (over: Record<string, unknown> = {}) =>
+    fb.setByPath('users/u1/leaderboard/stats', {
+      monthKey: '2026-07',
+      episodesThisMonth: 0,
+      moviesThisMonth: 0,
+      watchtimeThisMonth: 0,
+      streakThisMonth: 1,
+      streakAllTime: 128,
+      streakCurrent: 1,
+      lastStreakDate: '2026-07-01',
+      lastUpdated: 0,
+      ...over,
+    });
+
+  it('hebt einen zu kleinen Rekord auf den Stand des Trackers', async () => {
+    seedStats();
+    fb.setByPath('users/u1/wrapped/2026/streak', {
+      currentStreak: 205,
+      longestStreak: 205,
+      lastWatchDate: '2026-07-04',
+    });
+
+    await syncStreakFromTracker('u1');
+
+    const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+    expect(stats.streakAllTime).toBe(205);
+    expect(stats.streakCurrent).toBe(205);
+    const mirror = fb.getByPath('leaderboardStats/u1') as Record<string, unknown>;
+    expect(mirror.streakAllTime).toBe(205);
+  });
+
+  it('meldet eine abgerissene Streak als 0, behält aber den Rekord', async () => {
+    seedStats();
+    fb.setByPath('users/u1/wrapped/2026/streak', {
+      currentStreak: 40,
+      longestStreak: 205,
+      lastWatchDate: '2026-06-01',
+    });
+
+    await syncStreakFromTracker('u1');
+
+    const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+    expect(stats.streakAllTime).toBe(205);
+    expect(stats.streakCurrent).toBe(0);
+  });
+
+  it('greift auf das Vorjahr zurück, wenn das laufende Jahr noch leer ist', async () => {
+    seedStats();
+    fb.setByPath('users/u1/wrapped/2025/streak', {
+      currentStreak: 9,
+      longestStreak: 190,
+      lastWatchDate: '2025-12-31',
+    });
+
+    await syncStreakFromTracker('u1');
+
+    const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+    expect(stats.streakAllTime).toBe(190);
+  });
+
+  it('schreibt nichts, wenn die Werte schon stimmen', async () => {
+    seedStats({ streakAllTime: 205, streakCurrent: 205 });
+    fb.setByPath('users/u1/wrapped/2026/streak', {
+      currentStreak: 205,
+      longestStreak: 205,
+      lastWatchDate: '2026-07-04',
+    });
+
+    await syncStreakFromTracker('u1');
+
+    expect(fb.getByPath('leaderboardStats/u1')).toBeUndefined();
+  });
+
+  it('tut nichts ohne Tracker-Daten', async () => {
+    seedStats();
+    await expect(syncStreakFromTracker('u1')).resolves.toBeUndefined();
+    const stats = fb.getByPath('users/u1/leaderboard/stats') as Record<string, unknown>;
+    expect(stats.streakAllTime).toBe(128);
   });
 });
 

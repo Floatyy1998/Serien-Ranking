@@ -1,20 +1,21 @@
+import { WorkspacePremium } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { showAvatar } from '../../lib/image/avatarViewer';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
 import { NameBadges } from '../../components/ui/display/NameBadges';
-import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
-import { formatValue } from './leaderboardUtils';
+import { UserAvatar } from '../../components/ui/media/UserAvatar';
+import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import type { LeaderboardEntry, RankingCategory } from '../../types/Leaderboard';
+import { formatValue } from './leaderboardUtils';
 
-const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
-const PODIUM_HEIGHTS = [190, 148, 122];
-const PODIUM_ORDER = [1, 0, 2]; // 2nd, 1st, 3rd
+/** Medaillenfarben sind Semantik, kein Theme — sie liegen aber nur als Kante
+ *  und Schein auf dem Glas, nie als Flaeche (wird auf Dunkel zu Matsch). */
+const MEDALS = ['#f3c969', '#cfd6df', '#d79663'];
 
 interface PodiumSectionProps {
   topThree: LeaderboardEntry[];
-  category: LeaderboardCategory;
+  category: RankingCategory;
   unit: string;
 }
 
@@ -28,144 +29,100 @@ export const PodiumSection = React.memo(function PodiumSection({
 
   if (topThree.length === 0) return null;
 
-  return (
-    <div className="lb-podium">
-      {PODIUM_ORDER.map((podiumIndex) => {
-        const entry = topThree[podiumIndex];
-        if (!entry) return <div key={podiumIndex} style={{ flex: 1 }} />;
+  // Vorsprung der Spitze auf Platz 2 — fuellt die rechte Haelfte des Throns
+  // mit einer Aussage statt mit Leere.
+  const lead = topThree.length > 1 ? topThree[0].value - topThree[1].value : 0;
 
-        const medal = MEDAL_COLORS[podiumIndex];
-        const height = PODIUM_HEIGHTS[podiumIndex];
-        const isFirst = podiumIndex === 0;
-        const avatarSize = isFirst ? 96 : 72;
-        // Lange Werte („123h 35m") schrumpfen statt auf schmalen Mobile-
-        // Podesten umzubrechen.
-        const valueText = formatValue(entry.value, category);
-        const compact = valueText.length >= 7;
-        const valueFontSize = isFirst ? (compact ? 24 : 40) : compact ? 18 : 28;
+  return (
+    <div className="lb-stage">
+      {topThree.map((entry, index) => {
+        const medal = MEDALS[index];
+        const isFirst = index === 0;
+        const openProfile = () => {
+          if (!entry.isCurrentUser) navigate(`/friend/${entry.uid}`);
+        };
+
+        const value = (
+          <span className="lb-champ-value" style={{ color: currentTheme.text.secondary }}>
+            {formatValue(entry.value, category)}
+            {unit && <em>{unit}</em>}
+          </span>
+        );
 
         return (
           <motion.div
             key={entry.uid}
-            className="lb-podium-slot"
-            initial={{ opacity: 0, y: 40 }}
+            className={`lb-champ ${isFirst ? 'lb-champ--first' : ''}`}
+            style={{ ['--medal' as string]: medal }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: podiumIndex * 0.15, duration: 0.5, type: 'spring', damping: 15 }}
-            onClick={() => {
-              if (!entry.isCurrentUser) navigate(`/friend/${entry.uid}`);
+            transition={{ delay: index * 0.07, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            onClick={openProfile}
+            role={entry.isCurrentUser ? undefined : 'button'}
+            tabIndex={entry.isCurrentUser ? undefined : 0}
+            aria-label={
+              entry.isCurrentUser
+                ? undefined
+                : t('Profil von {name} öffnen', { name: entry.displayName })
+            }
+            onKeyDown={(event) => {
+              if (entry.isCurrentUser) return;
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openProfile();
+              }
             }}
-            style={{ cursor: entry.isCurrentUser ? 'default' : 'pointer' }}
           >
-            {/* Avatar with glow ring + rank badge */}
-            <div style={{ position: 'relative', marginBottom: 10 }}>
-              {isFirst && <span className="lb-podium-crown">👑</span>}
-              <div
-                className="lb-podium-avatar"
-                style={{
-                  width: avatarSize,
-                  height: avatarSize,
-                  border: `3px solid ${medal}`,
-                  background: currentTheme.background.card,
-                  boxShadow: isFirst
-                    ? `0 0 28px ${medal}55, 0 0 64px ${medal}25`
-                    : `0 6px 20px ${medal}35`,
-                  marginBottom: 0,
-                  cursor: entry.photoURL ? 'pointer' : undefined,
-                }}
-                onClick={(e) => {
-                  if (showAvatar(entry.photoURL, entry.displayName)) e.stopPropagation();
-                }}
-              >
-                {entry.photoURL ? (
-                  <img
-                    src={entry.photoURL}
-                    alt={entry.displayName}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span
-                    style={{
-                      fontSize: isFirst ? 34 : 26,
-                      fontWeight: 700,
-                      color: currentTheme.text.secondary,
-                    }}
-                  >
-                    {entry.displayName.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <span
-                className="lb-podium-rankbadge"
-                style={{
-                  width: isFirst ? 28 : 24,
-                  height: isFirst ? 28 : 24,
-                  fontSize: isFirst ? 14 : 12,
-                  background: `linear-gradient(135deg, ${medal}, color-mix(in srgb, ${medal} 70%, #fff))`,
-                  boxShadow: `0 2px 10px ${medal}60`,
-                }}
-              >
-                {entry.rank}
-              </span>
-            </div>
-
-            {/* Name */}
-            <span
-              className="lb-podium-name"
-              style={{
-                fontWeight: entry.isCurrentUser ? 800 : 600,
-                color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
-              }}
-            >
-              {/* Kein split(' ') mehr: .lb-podium-name kuerzt bereits per Ellipse.
-                  Vorher stand hier bei "Flo Spixi" nur "Flo", waehrend die Liste
-                  darunter den vollen Namen zeigte. */}
-              {entry.isCurrentUser ? t('Du') : entry.displayName}
-              <NameBadges uid={entry.uid} compact />
-            </span>
-
-            {/* Podium block */}
-            <div
-              className="lb-podium-block"
-              style={{
-                height: `${height}px`,
-                background:
-                  'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
-                borderTop: `2px solid ${medal}`,
-                borderLeft: '1px solid rgba(255,255,255,0.08)',
-                borderRight: '1px solid rgba(255,255,255,0.08)',
-                borderBottom: 'none',
-                boxShadow: `inset 0 22px 44px -26px ${medal}70, var(--shadow-lg)`,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: valueFontSize,
-                  fontWeight: 900,
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1,
-                  whiteSpace: 'nowrap',
-                  maxWidth: '100%',
-                  color: currentTheme.text.secondary,
-                  textShadow: `0 0 24px ${medal}40`,
-                }}
-              >
-                {valueText}
-              </span>
-              {unit && (
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: `${medal}cc`,
-                  }}
-                >
-                  {unit}
+            <div className="lb-champ-avatar">
+              <UserAvatar
+                userId={entry.uid}
+                username={entry.displayName}
+                photoURL={entry.photoURL}
+                size={isFirst ? 68 : 48}
+                navigable={false}
+                bordered={false}
+              />
+              {!isFirst && (
+                <span className="lb-champ-crest" style={{ color: medal }}>
+                  {entry.rank}
                 </span>
               )}
             </div>
+
+            <div className="lb-champ-info">
+              <span className="lb-champ-tag" style={{ color: medal }}>
+                {isFirst && <WorkspacePremium style={{ fontSize: 14 }} />}
+                {isFirst ? t('Spitzenreiter') : t('Platz {n}', { n: entry.rank })}
+              </span>
+
+              <span
+                className="lb-champ-name"
+                style={{
+                  color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
+                }}
+              >
+                <span className="lb-champ-name-text">
+                  {entry.isCurrentUser ? t('Du') : entry.displayName}
+                </span>
+                <NameBadges uid={entry.uid} />
+              </span>
+
+              {isFirst && value}
+            </div>
+
+            {!isFirst && value}
+
+            {isFirst && lead > 0 && (
+              <div className="lb-champ-lead">
+                <span className="lb-champ-lead-label" style={{ color: currentTheme.text.muted }}>
+                  {t('Vorsprung')}
+                </span>
+                <span className="lb-champ-lead-value" style={{ color: medal }}>
+                  {formatValue(lead, category)}
+                  {unit && <em>{unit}</em>}
+                </span>
+              </div>
+            )}
           </motion.div>
         );
       })}

@@ -17,6 +17,9 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('@mui/icons-material', () => ({ EmojiEvents: () => null }));
+vi.mock('../../components/ui/media/UserAvatar', () => ({
+  UserAvatar: ({ username }: { username: string }) => <span>{username?.charAt(0)}</span>,
+}));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {

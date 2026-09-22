@@ -45,6 +45,8 @@ import { useFriendPet } from './useFriendPet';
 import { FriendCurrentlyWatchingCard } from './FriendCurrentlyWatchingCard';
 import { FriendAnticipationSection } from './FriendAnticipationSection';
 import { FriendPetCard } from './FriendPetCard';
+import { FriendComparisonCard } from './FriendComparisonCard';
+import { useFriendComparison } from './useFriendComparison';
 import { ShareGate } from '../../components/social/ShareGate';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
@@ -148,6 +150,8 @@ export const FriendProfilePage = memo(() => {
   );
   const anticipation = useFriendAnticipation(restricted || !darfSehen ? undefined : friendId);
   const friendPet = useFriendPet(restricted ? undefined : friendId);
+  // Aggregierte Gesamtzahlen: haengen an der Freundschaft, nicht an der Freigabe.
+  const comparison = useFriendComparison(restricted ? undefined : friendId);
 
   const [insightsOpen, setInsightsOpen] = useState<boolean>(() => {
     try {
@@ -375,6 +379,16 @@ export const FriendProfilePage = memo(() => {
             </motion.button>
           </div>
         </header>
+
+        {/* Gesamtvergleich — aggregierte Zahlen, bewusst ohne Freigabe-Gate */}
+        {friendId && (
+          <FriendComparisonCard
+            friendName={friendName}
+            own={comparison.own}
+            friend={comparison.friend}
+            loading={comparison.loading}
+          />
+        )}
 
         {/* Friend Insights — Currently Watching, Pet, Anticipation */}
         {friendId && (

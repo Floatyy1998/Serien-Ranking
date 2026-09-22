@@ -5,6 +5,25 @@
  */
 
 import { useState } from 'react';
+import {
+  EmojiEvents,
+  Group,
+  InfoOutlined,
+  LocalFireDepartment,
+  Movie,
+  PlayCircle,
+  PersonAddAlt1,
+  Public,
+  Timer,
+  Tv,
+} from '@mui/icons-material';
+import { PageHeader } from '../../components/ui';
+import { PodiumSection } from '../Leaderboard/PodiumSection';
+import { RankingList } from '../Leaderboard/RankingList';
+import { SelfStandBand } from '../Leaderboard/SelfStandBand';
+import { TrophyHistory } from '../Leaderboard/TrophyHistory';
+import type { LeaderboardEntry, MonthlyTrophy } from '../../types/Leaderboard';
+import '../Leaderboard/LeaderboardPage.css';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
@@ -505,3 +524,213 @@ export const HistoryMoviesPreview = () => {
     </div>
   );
 };
+
+/* ── Rangliste (Neubau) ─────────────────────────────────────────
+   Echte Sektionen mit erfundenen Zahlen. Das Kommando-Deck ist hier
+   nachgebaut, weil es in der Seite selbst am Daten-Hook haengt. */
+
+const lbEntry = (
+  rank: number,
+  displayName: string,
+  value: number,
+  isCurrentUser = false
+): LeaderboardEntry => ({
+  uid: `u${rank}`,
+  displayName,
+  value,
+  rank,
+  isCurrentUser,
+});
+
+const LB_ENTRIES: LeaderboardEntry[] = [
+  lbEntry(1, 'Konrad', 45360),
+  lbEntry(2, 'VIC', 36245, true),
+  lbEntry(3, 'BeLLe', 30110),
+  lbEntry(4, 'catcatcat', 21480),
+  lbEntry(5, 'Miriam', 15900),
+  lbEntry(6, 'Jonas', 9240),
+  lbEntry(7, 'Ein sehr langer Anzeigename', 3120),
+];
+
+const LB_TROPHIES: MonthlyTrophy[] = [
+  {
+    monthKey: '2026-08',
+    category: 'watchtimeThisMonth',
+    first: { uid: 'u1', displayName: 'Konrad', score: 1890 },
+    second: { uid: 'u2', displayName: 'VIC', score: 1420 },
+    third: { uid: 'u3', displayName: 'BeLLe', score: 980 },
+  },
+  {
+    monthKey: '2026-07',
+    category: 'watchtimeThisMonth',
+    first: { uid: 'u2', displayName: 'VIC', score: 2210 },
+    second: { uid: 'u4', displayName: 'catcatcat', score: 1670 },
+    third: { uid: 'u1', displayName: 'Konrad', score: 1310 },
+  },
+];
+
+export const LeaderboardPreview = () => {
+  const [period, setPeriod] = useState<'month' | 'total'>('total');
+  const [cat, setCat] = useState('watchtimeMinutes');
+
+  const cats =
+    period === 'total'
+      ? [
+          { id: 'watchtimeMinutes', label: 'Watchtime', icon: <Timer sx={{ fontSize: 16 }} /> },
+          { id: 'seriesStarted', label: 'Serien', icon: <Tv sx={{ fontSize: 16 }} /> },
+          { id: 'movies', label: 'Filme', icon: <Movie sx={{ fontSize: 16 }} /> },
+          { id: 'episodes', label: 'Episoden', icon: <PlayCircle sx={{ fontSize: 16 }} /> },
+          {
+            id: 'streakAllTime',
+            label: 'Längste Streak',
+            icon: <EmojiEvents sx={{ fontSize: 16 }} />,
+          },
+        ]
+      : [
+          {
+            id: 'episodesThisMonth',
+            label: 'Episoden',
+            icon: <PlayCircle sx={{ fontSize: 16 }} />,
+          },
+          { id: 'moviesThisMonth', label: 'Filme', icon: <Movie sx={{ fontSize: 16 }} /> },
+          { id: 'watchtimeThisMonth', label: 'Watchtime', icon: <Timer sx={{ fontSize: 16 }} /> },
+          {
+            id: 'streakThisMonth',
+            label: 'Monats-Streak',
+            icon: <LocalFireDepartment sx={{ fontSize: 16 }} />,
+          },
+        ];
+
+  return (
+    <div className="lb-root" style={{ background: 'var(--color-background-default)' }}>
+      <div className="lb-page">
+        <PageHeader title="Rangliste" subtitle="Watchtime · Aller Zeiten" sticky={false} />
+
+        <div className="lb-deck">
+          <div className="lb-deck-row">
+            <div className={`lb-seg ${period === 'total' ? 'lb-seg--off' : ''}`}>
+              <button className="lb-seg-btn lb-seg-btn--on">
+                <Group sx={{ fontSize: 15 }} />
+                <span>Freunde</span>
+              </button>
+              <button className="lb-seg-btn">
+                <Public sx={{ fontSize: 15 }} />
+                <span>Alle</span>
+              </button>
+            </div>
+            <div className="lb-seg">
+              <button
+                className={`lb-seg-btn ${period === 'month' ? 'lb-seg-btn--on' : ''}`}
+                onClick={() => setPeriod('month')}
+              >
+                <span>Monat</span>
+              </button>
+              <button
+                className={`lb-seg-btn ${period === 'total' ? 'lb-seg-btn--on' : ''}`}
+                onClick={() => setPeriod('total')}
+              >
+                <span>Gesamt</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="lb-cats">
+            {cats.map((c) => (
+              <button
+                key={c.id}
+                className={`lb-cat ${c.id === cat ? 'lb-cat--active' : ''}`}
+                onClick={() => setCat(c.id)}
+              >
+                {c.icon}
+                <span>{c.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button type="button" className="lb-explain">
+          <InfoOutlined sx={{ fontSize: 14 }} />
+          <span>Alles, was du je gesehen hast — ohne Wertung</span>
+        </button>
+
+        <SelfStandBand
+          entries={LB_ENTRIES}
+          category="watchtimeMinutes"
+          unit=""
+          categoryLabel="Watchtime"
+        />
+        <PodiumSection topThree={LB_ENTRIES.slice(0, 3)} category="watchtimeMinutes" unit="" />
+        <RankingList
+          entries={LB_ENTRIES.slice(3)}
+          category="watchtimeMinutes"
+          unit=""
+          leaderValue={LB_ENTRIES[0].value}
+        />
+        <TrophyHistory trophies={LB_TROPHIES} currentUserId="u2" />
+        <div className="lb-bottom-pad" />
+      </div>
+    </div>
+  );
+};
+
+export const LeaderboardEmptyPreview = () => (
+  <div className="lb-root" style={{ background: 'var(--color-background-default)' }}>
+    <div className="lb-page">
+      <PageHeader title="Rangliste" sticky={false} />
+      <div className="lb-deck">
+        <div className="lb-deck-row">
+          <div className="lb-seg">
+            <button className="lb-seg-btn lb-seg-btn--on">
+              <Group sx={{ fontSize: 15 }} />
+              <span>Freunde</span>
+            </button>
+            <button className="lb-seg-btn">
+              <Public sx={{ fontSize: 15 }} />
+              <span>Alle</span>
+            </button>
+          </div>
+          <div className="lb-seg">
+            <button className="lb-seg-btn lb-seg-btn--on">
+              <span>Monat</span>
+            </button>
+            <button className="lb-seg-btn">
+              <span>Gesamt</span>
+            </button>
+          </div>
+        </div>
+        <div className="lb-cats">
+          <button className="lb-cat lb-cat--active">
+            <PlayCircle sx={{ fontSize: 16 }} />
+            <span>Episoden</span>
+          </button>
+          <button className="lb-cat">
+            <Movie sx={{ fontSize: 16 }} />
+            <span>Filme</span>
+          </button>
+          <button className="lb-cat">
+            <Timer sx={{ fontSize: 16 }} />
+            <span>Watchtime</span>
+          </button>
+          <button className="lb-cat">
+            <LocalFireDepartment sx={{ fontSize: 16 }} />
+            <span>Monats-Streak</span>
+          </button>
+        </div>
+      </div>
+
+      <section className="lb-empty">
+        <div className="lb-empty-orbit">
+          <Group style={{ fontSize: 30, color: 'var(--theme-accent)' }} />
+        </div>
+        <h2 style={{ color: 'var(--color-text-secondary)' }}>Noch keine Freunde</h2>
+        <p style={{ color: 'var(--color-text-muted)' }}>
+          Füge Freunde hinzu, um in der Rangliste gegeneinander anzutreten!
+        </p>
+        <button className="lb-empty-cta">
+          <PersonAddAlt1 style={{ fontSize: 18 }} />
+          Freunde finden
+        </button>
+      </section>
+    </div>
+  </div>
+);

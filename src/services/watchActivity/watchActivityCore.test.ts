@@ -77,7 +77,12 @@ const mocks = vi.hoisted(() => ({
   })),
   getActiveBingeSession: vi.fn(),
   updateBingeSession: vi.fn(),
-  updateWatchStreak: vi.fn(async () => {}),
+  updateWatchStreak: vi.fn(async () => ({
+    currentStreak: 7,
+    longestStreak: 21,
+    lastWatchDate: '2026-09-22',
+    streaks: [],
+  })),
   updateLeaderboardStats: vi.fn(async () => {}),
   triggerPetReaction: vi.fn(),
   logEpisodeWatchedActivity: vi.fn(async () => {}),
@@ -151,6 +156,7 @@ describe('logEpisodeWatch', () => {
     expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
       episodesWatched: 1,
       watchtimeMinutes: 50,
+      streak: { current: 7, longest: 21 },
     });
     expect(triggerPetReaction).toHaveBeenCalledWith({ tone: 'cheer' });
     expect(logEpisodeWatchedActivity).toHaveBeenCalledWith('u', 'Dark', 1, 1, 1);
@@ -161,6 +167,7 @@ describe('logEpisodeWatch', () => {
     expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
       episodesWatched: 1,
       watchtimeMinutes: 45,
+      streak: { current: 7, longest: 21 },
     });
   });
 
@@ -194,8 +201,12 @@ describe('logEpisodeWatch', () => {
     expect(logEpisodeWatchedActivity).not.toHaveBeenCalled();
     expect(firstSaved()?.t).toBe('ep');
     expect(updateWatchStreak).toHaveBeenCalled();
-    // Nachtragen alter Folgen zählt nicht für die Rangliste
-    expect(updateLeaderboardStats).not.toHaveBeenCalled();
+    // Nachtragen alter Folgen zählt nicht für die Zähler der Rangliste —
+    // die Streak wird trotzdem gespiegelt, sonst laufen Startseite und
+    // Rangliste auseinander.
+    expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
+      streak: { current: 7, longest: 21 },
+    });
   });
 
   it('reicht Genres und Provider ins Event durch', async () => {
@@ -215,6 +226,7 @@ describe('logMovieWatch', () => {
     expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
       moviesWatched: 1,
       watchtimeMinutes: 148,
+      streak: { current: 7, longest: 21 },
     });
     expect(triggerPetReaction).toHaveBeenCalledWith({ tone: 'movie' });
   });
@@ -231,6 +243,7 @@ describe('logMovieWatch', () => {
     expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
       moviesWatched: 1,
       watchtimeMinutes: 120,
+      streak: { current: 7, longest: 21 },
     });
   });
 
@@ -242,7 +255,9 @@ describe('logMovieWatch', () => {
     await logMovieWatch('u', 103, 'Bulk Movie', 100);
     expect(firstSaved()?.t).toBe('mv');
     expect(updateWatchStreak).toHaveBeenCalled();
-    expect(updateLeaderboardStats).not.toHaveBeenCalled();
+    expect(updateLeaderboardStats).toHaveBeenCalledWith('u', {
+      streak: { current: 7, longest: 21 },
+    });
     expect(triggerPetReaction).not.toHaveBeenCalled();
   });
 

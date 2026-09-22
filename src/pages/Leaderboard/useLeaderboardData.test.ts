@@ -34,6 +34,7 @@ const svc = vi.hoisted(() => ({
   fetchTrophyHistory: vi.fn(async () => [] as MonthlyTrophy[]),
   forceRebuildArchive: vi.fn(async () => {}),
   seedLeaderboardStats: vi.fn(async () => {}),
+  syncStreakFromTracker: vi.fn(async () => {}),
 }));
 vi.mock('../../services/social/leaderboardService', () => svc);
 

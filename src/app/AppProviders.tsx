@@ -6,11 +6,11 @@ import { OptimizedFriendsProvider } from '../contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from '../contexts/SeriesListProvider';
 import { RatingsStateProvider } from '../contexts/RatingsStateProvider';
 import { BadgeProvider } from '../features/badges/BadgeProvider';
-import { StatsProvider } from '../features/stats/StatsProvider';
+import { LibraryTotalsPublisher } from '../features/stats/LibraryTotalsPublisher';
 
 /**
  * Bündelt alle Daten-Provider der App in fester Reihenfolge (außen → innen):
- * Friends → Notifications → Series → Movies → Manga → Stats → Badges → RatingsState.
+ * Friends → Notifications → Series → Movies → Manga → Badges → RatingsState.
  * Die Reihenfolge ist load-bearing (innere Provider konsumieren äußere Contexts) —
  * beim Ergänzen neuer Provider hier einhängen, nicht in App.tsx.
  * Alle Context-values müssen useMemo-memoized bleiben (Performance-Regel).
@@ -22,11 +22,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <SeriesListProvider>
           <MovieListProvider>
             <MangaListProvider>
-              <StatsProvider>
-                <BadgeProvider>
-                  <RatingsStateProvider>{children}</RatingsStateProvider>
-                </BadgeProvider>
-              </StatsProvider>
+              <LibraryTotalsPublisher />
+              <BadgeProvider>
+                <RatingsStateProvider>{children}</RatingsStateProvider>
+              </BadgeProvider>
             </MangaListProvider>
           </MovieListProvider>
         </SeriesListProvider>

@@ -1,4 +1,7 @@
-/* ── Leaderboard Layout ── */
+/* ══ Rangliste ══
+   Aufbau von oben nach unten: Kommando-Deck (Umschalter + Kategorien) →
+   „Dein Stand" → Bühne (Top 3) → Balken-Rennen → Trophäen.
+   Die Balkenlänge trägt die Information; Zahlen bestätigen sie nur. */
 
 .lb-root {
   position: fixed;
@@ -13,469 +16,835 @@
   display: none;
 }
 
-/* ── Controls (Mode + Kategorien) ── */
-.lb-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px 20px;
-}
-.lb-controls .lb-mode-toggle {
-  margin: 0;
-}
-.lb-controls .lb-category-scroll {
-  padding: 0;
-}
-
-/* ── Mode Toggle (Segmented Control) ── */
-.lb-mode-toggle {
-  display: flex;
-  gap: 0;
-  background: var(--glass-light);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--glass-border-subtle);
-  overflow: hidden;
-  margin: 0 16px 12px;
-}
-.lb-mode-btn {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 8px;
-  border: none;
-  border-radius: 0;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s var(--ease-default);
-}
-
-/* ── Category Pills ── */
-.lb-category-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 0 16px 20px;
-}
-.lb-category-scroll::-webkit-scrollbar {
-  display: none;
-}
-.lb-cat-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--glass-border-light);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.25s var(--ease-default);
-}
-.lb-cat-pill--active {
-  background: color-mix(in srgb, var(--theme-primary) 16%, rgba(255, 255, 255, 0.04));
-  border-color: var(--theme-primary-40);
-  color: var(--theme-primary);
-  box-shadow: inset 0 0 0 1px var(--theme-primary-20);
-}
-
-/* ── Podium (Bühne) ── */
-.lb-podium {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 10px;
-  padding: 24px 16px 0;
-  min-height: 300px;
-}
-.lb-podium::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  width: min(820px, 98%);
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 220, 90, 0.7), transparent);
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
-}
-.lb-podium-slot {
-  flex: 1;
-  max-width: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
+.lb-page {
   position: relative;
   z-index: 1;
+  padding-bottom: var(--page-bottom-gap);
 }
-.lb-podium-rankbadge {
-  position: absolute;
-  right: -2px;
-  bottom: -4px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  color: #1a1a1a;
-  border: 2px solid rgba(0, 0, 0, 0.55);
-  z-index: 2;
+
+.lb-bottom-pad {
+  height: calc(90px + env(safe-area-inset-bottom));
 }
-.lb-podium-avatar {
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-  position: relative;
-}
-.lb-podium-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.lb-podium-crown {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 20px;
-  z-index: 2;
-  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.5));
-}
-.lb-podium-name {
-  font-size: 14px;
-  text-align: center;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 2px;
-}
-.lb-podium-block {
-  width: 100%;
-  margin-top: 8px;
-  border-radius: 18px 18px 0 0;
+
+/* ── Kommando-Deck ───────────────────────────────────────────── */
+.lb-deck {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding: 2px 16px 12px;
+}
+
+.lb-deck-row {
+  display: flex;
+  gap: 14px;
+}
+.lb-deck-row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Segmented Control (Freunde/Alle, Monat/Gesamt).
+   overflow: hidden ist Absicht — sonst schneidet die Ecke der aktiven Pille
+   die Rundung des Kastens an und es sieht aus wie ein verrutschter Rahmen. */
+.lb-seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 3px;
+  gap: 3px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border-subtle);
+  overflow: hidden;
+}
+.lb-seg--off {
+  opacity: 0.62;
+}
+.lb-seg--off .lb-seg-btn--on {
+  background: var(--glass-light);
+  color: var(--color-text-muted);
+}
+/* Die globale 44px-Regel (.mobile-app button) setzt min-width: 44px und
+   schlägt eine einzelne Klasse — ohne diesen Zweisel-Selektor können die
+   Beschriftungen nicht schrumpfen und quellen aus dem Kasten. */
+.lb-seg .lb-seg-btn {
+  min-width: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  position: relative;
+  padding: 8px 10px;
+  border: none;
+  border-radius: calc(var(--radius-lg) - 4px);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  -webkit-backdrop-filter: var(--glass-filter-sm);
-  backdrop-filter: var(--glass-filter-sm);
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
 }
-.lb-podium-block::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.02), transparent);
-  pointer-events: none;
-}
-.lb-podium-block::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+/* Getönte Fläche statt Rahmen: ein Rahmen im Rahmen wirkt wie ein Fehler. */
+.lb-seg .lb-seg-btn--on {
+  background: var(--theme-primary-15);
+  color: var(--theme-primary);
 }
 
-/* ── Rankings List ── */
-.lb-rankings {
+/* Kategorien: umbrechende Chips, kein horizontaler Streifen */
+.lb-cats {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 28px 16px 0;
+  flex-wrap: wrap;
+  gap: 7px;
 }
-.lb-rank-card {
+.lb-cat {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--radius-lg);
+  gap: 6px;
+  padding: 8px 13px;
   border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--glass-subtle);
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    background var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
 }
-.lb-rank-card:hover {
-  border-color: var(--glass-border-medium);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+.lb-cat--active {
+  background: var(--theme-primary-12);
+  border-color: var(--theme-primary-30);
+  color: var(--theme-primary);
 }
-.lb-rank-card:active {
-  transform: scale(0.98);
-}
-.lb-rank-num {
-  font-size: 16px;
-  font-weight: 700;
-  min-width: 28px;
-  text-align: center;
-}
-.lb-rank-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  overflow: hidden;
+
+/* Erklärzeile — beantwortet „warum steht da so wenig?" an Ort und Stelle */
+.lb-explain {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 8px;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.85;
 }
-.lb-rank-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Die Linie haengt als Pseudo-Element UNTER der Textbox. Als padding+border
+   machte sie den Text 3px hoeher, und das zentrierte Icon rutschte um die
+   halbe Differenz nach unten. */
+/* Optische Korrektur: geometrisch mittig wirkt ein rundes Glyph neben
+   kleiner Schrift eine Spur zu tief. */
+/* Die globale Touch-Regel skaliert jeden Button beim Druecken. Bei einer
+   vollbreiten Textzeile zappelt dadurch die halbe Seite — hier reicht ein
+   Aufhellen. */
+.lb-explain:active:not(:disabled) {
+  transform: none;
+  opacity: 1;
+  color: var(--color-text-secondary);
 }
-.lb-rank-info {
+.lb-explain svg {
+  flex: none;
+  margin-top: -1px;
+}
+.lb-explain span {
+  position: relative;
   flex: 1;
   min-width: 0;
 }
-.lb-rank-name {
-  font-size: 15px;
+.lb-explain span::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  left: 0;
+  border-bottom: 1px dashed var(--glass-border-subtle);
+}
+
+/* ── „Dein Stand" ────────────────────────────────────────────── */
+.lb-stand {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  margin: 0 16px 22px;
+  padding: 16px 18px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--theme-primary-20);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--theme-primary-10), transparent 62%),
+    var(--glass-light);
+  box-shadow: var(--shadow-glow);
+}
+
+.lb-stand-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 62px;
+  font-size: 46px;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+.lb-stand-of {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lb-stand-body {
+  min-width: 0;
+}
+.lb-stand-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.lb-stand-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lb-stand-value {
+  font-size: 19px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.lb-stand-value em,
+.lb-lane-value em,
+.lb-champ-value em {
+  font-style: normal;
+  font-size: 0.66em;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.lb-stand-track {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.lb-stand-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  box-shadow: 0 0 14px var(--theme-primary-40);
+}
+.lb-stand-gap {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Bühne: Top 3 ────────────────────────────────────────────────
+   Der Spitzenreiter ist ein breiter Thron (Avatar links, Zahlen rechts) —
+   als hochkant zentrierte Kachel war er eine große leere Fläche. */
+.lb-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 16px 22px;
+}
+
+.lb-champ {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-subtle);
+  /* Medaille als Lichtkante, nicht als Fläche. */
+  border-top: 1px solid color-mix(in srgb, var(--medal) 50%, transparent);
+  background: var(--glass-subtle);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  overflow: hidden;
+}
+/* Der Schein sitzt hinter dem Avatar, nicht über der ganzen Karte. */
+.lb-champ::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    90% 130% at 14% 0%,
+    color-mix(in srgb, var(--medal) 13%, transparent),
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.lb-champ--first {
+  grid-column: 1 / -1;
+  padding: 18px;
+  border-top-width: 2px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Verfolger stehen hochkant — der Wert bekommt so die volle Kartenbreite. */
+.lb-champ:not(.lb-champ--first) {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 16px 12px;
+}
+.lb-champ:not(.lb-champ--first) .lb-champ-info {
+  align-items: center;
+  width: 100%;
+}
+
+.lb-champ-avatar {
+  position: relative;
+  flex: none;
+  padding: 3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--medal) 20%, transparent);
+  box-shadow: 0 0 20px -6px color-mix(in srgb, var(--medal) 55%, transparent);
+}
+
+/* Rangziffer am Avatar — außerhalb dessen overflow:hidden. */
+.lb-champ-crest {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--medal) 45%, transparent);
+  background: var(--color-background-default);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.lb-champ-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.lb-champ:not(.lb-champ--first) .lb-champ-info {
+  flex: 1;
+}
+
+/* Vorsprung der Spitze — fuellt die rechte Haelfte des Throns. */
+.lb-champ-lead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: auto;
+  padding-left: 14px;
+  text-align: right;
+}
+.lb-champ-lead-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.lb-champ-lead-value {
+  font-size: 17px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  white-space: nowrap;
+}
+.lb-champ-lead-value em {
+  font-style: normal;
+  font-size: 0.66em;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.lb-champ-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lb-champ-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.lb-champ-name-text,
+.lb-lane-name-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: block;
 }
-/* ── Trophy Section ── */
-.lb-trophy-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 0 16px;
-}
-.lb-trophy-icon-wrap {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  background: var(--gradient-warm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-}
-.lb-trophy-scroll {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px 16px 16px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.lb-trophy-scroll::-webkit-scrollbar {
-  display: none;
-}
-.lb-trophy-card {
-  min-width: 260px;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg), var(--glass-specular);
-  -webkit-backdrop-filter: var(--glass-filter-sm);
-  backdrop-filter: var(--glass-filter-sm);
-}
-.lb-trophy-card-header {
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 2px 0 rgba(255, 215, 0, 0.55);
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.lb-trophy-entries {
-  padding: 10px 12px 14px;
-}
-.lb-trophy-entry {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-}
-.lb-trophy-medal {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.lb-trophy-avatar {
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.lb-trophy-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.lb-champ--first .lb-champ-name {
+  font-size: 16px;
 }
 
-/* ── Celebration Overlay ── */
-.lb-celebration {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(10, 14, 26, 0.9);
-  /* Kein backdrop-filter: eine ganzflaechige Blur-Ebene kostet ~25 ms pro
-     Frame. Die Trennung traegt die Deckkraft. */
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow: hidden;
+.lb-champ-value {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
-.lb-celebration-close {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  background: var(--glass-heavy);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
+.lb-champ--first .lb-champ-value {
+  font-size: 27px;
+}
+
+/* ── Das Feld: Balken-Rennen ─────────────────────────────────── */
+.lb-race {
+  display: grid;
+  gap: 8px;
+  margin: 0 16px;
+}
+
+.lb-lane {
+  display: grid;
+  grid-template-columns: 22px auto 1fr;
   align-items: center;
-  justify-content: center;
+  gap: 11px;
+  padding: 11px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-subtle);
+  background: var(--glass-subtle);
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.7);
-  z-index: var(--z-skip-nav);
-  -webkit-backdrop-filter: var(--blur-sm);
-  backdrop-filter: var(--blur-sm);
+  transition: border-color var(--duration-fast) var(--ease-default);
 }
-.lb-confetti {
-  position: fixed;
-  pointer-events: none;
-  z-index: var(--z-skip-nav);
+.lb-lane:hover {
+  border-color: var(--glass-border-medium);
+}
+.lb-lane--self {
+  border-color: var(--theme-primary-30);
+  background: var(--theme-primary-08);
+  cursor: default;
 }
 
-/* ── Loading / Empty ── */
-.lb-loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
+.lb-lane-rank {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
-.lb-loading-spinner {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 3px solid var(--theme-accent-15);
-  border-top-color: var(--theme-accent);
+.lb-lane-avatar {
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
-.lb-empty {
-  flex: 1;
+
+.lb-lane-body {
+  min-width: 0;
+}
+.lb-lane-top {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lb-lane-name {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 32px;
+  gap: 5px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.lb-lane-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  white-space: nowrap;
+}
+
+.lb-lane-track {
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.lb-lane-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+}
+.lb-lane--self .lb-lane-fill {
+  background: var(--gradient-primary);
+  box-shadow: 0 0 10px var(--theme-primary-30);
+}
+.lb-lane-detail {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.lb-missing-note {
+  margin: 16px 16px 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
   text-align: center;
 }
-.lb-empty-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--theme-accent-15);
+
+/* ── Ladezustand ─────────────────────────────────────────────── */
+.lb-skeleton {
+  display: grid;
+  gap: 10px;
+  padding: 8px 16px;
+}
+.lb-skeleton-row {
+  height: 62px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-subtle);
+}
+
+/* ── Leerer Zustand ──────────────────────────────────────────── */
+.lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 24px 16px 0;
+  padding: 40px 24px 44px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border-subtle);
+  background:
+    radial-gradient(100% 120% at 50% 0%, var(--theme-primary-08), transparent 65%),
+    var(--glass-subtle);
+}
+.lb-empty-orbit {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--theme-primary-20);
+  background: var(--theme-primary-08);
+  box-shadow: 0 0 34px -10px var(--theme-primary-40);
+}
+.lb-empty h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+.lb-empty p {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.lb-empty-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  margin-top: 24px;
+  padding: 13px 26px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--theme-primary);
+  color: var(--color-background-default);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--glow-soft);
 }
 
-/* ── Bottom padding ── */
-.lb-bottom-pad {
-  height: calc(120px + env(safe-area-inset-bottom));
+/* ── Erklär-Sheet ────────────────────────────────────────────── */
+.lb-explain-sheet {
+  padding: 4px 20px 24px;
+}
+.lb-explain-sheet h2 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+.lb-explain-sheet section {
+  margin-bottom: 22px;
+}
+.lb-explain-sheet h3 {
+  margin: 0 0 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lb-explain-sheet p {
+  margin: 0 0 9px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.lb-explain-cta {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--theme-primary);
+  color: var(--color-background-default);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--glow-soft);
 }
 
-/* ── Desktop: kompakte Controls, zentrierte Bühne, Grids statt Streifen ── */
-@media (min-width: 768px) {
-  .lb-mode-toggle {
-    width: max-content;
-  }
+/* ── Trophäen ────────────────────────────────────────────────── */
+.lb-page h2.lb-trophy-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 36px 16px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.lb-page h2.lb-trophy-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--glass-border-subtle), transparent);
+}
 
-  .lb-mode-btn {
-    flex: none;
-    padding: 10px 28px;
-  }
+.lb-trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin: 0 16px;
+}
+.lb-trophy-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-subtle);
+  border-top: 1px solid rgba(243, 201, 105, 0.45);
+  background:
+    linear-gradient(180deg, rgba(243, 201, 105, 0.07), transparent 46%), var(--glass-subtle);
+}
+.lb-trophy-month {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.lb-trophy-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+.lb-trophy-place {
+  width: 18px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.lb-trophy-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-trophy-score {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 
-  .lb-controls {
+/* ══ Tablet ══ */
+@media (min-width: 640px) {
+  .lb-champ {
+    padding: 16px;
+    gap: 14px;
+  }
+  .lb-champ--first {
+    padding: 22px 24px;
+    gap: 18px;
+  }
+  .lb-champ:not(.lb-champ--first) {
     flex-direction: row;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 12px 16px;
-    padding: 0 24px 24px;
+    text-align: left;
+    padding: 16px;
   }
+  .lb-champ:not(.lb-champ--first) .lb-champ-info {
+    align-items: flex-start;
+    width: auto;
+  }
+  .lb-champ:not(.lb-champ--first) > .lb-champ-value {
+    position: relative;
+    margin-left: auto;
+    padding-left: 12px;
+  }
+}
 
-  .lb-category-scroll {
+/* ══ Desktop: volle Breite nutzen, Bühne mittig ══ */
+@media (min-width: 900px) {
+  .lb-deck {
+    flex-direction: row;
+    align-items: center;
     flex-wrap: wrap;
-    overflow: visible;
+    gap: 10px 16px;
+    padding: 4px 28px 14px;
+  }
+  .lb-deck-row {
+    flex: 0 0 auto;
+    gap: 14px;
+  }
+  .lb-deck-row > * {
+    flex: 0 0 auto;
+  }
+  .lb-seg {
+    min-width: 236px;
+  }
+  .lb-seg .lb-seg-btn {
+    padding: 9px 14px;
+  }
+  .lb-cats {
+    flex: 1 1 auto;
   }
 
-  .lb-podium {
-    max-width: 900px;
-    margin: 0 auto;
-    min-height: 340px;
+  .lb-explain {
+    width: calc(100% - 56px);
+    margin: 0 28px 20px;
   }
 
-  /* Ranking als Karten-Grid statt gestreckter Zeilen */
-  .lb-rankings {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
-    gap: 10px;
+  .lb-stand {
+    gap: 26px;
+    margin: 0 28px 26px;
+    padding: 20px 26px;
+  }
+  .lb-stand-rank {
+    min-width: 86px;
+    font-size: 62px;
+  }
+  .lb-stand-value {
+    font-size: 24px;
   }
 
-  /* Trophäen: füllendes Grid statt Horizontal-Scroll */
-  .lb-trophy-scroll {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    overflow: visible;
-    padding-left: 24px;
-    padding-right: 24px;
+  .lb-stage {
+    margin: 0 28px 28px;
+    gap: 14px;
+  }
+  .lb-champ--first .lb-champ-value {
+    font-size: 34px;
   }
 
-  .lb-trophy-card {
-    min-width: 0;
+  .lb-race {
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    margin: 0 28px;
+  }
+  .lb-lane {
+    padding: 13px 16px;
   }
 
-  .lb-trophy-header {
-    padding-left: 24px;
+  .lb-page h2.lb-trophy-header,
+  .lb-trophy-grid,
+  .lb-missing-note {
+    margin-left: 28px;
+    margin-right: 28px;
   }
+  .lb-empty {
+    max-width: 620px;
+    margin: 30px auto 0;
+  }
+}
 
-  .lb-rankings {
-    padding-left: 24px;
-    padding-right: 24px;
+/* ══ Große Monitore: mehr Bahnen UND größere Typo ══ */
+@media (min-width: 1600px) {
+  .lb-stand-rank {
+    min-width: 104px;
+    font-size: 74px;
+  }
+  .lb-stand-value {
+    font-size: 28px;
+  }
+  .lb-stand-gap,
+  .lb-stand-label {
+    font-size: 13px;
+  }
+  .lb-champ--first {
+    padding: 26px 30px;
+  }
+  .lb-champ--first .lb-champ-name {
+    font-size: 18px;
+  }
+  .lb-champ--first .lb-champ-value {
+    font-size: 38px;
+  }
+  .lb-champ-lead-value {
+    font-size: 20px;
+  }
+  .lb-champ-value {
+    font-size: 21px;
+  }
+  .lb-lane-name,
+  .lb-lane-value {
+    font-size: 15px;
+  }
+  .lb-lane-track {
+    height: 6px;
+  }
+  .lb-deck {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  .lb-explain {
+    width: calc(100% - 80px);
+    margin-left: 40px;
+    margin-right: 40px;
+  }
+  .lb-stand {
+    margin: 0 40px 30px;
+  }
+  .lb-race {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    margin: 0 40px;
+  }
+  .lb-page h2.lb-trophy-header,
+  .lb-trophy-grid,
+  .lb-missing-note {
+    margin-left: 40px;
+    margin-right: 40px;
   }
 }

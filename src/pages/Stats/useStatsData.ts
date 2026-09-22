@@ -5,11 +5,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
+import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
-import { hasEpisodeAired } from '../../utils/episodeDate';
-import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import {
+  isEpisodeWatched,
+  normalizeEpisodes,
+  normalizeSeasons,
+} from '../../lib/episode/seriesMetrics';
+import { computeLibraryTotals, countsAsAired } from '../../lib/stats/libraryTotals';
 import { t } from '../../services/i18n';
 
 export interface StatsData {
@@ -159,19 +163,11 @@ export const useStatsData = (): StatsData => {
       let seriesTotal = 0;
       let seriesWatched = 0;
 
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((ep) => {
-          const isWatched = !!(
-            ep.firstWatchedAt ||
-            ep.watched === true ||
-            (ep.watched as unknown) === 1 ||
-            (ep.watchCount && ep.watchCount > 0)
-          );
-
-          if (hasEpisodeAired(ep) || !ep.air_date) {
-            seriesTotal++;
-            if (isWatched) seriesWatched++;
-          }
+      normalizeSeasons(series.seasons).forEach((season) => {
+        normalizeEpisodes(season.episodes).forEach((ep) => {
+          if (!countsAsAired(ep)) return;
+          seriesTotal++;
+          if (isEpisodeWatched(ep)) seriesWatched++;
         });
       });
 
@@ -186,41 +182,12 @@ export const useStatsData = (): StatsData => {
     });
 
     // Watch time: ALL series including hidden (you watched those episodes)
-    let seriesMinutes = 0;
-    allSeriesList.forEach((series) => {
-      if (!series) return;
-      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
+    const lifetime = computeLibraryTotals(allSeriesList, movieList);
+    const seriesMinutes = lifetime.seriesMinutes;
 
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((ep) => {
-          const isWatched = !!(
-            ep.firstWatchedAt ||
-            ep.watched === true ||
-            (ep.watched as unknown) === 1 ||
-            (ep.watchCount && ep.watchCount > 0)
-          );
-
-          if (isWatched && (hasEpisodeAired(ep) || !ep.air_date)) {
-            const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-            seriesMinutes += (ep.runtime || seriesRuntime) * count;
-          }
-        });
-      });
-    });
-
-    // Movies
     const totalMovies = movieList.length;
-    let watchedMovies = 0;
-    let movieMinutes = 0;
-
-    movieList.forEach((movie: MovieType) => {
-      if (!movie) return;
-      // Gesehen = explizit als watched markiert (F1) ODER Rating > 0.
-      if (isMovieWatched(movie)) {
-        watchedMovies++;
-        movieMinutes += movie.runtime || 120;
-      }
-    });
+    const watchedMovies = lifetime.movies;
+    const movieMinutes = lifetime.movieMinutes;
 
     // Ratings
     const seriesWithRating = seriesList.filter((s: Series) => {

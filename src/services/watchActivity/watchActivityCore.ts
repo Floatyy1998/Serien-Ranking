@@ -77,16 +77,17 @@ export async function logEpisodeWatch(
   if (bingeSessionId) event.bingeSessionId = bingeSessionId;
 
   await saveEvent(userId, event);
-  await updateWatchStreak(userId);
+  const streak = await updateWatchStreak(userId);
 
-  // Bulk-Marking (Nachtragen alter Folgen) zählt nicht für die Rangliste —
-  // sonst gewinnt, wer seine Bibliothek importiert statt schaut.
-  if (!isBulkMarking) {
-    updateLeaderboardStats(userId, {
-      episodesWatched: 1,
-      watchtimeMinutes: runtime,
-    }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
-  }
+  // Bulk-Marking (Nachtragen alter Folgen) zählt nicht für die Zähler der
+  // Rangliste — sonst gewinnt, wer seine Bibliothek importiert statt schaut.
+  // Die Streak wird trotzdem gespiegelt: sie gehört dem Tracker oben, und ein
+  // Nachtrag-Tag darf die Ranglisten-Streak nicht anders bewerten als die
+  // Streak auf der Startseite.
+  updateLeaderboardStats(userId, {
+    ...(isBulkMarking ? {} : { episodesWatched: 1, watchtimeMinutes: runtime }),
+    streak: streak ? { current: streak.currentStreak, longest: streak.longestStreak } : undefined,
+  }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
 
   // Freunde-Feed nur bei Erstwatch (kein Bulk/Rewatch — Feed-Spam); bewusst nicht im Notification-Hub.
   if (!isBulkMarking && !isRewatch) {
@@ -153,16 +154,15 @@ export async function logMovieWatch(
     }
 
     await saveEvent(userId, event);
-    await updateWatchStreak(userId);
+    const streak = await updateWatchStreak(userId);
 
-    // Bulk-Marking zählt nicht für die Rangliste — sonst gewinnt, wer seine
+    // Bulk-Marking zählt nicht für die Zähler — sonst gewinnt, wer seine
     // Filmbibliothek importiert statt schaut (gleiche Regel wie Episoden).
-    if (!isBulkMarking) {
-      updateLeaderboardStats(userId, {
-        moviesWatched: 1,
-        watchtimeMinutes: runtime || 120,
-      }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
-    }
+    // Die Streak kommt in jedem Fall vom Tracker.
+    updateLeaderboardStats(userId, {
+      ...(isBulkMarking ? {} : { moviesWatched: 1, watchtimeMinutes: runtime || 120 }),
+      streak: streak ? { current: streak.currentStreak, longest: streak.longestStreak } : undefined,
+    }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
 
     // Pet reaction – movie tone if no rating, rated tone if user also rated.
     // Bei Bulk-Marking übersprungen (Bubble-Spam).

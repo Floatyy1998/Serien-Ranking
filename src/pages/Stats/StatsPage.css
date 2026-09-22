@@ -563,3 +563,25 @@
   width: 30px;
   height: 30px;
 }
+
+/* Einordnung unter Freunden — die Antwort auf "und wie stehe ich da?"
+   direkt neben der eigenen Gesamtzahl. */
+.stats-friend-rank {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--glass-subtle);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.stats-friend-rank span {
+  flex: 1;
+  min-width: 0;
+}

@@ -8,6 +8,7 @@ import {
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
   seedLeaderboardStats,
+  syncStreakFromTracker,
 } from '../../services/social/leaderboardService';
 import type {
   GlobalLeaderboardEntry,
@@ -15,8 +16,12 @@ import type {
   LeaderboardEntry,
   LeaderboardStats,
   MonthlyTrophy,
+  RankingCategory,
+  RankingPeriod,
+  TotalsCategory,
 } from '../../types/Leaderboard';
 import { t } from '../../services/i18n';
+import { useTotalsRanking } from './useTotalsRanking';
 
 const MONTH_NAMES: Record<string, string> = {
   '01': t('Januar'),
@@ -44,7 +49,12 @@ export function useLeaderboardData() {
   const { friends } = useOptimizedFriends();
 
   const [mode, setMode] = useState<'friends' | 'global'>('friends');
-  const [activeCategory, setActiveCategory] = useState<LeaderboardCategory>('episodesThisMonth');
+  const [period, setPeriod] = useState<RankingPeriod>('month');
+  // Je Zeitraum eine eigene Kategorie: beim Hin- und Herschalten soll die
+  // vorherige Auswahl stehen bleiben, und die Kategoriesaetze sind disjunkt.
+  const [monthCategory, setMonthCategory] = useState<LeaderboardCategory>('episodesThisMonth');
+  const [totalsCategory, setTotalsCategory] = useState<TotalsCategory>('watchtimeMinutes');
+  const activeCategory: RankingCategory = period === 'total' ? totalsCategory : monthCategory;
   const [statsData, setStatsData] = useState<Record<string, LeaderboardStats>>({});
   const [profiles, setProfiles] = useState<
     Record<string, { displayName: string; photoURL?: string; username?: string }>
@@ -94,6 +104,8 @@ export function useLeaderboardData() {
 
   const loadFriendsData = useCallback(async () => {
     if (!user?.uid) return;
+    // Streak-Altlast nachziehen, bevor gelesen wird (siehe syncStreakFromTracker).
+    await syncStreakFromTracker(user.uid);
     const friendUids = friends.map((f) => f.uid);
     const [data, profileData] = await Promise.all([
       fetchLeaderboardData(user.uid, friendUids),
@@ -123,6 +135,12 @@ export function useLeaderboardData() {
 
   const loadData = useCallback(async () => {
     if (!user?.uid) return;
+    // Die Gesamtwertung laedt ueber useTotalsRanking — hier waere es ein
+    // zweiter Fan-Out ueber dieselben Freunde.
+    if (period === 'total') {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       if (mode === 'friends') await loadFriendsData();
@@ -132,7 +150,7 @@ export function useLeaderboardData() {
     } finally {
       setLoading(false);
     }
-  }, [user?.uid, mode, loadFriendsData, loadGlobalData]);
+  }, [user?.uid, mode, period, loadFriendsData, loadGlobalData]);
 
   useEffect(() => {
     loadData();
@@ -212,7 +230,11 @@ export function useLeaderboardData() {
     return () => document.removeEventListener('visibilitychange', handle);
   }, [loadData]);
 
-  const rankings: LeaderboardEntry[] = useMemo(() => {
+  const friendUids = useMemo(() => friends.map((f) => f.uid), [friends]);
+
+  const totalsRanking = useTotalsRanking(period === 'total', user?.uid, friendUids, totalsCategory);
+
+  const monthlyRankings: LeaderboardEntry[] = useMemo(() => {
     if (!user?.uid) return [];
     if (mode === 'global') {
       const entries = globalEntries.map((e) => ({
@@ -223,14 +245,14 @@ export function useLeaderboardData() {
             : t('Unbekannt'),
         photoURL: e.photoURL,
         username: e.username,
-        value: e[activeCategory] || 0,
+        value: e[monthCategory] || 0,
         rank: 0,
         isCurrentUser: e.uid === user.uid,
       }));
       // Eigenen Wert auf den Live-Stand heben (Snapshot kann veraltet sein) —
       // Live zählt im laufenden Monat nur hoch, daher nie kleiner als Snapshot.
       if (selfStats) {
-        const liveValue = selfStats[activeCategory] || 0;
+        const liveValue = selfStats[monthCategory] || 0;
         const own = entries.find((e) => e.uid === user.uid);
         if (own) {
           own.value = Math.max(own.value, liveValue);
@@ -260,7 +282,7 @@ export function useLeaderboardData() {
           typeof rawName === 'string' && rawName.trim().length > 0 ? rawName : t('Unbekannt'),
         photoURL: profiles[uid]?.photoURL,
         username: profiles[uid]?.username,
-        value: stats[activeCategory] || 0,
+        value: stats[monthCategory] || 0,
         rank: 0,
         isCurrentUser: uid === user.uid,
       };
@@ -270,25 +292,42 @@ export function useLeaderboardData() {
       e.rank = i + 1;
     });
     return entries;
-  }, [statsData, profiles, activeCategory, user, mode, globalEntries, selfStats, selfProfile]);
+  }, [statsData, profiles, monthCategory, user, mode, globalEntries, selfStats, selfProfile]);
+
+  const rankings = period === 'total' ? totalsRanking.entries : monthlyRankings;
 
   const handleSetMode = useCallback((newMode: 'friends' | 'global') => {
     setMode(newMode);
   }, []);
 
-  const handleSetActiveCategory = useCallback((newCategory: LeaderboardCategory) => {
-    setActiveCategory(newCategory);
+  const handleSetActiveCategory = useCallback(
+    (newCategory: RankingCategory) => {
+      if (period === 'total') setTotalsCategory(newCategory as TotalsCategory);
+      else setMonthCategory(newCategory as LeaderboardCategory);
+    },
+    [period]
+  );
+
+  // Die Gesamtwertung gibt es bewusst nur unter Freunden — global waere sie ein
+  // Wettbewerb um Bibliotheksgroesse.
+  const handleSetPeriod = useCallback((newPeriod: RankingPeriod) => {
+    setPeriod(newPeriod);
+    if (newPeriod === 'total') setMode('friends');
   }, []);
 
   return {
     user,
     mode,
     setMode: handleSetMode,
+    period,
+    setPeriod: handleSetPeriod,
     activeCategory,
     setActiveCategory: handleSetActiveCategory,
     rankings,
+    friendCount: friendUids.length,
+    missingTotals: period === 'total' ? totalsRanking.missing : 0,
     trophies,
-    loading,
+    loading: period === 'total' ? totalsRanking.loading : loading,
     celebration,
     setCelebration,
     scrollContainerRef,

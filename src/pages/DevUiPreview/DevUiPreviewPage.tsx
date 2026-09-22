@@ -13,6 +13,8 @@ import {
   FriendAddCardPreview,
   FriendCalendarAddPreview,
   HistoryMoviesPreview,
+  LeaderboardEmptyPreview,
+  LeaderboardPreview,
   UnhideProviderPreview,
 } from './NewFeaturePreviews';
 
@@ -119,6 +121,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'lightbox', label: 'Chat-Bild groß', render: () => <LightboxPreview /> },
   { id: 'avatar', label: 'Profilbild groß', render: () => <AvatarViewerPreview /> },
   { id: 'tour', label: 'Seitenhilfe', render: () => <PageTourPreview /> },
+  { id: 'leaderboard', label: 'Rangliste', render: () => <LeaderboardPreview /> },
+  {
+    id: 'leaderboard-empty',
+    label: 'Rangliste: ohne Freunde',
+    render: () => <LeaderboardEmptyPreview />,
+  },
   { id: 'catchup', label: 'Aufhol-Plan', render: () => <CatchUpPreview /> },
   { id: 'dropoff', label: 'Aussteiger-Radar', render: () => <DropOffPreview /> },
   { id: 'unhide', label: 'Wieder einblenden', render: () => <UnhideProviderPreview /> },

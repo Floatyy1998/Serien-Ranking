@@ -3,7 +3,6 @@ export * from './Friend';
 export * from './Leaderboard';
 export * from './Movie';
 export * from './Series';
-export * from './StatsData';
 export * from './TodayEpisode';
 export * from './WatchActivity';
 export * from './Wrapped';

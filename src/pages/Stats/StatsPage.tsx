@@ -3,11 +3,12 @@
  * Pods in StatsComponents/StatsDetailSections, Layout in StatsPage.css.
  */
 
-import { InsightsRounded, IosShare } from '@mui/icons-material';
+import { ChevronRight, EmojiEventsRounded, InsightsRounded, IosShare } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState, IconButton, PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useFriendTotalsRank } from '../../hooks/social/useFriendTotalsRank';
 import { hapticTap } from '../../lib/interaction/haptics';
 import {
   ActorUniverseBanner,
@@ -27,6 +28,7 @@ export const StatsPage = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const stats = useStatsData();
+  const friendRank = useFriendTotalsRank();
   const [shareOpen, setShareOpen] = useState(false);
 
   const timeData = useMemo(() => formatTime(stats.totalMinutes), [stats.totalMinutes]);
@@ -83,6 +85,24 @@ export const StatsPage = () => {
           />
         }
       />
+
+      {friendRank.rank !== null && (
+        <button
+          type="button"
+          className="stats-friend-rank"
+          onClick={() => navigate('/leaderboard')}
+          style={{ color: currentTheme.text.secondary }}
+        >
+          <EmojiEventsRounded style={{ fontSize: 17, color: currentTheme.accent }} />
+          <span>
+            {t('Platz {rank} von {of} unter deinen Freunden', {
+              rank: friendRank.rank,
+              of: friendRank.of,
+            })}
+          </span>
+          <ChevronRight style={{ fontSize: 18, color: currentTheme.text.muted }} />
+        </button>
+      )}
 
       <div className="stats-bento">
         <WatchtimePod stats={stats} timeData={timeData} theme={currentTheme} />

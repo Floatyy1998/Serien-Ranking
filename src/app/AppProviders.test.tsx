@@ -23,8 +23,8 @@ vi.mock('../contexts/RatingsStateProvider', () => ({
 vi.mock('../features/badges/BadgeProvider', () => ({
   BadgeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('../features/stats/StatsProvider', () => ({
-  StatsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock('../features/stats/LibraryTotalsPublisher', () => ({
+  LibraryTotalsPublisher: () => null,
 }));
 
 import { AppProviders } from './AppProviders';

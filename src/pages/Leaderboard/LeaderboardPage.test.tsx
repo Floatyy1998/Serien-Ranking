@@ -7,8 +7,12 @@ interface LbState {
   user: { uid: string; displayName?: string } | null;
   mode: 'friends' | 'global';
   setMode: (m: 'friends' | 'global') => void;
+  period: 'month' | 'total';
+  setPeriod: (p: 'month' | 'total') => void;
   activeCategory: LeaderboardCategory;
   setActiveCategory: (c: LeaderboardCategory) => void;
+  friendCount: number;
+  missingTotals: number;
   rankings: LeaderboardEntry[];
   trophies: never[];
   loading: boolean;
@@ -22,8 +26,12 @@ const { lbState } = vi.hoisted(() => ({
     user: { uid: 'me', displayName: 'Konrad' },
     mode: 'friends',
     setMode: vi.fn(),
+    period: 'month',
+    setPeriod: vi.fn(),
     activeCategory: 'episodesThisMonth',
     setActiveCategory: vi.fn(),
+    friendCount: 2,
+    missingTotals: 0,
     rankings: [] as LeaderboardEntry[],
     trophies: [],
     loading: false,
@@ -51,11 +59,18 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => ({
   EmojiEvents: () => null,
   Group: () => null,
+  InfoOutlined: () => null,
   LocalFireDepartment: () => null,
   Movie: () => null,
+  PersonAddAlt1: () => null,
   PlayCircle: () => null,
   Public: () => null,
   Timer: () => null,
+  Tv: () => null,
+}));
+vi.mock('../../components/ui/overlay/BottomSheet', () => ({
+  BottomSheet: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
+    isOpen ? children : null,
 }));
 vi.mock('../../components/ui', () => ({
   PageHeader: ({ title, subtitle }: { title: string; subtitle?: string }) => (
@@ -66,6 +81,7 @@ vi.mock('../../components/ui', () => ({
   ),
 }));
 vi.mock('./CelebrationModal', () => ({ CelebrationModal: () => null }));
+vi.mock('./SelfStandBand', () => ({ SelfStandBand: () => <div data-testid="stand" /> }));
 vi.mock('./PodiumSection', () => ({ PodiumSection: () => <div data-testid="podium" /> }));
 vi.mock('./RankingList', () => ({ RankingList: () => <div data-testid="rankings" /> }));
 vi.mock('./TrophyHistory', () => ({ TrophyHistory: () => <div data-testid="trophies" /> }));
@@ -116,11 +132,26 @@ describe('LeaderboardPage', () => {
     expect(lbState.setActiveCategory).toHaveBeenCalledWith('moviesThisMonth');
   });
 
-  it('shows the empty friends state when there is only one ranking', () => {
+  it('shows the empty friends state when there are no friends at all', () => {
+    lbState.friendCount = 0;
     lbState.rankings = [
       { uid: 'me', displayName: 'Konrad', value: 5, rank: 1, isCurrentUser: true },
     ];
     render(<LeaderboardPage />);
     expect(screen.getByText('Noch keine Freunde')).toBeInTheDocument();
+  });
+
+  // Sonst behauptet die Gesamtwertung „Noch keine Freunde“, obwohl nur deren
+  // Schnappschuss fehlt — dafür gibt es die Hinweiszeile.
+  it('keeps the ranking view when friends exist but only one entry has data', () => {
+    lbState.friendCount = 3;
+    lbState.period = 'total';
+    lbState.missingTotals = 3;
+    lbState.rankings = [
+      { uid: 'me', displayName: 'Konrad', value: 5, rank: 1, isCurrentUser: true },
+    ];
+    render(<LeaderboardPage />);
+    expect(screen.queryByText('Noch keine Freunde')).not.toBeInTheDocument();
+    expect(screen.getByText(/noch keine Gesamtdaten/)).toBeInTheDocument();
   });
 });
