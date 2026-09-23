@@ -5,7 +5,7 @@
  * the Activity feed.
  */
 
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { motion, useMotionValue } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
@@ -18,6 +18,16 @@ import { t } from '../../../services/i18n';
 const MARQUEE_PIXELS_PER_SECOND = 48;
 
 const MAX_ENTRIES = 14;
+
+/**
+ * Naechste Position des Bandes. Eine volle Runde wird zurueckgesetzt, damit die
+ * zweite Kopie nahtlos uebernimmt — per Modulo, weil nach einer kuerzeren
+ * Liste mehrere Runden auf einmal aufzuholen sein koennen.
+ */
+export function naechstePosition(aktuell: number, deltaMs: number, lap: number): number {
+  const next = aktuell - (deltaMs / 1000) * MARQUEE_PIXELS_PER_SECOND;
+  return next <= -lap ? -(-next % lap) : next;
+}
 
 function formatActivity(a: FriendActivity): string | null {
   const who = a.userName || t('Jemand');
@@ -59,49 +69,55 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
   const navigate = useTransitionNavigate();
   const { friendActivities } = useOptimizedFriends();
   const prefersReducedMotion = useReducedMotion();
-  const [isPaused, setIsPaused] = useState(false);
 
   // Measure one lap's actual rendered width so the scroll speed is exact
   // regardless of font fallback or label content. The track holds two laps
   // (#0 = visible, #1 = pre-rendered tail), so scrollWidth/2 is one lap.
   const lapRef = useRef<HTMLSpanElement | null>(null);
-  const [lapWidth, setLapWidth] = useState(0);
+  // Die Breite liegt im Ref, nicht im State: sie ist nur fuer die Schleife da,
+  // und eine 0 darf sie nie anhalten (siehe unten).
+  const lapWidthRef = useRef(0);
 
   // Drive the scroll via a MotionValue + rAF loop. This lets us pause
   // *at the current x* on hover instead of animating back to 0.
   const x = useMotionValue(0);
   const isPausedRef = useRef(false);
-  useEffect(() => {
-    isPausedRef.current = isPaused;
-  }, [isPaused]);
 
   useEffect(() => {
-    if (prefersReducedMotion || lapWidth === 0) {
+    if (prefersReducedMotion) {
       x.set(0);
       return;
     }
     let rafId = 0;
     let lastT = 0;
     const tick = (t: number) => {
+      rafId = requestAnimationFrame(tick);
       if (lastT === 0) {
         lastT = t;
-        rafId = requestAnimationFrame(tick);
         return;
       }
-      const delta = t - lastT;
+      // Nach einem Tab-Wechsel liegen Sekunden zwischen zwei Frames — ohne
+      // Deckel springt das Band beim Zurueckkommen weit nach vorn.
+      const delta = Math.min(t - lastT, 100);
       lastT = t;
-      if (!isPausedRef.current) {
-        let next = x.get() - (delta / 1000) * MARQUEE_PIXELS_PER_SECOND;
-        // Seamless wrap: when we've scrolled a full lap, jump back by lap
-        // length so the second copy seamlessly takes over.
-        if (next <= -lapWidth) next += lapWidth;
-        x.set(next);
+      if (isPausedRef.current) return;
+
+      // Die Breite kommt aus dem DOM statt aus dem Render: beim Wechsel auf die
+      // Startseite (View Transition) steht das frisch eingehaengte Band beim
+      // ersten Messen noch ohne Layout da. Frueher hielt diese eine 0 das Band
+      // dauerhaft an — jetzt versucht es die Schleife im naechsten Frame erneut.
+      let lap = lapWidthRef.current;
+      if (lap === 0) {
+        lap = lapRef.current?.scrollWidth ?? 0;
+        if (lap === 0) return;
+        lapWidthRef.current = lap;
       }
-      rafId = requestAnimationFrame(tick);
+
+      x.set(naechstePosition(x.get(), delta, lap));
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [prefersReducedMotion, lapWidth, x]);
+  }, [prefersReducedMotion, x]);
 
   const entries = useMemo(() => {
     const sorted = [...friendActivities]
@@ -112,21 +128,24 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
       .filter((e): e is { id: string; label: string } => e.label !== null);
   }, [friendActivities]);
 
-  // Re-measure whenever the entry list changes or the viewport resizes.
-  useLayoutEffect(() => {
-    const el = lapRef.current;
-    if (!el) return;
-    setLapWidth(el.scrollWidth);
-  }, [entries]);
-
+  // Neu messen, sobald sich die Liste aendert, eine Schrift nachlaedt oder das
+  // Fenster seine Breite aendert — der Beobachter deckt alle drei ab. Eine
+  // Messung von 0 wird verworfen statt uebernommen.
   useEffect(() => {
-    const onResize = () => {
-      const el = lapRef.current;
-      if (el) setLapWidth(el.scrollWidth);
+    const el = lapRef.current;
+    if (!el) {
+      lapWidthRef.current = 0;
+      return;
+    }
+    const messen = () => {
+      const breite = el.scrollWidth;
+      if (breite > 0) lapWidthRef.current = breite;
     };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+    messen();
+    const beobachter = new ResizeObserver(messen);
+    beobachter.observe(el);
+    return () => beobachter.disconnect();
+  }, [entries]);
 
   if (entries.length === 0) return null;
 
@@ -177,10 +196,20 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
       onClick={() => navigate('/activity')}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={() => setIsPaused(false)}
+      // Nur eine echte Maus haelt an: ein Tipp auf dem Handy loest in manchen
+      // Browsern ein Enter ohne Leave aus und liesse das Band stehen.
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') isPausedRef.current = true;
+      }}
+      onPointerLeave={() => {
+        isPausedRef.current = false;
+      }}
+      onFocus={() => {
+        isPausedRef.current = true;
+      }}
+      onBlur={() => {
+        isPausedRef.current = false;
+      }}
       aria-label={t('Aktivitäten deiner Freunde anzeigen')}
       style={{
         position: 'relative',
