@@ -14,6 +14,7 @@ import {
   type QuickRatingSheetState,
 } from '../../hooks/rating/useQuickRatingSheet';
 import { preloadImage } from '../../lib/image/preloadImage';
+import { rankSearchResults } from '../../lib/text/searchRelevance';
 import { backendFetch } from '../../services/api/backendApi';
 import { t } from '../../services/i18n';
 import { markMovieWatched } from '../../services/rating/quickRating';
@@ -28,6 +29,8 @@ export interface SearchResult {
   id: number;
   title?: string;
   name?: string;
+  original_title?: string;
+  original_name?: string;
   poster_path?: string;
   overview?: string;
   release_date?: string;
@@ -366,14 +369,14 @@ export const useSearchPage = (
           );
         }
 
-        results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        const ranked = rankSearchResults(results, query);
 
         // F7: optional auf die aktiven Abos einschränken (client-seitig, weil
         // TMDBs `/search` keinen `with_watch_providers`-Filter kennt).
         const filtered =
           onlyMyProviders && activeProviders.size > 0
-            ? await filterItemsByActiveProviders(results, activeProviders)
-            : results;
+            ? await filterItemsByActiveProviders(ranked, activeProviders)
+            : ranked;
         setSearchResults(filtered);
       } catch (error) {
         console.error('Search error:', error);

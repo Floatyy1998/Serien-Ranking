@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { backendFetch } from '../../../services/api/backendApi';
 import { dbGet, paths } from '../../../services/db/ref';
+import { rankSearchResults } from '../../../lib/text/searchRelevance';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import { CURATED_GENRES } from '../genres';
 
@@ -154,7 +155,7 @@ export function useOnboardingSearch() {
         for (const item of movieEN.results || [])
           enMovieMap.set(item.id, item.title || item.name || '');
 
-        const results: OnboardingItem[] = [
+        const candidates: OnboardingItem[] = [
           ...(tvDE.results || [])
             .filter((it: { poster_path?: unknown }) => it.poster_path)
             .map((item: Record<string, unknown>) => {
@@ -186,9 +187,8 @@ export function useOnboardingSearch() {
                 type: 'movie' as const,
               };
             }),
-        ]
-          .sort((a, b) => b.vote_average - a.vote_average)
-          .slice(0, 24);
+        ].sort((a, b) => b.vote_average - a.vote_average);
+        const results = rankSearchResults(candidates, trimmed).slice(0, 24);
 
         setSearchResults(results);
       } catch {

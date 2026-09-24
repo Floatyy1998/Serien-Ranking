@@ -6,6 +6,7 @@
  * localStorage-Verlauf.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { rankSearchResults } from '../../../lib/text/searchRelevance';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 
 export interface QuickResult {
@@ -23,6 +24,8 @@ interface TmdbListResponse {
     id: number;
     title?: string;
     name?: string;
+    original_title?: string;
+    original_name?: string;
     poster_path?: string | null;
     vote_average?: number;
     release_date?: string;
@@ -174,22 +177,23 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
         ]);
         if (id !== reqId.current) return; // veraltete Antwort verwerfen
 
-        const map = (arr: TmdbListResponse['results'], type: 'series' | 'movie'): QuickResult[] =>
-          (arr || []).map((r) => ({
+        const tag = (arr: TmdbListResponse['results'], type: 'series' | 'movie') =>
+          (arr || []).map((r) => ({ ...r, type }));
+
+        const merged: QuickResult[] = rankSearchResults(
+          [...tag(tv.results, 'series'), ...tag(mv.results, 'movie')],
+          q
+        )
+          .map((r) => ({
             id: r.id,
-            type,
-            title: (type === 'series' ? r.name || r.title : r.title || r.name) || '',
+            type: r.type,
+            title: (r.type === 'series' ? r.name || r.title : r.title || r.name) || '',
             poster_path: r.poster_path || undefined,
             vote_average: r.vote_average,
             popularity: r.popularity,
             year: (r.first_air_date || r.release_date || '').slice(0, 4),
-          }));
-
-        // Nach Popularität wie die SearchPage — vote_average begräbt neue Titel
-        // ohne Stimmen unter dem 18er-Cut.
-        const merged = [...map(tv.results, 'series'), ...map(mv.results, 'movie')]
+          }))
           .filter((r) => r.title)
-          .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
           .slice(0, 18);
         setResults(merged);
       } catch {
