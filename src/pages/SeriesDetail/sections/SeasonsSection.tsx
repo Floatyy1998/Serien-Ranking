@@ -1,4 +1,4 @@
-import ChatBubble from '@mui/icons-material/ChatBubble';
+import SmsOutlined from '@mui/icons-material/SmsOutlined';
 import Check from '@mui/icons-material/Check';
 import GridView from '@mui/icons-material/GridView';
 import List from '@mui/icons-material/List';
@@ -568,7 +568,7 @@ export function SeasonsSection({
                           flexShrink: 0,
                         }}
                       >
-                        <ChatBubble style={{ fontSize: '12px' }} />
+                        <SmsOutlined style={{ fontSize: '13px' }} />
                         {discussionCount}
                       </span>
                     )}
@@ -663,6 +663,9 @@ export function SeasonsSection({
                       }}
                     >
                       {episodeIndex + 1}
+                      {discussionCount > 0 && (
+                        <SmsOutlined aria-hidden style={{ fontSize: '13px', marginLeft: '3px' }} />
+                      )}
                       {isRewatched && (
                         <span
                           style={{
@@ -683,27 +686,6 @@ export function SeasonsSection({
                           }}
                         >
                           ×{episode.watchCount}
-                        </span>
-                      )}
-                      {discussionCount > 0 && (
-                        <span
-                          aria-hidden
-                          style={{
-                            position: 'absolute',
-                            bottom: '-5px',
-                            left: '-5px',
-                            background: currentTheme.primary,
-                            color: getOptimalTextColor(currentTheme.primary),
-                            borderRadius: '50%',
-                            width: '16px',
-                            height: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
-                          }}
-                        >
-                          <ChatBubble style={{ fontSize: '9px' }} />
                         </span>
                       )}
                       {fillerDotColor && (
