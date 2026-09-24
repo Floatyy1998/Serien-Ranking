@@ -1,3 +1,4 @@
+import ChatBubble from '@mui/icons-material/ChatBubble';
 import Check from '@mui/icons-material/Check';
 import GridView from '@mui/icons-material/GridView';
 import List from '@mui/icons-material/List';
@@ -24,6 +25,9 @@ import { SeasonTabs } from './SeasonTabs';
 import type { useSeriesData } from '../hooks/useSeriesData';
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
+
+const discussionLabel = (count: number) =>
+  count === 1 ? t('Diskussion') : t('{n} Diskussionen', { n: count });
 
 interface SeasonsSectionProps {
   series: NonNullable<ReturnType<typeof useSeriesData>['series']>;
@@ -545,17 +549,28 @@ export function SeasonsSection({
                       </span>
                     )}
 
-                    {/* Discussion dot */}
                     {discussionCount > 0 && (
                       <span
+                        className="episode-rating-badge"
+                        title={discussionLabel(discussionCount)}
+                        aria-label={discussionLabel(discussionCount)}
                         style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: '50%',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
                           background: currentTheme.primary,
+                          color: getOptimalTextColor(currentTheme.primary),
+                          whiteSpace: 'nowrap',
                           flexShrink: 0,
                         }}
-                      />
+                      >
+                        <ChatBubble style={{ fontSize: '12px' }} />
+                        {discussionCount}
+                      </span>
                     )}
                   </div>
                 );
@@ -577,6 +592,8 @@ export function SeasonsSection({
                   : fillerInfo?.recap
                     ? ' · Recap'
                     : '';
+                const discussionSuffix =
+                  discussionCount > 0 ? ` · ${discussionLabel(discussionCount)}` : '';
                 const fillerDotColor = fillerInfo?.filler
                   ? currentTheme.status.warning
                   : fillerInfo?.recap
@@ -591,7 +608,8 @@ export function SeasonsSection({
                         : episode.watched
                           ? t('Episode {n} als nicht gesehen markieren', { n: episodeIndex + 1 })
                           : t('Episode {n} als gesehen markieren', { n: episodeIndex + 1 })) +
-                      fillerLabel
+                      fillerLabel +
+                      discussionSuffix
                     }
                     arrow
                     enterDelay={400}
@@ -608,7 +626,8 @@ export function SeasonsSection({
                           : episode.watched
                             ? t('Episode {n} als nicht gesehen markieren', { n: episodeIndex + 1 })
                             : t('Episode {n} als gesehen markieren', { n: episodeIndex + 1 })) +
-                        fillerLabel
+                        fillerLabel +
+                        discussionSuffix
                       }
                       onClick={() => {
                         if (isRewatched) {
@@ -668,16 +687,24 @@ export function SeasonsSection({
                       )}
                       {discussionCount > 0 && (
                         <span
+                          aria-hidden
                           style={{
                             position: 'absolute',
-                            bottom: '-2px',
-                            left: '-2px',
+                            bottom: '-5px',
+                            left: '-5px',
                             background: currentTheme.primary,
+                            color: getOptimalTextColor(currentTheme.primary),
                             borderRadius: '50%',
-                            width: '6px',
-                            height: '6px',
+                            width: '16px',
+                            height: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
                           }}
-                        />
+                        >
+                          <ChatBubble style={{ fontSize: '9px' }} />
+                        </span>
                       )}
                       {fillerDotColor && (
                         <span
