@@ -10,6 +10,7 @@
  * bekannt ist; ohne Anmeldung gehen sie verloren.
  */
 import { buildFingerprint } from '../../lib/errorReport/fingerprint';
+import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { shortStack, truncate } from '../../lib/errorReport/redact';
 import { decideThrottle, type ThrottleState } from '../../lib/errorReport/throttle';
 import { dbRef, serverTimestamp } from '../db/ref';
@@ -35,6 +36,7 @@ let currentUid: string | null = null;
 let installed = false;
 let sessionErrorCount = 0;
 let queued: ReportDraft[] = [];
+let pageLeaving = false;
 
 function loadState(): ThrottleState | null {
   try {
@@ -169,6 +171,9 @@ function onWindowError(event: ErrorEvent): void {
     if (tag === 'link' && (target.getAttribute?.('rel') || '').toLowerCase() !== 'stylesheet') {
       return;
     }
+    // Waehrend die Seite ersetzt wird (Update-Reload, Chunk-Retry) bricht der
+    // Browser laufende Ladevorgaenge ab bzw. alte Chunks sind schon weg.
+    if (pageLeaving) return;
     const src = target.getAttribute?.('src') || target.getAttribute?.('href') || '';
     captureError({
       kind: 'resource',
@@ -209,6 +214,11 @@ export function installErrorReporting(): void {
 
   window.addEventListener('error', onWindowError, true);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
+  const markLeaving = () => {
+    pageLeaving = true;
+  };
+  window.addEventListener('beforeunload', markLeaving);
+  window.addEventListener(PAGE_REPLACING_EVENT, markLeaving);
 }
 
 /** Nur für Tests. */
@@ -217,4 +227,5 @@ export function resetErrorReporter(): void {
   installed = false;
   sessionErrorCount = 0;
   queued = [];
+  pageLeaving = false;
 }

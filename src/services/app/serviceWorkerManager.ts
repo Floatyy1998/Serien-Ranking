@@ -1,3 +1,4 @@
+import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { t } from '../i18n';
 import { isNativeApp } from './nativeShell';
 
@@ -148,6 +149,7 @@ class ServiceWorkerManager {
   private applyUpdate(registration: ServiceWorkerRegistration): void {
     if (!registration.waiting) return;
     this.intentionalActivation = true;
+    window.dispatchEvent(new Event(PAGE_REPLACING_EVENT));
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     if (this.hiddenApplyHandler) {
       document.removeEventListener('visibilitychange', this.hiddenApplyHandler);

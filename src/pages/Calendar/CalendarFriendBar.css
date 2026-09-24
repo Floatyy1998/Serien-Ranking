@@ -60,14 +60,6 @@
      ist die einzige Kontur, sonst läge ein Ring um den Ring. */
 }
 
-/* `UserAvatar` ist ein <button> und faengt sich sonst die 44x44 aus
-   `.mobile-app button` ein — der Kreis sprengt dann den Chip. Die Groesse
-   kommt aus dem size-Prop; hier wird nur die Mindestgroesse aufgehoben. */
-.mobile-app .cal-friendchip__avatar button {
-  min-width: 0;
-  min-height: 0;
-}
-
 .cal-friendchip--edit {
   padding: 0 12px;
   opacity: 0.6;

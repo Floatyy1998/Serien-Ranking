@@ -20,7 +20,8 @@ import './services/app/nativeShell';
 
 // Vor dem Rendern installieren, damit auch Fehler beim Bootstrap erfasst
 // werden. Geschrieben wird erst, sobald der Nutzer feststeht (authProvider).
-installErrorReporting();
+// Der Dev-Server meldet nicht: HMR/Dep-Neuoptimierung erzeugen Fehler, die es im Build nicht gibt.
+if (!import.meta.env.DEV) installErrorReporting();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 

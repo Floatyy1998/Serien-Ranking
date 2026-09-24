@@ -64,6 +64,24 @@ describe('UserAvatar', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('rendert dekorativ keinen eigenen Knopf, damit er in einem Chip-Knopf sitzen darf', () => {
+    const onChip = vi.fn();
+    render(
+      <button type="button" onClick={onChip}>
+        <UserAvatar
+          userId="u1"
+          username="Bob"
+          photoURL="https://x/p.jpg"
+          navigable={false}
+          decorative
+        />
+      </button>
+    );
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    fireEvent.click(document.querySelector('img') as HTMLImageElement);
+    expect(onChip).toHaveBeenCalledTimes(1);
+  });
+
   it('uses the photoURL as image when provided', () => {
     render(<UserAvatar userId="u1" username="Photo" photoURL="https://x/p.jpg" />);
     expect(screen.getByRole('button', { name: /Photo/ }).querySelector('img')).toHaveAttribute(

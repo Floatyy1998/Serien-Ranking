@@ -104,6 +104,7 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
                   size={42}
                   navigable={false}
                   bordered={false}
+                  decorative
                 />
               </span>
               {name}

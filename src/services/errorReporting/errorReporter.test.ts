@@ -32,6 +32,7 @@ vi.mock('./context', () => ({
   primeErrorContext: vi.fn(async () => {}),
 }));
 
+import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import {
   captureError,
   installErrorReporting,
@@ -201,6 +202,14 @@ describe('globale Handler', () => {
     document.body.appendChild(el);
     el.dispatchEvent(new Event('error'));
     el.remove();
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+  });
+
+  it('ignoriert Ressourcenfehler, sobald die Seite fuer ein Update ersetzt wird', async () => {
+    setErrorReporterUser('u1');
+    window.dispatchEvent(new Event(PAGE_REPLACING_EVENT));
+    fireResourceError('script', 'src', '/assets/RecentlyWatched-alt.js');
     await flush();
     expect(fb.sets).toHaveLength(0);
   });

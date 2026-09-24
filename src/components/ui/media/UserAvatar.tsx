@@ -17,6 +17,8 @@ interface UserAvatarProps {
    * das schon einen Rahmen hat — sonst liegt ein Ring um den Ring.
    */
   bordered?: boolean;
+  /** Reines Bild in einem klickbaren Elternteil (Chip): span statt verschachteltem button. */
+  decorative?: boolean;
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({
@@ -26,6 +28,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   size = 40,
   navigable = true,
   bordered = true,
+  decorative = false,
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -51,6 +54,58 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     if (showAvatar(src, username)) event.stopPropagation();
   };
 
+  const style: React.CSSProperties = {
+    width: size,
+    height: size,
+    borderRadius: '50%',
+    flexShrink: 0,
+    border: bordered ? `2px solid ${borderColor}` : 'none',
+    boxShadow: size >= 36 ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+    padding: 0,
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(src
+      ? {}
+      : {
+          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
+        }),
+  };
+
+  const content = src ? (
+    <img
+      src={src}
+      alt=""
+      onError={onError}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+    />
+  ) : initial ? (
+    <span
+      style={{
+        fontSize: Math.round(size * 0.42),
+        fontWeight: 700,
+        lineHeight: 1,
+        color: '#fff',
+        fontFamily: 'var(--font-display)',
+        userSelect: 'none',
+      }}
+      aria-hidden="true"
+    >
+      {initial}
+    </span>
+  ) : (
+    <Person style={{ fontSize: iconSize, color: currentTheme.text.primary }} aria-hidden="true" />
+  );
+
+  if (decorative) {
+    return (
+      <span aria-hidden="true" style={style}>
+        {content}
+      </span>
+    );
+  }
+
   return (
     <button
       onClick={handleClick}
@@ -61,53 +116,9 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           ? t('Profil von {name} öffnen', { name: username })
           : t('Profilbild von {name}', { name: username })
       }
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        flexShrink: 0,
-        cursor: navigable || zoomable ? 'pointer' : 'default',
-        border: bordered ? `2px solid ${borderColor}` : 'none',
-        boxShadow: size >= 36 ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-        padding: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...(src
-          ? {}
-          : {
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
-            }),
-      }}
+      style={{ ...style, cursor: navigable || zoomable ? 'pointer' : 'default' }}
     >
-      {src ? (
-        <img
-          src={src}
-          alt=""
-          onError={onError}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      ) : initial ? (
-        <span
-          style={{
-            fontSize: Math.round(size * 0.42),
-            fontWeight: 700,
-            lineHeight: 1,
-            color: '#fff',
-            fontFamily: 'var(--font-display)',
-            userSelect: 'none',
-          }}
-          aria-hidden="true"
-        >
-          {initial}
-        </span>
-      ) : (
-        <Person
-          style={{ fontSize: iconSize, color: currentTheme.text.primary }}
-          aria-hidden="true"
-        />
-      )}
+      {content}
     </button>
   );
 };
