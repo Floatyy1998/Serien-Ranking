@@ -26,7 +26,7 @@ interface StatsProps {
 
 export interface CalendarToolbarProps extends WeekNavProps, FilterChipsProps, StatsProps {}
 
-const WeekNav = memo(
+export const WeekNav = memo(
   ({ kwNumber, monday, sunday, weekOffset, onPrev, onNext, onReset }: WeekNavProps) => {
     const { currentTheme } = useTheme();
 

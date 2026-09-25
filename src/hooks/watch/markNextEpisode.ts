@@ -71,6 +71,33 @@ export function findNextEpisode(series: Series): NextEpisodeInfo | null {
   return null;
 }
 
+/** Positionsdaten einer bestimmten Folge (per TMDB-Id), unabhängig vom Gesehen-Status. */
+export function findEpisodeById(series: Series, episodeId: number): NextEpisodeInfo | null {
+  const seasons = series.seasons;
+  if (!seasons || !episodeId) return null;
+  for (let j = 0; j < seasons.length; j++) {
+    const season = seasons[j];
+    const episodes = season?.episodes;
+    if (!episodes) continue;
+    for (let k = 0; k < episodes.length; k++) {
+      const episode = episodes[k];
+      if (episode?.id !== episodeId) continue;
+      return {
+        seasonIndex: j,
+        episodeIndex: k,
+        seasonNumber: (season.seasonNumber ?? 0) + 1,
+        episodeNumber: episode.episode_number || k + 1,
+        absoluteNumber: episode.absoluteNumber,
+        episodeId,
+        episodeName: episode.name,
+        runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+        airDate: getEpisodeAirDateStr(episode) || episode.air_date || '',
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * Markiert die nächste ungesehene Folge einer Serie als gesehen – inkl. Haptik,
  * Undo-Toast und der drei nachgelagerten Systeme (Pet-XP, Badge-Counter,
@@ -79,7 +106,16 @@ export function findNextEpisode(series: Series): NextEpisodeInfo | null {
 export async function markNextEpisodeWatched(uid: string, series: Series): Promise<boolean> {
   const next = findNextEpisode(series);
   if (!next || !next.episodeId) return false;
+  return markEpisodeWatched(uid, series, next, 'quick_mark');
+}
 
+/** Dieselbe Pipeline für eine bestimmte Folge (z. B. aus dem eigenen Schau-Plan). */
+export async function markEpisodeWatched(
+  uid: string,
+  series: Series,
+  next: NextEpisodeInfo,
+  source: string
+): Promise<boolean> {
   const { seasonIndex, seasonNumber, episodeNumber, absoluteNumber, episodeId, runtime, airDate } =
     next;
   const base = `${paths.seriesWatchItem(uid, series.id)}/seasons/${seasonIndex}/eps/${episodeId}`;
@@ -109,7 +145,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
         episodeNumber,
         absoluteNumber
       ),
-      `${series.title} ${label} (Quick-Mark)`
+      `${series.title} ${label} (${source})`
     );
 
     hapticSuccess();
@@ -151,7 +187,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
           genres: series.genre?.genres,
           runtime,
           isRewatch: previousCount > 0,
-          source: 'quick_mark',
+          source,
         });
         // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
         // isRewatch ohnehin false, wie zuvor hart kodiert.

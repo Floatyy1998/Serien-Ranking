@@ -33,6 +33,7 @@ import pets from './pets';
 import settings from './settings';
 import tour from './tour';
 import social from './social';
+import watchplan from './watchplan';
 
 const fr: Record<string, string> = {
   ...analytics,
@@ -61,6 +62,7 @@ const fr: Record<string, string> = {
   ...settings,
   ...tour,
   ...social,
+  ...watchplan,
 };
 
 export default fr;

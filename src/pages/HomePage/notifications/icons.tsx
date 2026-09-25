@@ -2,6 +2,7 @@ import {
   BugReport,
   ChatBubbleOutlined,
   Favorite,
+  EditCalendar,
   Flag,
   Lightbulb,
   Movie as MovieIcon,
@@ -33,6 +34,7 @@ const ICON_MAP: Record<string, (theme: Theme) => React.ReactNode> = {
   feature: (t) => <Lightbulb style={{ fontSize: '18px', color: t.secondary }} />,
   pet: () => <Pets style={{ fontSize: '18px', color: '#FF9800' }} />,
   recommendation: (t) => <Recommend style={{ fontSize: '18px', color: t.primary }} />,
+  plan: (t) => <EditCalendar style={{ fontSize: '18px', color: t.primary }} />,
 };
 
 const ICON_BG_MAP: Record<string, (t: Theme) => string> = {

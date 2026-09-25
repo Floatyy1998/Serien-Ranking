@@ -34,6 +34,7 @@ const { navigateMock, calState } = vi.hoisted(() => ({
 vi.mock('./useCalendarData', () => ({ useCalendarData: () => calState }));
 vi.mock('./CalendarToolbar', () => ({ CalendarToolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('./CalendarGrid', () => ({ CalendarGrid: () => <div data-testid="grid" /> }));
+vi.mock('./WatchPlanView', () => ({ WatchPlanView: () => <div data-testid="watch-plan" /> }));
 // Das Nav-Sheet zieht das ganze BottomSheet samt framer-Drag herein — hier
 // nur die Auswahl abbilden, die dieser Test braucht.
 vi.mock('../../components/ui/overlay/PosterNavSheet', () => ({
@@ -43,10 +44,14 @@ vi.mock('../../components/ui/overlay/PosterNavSheet', () => ({
 vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({
   QuickRatingSheet: () => <div data-testid="quick-rating" />,
 }));
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+  useLocation: () => ({ search: '' }),
+}));
 vi.mock('@mui/icons-material', () => ({
   CalendarMonth: () => null,
   ChevronRight: () => null,
+  EditCalendar: () => null,
   LiveTv: () => null,
   LocalMovies: () => null,
 }));
@@ -68,6 +73,21 @@ vi.mock('../../components/ui', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
   SkeletonListRow: () => <div data-testid="skeleton" />,
+  TabSwitcher: ({
+    tabs,
+    onTabChange,
+  }: {
+    tabs: { id: string; label: string }[];
+    onTabChange: (id: string) => void;
+  }) => (
+    <div>
+      {tabs.map((tab) => (
+        <button key={tab.id} onClick={() => onTabChange(tab.id)}>
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  ),
 }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
@@ -85,6 +105,7 @@ import { CalendarPage } from './CalendarPage';
 
 beforeEach(() => {
   navigateMock.mockReset();
+  localStorage.clear();
   calState.totalEpisodes = 5;
 });
 afterEach(() => cleanup());
@@ -109,5 +130,16 @@ describe('CalendarPage', () => {
     calState.totalEpisodes = 0;
     render(<CalendarPage />);
     expect(screen.getByText('Keine Episoden in dieser Woche')).toBeInTheDocument();
+  });
+
+  it('switches to the own watch plan and remembers the choice', () => {
+    render(<CalendarPage />);
+    fireEvent.click(screen.getByText('Mein Plan'));
+    expect(screen.getByTestId('watch-plan')).toBeInTheDocument();
+    expect(screen.queryByTestId('toolbar')).not.toBeInTheDocument();
+    expect(localStorage.getItem('calendarMode')).toBe('plan');
+    cleanup();
+    render(<CalendarPage />);
+    expect(screen.getByTestId('watch-plan')).toBeInTheDocument();
   });
 });

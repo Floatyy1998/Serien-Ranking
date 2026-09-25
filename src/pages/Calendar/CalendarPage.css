@@ -818,6 +818,10 @@ button.cal-ep-add--inline:active {
   color: var(--color-text-secondary);
 }
 
+.cal-entry-btn__short {
+  display: none;
+}
+
 .cal-entry-btn__sub {
   display: block;
   font-size: var(--text-sm);
@@ -1486,25 +1490,42 @@ button.cal-ep-add--inline:active {
     outline-offset: 2px;
   }
 
+  /* Eine kompakte Zeile: drei gleich breite Chips mit Kurzlabel statt 2+1-Kacheln. */
   .cal-entry-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     padding: 0 12px 10px;
   }
-  /* 3 Einträge: der letzte spannt beide Spalten, statt einsam links zu hängen. */
-  .cal-entry-row .cal-entry-btn:nth-child(3):last-child {
-    grid-column: 1 / -1;
-  }
-  .cal-entry-row .cal-entry-btn {
+  .cal-entry-row .cal-entry-btn,
+  .mobile-app .cal-entry-row button.cal-entry-btn {
     width: 100%;
+    min-width: 0;
     margin: 0;
-    min-height: 44px;
-    padding: 8px 12px;
+    min-height: 40px;
+    padding: 0 8px;
+    gap: 6px;
+    justify-content: center;
+    border-radius: var(--radius-md);
   }
+  .cal-entry-row .cal-entry-btn__icon {
+    font-size: 18px !important;
+  }
+  .cal-entry-row .cal-entry-btn__body {
+    flex: 0 1 auto;
+  }
+  .cal-entry-row .cal-entry-btn__title,
   .cal-entry-row .cal-entry-btn__sub,
   .cal-entry-row .cal-entry-btn__chevron {
     display: none;
+  }
+  .cal-entry-row .cal-entry-btn__short {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

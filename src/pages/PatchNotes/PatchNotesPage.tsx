@@ -5,10 +5,12 @@ import {
   AutoFixHigh,
   CalendarMonth,
   CalendarToday,
+  EditCalendar,
   EmojiEmotions,
   Equalizer,
   EuroSymbol,
   FilterAlt,
+  GroupAdd,
   Forum,
   History,
   HourglassEmpty,
@@ -80,6 +82,55 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: t('September 2026 – Dein eigener Schau-Plan'),
+      date: '2026-09-25',
+      features: [
+        {
+          icon: <EditCalendar />,
+          color: currentTheme.primary,
+          title: t('Mein Plan: dein eigener Kalender'),
+          description: t(
+            'Im Kalender gibt es neben „Neue Folgen" jetzt den Reiter „Mein Plan". Dort trägst du ein, an welchem Tag du welche Folge oder welchen Film schauen willst — auf Wunsch mit Uhrzeit und einer kurzen Notiz. Tag und Uhrzeit wählst du bequem per Tippen, auch im 12-Stunden-Format.'
+          ),
+          link: { label: t('Zum Planer'), path: '/calendar?mode=plan' },
+        },
+        {
+          icon: <NotificationsActive />,
+          color: currentTheme.secondary,
+          title: t('Erinnerung, wann du willst'),
+          description: t(
+            'Setz bei einem Eintrag den Haken „Erinnern" und such dir aus: zur Startzeit, 15 Minuten oder eine Stunde vorher. Die Erinnerung kommt als Push aufs Handy und landet zusätzlich in deinen Benachrichtigungen — mit Poster und direktem Sprung zur Folge.'
+          ),
+        },
+        {
+          icon: <GroupAdd />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Zusammen schauen: Freunde einladen'),
+          description: t(
+            'Lade Freunde zu einem Termin ein. Sie bekommen eine Einladung, und wer annimmt, hat den Termin auch in seinem Plan. Du siehst, wer zugesagt hat; verschiebst du den Termin, zieht er bei allen mit. Deine Notiz bleibt dabei privat.'
+          ),
+          link: { label: t('Termin planen'), path: '/calendar?mode=plan' },
+        },
+        {
+          icon: <PlaylistAddCheck />,
+          color: currentTheme.secondary,
+          title: t('Direkt im Plan abhaken'),
+          description: t(
+            'Geschaut? Ein Tipp auf den Kreis neben dem Eintrag hakt die Folge oder den Film ab — genau wie überall sonst in der App, inklusive Rückgängig.'
+          ),
+        },
+        {
+          icon: <CalendarMonth />,
+          color: currentTheme.primary,
+          title: t('Aufgeräumter Kalender'),
+          description: t(
+            'Der Kopf des Kalenders ist deutlich ruhiger: deine Favoriten stehen als Avatar-Reihe bereit, und Anime-Season, Serien- und Film-Kalender erreichst du über eine kompakte Zeile.'
+          ),
+          link: { label: t('Zum Kalender'), path: '/calendar' },
+        },
+      ],
+    },
     {
       version: t('September 2026 – Deine Favoriten unter den Freunden'),
       date: '2026-09-17',

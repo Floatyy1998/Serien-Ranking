@@ -15,10 +15,87 @@
   display: none;
 }
 
-.cal-friendbar__icon {
-  flex-shrink: 0;
-  margin-right: 2px;
-  opacity: 0.45;
+/* Personen-Reihe: runder Avatar + Name darunter, rechts weich ausgeblendet,
+   damit klar ist, dass es weitergeht. */
+.cal-friendbar--people {
+  align-items: flex-start;
+  gap: 14px;
+  padding-top: 2px;
+  padding-bottom: 12px;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+.cal-person,
+.mobile-app button.cal-person {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  width: 52px;
+  min-width: 52px;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cal-person:last-child,
+.mobile-app button.cal-person:last-child {
+  margin-right: 24px;
+}
+
+.cal-person__ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 2px;
+  transition: box-shadow var(--duration-fast, 0.15s) var(--ease-default);
+}
+
+.cal-person__ring .cal-friendchip__avatar,
+.cal-person__ring > * {
+  pointer-events: none;
+}
+
+.cal-person__ring--edit {
+  border: 1.5px dashed;
+  padding: 0;
+}
+
+.cal-person:not(.is-active):not(.cal-person--edit) .cal-person__ring {
+  opacity: 0.85;
+}
+
+.cal-person__name {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-person:active .cal-person__ring {
+  transform: scale(0.94);
+}
+
+.cal-person:focus-visible {
+  outline: none;
+}
+
+.cal-person:focus-visible .cal-person__ring {
+  outline: 2px solid var(--theme-primary, #ef6f8a);
+  outline-offset: 3px;
 }
 
 .cal-friendchip {

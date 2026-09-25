@@ -22,7 +22,10 @@ export interface AppNotification {
     | 'moderation_flag'
     | 'moderation_ban'
     | 'data_heal'
-    | 'movie_available';
+    | 'movie_available'
+    | 'watch_plan_reminder'
+    | 'watch_plan_invite'
+    | 'watch_plan_response';
   title: string;
   message: string;
   // Englische Variante (Cross-User-Notifications) — Anzeige wählt nach appLocale

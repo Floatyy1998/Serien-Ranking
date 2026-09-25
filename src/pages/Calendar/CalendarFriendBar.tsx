@@ -1,9 +1,9 @@
-import GroupRounded from '@mui/icons-material/GroupRounded';
 import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
 import TuneRounded from '@mui/icons-material/TuneRounded';
 import { useState } from 'react';
 import { FavoriteFriendsSheet } from '../../components/social/FavoriteFriendsSheet';
 import { UserAvatar } from '../../components/ui/media/UserAvatar';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import type { Friend } from '../../types/Friend';
@@ -29,30 +29,15 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
   onSelect,
 }) => {
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
   const [pickerOpen, setPickerOpen] = useState(false);
 
   if (!hasFriends) return null;
-
-  // Auswahl-Optik wie bei den Filter-Chips darüber, nicht als Vollfläche.
-  const activeStyle = {
-    background: `${currentTheme.primary}20`,
-    color: currentTheme.primary,
-    borderColor: `${currentTheme.primary}50`,
-  };
-
-  const icon = (
-    <GroupRounded
-      className="cal-friendbar__icon"
-      style={{ fontSize: 16, color: currentTheme.text.muted }}
-      aria-hidden
-    />
-  );
 
   if (favoriteFriends.length === 0) {
     return (
       <>
         <div className="cal-friendbar">
-          {icon}
           <button
             type="button"
             className="cal-friendchip"
@@ -68,57 +53,102 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
     );
   }
 
+  const person = (
+    key: string,
+    label: string,
+    active: boolean,
+    onClick: () => void,
+    avatar: React.ReactNode
+  ) => (
+    <button
+      key={key}
+      type="button"
+      role="tab"
+      aria-selected={active}
+      className={`cal-person${active ? ' is-active' : ''}`}
+      onClick={onClick}
+    >
+      <span
+        className="cal-person__ring"
+        style={{
+          boxShadow: active
+            ? `0 0 0 2px ${currentTheme.primary}, 0 4px 14px ${currentTheme.primary}40`
+            : `0 0 0 1px ${currentTheme.border.default}`,
+        }}
+        aria-hidden
+      >
+        {avatar}
+      </span>
+      <span
+        className="cal-person__name"
+        style={{ color: active ? currentTheme.primary : currentTheme.text.muted }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+
+  const ownName = user?.displayName || t('Ich');
+
   return (
     <>
-      <div className="cal-friendbar" role="tablist" aria-label={t('Kalender wählen')}>
-        {icon}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={viewedFriendUid === null}
-          className={`cal-friendchip${viewedFriendUid === null ? ' is-active' : ''}`}
-          onClick={() => onSelect(null)}
-          style={viewedFriendUid === null ? activeStyle : undefined}
-        >
-          {t('Ich')}
-        </button>
+      <div
+        className="cal-friendbar cal-friendbar--people"
+        role="tablist"
+        aria-label={t('Kalender wählen')}
+      >
+        {person(
+          'me',
+          t('Ich'),
+          viewedFriendUid === null,
+          () => onSelect(null),
+          <UserAvatar
+            userId={user?.uid ?? 'me'}
+            username={ownName}
+            photoURL={user?.photoURL ?? undefined}
+            size={40}
+            navigable={false}
+            bordered={false}
+            decorative
+          />
+        )}
 
         {favoriteFriends.map((friend) => {
           const active = viewedFriendUid === friend.uid;
           const name = friend.displayName || friend.username || t('Freund');
-          return (
-            <button
-              key={friend.uid}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              className={`cal-friendchip cal-friendchip--avatar${active ? ' is-active' : ''}`}
-              onClick={() => onSelect(active ? null : friend.uid)}
-              style={active ? activeStyle : undefined}
-            >
-              <span className="cal-friendchip__avatar" aria-hidden>
-                <UserAvatar
-                  userId={friend.uid}
-                  username={name}
-                  photoURL={friend.photoURL}
-                  size={42}
-                  navigable={false}
-                  bordered={false}
-                  decorative
-                />
-              </span>
-              {name}
-            </button>
+          return person(
+            friend.uid,
+            name,
+            active,
+            () => onSelect(active ? null : friend.uid),
+            <UserAvatar
+              userId={friend.uid}
+              username={name}
+              photoURL={friend.photoURL}
+              size={40}
+              navigable={false}
+              bordered={false}
+              decorative
+            />
           );
         })}
 
         <button
           type="button"
-          className="cal-friendchip cal-friendchip--edit"
+          className="cal-person cal-person--edit"
           onClick={() => setPickerOpen(true)}
           aria-label={t('Favoriten bearbeiten')}
         >
-          <TuneRounded style={{ fontSize: 15 }} />
+          <span
+            className="cal-person__ring cal-person__ring--edit"
+            style={{ borderColor: currentTheme.border.default, color: currentTheme.text.muted }}
+            aria-hidden
+          >
+            <TuneRounded style={{ fontSize: 18 }} />
+          </span>
+          <span className="cal-person__name" style={{ color: currentTheme.text.muted }}>
+            {t('Bearbeiten')}
+          </span>
         </button>
       </div>
       <FavoriteFriendsSheet isOpen={pickerOpen} onClose={() => setPickerOpen(false)} />

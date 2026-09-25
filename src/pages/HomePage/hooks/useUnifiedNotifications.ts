@@ -53,7 +53,8 @@ export interface UnifiedNotification {
     | 'bug'
     | 'feature'
     | 'pet'
-    | 'recommendation';
+    | 'recommendation'
+    | 'plan';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
@@ -71,6 +72,15 @@ export interface Announcement {
 }
 
 export const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: 'announcement_watch-plan-2026-09',
+    title: 'Neu: Dein eigener Schau-Plan',
+    message:
+      'Im Kalender gibt es jetzt „Mein Plan": Trag ein, wann du welche Folge oder welchen Film schauen willst, lass dich per Push daran erinnern und lade Freunde dazu ein — wer annimmt, hat den Termin auch in seinem Plan. Alle Details in den Patch Notes.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik)
+    timestamp: new Date('2026-09-25T16:30:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
   {
     id: 'announcement_default-theme-2026-07',
     title: 'Neu: Ein neues Standard-Design',
@@ -462,13 +472,15 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
                 ? n.data?.ticketType === 'feature'
                   ? 'feature'
                   : 'bug'
-                : n.type === 'discussion_reply'
-                  ? 'chat'
-                  : n.type === 'spoiler_flag'
-                    ? 'flag'
-                    : n.type === 'discussion_like' || n.type === 'welcome'
-                      ? 'heart'
-                      : 'chat',
+                : String(n.type ?? '').startsWith('watch_plan')
+                  ? 'plan'
+                  : n.type === 'discussion_reply'
+                    ? 'chat'
+                    : n.type === 'spoiler_flag'
+                      ? 'flag'
+                      : n.type === 'discussion_like' || n.type === 'welcome'
+                        ? 'heart'
+                        : 'chat',
       };
 
       if (isPendingDrop && n.data) {
