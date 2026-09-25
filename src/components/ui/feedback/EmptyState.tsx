@@ -156,6 +156,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             whileTap={tapScale}
             onClick={action.onClick}
             style={{
+              // Inline, damit `.mobile-app button { display: flex }` den Knopf nicht links an den Rand zieht.
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginTop: '24px',
               padding: '13px 32px',
               background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
