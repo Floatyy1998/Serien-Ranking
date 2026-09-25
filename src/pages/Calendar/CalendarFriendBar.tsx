@@ -72,8 +72,9 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
         className="cal-person__ring"
         style={{
           boxShadow: active
-            ? `0 0 0 2px ${currentTheme.primary}, 0 4px 14px ${currentTheme.primary}40`
-            : `0 0 0 1px ${currentTheme.border.default}`,
+            ? `inset 0 0 0 2px ${currentTheme.primary}`
+            : `inset 0 0 0 1px ${currentTheme.border.default}`,
+          background: active ? `${currentTheme.primary}1f` : undefined,
         }}
         aria-hidden
       >
@@ -106,7 +107,7 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
             userId={user?.uid ?? 'me'}
             username={ownName}
             photoURL={user?.photoURL ?? undefined}
-            size={40}
+            size={38}
             navigable={false}
             bordered={false}
             decorative
@@ -125,7 +126,7 @@ export const CalendarFriendBar: React.FC<CalendarFriendBarProps> = ({
               userId={friend.uid}
               username={name}
               photoURL={friend.photoURL}
-              size={40}
+              size={38}
               navigable={false}
               bordered={false}
               decorative

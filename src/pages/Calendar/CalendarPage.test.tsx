@@ -34,6 +34,9 @@ const { navigateMock, calState } = vi.hoisted(() => ({
 vi.mock('./useCalendarData', () => ({ useCalendarData: () => calState }));
 vi.mock('./CalendarToolbar', () => ({ CalendarToolbar: () => <div data-testid="toolbar" /> }));
 vi.mock('./CalendarGrid', () => ({ CalendarGrid: () => <div data-testid="grid" /> }));
+vi.mock('../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isDesktop: false, isMobile: true }),
+}));
 vi.mock('./WatchPlanView', () => ({ WatchPlanView: () => <div data-testid="watch-plan" /> }));
 // Das Nav-Sheet zieht das ganze BottomSheet samt framer-Drag herein — hier
 // nur die Auswahl abbilden, die dieser Test braucht.

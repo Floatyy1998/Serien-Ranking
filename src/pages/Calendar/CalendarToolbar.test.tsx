@@ -32,8 +32,6 @@ const baseProps = {
   onReset: vi.fn(),
   watchlistOnly: false,
   onToggle: vi.fn(),
-  totalEpisodes: 10,
-  watchedCount: 4,
 };
 
 beforeEach(() => {
@@ -44,12 +42,10 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('CalendarToolbar', () => {
-  it('renders the KW label and episode stats', () => {
+  it('renders the KW label without duplicating the page-header stats', () => {
     render(<CalendarToolbar {...baseProps} />);
     expect(screen.getAllByText(/KW 27/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('10 gesamt').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('4 gesehen').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('6 offen').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/gesamt/)).not.toBeInTheDocument();
   });
 
   it('invokes navigation callbacks from the week arrows', () => {
@@ -65,10 +61,5 @@ describe('CalendarToolbar', () => {
     render(<CalendarToolbar {...baseProps} />);
     fireEvent.click(screen.getAllByText('Watchlist')[0]);
     expect(baseProps.onToggle).toHaveBeenCalledWith(true);
-  });
-
-  it('hides the stats when there are no episodes', () => {
-    render(<CalendarToolbar {...baseProps} totalEpisodes={0} watchedCount={0} />);
-    expect(screen.queryByText(/gesamt/)).not.toBeInTheDocument();
   });
 });

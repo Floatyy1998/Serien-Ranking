@@ -3,6 +3,78 @@
   padding-bottom: 0;
 }
 
+/* Desktop: Modus-Umschalter genau in der Mitte der Kopfzeile. */
+.cal-header-center {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .cal-header-center {
+    display: flex;
+    position: absolute;
+    top: calc(50% + var(--safe-top) / 2);
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  /* Pille und Wochen-Schalter teilen sich dieselbe Breite — eine Mittelachse. */
+  .ui-tabs.cal-mode-tabs--header {
+    margin: 0;
+    width: 360px;
+    max-width: none;
+  }
+  .ui-tabs.cal-mode-tabs--header .ui-tabs__tab {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+  .cal-header-counter {
+    margin-left: 12px;
+  }
+
+  /* Zeile darunter: Personen | Woche | Filter — Mitte bleibt das Zentrum. */
+  .cal-desktop-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px 14px;
+  }
+  .cal-desktop-bar .cal-toolbar-desktop {
+    display: contents;
+  }
+  .cal-desktop-bar .cal-toolbar-left {
+    grid-column: 2;
+    grid-row: 1;
+    flex: none;
+  }
+  .cal-desktop-bar .cal-toolbar-left .cal-week-switcher {
+    justify-content: center;
+    width: 360px;
+  }
+  .cal-desktop-bar .cal-toolbar-left .cal-week-chip {
+    flex: 1 1 auto;
+  }
+  .cal-desktop-bar .cal-subbar .cal-friendbar {
+    padding: 0;
+  }
+  .cal-desktop-bar .cal-toolbar-right {
+    grid-column: 3;
+    grid-row: 1;
+    justify-content: flex-end;
+  }
+  .cal-desktop-bar .cal-subbar {
+    grid-column: 1;
+    grid-row: 1;
+    display: block;
+    padding: 0;
+    min-width: 0;
+  }
+  .cal-desktop-bar .cal-mobile-header {
+    display: none;
+  }
+}
+
 /* Week Switcher */
 .cal-week-switcher {
   display: flex;
@@ -852,6 +924,11 @@ button.cal-ep-add--inline:active {
     flex: 1;
   }
 
+  .cal-toolbar-left .cal-week-switcher {
+    padding: 0;
+    justify-content: flex-start;
+  }
+
   .cal-toolbar-right {
     justify-content: flex-end;
   }
@@ -1277,16 +1354,48 @@ button.cal-ep-add--inline:active {
 /* Desktop 2050-Pass: volle Flächennutzung — Einstiegskarten nebeneinander,
    Wochen-Grid füllt die Seitenhöhe, leere Tage bleiben sichtbare Zonen. */
 @media (min-width: 768px) {
-  .cal-entry-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    padding: 4px 20px 12px;
+  /* Personen links, Einstiege rechts — eine ruhige Zeile statt zwei. */
+  .cal-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 20px 14px;
   }
-  .cal-entry-row .cal-entry-btn {
-    width: 100%;
+  .cal-subbar .cal-friendbar {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+  }
+  .cal-entry-row {
+    display: flex;
+    flex: none;
+    gap: 8px;
+    padding: 0;
+    margin-left: auto;
+  }
+  .cal-entry-row .cal-entry-btn,
+  .mobile-app .cal-entry-row button.cal-entry-btn {
+    width: auto;
     margin: 0;
-    box-shadow: var(--glass-specular);
+    min-height: 40px;
+    padding: 0 14px;
+    gap: 8px;
+    border-radius: var(--radius-md);
+  }
+  .cal-entry-row .cal-entry-btn__body {
+    flex: 0 1 auto;
+  }
+  .cal-entry-row .cal-entry-btn__title,
+  .cal-entry-row .cal-entry-btn__sub,
+  .cal-entry-row .cal-entry-btn__chevron {
+    display: none;
+  }
+  .cal-entry-row .cal-entry-btn__short {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .cal-content {

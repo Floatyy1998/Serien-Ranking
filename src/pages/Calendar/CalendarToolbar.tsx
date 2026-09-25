@@ -19,12 +19,7 @@ interface FilterChipsProps {
   onToggle: (next: boolean) => void;
 }
 
-interface StatsProps {
-  totalEpisodes: number;
-  watchedCount: number;
-}
-
-export interface CalendarToolbarProps extends WeekNavProps, FilterChipsProps, StatsProps {}
+export interface CalendarToolbarProps extends WeekNavProps, FilterChipsProps {}
 
 export const WeekNav = memo(
   ({ kwNumber, monday, sunday, weekOffset, onPrev, onNext, onReset }: WeekNavProps) => {
@@ -116,33 +111,6 @@ const MobileWatchlistToggle = memo(({ watchlistOnly, onToggle }: FilterChipsProp
 });
 MobileWatchlistToggle.displayName = 'MobileWatchlistToggle';
 
-const StatItems = memo(({ totalEpisodes, watchedCount }: StatsProps) => {
-  const { currentTheme } = useTheme();
-  if (totalEpisodes <= 0) return null;
-
-  return (
-    <>
-      <div
-        className="cal-stat-item"
-        style={{ background: `${currentTheme.primary}15`, color: currentTheme.primary }}
-      >
-        {t('{n} gesamt', { n: totalEpisodes })}
-      </div>
-      <div
-        className="cal-stat-item"
-        style={{
-          background: `${currentTheme.status.success}15`,
-          color: currentTheme.status.success,
-        }}
-      >
-        {t('{n} gesehen', { n: watchedCount })}
-      </div>
-      <div className="cal-stat-item">{t('{n} offen', { n: totalEpisodes - watchedCount })}</div>
-    </>
-  );
-});
-StatItems.displayName = 'StatItems';
-
 export const CalendarToolbar = memo(
   ({
     kwNumber,
@@ -154,23 +122,18 @@ export const CalendarToolbar = memo(
     onReset,
     watchlistOnly,
     onToggle,
-    totalEpisodes,
-    watchedCount,
   }: CalendarToolbarProps) => {
     const weekNavProps = { kwNumber, monday, sunday, weekOffset, onPrev, onNext, onReset };
 
     return (
       <>
-        {/* Desktop toolbar */}
+        {/* Desktop: Woche links, Filter rechts — die Zahlen stehen im Seitenkopf. */}
         <div className="cal-toolbar-desktop">
           <div className="cal-toolbar-left">
-            <FilterChips watchlistOnly={watchlistOnly} onToggle={onToggle} />
-          </div>
-          <div className="cal-toolbar-center">
             <WeekNav {...weekNavProps} />
           </div>
           <div className="cal-toolbar-right">
-            <StatItems totalEpisodes={totalEpisodes} watchedCount={watchedCount} />
+            <FilterChips watchlistOnly={watchlistOnly} onToggle={onToggle} />
           </div>
         </div>
 

@@ -27,6 +27,7 @@ import { CalendarViewModeContext } from './calendarViewMode';
 import { PosterNavSheet } from '../../components/ui/overlay/PosterNavSheet';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { friendAddKey, useFriendAddToList } from '../../hooks/social/useFriendAddToList';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { WatchPlanView } from './WatchPlanView';
 import './CalendarPage.css';
 
@@ -46,6 +47,7 @@ export const CalendarPage = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const { search } = useLocation();
+  const { isDesktop } = useDeviceType();
   const [mode, setModeState] = useState<CalendarMode>(readMode);
   const setMode = (next: CalendarMode) => {
     setModeState(next);
@@ -122,118 +124,143 @@ export const CalendarPage = () => {
     [viewedFriendUid, addingKey, isInOwnList, addToOwnList]
   );
 
+  const modeTabs = (
+    <TabSwitcher
+      tabs={[
+        { id: 'releases', label: t('Neue Folgen'), icon: CalendarMonth },
+        { id: 'plan', label: t('Mein Plan'), icon: EditCalendar },
+      ]}
+      activeTab={mode}
+      onTabChange={(id) => {
+        hapticTap();
+        setMode(id as CalendarMode);
+      }}
+      className={isDesktop ? 'cal-mode-tabs--header' : 'ui-tabs--center'}
+    />
+  );
+
+  const counter =
+    mode === 'releases' && totalEpisodes > 0 ? (
+      <span
+        className="cal-header-counter"
+        style={{ fontSize: '13px', fontWeight: 600, color: currentTheme.text.muted }}
+      >
+        <span style={{ color: currentTheme.status.success }}>{watchedCount}</span>
+        {' / '}
+        {totalEpisodes}
+      </span>
+    ) : undefined;
+
+  const entryLinks = (
+    <div className="cal-entry-row">
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          hapticTap();
+          navigate('/anime-season');
+        }}
+        aria-label={t('Anime-Season-Kalender öffnen')}
+        className="cal-entry-btn cal-entry-btn--first"
+      >
+        <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+        <span className="cal-entry-btn__body">
+          <span className="cal-entry-btn__title">{t('Anime-Season')}</span>
+          <span className="cal-entry-btn__short">{t('Anime')}</span>
+          <span className="cal-entry-btn__sub">
+            {t('Was läuft diese Season? Airing-Tage & Countdown')}
+          </span>
+        </span>
+        <ChevronRight className="cal-entry-btn__chevron" />
+      </motion.button>
+
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          hapticTap();
+          navigate('/serien-kalender');
+        }}
+        aria-label={t('Serien-Kalender öffnen')}
+        className="cal-entry-btn"
+      >
+        <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+        <span className="cal-entry-btn__body">
+          <span className="cal-entry-btn__title">{t('Serien-Kalender')}</span>
+          <span className="cal-entry-btn__short">{t('Serien')}</span>
+          <span className="cal-entry-btn__sub">{t('Neue Serien & Staffeln entdecken')}</span>
+        </span>
+        <ChevronRight className="cal-entry-btn__chevron" />
+      </motion.button>
+
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          hapticTap();
+          navigate('/film-kalender');
+        }}
+        aria-label={t('Film-Kalender öffnen')}
+        className="cal-entry-btn"
+      >
+        <LocalMovies className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+        <span className="cal-entry-btn__body">
+          <span className="cal-entry-btn__title">{t('Film-Kalender')}</span>
+          <span className="cal-entry-btn__short">{t('Filme')}</span>
+          <span className="cal-entry-btn__sub">{t('Kinostarts & Streaming-Releases')}</span>
+        </span>
+        <ChevronRight className="cal-entry-btn__chevron" />
+      </motion.button>
+    </div>
+  );
+
   return (
     <PageLayout>
       <div className="calendar-page">
         <PageHeader
           title={t('TV-Kalender')}
+          style={{
+            paddingTop: 'calc(var(--space-4) + var(--safe-top))',
+            paddingBottom: 'var(--space-3)',
+          }}
+          titleBadge={isDesktop ? counter : undefined}
           actions={
-            mode === 'releases' && totalEpisodes > 0 ? (
-              <span style={{ fontSize: '13px', fontWeight: 600, color: currentTheme.text.muted }}>
-                <span style={{ color: currentTheme.status.success }}>{watchedCount}</span>
-                {' / '}
-                {totalEpisodes}
-              </span>
-            ) : undefined
+            isDesktop ? (
+              <>
+                <div className="cal-header-center">{modeTabs}</div>
+                {entryLinks}
+              </>
+            ) : (
+              counter
+            )
           }
         />
-        <TabSwitcher
-          tabs={[
-            { id: 'releases', label: t('Neue Folgen'), icon: CalendarMonth },
-            { id: 'plan', label: t('Mein Plan'), icon: EditCalendar },
-          ]}
-          activeTab={mode}
-          onTabChange={(id) => {
-            hapticTap();
-            setMode(id as CalendarMode);
-          }}
-          className="ui-tabs--center"
-        />
+        {!isDesktop && modeTabs}
 
         {mode === 'plan' ? (
           <WatchPlanView />
         ) : (
           <>
-            <CalendarToolbar
-              kwNumber={kwNumber}
-              monday={monday}
-              sunday={sunday}
-              weekOffset={weekOffset}
-              onPrev={goToPrevWeek}
-              onNext={goToNextWeek}
-              onReset={goToCurrentWeek}
-              watchlistOnly={watchlistOnly}
-              onToggle={toggleWatchlistOnly}
-              totalEpisodes={totalEpisodes}
-              watchedCount={watchedCount}
-            />
+            <div className={isDesktop ? 'cal-desktop-bar' : 'cal-subbar-wrap'}>
+              <CalendarToolbar
+                kwNumber={kwNumber}
+                monday={monday}
+                sunday={sunday}
+                weekOffset={weekOffset}
+                onPrev={goToPrevWeek}
+                onNext={goToNextWeek}
+                onReset={goToCurrentWeek}
+                watchlistOnly={watchlistOnly}
+                onToggle={toggleWatchlistOnly}
+              />
 
-            <CalendarFriendBar
-              favoriteFriends={favoriteFriends}
-              hasFriends={friends.length > 0}
-              viewedFriendUid={viewedFriendUid}
-              onSelect={setViewedFriendUid}
-            />
+              <div className="cal-subbar">
+                <CalendarFriendBar
+                  favoriteFriends={favoriteFriends}
+                  hasFriends={friends.length > 0}
+                  viewedFriendUid={viewedFriendUid}
+                  onSelect={setViewedFriendUid}
+                />
 
-            {/* Einstiege in Anime-Season + Serien-Kalender — Desktop nebeneinander */}
-            <div className="cal-entry-row">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  hapticTap();
-                  navigate('/anime-season');
-                }}
-                aria-label={t('Anime-Season-Kalender öffnen')}
-                className="cal-entry-btn cal-entry-btn--first"
-              >
-                <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
-                <span className="cal-entry-btn__body">
-                  <span className="cal-entry-btn__title">{t('Anime-Season')}</span>
-                  <span className="cal-entry-btn__short">{t('Anime')}</span>
-                  <span className="cal-entry-btn__sub">
-                    {t('Was läuft diese Season? Airing-Tage & Countdown')}
-                  </span>
-                </span>
-                <ChevronRight className="cal-entry-btn__chevron" />
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  hapticTap();
-                  navigate('/serien-kalender');
-                }}
-                aria-label={t('Serien-Kalender öffnen')}
-                className="cal-entry-btn"
-              >
-                <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
-                <span className="cal-entry-btn__body">
-                  <span className="cal-entry-btn__title">{t('Serien-Kalender')}</span>
-                  <span className="cal-entry-btn__short">{t('Serien')}</span>
-                  <span className="cal-entry-btn__sub">
-                    {t('Neue Serien & Staffeln entdecken')}
-                  </span>
-                </span>
-                <ChevronRight className="cal-entry-btn__chevron" />
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  hapticTap();
-                  navigate('/film-kalender');
-                }}
-                aria-label={t('Film-Kalender öffnen')}
-                className="cal-entry-btn"
-              >
-                <LocalMovies className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
-                <span className="cal-entry-btn__body">
-                  <span className="cal-entry-btn__title">{t('Film-Kalender')}</span>
-                  <span className="cal-entry-btn__short">{t('Filme')}</span>
-                  <span className="cal-entry-btn__sub">{t('Kinostarts & Streaming-Releases')}</span>
-                </span>
-                <ChevronRight className="cal-entry-btn__chevron" />
-              </motion.button>
+                {!isDesktop && entryLinks}
+              </div>
             </div>
 
             {loading ? (

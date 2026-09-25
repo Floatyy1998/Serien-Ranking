@@ -22,8 +22,13 @@
   gap: 14px;
   padding-top: 2px;
   padding-bottom: 12px;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+@media (max-width: 767px) {
+  .cal-friendbar--people {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
 }
 
 .cal-person,
@@ -54,16 +59,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  padding: 2px;
+  padding: 4px;
   transition: box-shadow var(--duration-fast, 0.15s) var(--ease-default);
 }
 
 .cal-person__ring .cal-friendchip__avatar,
 .cal-person__ring > * {
   pointer-events: none;
+}
+
+.cal-person--edit,
+.mobile-app button.cal-person--edit {
+  width: 64px;
+  min-width: 64px;
 }
 
 .cal-person__ring--edit {
