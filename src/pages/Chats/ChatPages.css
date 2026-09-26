@@ -386,6 +386,19 @@
   margin-top: 8px;
 }
 
+.ch-bubble:not(.ch-bubble--media),
+.ch-image-caption {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ch-bubble-time,
+.ch-spoiler-own {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Klare Seitenränder wie bei WhatsApp: eigene Bubbles kommen nie ganz nach
    links, fremde nie ganz nach rechts. */
 .ch-bubble--own {

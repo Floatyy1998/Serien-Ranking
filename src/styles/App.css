@@ -38,22 +38,7 @@
 /* Reset for mobile */
 .mobile-app * {
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
   box-sizing: border-box;
-}
-
-/* Allow text selection where needed.
-   Fields + opt-in .selectable, plus all flowing text content so titles,
-   descriptions and episode names stay copyable (the global `* { user-select:none }`
-   above only needs to suppress selection on interactive/layout chrome). */
-.mobile-app input,
-.mobile-app textarea,
-.mobile-app .selectable,
-.mobile-app :is(p, h1, h2, h3, h4, h5, h6, span, li, blockquote, td, dd, dt) {
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 /* Smooth scrolling */

@@ -82,3 +82,19 @@ body {
 html.electron header {
   padding-top: 50px !important;
 }
+
+/* Kein Markieren in der App — nur Eingabefelder bleiben markierbar */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable='true'],
+.selectable {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
