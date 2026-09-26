@@ -5,7 +5,7 @@ import { getMangaById } from '../services/api/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/api/mangaUpdatesService';
 import { shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
-import { dbRef, paths, userPath } from '../services/db/ref';
+import { dbRef, paths, updateIfExists, userPath } from '../services/db/ref';
 import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
@@ -28,7 +28,8 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
   });
 
   const allMangaList: Manga[] = useMemo(
-    () => (mangaData ? Object.values(mangaData) : []),
+    // Fragmente ohne anilistId/title (Teil-Update auf gelöschten Eintrag) nie anzeigen.
+    () => (mangaData ? Object.values(mangaData).filter((m) => m?.anilistId && m.title) : []),
     [mangaData]
   );
   const mangaList = useMemo(() => allMangaList.filter((m) => !m.hidden), [allMangaList]);
@@ -106,7 +107,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
             }
           }
           if (Object.keys(updates).length > 0) {
-            await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
+            await updateIfExists(paths.mangaItem(user.uid, manga.anilistId), updates);
           }
         } catch {
           // Silent fail per manga
@@ -180,7 +181,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           if (!manga.description && data.description) updates.description = data.description;
 
           if (Object.keys(updates).length > 0) {
-            await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
+            await updateIfExists(paths.mangaItem(user.uid, manga.anilistId), updates);
           }
         } catch {
           // Silent fail per manga

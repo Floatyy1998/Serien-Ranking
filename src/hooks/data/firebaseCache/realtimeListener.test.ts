@@ -119,6 +119,17 @@ describe('attachRealtimeListener — value snapshots', () => {
     expect(deps.saveToCache).not.toHaveBeenCalled();
     expect(deps.setLoading).toHaveBeenCalledWith(false);
   });
+  it('clears state + cache when a previously present node gets deleted', async () => {
+    const deps = makeDeps();
+    attachRealtimeListener('users/u1/manga', deps);
+    await fb.state.onArgs?.success(snap(true, { 1: { title: 'X' } }));
+    deps.setData.mockClear();
+    deps.saveToCache.mockClear();
+    await fb.state.onArgs?.success(snap(false));
+
+    expect(deps.setData).toHaveBeenCalledWith({});
+    expect(deps.saveToCache).toHaveBeenCalledWith({});
+  });
 });
 
 describe('attachRealtimeListener — error handling', () => {

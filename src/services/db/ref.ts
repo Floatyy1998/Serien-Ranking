@@ -38,6 +38,21 @@ export const dbGet = async <T = unknown>(path: string): Promise<T | null> => {
   return (snap.val() as T) ?? null;
 };
 
+/**
+ * Flaches Update, das einen inzwischen gelöschten Knoten nicht als Fragment
+ * wiederbelebt. Setzt einen aktiven Listener auf dem Pfad voraus (lokaler Cache).
+ */
+export const updateIfExists = async (
+  path: string,
+  updates: Record<string, unknown>
+): Promise<void> => {
+  await db()
+    .ref(path)
+    .transaction((current: Record<string, unknown> | null) =>
+      current ? { ...current, ...updates } : undefined
+    );
+};
+
 /** Multi-Path-Update von der DB-Root aus (Keys = volle Pfade). */
 export const dbUpdate = (updates: Record<string, unknown>): Promise<void> =>
   db().ref('/').update(updates);

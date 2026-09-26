@@ -40,10 +40,12 @@ export function attachRealtimeListener<T>(
   } = deps;
   try {
     const ref = firebase.database().ref(path);
+    let seenData = false;
     const listener = onValue(
       ref,
       async (snapshot) => {
         if (snapshot.exists()) {
+          seenData = true;
           const newData = snapshot.val();
           setData(newData);
           setLastUpdated(Date.now());
@@ -51,6 +53,12 @@ export function attachRealtimeListener<T>(
           setError(null);
           setIsOffline(false); // Successful realtime = online
           await saveToCache(newData);
+        } else if (seenData) {
+          // Knoten existierte in dieser Sitzung schon → echte Löschung (z.B. letzter Manga entfernt).
+          const empty = {} as T;
+          setData(empty);
+          setLastUpdated(Date.now());
+          await saveToCache(empty);
         } else {
           // !exists kann transient sein wenn Firebase RTDB bei einem
           // Netzwerk-Glitch kurz disconnected ist. NICHT auf Cache
