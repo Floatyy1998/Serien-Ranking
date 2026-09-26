@@ -2,6 +2,7 @@ import type { useAuth } from '../../contexts/AuthContext';
 import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -21,6 +22,15 @@ export interface PreparedItem {
   providers: { name: string; logo: string }[];
 }
 
+export type RatingsTab = 'series' | 'movies' | 'folders';
+
+export interface FolderPreview {
+  /** Titel, die noch in der Bibliothek sind */
+  count: number;
+  /** Poster der bis zu vier bestbewerteten Titel */
+  posters: string[];
+}
+
 export interface RatingsStats {
   count: number;
   average: number;
@@ -30,7 +40,7 @@ export interface UseRatingsDataResult {
   /** Auth - null when context or user is not available */
   user: NonNullable<ReturnType<typeof useAuth>>['user'];
   /** Current active tab */
-  activeTab: 'series' | 'movies';
+  activeTab: RatingsTab;
   /** Items to render (progressive) */
   itemsToRender: PreparedItem[];
   /** All current items (after filter/sort) */
@@ -62,9 +72,43 @@ export interface UseRatingsDataResult {
   scrollRef: React.MutableRefObject<HTMLDivElement | null>;
   /** Quick filter active state for empty message */
   quickFilter: string | null;
+  folders: RatingFolder[];
+  /** Geöffneter Ordner (nur im Ordner-Reiter) */
+  activeFolder: RatingFolder | null;
+  folderPreviews: Record<string, FolderPreview>;
+  handleFolderChange: (id: string | null) => void;
 }
 
 // Helpers (pure functions, created once)
+export const itemFolderKey = (item: PreparedItem): string =>
+  folderItemKey(item.isMovie ? 'movie' : 'series', item.id);
+
+export const parseTab = (value: string | null): RatingsTab =>
+  value === 'movies' || value === 'folders' ? value : 'series';
+
+export const posterOf = (item: Series | Movie): string => getImageUrl(item.poster, 'w342');
+
+export function mergePreparedItems(
+  series: PreparedItem[],
+  movies: PreparedItem[],
+  sortBy: string
+): PreparedItem[] {
+  const merged = [...series, ...movies];
+  const byTitle = (a: PreparedItem, b: PreparedItem) => a.title.localeCompare(b.title);
+  switch (sortBy) {
+    case 'rating-asc':
+      return merged.sort((a, b) => a.rating - b.rating || byTitle(a, b));
+    case 'name-asc':
+      return merged.sort(byTitle);
+    case 'name-desc':
+      return merged.sort((a, b) => byTitle(b, a));
+    case 'date-desc':
+      return merged;
+    default:
+      return merged.sort((a, b) => b.rating - a.rating || byTitle(a, b));
+  }
+}
+
 export function getRating(item: Series | Movie): number {
   const r = parseFloat(calculateOverallRating(item));
   return isNaN(r) ? 0 : r;
@@ -153,7 +197,7 @@ export function prepareSeriesItem(s: Series, r: number): PreparedItem {
   return {
     id: s.id,
     title: s.title || '',
-    posterUrl: getImageUrl(s.poster, 'w342'),
+    posterUrl: posterOf(s),
     rating: r,
     progress,
     watched: progress === 100,
@@ -169,7 +213,7 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
   return {
     id: m.id,
     title: m.title || '',
-    posterUrl: getImageUrl(m.poster, 'w342'),
+    posterUrl: posterOf(m),
     rating: r,
     progress: 0,
     // Filme haben keinen Fortschritt — „gesehen" kommt aus isMovieWatched

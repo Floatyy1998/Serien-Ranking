@@ -4,20 +4,21 @@
  * CSS classes for layout, inline styles ONLY for theme colors.
  */
 
-import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import { ListAlt, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { GradientText, NavEscapeButtons, SearchInput, TabSwitcher } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-import type { RatingsStats } from './useRatingsData';
+import type { RatingsStats, RatingsTab } from './useRatingsData';
 
 interface RatingsHeaderProps {
   theme: ReturnType<typeof useTheme>['currentTheme'];
   stats: RatingsStats;
-  activeTab: 'series' | 'movies';
+  activeTab: RatingsTab;
   seriesCount: number;
   moviesCount: number;
+  folderCount: number;
   searchValue: string;
   onSearchChange: (value: string) => void;
   onTabChange: (id: string) => void;
@@ -30,6 +31,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
     activeTab,
     seriesCount,
     moviesCount,
+    folderCount,
     searchValue,
     onSearchChange,
     onTabChange,
@@ -122,9 +124,11 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
+            { id: 'folders', label: t('Listen'), icon: ListAlt, count: folderCount },
           ]}
           activeTab={activeTab}
           onTabChange={onTabChange}
+          className="ui-tabs--equal"
           style={{ margin: '0 20px 16px 20px' }}
         />
       </div>

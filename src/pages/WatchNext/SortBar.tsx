@@ -1,27 +1,13 @@
-import { ArrowDownward, ArrowUpward, DragHandle } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { ArrowDownward, ArrowUpward } from '@mui/icons-material';
 import React from 'react';
-import { HorizontalScrollContainer } from '../../components/ui';
-import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
-import { getOptimalTextColor } from '../../theme/colorUtils';
+import { FilterChip, FilterSection, FilterSwitch } from './FilterSection';
 
-interface SortOption {
-  key: string;
-  label: string;
-  icon?: React.ReactNode;
-}
-
-const SORT_OPTIONS: SortOption[] = [
-  {
-    key: 'custom',
-    label: t('Benutzerdefiniert'),
-    icon: <DragHandle style={{ fontSize: '16px' }} />,
-  },
+const SORT_OPTIONS: { key: string; label: string }[] = [
   { key: 'name', label: t('Name') },
   { key: 'date', label: t('Datum') },
   { key: 'progress', label: t('Fortschritt') },
-  { key: 'remaining', label: t('\u00dcbrig') },
+  { key: 'remaining', label: t('Übrig') },
 ];
 
 interface SortBarProps {
@@ -29,61 +15,42 @@ interface SortBarProps {
   customOrderActive: boolean;
   onSort: (field: string) => void;
   onToggleCustom: () => void;
-  theme: {
-    primary: string;
-    text: { primary: string; secondary: string };
-  };
 }
 
 export const SortBar = React.memo(
-  ({ sortOption, customOrderActive, onSort, onToggleCustom, theme }: SortBarProps) => {
-    const isActive = (key: string) =>
-      key === 'custom' ? customOrderActive : !customOrderActive && sortOption.startsWith(key);
-
-    const activeStyle = (active: boolean) => ({
-      padding: '8px 14px',
-      minHeight: 44,
-      background: active
-        ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-        : `var(--glass-light)`,
-      border: 'none' as const,
-      borderRadius: 'var(--radius-md)',
-      color: active ? getOptimalTextColor(theme.primary) : theme.text.primary,
-      fontSize: 'var(--text-sm)',
-      fontWeight: 600 as const,
-      cursor: 'pointer' as const,
-      display: 'flex' as const,
-      alignItems: 'center' as const,
-      gap: '6px',
-      whiteSpace: 'nowrap' as const,
-      flexShrink: 0,
-      boxShadow: active ? `0 4px 12px ${theme.primary}40` : 'none',
-    });
-
+  ({ sortOption, customOrderActive, onSort, onToggleCustom }: SortBarProps) => {
     const renderArrow = (key: string) => {
       if (customOrderActive || !sortOption.startsWith(key)) return null;
       return sortOption.endsWith('asc') ? (
-        <ArrowUpward style={{ fontSize: '15px' }} />
+        <ArrowUpward className="wn-chip__icon" />
       ) : (
-        <ArrowDownward style={{ fontSize: '15px' }} />
+        <ArrowDownward className="wn-chip__icon" />
       );
     };
 
     return (
-      <HorizontalScrollContainer gap={8} style={{}}>
+      <FilterSection
+        label={t('Sortieren')}
+        layout="segmented"
+        action={
+          <FilterSwitch
+            label={t('Benutzerdefiniert')}
+            on={customOrderActive}
+            onToggle={onToggleCustom}
+          />
+        }
+      >
         {SORT_OPTIONS.map((opt) => (
-          <motion.button
+          <FilterChip
             key={opt.key}
-            whileTap={tapScale}
-            onClick={() => (opt.key === 'custom' ? onToggleCustom() : onSort(opt.key))}
-            style={activeStyle(isActive(opt.key))}
+            active={!customOrderActive && sortOption.startsWith(opt.key)}
+            onClick={() => onSort(opt.key)}
           >
-            {opt.icon}
-            {opt.label}
-            {opt.key !== 'custom' && renderArrow(opt.key)}
-          </motion.button>
+            <span className="wn-chip__text">{opt.label}</span>
+            {renderArrow(opt.key)}
+          </FilterChip>
         ))}
-      </HorizontalScrollContainer>
+      </FilterSection>
     );
   }
 );

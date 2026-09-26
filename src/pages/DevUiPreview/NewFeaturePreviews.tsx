@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import {
   EmojiEvents,
+  ListAlt,
   Group,
   InfoOutlined,
   LocalFireDepartment,
@@ -17,7 +18,16 @@ import {
   Timer,
   Tv,
 } from '@mui/icons-material';
-import { PageHeader } from '../../components/ui';
+import { PageHeader, TabSwitcher } from '../../components/ui';
+import {
+  RatingFolderActionsSheet,
+  RatingFolderBar,
+  RatingFolderGrid,
+} from '../Ratings/RatingFolderGrid';
+import '../Ratings/RatingsPage.css';
+import { WatchNextHeader } from '../WatchNext/components/WatchNextHeader';
+import '../WatchNext/WatchNextPage.css';
+import { RatingItemActions } from '../Ratings/RatingItemActions';
 import { PodiumSection } from '../Leaderboard/PodiumSection';
 import { RankingList } from '../Leaderboard/RankingList';
 import { SelfStandBand } from '../Leaderboard/SelfStandBand';
@@ -733,4 +743,180 @@ export const LeaderboardEmptyPreview = () => (
       </section>
     </div>
   </div>
+);
+
+const TMDB = (path: string) => `https://image.tmdb.org/t/p/w342${path}`;
+const previewFolders = [
+  { id: 'f1', name: 'Marvel', createdAt: 1, items: new Set(['m_1', 'm_2', 'm_3', 'm_4', 's_5']) },
+  { id: 'f2', name: 'Lieblingsfilme', createdAt: 2, items: new Set(['m_6', 'm_7']) },
+  { id: 'f3', name: 'Mit Freunden', createdAt: 3, items: new Set<string>() },
+];
+const previewFolderData = {
+  f1: {
+    count: 5,
+    posters: [
+      TMDB('/or06FN3Dka5tukK1e9sl16pB3iy.jpg'),
+      TMDB('/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg'),
+      TMDB('/78lPtwv72eTNqFW9COBYI0dWDJa.jpg'),
+      TMDB('/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg'),
+    ],
+  },
+  f2: {
+    count: 2,
+    posters: [TMDB('/3bhkrj58Vtu7enYsRolD1fZdja1.jpg'), TMDB('/qJ2tW6WMUDux911r6m7haRef0WH.jpg')],
+  },
+  f3: { count: 0, posters: [] },
+};
+
+export const RatingFoldersPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <TabSwitcher
+        tabs={[
+          { id: 'series', label: 'Serien', icon: Tv, count: 1214 },
+          { id: 'movies', label: 'Filme', icon: Movie, count: 87 },
+          { id: 'folders', label: 'Listen', icon: ListAlt, count: 3 },
+        ]}
+        activeTab="folders"
+        onTabChange={() => {}}
+        className="ui-tabs--equal"
+        style={{ margin: '16px 20px 16px 20px' }}
+      />
+      <div className="ratings-content">
+        <RatingFolderGrid
+          theme={currentTheme}
+          folders={previewFolders}
+          previews={previewFolderData}
+          onOpen={() => {}}
+          onCreate={() => {}}
+          onLongPress={() => {}}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const RatingFolderBarPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <div className="ratings-content">
+        <RatingFolderBar
+          theme={currentTheme}
+          folder={previewFolders[0]}
+          count={5}
+          onBack={() => {}}
+          onEdit={() => {}}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const RatingFolderActionsPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <RatingFolderActionsSheet
+        theme={currentTheme}
+        folder={previewFolders[0]}
+        onClose={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    </div>
+  );
+};
+
+export const RatingItemActionsPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <RatingItemActions
+        theme={currentTheme}
+        item={{
+          id: 1,
+          title: 'Guardians of the Galaxy',
+          posterUrl: '',
+          rating: 0,
+          progress: 0,
+          watched: false,
+          isMovie: true,
+          watchlist: false,
+          providers: [],
+        }}
+        folders={previewFolders.map((f, i) => (i === 0 ? { ...f, items: new Set(['m_1']) } : f))}
+        onClose={() => {}}
+        onRate={() => {}}
+        onMarkWatched={() => {}}
+        onCreateFolder={() => {}}
+      />
+    </div>
+  );
+};
+
+const previewProviders = [
+  { name: 'Amazon Prime Video', logo: '/pvske1MyAoymrs5bguRfVqYiM9a.jpg' },
+  { name: 'Crunchyroll', logo: '/fzN5Jok5Ig1eJ7gyNGoMhnLSOfh.jpg' },
+  { name: 'Disney Plus', logo: '/97yvRBw1GzX7fXprcF80er19ot.jpg' },
+  { name: 'HBO Max', logo: '/jbe4gVSfRlbPTdESXhEKpornsfu.jpg' },
+  { name: 'Joyn Plus', logo: '/2joD3S2goOB6lmepX35A8dmaqgM.jpg' },
+  { name: 'MagentaTV', logo: '/mlqpGT1xJdHOZt2gzSuuxDCaGh1.jpg' },
+  { name: 'Netflix', logo: '/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg' },
+  { name: 'RTL+', logo: '/1YA79GnE5K2P7qRddcRcyzlDB0Q.jpg' },
+];
+
+export const WatchNextFilterPreview = () => (
+  <WatchNextHeader
+    episodeCount={42}
+    customOrderActive={false}
+    editModeActive={false}
+    onToggleEditMode={() => {}}
+    showFilter
+    onToggleFilter={() => {}}
+    filterInput=""
+    onFilterInputChange={() => {}}
+    sortOption="name-asc"
+    onSort={() => {}}
+    onToggleCustomOrder={() => {}}
+    availableProviders={previewProviders}
+    providerFilter="Crunchyroll"
+    onSelectProvider={() => {}}
+    availableLists={[
+      { id: 'l1', name: 'Anime' },
+      { id: 'l2', name: 'Marvel' },
+      { id: 'l3', name: 'Mit Freunden' },
+    ]}
+    listFilter={null}
+    onSelectList={() => {}}
+    hasAnySubscription
+    onlyMySubs
+    onToggleOnlyMySubs={() => {}}
+  />
+);
+
+export const WatchNextBadgePreview = () => (
+  <WatchNextHeader
+    episodeCount={12}
+    customOrderActive={false}
+    editModeActive={false}
+    onToggleEditMode={() => {}}
+    showFilter={false}
+    onToggleFilter={() => {}}
+    filterInput=""
+    onFilterInputChange={() => {}}
+    sortOption="name-asc"
+    onSort={() => {}}
+    onToggleCustomOrder={() => {}}
+    availableProviders={previewProviders}
+    providerFilter="Netflix"
+    onSelectProvider={() => {}}
+    availableLists={[{ id: 'l1', name: 'Anime' }]}
+    listFilter="l1"
+    onSelectList={() => {}}
+    hasAnySubscription
+    onlyMySubs={false}
+    onToggleOnlyMySubs={() => {}}
+  />
 );

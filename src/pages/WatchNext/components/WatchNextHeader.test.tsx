@@ -96,4 +96,14 @@ describe('WatchNextHeader', () => {
     fireEvent.click(buttons[0]);
     expect(onToggleEditMode).toHaveBeenCalledTimes(1);
   });
+
+  it('marks the filter button with the number of active filters', () => {
+    const { rerender } = render(<WatchNextHeader {...baseProps} />);
+    expect(screen.getByLabelText('Filter')).toBeInTheDocument();
+    rerender(
+      <WatchNextHeader {...baseProps} providerFilter="Netflix" filterInput="dark" onlyMySubs />
+    );
+    const button = screen.getByLabelText('Filter (3 aktiv)');
+    expect(button).toHaveTextContent('3');
+  });
 });

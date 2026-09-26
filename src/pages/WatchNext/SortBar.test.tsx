@@ -28,8 +28,6 @@ vi.mock('../../components/ui', () => ({
 
 import { SortBar } from './SortBar';
 
-const theme = { primary: '#00d123', text: { primary: '#fff', secondary: '#000' } };
-
 afterEach(() => cleanup());
 
 describe('SortBar', () => {
@@ -40,7 +38,6 @@ describe('SortBar', () => {
         customOrderActive={false}
         onSort={vi.fn()}
         onToggleCustom={vi.fn()}
-        theme={theme}
       />
     );
     expect(screen.getByText('Benutzerdefiniert')).toBeInTheDocument();
@@ -57,7 +54,6 @@ describe('SortBar', () => {
         customOrderActive={false}
         onSort={onSort}
         onToggleCustom={vi.fn()}
-        theme={theme}
       />
     );
     fireEvent.click(screen.getByText('Datum'));
@@ -72,7 +68,6 @@ describe('SortBar', () => {
         customOrderActive={false}
         onSort={vi.fn()}
         onToggleCustom={onToggleCustom}
-        theme={theme}
       />
     );
     fireEvent.click(screen.getByText('Benutzerdefiniert'));

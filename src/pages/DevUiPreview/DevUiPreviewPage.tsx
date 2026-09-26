@@ -12,6 +12,12 @@ import {
   DropOffPreview,
   FriendAddCardPreview,
   FriendCalendarAddPreview,
+  RatingFolderActionsPreview,
+  RatingFolderBarPreview,
+  RatingItemActionsPreview,
+  WatchNextBadgePreview,
+  WatchNextFilterPreview,
+  RatingFoldersPreview,
   HistoryMoviesPreview,
   LeaderboardEmptyPreview,
   LeaderboardPreview,
@@ -137,6 +143,20 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     label: 'Freundes-Kalender: hinzufügen',
     render: () => <FriendCalendarAddPreview />,
   },
+  { id: 'ratingfolders', label: 'Bewertungs-Listen', render: () => <RatingFoldersPreview /> },
+  { id: 'ratingfolderbar', label: 'Listen-Kopf', render: () => <RatingFolderBarPreview /> },
+  {
+    id: 'ratingfolderactions',
+    label: 'Liste: Long-Press',
+    render: () => <RatingFolderActionsPreview />,
+  },
+  {
+    id: 'ratingitemactions',
+    label: 'Titel: Long-Press',
+    render: () => <RatingItemActionsPreview />,
+  },
+  { id: 'watchnextfilter', label: 'Weiter: Filter', render: () => <WatchNextFilterPreview /> },
+  { id: 'watchnextbadge', label: 'Weiter: Filter aktiv', render: () => <WatchNextBadgePreview /> },
 ];
 
 export const DevUiPreviewPage = () => {

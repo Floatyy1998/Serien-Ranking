@@ -30,6 +30,13 @@ vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
 
+const folderState = vi.hoisted(() => ({
+  folders: [] as { id: string; name: string; createdAt: number; items: Set<string> }[],
+}));
+vi.mock('../../hooks/rating/useRatingFolders', () => ({
+  useRatingFolders: () => ({ folders: folderState.folders, loading: false }),
+}));
+
 const preloadImage = vi.fn();
 vi.mock('../../lib/image/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
 
@@ -104,6 +111,7 @@ describe('useRatingsData', () => {
     ctx.user = { uid: 'u1' };
     ctx.seriesList = [seriesRated9, seriesUnrated, seriesRated5];
     ctx.movieList = [movieRated8, movieUnrated];
+    folderState.folders = [];
   });
   afterEach(() => cleanup());
 
@@ -135,6 +143,64 @@ describe('useRatingsData', () => {
     expect(result.current.activeTab).toBe('movies');
     expect(result.current.currentItems.map((i) => i.id)).toEqual([10, 11]);
     expect(router.setParams).toHaveBeenCalled();
+  });
+
+  it('shows a folder only in the folders tab, mixing series and movies', () => {
+    folderState.folders = [
+      { id: 'f1', name: 'Marvel', createdAt: 1, items: new Set(['s_3', 'm_10', 'm_99']) },
+    ];
+    router.params = new URLSearchParams('tab=folders&folder=f1');
+    const { result } = renderHook(() => useRatingsData());
+    expect(result.current.activeTab).toBe('folders');
+    expect(result.current.activeFolder?.id).toBe('f1');
+    expect(result.current.currentItems.map((i) => i.id)).toEqual([10, 3]);
+    expect(result.current.seriesCount).toBe(3);
+    expect(result.current.moviesCount).toBe(2);
+    expect(result.current.folderPreviews.f1).toEqual({
+      count: 2,
+      posters: ['https://image.tmdb.org/t/p/w342/p.jpg', 'https://image.tmdb.org/t/p/w342/p.jpg'],
+    });
+  });
+
+  it('ignores the folder outside the folders tab', () => {
+    folderState.folders = [{ id: 'f1', name: 'X', createdAt: 1, items: new Set(['s_3']) }];
+    router.params = new URLSearchParams('folder=f1');
+    const { result } = renderHook(() => useRatingsData());
+    expect(result.current.activeFolder).toBeNull();
+    expect(result.current.currentItems).toHaveLength(3);
+  });
+
+  it('opens a folder and leaves it again via the tab switch', () => {
+    folderState.folders = [{ id: 'f1', name: 'Filme', createdAt: 1, items: new Set(['m_10']) }];
+    const { result } = renderHook(() => useRatingsData());
+    act(() => result.current.handleFolderChange('f1'));
+    expect(result.current.activeTab).toBe('folders');
+    expect(result.current.currentItems.map((i) => i.id)).toEqual([10]);
+    let params = router.setParams.mock.calls[router.setParams.mock.calls.length - 1]?.[0];
+    expect(params.get('folder')).toBe('f1');
+    act(() => result.current.handleTabChange('series'));
+    expect(result.current.activeFolder).toBeNull();
+    params = router.setParams.mock.calls[router.setParams.mock.calls.length - 1]?.[0];
+    expect(params.get('folder')).toBeNull();
+  });
+
+  it('a filter change right after leaving the folders tab keeps the new tab', () => {
+    router.params = new URLSearchParams('tab=folders');
+    const { result } = renderHook(() => useRatingsData());
+    act(() => {
+      result.current.handleTabChange('series');
+      result.current.handleQuickFilterChange({ sortBy: 'rating-desc' });
+    });
+    const params = router.setParams.mock.calls[router.setParams.mock.calls.length - 1]?.[0];
+    expect(params.get('tab')).toBeNull();
+    expect(result.current.activeTab).toBe('series');
+  });
+
+  it('folders overview has no items but stats over the whole library', () => {
+    router.params = new URLSearchParams('tab=folders');
+    const { result } = renderHook(() => useRatingsData());
+    expect(result.current.currentItems).toEqual([]);
+    expect(result.current.stats.count).toBe(3);
   });
 
   it('filters by genre (OR multi-select)', () => {

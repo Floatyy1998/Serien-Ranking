@@ -1,9 +1,6 @@
-import { motion } from 'framer-motion';
 import React from 'react';
-import { HorizontalScrollContainer } from '../../components/ui';
-import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
-import { getOptimalTextColor } from '../../theme/colorUtils';
+import { FilterChip, FilterSection } from './FilterSection';
 
 interface Provider {
   name: string;
@@ -14,75 +11,38 @@ interface ProviderFilterProps {
   providers: Provider[];
   selected: string | null;
   onSelect: (provider: string | null) => void;
-  theme: {
-    primary: string;
-    text: { primary: string; secondary: string; muted: string };
-  };
+  /** Rechts neben der Überschrift, z. B. der „Nur meine Abos"-Schalter. */
+  action?: React.ReactNode;
 }
 
 export const ProviderFilter = React.memo(
-  ({ providers, selected, onSelect, theme }: ProviderFilterProps) => {
+  ({ providers, selected, onSelect, action }: ProviderFilterProps) => {
     if (providers.length === 0) return null;
 
     return (
-      <div style={{ marginTop: '10px' }}>
-        <p
-          style={{
-            fontSize: '12px',
-            color: theme.text.muted,
-            margin: '0 0 6px 0',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
-          {t('Provider')}
-        </p>
-        <HorizontalScrollContainer gap={6} style={{}}>
-          <motion.button
-            whileTap={tapScale}
-            onClick={() => onSelect(null)}
-            className="provider-chip"
-            style={{
-              background: !selected
-                ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                : `var(--glass-light)`,
-              color: !selected ? getOptimalTextColor(theme.primary) : theme.text.primary,
-            }}
+      <FilterSection label={t('Anbieter')} action={action}>
+        <FilterChip active={!selected} onClick={() => onSelect(null)}>
+          <span className="wn-chip__text">{t('Alle')}</span>
+        </FilterChip>
+        {providers.map((provider) => (
+          <FilterChip
+            key={provider.name}
+            active={selected === provider.name}
+            onClick={() => onSelect(selected === provider.name ? null : provider.name)}
           >
-            {t('Alle')}
-          </motion.button>
-          {providers.map((provider) => (
-            <motion.button
-              key={provider.name}
-              whileTap={tapScale}
-              onClick={() => onSelect(selected === provider.name ? null : provider.name)}
-              className="provider-chip"
-              style={{
-                background:
-                  selected === provider.name
-                    ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                    : `var(--glass-light)`,
-                color:
-                  selected === provider.name
-                    ? getOptimalTextColor(theme.primary)
-                    : theme.text.primary,
-              }}
-            >
-              {provider.logo && (
-                <img
-                  src={`https://image.tmdb.org/t/p/w45${provider.logo}`}
-                  alt=""
-                  style={{ width: '16px', height: '16px', borderRadius: '3px' }}
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-              {provider.name}
-            </motion.button>
-          ))}
-        </HorizontalScrollContainer>
-      </div>
+            {provider.logo && (
+              <img
+                className="wn-chip__logo"
+                src={`https://image.tmdb.org/t/p/w45${provider.logo}`}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            <span className="wn-chip__text">{provider.name}</span>
+          </FilterChip>
+        ))}
+      </FilterSection>
     );
   }
 );

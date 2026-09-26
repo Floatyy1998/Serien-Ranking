@@ -9,6 +9,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
+import { folderItemKey } from '../../lib/rating/ratingFolders';
 import { preloadImage } from '../../lib/image/preloadImage';
 import { isMovieWatched } from '../../lib/rating/rating';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
@@ -16,13 +18,22 @@ import {
   getRating,
   getSeriesProgress,
   hasWatchedEpisodes,
+  mergePreparedItems,
+  parseTab,
+  posterOf,
   prepareSeriesItem,
   prepareMovieItem,
 } from './ratingsHelpers';
-import type { UseRatingsDataResult } from './ratingsHelpers';
+import type { FolderPreview, RatingsTab, UseRatingsDataResult } from './ratingsHelpers';
 
 // Re-export types for backward compatibility
-export type { PreparedItem, RatingsStats, UseRatingsDataResult } from './ratingsHelpers';
+export type {
+  FolderPreview,
+  PreparedItem,
+  RatingsStats,
+  RatingsTab,
+  UseRatingsDataResult,
+} from './ratingsHelpers';
 export { extractProviders } from './ratingsHelpers';
 
 export const useRatingsData = (): UseRatingsDataResult => {
@@ -32,12 +43,11 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const user = authContext?.user;
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { folders } = useRatingFolders();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // State (initialized from URL)
-  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() =>
-    searchParams.get('tab') === 'movies' ? 'movies' : 'series'
-  );
+  const [activeTab, setActiveTab] = useState<RatingsTab>(() => parseTab(searchParams.get('tab')));
   const [sortOption, setSortOption] = useState(() => searchParams.get('sort') || 'rating-desc');
   const [selectedGenre, setSelectedGenre] = useState(() => searchParams.get('genre') || 'Alle');
   const [selectedProvider, setSelectedProvider] = useState<string | null>(
@@ -47,6 +57,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     () => searchParams.get('filter') || null
   );
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [folderId, setFolderId] = useState<string | null>(() => searchParams.get('folder'));
 
   const [, startTransition] = useTransition();
   const isUpdatingFromQuickFilter = useRef(false);
@@ -74,6 +85,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
         }
       }
 
+      searchParamsRef.current = newParams;
       setSearchParams(newParams, { replace: true });
     },
     [setSearchParams]
@@ -86,20 +98,68 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // aktiv sind, wird nichts angefasst.
   useEffect(() => {
     if (window.location.pathname !== '/ratings') return;
-    setActiveTab(searchParams.get('tab') === 'movies' ? 'movies' : 'series');
+    setActiveTab(parseTab(searchParams.get('tab')));
     setSortOption(searchParams.get('sort') || 'rating-desc');
     setSelectedGenre(searchParams.get('genre') || 'Alle');
     setSelectedProvider(searchParams.get('provider') || null);
     setQuickFilter(searchParams.get('filter') || null);
     setSearchQuery(searchParams.get('search') || '');
+    setFolderId(searchParams.get('folder'));
   }, [searchParams]);
 
   const handleTabChange = useCallback(
     (id: string) => {
       startTransition(() => {
-        setActiveTab(id as 'series' | 'movies');
+        setActiveTab(parseTab(id));
+        setFolderId(null);
       });
-      updateURL({ tab: id });
+      updateURL({ tab: id, folder: null });
+    },
+    [updateURL, startTransition]
+  );
+
+  const activeFolder = useMemo(
+    () => (folderId ? (folders.find((f) => f.id === folderId) ?? null) : null),
+    [folders, folderId]
+  );
+
+  const inFolder = activeTab === 'folders' ? activeFolder : null;
+
+  const folderPreviews = useMemo(() => {
+    const byKey = new Map<string, { rating: number; posterUrl: string }>();
+    const needed = new Set<string>();
+    for (const f of folders) for (const key of f.items) needed.add(key);
+    for (const s of seriesList) {
+      const key = folderItemKey('series', s.id);
+      if (needed.has(key)) byKey.set(key, { rating: getRating(s), posterUrl: posterOf(s) });
+    }
+    for (const m of movieList) {
+      const key = folderItemKey('movie', m.id);
+      if (needed.has(key)) byKey.set(key, { rating: getRating(m), posterUrl: posterOf(m) });
+    }
+    const previews: Record<string, FolderPreview> = {};
+    for (const f of folders) {
+      const entries = [...f.items]
+        .map((key) => byKey.get(key))
+        .filter((e): e is { rating: number; posterUrl: string } => !!e);
+      previews[f.id] = {
+        count: entries.length,
+        posters: entries
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 4)
+          .map((e) => e.posterUrl),
+      };
+    }
+    return previews;
+  }, [folders, seriesList, movieList]);
+
+  const handleFolderChange = useCallback(
+    (id: string | null) => {
+      startTransition(() => {
+        setFolderId(id);
+        setActiveTab('folders');
+      });
+      updateURL({ folder: id, tab: 'folders' });
     },
     [updateURL, startTransition]
   );
@@ -146,6 +206,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
         }
       }
 
+      searchParamsRef.current = newParams;
       setSearchParams(newParams, { replace: true });
 
       startTransition(() => {
@@ -371,12 +432,21 @@ export const useRatingsData = (): UseRatingsDataResult => {
     return items.map(({ m, r }) => prepareMovieItem(m, r));
   }, [movieList, selectedGenre, selectedProvider, searchQuery, quickFilter, effectiveSortBy]);
 
-  const currentItems = activeTab === 'series' ? preparedSeries : preparedMovies;
+  const currentItems = useMemo(() => {
+    if (activeTab === 'series') return preparedSeries;
+    if (activeTab === 'movies') return preparedMovies;
+    if (!inFolder) return [];
+    return mergePreparedItems(
+      preparedSeries.filter((i) => inFolder.items.has(folderItemKey('series', i.id))),
+      preparedMovies.filter((i) => inFolder.items.has(folderItemKey('movie', i.id))),
+      effectiveSortBy
+    );
+  }, [activeTab, inFolder, preparedSeries, preparedMovies, effectiveSortBy]);
 
   // Progressive rendering via derived state pattern:
   // When the filter fingerprint changes, reset to initial batch.
   // Then rAF fills in remaining items without blocking the UI.
-  const filterKey = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
+  const filterKey = `${activeTab}\0${inFolder?.id}\0${inFolder?.items.size}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
   const [renderState, setRenderState] = useState({ key: filterKey, count: 60 });
 
   // Derived state: reset count when filters change (React-safe setState during render)
@@ -403,10 +473,12 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
   // Stats (cheap: ratings are pre-computed)
   const stats = useMemo(() => {
-    const rated = currentItems.filter((i) => i.rating > 0);
+    const pool =
+      activeTab === 'folders' && !inFolder ? [...preparedSeries, ...preparedMovies] : currentItems;
+    const rated = pool.filter((i) => i.rating > 0);
     const avg = rated.length > 0 ? rated.reduce((sum, i) => sum + i.rating, 0) / rated.length : 0;
     return { count: rated.length, average: avg };
-  }, [currentItems]);
+  }, [activeTab, inFolder, preparedSeries, preparedMovies, currentItems]);
 
   // Scroll Restoration
   useEffect(() => {
@@ -466,5 +538,9 @@ export const useRatingsData = (): UseRatingsDataResult => {
     handleGridClick,
     scrollRef,
     quickFilter,
+    folders,
+    activeFolder: inFolder,
+    folderPreviews,
+    handleFolderChange,
   };
 };

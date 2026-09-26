@@ -169,7 +169,7 @@
 }
 
 .ratings-grid-item:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 /* D5: Dichte-Modus (Toggle + Kompakt-Liste) */
@@ -866,4 +866,11 @@
 .ratings-row-rank,
 .ratings-row-providers {
   align-self: center;
+}
+
+/* Long-Press auf Karten: kein Bild-Kontextmenü, keine Textauswahl */
+.ratings-grid-item {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

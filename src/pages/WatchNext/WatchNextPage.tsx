@@ -15,6 +15,8 @@ import {
   fillerEpisodesFromStatic,
 } from '../../services/catalog/animeFillerService';
 import { useAnimeFillerCatalog } from '../../hooks/manga/useAnimeFillerCatalog';
+import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
+import { folderItemKey } from '../../lib/rating/ratingFolders';
 import { RewatchToggle } from './components/RewatchToggle';
 import { WatchNextEmptyState } from './components/WatchNextEmptyState';
 import { WatchNextEpisodeList } from './components/WatchNextEpisodeList';
@@ -46,6 +48,19 @@ export const WatchNextPage = () => {
     'watchNextProvider',
     null
   );
+  const [listFilter, setListFilter] = usePersistedState<string | null>('watchNextList', null);
+  const { folders } = useRatingFolders();
+  const availableLists = useMemo(() => folders.map((f) => ({ id: f.id, name: f.name })), [folders]);
+  const activeList = folders.find((f) => f.id === listFilter) ?? null;
+  const listedSeries = useMemo(
+    () =>
+      activeList
+        ? seriesList
+            .filter((s) => activeList.items.has(folderItemKey('series', s.id)))
+            .map((s) => (s.watchlist ? s : { ...s, watchlist: true }))
+        : seriesList,
+    [seriesList, activeList]
+  );
   const [onlyMySubs, setOnlyMySubs] = usePersistedState('watchNextOnlyMySubs', false);
   const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
@@ -69,7 +84,7 @@ export const WatchNextPage = () => {
 
   // First call to get initial episodes (needed by drag/drop hook)
   const nextEpisodes = useWatchNextEpisodes(
-    seriesList,
+    listedSeries,
     debouncedFilter,
     showRewatches,
     sortOption,
@@ -103,7 +118,7 @@ export const WatchNextPage = () => {
 
   // Re-compute with actual watchlistOrder
   const actualNextEpisodes = useWatchNextEpisodes(
-    seriesList,
+    listedSeries,
     debouncedFilter,
     showRewatches,
     sortOption,
@@ -191,6 +206,9 @@ export const WatchNextPage = () => {
           availableProviders={availableProviders}
           providerFilter={providerFilter}
           onSelectProvider={(p) => startTransition(() => setProviderFilter(p))}
+          availableLists={availableLists}
+          listFilter={activeList?.id ?? null}
+          onSelectList={(id) => startTransition(() => setListFilter(id))}
           hasAnySubscription={hasAnySubscription}
           onlyMySubs={onlyMySubs}
           onToggleOnlyMySubs={() => startTransition(() => setOnlyMySubs((v) => !v))}
