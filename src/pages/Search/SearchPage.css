@@ -133,7 +133,7 @@
 }
 
 .search-filter-btn:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 .search-filter-btn:focus-visible {
@@ -211,7 +211,7 @@
 }
 
 .search-result-poster-btn:active {
-  transform: scale(0.98);
+  opacity: 0.7;
   transition: all 0.3s var(--ease-default);
 }
 
@@ -329,7 +329,7 @@
 .search-add-btn:active,
 .search-rate-btn:active,
 .search-watched-btn:active {
-  transform: scale(0.9);
+  opacity: 0.7;
 }
 
 .search-add-btn:focus-visible,

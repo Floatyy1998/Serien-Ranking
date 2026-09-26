@@ -137,7 +137,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
         </div>
 
         <motion.button
-          whileTap={canSend ? { scale: 0.96 } : undefined}
+          whileTap={canSend ? { opacity: 0.7 } : undefined}
           disabled={!canSend}
           onClick={handleSnack}
           className="fp-pet-snack-btn"

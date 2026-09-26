@@ -255,7 +255,7 @@
 }
 
 .settings-size-seg button:active {
-  transform: scale(0.96);
+  opacity: 0.7;
 }
 
 .settings-size-seg .sz-a {

@@ -246,7 +246,7 @@ export const BottomNavigation = () => {
                 style={{ color: isTarget ? 'var(--color-primary)' : undefined }}
                 onClick={() => handleNavigation(item.path, index)}
                 onMouseEnter={() => setHoveredIndex(index)}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ opacity: 0.7 }}
               >
                 <div className="nav-icon-container">
                   {item.badge && (typeof item.badge === 'boolean' || item.badge > 0) ? (

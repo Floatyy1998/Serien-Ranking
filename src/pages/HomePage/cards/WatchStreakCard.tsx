@@ -327,7 +327,7 @@ export const WatchStreakCard: React.FC = () => {
                     : { type: 'spring', stiffness: 300, damping: 15 }
                 }
                 whileHover={shieldEligible ? { scale: 1.08 } : undefined}
-                whileTap={shieldEligible ? { scale: 0.92 } : undefined}
+                whileTap={shieldEligible ? { opacity: 0.7 } : undefined}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (shieldEligible) setShowConfirm(true);

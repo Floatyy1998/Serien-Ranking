@@ -226,7 +226,7 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                 <motion.button
                   data-stop-nav
                   type="button"
-                  whileTap={{ scale: 0.94 }}
+                  whileTap={{ opacity: 0.7 }}
                   onClick={(e) => {
                     e.stopPropagation();
                     pauseProvider(insight.name);

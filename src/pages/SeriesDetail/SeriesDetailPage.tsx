@@ -608,7 +608,7 @@ export const SeriesDetailPage = memo(() => {
           <motion.button
             onClick={handleAddSeries}
             disabled={isAdding}
-            whileTap={{ scale: isAdding ? 1 : 0.98 }}
+            whileTap={{ opacity: isAdding ? 1 : 0.75 }}
             style={{
               width: '100%',
               padding: '16px',

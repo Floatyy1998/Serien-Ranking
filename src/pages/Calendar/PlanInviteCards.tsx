@@ -106,7 +106,7 @@ export const PlanInviteCards = ({
               <div className="wp-invite__actions">
                 <motion.button
                   type="button"
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={{ opacity: 0.7 }}
                   className="wp-invite__btn"
                   disabled={pending}
                   onClick={() => void answer(invite, true)}
@@ -120,7 +120,7 @@ export const PlanInviteCards = ({
                 </motion.button>
                 <motion.button
                   type="button"
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={{ opacity: 0.7 }}
                   className="wp-invite__btn wp-invite__btn--ghost"
                   disabled={pending}
                   onClick={() => void answer(invite, false)}

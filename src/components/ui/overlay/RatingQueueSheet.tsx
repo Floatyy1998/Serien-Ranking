@@ -246,7 +246,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
               {t('Überspringen')}
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ opacity: 0.7 }}
               onClick={handleSave}
               disabled={stage.rating === 0}
               style={{

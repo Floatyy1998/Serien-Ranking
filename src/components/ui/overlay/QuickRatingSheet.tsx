@@ -179,7 +179,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
           {t('Später')}
         </motion.button>
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ opacity: 0.7 }}
           onClick={handleSave}
           disabled={stage.rating === 0}
           style={{

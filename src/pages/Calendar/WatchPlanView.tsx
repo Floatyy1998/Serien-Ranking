@@ -93,7 +93,7 @@ const PlanEntryRow = ({
     >
       <motion.button
         type="button"
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ opacity: 0.7 }}
         className="wp-entry__main"
         onClick={() => {
           hapticTap();
@@ -248,7 +248,7 @@ export const WatchPlanView = () => {
         />
         <motion.button
           type="button"
-          whileTap={{ scale: 0.96 }}
+          whileTap={{ opacity: 0.7 }}
           className="wp-add-main"
           aria-label={t('Eintragen')}
           onClick={() => openNew(weekOffset === 0 ? todayKey : dayKeys[0])}

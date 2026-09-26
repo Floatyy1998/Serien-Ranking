@@ -171,7 +171,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .hso .hso__filter:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 /* Inhalt. */
@@ -324,7 +324,7 @@
 .hso .hso__add:active,
 .hso .hso__rate:active,
 .hso .hso__watched:active {
-  transform: scale(0.86);
+  opacity: 0.7;
 }
 
 .hso__rate-value {

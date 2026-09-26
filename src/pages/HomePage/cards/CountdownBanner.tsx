@@ -24,7 +24,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
 
   return (
     <motion.div
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ opacity: 0.7 }}
       onClick={() => navigate('/countdowns')}
       role="button"
       tabIndex={0}

@@ -291,7 +291,7 @@
 }
 
 .manga-collection-item:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 /* Ratings grid item (MangaRatingsPage) — same native virtualization as the collection */

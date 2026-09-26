@@ -264,7 +264,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
           {/* Footer */}
           <div style={{ padding: '8px 16px 20px' }}>
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ opacity: 0.7 }}
               onClick={() => {
                 onClose();
                 navigate('/activity');

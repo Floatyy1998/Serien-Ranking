@@ -371,7 +371,7 @@ export const XpBoostHeaderButton: React.FC = () => {
                     return (
                       <motion.button
                         key={i}
-                        whileTap={disabled ? {} : { scale: 0.97 }}
+                        whileTap={disabled ? {} : { opacity: 0.7 }}
                         onClick={() => !disabled && handleActivate(i)}
                         style={{
                           display: 'flex',

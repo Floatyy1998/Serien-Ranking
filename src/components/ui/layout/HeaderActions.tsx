@@ -25,7 +25,7 @@ export const HeaderActions = React.memo(function HeaderActions({
 
   const bellButton = (
     <motion.button
-      whileTap={{ scale: 0.9 }}
+      whileTap={{ opacity: 0.7 }}
       onClick={onNotificationsOpen}
       aria-label={
         totalUnreadBadge > 0
@@ -68,7 +68,7 @@ export const HeaderActions = React.memo(function HeaderActions({
       )}
 
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ opacity: 0.7 }}
         onClick={() => navigate('/profile')}
         aria-label={t('Profil und weitere Bereiche öffnen')}
         style={{

@@ -112,7 +112,7 @@ export const ThemedSelect = ({ value, options, onChange, ariaLabel, width }: The
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        whileTap={{ scale: 0.985 }}
+        whileTap={{ opacity: 0.7 }}
         onClick={() => setOpen((v) => !v)}
         style={{
           width: '100%',

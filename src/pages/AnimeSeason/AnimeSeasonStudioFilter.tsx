@@ -69,7 +69,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
       {/* Trigger-Pill — baugleich zu den anderen Filter-Buttons. */}
       <motion.button
         type="button"
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ opacity: 0.7 }}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t('Studio-Filter')}

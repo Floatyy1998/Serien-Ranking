@@ -305,7 +305,7 @@ export const PetCustomization = memo(function PetCustomization({
                             key={`${accessory.id}-${equipped}`}
                             type="button"
                             whileHover={{ scale: 1.06, y: -2 }}
-                            whileTap={{ scale: 0.94 }}
+                            whileTap={{ opacity: 0.7 }}
                             onClick={() => onToggleAccessory(accessory.id)}
                             className={`pet-accessory-btn${equipped ? ' pet-accessory-btn--equipped' : ''}`}
                             title={`${def?.name || accessory.name} (${t(RARITY_LABELS[rarity])})`}

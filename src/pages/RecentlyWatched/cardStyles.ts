@@ -1,6 +1,6 @@
 /** Gemeinsames Aussehen der Verlaufs-Karten: Druck-Animation und Oberflaeche. */
 
-export const CARD_PRESS = { scale: 0.985 };
+export const CARD_PRESS = { opacity: 0.75 };
 export const CARD_SPRING = { type: 'spring', stiffness: 520, damping: 34 } as const;
 
 export const cardSurface = (theme: {

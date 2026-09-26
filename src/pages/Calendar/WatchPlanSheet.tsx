@@ -371,7 +371,7 @@ export const WatchPlanSheet = ({
                     key={`${item.kind}-${item.id}`}
                     type="button"
                     role="listitem"
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ opacity: 0.7 }}
                     className="wp-result"
                     onClick={() => choose(item)}
                     style={{ borderColor: currentTheme.border.default }}
@@ -673,7 +673,7 @@ export const WatchPlanSheet = ({
             {resolved && !resolved.done && (
               <motion.button
                 type="button"
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ opacity: 0.7 }}
                 className="wp-btn wp-btn--watched"
                 onClick={() => void markWatched()}
                 style={{
@@ -708,7 +708,7 @@ export const WatchPlanSheet = ({
               )}
               <motion.button
                 type="button"
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ opacity: 0.7 }}
                 className="wp-btn wp-btn--primary"
                 disabled={!canSave}
                 onClick={() => void save()}

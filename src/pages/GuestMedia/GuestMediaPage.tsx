@@ -263,7 +263,7 @@ export const GuestMediaPage: React.FC<GuestMediaPageProps> = ({ mediaType, tmdbI
                   }}
                 >
                   <motion.button
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ opacity: 0.7 }}
                     onClick={() => {
                       // Geteilten Titel in die Gast-Auswahl legen und ins
                       // bestehende /join-Onboarding einsteigen — nach dem
@@ -295,7 +295,7 @@ export const GuestMediaPage: React.FC<GuestMediaPageProps> = ({ mediaType, tmdbI
                     {t('Jetzt tracken — kostenlos')}
                   </motion.button>
                   <motion.button
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ opacity: 0.7 }}
                     onClick={() => navigate('/login')}
                     style={{
                       padding: '12px 22px',
@@ -312,7 +312,7 @@ export const GuestMediaPage: React.FC<GuestMediaPageProps> = ({ mediaType, tmdbI
                   </motion.button>
                   {installTarget.os && (
                     <motion.a
-                      whileTap={{ scale: 0.97 }}
+                      whileTap={{ opacity: 0.7 }}
                       href={installTarget.url}
                       target="_blank"
                       rel="noopener noreferrer"

@@ -115,7 +115,7 @@ export const MilestoneBoxCard: React.FC = () => {
                 }
               : undefined
           }
-          whileTap={hasBox ? { scale: 0.98 } : undefined}
+          whileTap={hasBox ? { opacity: 0.7 } : undefined}
           {...(hasBox && {
             role: 'button',
             tabIndex: 0,

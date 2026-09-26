@@ -58,7 +58,7 @@ export const ActivitySpotlight = ({
       initial={{ opacity: 0, y: 18, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-      whileTap={{ scale: 0.985 }}
+      whileTap={{ opacity: 0.7 }}
       onClick={onClick}
       style={{
         background: theme.background.surface,

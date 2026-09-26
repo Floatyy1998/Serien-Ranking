@@ -70,7 +70,7 @@ export const BugReportPage = memo(() => {
         )}
         {!showForm && !ban.tickets && (
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ opacity: 0.7 }}
             onClick={() => setShowForm(true)}
             style={{
               width: '100%',
@@ -140,7 +140,7 @@ export const BugReportPage = memo(() => {
             return (
               <motion.button
                 key={tab.id}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ opacity: 0.7 }}
                 onClick={() => {
                   setActiveTab(tab.id);
                   setExpandedTicket(null);

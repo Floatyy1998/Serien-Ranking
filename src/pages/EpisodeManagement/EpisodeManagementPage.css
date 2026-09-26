@@ -320,7 +320,7 @@
 }
 
 .mark-all-button:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .catch-up-button {
@@ -348,7 +348,7 @@
 }
 
 .catch-up-button:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 /* Episodes List */
@@ -422,7 +422,7 @@
 }
 
 .episode-item:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .episode-number {
@@ -591,7 +591,7 @@
 }
 
 .action-button:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .action-button svg {
@@ -708,7 +708,7 @@
 }
 
 .dialog-button.increase:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .dialog-button.decrease {
@@ -723,7 +723,7 @@
 }
 
 .dialog-button.decrease:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .dialog-button.cancel {
@@ -738,7 +738,7 @@
 }
 
 .dialog-button.cancel:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 /* em- prefixed layout classes */

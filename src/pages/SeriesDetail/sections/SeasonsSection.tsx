@@ -414,7 +414,7 @@ export function SeasonsSection({
                     >
                       <motion.button
                         type="button"
-                        whileTap={{ scale: 0.85 }}
+                        whileTap={{ opacity: 0.7 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (isRewatched) {

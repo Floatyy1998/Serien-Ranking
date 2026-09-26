@@ -74,7 +74,7 @@
 }
 
 .rw-search-clear:active {
-  transform: translateY(-50%) scale(0.9);
+  opacity: 0.7;
 }
 
 /* Hit-slop: der sichtbare Kreis bleibt klein, die Trefferflaeche wird 44px */

@@ -81,7 +81,7 @@ export const PlanInviteFriendsSheet = ({
         {friends.length > 0 && (
           <motion.button
             type="button"
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ opacity: 0.7 }}
             className="wp-btn wp-btn--primary wp-btn--block"
             disabled={selected.size === 0}
             onClick={() => {

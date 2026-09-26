@@ -473,7 +473,7 @@ export function TicketCard({
                 <div style={{ marginTop: '12px' }}>
                   {!reopenMode ? (
                     <motion.button
-                      whileTap={{ scale: 0.97 }}
+                      whileTap={{ opacity: 0.7 }}
                       onClick={() => setReopenMode(true)}
                       style={{
                         width: '100%',
@@ -629,7 +629,7 @@ export function TicketCard({
                   {/* Ersteller kann sein Ticket selbst schließen */}
                   {onClose && !closeConfirm && (
                     <motion.button
-                      whileTap={{ scale: 0.97 }}
+                      whileTap={{ opacity: 0.7 }}
                       onClick={() => setCloseConfirm(true)}
                       style={{
                         width: '100%',

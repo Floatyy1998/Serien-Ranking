@@ -341,7 +341,7 @@
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
 }
 .ob-cta:not(:disabled):active {
-  transform: translateY(0);
+  opacity: 0.7;
 }
 .ob-cta__arrow {
   font-family: var(--ob-font-display);

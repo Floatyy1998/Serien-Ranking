@@ -57,11 +57,11 @@ describe('motion/variants', () => {
     expect(asRecord(scaleIn.visible).scale).toBe(1);
   });
 
-  it('tap-Presets sind absteigend skaliert', () => {
-    expect(tapScaleSmall.scale).toBe(0.98);
-    expect(tapScale.scale).toBe(0.96);
-    expect(tapScaleTight.scale).toBe(0.92);
-    expect(tapScaleTight.scale).toBeLessThan(tapScale.scale);
-    expect(tapScale.scale).toBeLessThan(tapScaleSmall.scale);
+  it('tap-Presets dimmen nur ab und skalieren nicht', () => {
+    for (const preset of [tapScaleSmall, tapScale, tapScaleTight]) {
+      expect(preset).not.toHaveProperty('scale');
+    }
+    expect(tapScaleTight.opacity).toBeLessThan(tapScale.opacity);
+    expect(tapScale.opacity).toBeLessThan(tapScaleSmall.opacity);
   });
 });

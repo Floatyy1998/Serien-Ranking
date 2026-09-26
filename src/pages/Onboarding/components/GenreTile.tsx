@@ -48,7 +48,7 @@ export const GenreTile: React.FC<Props> = ({ label, index, posters, selected, on
       onClick={onToggle}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ opacity: 0.7 }}
       className={`ob-genre-tile ${selected ? 'ob-genre-tile--selected' : ''}`}
       style={{ transform }}
     >

@@ -99,7 +99,7 @@ export const MangaDetailPreview = ({
         </div>
 
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ opacity: 0.7 }}
           onClick={onAdd}
           style={{
             width: '100%',

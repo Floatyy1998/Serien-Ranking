@@ -128,7 +128,7 @@
 }
 
 .manga-hero-stepper:active {
-  transform: scale(0.9);
+  opacity: 0.7;
 }
 
 .manga-hero-chapter-input {
@@ -174,7 +174,7 @@
 }
 
 .manga-detail-counter-btn:active {
-  transform: scale(0.9);
+  opacity: 0.7;
 }
 
 .manga-detail-counter-value {
@@ -236,7 +236,7 @@
 }
 
 .manga-detail-status-btn:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 .manga-detail-status-btn--active {
@@ -259,7 +259,7 @@
 }
 
 .manga-detail-star-btn:active {
-  transform: scale(1.2);
+  opacity: 0.7;
 }
 
 /* Chapter "read up to" action */
@@ -282,7 +282,7 @@
 }
 
 .manga-chapter-read-btn:active {
-  transform: scale(0.92);
+  opacity: 0.7;
 }
 
 .manga-chapter-read-btn:focus-visible,
@@ -303,7 +303,7 @@
 }
 
 .manga-chapter-confirm-btn:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 /* Description */

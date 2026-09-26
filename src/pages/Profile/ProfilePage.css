@@ -194,7 +194,7 @@
 }
 
 .profile-featured-item:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .profile-featured-item-left {
@@ -248,7 +248,7 @@
 }
 
 .profile-menu-item:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .profile-menu-item + .profile-menu-item {
@@ -327,7 +327,7 @@
 }
 
 .profile-logout-btn:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 /* 44px-Regel-Fix: .mobile-app button (0,1,1) schlaegt sonst die Klassen

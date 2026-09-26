@@ -341,7 +341,7 @@ export const HeroSection = memo<HeroSectionProps>(
 
         <Tooltip title={t('Löschen')} arrow>
           <motion.button
-            whileTap={{ scale: isDeleting ? 1 : 0.96 }}
+            whileTap={{ opacity: isDeleting ? 1 : 0.7 }}
             onClick={onDelete}
             disabled={isDeleting}
             aria-label={t('Löschen')}

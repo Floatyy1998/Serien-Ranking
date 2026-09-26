@@ -118,7 +118,7 @@
 }
 
 .md-hero__action-btn:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 .md-hero__action-btn:focus-visible,
@@ -273,7 +273,7 @@
 }
 
 .md-rate-btn:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 .md-rate-btn--mobile {

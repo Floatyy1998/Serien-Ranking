@@ -128,7 +128,7 @@
 }
 
 .activity-nav__tab:active {
-  transform: scale(0.96);
+  opacity: 0.7;
 }
 
 .activity-nav__icon {
@@ -265,7 +265,7 @@
 }
 
 .activity-entry:active {
-  transform: scale(0.985);
+  opacity: 0.7;
 }
 
 .activity-friend-row {
@@ -692,7 +692,7 @@
 }
 
 .ft-share-chip--ask:active {
-  transform: scale(0.95);
+  opacity: 0.7;
 }
 
 .ft-share-chip--ask:focus-visible {

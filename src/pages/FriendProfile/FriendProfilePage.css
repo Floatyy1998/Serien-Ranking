@@ -61,7 +61,7 @@
 }
 
 .fp-card:active {
-  transform: scale(0.95);
+  opacity: 0.7;
   transition: transform 0.15s ease;
 }
 
@@ -405,7 +405,7 @@
 }
 
 .fp-watching-card:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .fp-watching-poster {
@@ -640,7 +640,7 @@
 }
 
 .fp-anticipation-item:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 .fp-anticipation-poster {
@@ -837,7 +837,7 @@
 }
 
 .fp-hero-btn:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 /* 2050-Desktop: Insight-Platzhalter als schlanke Zeile statt Riesen-Leerbox */

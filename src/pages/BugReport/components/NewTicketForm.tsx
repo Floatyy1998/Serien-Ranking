@@ -429,7 +429,7 @@ export function NewTicketForm({
             {t('Abbrechen')}
           </button>
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ opacity: 0.7 }}
             onClick={handleSubmit}
             disabled={!title.trim() || !description.trim() || submitting}
             style={{

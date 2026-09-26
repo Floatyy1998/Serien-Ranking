@@ -62,7 +62,7 @@ export const SerienTabMonthSelect: React.FC<SerienTabMonthSelectProps> = ({
     <div ref={rootRef} style={{ position: 'relative', display: 'flex' }}>
       <motion.button
         type="button"
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ opacity: 0.7 }}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}

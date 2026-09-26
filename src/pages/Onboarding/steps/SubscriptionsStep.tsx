@@ -198,7 +198,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + i * 0.03, duration: 0.4 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ opacity: 0.7 }}
                     onClick={() => onToggle(name)}
                     style={{
                       display: 'flex',

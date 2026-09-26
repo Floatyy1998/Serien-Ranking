@@ -297,7 +297,7 @@
 }
 
 .ed-watch-btn:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 .ed-watch-btn-icon {
@@ -326,7 +326,7 @@
 }
 
 .ed-episodes-btn:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 .ed-episodes-btn-icon {

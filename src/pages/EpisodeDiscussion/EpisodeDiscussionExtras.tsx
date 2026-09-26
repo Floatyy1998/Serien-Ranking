@@ -25,7 +25,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
   >
     {/* Previous Episode */}
     <motion.button
-      whileTap={{ scale: navigation.hasPrevEpisode ? 0.95 : 1 }}
+      whileTap={{ opacity: navigation.hasPrevEpisode ? 0.7 : 1 }}
       onClick={navigation.goToPrevEpisode}
       disabled={!navigation.hasPrevEpisode}
       className="ed-nav-btn"
@@ -58,7 +58,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
 
     {/* Next Episode */}
     <motion.button
-      whileTap={{ scale: navigation.hasNextEpisode ? 0.95 : 1 }}
+      whileTap={{ opacity: navigation.hasNextEpisode ? 0.7 : 1 }}
       onClick={navigation.goToNextEpisode}
       disabled={!navigation.hasNextEpisode}
       className="ed-nav-btn ed-nav-btn--next"

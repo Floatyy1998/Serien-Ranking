@@ -47,7 +47,7 @@ export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClo
           {posterNav.title}
         </p>
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ opacity: 0.7 }}
           onClick={() => {
             onClose();
             navigate(posterNav.episodePath);
@@ -70,7 +70,7 @@ export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClo
           {t('Zur Episode')}
         </motion.button>
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ opacity: 0.7 }}
           onClick={() => {
             onClose();
             navigate(`/series/${posterNav.seriesId}`);

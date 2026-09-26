@@ -71,7 +71,7 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
         return (
           <motion.button
             key={id}
-            whileTap={{ scale: 0.93 }}
+            whileTap={{ opacity: 0.7 }}
             whileHover={{ y: -2 }}
             onClick={() => {
               navigate(a.path);

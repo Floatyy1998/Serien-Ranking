@@ -286,7 +286,7 @@ export const MangaSearchPage = () => {
                   aria-label={t('{title} öffnen', {
                     title: result.title.english || result.title.romaji,
                   })}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ opacity: 0.7 }}
                   onClick={() => navigate(`/manga/${result.id}`)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -383,7 +383,7 @@ export const MangaSearchPage = () => {
                       aria-label={t('{title} zur Sammlung hinzufügen', {
                         title: result.title.english || result.title.romaji,
                       })}
-                      whileTap={{ scale: 0.85 }}
+                      whileTap={{ opacity: 0.7 }}
                       onClick={(e) => handleAdd(e, result)}
                       style={{
                         position: 'absolute',

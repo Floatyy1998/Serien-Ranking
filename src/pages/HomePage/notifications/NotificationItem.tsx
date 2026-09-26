@@ -31,7 +31,7 @@ export const NotificationItem = React.memo(function NotificationItem({
   const [expanded, setExpanded] = useState(false);
   return (
     <motion.div
-      whileTap={item.kind !== 'request' ? { scale: 0.98 } : undefined}
+      whileTap={item.kind !== 'request' ? { opacity: 0.7 } : undefined}
       onClick={() => {
         if (expandable) setExpanded((v) => !v);
         onItemClick(item);

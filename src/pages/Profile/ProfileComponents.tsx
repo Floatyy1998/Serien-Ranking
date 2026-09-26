@@ -319,7 +319,7 @@ export const ProfileMenuGroup = memo(
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: animationDelay + 0.05 + index * 0.03 }}
-            whileTap={{ scale: 0.99 }}
+            whileTap={{ opacity: 0.7 }}
             onClick={() => onNavigate(item.path)}
             className="profile-menu-item"
             style={{

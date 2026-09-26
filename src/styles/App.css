@@ -157,7 +157,6 @@
 }
 
 .mobile-app .btn-primary:active {
-  transform: scale(0.95);
   opacity: 0.9;
 }
 

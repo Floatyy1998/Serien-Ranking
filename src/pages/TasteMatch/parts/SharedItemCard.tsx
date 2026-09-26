@@ -20,7 +20,7 @@ export const SharedItemCard: React.FC<{
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ opacity: 0.7 }}
       whileHover={{ scale: 1.01, y: -2 }}
       onClick={() => {
         navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`);

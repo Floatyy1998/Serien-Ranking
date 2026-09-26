@@ -154,7 +154,7 @@ export const CalendarPage = () => {
   const entryLinks = (
     <div className="cal-entry-row">
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ opacity: 0.7 }}
         onClick={() => {
           hapticTap();
           navigate('/anime-season');
@@ -174,7 +174,7 @@ export const CalendarPage = () => {
       </motion.button>
 
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ opacity: 0.7 }}
         onClick={() => {
           hapticTap();
           navigate('/serien-kalender');
@@ -192,7 +192,7 @@ export const CalendarPage = () => {
       </motion.button>
 
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ opacity: 0.7 }}
         onClick={() => {
           hapticTap();
           navigate('/film-kalender');

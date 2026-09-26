@@ -79,10 +79,10 @@ export const fadeIn: Variants = {
   },
 };
 
-// --- Shared tap/hover presets for consistency ---
-export const tapScale = { scale: 0.96 } as const;
-export const tapScaleSmall = { scale: 0.98 } as const;
-export const tapScaleTight = { scale: 0.92 } as const;
+// --- Shared tap presets: Drücken dimmt nur ab, nichts skaliert oder verschiebt sich ---
+export const tapScale = { opacity: 0.7 } as const;
+export const tapScaleSmall = { opacity: 0.75 } as const;
+export const tapScaleTight = { opacity: 0.65 } as const;
 // --- Scale button (clear buttons, icon buttons) ---
 export const scaleButton: Variants = {
   hidden: { opacity: 0, scale: 0.7 },

@@ -121,7 +121,7 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03, duration: 0.25 }}
-                    whileTap={{ scale: 0.985 }}
+                    whileTap={{ opacity: 0.7 }}
                     onClick={() => navigate(`/friend/${entry.uid}`)}
                     className="friend-progress-card"
                   >

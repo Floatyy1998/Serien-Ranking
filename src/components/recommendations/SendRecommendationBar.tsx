@@ -31,7 +31,7 @@ export const SendRecommendationBar: React.FC<SendRecommendationBarProps> = ({
       }}
     >
       <motion.button
-        whileTap={selectedCount > 0 && !sending ? { scale: 0.98 } : undefined}
+        whileTap={selectedCount > 0 && !sending ? { opacity: 0.7 } : undefined}
         onClick={onSend}
         disabled={selectedCount === 0 || sending}
         style={{

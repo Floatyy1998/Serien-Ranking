@@ -82,7 +82,7 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
           return (
             <motion.button
               key={ep.id ?? i}
-              whileTap={{ scale: 0.99 }}
+              whileTap={{ opacity: 0.7 }}
               onClick={() => onPick(activeSeason, i)}
               className={`ob-episode ${isCovered ? 'ob-episode--covered' : ''} ${isPicked ? 'ob-episode--picked' : ''}`}
             >

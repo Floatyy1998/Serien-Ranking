@@ -37,7 +37,7 @@ export const FriendAvatarButton: React.FC<FriendAvatarButtonProps> = ({
 
   return (
     <motion.button
-      whileTap={alreadyHas ? undefined : { scale: 0.9 }}
+      whileTap={alreadyHas ? undefined : { opacity: 0.7 }}
       whileHover={!isMobile && !alreadyHas ? { y: -2 } : undefined}
       onClick={() => onToggle(friend.uid)}
       aria-pressed={isSelected}

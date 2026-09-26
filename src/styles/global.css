@@ -334,6 +334,25 @@ a,
   }
 }
 
+/* Variante: alle Tabs gleich breit, egal wie lang Label und Zahl sind. */
+.ui-tabs.ui-tabs--equal {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.ui-tabs--equal .ui-tabs__tab {
+  min-width: 0;
+  padding: 0 6px;
+  gap: 5px;
+}
+
+@media (min-width: 768px) {
+  .ui-tabs--equal .ui-tabs__tab {
+    padding: 10px 22px;
+  }
+}
+
 /* Trefferflaeche auf 44px aufziehen, ohne das Element optisch zu vergroessern.
    Fuer kleine Symbolknoepfe, die auf Postern oder in dichten Reihen sitzen. */
 .tap-target-44 {
@@ -807,7 +826,7 @@ textarea[style*='outline']:focus-visible {
 }
 
 .glow-card:active {
-  transform: scale(0.97) translateY(0);
+  opacity: 0.7;
 }
 
 /* Progress bar shimmer */
@@ -848,20 +867,11 @@ textarea[style*='outline']:focus-visible {
   animation-delay: 0.2s;
 }
 
-/* Global touch feedback */
+/* Globales Druck-Feedback: nur abdunkeln, nie skalieren oder verschieben */
 button:active:not(:disabled),
 [role='button']:active:not(:disabled),
 [role='tab']:active {
-  transform: scale(0.96);
-}
-
-/* Verlaufsschrift ausnehmen: ein transform hebt die Glyphen auf eine eigene
-   Ebene, wodurch die background-clip-Stanzung bricht (Chromium). Da die Schrift
-   selbst transparent ist, verschwände der Text für die Dauer des Drückens. */
-.gradient-text:active:not(:disabled),
-.gradient-text [role='button']:active:not(:disabled),
-.gradient-text [role='tab']:active {
-  transform: none;
+  opacity: 0.7;
 }
 
 /* Cinematic card lift - höherer Kontrast */

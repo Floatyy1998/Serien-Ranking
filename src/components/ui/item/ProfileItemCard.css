@@ -14,7 +14,7 @@
 }
 
 .pic-grid-item:active {
-  transform: scale(0.97);
+  opacity: 0.7;
 }
 
 .pic-grid-item:focus-visible,
@@ -106,7 +106,7 @@
 }
 
 .pic-card-add:active {
-  transform: scale(0.92);
+  opacity: 0.7;
 }
 
 .pic-card-add-icon {
