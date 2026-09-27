@@ -18,6 +18,7 @@ import {
   SharedListUserPreview,
   ListCollagePreview,
   ShareFolderSheetPreview,
+  DetailActionsPreview,
   RatingItemActionsPreview,
   WatchNextBadgePreview,
   WatchNextFilterPreview,
@@ -156,6 +157,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   },
   { id: 'sharedlist-user', label: 'Geteilte Liste', render: () => <SharedListUserPreview /> },
   { id: 'listcollage', label: 'Listen-Collage', render: () => <ListCollagePreview /> },
+  { id: 'detailactions', label: 'Detail-Aktionen', render: () => <DetailActionsPreview /> },
   { id: 'sharefolder', label: 'Liste teilen', render: () => <ShareFolderSheetPreview /> },
   {
     id: 'ratingfolderactions',

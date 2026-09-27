@@ -21,6 +21,11 @@ import { addToLibrary } from '../../services/series/addToLibrary';
 import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { MediaActionsSheet, type MediaActionsState } from './MediaActionsSheet';
+import {
+  MEDIA_ACTIONS_EVENT,
+  type MediaActionsView,
+  type OpenMediaActionsDetail,
+} from './openMediaActions';
 
 const LONG_PRESS_MS = 500;
 const MOVE_TOLERANCE = 10;
@@ -38,6 +43,7 @@ export const MediaActionsHost = () => {
   const { movieList } = useMovieList();
   const { folders } = useRatingFolders();
   const [target, setTarget] = useState<MediaTarget | null>(null);
+  const [initialView, setInitialView] = useState<MediaActionsView>('menu');
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState<Set<string>>(() => new Set());
   const [folderSheet, setFolderSheet] = useState<RatingFolderSheetState>({ open: false });
@@ -61,6 +67,7 @@ export const MediaActionsHost = () => {
     const fire = (el: Element, found: MediaTarget) => {
       fired = { el, at: Date.now() };
       hapticTap();
+      setInitialView('menu');
       setTarget(found);
     };
     const onDown = (e: PointerEvent) => {
@@ -114,6 +121,17 @@ export const MediaActionsHost = () => {
       document.removeEventListener('contextmenu', onContextMenu, opts);
       document.removeEventListener('click', onClick, opts);
     };
+  }, []);
+
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const detail = (e as CustomEvent<OpenMediaActionsDetail>).detail;
+      if (!detail?.target) return;
+      setInitialView(detail.view);
+      setTarget(detail.target);
+    };
+    window.addEventListener(MEDIA_ACTIONS_EVENT, onOpen);
+    return () => window.removeEventListener(MEDIA_ACTIONS_EVENT, onOpen);
   }, []);
 
   const owned = useMemo<Series | Movie | undefined>(() => {
@@ -224,6 +242,7 @@ export const MediaActionsHost = () => {
     <>
       <MediaActionsSheet
         state={state}
+        initialView={initialView}
         folders={folders}
         busy={busy}
         onClose={close}

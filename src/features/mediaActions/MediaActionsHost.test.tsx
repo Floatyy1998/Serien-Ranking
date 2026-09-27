@@ -62,6 +62,7 @@ vi.mock('../../components/ui', () => ({
 }));
 
 import { MediaActionsHost } from './MediaActionsHost';
+import { openMediaActions } from './openMediaActions';
 
 const Card = ({ type, id, title }: { type: 'series' | 'movie'; id: number; title: string }) => (
   <div {...mediaTargetProps({ type, id, title })}>
@@ -175,5 +176,15 @@ describe('MediaActionsHost', () => {
     longPress(card);
     fireEvent.click(card);
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('öffnet per Knopf direkt die Listenauswahl', () => {
+    mocks.series = [{ id: 1, title: 'Dark', rating: {} }];
+    mocks.folders = [{ id: 'f1', name: 'Mystery', createdAt: 1, items: new Set() }];
+    render(<MediaActionsHost />);
+    act(() => openMediaActions({ type: 'series', id: 1, title: 'Dark' }, 'folders'));
+    expect(screen.getByText('Mystery')).toBeInTheDocument();
+    expect(screen.getByText('Neue Liste')).toBeInTheDocument();
+    expect(screen.queryByText('Bewerten')).toBeNull();
   });
 });

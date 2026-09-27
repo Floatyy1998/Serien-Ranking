@@ -7,6 +7,7 @@ import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
+import { AddToListButton } from '../../components/detail/AddToListButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/provider/providerMerge';
@@ -463,6 +464,20 @@ export const MovieHeroSection = memo(
                     {t('Bewerten')}
                   </motion.button>
                 )}
+
+                <AddToListButton
+                  className="action-btn"
+                  iconSize={isMobile ? 18 : 20}
+                  target={{ type: 'movie', id: movie.id, title: movie.title, poster: posterPath }}
+                  style={{
+                    padding: isMobile ? '10px' : '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: isMobile ? '10px' : '12px',
+                    fontSize: isMobile ? '13px' : '16px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: currentTheme.text.secondary,
+                  }}
+                />
 
                 <RecommendButton
                   className="action-btn"

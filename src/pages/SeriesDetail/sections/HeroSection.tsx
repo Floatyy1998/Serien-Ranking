@@ -19,6 +19,7 @@ import {
   VideoGallery,
 } from '../../../components/detail';
 import { RecommendButton } from '../../../components/recommendations/RecommendButton';
+import { AddToListButton } from '../../../components/detail/AddToListButton';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { applyOverrideToProviders, mergeProviders } from '../../../lib/provider/providerMerge';
@@ -250,10 +251,21 @@ export const HeroSection = memo<HeroSectionProps>(
       />
     );
 
+    const listButton = (
+      <AddToListButton
+        className="hero-actions__btn"
+        iconSize={iconSize}
+        target={{ type: 'series', id: seriesId, title: series.title, poster: posterPath }}
+      />
+    );
+
     // Read-only (nicht in der Liste): Teilen/Empfehlen bleibt verfügbar —
     // braucht den Titel nicht in der Sammlung.
     const actionButtons = isReadOnlyTmdbSeries ? (
-      <div className="hero-actions">{recommendButton}</div>
+      <div className="hero-actions">
+        {listButton}
+        {recommendButton}
+      </div>
     ) : (
       <div className="hero-actions">
         <motion.button
@@ -312,6 +324,8 @@ export const HeroSection = memo<HeroSectionProps>(
             )}
           </motion.button>
         </Tooltip>
+
+        {listButton}
 
         {recommendButton}
 

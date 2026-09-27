@@ -5,6 +5,15 @@
  */
 
 import { useEffect, useState } from 'react';
+import {
+  BookmarkAdd,
+  Delete as DeleteIcon,
+  Send,
+  Star as StarIcon,
+  VisibilityOff,
+} from '@mui/icons-material';
+import { AddToListButton } from '../../components/detail/AddToListButton';
+import '../SeriesDetail/SeriesDetailPage.css';
 import type { SharedList } from '../../lib/rating/sharedList';
 import { renderListCollage } from '../../services/share/listCollage';
 import { listSubtitle } from '../SharedList/listSubtitle';
@@ -992,6 +1001,47 @@ export const ShareFolderSheetPreview = () => {
         folder={{ ...previewFolders[0], shared: true }}
         onClose={() => {}}
       />
+    </div>
+  );
+};
+
+export const DetailActionsPreview = () => {
+  const { currentTheme } = useTheme();
+  const size = 20;
+  return (
+    <div style={{ padding: 16, background: currentTheme.background.default }}>
+      <div className="hero-actions">
+        <button
+          type="button"
+          className="hero-actions__btn hero-actions__btn--primary"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          }}
+        >
+          <PlayCircle style={{ fontSize: size }} />
+          <span>Episoden</span>
+        </button>
+        <button type="button" className="hero-actions__btn">
+          <StarIcon style={{ fontSize: size }} />
+        </button>
+        <button type="button" className="hero-actions__btn">
+          <BookmarkAdd style={{ fontSize: size }} />
+        </button>
+        <AddToListButton
+          className="hero-actions__btn"
+          iconSize={size}
+          target={{ type: 'series', id: 1, title: 'Dark' }}
+        />
+        <button type="button" className="hero-actions__btn">
+          <Send style={{ fontSize: size }} />
+        </button>
+        <button type="button" className="hero-actions__btn">
+          <VisibilityOff style={{ fontSize: size }} />
+        </button>
+        <button type="button" className="hero-actions__btn hero-actions__btn--danger">
+          <DeleteIcon style={{ fontSize: size }} />
+        </button>
+      </div>
     </div>
   );
 };

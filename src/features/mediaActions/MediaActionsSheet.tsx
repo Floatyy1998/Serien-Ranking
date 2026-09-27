@@ -15,6 +15,7 @@ import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders
 import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import '../../pages/Ratings/RatingFolders.css';
+import type { MediaActionsView } from './openMediaActions';
 import './MediaActions.css';
 
 export interface MediaActionsState {
@@ -28,6 +29,7 @@ export interface MediaActionsState {
 
 export const MediaActionsSheet = ({
   state,
+  initialView = 'menu',
   folders,
   busy,
   onClose,
@@ -38,6 +40,7 @@ export const MediaActionsSheet = ({
   onCreateFolder,
 }: {
   state: MediaActionsState | null;
+  initialView?: MediaActionsView;
   folders: RatingFolder[];
   busy: boolean;
   onClose: () => void;
@@ -48,12 +51,12 @@ export const MediaActionsSheet = ({
   onCreateFolder: () => void;
 }) => {
   const { currentTheme: theme } = useTheme();
-  const [view, setView] = useState<'menu' | 'folders'>('menu');
+  const [view, setView] = useState<MediaActionsView>(initialView);
   const targetKey = state ? `${state.target.type}-${state.target.id}` : '';
 
   useEffect(() => {
-    if (targetKey) setView('menu');
-  }, [targetKey]);
+    if (targetKey) setView(initialView);
+  }, [targetKey, initialView]);
 
   const key = state ? folderItemKey(state.target.type, state.target.id) : '';
   const memberCount = state ? folders.filter((f) => f.items.has(key)).length : 0;
