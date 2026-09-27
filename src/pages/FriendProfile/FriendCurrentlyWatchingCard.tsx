@@ -1,3 +1,4 @@
+import { VisibilityOutlined, WarningAmberRounded } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -52,12 +53,19 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
         title: data.title,
         poster: data.poster,
       })}
-      className="fp-watching-card"
+      className="fp-card fp-watching-card"
       style={{
-        background: `linear-gradient(135deg, ${mood.tint}18, ${currentTheme.primary}10)`,
-        border: `1px solid ${mood.tint}40`,
+        background: `radial-gradient(120% 140% at 0% 0%, ${mood.tint}22, transparent 60%), var(--glass-subtle)`,
       }}
     >
+      <img
+        src={getImageUrl(data.poster, 'w342')}
+        alt=""
+        aria-hidden
+        className="fp-watching-backdrop"
+        loading="lazy"
+        decoding="async"
+      />
       <img
         src={getImageUrl(data.poster, 'w342')}
         alt={data.title}
@@ -67,31 +75,37 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
       />
 
       <div className="fp-watching-body">
-        <div className="fp-watching-mood" style={{ color: mood.tint }}>
+        <div className="fp-card-eyebrow" style={{ color: mood.tint }}>
           <span className="fp-watching-mood-dot" style={{ background: mood.tint }} />
           <span>{mood.label}</span>
         </div>
 
-        <div className="fp-watching-title">{data.title}</div>
+        <div className="fp-watching-title" style={{ color: currentTheme.text.primary }}>
+          {data.title}
+        </div>
 
-        <div className="fp-watching-meta">
+        <div className="fp-watching-meta" style={{ color: currentTheme.text.muted }}>
           {t('{name} schaut', { name: friendName })} S{data.latestSeason}E{data.latestEpisode} ·{' '}
           {formatRelative(data.latestWatchedAt)}
         </div>
 
-        <div className="fp-watching-stats">
-          <span>
+        <div className="fp-watching-chips" style={{ color: currentTheme.text.secondary }}>
+          <span className="fp-chip">
             <strong>{data.episodeCount}</strong>{' '}
             {data.episodeCount === 1 ? t('Folge') : t('Folgen')}
           </span>
-          <span>·</span>
-          <span>
+          <span className="fp-chip">
             {data.daysCovered === 1 ? t('heute') : t('in {n} Tagen', { n: data.daysCovered })}
           </span>
         </div>
 
         <div className="fp-watching-spoiler" style={{ color: spoilerColor }}>
-          {data.spoilerDiff.message}
+          {data.spoilerDiff.warning ? (
+            <WarningAmberRounded style={{ fontSize: 16 }} />
+          ) : (
+            <VisibilityOutlined style={{ fontSize: 16 }} />
+          )}
+          <span>{data.spoilerDiff.message}</span>
         </div>
       </div>
     </motion.div>

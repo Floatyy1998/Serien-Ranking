@@ -75,7 +75,7 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
 
   if (loading || !friend) {
     return (
-      <div className="fp-compare fp-compare--empty">
+      <div className="fp-card fp-compare fp-compare--empty">
         <span style={{ color: currentTheme.text.muted }}>
           {loading
             ? t('Vergleich wird geladen …')
@@ -86,41 +86,45 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
   }
 
   return (
-    <section className="fp-compare" aria-label={t('Ihr im Vergleich')}>
+    <section className="fp-card fp-compare" aria-label={t('Ihr im Vergleich')}>
       <header className="fp-compare-head">
-        <h2 style={{ color: currentTheme.text.primary }}>{t('Ihr im Vergleich')}</h2>
+        <div className="fp-compare-titles">
+          <div
+            role="heading"
+            aria-level={2}
+            className="fp-card-eyebrow"
+            style={{ color: currentTheme.text.muted }}
+          >
+            {t('Ihr im Vergleich')}
+          </div>
+          <div className="fp-compare-legend" style={{ color: currentTheme.text.muted }}>
+            <span>
+              <i style={{ background: currentTheme.accent }} />
+              {t('Du')}
+            </span>
+            <span>
+              <i style={{ background: currentTheme.text.secondary }} />
+              {friendName}
+            </span>
+          </div>
+        </div>
         <button
           type="button"
           className="fp-compare-link"
           aria-label={t('Zur Gesamt-Rangliste')}
-          style={{ color: currentTheme.text.muted }}
+          style={{ color: currentTheme.text.secondary }}
           onClick={() => navigate('/leaderboard')}
         >
           <ChevronRight style={{ fontSize: 18 }} />
         </button>
       </header>
 
-      <div className="fp-compare-names" style={{ color: currentTheme.text.muted }}>
-        <span style={{ color: currentTheme.accent }}>{t('Du')}</span>
-        <span>{friendName}</span>
-      </div>
-
-      {rows.map((row, index) => {
-        const ownLeads = row.own > row.friend;
-        const friendLeads = row.friend > row.own;
-        return (
-          <div className="fp-compare-row" key={row.key}>
-            <span
-              className="fp-compare-value fp-compare-value--own"
-              title={row.ownHint}
-              style={{
-                color: ownLeads ? currentTheme.accent : currentTheme.text.secondary,
-                fontWeight: ownLeads ? 800 : 600,
-              }}
-            >
-              {row.format(row.own)}
-            </span>
-            <div className="fp-compare-mid">
+      <div className="fp-compare-list">
+        {rows.map((row, index) => {
+          const ownLeads = row.own > row.friend;
+          const friendLeads = row.friend > row.own;
+          return (
+            <div className="fp-compare-row" key={row.key}>
               <span className="fp-compare-label" style={{ color: currentTheme.text.muted }}>
                 {row.icon}
                 {row.label}
@@ -128,7 +132,7 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
               <div
                 className="fp-compare-track"
                 style={{
-                  background: `color-mix(in srgb, ${currentTheme.text.secondary} 38%, transparent)`,
+                  background: `color-mix(in srgb, ${currentTheme.text.secondary} 32%, transparent)`,
                 }}
               >
                 <motion.div
@@ -136,26 +140,35 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
                   initial={{ width: '50%' }}
                   animate={{ width: `${ownShare(row.own, row.friend)}%` }}
                   transition={{ duration: 0.6, delay: index * 0.08, ease: 'easeOut' }}
-                  style={{
-                    background: currentTheme.accent,
-                    boxShadow: `2px 0 0 ${currentTheme.background.default}`,
-                  }}
+                  style={{ background: currentTheme.accent }}
                 />
               </div>
+              <div className="fp-compare-values">
+                <span
+                  title={row.ownHint}
+                  style={{
+                    color: currentTheme.accent,
+                    fontWeight: ownLeads ? 800 : 600,
+                    opacity: friendLeads ? 0.75 : 1,
+                  }}
+                >
+                  {row.format(row.own)}
+                </span>
+                <span
+                  title={row.friendHint}
+                  style={{
+                    color: currentTheme.text.secondary,
+                    fontWeight: friendLeads ? 800 : 600,
+                    opacity: ownLeads ? 0.75 : 1,
+                  }}
+                >
+                  {row.format(row.friend)}
+                </span>
+              </div>
             </div>
-            <span
-              className="fp-compare-value fp-compare-value--friend"
-              title={row.friendHint}
-              style={{
-                color: friendLeads ? currentTheme.text.primary : currentTheme.text.secondary,
-                fontWeight: friendLeads ? 800 : 600,
-              }}
-            >
-              {row.format(row.friend)}
-            </span>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </section>
   );
 });

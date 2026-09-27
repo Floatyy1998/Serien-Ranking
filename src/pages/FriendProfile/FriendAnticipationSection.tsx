@@ -36,7 +36,7 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
 
   return (
     <div className="fp-anticipation">
-      <div className="fp-anticipation-header">
+      <div className="fp-anticipation-header" style={{ color: currentTheme.text.primary }}>
         {t('Worauf {name} wartet', { name: friendName })}
       </div>
 
@@ -54,11 +54,7 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
               title: item.title,
               poster: item.poster,
             })}
-            className="fp-anticipation-item"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}10, transparent)`,
-              border: `1px solid ${currentTheme.primary}25`,
-            }}
+            className="fp-card fp-anticipation-item"
           >
             <img
               src={getImageUrl(item.poster, 'w185')}
@@ -69,7 +65,9 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
             />
 
             <div className="fp-anticipation-body">
-              <div className="fp-anticipation-title">{item.title}</div>
+              <div className="fp-anticipation-title" style={{ color: currentTheme.text.secondary }}>
+                {item.title}
+              </div>
               <div className="fp-anticipation-episode" style={{ color: currentTheme.text.muted }}>
                 S{item.seasonNumber}E{item.episodeNumber}
                 {item.episodeTitle ? ` · ${item.episodeTitle}` : ''}

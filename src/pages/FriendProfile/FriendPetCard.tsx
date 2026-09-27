@@ -84,29 +84,27 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fp-pet-card"
+      className="fp-card fp-pet-card"
       style={{
-        background: `linear-gradient(135deg, ${currentTheme.accent}15, ${currentTheme.primary}10)`,
-        border: `1px solid ${currentTheme.accent}30`,
+        background: `radial-gradient(120% 140% at 0% 0%, ${currentTheme.accent}1c, transparent 60%), var(--glass-subtle)`,
       }}
     >
       <div className="fp-pet-sprite">
-        <EvolvingPixelPet pet={pet} size={96} animated={true} />
+        <EvolvingPixelPet pet={pet} size={104} animated={true} />
       </div>
 
       <div className="fp-pet-body">
-        <div className="fp-pet-header">
-          <span className="fp-pet-name">{pet.name}</span>
+        <div className="fp-pet-name" style={{ color: currentTheme.text.primary }}>
+          {pet.name}
         </div>
-
         <div className="fp-pet-subline" style={{ color: currentTheme.text.muted }}>
           {PET_TYPE_NAMES[pet.type]} · Lvl {pet.level} · {MOOD_LABEL[mood ?? 'happy'] ?? '—'}
         </div>
 
-        <div className="fp-pet-stats">
+        <div className="fp-pet-stats" style={{ color: currentTheme.text.secondary }}>
           <div className="fp-pet-stat">
             <div className="fp-pet-stat-label">
-              <span>{t('Sättigung')}</span>
+              <span style={{ color: currentTheme.text.muted }}>{t('Sättigung')}</span>
               <span>{satietyPct}%</span>
             </div>
             <div className="fp-pet-stat-track">
@@ -121,7 +119,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
           </div>
           <div className="fp-pet-stat">
             <div className="fp-pet-stat-label">
-              <span>{t('Glück')}</span>
+              <span style={{ color: currentTheme.text.muted }}>{t('Glück')}</span>
               <span>{happinessPct}%</span>
             </div>
             <div className="fp-pet-stat-track">
@@ -144,7 +142,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
           style={{
             background: canSend
               ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-              : `${currentTheme.text.muted}25`,
+              : 'var(--glass-light)',
             color: canSend ? '#fff' : currentTheme.text.muted,
             cursor: canSend ? 'pointer' : 'default',
           }}

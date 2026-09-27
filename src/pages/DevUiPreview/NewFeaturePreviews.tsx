@@ -53,6 +53,10 @@ import { ProviderChangeNotification } from '../../components/ui/notification/Pro
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import { FriendComparisonCard } from '../FriendProfile/FriendComparisonCard';
+import { FriendCurrentlyWatchingCard } from '../FriendProfile/FriendCurrentlyWatchingCard';
+import { FriendPetCard } from '../FriendProfile/FriendPetCard';
+import { FriendAnticipationSection } from '../FriendProfile/FriendAnticipationSection';
+import type { Pet } from '../../types/pet.types';
 import '../FriendProfile/FriendProfilePage.css';
 import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
@@ -1050,6 +1054,7 @@ export const DetailActionsPreview = () => {
 
 export const FriendInsightsPreview = () => {
   const { currentTheme } = useTheme();
+  const [watchedAt] = useState(() => Date.now() - 2 * 3600000);
   const own = {
     watchtimeMinutes: 1077000,
     seriesStarted: 439,
@@ -1070,10 +1075,70 @@ export const FriendInsightsPreview = () => {
       style={{ background: currentTheme.background.default, paddingTop: 16 }}
     >
       <div className="fp-insights">
-        <div className="fp-insights-row fp-insights-row--3">
-          <div className="fp-insights-placeholder">Gerade am Schauen</div>
-          <div className="fp-insights-placeholder">Pet</div>
-          <FriendComparisonCard friendName="Flo" own={own} friend={friend} loading={false} />
+        <div className="fp-insights-content">
+          <div className="fp-insights-row fp-insights-row--3">
+            <FriendCurrentlyWatchingCard
+              friendName="Flo"
+              data={{
+                seriesId: 1,
+                title: 'Black Clover',
+                poster: PLACEHOLDER_SVG,
+                episodeCount: 12,
+                daysCovered: 2,
+                latestSeason: 1,
+                latestEpisode: 168,
+                latestWatchedAt: watchedAt,
+                isRewatch: true,
+                mood: 'rewatch',
+                spoilerDiff: {
+                  kind: 'rewatch',
+                  message: 'Rewatch — kein Spoiler-Risiko',
+                  warning: false,
+                },
+              }}
+            />
+            <FriendPetCard
+              friendUid="preview-friend"
+              pet={
+                {
+                  id: 'p1',
+                  userId: 'preview-friend',
+                  name: 'Franzok',
+                  type: 'penguin',
+                  color: '#4ecdc4',
+                  level: 7,
+                  experience: 100,
+                  hunger: 0,
+                  happiness: 100,
+                  lastFed: new Date(),
+                  episodesWatched: 140,
+                  createdAt: new Date(),
+                  isAlive: true,
+                } as Pet
+              }
+            />
+            <FriendComparisonCard friendName="Flo" own={own} friend={friend} loading={false} />
+          </div>
+          <FriendAnticipationSection
+            friendName="Flo"
+            items={[
+              'LIAR GAME',
+              'Re:ZERO - Starting Life in Another World',
+              'Clevatess',
+              'Tomb Raider King',
+              'I Want to Love You Till Your Dying Day',
+            ].map((title, i) => ({
+              seriesId: i + 10,
+              title,
+              poster: PLACEHOLDER_SVG,
+              airDate: '2026-09-30',
+              daysUntil: i + 1,
+              seasonNumber: 1,
+              episodeNumber: 12 + i,
+              episodeTitle: i === 1 ? 'Shaula / Hero' : '',
+              bothWaiting: i % 2 === 1,
+            }))}
+          />
         </div>
       </div>
       <div className="fp-grid-wrapper">
