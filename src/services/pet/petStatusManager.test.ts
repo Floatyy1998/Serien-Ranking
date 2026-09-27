@@ -215,6 +215,7 @@ describe('updatePetStatus — Decay', () => {
     const result = await updatePetStatus('u1', 'p1');
     expect(result?.hunger).toBe(50);
     expect(result?.isAlive).toBe(true);
+    expect(fb.getAt('users/u1/pets/p1/lastFed')).toBe(NOW.toISOString());
   });
 });
 

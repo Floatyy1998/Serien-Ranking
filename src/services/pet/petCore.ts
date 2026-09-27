@@ -279,7 +279,13 @@ export async function createPet(userId: string, name: string, type: Pet['type'])
   };
 
   await migrateIfNeeded(userId);
-  await dbRef(userPath(userId, 'pets', newPet.id)).set(newPet);
+  // RTDB verwirft Date-Objekte still — ohne lastFed altert das Pet nie
+  await dbRef(userPath(userId, 'pets', newPet.id)).set({
+    ...newPet,
+    lastFed: now.toISOString(),
+    lastUpdated: now.toISOString(),
+    createdAt: now.getTime(),
+  });
   await dbRef(userPath(userId, 'petWidget', 'activePetId')).set(newPet.id);
   return newPet;
 }

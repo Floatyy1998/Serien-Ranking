@@ -60,7 +60,8 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
   const minutesSinceLastUpdate = (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
   if (minutesSinceLastUpdate < 1) return pet;
 
-  if (isNaN(lastFedTime.getTime())) {
+  const lastFedMissing = isNaN(lastFedTime.getTime());
+  if (lastFedMissing) {
     console.warn('[PetService] Invalid lastFed date, resetting to current time');
     pet.lastFed = now;
     pet.hunger = 50;
@@ -115,6 +116,7 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
       hunger: pet.hunger,
       happiness: pet.happiness,
       lastUpdated: now.toISOString(),
+      ...(lastFedMissing ? { lastFed: now.toISOString() } : {}),
     });
   }
 

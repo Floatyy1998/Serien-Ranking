@@ -303,6 +303,10 @@ describe('createPet', () => {
     // persistiert + aktiv gesetzt
     expect(fb.getAt(`users/u1/pets/${pet.id}`)).toBeDefined();
     expect(fb.getAt('users/u1/petWidget/activePetId')).toBe(pet.id);
+    const stored = fb.getAt(`users/u1/pets/${pet.id}`) as Record<string, unknown>;
+    expect(stored.lastFed).toBe(new Date(2026, 6, 4, 12, 0, 0).toISOString());
+    expect(stored.lastUpdated).toBe(stored.lastFed);
+    expect(typeof stored.createdAt).toBe('number');
 
     vi.useRealTimers();
   });
