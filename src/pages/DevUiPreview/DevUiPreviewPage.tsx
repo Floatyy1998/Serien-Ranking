@@ -28,6 +28,8 @@ import {
   LeaderboardEmptyPreview,
   LeaderboardPreview,
   UnhideProviderPreview,
+  WatchPlanGroupPreview,
+  WatchPlanNewPreview,
 } from './NewFeaturePreviews';
 
 /**
@@ -172,6 +174,8 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <RatingItemActionsPreview />,
   },
   { id: 'watchnextfilter', label: 'Weiter: Filter', render: () => <WatchNextFilterPreview /> },
+  { id: 'plan-new', label: 'Plan: Serientermin', render: () => <WatchPlanNewPreview /> },
+  { id: 'plan-group', label: 'Plan: Reihe', render: () => <WatchPlanGroupPreview /> },
   { id: 'watchnextbadge', label: 'Weiter: Filter aktiv', render: () => <WatchNextBadgePreview /> },
 ];
 

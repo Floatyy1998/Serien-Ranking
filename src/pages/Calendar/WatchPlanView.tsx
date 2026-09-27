@@ -4,9 +4,11 @@ import {
   Add,
   CheckCircle,
   EditCalendar,
+  EventRepeat,
   Group,
   NotificationsActive,
   RadioButtonUnchecked,
+  Replay,
   Schedule,
 } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -106,8 +108,20 @@ const PlanEntryRow = ({
             {title}
           </span>
           <span className="wp-entry__detail" style={{ color: currentTheme.text.muted }}>
+            {entry.groupId && (
+              <EventRepeat
+                aria-label={t('Serientermin')}
+                style={{ fontSize: 13, verticalAlign: -2, marginRight: 4 }}
+              />
+            )}
             {detail}
           </span>
+          {entry.watchTarget && entry.watchTarget > 1 && (
+            <span className="wp-entry__rewatch" style={{ color: currentTheme.primary }}>
+              <Replay style={{ fontSize: 13 }} />
+              {t('Rewatch · {n}. Mal', { n: entry.watchTarget })}
+            </span>
+          )}
           {companions && (
             <span className="wp-entry__with" style={{ color: currentTheme.primary }}>
               <Group style={{ fontSize: 13 }} />
@@ -359,6 +373,7 @@ export const WatchPlanView = () => {
         state={sheet}
         onClose={() => setSheet({ open: false })}
         guestsByKey={guests}
+        entries={entries}
       />
     </div>
   );

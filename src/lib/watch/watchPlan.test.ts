@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildPlanSchedule,
   compactWatchPlanDraft,
+  encodePlanRepeat,
+  nextRepeatDate,
+  parsePlanRepeat,
+  renumberPlanGroup,
+  shiftPlanGroup,
+  planRepeatDates,
   expandPlanGuests,
   expandPlanInvites,
   expandWatchPlan,
@@ -352,5 +359,130 @@ describe('Gemeinsame Termine', () => {
   it('baut stabile Schlüssel', () => {
     expect(planInviteId('h', 'k')).toBe('h_k');
     expect(guestCopyKey('h', 'k')).toBe('inv_h_k');
+  });
+});
+
+describe('Serientermin', () => {
+  it('kodiert und liest den Rhythmus', () => {
+    expect(encodePlanRepeat({ mode: 'weekly', weekdays: [4, 1, 1] })).toBe('w1,4');
+    expect(parsePlanRepeat('w1,4')).toEqual({ mode: 'weekly', weekdays: [1, 4] });
+    expect(parsePlanRepeat('d2')).toEqual({ mode: 'interval', days: 2 });
+    expect(parsePlanRepeat('d0')).toBeNull();
+    expect(parsePlanRepeat('x')).toBeNull();
+  });
+
+  it('rechnet Wochentags- und Intervall-Termine', () => {
+    // 2026-09-28 ist ein Montag
+    expect(planRepeatDates('2026-09-27', { mode: 'weekly', weekdays: [1, 4] }, 3)).toEqual([
+      '2026-09-28',
+      '2026-10-01',
+      '2026-10-05',
+    ]);
+    expect(planRepeatDates('2026-09-30', { mode: 'interval', days: 2 }, 3)).toEqual([
+      '2026-09-30',
+      '2026-10-02',
+      '2026-10-04',
+    ]);
+  });
+
+  it('plant ab der Startfolge, mit Rewatch-Ziel und Erinnerung je Termin', () => {
+    const series = mkSeries([
+      [true, true],
+      [true, false, false],
+    ]);
+    const { drafts, cut } = buildPlanSchedule({
+      series,
+      title: 'Serie',
+      startEpisodeId: 1001,
+      end: 'series',
+      startDate: '2026-09-28',
+      time: '20:00',
+      repeat: { mode: 'interval', days: 1 },
+      perSession: 2,
+      remindOffset: 15,
+      groupId: 'g1',
+    });
+    expect(cut).toBe(0);
+    expect(drafts.map((d) => `${d.seasonNumber}x${d.episodeNumber}@${d.date}`)).toEqual([
+      '1x2@2026-09-28',
+      '2x1@2026-09-28',
+      '2x2@2026-09-29',
+      '2x3@2026-09-29',
+    ]);
+    expect(drafts.map((d) => d.watchTarget)).toEqual([2, 2, 1, 1]);
+    expect(drafts.map((d) => d.remindOffset)).toEqual([15, undefined, 15, undefined]);
+  });
+
+  it('endet auf Wunsch mit der Staffel', () => {
+    const series = mkSeries([[true, true], [false]]);
+    const { drafts } = buildPlanSchedule({
+      series,
+      title: 'Serie',
+      startEpisodeId: 1000,
+      end: 'season',
+      startDate: '2026-09-28',
+      repeat: { mode: 'weekly', weekdays: [1] },
+      perSession: 1,
+      groupId: 'g1',
+    });
+    expect(drafts.map((d) => d.date)).toEqual(['2026-09-28', '2026-10-05']);
+  });
+
+  it('gilt erst als erledigt, wenn der Zähler das Ziel erreicht', () => {
+    const series = mkSeries([[true]]);
+    const byId = new Map([[7, series]]);
+    const e = entry({ seasonNumber: 1, episodeNumber: 1, episodeId: 1000, watchTarget: 2 });
+    expect(resolveWatchPlanEntry(e, byId, new Map()).done).toBe(false);
+    (series.seasons[0].episodes[0] as { watchCount?: number }).watchCount = 2;
+    expect(resolveWatchPlanEntry(e, byId, new Map()).done).toBe(true);
+  });
+
+  it('speichert Ziel und Reihe kompakt', () => {
+    const stored = compactWatchPlanDraft(
+      {
+        kind: 'series',
+        itemId: 7,
+        title: 'Serie',
+        date: '2026-09-28',
+        seasonNumber: 1,
+        episodeNumber: 1,
+        episodeId: 1000,
+        watchTarget: 3,
+        groupId: 'g1',
+        repeat: { mode: 'weekly', weekdays: [1] },
+      },
+      1
+    );
+    expect(stored).toMatchObject({ w: 3, g: 'g1', gr: 'w1' });
+    expect(expandWatchPlanEntry('k', stored)).toMatchObject({
+      watchTarget: 3,
+      groupId: 'g1',
+      repeat: { mode: 'weekly', weekdays: [1] },
+    });
+  });
+});
+
+describe('Reihe anpassen', () => {
+  it('schiebt bei Ausfall jede Sitzung auf die nächste', () => {
+    const list = [
+      entry({ key: 'a', date: '2026-09-28' }),
+      entry({ key: 'b', date: '2026-09-28' }),
+      entry({ key: 'c', date: '2026-10-05' }),
+    ];
+    const moved = shiftPlanGroup(list, { mode: 'weekly', weekdays: [1] });
+    expect(Object.fromEntries(moved)).toEqual({
+      a: '2026-10-05',
+      b: '2026-10-05',
+      c: '2026-10-12',
+    });
+    expect(nextRepeatDate('2026-09-28', { mode: 'interval', days: 3 })).toBe('2026-10-01');
+  });
+
+  it('verteilt ab der neuen Folge neu und streicht Überzählige', () => {
+    const series = mkSeries([[false, false, false]]);
+    const list = [entry({ key: 'a' }), entry({ key: 'b' }), entry({ key: 'c' })];
+    const { assigned, removed } = renumberPlanGroup(series, list, 1001);
+    expect(assigned.map((a) => a.ref.episodeNumber)).toEqual([2, 3]);
+    expect(removed.map((e) => e.key)).toEqual(['c']);
   });
 });

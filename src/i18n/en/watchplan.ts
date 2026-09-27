@@ -102,6 +102,42 @@ const dict: Record<string, string> = {
   'Neu: Dein eigener Schau-Plan': 'New: Your own watch plan',
   'Im Kalender gibt es jetzt „Mein Plan": Trag ein, wann du welche Folge oder welchen Film schauen willst, lass dich per Push daran erinnern und lade Freunde dazu ein — wer annimmt, hat den Termin auch in seinem Plan. Alle Details in den Patch Notes.':
     'The calendar now has “My plan”: note down when you want to watch which episode or movie, get a push reminder, and invite friends — whoever accepts has it in their plan too. All details in the patch notes.',
+  '{n}× gesehen': 'watched {n}×',
+  Täglich: 'Daily',
+  'Alle {n} Tage': 'Every {n} days',
+  'Jeden {days}': 'Every {days}',
+  Weniger: 'Less',
+  Mehr: 'More',
+  '{n} Folgen eingeplant': '{n} episodes planned',
+  '{n} Termine entfernt': '{n} entries removed',
+  Serientermin: 'Recurring session',
+  'Regelmäßig weiterschauen, ab der gewählten Folge':
+    'Keep watching on a schedule, starting with the chosen episode',
+  Rhythmus: 'Rhythm',
+  Wochentage: 'Weekdays',
+  'Alle X Tage': 'Every X days',
+  'Abstand in Tagen': 'Interval in days',
+  'Folgen pro Termin': 'Episodes per session',
+  Bis: 'Until',
+  'Bis Staffelende': 'Until season end',
+  'Bis Serienende': 'Until series end',
+  '{n} Folgen an {m} Terminen': '{n} episodes in {m} sessions',
+  'bis {date}': 'until {date}',
+  'Eingeplant werden die nächsten {n} Folgen.': 'The next {n} episodes will be planned.',
+  'Schon gesehene Folgen zählen beim Abhaken als Rewatch.':
+    'Episodes you’ve already seen count as a rewatch when you check them off.',
+  'Ab dieser Folge ist noch nichts erschienen.': 'Nothing has aired yet from this episode on.',
+  'Folge {i} von {n} in dieser Reihe': 'Episode {i} of {n} in this series of sessions',
+  'Nochmal gesehen': 'Watched again',
+  'Diesen und alle folgenden löschen ({n})': 'Delete this and all following ({n})',
+  '{n} Folgen eintragen': 'Add {n} episodes',
+  'Rewatch · {n}. Mal': 'Rewatch · time #{n}',
+  'Folgende Termine angepasst': 'Following sessions updated',
+  'Termin fällt aus, der Rest rückt nach': 'Session skipped, the rest moves back',
+  'Änderst du die Folge, ziehen die späteren Termine mit.':
+    'Change the episode and later sessions follow along.',
+  'Termin fällt aus – Rest verschieben': 'Skip session – move the rest',
+  'Als {n}. Mal gesehen markieren': 'Mark as watched (time #{n})',
 };
 
 export default dict;

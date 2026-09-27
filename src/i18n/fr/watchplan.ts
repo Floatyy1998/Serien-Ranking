@@ -103,6 +103,42 @@ const dict: Record<string, string> = {
   'Neu: Dein eigener Schau-Plan': 'Nouveau : ton propre planning',
   'Im Kalender gibt es jetzt „Mein Plan": Trag ein, wann du welche Folge oder welchen Film schauen willst, lass dich per Push daran erinnern und lade Freunde dazu ein — wer annimmt, hat den Termin auch in seinem Plan. Alle Details in den Patch Notes.':
     'Le calendrier a maintenant « Mon planning » : note quand tu veux regarder quel épisode ou quel film, reçois un rappel en push et invite des amis — ceux qui acceptent l’ont aussi dans leur planning. Tous les détails dans les notes de version.',
+  '{n}× gesehen': 'vu {n}×',
+  Täglich: 'Tous les jours',
+  'Alle {n} Tage': 'Tous les {n} jours',
+  'Jeden {days}': 'Chaque {days}',
+  Weniger: 'Moins',
+  Mehr: 'Plus',
+  '{n} Folgen eingeplant': '{n} épisodes planifiés',
+  '{n} Termine entfernt': '{n} rendez-vous supprimés',
+  Serientermin: 'Séance récurrente',
+  'Regelmäßig weiterschauen, ab der gewählten Folge':
+    'Continue régulièrement à partir de l’épisode choisi',
+  Rhythmus: 'Rythme',
+  Wochentage: 'Jours de la semaine',
+  'Alle X Tage': 'Tous les X jours',
+  'Abstand in Tagen': 'Intervalle en jours',
+  'Folgen pro Termin': 'Épisodes par séance',
+  Bis: 'Jusqu’à',
+  'Bis Staffelende': 'Jusqu’à la fin de la saison',
+  'Bis Serienende': 'Jusqu’à la fin de la série',
+  '{n} Folgen an {m} Terminen': '{n} épisodes en {m} séances',
+  'bis {date}': 'jusqu’au {date}',
+  'Eingeplant werden die nächsten {n} Folgen.': 'Les {n} prochains épisodes seront planifiés.',
+  'Schon gesehene Folgen zählen beim Abhaken als Rewatch.':
+    'Les épisodes déjà vus comptent comme un revisionnage quand tu les coches.',
+  'Ab dieser Folge ist noch nichts erschienen.': 'Rien n’est encore sorti à partir de cet épisode.',
+  'Folge {i} von {n} in dieser Reihe': 'Épisode {i} sur {n} de cette série de séances',
+  'Nochmal gesehen': 'Revu',
+  'Diesen und alle folgenden löschen ({n})': 'Supprimer celle-ci et toutes les suivantes ({n})',
+  '{n} Folgen eintragen': 'Ajouter {n} épisodes',
+  'Rewatch · {n}. Mal': 'Revisionnage · {n}e fois',
+  'Folgende Termine angepasst': 'Séances suivantes ajustées',
+  'Termin fällt aus, der Rest rückt nach': 'Séance annulée, la suite est décalée',
+  'Änderst du die Folge, ziehen die späteren Termine mit.':
+    'Si tu changes d’épisode, les séances suivantes suivent.',
+  'Termin fällt aus – Rest verschieben': 'Annuler la séance – décaler la suite',
+  'Als {n}. Mal gesehen markieren': 'Marquer comme vu ({n}e fois)',
 };
 
 export default dict;

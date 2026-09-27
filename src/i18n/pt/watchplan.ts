@@ -102,6 +102,42 @@ const dict: Record<string, string> = {
   'Neu: Dein eigener Schau-Plan': 'Novidade: seu próprio plano',
   'Im Kalender gibt es jetzt „Mein Plan": Trag ein, wann du welche Folge oder welchen Film schauen willst, lass dich per Push daran erinnern und lade Freunde dazu ein — wer annimmt, hat den Termin auch in seinem Plan. Alle Details in den Patch Notes.':
     'O calendário agora tem “Meu plano”: anote quando quer assistir cada episódio ou filme, receba um lembrete por push e convide amigos — quem aceitar também terá no plano. Todos os detalhes nas notas da versão.',
+  '{n}× gesehen': 'assistido {n}×',
+  Täglich: 'Diariamente',
+  'Alle {n} Tage': 'A cada {n} dias',
+  'Jeden {days}': 'Toda {days}',
+  Weniger: 'Menos',
+  Mehr: 'Mais',
+  '{n} Folgen eingeplant': '{n} episódios planejados',
+  '{n} Termine entfernt': '{n} sessões removidas',
+  Serientermin: 'Sessão recorrente',
+  'Regelmäßig weiterschauen, ab der gewählten Folge':
+    'Continue assistindo regularmente a partir do episódio escolhido',
+  Rhythmus: 'Ritmo',
+  Wochentage: 'Dias da semana',
+  'Alle X Tage': 'A cada X dias',
+  'Abstand in Tagen': 'Intervalo em dias',
+  'Folgen pro Termin': 'Episódios por sessão',
+  Bis: 'Até',
+  'Bis Staffelende': 'Até o fim da temporada',
+  'Bis Serienende': 'Até o fim da série',
+  '{n} Folgen an {m} Terminen': '{n} episódios em {m} sessões',
+  'bis {date}': 'até {date}',
+  'Eingeplant werden die nächsten {n} Folgen.': 'Os próximos {n} episódios serão planejados.',
+  'Schon gesehene Folgen zählen beim Abhaken als Rewatch.':
+    'Episódios já vistos contam como reassistidos ao marcar.',
+  'Ab dieser Folge ist noch nichts erschienen.': 'A partir deste episódio ainda nada foi lançado.',
+  'Folge {i} von {n} in dieser Reihe': 'Episódio {i} de {n} nesta série de sessões',
+  'Nochmal gesehen': 'Assistido de novo',
+  'Diesen und alle folgenden löschen ({n})': 'Excluir esta e todas as seguintes ({n})',
+  '{n} Folgen eintragen': 'Adicionar {n} episódios',
+  'Rewatch · {n}. Mal': 'Reassistindo · {n}ª vez',
+  'Folgende Termine angepasst': 'Sessões seguintes ajustadas',
+  'Termin fällt aus, der Rest rückt nach': 'Sessão cancelada, o resto foi adiado',
+  'Änderst du die Folge, ziehen die späteren Termine mit.':
+    'Se você mudar o episódio, as sessões seguintes acompanham.',
+  'Termin fällt aus – Rest verschieben': 'Pular sessão – adiar o resto',
+  'Als {n}. Mal gesehen markieren': 'Marcar como assistido ({n}ª vez)',
 };
 
 export default dict;

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import type { Series } from '../../types/Series';
 import {
   BookmarkAdd,
   Delete as DeleteIcon,
@@ -49,6 +50,11 @@ import { TrophyHistory } from '../Leaderboard/TrophyHistory';
 import type { LeaderboardEntry, MonthlyTrophy } from '../../types/Leaderboard';
 import '../Leaderboard/LeaderboardPage.css';
 import { useTheme } from '../../contexts/ThemeContext';
+import { SeriesListContext, useSeriesList } from '../../contexts/SeriesListContext';
+import { MovieListContext } from '../../contexts/MovieListContext';
+import { WatchPlanSheet } from '../Calendar/WatchPlanSheet';
+import '../Calendar/WatchPlan.css';
+import type { WatchPlanEntry } from '../../lib/watch/watchPlan';
 import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
@@ -1158,3 +1164,76 @@ export const FriendInsightsPreview = () => {
     </div>
   );
 };
+
+/* Eigener Plan: Serientermin + Rewatch */
+
+const planPreviewSeries = {
+  id: 1399,
+  nmr: 1399,
+  title: 'Nachtschicht',
+  poster: { poster: PLACEHOLDER_SVG },
+  seasons: [0, 1, 2].map((s) => ({
+    seasonNumber: s,
+    episodes: Array.from({ length: 10 }, (_, e) => ({
+      id: 5000 + s * 100 + e,
+      episode_number: e + 1,
+      name: `Folge ${e + 1}`,
+      air_date: '2024-01-01',
+      watched: s < 2,
+      watchCount: s === 0 && e < 3 ? 2 : s < 2 ? 1 : 0,
+    })),
+  })),
+} as unknown as Series;
+
+const PlanPreviewLists = ({ children }: { children: React.ReactNode }) => {
+  const base = useSeriesList();
+  return (
+    <SeriesListContext.Provider
+      value={{ ...base, seriesList: [planPreviewSeries], allSeriesList: [planPreviewSeries] }}
+    >
+      <MovieListContext.Provider
+        value={{
+          movieList: [],
+          loading: false,
+          refetchMovies: () => {},
+          isOffline: false,
+          isStale: false,
+        }}
+      >
+        {children}
+      </MovieListContext.Provider>
+    </SeriesListContext.Provider>
+  );
+};
+
+const planGroupEntries: WatchPlanEntry[] = [0, 1, 2, 3].map((i) => ({
+  key: `g${i}`,
+  kind: 'series',
+  itemId: 1399,
+  title: 'Nachtschicht',
+  date: `2026-10-0${1 + i}`,
+  time: '20:00',
+  seasonNumber: 1,
+  episodeNumber: i + 1,
+  episodeId: 5000 + i,
+  watchTarget: 3,
+  groupId: 'grp',
+  repeat: { mode: 'weekly', weekdays: [1, 4] },
+  createdAt: i,
+}));
+
+export const WatchPlanNewPreview = () => (
+  <PlanPreviewLists>
+    <WatchPlanSheet state={{ open: true, mode: 'new', date: '2026-09-28' }} onClose={() => {}} />
+  </PlanPreviewLists>
+);
+
+export const WatchPlanGroupPreview = () => (
+  <PlanPreviewLists>
+    <WatchPlanSheet
+      state={{ open: true, mode: 'edit', entry: planGroupEntries[0] }}
+      onClose={() => {}}
+      entries={planGroupEntries}
+    />
+  </PlanPreviewLists>
+);

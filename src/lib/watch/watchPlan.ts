@@ -4,6 +4,7 @@ import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { isMovieWatched } from '../rating/rating';
 import { isEpisodeWatched, normalizeEpisodes, normalizeSeasons } from '../episode/seriesMetrics';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export type WatchPlanKind = 'series' | 'movie';
 
@@ -27,6 +28,11 @@ export interface StoredWatchPlanEntry {
   rs?: number;
   /** Gemeinsamer Termin: Host-UID, Host-Schlüssel, Host-Name. */
   v?: { f: string; k: string; n?: string };
+  /** Ziel-Sichtungszahl der Folge: abgehakt, sobald watchCount sie erreicht (Rewatch). */
+  w?: number;
+  /** Serientermin: Reihen-Id und Rhythmus ("w1,4" = Wochentage, "d2" = alle 2 Tage). */
+  g?: string;
+  gr?: string;
 }
 
 export interface PlanVia {
@@ -53,8 +59,14 @@ export interface WatchPlanEntry {
   remindSentAt?: number;
   /** Gesetzt, wenn der Eintrag eine angenommene Einladung ist. */
   via?: PlanVia;
+  watchTarget?: number;
+  groupId?: string;
+  repeat?: PlanRepeat;
   createdAt: number;
 }
+
+export type PlanRepeat =
+  { mode: 'weekly'; weekdays: number[] } | { mode: 'interval'; days: number };
 
 export type WatchPlanDraft = Omit<
   WatchPlanEntry,
@@ -123,6 +135,9 @@ export function expandWatchPlanEntry(key: string, raw: unknown): WatchPlanEntry 
             hostName: typeof r.v.n === 'string' ? r.v.n : undefined,
           }
         : undefined,
+    watchTarget: kind === 'series' ? positiveInt(r.w) : undefined,
+    groupId: typeof r.g === 'string' && r.g ? r.g : undefined,
+    repeat: typeof r.g === 'string' && r.g ? (parsePlanRepeat(r.gr) ?? undefined) : undefined,
     createdAt: typeof r.c === 'number' ? r.c : 0,
   };
 }
@@ -159,6 +174,11 @@ export function compactWatchPlanDraft(
   const note = draft.note?.trim().slice(0, WATCH_PLAN_NOTE_MAX);
   if (note) stored.n = note;
   if (draft.poster) stored.p = draft.poster.slice(0, 300);
+  if (stored.x && draft.watchTarget && draft.watchTarget > 0) stored.w = draft.watchTarget;
+  if (draft.groupId) {
+    stored.g = draft.groupId;
+    if (draft.repeat) stored.gr = encodePlanRepeat(draft.repeat);
+  }
   if (draft.via) {
     stored.v = { f: draft.via.hostUid, k: draft.via.hostKey };
     if (draft.via.hostName) stored.v.n = draft.via.hostName.slice(0, 100);
@@ -265,7 +285,152 @@ export function resolveWatchPlanEntry(
   }
   const series = seriesById.get(entry.itemId);
   const episode = series ? resolvePlanEpisode(series, entry) : null;
-  return { entry, series, episode, done: episode ? isEpisodeWatched(episode.episode) : false };
+  const done = episode
+    ? entry.watchTarget
+      ? episodeWatchCount(episode.episode) >= entry.watchTarget
+      : isEpisodeWatched(episode.episode)
+    : false;
+  return { entry, series, episode, done };
+}
+
+/** Wie oft eine Folge gesehen wurde; Alt-Zeilen ohne Zähler zählen als 1. */
+export function episodeWatchCount(episode: SeriesEpisode): number {
+  const count = typeof episode.watchCount === 'number' ? episode.watchCount : 0;
+  if (count > 0) return count;
+  return isEpisodeWatched(episode) ? 1 : 0;
+}
+
+/* ── Serientermin ───────────────────────────────────────────────────── */
+
+export const SCHEDULE_MAX_ENTRIES = 150;
+export const SCHEDULE_MAX_PER_SESSION = 5;
+export const SCHEDULE_MAX_INTERVAL = 14;
+
+export function encodePlanRepeat(repeat: PlanRepeat): string {
+  return repeat.mode === 'weekly'
+    ? `w${[...new Set(repeat.weekdays)].sort((a, b) => a - b).join(',')}`
+    : `d${repeat.days}`;
+}
+
+export function parsePlanRepeat(raw: unknown): PlanRepeat | null {
+  if (typeof raw !== 'string') return null;
+  if (raw.startsWith('d')) {
+    const days = Number(raw.slice(1));
+    return Number.isInteger(days) && days >= 1 && days <= SCHEDULE_MAX_INTERVAL
+      ? { mode: 'interval', days }
+      : null;
+  }
+  if (raw.startsWith('w')) {
+    const weekdays = raw
+      .slice(1)
+      .split(',')
+      .map(Number)
+      .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
+    return weekdays.length ? { mode: 'weekly', weekdays: [...new Set(weekdays)] } : null;
+  }
+  return null;
+}
+
+const dateKeyOf = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Die ersten `count` Termine ab `start` (inklusive, falls er passt). */
+export function planRepeatDates(start: string, repeat: PlanRepeat, count: number): string[] {
+  if (!isValidPlanDate(start) || count <= 0) return [];
+  const [y, m, d] = start.split('-').map(Number);
+  const out: string[] = [];
+  if (repeat.mode === 'interval') {
+    const step = Math.max(1, Math.min(SCHEDULE_MAX_INTERVAL, Math.floor(repeat.days)));
+    for (let i = 0; out.length < count; i++) out.push(dateKeyOf(new Date(y, m - 1, d + i * step)));
+    return out;
+  }
+  const days = new Set(repeat.weekdays.filter((w) => w >= 0 && w <= 6));
+  if (!days.size) return [];
+  for (let i = 0; out.length < count; i++) {
+    const date = new Date(y, m - 1, d + i);
+    if (days.has(date.getDay())) out.push(dateKeyOf(date));
+  }
+  return out;
+}
+
+export type ScheduleEnd = 'season' | 'series';
+
+/** Folgen ab der Startfolge in Reihenfolge; nur ausgestrahlte, optional nur bis Staffelende. */
+export function scheduleEpisodes(
+  series: Series,
+  startEpisodeId: number,
+  end: ScheduleEnd
+): PlanEpisodeRef[] {
+  const out: PlanEpisodeRef[] = [];
+  let started = false;
+  for (const season of planSeasons(series)) {
+    for (const ref of season.episodes) {
+      if (!started && ref.episode.id === startEpisodeId) started = true;
+      if (!started) continue;
+      if (!hasEpisodeAired(ref.episode)) return out;
+      out.push(ref);
+    }
+    if (started && end === 'season') return out;
+  }
+  return out;
+}
+
+export interface PlanScheduleInput {
+  series: Series;
+  title: string;
+  poster?: string;
+  startEpisodeId: number;
+  end: ScheduleEnd;
+  startDate: string;
+  time?: string;
+  repeat: PlanRepeat;
+  perSession: number;
+  note?: string;
+  remindOffset?: number;
+  groupId: string;
+}
+
+export interface PlanSchedule {
+  drafts: WatchPlanDraft[];
+  /** Folgen, die wegen SCHEDULE_MAX_ENTRIES nicht mehr eingeplant wurden. */
+  cut: number;
+}
+
+/** Ein Eintrag je Folge; Erinnerung nur beim ersten Eintrag eines Termins. */
+export function buildPlanSchedule(input: PlanScheduleInput): PlanSchedule {
+  const all = scheduleEpisodes(input.series, input.startEpisodeId, input.end);
+  const episodes = all.slice(0, SCHEDULE_MAX_ENTRIES);
+  const perSession = Math.max(1, Math.min(SCHEDULE_MAX_PER_SESSION, Math.floor(input.perSession)));
+  const dates = planRepeatDates(
+    input.startDate,
+    input.repeat,
+    Math.ceil(episodes.length / perSession)
+  );
+  const drafts = episodes.map((ref, i): WatchPlanDraft => {
+    const first = i % perSession === 0;
+    return {
+      kind: 'series',
+      itemId: input.series.id,
+      title: input.title,
+      date: dates[Math.floor(i / perSession)],
+      time: input.time,
+      seasonNumber: ref.seasonNumber,
+      episodeNumber: ref.episodeNumber,
+      episodeId: ref.episode.id,
+      note: input.note,
+      poster: input.poster,
+      remindOffset: first && input.time ? input.remindOffset : undefined,
+      watchTarget: episodeWatchCount(ref.episode) + 1,
+      groupId: input.groupId,
+      repeat: input.repeat,
+    };
+  });
+  return { drafts, cut: all.length - episodes.length };
+}
+
+/** Einträge einer Reihe in Terminreihenfolge. */
+export function planGroupEntries(entries: WatchPlanEntry[], groupId: string): WatchPlanEntry[] {
+  return entries.filter((e) => e.groupId === groupId).sort(compareWatchPlanEntries);
 }
 
 /** Die sieben Datums-Keys (YYYY-MM-DD, lokal) ab Montag. */
@@ -423,4 +588,56 @@ export function expandPlanGuests(raw: unknown): Map<string, Record<string, PlanG
     if (Object.keys(clean).length) out.set(key, clean);
   }
   return out;
+}
+
+const addDays = (date: string, days: number) => {
+  const [y, m, d] = date.split('-').map(Number);
+  return dateKeyOf(new Date(y, m - 1, d + days));
+};
+
+/** Nächster Termin im Rhythmus nach `date`; ohne Rhythmus eine Woche später. */
+export function nextRepeatDate(date: string, repeat?: PlanRepeat): string {
+  if (!repeat) return addDays(date, 7);
+  if (repeat.mode === 'interval') return addDays(date, repeat.days);
+  return planRepeatDates(addDays(date, 1), repeat, 1)[0] ?? addDays(date, 7);
+}
+
+/** Termin fällt aus: jede Sitzung ab `from` rückt auf den Tag der nächsten, die letzte auf den nächsten Rhythmus-Tag. */
+export function shiftPlanGroup(
+  following: WatchPlanEntry[],
+  repeat?: PlanRepeat
+): Map<string, string> {
+  const sessions = [...new Set(following.map((e) => e.date))].sort();
+  const moved = new Map<string, string>();
+  sessions.forEach((date, i) => {
+    moved.set(date, sessions[i + 1] ?? nextRepeatDate(date, repeat));
+  });
+  const out = new Map<string, string>();
+  for (const entry of following) out.set(entry.key, moved.get(entry.date) ?? entry.date);
+  return out;
+}
+
+/** Folge geändert: ab der neuen Folge fortlaufend neu verteilen; überzählige Termine fallen weg. */
+export function renumberPlanGroup(
+  series: Series,
+  following: WatchPlanEntry[],
+  startEpisodeId: number
+): { assigned: { entry: WatchPlanEntry; ref: PlanEpisodeRef }[]; removed: WatchPlanEntry[] } {
+  const episodes = scheduleEpisodes(series, startEpisodeId, 'series');
+  const assigned = following
+    .slice(0, episodes.length)
+    .map((entry, i) => ({ entry, ref: episodes[i] }));
+  return { assigned, removed: following.slice(episodes.length) };
+}
+
+/** Eintrag mit neuer Folge; Rewatch-Ziel neu aus dem aktuellen Zähler. */
+export function withPlanEpisode(entry: WatchPlanEntry, ref: PlanEpisodeRef): WatchPlanEntry {
+  if (entry.episodeId === ref.episode.id) return entry;
+  return {
+    ...entry,
+    seasonNumber: ref.seasonNumber,
+    episodeNumber: ref.episodeNumber,
+    episodeId: ref.episode.id,
+    watchTarget: episodeWatchCount(ref.episode) + 1,
+  };
 }

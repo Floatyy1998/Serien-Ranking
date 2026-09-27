@@ -10,13 +10,14 @@ import { paths, updateWithSeriesVersion } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { markMovieWatched } from '../../services/rating/quickRating';
 
-/** Hakt Folge bzw. Film eines Plan-Eintrags ab; ohne bestimmte Folge die nächste ungesehene. */
+/** Hakt Folge bzw. Film eines Plan-Eintrags ab; ohne bestimmte Folge die nächste ungesehene. `again` zählt eine gesehene Folge erneut. */
 export async function markPlanEntryWatched(
   uid: string,
-  item: ResolvedWatchPlanEntry
+  item: ResolvedWatchPlanEntry,
+  again = false
 ): Promise<boolean> {
   const { entry, series, movie, done } = item;
-  if (done) return false;
+  if (done && !(again && entry.kind === 'series' && entry.episodeNumber)) return false;
 
   if (entry.kind === 'movie') {
     if (!movie) {

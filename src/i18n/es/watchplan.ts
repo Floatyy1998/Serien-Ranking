@@ -102,6 +102,43 @@ const dict: Record<string, string> = {
   'Neu: Dein eigener Schau-Plan': 'Novedad: tu propio plan',
   'Im Kalender gibt es jetzt „Mein Plan": Trag ein, wann du welche Folge oder welchen Film schauen willst, lass dich per Push daran erinnern und lade Freunde dazu ein — wer annimmt, hat den Termin auch in seinem Plan. Alle Details in den Patch Notes.':
     'El calendario tiene ahora «Mi plan»: apunta cuándo quieres ver cada episodio o película, recibe un recordatorio push e invita a amigos; quien acepte lo tendrá también en su plan. Todos los detalles en las notas de la versión.',
+  '{n}× gesehen': 'visto {n}×',
+  Täglich: 'A diario',
+  'Alle {n} Tage': 'Cada {n} días',
+  'Jeden {days}': 'Cada {days}',
+  Weniger: 'Menos',
+  Mehr: 'Más',
+  '{n} Folgen eingeplant': '{n} episodios planificados',
+  '{n} Termine entfernt': '{n} citas eliminadas',
+  Serientermin: 'Sesión periódica',
+  'Regelmäßig weiterschauen, ab der gewählten Folge':
+    'Sigue viendo con regularidad a partir del episodio elegido',
+  Rhythmus: 'Ritmo',
+  Wochentage: 'Días de la semana',
+  'Alle X Tage': 'Cada X días',
+  'Abstand in Tagen': 'Intervalo en días',
+  'Folgen pro Termin': 'Episodios por sesión',
+  Bis: 'Hasta',
+  'Bis Staffelende': 'Hasta fin de temporada',
+  'Bis Serienende': 'Hasta el final de la serie',
+  '{n} Folgen an {m} Terminen': '{n} episodios en {m} sesiones',
+  'bis {date}': 'hasta el {date}',
+  'Eingeplant werden die nächsten {n} Folgen.': 'Se planificarán los próximos {n} episodios.',
+  'Schon gesehene Folgen zählen beim Abhaken als Rewatch.':
+    'Los episodios ya vistos cuentan como revisionado al marcarlos.',
+  'Ab dieser Folge ist noch nichts erschienen.':
+    'A partir de este episodio aún no se ha emitido nada.',
+  'Folge {i} von {n} in dieser Reihe': 'Episodio {i} de {n} en esta serie de sesiones',
+  'Nochmal gesehen': 'Visto otra vez',
+  'Diesen und alle folgenden löschen ({n})': 'Eliminar esta y todas las siguientes ({n})',
+  '{n} Folgen eintragen': 'Añadir {n} episodios',
+  'Rewatch · {n}. Mal': 'Revisionado · vez n.º {n}',
+  'Folgende Termine angepasst': 'Sesiones siguientes ajustadas',
+  'Termin fällt aus, der Rest rückt nach': 'Sesión cancelada, el resto se aplaza',
+  'Änderst du die Folge, ziehen die späteren Termine mit.':
+    'Si cambias el episodio, las sesiones posteriores se ajustan.',
+  'Termin fällt aus – Rest verschieben': 'Saltar sesión – aplazar el resto',
+  'Als {n}. Mal gesehen markieren': 'Marcar como vista (vez n.º {n})',
 };
 
 export default dict;
