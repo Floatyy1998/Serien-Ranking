@@ -894,10 +894,6 @@
     padding: 14px;
   }
 
-  .fp-watching-poster {
-    width: 92px;
-  }
-
   .fp-watching-body {
     gap: 4px;
   }
@@ -916,7 +912,7 @@
   }
 
   .fp-pet-sprite {
-    width: 92px;
+    width: 120px;
   }
 
   .fp-pet-stats {
@@ -999,9 +995,5 @@
 
   .fp-anticipation-item {
     padding: 8px;
-  }
-
-  .fp-anticipation-poster {
-    width: 44px;
   }
 }
