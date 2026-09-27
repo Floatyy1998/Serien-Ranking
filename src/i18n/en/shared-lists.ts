@@ -1,4 +1,4 @@
-/** Geteilte Listen (Teilen-Sheet, /list/:id) — Deutsch → Englisch. */
+/** Eigene Listen: Teilen-Sheet, /list/:id und Long-Press-Aktionen — Deutsch → Englisch. */
 
 const dict: Record<string, string> = {
   'Liste teilen': 'Share list',
@@ -20,6 +20,11 @@ const dict: Record<string, string> = {
     'This list no longer exists or is no longer shared.',
   'Folgen abhaken, bewerten, eigene Listen anlegen': 'Track episodes, rate, build your own lists',
   'Starte mit dieser Liste bei TV-RANK — kostenlos.': 'Start on TV-RANK with this list — for free.',
+  'Zu meinen Filmen hinzufügen': 'Add to my movies',
+  'Zu meinen Serien hinzufügen': 'Add to my shows',
+  'Wird hinzugefügt …': 'Adding …',
+  'Der Film wird dabei zu deinen Filmen hinzugefügt.': 'The movie will be added to your movies.',
+  'Die Serie wird dabei zu deinen Serien hinzugefügt.': 'The show will be added to your shows.',
 };
 
 export default dict;

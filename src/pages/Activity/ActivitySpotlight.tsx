@@ -11,7 +11,7 @@ import TvRounded from '@mui/icons-material/TvRounded';
 import { motion } from 'framer-motion';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
-import { getActivityMeta, type ActivityTheme } from './activityMeta';
+import { activityMediaTargetProps, getActivityMeta, type ActivityTheme } from './activityMeta';
 import type { FriendActivity } from '../../types/Friend';
 
 interface ActivitySpotlightProps {
@@ -60,6 +60,7 @@ export const ActivitySpotlight = ({
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
       whileTap={{ opacity: 0.7 }}
       onClick={onClick}
+      {...activityMediaTargetProps(activity, itemTitle, posterUrl)}
       style={{
         background: theme.background.surface,
         border: `1px solid ${theme.primary}3a`,

@@ -21,6 +21,7 @@ import {
 import { parsePremiereDate, isSameDay, datePillText } from '../SerienKalender/tvPremiereFormat';
 import type { FilmReleaseEntry } from './filmReleaseData';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 /** Provider-Logo-Strip (MiniProviderBadges-Look): Deep-Link, stopPropagation. */
 function ProviderLogos({
@@ -168,6 +169,7 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
       role="button"
       tabIndex={0}
       aria-label={title}
+      {...mediaTargetProps({ type: 'movie', id: entry.tmdbId, title, poster: entry.poster })}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

@@ -30,6 +30,7 @@ import {
 } from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface SerienKalenderHeroProps {
   entry: TvPremiereStaticEntry;
@@ -139,6 +140,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
       role="button"
       tabIndex={0}
       aria-label={title}
+      {...mediaTargetProps({ type: 'series', id: entry.tmdbId, title, poster: cover })}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

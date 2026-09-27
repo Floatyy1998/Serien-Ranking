@@ -12,6 +12,7 @@ import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/us
 import type { ItemCardProps } from './discoverItemHelpers';
 import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import { tapScale } from '../../lib/motion';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
@@ -58,6 +59,12 @@ export const ItemCard = memo(
           alt={item.title || item.name || ''}
           ariaLabel={item.title || item.name}
           onClick={handlePosterClick}
+          dataAttrs={mediaTargetProps({
+            type: item.type,
+            id: item.id,
+            title: item.title || item.name,
+            poster: item.poster_path,
+          })}
           scrimColor={`${currentTheme.background.default}cc`}
           boxShadow={`0 6px 20px ${currentTheme.background.default}80`}
           style={{ marginBottom: '10px' }}

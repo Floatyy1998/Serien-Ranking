@@ -18,6 +18,7 @@ import {
   useTimelineSeries,
 } from '../helpers/serienTabHelpers';
 import { t } from '../../../services/i18n';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 interface SerienTabProps {
   data: WatchJourneyData;
@@ -204,6 +205,12 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               animate={{ opacity: 1, x: 0 }}
               whileTap={{ opacity: 0.7 }}
               transition={{ delay: Math.min(index * 0.03, 0.3) }}
+              {...mediaTargetProps({
+                type: 'series',
+                id: series.seriesId,
+                title: series.title,
+                poster: posters[series.seriesId],
+              })}
               onClick={() => navigate(`/series/${series.seriesId}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

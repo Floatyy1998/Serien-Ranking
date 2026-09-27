@@ -571,6 +571,7 @@ export const FriendProfilePage = memo(() => {
                   return (
                     <ProfileItemCard
                       key={item.id}
+                      mediaId={item.id}
                       title={item.title}
                       posterUrl={getImageUrl(item.poster)}
                       isMovie={isMovie}

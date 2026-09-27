@@ -108,6 +108,9 @@ interface SwipeableEpisodeRowProps {
   onSwipeEnd: () => void;
   onComplete: (direction: 'left' | 'right') => void;
 
+  /** Long-Press-Ziel der Serie (mediaTargetProps), im Sortier-Modus ignoriert */
+  mediaTarget?: Record<string, string>;
+
   // Poster
   onPosterClick?: () => void;
   posterOverlay?: React.ReactNode;
@@ -158,6 +161,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     index,
     isEditMode = false,
     draggedIndex = null,
+    mediaTarget,
     currentTouchIndex = null,
     onDragStart,
     onDragOver,
@@ -291,6 +295,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
         className="cine-host"
         data-block-swipe
         data-index={index}
+        {...(!isEditMode ? mediaTarget : undefined)}
         layout={isEditMode || animateLayout ? true : undefined}
         initial={{ opacity: 0, y: 14 }}
         animate={{

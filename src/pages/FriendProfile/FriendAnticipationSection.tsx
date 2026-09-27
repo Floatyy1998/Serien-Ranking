@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendAnticipationItem } from './useFriendAnticipation';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 function formatCountdown(days: number, dateStr: string): string {
   if (days <= 0) return t('heute');
@@ -47,6 +48,12 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05 }}
             onClick={() => navigate(`/series/${item.seriesId}`)}
+            {...mediaTargetProps({
+              type: 'series',
+              id: item.seriesId,
+              title: item.title,
+              poster: item.poster,
+            })}
             className="fp-anticipation-item"
             style={{
               background: `linear-gradient(135deg, ${currentTheme.primary}10, transparent)`,

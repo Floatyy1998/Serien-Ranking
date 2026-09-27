@@ -22,6 +22,7 @@ import { CARD_PRESS, CARD_SPRING, cardSurface, chipStyle } from './cardStyles';
 import type { WatchedEpisode, WatchedMovie } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 export { SeriesAccordion } from './SeriesAccordion';
 
@@ -305,6 +306,12 @@ export const SingleEpisodeCard = memo<{
         role="button"
         tabIndex={0}
         aria-label={t('{title} öffnen', { title: episode.seriesName })}
+        {...mediaTargetProps({
+          type: 'series',
+          id: episode.seriesId,
+          title: episode.seriesName,
+          poster: episode.seriesPoster,
+        })}
         onClick={openSeries}
         onKeyDown={(e) => {
           if (e.target !== e.currentTarget) return;
@@ -445,6 +452,12 @@ export const MovieCard = memo<{
       role="button"
       tabIndex={0}
       aria-label={t('{title} öffnen', { title: movie.title })}
+      {...mediaTargetProps({
+        type: 'movie',
+        id: movie.movieId,
+        title: movie.title,
+        poster: movie.poster,
+      })}
       onClick={open}
       onKeyDown={(e) => {
         if (e.target !== e.currentTarget) return;

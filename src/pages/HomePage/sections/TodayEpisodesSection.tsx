@@ -20,6 +20,7 @@ import { useAnimeFillerCatalog } from '../../../hooks/manga/useAnimeFillerCatalo
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 import { t } from '../../../services/i18n';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 interface TodayEpisode {
   seriesId: string;
@@ -132,6 +133,12 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   poster={episode.poster}
                   backdrop={episode.backdrop}
                   posterAlt={episode.seriesTitle}
+                  mediaTarget={mediaTargetProps({
+                    type: 'series',
+                    id: episode.seriesId,
+                    title: episode.seriesTitle,
+                    poster: episode.poster,
+                  })}
                   accentColor={accentColor}
                   posterOverlay={(() => {
                     // Abo-Präferenz: läuft die Serie auch auf einem aktiven Abo,

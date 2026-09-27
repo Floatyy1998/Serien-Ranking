@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import type { SharedItem } from '../../../services/social/tasteMatchService';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from '../constants';
 import { t } from '../../../services/i18n';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 export const SharedItemCard: React.FC<{
   item: SharedItem;
@@ -25,6 +26,7 @@ export const SharedItemCard: React.FC<{
       onClick={() => {
         navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`);
       }}
+      {...mediaTargetProps({ type, id: item.id, title: item.title, poster: item.poster })}
       aria-label={
         type === 'series'
           ? t('{title} – Serie Details anzeigen', { title: item.title })

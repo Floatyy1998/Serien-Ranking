@@ -12,6 +12,8 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
 import type { SvgIconComponent } from '@mui/icons-material';
 import type { FriendActivity } from '../../types/Friend';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import { isPlaceholderUrl } from '../../utils/imageUrl';
 
 export interface ActivityTheme {
   primary: string;
@@ -50,6 +52,20 @@ const MOVIE_TYPES = new Set([
 
 export const isMovieActivity = (activity: FriendActivity): boolean =>
   MOVIE_TYPES.has(activity.type) || activity.itemType === 'movie';
+
+export const activityMediaTargetProps = (
+  activity: FriendActivity,
+  title: string,
+  posterUrl?: string
+): Record<string, string> =>
+  activity.redacted
+    ? {}
+    : mediaTargetProps({
+        type: isMovieActivity(activity) ? 'movie' : 'series',
+        id: activity.tmdbId || activity.itemId,
+        title,
+        poster: posterUrl && !isPlaceholderUrl(posterUrl) ? posterUrl : undefined,
+      });
 
 export const getActivityMeta = (activity: FriendActivity): ActivityMeta => {
   const isMovie = isMovieActivity(activity);

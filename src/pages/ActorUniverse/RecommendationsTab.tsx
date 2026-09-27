@@ -5,6 +5,7 @@ import { SkeletonPosterRow } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -113,6 +114,12 @@ export const RecommendationsTab = ({
               whileHover={{ scale: 1.01 }}
               whileTap={tapScaleSmall}
               onClick={() => navigate(`/series/${rec.series.id}`)}
+              {...mediaTargetProps({
+                type: 'series',
+                id: rec.series.id,
+                title: rec.series.title,
+                poster: rec.series.poster,
+              })}
               style={{
                 display: 'flex',
                 gap: '14px',

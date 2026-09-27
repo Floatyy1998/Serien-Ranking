@@ -209,6 +209,7 @@ export const PublicProfilePage: React.FC = () => {
                   return (
                     <ProfileItemCard
                       key={item.id}
+                      mediaId={item.id}
                       title={item.title}
                       posterUrl={getImageUrl(item.poster)}
                       isMovie={isMovie}

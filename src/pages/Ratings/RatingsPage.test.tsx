@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { PreparedItem } from './useRatingsData';
 import type React from 'react';
 
@@ -207,46 +207,5 @@ describe('RatingsPage', () => {
     fireEvent.contextMenu(screen.getByLabelText('Marvel'));
     fireEvent.click(screen.getByText('Liste löschen'));
     expect(folderMocks.deleteWithUndo).toHaveBeenCalledWith('me', folder, expect.any(Function));
-  });
-
-  it('long press on a movie card offers rating, mark watched and lists', async () => {
-    const movie = { ...sampleItem, id: 7, title: 'Iron Man', isMovie: true, rating: 0 };
-    dataRef.current.itemsToRender = [movie];
-    dataRef.current.currentItems = [movie];
-    dataRef.current.folders = [{ id: 'f1', name: 'Marvel', createdAt: 1, items: new Set() }];
-    render(<RatingsPage />);
-    const card = screen.getByText('Iron Man');
-
-    fireEvent.pointerDown(card, { button: 2 });
-    fireEvent.contextMenu(card);
-    fireEvent.click(screen.getByText('Bewerten'));
-    expect(rateMocks.open).toHaveBeenCalledWith(
-      { id: 7, type: 'movie', title: 'Iron Man', userRating: 0 },
-      false
-    );
-
-    fireEvent.pointerDown(card, { button: 2 });
-    fireEvent.contextMenu(card);
-    fireEvent.click(screen.getByText('Als gesehen markieren'));
-    await waitFor(() => expect(rateMocks.markWatched).toHaveBeenCalledWith('me', 7));
-    await waitFor(() => expect(rateMocks.open).toHaveBeenLastCalledWith(expect.anything(), true));
-
-    fireEvent.pointerDown(card, { button: 2 });
-    fireEvent.contextMenu(card);
-    fireEvent.click(screen.getByText('Zu Liste hinzufügen'));
-    expect(screen.getByText('Marvel')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Neue Liste'));
-    expect(screen.getByTestId('folder-sheet')).toBeInTheDocument();
-  });
-
-  it('series cards do not offer mark watched and rated ones say change rating', () => {
-    dataRef.current.itemsToRender = [sampleItem];
-    dataRef.current.currentItems = [sampleItem];
-    render(<RatingsPage />);
-    const card = screen.getByText('Dark');
-    fireEvent.pointerDown(card, { button: 2 });
-    fireEvent.contextMenu(card);
-    expect(screen.getByText('Bewertung ändern')).toBeInTheDocument();
-    expect(screen.queryByText('Als gesehen markieren')).toBeNull();
   });
 });

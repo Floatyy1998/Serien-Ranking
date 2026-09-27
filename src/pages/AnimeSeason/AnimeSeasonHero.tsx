@@ -42,6 +42,7 @@ import {
 import type { TmdbProviderInfo } from './resolveTmdbId';
 import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface AnimeSeasonHeroProps {
   anime: SeasonAnime;
@@ -54,6 +55,7 @@ interface AnimeSeasonHeroProps {
   /** TMDB-vote_average (10er-Skala) — solange fehlend: AniList-Fallback. */
   tmdbRating?: number | null;
   onOpen: () => void;
+  mediaTarget?: { type: 'series' | 'movie'; id: number } | null;
   /** „+"-Button oben rechts: direkt zur Liste adden (wenn nicht in Liste). */
   onAdd?: () => void;
   /** Add läuft gerade — Spinner im „+"-Button. */
@@ -118,6 +120,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
   tmdbProviders,
   tmdbRating,
   onOpen,
+  mediaTarget,
   onAdd,
   adding = false,
 }) => {
@@ -184,6 +187,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
       tabIndex={0}
       aria-label={title}
       aria-busy={resolving}
+      {...(mediaTarget ? mediaTargetProps({ ...mediaTarget, title, poster: cover }) : {})}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

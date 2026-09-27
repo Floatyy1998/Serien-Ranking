@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendCurrentlyWatching, WatchingMood } from './useFriendCurrentlyWatching';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const MOOD_META: Record<WatchingMood, { label: string; tint: string }> = {
   binge: { label: t('Binge-Modus'), tint: '#ff6b3d' },
@@ -45,6 +46,12 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate(`/series/${data.seriesId}`)}
+      {...mediaTargetProps({
+        type: 'series',
+        id: data.seriesId,
+        title: data.title,
+        poster: data.poster,
+      })}
       className="fp-watching-card"
       style={{
         background: `linear-gradient(135deg, ${mood.tint}18, ${currentTheme.primary}10)`,

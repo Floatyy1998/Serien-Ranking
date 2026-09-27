@@ -7,6 +7,7 @@ import type { Actor, ActorConnection } from '../../hooks/discover/useActorUniver
 import './ActorUniversePage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -116,6 +117,12 @@ export const ActorDetailModal = ({
                     onClose();
                     navigate(`/series/${series.id}`);
                   }}
+                  {...mediaTargetProps({
+                    type: 'series',
+                    id: series.id,
+                    title: series.title,
+                    poster: series.poster,
+                  })}
                   className="au-modal-series-item"
                   style={{
                     background: currentTheme.background.surface,
@@ -165,6 +172,12 @@ export const ActorDetailModal = ({
                         onClose();
                         navigate(`/series/${rec.id}`);
                       }}
+                      {...mediaTargetProps({
+                        type: 'series',
+                        id: rec.id,
+                        title: rec.title,
+                        poster: rec.poster,
+                      })}
                       className="au-modal-rec-item"
                     >
                       <div

@@ -5,6 +5,7 @@ import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { formatRatingShort } from '../../lib/rating/rating';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SearchResult } from './useSearchPage';
@@ -90,6 +91,12 @@ export const SearchResultCard = memo(
           <button
             type="button"
             className="search-result-poster-btn"
+            {...mediaTargetProps({
+              type: item.type,
+              id: item.id,
+              title: label,
+              poster: item.poster_path,
+            })}
             onClick={() => onItemClick(item)}
             aria-label={t('{type} „{title}" öffnen', { type: typeLabel, title: label })}
           >

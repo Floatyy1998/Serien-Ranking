@@ -14,7 +14,7 @@ import { NameBadges } from '../../components/ui/display/NameBadges';
 import type { FriendActivity } from '../../types/Friend';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
-import { getActivityMeta, type ActivityTheme } from './activityMeta';
+import { activityMediaTargetProps, getActivityMeta, type ActivityTheme } from './activityMeta';
 
 interface ActivityEntryCardProps {
   activity: FriendActivity;
@@ -72,6 +72,7 @@ export const ActivityEntryCard = React.memo(
           damping: 24,
         }}
         onClick={onClick}
+        {...activityMediaTargetProps(activity, itemTitle, posterUrl)}
         style={{
           display: 'flex',
           gap: '13px',

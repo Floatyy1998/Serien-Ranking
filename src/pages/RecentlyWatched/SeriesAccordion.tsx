@@ -8,6 +8,7 @@ import type { WatchedEpisode } from './EpisodeDataManager';
 import { EpisodeDiscussionIndicator } from './RecentlyWatchedComponents';
 import { CARD_PRESS, CARD_SPRING, cardSurface, chipStyle } from './cardStyles';
 import { tapScaleTight } from '../../lib/motion';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const SMALL_ICON_STYLE: React.CSSProperties = { fontSize: '18px' };
 const CHIP_ICON_STYLE: React.CSSProperties = { fontSize: '14px' };
@@ -81,6 +82,12 @@ export const SeriesAccordion = memo<{
             role="button"
             tabIndex={0}
             aria-label={t('{title} öffnen', { title: firstEpisode.seriesName })}
+            {...mediaTargetProps({
+              type: 'series',
+              id: firstEpisode.seriesId,
+              title: firstEpisode.seriesName,
+              poster: firstEpisode.seriesPoster,
+            })}
             onClick={(e) => {
               e.stopPropagation();
               onNavigateToSeries(firstEpisode.seriesId);

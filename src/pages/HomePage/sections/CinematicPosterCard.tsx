@@ -5,6 +5,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import { tapScale } from '../../../lib/motion';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 import { MiniProviderBadges } from './MiniProviderBadges';
 import type { MediaItem } from './mediaCarouselTypes';
 import { t } from '../../../services/i18n';
@@ -22,6 +23,12 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
 
   return (
     <motion.div
+      {...mediaTargetProps({
+        type: item.type,
+        id: item.id,
+        title: item.title,
+        poster: item.poster,
+      })}
       whileTap={tapScale}
       onClick={() => navigate(`/${item.type}/${item.id}`)}
       role="button"

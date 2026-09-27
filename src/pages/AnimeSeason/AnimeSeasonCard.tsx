@@ -45,6 +45,7 @@ import {
 import type { TmdbProviderInfo } from './resolveTmdbId';
 import type { SeasonAnime } from '../../services/api/anilistSeasonService';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 /**
  * Provider-Logo-Strip im MiniProviderBadges-Look (Logo + Radius 5px +
@@ -149,6 +150,7 @@ interface AnimeSeasonCardProps {
   genres?: string[];
   /** Karten-Tap: SeriesDetail (Match/Resolve übernimmt die Page). */
   onOpen: () => void;
+  mediaTarget?: { type: 'series' | 'movie'; id: number } | null;
   /** „+"-Button: direkt zur Liste adden (nur wenn nicht in der Liste). */
   onAdd?: () => void;
   /** Add läuft gerade — Spinner im „+"-Button, Klicks gesperrt. */
@@ -167,6 +169,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   tmdbRating,
   genres,
   onOpen,
+  mediaTarget,
   onAdd,
   adding = false,
   staggerIndex = 0,
@@ -253,6 +256,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
       tabIndex={0}
       aria-label={title}
       aria-busy={resolving}
+      {...(mediaTarget ? mediaTargetProps({ ...mediaTarget, title, poster: cover }) : {})}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

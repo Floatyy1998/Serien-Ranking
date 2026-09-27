@@ -5,6 +5,7 @@ import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface CountdownHeroCardProps {
   item: SeriesCountdown;
@@ -30,6 +31,12 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       whileTap={tapScaleSmall}
+      {...mediaTargetProps({
+        type: 'series',
+        id: item.seriesId,
+        title: item.title,
+        poster: item.posterUrl,
+      })}
       onClick={onClick}
       aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-hero"

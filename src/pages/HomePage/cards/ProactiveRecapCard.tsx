@@ -6,6 +6,7 @@ import { SpeakButton } from '../../../components/ui/input/SpeakButton';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTextToSpeech } from '../../../hooks/platform/useTextToSpeech';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 import type { ProactiveRecap } from '../../../hooks/watch/useProactiveRecaps';
 import { t } from '../../../services/i18n';
 
@@ -148,6 +149,12 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                 <img
                   src={current.posterUrl}
                   alt={current.seriesTitle}
+                  {...mediaTargetProps({
+                    type: 'series',
+                    id: current.seriesId,
+                    title: current.seriesTitle,
+                    poster: current.posterUrl,
+                  })}
                   onClick={() => navigate(`/series/${current.seriesId}`)}
                   style={{
                     width: isMobile ? '44px' : '50px',

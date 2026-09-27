@@ -20,6 +20,7 @@ import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { PLACEHOLDER_SVG, ProviderBadgeArea } from './RatingItemCard';
 import type { PreparedItem } from './useRatingsData';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface RatingCompactRowProps {
   item: PreparedItem;
@@ -66,6 +67,12 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
         data-id={item.id}
         data-movie={item.isMovie || undefined}
         data-poster={item.posterUrl || undefined}
+        {...mediaTargetProps({
+          type: item.isMovie ? 'movie' : 'series',
+          id: item.id,
+          title: item.title,
+          poster: item.posterUrl,
+        })}
       >
         {rank !== undefined && (
           <span className="ratings-row-rank" style={{ color: theme.text.muted }}>

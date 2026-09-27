@@ -2,7 +2,7 @@ import type { useAuth } from '../../contexts/AuthContext';
 import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
-import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders';
+import type { RatingFolder } from '../../lib/rating/ratingFolders';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -80,9 +80,6 @@ export interface UseRatingsDataResult {
 }
 
 // Helpers (pure functions, created once)
-export const itemFolderKey = (item: PreparedItem): string =>
-  folderItemKey(item.isMovie ? 'movie' : 'series', item.id);
-
 export const parseTab = (value: string | null): RatingsTab =>
   value === 'movies' || value === 'folders' ? value : 'series';
 

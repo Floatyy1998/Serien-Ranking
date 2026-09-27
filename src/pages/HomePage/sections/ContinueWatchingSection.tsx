@@ -25,6 +25,7 @@ import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 import { t } from '../../../services/i18n';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 // "Currently bingeing" window – 3 days. Covers casual binges that stretch
 // across a weekend or weekday-evening sessions, while still letting the
@@ -315,6 +316,12 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   poster={item.poster}
                   backdrop={item.backdrop}
                   posterAlt={item.title}
+                  mediaTarget={mediaTargetProps({
+                    type: 'series',
+                    id: item.id,
+                    title: item.title,
+                    poster: item.poster,
+                  })}
                   accentColor={cardAccent}
                   posterOverlay={(() => {
                     const isActivelyWatching = (() => {

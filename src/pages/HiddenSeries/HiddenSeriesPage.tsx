@@ -9,6 +9,7 @@ import { getImageUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
 import { tapScaleTight } from '../../lib/motion';
 import './HiddenSeriesPage.css';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 // Static inline styles hoisted out of render (no per-render allocation)
 const CONTENT_WRAPPER_STYLE: React.CSSProperties = { position: 'relative', zIndex: 1 };
@@ -171,6 +172,12 @@ export const HiddenSeriesPage: React.FC = () => {
                   className="hidden-series-card"
                   role="button"
                   tabIndex={0}
+                  {...mediaTargetProps({
+                    type: 'series',
+                    id: series.id,
+                    title: series.title,
+                    poster: series.poster?.poster,
+                  })}
                   aria-label={t('{title} öffnen', { title: series.title })}
                   layout
                   initial={{ opacity: 0, y: 20 }}

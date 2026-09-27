@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useMovieCollection } from '../../hooks/discover/useMovieCollection';
 import { useTransitionNavigate } from '../../hooks/ui/useTransitionNavigate';
 import { isMovieWatched } from '../../lib/rating/rating';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { t } from '../../services/i18n';
 
 interface CollectionSectionProps {
@@ -107,6 +108,14 @@ export const CollectionSection = memo(({ movieId, isMobile }: CollectionSectionP
               onClick={() => {
                 if (!isCurrent) navigate(`/movie/${part.id}`);
               }}
+              {...(isCurrent
+                ? {}
+                : mediaTargetProps({
+                    type: 'movie',
+                    id: part.id,
+                    title: part.title,
+                    poster: part.poster_path,
+                  }))}
               title={part.title}
               style={{
                 display: 'block',

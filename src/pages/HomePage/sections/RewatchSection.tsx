@@ -18,6 +18,7 @@ import {
 } from '../../../services/catalog/animeFillerService';
 import { useAnimeFillerCatalog } from '../../../hooks/manga/useAnimeFillerCatalog';
 import type { Series } from '../../../types/Series';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 interface RewatchEpisode {
   id: number;
@@ -132,6 +133,12 @@ export const RewatchSection = React.memo(function RewatchSection({
                   poster={item.poster}
                   backdrop={item.backdrop}
                   posterAlt={item.title}
+                  mediaTarget={mediaTargetProps({
+                    type: 'series',
+                    id: item.id,
+                    title: item.title,
+                    poster: item.poster,
+                  })}
                   accentColor={accentColor}
                   posterOverlay={(() => {
                     const preferred = pickPreferredProvider(

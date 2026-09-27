@@ -22,6 +22,8 @@ interface PosterFrameProps {
   /** Klasse/Style fürs <img> — für Karten, deren CSS das Bild über Klassen stylt. */
   imgClassName?: string;
   imgStyle?: React.CSSProperties;
+  /** Zusätzliche data-Attribute fürs Wurzel-Element (z. B. mediaTargetProps). */
+  dataAttrs?: Record<string, string>;
   /** Overlays (Badges, Buttons, Rang, Ring, Info-Panel) — card-spezifisch. */
   children?: React.ReactNode;
 }
@@ -50,6 +52,7 @@ export const PosterFrame: React.FC<PosterFrameProps> = ({
   style,
   imgClassName,
   imgStyle,
+  dataAttrs,
   children,
 }) => {
   const src = posterUrl ?? getImageUrl(posterPath ?? null, imageSize);
@@ -69,6 +72,7 @@ export const PosterFrame: React.FC<PosterFrameProps> = ({
 
   return (
     <div
+      {...dataAttrs}
       className={className}
       onClick={onClick}
       role={interactive ? 'button' : undefined}

@@ -7,6 +7,7 @@ import type { WatchlistGap } from '../../../hooks/provider/useSubscriptionsData'
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 import { getProviderBrand } from '../providerBrands';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 interface WatchlistGapsSectionProps {
   watchlistGaps: WatchlistGap[];
@@ -70,6 +71,12 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
                   borderColor: border,
                   color: currentTheme.text.primary,
                 }}
+                {...mediaTargetProps({
+                  type: 'series',
+                  id: series.id,
+                  title: gapTitle,
+                  poster: series.poster?.poster,
+                })}
                 onClick={() => navigate(`/series/${series.id}`)}
                 aria-label={t('{title} öffnen', { title: gapTitle })}
               >

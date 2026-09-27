@@ -9,6 +9,7 @@ import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { GradientRing } from './GradientRing';
 import { advanceCatchUpView, formatTimeString, type CatchUpSeries } from './useCatchUpData';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface SeriesCardProps {
   item: CatchUpSeries;
@@ -126,6 +127,12 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
       role="button"
       tabIndex={0}
       aria-label={t('{title} öffnen', { title: item.series.title })}
+      {...mediaTargetProps({
+        type: 'series',
+        id: item.series.id,
+        title: item.series.title,
+        poster: item.series.poster?.poster,
+      })}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       style={{

@@ -34,6 +34,7 @@ import {
 } from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/catalog/staticCatalog';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 /** Provider-Logo mit sicherer (nicht-null) Logo-URL. */
 type LogoProvider = { name: string; logo: string };
@@ -202,6 +203,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
       role="button"
       tabIndex={0}
       aria-label={title}
+      {...mediaTargetProps({ type: 'series', id: entry.tmdbId, title, poster: cover })}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

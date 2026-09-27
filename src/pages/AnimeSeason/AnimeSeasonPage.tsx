@@ -772,6 +772,16 @@ export const AnimeSeasonPage: React.FC = () => {
     setSelected(next);
   };
 
+  const mediaTargetFor = (entry: DecoratedAnime) => {
+    if (entry.match?.id) return { type: 'series' as const, id: Number(entry.match.id) };
+    const known = infoFor(entry.anime.id);
+    if (!known?.tmdbId) return null;
+    return {
+      type: known.mediaType === 'movie' ? ('movie' as const) : ('series' as const),
+      id: known.tmdbId,
+    };
+  };
+
   const openEntry = async (entry: DecoratedAnime) => {
     // tmdbId aus der eigenen Liste bekannt → direkt zur SeriesDetail-Seite.
     if (entry.match?.id) {
@@ -903,6 +913,7 @@ export const AnimeSeasonPage: React.FC = () => {
         genres={genres}
         staggerIndex={staggerIndexById.get(entry.anime.id) ?? 0}
         onOpen={() => void openEntry(entry)}
+        mediaTarget={mediaTargetFor(entry)}
         adding={addingId === entry.anime.id}
         onAdd={canAdd(entry.anime) ? () => void addEntry(entry) : undefined}
       />
@@ -1135,6 +1146,7 @@ export const AnimeSeasonPage: React.FC = () => {
                     tmdbProviders={tmdbProviders}
                     tmdbRating={tmdbRating}
                     onOpen={() => void openEntry(hero)}
+                    mediaTarget={mediaTargetFor(hero)}
                     adding={addingId === hero.anime.id}
                     onAdd={canAdd(hero.anime) ? () => void addEntry(hero) : undefined}
                   />

@@ -24,6 +24,7 @@ import {
 } from '../../../hooks/rating/useCommunityRatings';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { tapScale } from '../../../lib/motion';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 import { backendFetch } from '../../../services/api/backendApi';
 import { trackMovieAdded, trackSeriesAdded } from '../../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
@@ -308,6 +309,12 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
     return (
       <motion.div
         key={keyOf(item)}
+        {...mediaTargetProps({
+          type: item.type,
+          id: item.id,
+          title: item.title,
+          poster: item.poster_path,
+        })}
         className="hso__card"
         role="button"
         tabIndex={0}

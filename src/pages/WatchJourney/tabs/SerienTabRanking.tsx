@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { wjCard } from '../helpers/watchJourneyStyles';
 import { t } from '../../../services/i18n';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -65,6 +66,12 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
             animate={{ opacity: 1, x: 0 }}
             whileTap={{ opacity: 0.7 }}
             transition={{ delay: 0.3 + index * 0.05 }}
+            {...mediaTargetProps({
+              type: 'series',
+              id: series.seriesId,
+              title: series.title,
+              poster: posters[series.seriesId],
+            })}
             onClick={() => navigate(`/series/${series.seriesId}`)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {

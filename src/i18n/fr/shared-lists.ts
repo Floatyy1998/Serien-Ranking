@@ -1,4 +1,4 @@
-/** Geteilte Listen (Teilen-Sheet, /list/:id) — Deutsch → Französisch. */
+/** Eigene Listen: Teilen-Sheet, /list/:id und Long-Press-Aktionen — Deutsch → Französisch. */
 
 const dict: Record<string, string> = {
   'Liste teilen': 'Partager la liste',
@@ -22,6 +22,11 @@ const dict: Record<string, string> = {
     'Coche les épisodes, note et crée tes propres listes',
   'Starte mit dieser Liste bei TV-RANK — kostenlos.':
     'Commence sur TV-RANK avec cette liste — gratuitement.',
+  'Zu meinen Filmen hinzufügen': 'Ajouter à mes films',
+  'Zu meinen Serien hinzufügen': 'Ajouter à mes séries',
+  'Wird hinzugefügt …': 'Ajout en cours …',
+  'Der Film wird dabei zu deinen Filmen hinzugefügt.': 'Le film sera ajouté à tes films.',
+  'Die Serie wird dabei zu deinen Serien hinzugefügt.': 'La série sera ajoutée à tes séries.',
 };
 
 export default dict;

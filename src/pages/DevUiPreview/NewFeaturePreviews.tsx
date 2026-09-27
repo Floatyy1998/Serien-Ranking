@@ -32,7 +32,7 @@ import {
 import '../Ratings/RatingsPage.css';
 import { WatchNextHeader } from '../WatchNext/components/WatchNextHeader';
 import '../WatchNext/WatchNextPage.css';
-import { RatingItemActions } from '../Ratings/RatingItemActions';
+import { MediaActionsSheet } from '../../features/mediaActions/MediaActionsSheet';
 import { PodiumSection } from '../Leaderboard/PodiumSection';
 import { RankingList } from '../Leaderboard/RankingList';
 import { SelfStandBand } from '../Leaderboard/SelfStandBand';
@@ -840,23 +840,22 @@ export const RatingItemActionsPreview = () => {
   const { currentTheme } = useTheme();
   return (
     <div className="ratings-page" style={{ background: currentTheme.background.default }}>
-      <RatingItemActions
-        theme={currentTheme}
-        item={{
-          id: 1,
+      <MediaActionsSheet
+        state={{
+          target: { type: 'movie', id: 1, title: 'Guardians of the Galaxy' },
           title: 'Guardians of the Galaxy',
-          posterUrl: '',
+          poster: '/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg',
+          owned: false,
           rating: 0,
-          progress: 0,
           watched: false,
-          isMovie: true,
-          watchlist: false,
-          providers: [],
         }}
         folders={previewFolders.map((f, i) => (i === 0 ? { ...f, items: new Set(['m_1']) } : f))}
+        busy={false}
         onClose={() => {}}
+        onAdd={() => {}}
         onRate={() => {}}
         onMarkWatched={() => {}}
+        onToggleFolder={() => {}}
         onCreateFolder={() => {}}
       />
     </div>

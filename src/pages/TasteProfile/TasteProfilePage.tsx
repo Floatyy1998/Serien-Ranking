@@ -10,6 +10,7 @@ import type { Recommendation } from './useTasteProfileData';
 import './TasteProfilePage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index }) => {
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index 
       onClick={() =>
         rec.tmdbId && navigate(isMovie ? `/movie/${rec.tmdbId}` : `/series/${rec.tmdbId}`)
       }
+      {...mediaTargetProps({
+        type: isMovie ? 'movie' : 'series',
+        id: rec.tmdbId,
+        title: rec.title,
+        poster: rec.posterUrl,
+      })}
     >
       <div className="tp-card__poster-wrap" style={{ background: currentTheme.background.surface }}>
         {rec.posterUrl ? (

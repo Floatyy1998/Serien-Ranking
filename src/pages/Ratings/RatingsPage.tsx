@@ -20,28 +20,16 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/data/usePersistedState';
 import { t } from '../../services/i18n';
-import {
-  QuickFilter,
-  QuickRatingSheet,
-  ScrollToTopButton,
-  SkeletonRatingsGrid,
-} from '../../components/ui';
-import { useQuickRatingSheet } from '../../hooks/rating/useQuickRatingSheet';
-import { useLongPress } from '../../hooks/ui/useLongPress';
-import { hapticTap } from '../../lib/interaction/haptics';
-import { showToast } from '../../lib/interaction/toast';
-import { markMovieWatched } from '../../services/rating/quickRating';
+import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';
 import { RatingCompactRow } from './RatingCompactRow';
 import { RatingFolderActionsSheet, RatingFolderBar, RatingFolderGrid } from './RatingFolderGrid';
 import { RatingFolderSheet, type RatingFolderSheetState } from './RatingFolderSheet';
 import { ShareFolderSheet } from './ShareFolderSheet';
 import { deleteFolderWithUndo } from './deleteFolderWithUndo';
-import { RatingItemActions } from './RatingItemActions';
-import { itemFolderKey } from './ratingsHelpers';
 import { RatingItemCard } from './RatingItemCard';
 import { RatingsEmptyState } from './RatingsEmptyState';
 import { RatingsHeader } from './RatingsHeader';
-import { useRatingsData, type PreparedItem } from './useRatingsData';
+import { useRatingsData } from './useRatingsData';
 import './RatingsPage.css';
 
 export const RatingsPage: React.FC = () => {
@@ -86,57 +74,6 @@ export const RatingsPage: React.FC = () => {
     }
     if (window.scrollY > 0) window.scrollTo(0, 0);
   }, [openFolderId, scrollRef]);
-
-  const [actionItem, setActionItem] = useState<PreparedItem | null>(null);
-  const notify = useCallback((message: string) => showToast(message, 2500), []);
-  const { quickRating, openQuickRating, closeQuickRating, saveQuickRating } = useQuickRatingSheet({
-    onSaved: notify,
-    onError: notify,
-  });
-
-  const itemsByKey = useMemo(() => {
-    const map = new Map<string, PreparedItem>();
-    for (const item of currentItems) map.set(`${item.isMovie ? 'm' : 's'}-${item.id}`, item);
-    return map;
-  }, [currentItems]);
-
-  const bindItemLongPress = useLongPress<PreparedItem>((item) => {
-    hapticTap();
-    setActionItem(item);
-  });
-  const itemLongPress = bindItemLongPress((e) => {
-    const el = (e.target as HTMLElement).closest<HTMLElement>('.ratings-grid-item');
-    if (!el?.dataset.id) return null;
-    const kind = el.dataset.movie !== undefined ? 'm' : 's';
-    return itemsByKey.get(`${kind}-${el.dataset.id}`) ?? null;
-  });
-
-  const rateItem = useCallback(
-    (item: PreparedItem, afterWatched = false) =>
-      openQuickRating(
-        {
-          id: item.id,
-          type: item.isMovie ? 'movie' : 'series',
-          title: item.title,
-          userRating: item.rating,
-        },
-        afterWatched
-      ),
-    [openQuickRating]
-  );
-
-  const markWatched = useCallback(
-    async (item: PreparedItem) => {
-      if (!user) return;
-      try {
-        await markMovieWatched(user.uid, item.id);
-        rateItem(item, true);
-      } catch {
-        showToast(t('Der Gesehen-Status konnte nicht gespeichert werden.'), 2500, 'error');
-      }
-    },
-    [user, rateItem]
-  );
 
   const [actionFolder, setActionFolder] = useState<NonNullable<typeof activeFolder> | null>(null);
   const [shareFolderId, setShareFolderId] = useState<string | null>(null);
@@ -284,7 +221,7 @@ export const RatingsPage: React.FC = () => {
 
         {itemsToRender.length > 0 ? (
           density === 'compact' ? (
-            <div className="ratings-list" onClick={handleGridClick} {...itemLongPress}>
+            <div className="ratings-list" onClick={handleGridClick}>
               {itemsToRender.map((item, idx) => (
                 <RatingCompactRow
                   key={`${item.isMovie ? 'm' : 's'}-${item.id}`}
@@ -298,7 +235,7 @@ export const RatingsPage: React.FC = () => {
               <div className="ratings-spacer" />
             </div>
           ) : (
-            <div className="ratings-grid" onClick={handleGridClick} {...itemLongPress}>
+            <div className="ratings-grid" onClick={handleGridClick}>
               {itemsToRender.map((item) => (
                 <RatingItemCard
                   key={`${item.isMovie ? 'm' : 's'}-${item.id}`}
@@ -341,31 +278,6 @@ export const RatingsPage: React.FC = () => {
           initialFilters={filters}
         />
       )}
-
-      <RatingItemActions
-        theme={currentTheme}
-        item={actionItem}
-        folders={folders}
-        onClose={() => setActionItem(null)}
-        onRate={(item) => rateItem(item)}
-        onMarkWatched={(item) => void markWatched(item)}
-        onCreateFolder={(item) =>
-          setFolderSheet({ open: true, folder: null, preselect: [itemFolderKey(item)] })
-        }
-      />
-
-      <QuickRatingSheet
-        isOpen={quickRating.open}
-        onClose={closeQuickRating}
-        seriesTitle={quickRating.title}
-        eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
-        initialRating={quickRating.initialRating}
-        genres={quickRating.genres}
-        mediaType={quickRating.mediaType}
-        itemId={quickRating.itemId}
-        initialGenreRatings={quickRating.genreRatings}
-        onRate={saveQuickRating}
-      />
 
       <RatingFolderActionsSheet
         theme={currentTheme}

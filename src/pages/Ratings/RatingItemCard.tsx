@@ -22,6 +22,7 @@ import { PosterFrame } from '../../components/ui/media/PosterFrame';
 // Aus lib/ importieren + fuer bestehende Importer (RatingCompactRow) re-exportieren.
 import { primaryGenre } from '../../lib/text/genreLabel';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 export { PLACEHOLDER_SVG };
 
 // Provider-Badge mit Popup — auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
@@ -215,6 +216,12 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
       data-id={item.id}
       data-movie={item.isMovie || undefined}
       data-poster={item.posterUrl || undefined}
+      {...mediaTargetProps({
+        type: item.isMovie ? 'movie' : 'series',
+        id: item.id,
+        title: item.title,
+        poster: item.posterUrl,
+      })}
     >
       {/* Card container — no overflow:hidden (iOS Safari fix).
           D1: Serien mit Fortschritt bekommen einen umlaufenden Fortschritts-Ring

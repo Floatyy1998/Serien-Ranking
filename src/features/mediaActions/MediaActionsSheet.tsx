@@ -9,88 +9,111 @@ import {
 } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { BottomSheet } from '../../components/ui';
-import { useAuth } from '../../contexts/AuthContext';
-import type { useTheme } from '../../contexts/ThemeContext';
-import { hapticTap } from '../../lib/interaction/haptics';
-import { showToast } from '../../lib/interaction/toast';
-import type { RatingFolder } from '../../lib/rating/ratingFolders';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { MediaTarget } from '../../lib/interaction/mediaTarget';
+import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders';
 import { t } from '../../services/i18n';
-import { setRatingFolderItem } from '../../services/rating/ratingFoldersService';
-import { itemFolderKey } from './ratingsHelpers';
-import type { PreparedItem } from './useRatingsData';
-import './RatingFolders.css';
+import { getImageUrl } from '../../utils/imageUrl';
+import '../../pages/Ratings/RatingFolders.css';
+import './MediaActions.css';
 
-type Theme = ReturnType<typeof useTheme>['currentTheme'];
+export interface MediaActionsState {
+  target: MediaTarget;
+  title: string;
+  poster?: string;
+  owned: boolean;
+  rating: number;
+  watched: boolean;
+}
 
-export const RatingItemActions = ({
-  theme,
-  item,
+export const MediaActionsSheet = ({
+  state,
   folders,
+  busy,
   onClose,
+  onAdd,
   onRate,
   onMarkWatched,
+  onToggleFolder,
   onCreateFolder,
 }: {
-  theme: Theme;
-  item: PreparedItem | null;
+  state: MediaActionsState | null;
   folders: RatingFolder[];
+  busy: boolean;
   onClose: () => void;
-  onRate: (item: PreparedItem) => void;
-  onMarkWatched: (item: PreparedItem) => void;
-  onCreateFolder: (item: PreparedItem) => void;
+  onAdd: () => void;
+  onRate: () => void;
+  onMarkWatched: () => void;
+  onToggleFolder: (folder: RatingFolder) => void;
+  onCreateFolder: () => void;
 }) => {
-  const { user } = useAuth() || {};
+  const { currentTheme: theme } = useTheme();
   const [view, setView] = useState<'menu' | 'folders'>('menu');
+  const targetKey = state ? `${state.target.type}-${state.target.id}` : '';
 
   useEffect(() => {
-    if (item) setView('menu');
-  }, [item]);
+    if (targetKey) setView('menu');
+  }, [targetKey]);
 
-  const key = item ? itemFolderKey(item) : '';
-  const memberCount = item ? folders.filter((f) => f.items.has(key)).length : 0;
-
-  const toggleFolder = async (folder: RatingFolder) => {
-    if (!user || !item) return;
-    hapticTap();
-    try {
-      await setRatingFolderItem(user.uid, folder.id, key, !folder.items.has(key));
-    } catch {
-      showToast(t('Speichern fehlgeschlagen'), 2500, 'error');
-    }
-  };
-
+  const key = state ? folderItemKey(state.target.type, state.target.id) : '';
+  const memberCount = state ? folders.filter((f) => f.items.has(key)).length : 0;
+  const isMovie = state?.target.type === 'movie';
   const actionStyle = { borderColor: theme.border.default, color: theme.text.primary };
+  const poster = state?.poster ? getImageUrl(state.poster, 'w154', '') : '';
 
   return (
-    <BottomSheet isOpen={!!item} onClose={onClose} ariaLabel={item?.title ?? ''} maxHeight="80vh">
-      {item && (
-        <div className="rf-sheet rf-actions-sheet">
-          <h3 className="rf-sheet__title" style={{ color: theme.text.secondary }}>
-            {item.title}
-          </h3>
+    <BottomSheet
+      isOpen={!!state}
+      onClose={onClose}
+      ariaLabel={state?.title ?? ''}
+      maxHeight="80vh"
+      maxWidth="520px"
+    >
+      {state && (
+        <div className="rf-sheet rf-actions-sheet" aria-busy={busy}>
+          <div className="ma-head">
+            {poster && <img className="ma-head__poster" src={poster} alt="" />}
+            <div className="ma-head__text">
+              <span className="ma-head__title" style={{ color: theme.text.primary }}>
+                {state.title}
+              </span>
+              <span className="ma-head__meta" style={{ color: theme.text.muted }}>
+                {isMovie ? t('Film') : t('Serie')}
+                {state.owned ? ` · ${t('In deiner Bibliothek')}` : ''}
+              </span>
+            </div>
+          </div>
 
           {view === 'menu' ? (
             <>
-              <button
-                type="button"
-                className="rf-action"
-                onClick={() => {
-                  onClose();
-                  onRate(item);
-                }}
-                style={actionStyle}
-              >
-                <Star style={{ fontSize: 22, color: theme.accent }} />
-                {item.rating > 0 ? t('Bewertung ändern') : t('Bewerten')}
-              </button>
-              {item.isMovie && !item.watched && (
+              {!state.owned && (
                 <button
                   type="button"
                   className="rf-action"
-                  onClick={() => {
-                    onClose();
-                    onMarkWatched(item);
-                  }}
+                  disabled={busy}
+                  onClick={onAdd}
+                  style={actionStyle}
+                >
+                  <Add style={{ fontSize: 22, color: theme.primary }} />
+                  {isMovie ? t('Zu meinen Filmen hinzufügen') : t('Zu meinen Serien hinzufügen')}
+                </button>
+              )}
+              <button
+                type="button"
+                className="rf-action"
+                disabled={busy}
+                onClick={onRate}
+                style={actionStyle}
+              >
+                <Star style={{ fontSize: 22, color: theme.accent }} />
+                {state.rating > 0 ? t('Bewertung ändern') : t('Bewerten')}
+              </button>
+              {isMovie && !state.watched && (
+                <button
+                  type="button"
+                  className="rf-action"
+                  disabled={busy}
+                  onClick={onMarkWatched}
                   style={actionStyle}
                 >
                   <Visibility style={{ fontSize: 22, color: theme.primary }} />
@@ -100,6 +123,7 @@ export const RatingItemActions = ({
               <button
                 type="button"
                 className="rf-action"
+                disabled={busy}
                 onClick={() => setView('folders')}
                 style={actionStyle}
               >
@@ -111,6 +135,11 @@ export const RatingItemActions = ({
                   </span>
                 )}
               </button>
+              {busy && (
+                <p className="ma-busy" style={{ color: theme.text.muted }}>
+                  {t('Wird hinzugefügt …')}
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -131,7 +160,8 @@ export const RatingItemActions = ({
                     type="button"
                     className="rf-action"
                     aria-pressed={isIn}
-                    onClick={() => void toggleFolder(folder)}
+                    disabled={busy}
+                    onClick={() => onToggleFolder(folder)}
                     style={{
                       borderColor: isIn ? theme.primary : theme.border.default,
                       background: isIn ? `${theme.primary}1f` : undefined,
@@ -150,10 +180,8 @@ export const RatingItemActions = ({
               <button
                 type="button"
                 className="rf-action"
-                onClick={() => {
-                  onClose();
-                  onCreateFolder(item);
-                }}
+                disabled={busy}
+                onClick={onCreateFolder}
                 style={{
                   borderColor: theme.border.default,
                   borderStyle: 'dashed',
@@ -163,6 +191,13 @@ export const RatingItemActions = ({
                 <Add style={{ fontSize: 22 }} />
                 {t('Neue Liste')}
               </button>
+              {!state.owned && (
+                <p className="ma-busy" style={{ color: theme.text.muted }}>
+                  {isMovie
+                    ? t('Der Film wird dabei zu deinen Filmen hinzugefügt.')
+                    : t('Die Serie wird dabei zu deinen Serien hinzugefügt.')}
+                </p>
+              )}
             </>
           )}
         </div>

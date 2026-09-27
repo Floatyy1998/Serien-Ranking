@@ -9,6 +9,7 @@
 import { Add, CheckCircle, Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 import { primaryGenre } from '../../../lib/text/genreLabel';
 import { PLACEHOLDER_SVG } from '../../../lib/image/posterPlaceholder';
 import { t } from '../../../services/i18n';
@@ -170,6 +171,8 @@ function ProviderBadgeArea({
 /* Karte */
 
 interface ProfileItemCardProps {
+  /** TMDB-ID — aktiviert Langdruck-/Rechtsklick-Aktionen. */
+  mediaId?: number | string;
   title: string;
   posterUrl: string;
   isMovie: boolean;
@@ -191,6 +194,7 @@ interface ProfileItemCardProps {
 
 export const ProfileItemCard = React.memo<ProfileItemCardProps>(
   ({
+    mediaId,
     title,
     posterUrl,
     isMovie,
@@ -211,7 +215,16 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
     const mutedColor = currentTheme.text.muted ?? currentTheme.text.secondary ?? '#9aa0a6';
 
     return (
-      <div className="pic-grid-item" onClick={onClick}>
+      <div
+        className="pic-grid-item"
+        {...mediaTargetProps({
+          type: isMovie ? 'movie' : 'series',
+          id: mediaId,
+          title,
+          poster: posterUrl,
+        })}
+        onClick={onClick}
+      >
         {/* Kein onClick am PosterFrame: der Klick liegt (wie bisher) auf .pic-grid-item.
             Scrim aus — der Bottom-Gradient kommt aus .pic-card-bottom. overflow bleibt
             visible (Spiegel des iOS-Safari-Fixes der Ratings-Karte); img/Overlay clippen

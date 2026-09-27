@@ -5,6 +5,7 @@ import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface CountdownListItemProps {
   item: SeriesCountdown;
@@ -30,6 +31,12 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileTap={tapScaleSmall}
+      {...mediaTargetProps({
+        type: 'series',
+        id: item.seriesId,
+        title: item.title,
+        poster: item.posterUrl,
+      })}
       onClick={onClick}
       aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-item"

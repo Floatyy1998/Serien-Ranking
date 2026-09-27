@@ -21,6 +21,7 @@ import { HorizontalScrollContainer } from '../ui/layout/HorizontalScrollContaine
 import { PosterFrame } from '../ui/media/PosterFrame';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface RecommendationsSectionProps {
   id: string | number | undefined;
@@ -287,6 +288,7 @@ const MagneticCard = memo(
     return (
       <motion.div
         onClick={onClick}
+        {...mediaTargetProps({ type: item.type, id: item.id, title, poster: item.poster_path })}
         role="button"
         tabIndex={0}
         aria-label={t('{titel} öffnen', { titel: title })}

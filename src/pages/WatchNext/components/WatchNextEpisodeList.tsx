@@ -14,6 +14,7 @@ import { fillerLookupKey } from '../../../services/catalog/animeFillerService';
 import { t } from '../../../services/i18n';
 import { chipColor, chipLabel } from '../../../utils/episodeChips';
 import type { useWatchNextSwipe } from '../useWatchNextSwipe';
+import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 
 interface WatchNextEpisodeListProps {
   episodes: NextEpisode[];
@@ -129,6 +130,12 @@ export const WatchNextEpisodeList = ({
                   itemKey={episodeKey}
                   poster={episode.poster}
                   posterAlt={episode.seriesTitle}
+                  mediaTarget={mediaTargetProps({
+                    type: 'series',
+                    id: episode.seriesId,
+                    title: episode.seriesTitle,
+                    poster: episode.poster,
+                  })}
                   accentColor={episode.isRewatch ? currentTheme.accent : currentTheme.primary}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}

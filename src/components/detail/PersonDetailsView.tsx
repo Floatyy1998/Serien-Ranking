@@ -7,6 +7,7 @@ import { HorizontalScrollContainer } from '../ui';
 import type { CreditItem, PersonDetailsData } from './CastCrew.types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 interface PersonDetailsViewProps {
   personDetails: PersonDetailsData;
@@ -133,6 +134,12 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
               key={`${credit.id}-${index}`}
               whileTap={tapScale}
               onClick={() => handleCreditClick(credit)}
+              {...mediaTargetProps({
+                type: credit.media_type === 'movie' ? 'movie' : 'series',
+                id: credit.id,
+                title: credit.title || credit.name,
+                poster: credit.poster_path,
+              })}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {

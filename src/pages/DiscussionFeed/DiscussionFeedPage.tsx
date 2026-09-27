@@ -17,6 +17,7 @@ import { formatRelativeTime } from '../../components/Discussion/utils';
 import { t } from '../../services/i18n';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -43,6 +44,7 @@ const FeedCard: React.FC<{
     entry.itemType === 'episode' && entry.seasonNumber && entry.episodeNumber
       ? `${entry.itemTitle} S${entry.seasonNumber}E${entry.episodeNumber}`
       : entry.itemTitle;
+  const opensEpisode = entry.itemType === 'episode' && entry.seasonNumber && entry.episodeNumber;
 
   return (
     <motion.div
@@ -51,6 +53,14 @@ const FeedCard: React.FC<{
       transition={{ delay: index * 0.03 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
+      {...(opensEpisode
+        ? {}
+        : mediaTargetProps({
+            type: entry.itemType,
+            id: entry.itemId,
+            title: entry.itemTitle,
+            poster: entry.posterPath,
+          }))}
       style={{
         display: 'flex',
         gap: '14px',

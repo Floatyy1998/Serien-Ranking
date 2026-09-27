@@ -1,4 +1,4 @@
-/** Geteilte Listen (Teilen-Sheet, /list/:id) — Deutsch → Spanisch. */
+/** Eigene Listen: Teilen-Sheet, /list/:id und Long-Press-Aktionen — Deutsch → Spanisch. */
 
 const dict: Record<string, string> = {
   'Liste teilen': 'Compartir lista',
@@ -21,6 +21,11 @@ const dict: Record<string, string> = {
   'Folgen abhaken, bewerten, eigene Listen anlegen':
     'Marca episodios, valora y crea tus propias listas',
   'Starte mit dieser Liste bei TV-RANK — kostenlos.': 'Empieza en TV-RANK con esta lista, gratis.',
+  'Zu meinen Filmen hinzufügen': 'Añadir a mis películas',
+  'Zu meinen Serien hinzufügen': 'Añadir a mis series',
+  'Wird hinzugefügt …': 'Añadiendo …',
+  'Der Film wird dabei zu deinen Filmen hinzugefügt.': 'La película se añadirá a tus películas.',
+  'Die Serie wird dabei zu deinen Serien hinzugefügt.': 'La serie se añadirá a tus series.',
 };
 
 export default dict;

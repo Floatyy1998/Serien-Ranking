@@ -8,6 +8,7 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
+import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { detectAppInstallTarget } from '../../lib/platform/appInstallTarget';
 import {
   sharedListItemPath,
@@ -252,7 +253,18 @@ const SharedListCard = ({
   const { currentTheme: theme } = useTheme();
   const poster = getImageUrl(item.p, 'w342');
   return (
-    <button type="button" className="sl-card" onClick={onOpen} aria-label={item.t}>
+    <button
+      type="button"
+      className="sl-card"
+      {...mediaTargetProps({
+        type: item.k === 'm' ? 'movie' : 'series',
+        id: item.id,
+        title: item.t,
+        poster: item.p,
+      })}
+      onClick={onOpen}
+      aria-label={item.t}
+    >
       <div className="sl-card__art" style={{ borderColor: theme.border.default }}>
         <img src={poster} alt="" loading="lazy" />
         {item.r !== undefined && (

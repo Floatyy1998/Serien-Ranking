@@ -16,6 +16,7 @@ import { LoadingSpinner } from '../components/ui/feedback/LoadingSpinner';
 import { PushOptInPrompt } from '../components/PushOptInPrompt';
 import { WidgetDataSync } from '../components/WidgetDataSync';
 import { SharedListSync } from '../components/SharedListSync';
+import { MediaActionsHost } from '../features/mediaActions/MediaActionsHost';
 import { EpisodeRatingSheetHost } from '../components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from '../components/AvatarViewerHost';
 import { bindOwnPhotoURL } from '../services/profile/ownProfilePhoto';
@@ -240,6 +241,7 @@ export const MobileApp = () => {
       <PushOptInPrompt />
       <WidgetDataSync />
       <SharedListSync />
+      <MediaActionsHost />
       <EpisodeRatingSheetHost />
       <PageTourHost />
       <AvatarViewerHost />
