@@ -60,6 +60,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const lastReadActivitiesTimeRef = useRef(lastReadActivitiesTime);
   const lastReadRequestsTimeRef = useRef(lastReadRequestsTime);
   const loadFriendActivitiesRef = useRef<(() => Promise<void>) | null>(null);
+  const loadGenRef = useRef(0);
 
   useEffect(() => {
     lastReadActivitiesTimeRef.current = lastReadActivitiesTime;
@@ -147,6 +148,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   // jeweiligen Freundes, ist also je Freund ein gezielter Punkt-Read (dieselbe
   // Bauart wie `FriendsWhoHaveThis`) statt eines Abos auf fremde Daten.
   const [grantedToMe, setGrantedToMe] = useState<Set<string>>(() => new Set());
+  // Erst wenn jedes Freigabe-Abo einmal geantwortet hat, darf der Feed laden.
+  const [grantsReady, setGrantsReady] = useState(false);
   // Der Aktivitaets-Lader laeuft in einem eigenen Effect und darf nicht bei
   // jeder Freigabe-Aenderung neu aufgesetzt werden.
   const grantedRef = useRef(grantedToMe);
@@ -173,14 +176,23 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     if (!user || !friendUidKey) {
       setGrantedToMe(new Set());
+      setGrantsReady(true);
       return;
     }
     const ids = friendUidKey.split(',');
+    const pending = new Set(ids);
+    setGrantsReady(false);
+    const settle = (id: string) => {
+      if (!pending.delete(id)) return;
+      if (pending.size === 0) setGrantsReady(true);
+    };
+    const fallback = setTimeout(() => setGrantsReady(true), 3000);
     const refs = ids.map((id) => ({ id, ref: dbRef(paths.share(id, user.uid)) }));
     const listeners = refs.map(({ id, ref }) =>
       onValue(
         ref,
         (snap) => {
+          settle(id);
           const erlaubt = snap.val() === true;
           setGrantedToMe((prev) => {
             if (prev.has(id) === erlaubt) return prev;
@@ -192,6 +204,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         },
         {
           onError: () => {
+            settle(id);
             // Kein Leserecht heisst schlicht: nicht freigegeben.
             setGrantedToMe((prev) => {
               if (!prev.has(id)) return prev;
@@ -204,6 +217,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       )
     );
     return () => {
+      clearTimeout(fallback);
       refs.forEach(({ ref }, i) => ref.off('value', listeners[i]));
     };
   }, [user, friendUidKey]);
@@ -370,6 +384,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
   // Friend Activities: Einmaliger Load + child_added Listener für neue Activities
   const loadFriendActivities = useCallback(async () => {
+    const gen = ++loadGenRef.current;
     if (!user || friends.length === 0) {
       setFriendActivities([]);
       setUnreadActivitiesCount(0);
@@ -459,6 +474,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       });
 
       const activityResults = await Promise.all(activityPromises);
+      // Ein älterer Lauf (z. B. vor dem Eintreffen der Freigaben) darf den neueren nicht überschreiben.
+      if (gen !== loadGenRef.current) return;
 
       activityResults.forEach((activities) => {
         allActivities.push(...activities);
@@ -502,7 +519,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
   // Einmaliger Load + Realtime child_added Listener pro Freund für neue Activities
   useEffect(() => {
-    if (!user || friends.length === 0 || !readTimesLoaded) {
+    if (!user || friends.length === 0 || !readTimesLoaded || !grantsReady) {
       return;
     }
 
@@ -548,7 +565,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       document.removeEventListener('visibilitychange', onVisibility);
       stop();
     };
-  }, [user, friends, readTimesLoaded, grantedCacheKey]);
+  }, [user, friends, readTimesLoaded, grantsReady, grantedCacheKey]);
 
   // Sync eigenes Profil (photoURL, displayName, username) in die friend-Einträge
   // bei allen Freunden. Der Snapshot in users/{friend}/friends/{user} wird sonst

@@ -20,6 +20,8 @@ const fb = vi.hoisted(() => {
   /** Listener je Pfad, damit der Test eine Freigabe nachtraeglich senden kann. */
   const listener = new Map<string, (snap: Snap) => void>();
   const werte = new Map<string, unknown>();
+  /** Pfade, deren once() erst auf Zuruf antwortet (langsame Abfrage). */
+  const verzoegert = new Map<string, () => void>();
 
   const snap = (value: unknown): Snap => ({
     val: () => value,
@@ -40,6 +42,9 @@ const fb = vi.hoisted(() => {
       off: () => {},
       once: async () => {
         gelesen.push(path);
+        if (verzoegert.has(path)) {
+          await new Promise<void>((resolve) => verzoegert.set(path, resolve));
+        }
         return snap(werte.get(path) ?? null);
       },
       update: async () => {},
@@ -55,6 +60,7 @@ const fb = vi.hoisted(() => {
     gelesen,
     listener,
     werte,
+    verzoegert,
     database: () => ({ ref: (path: string) => makeRef(path) }),
   };
 });
@@ -101,12 +107,14 @@ vi.mock('./shareOperations', () => ({
 }));
 
 import { OptimizedFriendsProvider } from './OptimizedFriendsProvider';
+import { useOptimizedFriends } from './OptimizedFriendsContext';
 
 afterEach(() => {
   cleanup();
   fb.gelesen.length = 0;
   fb.listener.clear();
   fb.werte.clear();
+  fb.verzoegert.clear();
   localStorage.clear();
 });
 
@@ -142,5 +150,34 @@ describe('Aktivitaets-Feed und Freigabe', () => {
     });
 
     await waitFor(() => expect(fb.gelesen.some((p) => p === 'users/f1/activities')).toBe(true));
+  });
+
+  it('ein langsamer Lauf ohne Freigabe überschreibt den Feed mit Titeln nicht', async () => {
+    fb.werte.set('users/me/readTimes', { requests: 1, activities: 1 });
+    fb.werte.set('users/f1/activities', {
+      a1: { type: 'episode_watched', itemTitle: 'Dark', timestamp: Date.now() },
+    });
+    fb.verzoegert.set('users/f1/activityTeaser', () => {});
+    const seen: { current: { itemTitle?: string }[] } = { current: [] };
+    const Probe = () => {
+      seen.current = useOptimizedFriends().friendActivities;
+      return null;
+    };
+    render(
+      <OptimizedFriendsProvider>
+        <Probe />
+      </OptimizedFriendsProvider>
+    );
+
+    await waitFor(() => expect(fb.gelesen).toContain('users/f1/activityTeaser'));
+    await act(async () => {
+      fb.listener.get('users/f1/shares/me')?.({ val: () => true, exists: () => true });
+    });
+    await waitFor(() => expect(seen.current.map((a) => a.itemTitle)).toEqual(['Dark']));
+
+    await act(async () => {
+      fb.verzoegert.get('users/f1/activityTeaser')?.();
+    });
+    expect(seen.current.map((a) => a.itemTitle)).toEqual(['Dark']);
   });
 });
