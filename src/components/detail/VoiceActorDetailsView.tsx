@@ -1,5 +1,6 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../ui';
@@ -21,6 +22,23 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
+
+  const mediaEdges = useMemo(() => {
+    const byId = new Map<number, CharacterMediaEdge>();
+    for (const edge of voiceActorDetails.characterMedia?.edges ?? []) {
+      const existing = byId.get(edge.node.id);
+      if (!existing) {
+        byId.set(edge.node.id, { ...edge, characters: [...(edge.characters ?? [])] });
+        continue;
+      }
+      for (const character of edge.characters ?? []) {
+        if (!existing.characters?.some((c) => c.id === character.id)) {
+          existing.characters?.push(character);
+        }
+      }
+    }
+    return [...byId.values()];
+  }, [voiceActorDetails.characterMedia?.edges]);
 
   // AniList-IDs mappen nicht auf TMDB. Wir suchen beim Klick per TMDB-Search
   // nach dem Titel und navigieren intern, wenn ein Treffer existiert; sonst
@@ -176,7 +194,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
             </h4>
 
             <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
-              {voiceActorDetails.characterMedia?.edges?.map((edge, index) => (
+              {mediaEdges.map((edge, index) => (
                 <motion.div
                   key={`${edge.node.id}-${index}`}
                   whileTap={tapScale}
@@ -190,7 +208,8 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                     }
                   }}
                   style={{
-                    minWidth: '130px',
+                    width: '130px',
+                    flexShrink: 0,
                     cursor: 'pointer',
                   }}
                 >
@@ -298,9 +317,17 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                         fontSize: '11px',
                         margin: 0,
                         color: currentTheme.text.muted,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.3,
                       }}
                     >
-                      {t('als {rolle}', { rolle: edge.characters[0].name.full })}
+                      {t('als {rolle}', {
+                        rolle: edge.characters.map((c) => c.name.full).join(', '),
+                      })}
                     </p>
                   )}
                 </motion.div>
