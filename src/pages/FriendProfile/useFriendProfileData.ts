@@ -229,16 +229,22 @@ const applyFiltersAndSort = (
   return sortItems(filtered, sortBy);
 };
 
+export type FriendProfileTab = 'series' | 'movies' | 'lists';
+
 export interface UseFriendProfileDataReturn {
   loading: boolean;
   friendId: string | undefined;
   friendName: string;
-  activeTab: 'series' | 'movies';
-  setActiveTab: React.Dispatch<React.SetStateAction<'series' | 'movies'>>;
+  activeTab: FriendProfileTab;
+  setActiveTab: React.Dispatch<React.SetStateAction<FriendProfileTab>>;
+  openFolderId: string | null;
+  setOpenFolderId: (id: string | null) => void;
   filters: Filters;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   ratedSeries: FriendItem[];
   ratedMovies: FriendItem[];
+  allSeries: FriendItem[];
+  allMovies: FriendItem[];
   currentItems: FriendItem[];
   averageRating: number;
   itemsWithRatingCount: number;
@@ -260,8 +266,12 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   // Tab und Filter leben in der URL (wie auf der eigenen Bewertungsseite): die
   // Route wird beim Zurückkommen von einer Detailseite neu gemountet, reiner
   // Component-State fiele dabei auf "Serien, ungefiltert, ganz oben" zurück.
-  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() =>
-    searchParams.get('tab') === 'movies' ? 'movies' : 'series'
+  const [activeTab, setActiveTab] = useState<FriendProfileTab>(() => {
+    const tab = searchParams.get('tab');
+    return tab === 'movies' || tab === 'lists' ? tab : 'series';
+  });
+  const [openFolderId, setOpenFolderId] = useState<string | null>(() =>
+    searchParams.get('tab') === 'lists' ? searchParams.get('list') : null
   );
   const [filters, setFilters] = useState<Filters>(() => ({
     genre: searchParams.get('genre') || undefined,
@@ -277,7 +287,8 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
       if (value) next.set(key, value);
       else next.delete(key);
     };
-    sync('tab', activeTab === 'movies' ? 'movies' : undefined);
+    sync('tab', activeTab === 'series' ? undefined : activeTab);
+    sync('list', activeTab === 'lists' ? openFolderId || undefined : undefined);
     sync('genre', filters.genre && filters.genre !== 'Alle' ? filters.genre : undefined);
     sync('provider', filters.provider);
     sync('filter', filters.quickFilter);
@@ -285,7 +296,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     sync('sort', filters.sortBy);
     if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
-  }, [activeTab, filters, searchParams, setSearchParams]);
+  }, [activeTab, openFolderId, filters, searchParams, setSearchParams]);
 
   useEffect(() => {
     const loadFriendData = async () => {
@@ -386,7 +397,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     [friendMovies, filters]
   );
 
-  const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
+  const currentItems = activeTab === 'movies' ? ratedMovies : ratedSeries;
 
   useEffect(() => {
     const shouldRestore = sessionStorage.getItem('shouldRestoreFriendProfileScroll');
@@ -504,10 +515,14 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     friendName,
     activeTab,
     setActiveTab,
+    openFolderId,
+    setOpenFolderId,
     filters,
     setFilters,
     ratedSeries,
     ratedMovies,
+    allSeries: friendSeries,
+    allMovies: friendMovies,
     currentItems,
     averageRating,
     itemsWithRatingCount: itemsWithRating.length,

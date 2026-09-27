@@ -1,5 +1,7 @@
 import {
+  ArrowBack,
   ChatBubbleOutlined,
+  ListAlt,
   CompareArrows,
   ExpandLess,
   ExpandMore,
@@ -8,7 +10,7 @@ import {
   Tv as TvIcon,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -38,6 +40,7 @@ import {
   calculateProgress,
   useFriendProfileData,
 } from './useFriendProfileData';
+import type { FriendItem } from './useFriendProfileData';
 import { friendAddKey, useFriendAddToList } from '../../hooks/social/useFriendAddToList';
 import { useFriendCurrentlyWatching } from './useFriendCurrentlyWatching';
 import { useFriendAnticipation } from './useFriendAnticipation';
@@ -47,6 +50,10 @@ import { FriendAnticipationSection } from './FriendAnticipationSection';
 import { FriendPetCard } from './FriendPetCard';
 import { FriendComparisonCard } from './FriendComparisonCard';
 import { useFriendComparison } from './useFriendComparison';
+import { useFriendFolders } from './useFriendFolders';
+import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
+import type { FolderPreview } from '../Ratings/ratingsHelpers';
+import { folderItemKey } from '../../lib/rating/ratingFolders';
 import { ShareGate } from '../../components/social/ShareGate';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
@@ -76,10 +83,14 @@ export const FriendProfilePage = memo(() => {
     friendName,
     activeTab,
     setActiveTab,
+    openFolderId,
+    setOpenFolderId,
     filters,
     setFilters,
     ratedSeries,
     ratedMovies,
+    allSeries,
+    allMovies,
     currentItems,
     averageRating,
     itemsWithRatingCount,
@@ -152,6 +163,61 @@ export const FriendProfilePage = memo(() => {
   const friendPet = useFriendPet(restricted ? undefined : friendId);
   // Aggregierte Gesamtzahlen: haengen an der Freundschaft, nicht an der Freigabe.
   const comparison = useFriendComparison(restricted ? undefined : friendId);
+  const friendFolders = useFriendFolders(restricted || !darfSehen ? undefined : friendId);
+  const folders = friendFolders.folders;
+  const openFolder =
+    activeTab === 'lists' ? (folders.find((f) => f.id === openFolderId) ?? null) : null;
+
+  const folderPreviews = useMemo(() => {
+    const byKey = new Map<string, { rating: number; poster: string }>();
+    const collect = (items: FriendItem[], kind: 'series' | 'movie') => {
+      for (const item of items) {
+        const r = parseFloat(calculateFriendRating(item));
+        byKey.set(folderItemKey(kind, item.id), {
+          rating: isNaN(r) ? 0 : r,
+          poster: getImageUrl(item.poster),
+        });
+      }
+    };
+    collect(allSeries, 'series');
+    collect(allMovies, 'movie');
+    const previews: Record<string, FolderPreview> = {};
+    for (const f of folders) {
+      const entries = [...f.items]
+        .map((key) => byKey.get(key))
+        .filter((e): e is { rating: number; poster: string } => !!e);
+      previews[f.id] = {
+        count: entries.length,
+        posters: entries
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 4)
+          .map((e) => e.poster),
+      };
+    }
+    return previews;
+  }, [folders, allSeries, allMovies]);
+
+  const folderItems = useMemo(() => {
+    if (!openFolder) return [];
+    const inFolder = (item: FriendItem, kind: 'series' | 'movie') =>
+      openFolder.items.has(folderItemKey(kind, item.id));
+    return [
+      ...ratedSeries.filter((item) => inFolder(item, 'series')),
+      ...ratedMovies.filter((item) => inFolder(item, 'movie')),
+    ].sort(
+      (a, b) =>
+        (parseFloat(calculateFriendRating(b)) || 0) - (parseFloat(calculateFriendRating(a)) || 0)
+    );
+  }, [openFolder, ratedSeries, ratedMovies]);
+
+  useEffect(() => {
+    if (activeTab === 'lists' && !friendFolders.loading && folders.length === 0) {
+      setActiveTab('series');
+    }
+  }, [activeTab, friendFolders.loading, folders.length, setActiveTab]);
+
+  const showFolderOverview = activeTab === 'lists' && !openFolder;
+  const gridItems = activeTab === 'lists' ? folderItems : currentItems;
 
   const [insightsOpen, setInsightsOpen] = useState<boolean>(() => {
     try {
@@ -380,16 +446,6 @@ export const FriendProfilePage = memo(() => {
           </div>
         </header>
 
-        {/* Gesamtvergleich — aggregierte Zahlen, bewusst ohne Freigabe-Gate */}
-        {friendId && (
-          <FriendComparisonCard
-            friendName={friendName}
-            own={comparison.own}
-            friend={comparison.friend}
-            loading={comparison.loading}
-          />
-        )}
-
         {/* Friend Insights — Currently Watching, Pet, Anticipation */}
         {friendId && (
           <div className="fp-insights">
@@ -428,7 +484,7 @@ export const FriendProfilePage = memo(() => {
                       </div>
                     )}
 
-                    <div className="fp-insights-row">
+                    <div className={`fp-insights-row fp-insights-row--${darfSehen ? 3 : 2}`}>
                       {!darfSehen ? null : currentlyWatching.data ? (
                         <FriendCurrentlyWatchingCard
                           friendName={friendName}
@@ -460,6 +516,13 @@ export const FriendProfilePage = memo(() => {
                           </div>
                         </div>
                       )}
+                      {/* Gesamtvergleich — aggregierte Zahlen, bewusst ohne Freigabe-Gate */}
+                      <FriendComparisonCard
+                        friendName={friendName}
+                        own={comparison.own}
+                        friend={comparison.friend}
+                        loading={comparison.loading}
+                      />
                     </div>
                     {anticipation.items.length > 0 ? (
                       <FriendAnticipationSection
@@ -497,13 +560,15 @@ export const FriendProfilePage = memo(() => {
         </div>
 
         {/* Quick Filter */}
-        <QuickFilter
-          onFilterChange={setFilters}
-          isMovieMode={activeTab === 'movies'}
-          isRatingsMode={true}
-          hasBottomNav={false}
-          initialFilters={filters}
-        />
+        {!showFolderOverview && (
+          <QuickFilter
+            onFilterChange={setFilters}
+            isMovieMode={activeTab === 'movies'}
+            isRatingsMode={true}
+            hasBottomNav={false}
+            initialFilters={filters}
+          />
+        )}
 
         {/* Tab Switcher */}
         <TabSwitcher
@@ -511,15 +576,61 @@ export const FriendProfilePage = memo(() => {
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: ratedSeries.length },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },
+            ...(folders.length > 0
+              ? [{ id: 'lists', label: t('Listen'), icon: ListAlt, count: folders.length }]
+              : []),
           ]}
           activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
+          onTabChange={(id) => {
+            setActiveTab(id as typeof activeTab);
+            if (id !== 'lists') setOpenFolderId(null);
+          }}
         />
 
         {/* Items Grid */}
         <div className="fp-grid-wrapper">
+          {openFolder && (
+            <div className="rf-bar">
+              <button
+                type="button"
+                className="rf-icon-btn"
+                onClick={() => setOpenFolderId(null)}
+                aria-label={t('Alle Listen')}
+                style={{
+                  borderColor: currentTheme.border.default,
+                  color: currentTheme.text.secondary,
+                }}
+              >
+                <ArrowBack style={{ fontSize: 20 }} />
+              </button>
+              <div className="rf-bar__text">
+                <span className="rf-bar__name" style={{ color: currentTheme.text.primary }}>
+                  {openFolder.name}
+                </span>
+                <span className="rf-bar__count" style={{ color: currentTheme.text.muted }}>
+                  {folderItems.length === 1
+                    ? t('1 Titel')
+                    : t('{n} Titel', { n: folderItems.length })}
+                </span>
+              </div>
+            </div>
+          )}
           <AnimatePresence mode="wait">
-            {currentItems.length === 0 ? (
+            {showFolderOverview ? (
+              <motion.div
+                key="folders"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <RatingFolderGrid
+                  theme={currentTheme}
+                  folders={folders}
+                  previews={folderPreviews}
+                  onOpen={setOpenFolderId}
+                />
+              </motion.div>
+            ) : gridItems.length === 0 ? (
               <motion.div
                 key="empty"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -529,25 +640,31 @@ export const FriendProfilePage = memo(() => {
                 <EmptyState
                   icon={<Star style={{ fontSize: '56px' }} />}
                   title={
-                    activeTab === 'series' ? t('Keine Serien gefunden') : t('Keine Filme gefunden')
+                    activeTab === 'lists'
+                      ? t('Keine Titel gefunden')
+                      : activeTab === 'series'
+                        ? t('Keine Serien gefunden')
+                        : t('Keine Filme gefunden')
                   }
                   description={
-                    activeTab === 'series'
-                      ? t('{name} hat noch keine Serien bewertet', { name: friendName })
-                      : t('{name} hat noch keine Filme bewertet', { name: friendName })
+                    activeTab === 'lists'
+                      ? t('Diese Liste ist leer.')
+                      : activeTab === 'series'
+                        ? t('{name} hat noch keine Serien bewertet', { name: friendName })
+                        : t('{name} hat noch keine Filme bewertet', { name: friendName })
                   }
                   iconColor={currentTheme.text.muted}
                 />
               </motion.div>
             ) : (
               <motion.div
-                key="grid"
+                key={openFolder ? `grid-${openFolder.id}` : 'grid'}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fp-grid"
               >
-                {currentItems.map((item, index) => {
+                {gridItems.map((item, index) => {
                   const isMovie = 'release_date' in item && !item.seasons?.length;
                   const rating = parseFloat(calculateFriendRating(item));
                   const progress = isMovie ? 0 : calculateProgress(item);

@@ -66,11 +66,11 @@ describe('FriendComparisonCard', () => {
     expect(screen.getByText('104')).toBeInTheDocument();
   });
 
-  it('nennt bei den Serien die komplett gesehenen als Unterzeile', () => {
+  it('nennt bei den Serien die komplett gesehenen als Hinweis', () => {
     render(<FriendComparisonCard friendName="VIC" own={own} friend={friend} loading={false} />);
 
-    expect(screen.getByText('davon 28 komplett')).toBeInTheDocument();
-    expect(screen.getByText('davon 20 komplett')).toBeInTheDocument();
+    expect(screen.getByTitle('davon 28 komplett')).toBeInTheDocument();
+    expect(screen.getByTitle('davon 20 komplett')).toBeInTheDocument();
   });
 
   it('zeigt waehrend des Ladens keinen Vergleich', () => {
@@ -89,7 +89,7 @@ describe('FriendComparisonCard', () => {
   it('fuehrt in die Rangliste', () => {
     render(<FriendComparisonCard friendName="VIC" own={own} friend={friend} loading={false} />);
 
-    fireEvent.click(screen.getByText('Zur Gesamt-Rangliste'));
+    fireEvent.click(screen.getByLabelText('Zur Gesamt-Rangliste'));
     expect(navigateMock).toHaveBeenCalledWith('/leaderboard');
   });
 

@@ -1,4 +1,4 @@
-import { Movie, Timer, Tv } from '@mui/icons-material';
+import { ChevronRight, Movie, Timer, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,14 +21,16 @@ interface Row {
   own: number;
   friend: number;
   format: (value: number) => string;
-  ownDetail?: string;
-  friendDetail?: string;
+  ownHint?: string;
+  friendHint?: string;
 }
 
-/** Anteil am jeweils groesseren Wert — beide Balken teilen sich eine Skala,
- *  sonst sieht ein Vorsprung von 5 % aus wie ein Erdrutsch. */
-const share = (value: number, max: number): number =>
-  max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
+/** Anteil der eigenen Seite am Tauziehen-Balken, nie ganz 0 oder 100. */
+const ownShare = (own: number, friend: number): number => {
+  const sum = own + friend;
+  if (sum <= 0) return 50;
+  return Math.min(96, Math.max(4, Math.round((own / sum) * 100)));
+};
 
 export const FriendComparisonCard = memo(function FriendComparisonCard({
   friendName,
@@ -45,7 +47,7 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
       {
         key: 'watchtime',
         label: 'Watchtime',
-        icon: <Timer sx={{ fontSize: 15 }} />,
+        icon: <Timer sx={{ fontSize: 14 }} />,
         own: own.watchtimeMinutes,
         friend: friend.watchtimeMinutes,
         format: formatTotalWatchtime,
@@ -53,17 +55,17 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
       {
         key: 'series',
         label: t('Serien'),
-        icon: <Tv sx={{ fontSize: 15 }} />,
+        icon: <Tv sx={{ fontSize: 14 }} />,
         own: own.seriesStarted,
         friend: friend.seriesStarted,
         format: (value) => String(value),
-        ownDetail: t('davon {n} komplett', { n: own.seriesCompleted }),
-        friendDetail: t('davon {n} komplett', { n: friend.seriesCompleted }),
+        ownHint: t('davon {n} komplett', { n: own.seriesCompleted }),
+        friendHint: t('davon {n} komplett', { n: friend.seriesCompleted }),
       },
       {
         key: 'movies',
         label: t('Filme'),
-        icon: <Movie sx={{ fontSize: 15 }} />,
+        icon: <Movie sx={{ fontSize: 14 }} />,
         own: own.movies,
         friend: friend.movies,
         format: (value) => String(value),
@@ -87,103 +89,73 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
     <section className="fp-compare" aria-label={t('Ihr im Vergleich')}>
       <header className="fp-compare-head">
         <h2 style={{ color: currentTheme.text.primary }}>{t('Ihr im Vergleich')}</h2>
-        <div className="fp-compare-names" style={{ color: currentTheme.text.muted }}>
-          <span>{t('Du')}</span>
-          <span>{friendName}</span>
-        </div>
+        <button
+          type="button"
+          className="fp-compare-link"
+          aria-label={t('Zur Gesamt-Rangliste')}
+          style={{ color: currentTheme.text.muted }}
+          onClick={() => navigate('/leaderboard')}
+        >
+          <ChevronRight style={{ fontSize: 18 }} />
+        </button>
       </header>
 
+      <div className="fp-compare-names" style={{ color: currentTheme.text.muted }}>
+        <span style={{ color: currentTheme.accent }}>{t('Du')}</span>
+        <span>{friendName}</span>
+      </div>
+
       {rows.map((row, index) => {
-        const max = Math.max(row.own, row.friend);
         const ownLeads = row.own > row.friend;
         const friendLeads = row.friend > row.own;
-
         return (
           <div className="fp-compare-row" key={row.key}>
-            <div className="fp-compare-label" style={{ color: currentTheme.text.secondary }}>
-              {row.icon}
-              <span>{row.label}</span>
+            <span
+              className="fp-compare-value fp-compare-value--own"
+              title={row.ownHint}
+              style={{
+                color: ownLeads ? currentTheme.accent : currentTheme.text.secondary,
+                fontWeight: ownLeads ? 800 : 600,
+              }}
+            >
+              {row.format(row.own)}
+            </span>
+            <div className="fp-compare-mid">
+              <span className="fp-compare-label" style={{ color: currentTheme.text.muted }}>
+                {row.icon}
+                {row.label}
+              </span>
+              <div
+                className="fp-compare-track"
+                style={{
+                  background: `color-mix(in srgb, ${currentTheme.text.secondary} 38%, transparent)`,
+                }}
+              >
+                <motion.div
+                  className="fp-compare-fill"
+                  initial={{ width: '50%' }}
+                  animate={{ width: `${ownShare(row.own, row.friend)}%` }}
+                  transition={{ duration: 0.6, delay: index * 0.08, ease: 'easeOut' }}
+                  style={{
+                    background: currentTheme.accent,
+                    boxShadow: `2px 0 0 ${currentTheme.background.default}`,
+                  }}
+                />
+              </div>
             </div>
-
-            <div className="fp-compare-duel">
-              <Side
-                align="left"
-                value={row.format(row.own)}
-                detail={row.ownDetail}
-                percent={share(row.own, max)}
-                leads={ownLeads}
-                delay={index * 0.08}
-              />
-              <Side
-                align="right"
-                value={row.format(row.friend)}
-                detail={row.friendDetail}
-                percent={share(row.friend, max)}
-                leads={friendLeads}
-                delay={index * 0.08}
-              />
-            </div>
+            <span
+              className="fp-compare-value fp-compare-value--friend"
+              title={row.friendHint}
+              style={{
+                color: friendLeads ? currentTheme.text.primary : currentTheme.text.secondary,
+                fontWeight: friendLeads ? 800 : 600,
+              }}
+            >
+              {row.format(row.friend)}
+            </span>
           </div>
         );
       })}
-
-      <button
-        type="button"
-        className="fp-compare-cta"
-        style={{ color: currentTheme.accent }}
-        onClick={() => navigate('/leaderboard')}
-      >
-        {t('Zur Gesamt-Rangliste')}
-      </button>
     </section>
   );
 });
-
-const Side = ({
-  align,
-  value,
-  detail,
-  percent,
-  leads,
-  delay,
-}: {
-  align: 'left' | 'right';
-  value: string;
-  detail?: string;
-  percent: number;
-  leads: boolean;
-  delay: number;
-}) => {
-  const { currentTheme } = useTheme();
-
-  return (
-    <div className={`fp-compare-side fp-compare-side--${align}`}>
-      <span
-        className="fp-compare-value"
-        style={{
-          color: leads ? currentTheme.accent : currentTheme.text.secondary,
-          fontWeight: leads ? 800 : 600,
-        }}
-      >
-        {value}
-      </span>
-      <div className="fp-compare-track">
-        <motion.div
-          className="fp-compare-fill"
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.6, delay, ease: 'easeOut' }}
-          style={{
-            background: leads ? currentTheme.accent : 'var(--glass-strong)',
-            boxShadow: leads ? `0 0 12px ${currentTheme.accent}66` : 'none',
-          }}
-        />
-      </div>
-      {detail && (
-        <span className="fp-compare-detail" style={{ color: currentTheme.text.muted }}>
-          {detail}
-        </span>
-      )}
-    </div>
-  );
-};

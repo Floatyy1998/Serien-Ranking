@@ -52,6 +52,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
+import { FriendComparisonCard } from '../FriendProfile/FriendComparisonCard';
+import '../FriendProfile/FriendProfilePage.css';
 import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
@@ -1041,6 +1043,52 @@ export const DetailActionsPreview = () => {
         <button type="button" className="hero-actions__btn hero-actions__btn--danger">
           <DeleteIcon style={{ fontSize: size }} />
         </button>
+      </div>
+    </div>
+  );
+};
+
+export const FriendInsightsPreview = () => {
+  const { currentTheme } = useTheme();
+  const own = {
+    watchtimeMinutes: 1077000,
+    seriesStarted: 439,
+    seriesCompleted: 402,
+    movies: 526,
+    episodes: 30000,
+  };
+  const friend = {
+    watchtimeMinutes: 402000,
+    seriesStarted: 281,
+    seriesCompleted: 216,
+    movies: 56,
+    episodes: 12000,
+  };
+  return (
+    <div
+      className="fp-page"
+      style={{ background: currentTheme.background.default, paddingTop: 16 }}
+    >
+      <div className="fp-insights">
+        <div className="fp-insights-row fp-insights-row--3">
+          <div className="fp-insights-placeholder">Gerade am Schauen</div>
+          <div className="fp-insights-placeholder">Pet</div>
+          <FriendComparisonCard friendName="Flo" own={own} friend={friend} loading={false} />
+        </div>
+      </div>
+      <div className="fp-grid-wrapper">
+        <RatingFolderGrid
+          theme={currentTheme}
+          folders={[
+            { id: 'a', name: 'Marvel', createdAt: 1, items: new Set() },
+            { id: 'b', name: 'Lieblingsfilme', createdAt: 2, items: new Set() },
+          ]}
+          previews={{
+            a: { count: 12, posters: [PLACEHOLDER_SVG, PLACEHOLDER_SVG, PLACEHOLDER_SVG] },
+            b: { count: 1, posters: [PLACEHOLDER_SVG] },
+          }}
+          onOpen={() => undefined}
+        />
       </div>
     </div>
   );

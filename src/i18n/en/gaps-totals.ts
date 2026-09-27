@@ -34,6 +34,8 @@ const dict: Record<string, string> = {
   Spitzenreiter: 'Leader',
   'Platz {n}': 'Rank {n}',
   Vorsprung: 'Lead',
+  'Keine Titel gefunden': 'No titles found',
+  'Diese Liste ist leer.': 'This list is empty.',
 };
 
 export default dict;

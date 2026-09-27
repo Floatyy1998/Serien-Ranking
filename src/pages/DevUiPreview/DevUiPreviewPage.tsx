@@ -11,6 +11,7 @@ import {
   CatchUpPreview,
   DropOffPreview,
   FriendAddCardPreview,
+  FriendInsightsPreview,
   FriendCalendarAddPreview,
   RatingFolderActionsPreview,
   RatingFolderBarPreview,
@@ -128,6 +129,7 @@ const LightboxPreview = () => {
 };
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
+  { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },
   { id: 'lightbox', label: 'Chat-Bild groß', render: () => <LightboxPreview /> },
   { id: 'avatar', label: 'Profilbild groß', render: () => <AvatarViewerPreview /> },

@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../db/ref';
+import { dbGet, dbRef, userPath } from '../db/ref';
 import { sharedListPath } from './sharedListService';
 import { subscribeValue } from '../db/subscribeValue';
 import {
@@ -19,6 +19,10 @@ export function subscribeRatingFolders(
     (snap) => onChange(expandRatingFolders(snap.val())),
     { label: 'ratingFolders' }
   );
+}
+
+export async function fetchRatingFolders(uid: string): Promise<RatingFolder[]> {
+  return expandRatingFolders(await dbGet(folderPath(uid)));
 }
 
 export async function createRatingFolder(

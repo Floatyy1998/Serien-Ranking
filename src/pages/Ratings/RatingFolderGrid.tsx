@@ -51,10 +51,11 @@ export const RatingFolderGrid = React.memo(
     folders: RatingFolder[];
     previews: Record<string, FolderPreview>;
     onOpen: (id: string) => void;
-    onCreate: () => void;
-    onLongPress: (folder: RatingFolder) => void;
+    onCreate?: () => void;
+    onLongPress?: (folder: RatingFolder) => void;
   }) => {
     const longPress = useLongPress<RatingFolder>((folder) => {
+      if (!onLongPress) return;
       hapticTap();
       onLongPress(folder);
     });
@@ -69,7 +70,7 @@ export const RatingFolderGrid = React.memo(
               className="rf-card"
               onClick={() => onOpen(folder.id)}
               aria-label={folder.name}
-              {...longPress(folder)}
+              {...(onLongPress ? longPress(folder) : {})}
             >
               <div className="rf-card__art" style={{ borderColor: theme.border.default }}>
                 <FolderCollage posters={preview.posters} theme={theme} />
@@ -83,20 +84,22 @@ export const RatingFolderGrid = React.memo(
             </button>
           );
         })}
-        <button type="button" className="rf-card" onClick={onCreate}>
-          <div
-            className="rf-card__art rf-card__art--new"
-            style={{ borderColor: theme.border.default, color: theme.text.muted }}
-          >
-            <PlaylistAdd style={{ fontSize: 40 }} />
-          </div>
-          <span className="rf-card__name" style={{ color: theme.text.secondary }}>
-            {t('Neue Liste')}
-          </span>
-          <span className="rf-card__count" style={{ color: theme.text.muted }}>
-            {folders.length === 0 ? t('z. B. Marvel oder Lieblingsfilme') : ' '}
-          </span>
-        </button>
+        {onCreate && (
+          <button type="button" className="rf-card" onClick={onCreate}>
+            <div
+              className="rf-card__art rf-card__art--new"
+              style={{ borderColor: theme.border.default, color: theme.text.muted }}
+            >
+              <PlaylistAdd style={{ fontSize: 40 }} />
+            </div>
+            <span className="rf-card__name" style={{ color: theme.text.secondary }}>
+              {t('Neue Liste')}
+            </span>
+            <span className="rf-card__count" style={{ color: theme.text.muted }}>
+              {folders.length === 0 ? t('z. B. Marvel oder Lieblingsfilme') : ' '}
+            </span>
+          </button>
+        )}
       </div>
     );
   }

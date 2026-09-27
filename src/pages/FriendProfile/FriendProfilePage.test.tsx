@@ -15,12 +15,16 @@ const { fpState } = vi.hoisted(() => ({
     loading: false,
     friendId: 'friend-1',
     friendName: 'Mia',
-    activeTab: 'series' as 'series' | 'movies',
+    activeTab: 'series' as 'series' | 'movies' | 'lists',
     setActiveTab: vi.fn(),
+    openFolderId: null as string | null,
+    setOpenFolderId: vi.fn(),
+    allSeries: [] as FpItem[],
+    allMovies: [] as FpItem[],
     filters: {} as Record<string, string>,
     setFilters: vi.fn(),
-    ratedSeries: [{ id: 1 }],
-    ratedMovies: [],
+    ratedSeries: [{ id: 1 }] as unknown as FpItem[],
+    ratedMovies: [] as FpItem[],
     currentItems: [{ id: 1, title: 'Fringe', poster: '/p.jpg', seasons: [{}] }] as FpItem[],
     averageRating: 8.4,
     itemsWithRatingCount: 3,
@@ -81,11 +85,37 @@ vi.mock('./FriendCurrentlyWatchingCard', () => ({ FriendCurrentlyWatchingCard: (
 vi.mock('./FriendAnticipationSection', () => ({ FriendAnticipationSection: () => null }));
 vi.mock('./FriendPetCard', () => ({ FriendPetCard: () => null }));
 vi.mock('./FriendComparisonCard', () => ({ FriendComparisonCard: () => null }));
+const { foldersState } = vi.hoisted(() => ({
+  foldersState: {
+    folders: [] as { id: string; name: string; createdAt: number; items: Set<string> }[],
+    loading: false,
+  },
+}));
+vi.mock('./useFriendFolders', () => ({ useFriendFolders: () => foldersState }));
+vi.mock('../Ratings/RatingFolderGrid', () => ({
+  RatingFolderGrid: ({
+    folders,
+    onOpen,
+  }: {
+    folders: { id: string; name: string }[];
+    onOpen: (id: string) => void;
+  }) => (
+    <div>
+      {folders.map((f) => (
+        <button key={f.id} onClick={() => onOpen(f.id)}>
+          folder-{f.name}
+        </button>
+      ))}
+    </div>
+  ),
+}));
 vi.mock('./useFriendComparison', () => ({
   useFriendComparison: () => ({ own: {}, friend: null, loading: false }),
 }));
 vi.mock('@mui/icons-material', () => ({
+  ArrowBack: () => null,
   ChatBubbleOutlined: () => null,
+  ListAlt: () => null,
   CompareArrows: () => null,
   ExpandLess: () => null,
   ExpandMore: () => null,
@@ -164,6 +194,10 @@ import { FriendProfilePage } from './FriendProfilePage';
 beforeEach(() => {
   fpState.loading = false;
   fpState.activeTab = 'series';
+  fpState.openFolderId = null;
+  fpState.ratedMovies = [];
+  fpState.ratedSeries = [{ id: 1 }] as unknown as FpItem[];
+  foldersState.folders = [];
   friendsState.friends = [{ uid: 'friend-1' }];
   friendsState.loading = false;
   friendsState.sentRequests = [];
@@ -203,6 +237,32 @@ describe('FriendProfilePage', () => {
     render(<FriendProfilePage />);
     fireEvent.click(screen.getByText('tab-Filme'));
     expect(fpState.setActiveTab).toHaveBeenCalledWith('movies');
+  });
+
+  it('zeigt den Listen-Reiter nur, wenn der Freund Listen hat', () => {
+    render(<FriendProfilePage />);
+    expect(screen.queryByText('tab-Listen')).not.toBeInTheDocument();
+    cleanup();
+
+    foldersState.folders = [{ id: 'f1', name: 'Marvel', createdAt: 1, items: new Set(['s_1']) }];
+    render(<FriendProfilePage />);
+    fireEvent.click(screen.getByText('tab-Listen'));
+    expect(fpState.setActiveTab).toHaveBeenCalledWith('lists');
+  });
+
+  it('oeffnet eine Liste des Freundes und zeigt nur ihre Titel', () => {
+    foldersState.folders = [{ id: 'f1', name: 'Marvel', createdAt: 1, items: new Set(['s_1']) }];
+    fpState.activeTab = 'lists';
+    fpState.ratedSeries = [{ id: 1, title: 'Fringe', poster: '/p.jpg', seasons: [{}] }];
+    render(<FriendProfilePage />);
+    fireEvent.click(screen.getByText('folder-Marvel'));
+    expect(fpState.setOpenFolderId).toHaveBeenCalledWith('f1');
+    cleanup();
+
+    fpState.openFolderId = 'f1';
+    render(<FriendProfilePage />);
+    expect(screen.getByText('Marvel')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fringe' })).toBeInTheDocument();
   });
 
   it('shows the empty state when there are no items', () => {
