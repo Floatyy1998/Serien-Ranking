@@ -436,6 +436,10 @@
 
 /* Liste teilen */
 
+.rf-share {
+  gap: 16px;
+}
+
 .rf-share__preview {
   overflow: hidden;
   aspect-ratio: 20 / 13;
@@ -461,6 +465,27 @@
   text-align: center;
 }
 
+.rf-share__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rf-share__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rf-share__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
 .rf-share__hint {
   margin: 0;
   font-size: 13px;
@@ -468,13 +493,85 @@
   text-align: center;
 }
 
+.rf-share__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 8px 0 14px;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rf-share__url {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-share .rf-chip:disabled,
+.rf-share .rf-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .rf-share .rf-btn--primary {
   width: 100%;
 }
 
-.rf-share .rf-action:disabled {
-  opacity: 0.45;
-  cursor: default;
+.rf-share__stop,
+.mobile-app button.rf-share__stop {
+  justify-content: center;
+}
+
+@media (max-width: 899px) {
+  .rf-share {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rf-share__side {
+    display: contents;
+  }
+
+  .rf-share__head {
+    order: -1;
+  }
+}
+
+@media (min-width: 900px) {
+  .rf-share {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+    align-items: center;
+    gap: 28px;
+    padding: 8px 28px 28px;
+  }
+
+  .rf-share__title,
+  .rf-share__hint {
+    text-align: left;
+  }
+
+  .rf-share__title {
+    font-size: 26px;
+  }
+
+  .rf-share__hint {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .rf-share__stop,
+  .mobile-app button.rf-share__stop {
+    justify-content: flex-start;
+  }
 }
 
 .rf-icon-btn--active,

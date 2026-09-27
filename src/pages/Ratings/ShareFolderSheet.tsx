@@ -2,6 +2,7 @@ import { IosShare, LinkOff, LinkOutlined } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { BottomSheet } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { useTheme } from '../../contexts/ThemeContext';
@@ -47,6 +48,7 @@ export const ShareFolderSheet = ({
   onClose: () => void;
 }) => {
   const { user } = useAuth() || {};
+  const { isMobile } = useDeviceType();
   const { allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const [prepared, setPrepared] = useState<Prepared | null>(null);
@@ -136,14 +138,17 @@ export const ShareFolderSheet = ({
     }
   };
 
+  const linkText = folder ? sharedListUrl(folder.id).replace(/^https:\/\//, '') : '';
+
   return (
-    <BottomSheet isOpen={!!folder} onClose={onClose} ariaLabel={t('Liste teilen')}>
+    <BottomSheet
+      isOpen={!!folder}
+      onClose={onClose}
+      ariaLabel={t('Liste teilen')}
+      maxWidth={isMobile ? undefined : 'min(1040px, 94vw)'}
+    >
       {folder && (
         <div className="rf-sheet rf-actions-sheet rf-share">
-          <h3 className="rf-sheet__title" style={{ color: theme.text.primary }}>
-            {t('Liste teilen')}
-          </h3>
-
           <div className="rf-share__preview" style={{ borderColor: theme.border.default }}>
             {ready?.previewUrl ? (
               <img src={ready.previewUrl} alt={folder.name} />
@@ -154,46 +159,61 @@ export const ShareFolderSheet = ({
             )}
           </div>
 
-          <p className="rf-share__hint" style={{ color: theme.text.muted }}>
-            {t(
-              'Jeder mit dem Link sieht die Liste, auch ohne Konto. Änderungen an der Liste werden automatisch übernommen.'
-            )}
-          </p>
+          <div className="rf-share__side">
+            <div className="rf-share__head">
+              <h3 className="rf-share__title" style={{ color: theme.text.primary }}>
+                {t('Liste teilen')}
+              </h3>
+              <p className="rf-share__hint" style={{ color: theme.text.muted }}>
+                {t(
+                  'Jeder mit dem Link sieht die Liste, auch ohne Konto. Änderungen an der Liste werden automatisch übernommen.'
+                )}
+              </p>
+            </div>
 
-          <button
-            type="button"
-            className="rf-btn rf-btn--primary"
-            disabled={!ready}
-            onClick={() => void handleShare()}
-            style={{
-              background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
-              color: theme.background.default,
-            }}
-          >
-            <IosShare style={{ fontSize: 20 }} />
-            {t('Teilen')}
-          </button>
-          <button
-            type="button"
-            className="rf-action"
-            disabled={!ready}
-            onClick={() => void handleCopy()}
-            style={{ borderColor: theme.border.default, color: theme.text.primary }}
-          >
-            <LinkOutlined style={{ fontSize: 22 }} />
-            {t('Link kopieren')}
-          </button>
-          {(folder.shared || ready) && (
+            <div
+              className="rf-share__link"
+              style={{ borderColor: theme.border.default, color: theme.text.secondary }}
+            >
+              <LinkOutlined style={{ fontSize: 20, color: theme.text.muted }} />
+              <span className="rf-share__url">{linkText}</span>
+              <button
+                type="button"
+                className="rf-chip rf-chip--small"
+                disabled={!ready}
+                onClick={() => void handleCopy()}
+                style={{ borderColor: theme.border.default, color: theme.text.primary }}
+              >
+                {t('Link kopieren')}
+              </button>
+            </div>
+
             <button
               type="button"
-              className="rf-action rf-action--quiet"
-              onClick={() => void handleStop()}
-              style={{ borderColor: 'transparent', color: theme.status.error }}
+              className="rf-btn rf-btn--primary"
+              disabled={!ready}
+              onClick={() => void handleShare()}
+              style={{
+                background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
+                color: theme.background.default,
+              }}
             >
-              <LinkOff style={{ fontSize: 20 }} />
-              {t('Teilen beenden')}
+              <IosShare style={{ fontSize: 20 }} />
+              {t('Teilen')}
             </button>
-          )}
+
+            {(folder.shared || ready) && (
+              <button
+                type="button"
+                className="rf-action rf-action--quiet rf-share__stop"
+                onClick={() => void handleStop()}
+                style={{ borderColor: 'transparent', color: theme.status.error }}
+              >
+                <LinkOff style={{ fontSize: 20 }} />
+                {t('Teilen beenden')}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </BottomSheet>

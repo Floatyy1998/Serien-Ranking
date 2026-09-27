@@ -5,7 +5,7 @@ import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { shareLink } from '../../services/share/shareLink';
-import { getImageUrl } from '../../utils/imageUrl';
+import { getImageUrl, readableImageUrl } from '../../utils/imageUrl';
 import { BottomSheet } from '../ui';
 import { FriendPicker } from './FriendPicker';
 import { RecommendMessageInput } from './RecommendMessageInput';
@@ -65,7 +65,7 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
     ) {
       try {
         const posterUrl = getImageUrl(media.posterPath, 'w500', '');
-        const res = posterUrl ? await fetch(posterUrl) : null;
+        const res = posterUrl ? await fetch(readableImageUrl(posterUrl)) : null;
         if (res?.ok) {
           const blob = await res.blob();
           const file = new File([blob], 'poster.jpg', { type: blob.type || 'image/jpeg' });

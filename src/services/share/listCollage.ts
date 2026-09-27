@@ -3,7 +3,7 @@
  * externen Teilen als Foto angehängt. Poster kommen per fetch als Blob, damit
  * der Canvas nicht durch Cross-Origin-Bilder gesperrt wird.
  */
-import { getImageUrl } from '../../utils/imageUrl';
+import { getImageUrl, readableImageUrl } from '../../utils/imageUrl';
 
 const WIDTH = 1200;
 const HEIGHT = 780;
@@ -20,7 +20,7 @@ async function loadPoster(path: string): Promise<ImageBitmap | null> {
   const url = getImageUrl(path, 'w500', '');
   if (!url) return null;
   try {
-    const res = await fetch(url);
+    const res = await fetch(readableImageUrl(url));
     if (!res.ok) return null;
     return await createImageBitmap(await res.blob());
   } catch {
@@ -104,15 +104,16 @@ export async function renderListCollage(options: {
     });
   }
 
+  const textTop = n > 0 ? top + POSTER_H + 60 : HEIGHT / 2 - 70;
   const family = cssVar('--font-display', 'system-ui, sans-serif');
   ctx.textAlign = 'center';
   ctx.fillStyle = text;
   ctx.font = `800 64px ${family}`;
-  ctx.fillText(fitText(ctx, options.name, WIDTH - 120), WIDTH / 2, top + POSTER_H + 100);
+  ctx.fillText(fitText(ctx, options.name, WIDTH - 120), WIDTH / 2, textTop + 40);
 
   ctx.globalAlpha = 0.72;
   ctx.font = `500 32px ${family}`;
-  ctx.fillText(fitText(ctx, options.subtitle, WIDTH - 120), WIDTH / 2, top + POSTER_H + 150);
+  ctx.fillText(fitText(ctx, options.subtitle, WIDTH - 120), WIDTH / 2, textTop + 90);
   ctx.globalAlpha = 1;
 
   const brand = ctx.createLinearGradient(WIDTH / 2 - 90, 0, WIDTH / 2 + 90, 0);

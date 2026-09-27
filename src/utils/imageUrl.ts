@@ -68,3 +68,10 @@ export const getPosterSrcSet = (posterObj: PosterInput): string => {
     `${TMDB_BASE}/w780${path} 780w`,
   ].join(', ');
 };
+
+/**
+ * Eigener Cache-Schlüssel für per fetch() gelesene Bilder: der Service Worker hält
+ * TMDB-Poster aus <img>-Ladevorgängen als opaque Antwort, die fetch() nicht lesen kann.
+ */
+export const readableImageUrl = (url: string): string =>
+  url ? `${url}${url.includes('?') ? '&' : '?'}cors=1` : url;
