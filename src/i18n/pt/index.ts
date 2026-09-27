@@ -29,6 +29,7 @@ import native from './native';
 import onboarding from './onboarding';
 import pets from './pets';
 import settings from './settings';
+import sharedLists from './shared-lists';
 import tour from './tour';
 import social from './social';
 import watchplan from './watchplan';
@@ -58,6 +59,7 @@ const pt: Record<string, string> = {
   ...onboarding,
   ...pets,
   ...settings,
+  ...sharedLists,
   ...tour,
   ...social,
   ...watchplan,

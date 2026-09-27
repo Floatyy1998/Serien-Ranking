@@ -4,7 +4,12 @@
  * bzw. das Backend das Abbruch-Aggregat schreibt.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { SharedList } from '../../lib/rating/sharedList';
+import { renderListCollage } from '../../services/share/listCollage';
+import { listSubtitle } from '../SharedList/listSubtitle';
+import { SharedListPage } from '../SharedList/SharedListPage';
+import { ShareFolderSheet } from '../Ratings/ShareFolderSheet';
 import {
   EmojiEvents,
   ListAlt,
@@ -808,6 +813,7 @@ export const RatingFolderBarPreview = () => {
           count={5}
           onBack={() => {}}
           onEdit={() => {}}
+          onShare={() => {}}
         />
       </div>
     </div>
@@ -823,6 +829,7 @@ export const RatingFolderActionsPreview = () => {
         folder={previewFolders[0]}
         onClose={() => {}}
         onEdit={() => {}}
+        onShare={() => {}}
         onDelete={() => {}}
       />
     </div>
@@ -920,3 +927,72 @@ export const WatchNextBadgePreview = () => (
     onToggleOnlyMySubs={() => {}}
   />
 );
+
+const previewSharedList: SharedList = {
+  id: 'preview',
+  owner: 'someone',
+  ownerName: 'Konrad',
+  name: 'Marvel Marathon',
+  updatedAt: 0,
+  items: [
+    { k: 's', id: 84958, t: 'Loki', p: '/kEl2t3OhXc3Zb9FBh1AuYzRTgZp.jpg', r: 9.2, y: '2021' },
+    { k: 'm', id: 1726, t: 'Iron Man', p: '/78lPtwv72eTNqFW9COBYI0dWDJa.jpg', r: 8.5, y: '2008' },
+    {
+      k: 'm',
+      id: 24428,
+      t: 'The Avengers',
+      p: '/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg',
+      r: 8.1,
+      y: '2012',
+    },
+    {
+      k: 's',
+      id: 85271,
+      t: 'WandaVision',
+      p: '/glKDfE6btIRcVB5zrjspRIs4r52.jpg',
+      r: 7.9,
+      y: '2021',
+    },
+    {
+      k: 'm',
+      id: 299534,
+      t: 'Avengers: Endgame',
+      p: '/or06FN3Dka5tukK1e9sl16pB3iy.jpg',
+      y: '2019',
+    },
+    { k: 's', id: 61889, t: 'Daredevil', y: '2015' },
+  ],
+};
+
+export const SharedListGuestPreview = () => (
+  <SharedListPage listId="preview" preview={{ list: previewSharedList, guest: true }} />
+);
+
+export const SharedListUserPreview = () => (
+  <SharedListPage listId="preview" preview={{ list: previewSharedList, guest: false }} />
+);
+
+export const ListCollagePreview = () => {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    void renderListCollage({
+      name: previewSharedList.name,
+      subtitle: listSubtitle(previewSharedList.ownerName, previewSharedList.items.length),
+      posterPaths: previewSharedList.items.filter((i) => i.p).map((i) => i.p as string),
+    }).then((blob) => blob && setUrl(URL.createObjectURL(blob)));
+  }, []);
+  return url ? <img src={url} alt="" style={{ width: '100%', display: 'block' }} /> : null;
+};
+
+export const ShareFolderSheetPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <ShareFolderSheet
+        theme={currentTheme}
+        folder={{ ...previewFolders[0], shared: true }}
+        onClose={() => {}}
+      />
+    </div>
+  );
+};

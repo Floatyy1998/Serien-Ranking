@@ -1,4 +1,11 @@
-import { ArrowBack, DeleteOutlined, EditOutlined, ListAlt, PlaylistAdd } from '@mui/icons-material';
+import {
+  ArrowBack,
+  DeleteOutlined,
+  EditOutlined,
+  IosShare,
+  ListAlt,
+  PlaylistAdd,
+} from '@mui/icons-material';
 import React from 'react';
 import { BottomSheet } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContext';
@@ -103,12 +110,14 @@ export const RatingFolderBar = ({
   count,
   onBack,
   onEdit,
+  onShare,
 }: {
   theme: Theme;
   folder: RatingFolder;
   count: number;
   onBack: () => void;
   onEdit: () => void;
+  onShare: () => void;
 }) => (
   <div className="rf-bar">
     <button
@@ -130,6 +139,18 @@ export const RatingFolderBar = ({
     </div>
     <button
       type="button"
+      className={`rf-icon-btn${folder.shared ? ' rf-icon-btn--active' : ''}`}
+      onClick={onShare}
+      aria-label={t('Liste teilen')}
+      style={{
+        borderColor: folder.shared ? theme.primary : theme.border.default,
+        color: folder.shared ? theme.primary : theme.text.secondary,
+      }}
+    >
+      <IosShare style={{ fontSize: 19 }} />
+    </button>
+    <button
+      type="button"
       className="rf-chip"
       onClick={onEdit}
       style={{ borderColor: theme.border.default, color: theme.text.secondary }}
@@ -145,12 +166,14 @@ export const RatingFolderActionsSheet = ({
   folder,
   onClose,
   onEdit,
+  onShare,
   onDelete,
 }: {
   theme: Theme;
   folder: RatingFolder | null;
   onClose: () => void;
   onEdit: (folder: RatingFolder) => void;
+  onShare: (folder: RatingFolder) => void;
   onDelete: (folder: RatingFolder) => void;
 }) => (
   <BottomSheet isOpen={!!folder} onClose={onClose} ariaLabel={folder?.name ?? t('Listen')}>
@@ -170,6 +193,23 @@ export const RatingFolderActionsSheet = ({
         >
           <EditOutlined style={{ fontSize: 22 }} />
           {t('Bearbeiten')}
+        </button>
+        <button
+          type="button"
+          className="rf-action"
+          onClick={() => {
+            onClose();
+            onShare(folder);
+          }}
+          style={{ borderColor: theme.border.default, color: theme.text.primary }}
+        >
+          <IosShare style={{ fontSize: 22 }} />
+          <span className="rf-action__label">{t('Teilen')}</span>
+          {folder.shared && (
+            <span className="rf-action__meta" style={{ color: theme.primary }}>
+              {t('Geteilt')}
+            </span>
+          )}
         </button>
         <button
           type="button"

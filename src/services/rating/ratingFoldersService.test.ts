@@ -59,7 +59,7 @@ describe('ratingFoldersService', () => {
       val: { name: 'Neu', createdAt: 7, items: { s_2: true, m_3: true } },
     });
     await deleteRatingFolder('u1', 'f1');
-    expect(fb.calls.remove).toEqual(['users/u1/ratingFolders/f1']);
+    expect(fb.calls.remove).toEqual(['users/u1/ratingFolders/f1', 'sharedLists/f1']);
     await restoreRatingFolder('u1', folder);
     expect(fb.calls.set[1].val).toEqual({ name: 'Alt', createdAt: 7, items: { s_2: true } });
   });

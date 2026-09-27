@@ -6,6 +6,7 @@ export interface StoredRatingFolder {
   name?: string;
   createdAt?: number;
   items?: Record<string, boolean>;
+  shared?: boolean;
 }
 
 export interface RatingFolder {
@@ -13,6 +14,7 @@ export interface RatingFolder {
   name: string;
   createdAt: number;
   items: Set<string>;
+  shared?: boolean;
 }
 
 export const folderItemKey = (kind: FolderItemKind, id: number | string): string =>
@@ -33,7 +35,13 @@ export function expandRatingFolders(
         .filter(([, on]) => on === true)
         .map(([key]) => key)
     );
-    folders.push({ id, name: value.name, createdAt: value.createdAt ?? 0, items });
+    folders.push({
+      id,
+      name: value.name,
+      createdAt: value.createdAt ?? 0,
+      items,
+      shared: value.shared === true,
+    });
   }
   return folders.sort((a, b) => a.createdAt - b.createdAt || a.name.localeCompare(b.name));
 }
@@ -41,9 +49,12 @@ export function expandRatingFolders(
 export function compactRatingFolder(
   name: string,
   items: Iterable<string>,
-  createdAt: number
+  createdAt: number,
+  shared = false
 ): StoredRatingFolder {
   const record: Record<string, boolean> = {};
   for (const key of items) record[key] = true;
-  return { name: normalizeFolderName(name), createdAt, items: record };
+  const folder: StoredRatingFolder = { name: normalizeFolderName(name), createdAt, items: record };
+  if (shared) folder.shared = true;
+  return folder;
 }

@@ -1,4 +1,5 @@
 import { dbRef, userPath } from '../db/ref';
+import { sharedListPath } from './sharedListService';
 import { subscribeValue } from '../db/subscribeValue';
 import {
   compactRatingFolder,
@@ -37,17 +38,20 @@ export async function saveRatingFolder(
   items: Iterable<string>
 ): Promise<void> {
   await dbRef(folderPath(uid, folder.id)).set(
-    compactRatingFolder(name, items, folder.createdAt || Date.now())
+    compactRatingFolder(name, items, folder.createdAt || Date.now(), folder.shared)
   );
 }
 
 export async function deleteRatingFolder(uid: string, id: string): Promise<void> {
   await dbRef(folderPath(uid, id)).remove();
+  await dbRef(sharedListPath(id))
+    .remove()
+    .catch(() => {});
 }
 
 export async function restoreRatingFolder(uid: string, folder: RatingFolder): Promise<void> {
   await dbRef(folderPath(uid, folder.id)).set(
-    compactRatingFolder(folder.name, folder.items, folder.createdAt)
+    compactRatingFolder(folder.name, folder.items, folder.createdAt, folder.shared)
   );
 }
 

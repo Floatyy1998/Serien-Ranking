@@ -34,6 +34,7 @@ import { markMovieWatched } from '../../services/rating/quickRating';
 import { RatingCompactRow } from './RatingCompactRow';
 import { RatingFolderActionsSheet, RatingFolderBar, RatingFolderGrid } from './RatingFolderGrid';
 import { RatingFolderSheet, type RatingFolderSheetState } from './RatingFolderSheet';
+import { ShareFolderSheet } from './ShareFolderSheet';
 import { deleteFolderWithUndo } from './deleteFolderWithUndo';
 import { RatingItemActions } from './RatingItemActions';
 import { itemFolderKey } from './ratingsHelpers';
@@ -138,6 +139,11 @@ export const RatingsPage: React.FC = () => {
   );
 
   const [actionFolder, setActionFolder] = useState<NonNullable<typeof activeFolder> | null>(null);
+  const [shareFolderId, setShareFolderId] = useState<string | null>(null);
+  const shareFolder = useMemo(
+    () => (shareFolderId ? (folders.find((f) => f.id === shareFolderId) ?? null) : null),
+    [folders, shareFolderId]
+  );
   const [folderSheet, setFolderSheet] = useState<RatingFolderSheetState>({ open: false });
   const openNewFolder = useCallback(() => setFolderSheet({ open: true, folder: null }), []);
   const openEditFolder = useCallback(
@@ -239,6 +245,7 @@ export const RatingsPage: React.FC = () => {
             count={folderPreviews[activeFolder.id]?.count ?? 0}
             onBack={() => handleFolderChange(null)}
             onEdit={() => openEditFolder(activeFolder)}
+            onShare={() => setShareFolderId(activeFolder.id)}
           />
         )}
 
@@ -365,9 +372,16 @@ export const RatingsPage: React.FC = () => {
         folder={actionFolder}
         onClose={() => setActionFolder(null)}
         onEdit={openEditFolder}
+        onShare={(folder) => setShareFolderId(folder.id)}
         onDelete={(folder) => {
           if (user) void deleteFolderWithUndo(user.uid, folder, handleFolderDeleted);
         }}
+      />
+
+      <ShareFolderSheet
+        theme={currentTheme}
+        folder={shareFolder}
+        onClose={() => setShareFolderId(null)}
       />
 
       <RatingFolderSheet

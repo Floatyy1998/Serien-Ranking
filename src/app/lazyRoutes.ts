@@ -355,6 +355,12 @@ export const ChatThreadPage = lazyWithRetry(() =>
   }))
 );
 
+export const SharedListPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "shared-list" */ '../pages/SharedList').then((m) => ({
+    default: m.SharedListPage,
+  }))
+);
+
 // Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys.
 //
 // iOS-Shell (kein Service Worker!) braucht den VOLL-Preload aller Routen als
@@ -399,6 +405,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/SerienKalender'),
     () => import('../pages/FilmKalender'),
     () => import('../pages/Chats'),
+    () => import('../pages/SharedList'),
     () => import('../pages/Wrapped'),
     () => import('../pages/WatchJourney'),
     () => import('../pages/TasteMatch'),

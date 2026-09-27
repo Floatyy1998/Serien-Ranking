@@ -15,6 +15,7 @@ import { t } from '../services/i18n';
 import { LoadingSpinner } from '../components/ui/feedback/LoadingSpinner';
 import { PushOptInPrompt } from '../components/PushOptInPrompt';
 import { WidgetDataSync } from '../components/WidgetDataSync';
+import { SharedListSync } from '../components/SharedListSync';
 import { EpisodeRatingSheetHost } from '../components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from '../components/AvatarViewerHost';
 import { bindOwnPhotoURL } from '../services/profile/ownProfilePhoto';
@@ -61,6 +62,7 @@ import {
   ChatsPage,
   ChatThreadPage,
   preloadRoutes,
+  SharedListPage,
 } from './lazyRoutes';
 
 // Nur im Dev-Server: Vorschau aller neuen Pet-Inhalte unter /dev/pet-preview
@@ -237,6 +239,7 @@ export const MobileApp = () => {
       <ScrollToTop />
       <PushOptInPrompt />
       <WidgetDataSync />
+      <SharedListSync />
       <EpisodeRatingSheetHost />
       <PageTourHost />
       <AvatarViewerHost />
@@ -357,6 +360,7 @@ export const MobileApp = () => {
               <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
               <Route path="/watch-journey" element={<WatchJourneyPage />} />
               <Route path="/hidden-series" element={<HiddenSeriesPage />} />
+              <Route path="/list/:id" element={<SharedListPage />} />
               <Route
                 path="/anime-season"
                 element={

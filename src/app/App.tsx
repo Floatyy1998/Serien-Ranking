@@ -73,6 +73,11 @@ const GuestMediaPage = lazyWithRetry(() =>
     default: m.GuestMediaPage,
   }))
 );
+const SharedListPage = lazyWithRetry(() =>
+  import('../pages/SharedList').then((m) => ({
+    default: m.SharedListPage,
+  }))
+);
 const PrivacyPage = lazyWithRetry(() =>
   import('../pages/Privacy').then((m) => ({
     default: m.PrivacyPage,
@@ -89,7 +94,7 @@ const ImpressumPage = lazyWithRetry(() =>
   }))
 );
 
-// Ausgeloggt: geteilte Detail-Links (/series/:id, /movie/:id) zeigen die
+// Ausgeloggt: geteilte Detail-Links (/series/:id, /movie/:id, /list/:id) zeigen die
 // öffentliche Gast-Seite mit Register-CTA statt der Login-Wand (Option B:
 // nur Share-Ziele sind public, der Rest führt zur StartPage).
 const GuestRouteSwitch = () => {
@@ -97,6 +102,8 @@ const GuestRouteSwitch = () => {
   // Die Dev-Vorschauen brauchen kein Konto — sonst laufen sie beim Screenshot-
   // Durchlauf auf der StartPage statt auf der Komponente, die geprueft wird.
   if (import.meta.env.DEV && pathname.startsWith('/dev/')) return <MobileApp />;
+  const list = pathname.match(/^\/list\/([\w-]{1,64})/);
+  if (list) return <SharedListPage listId={list[1]} />;
   const match = pathname.match(/^\/(series|movie)\/(\d+)/);
   if (match) {
     return (
