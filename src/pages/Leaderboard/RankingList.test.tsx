@@ -83,4 +83,16 @@ describe('RankingList', () => {
     fireEvent.click(screen.getByText('Du'));
     expect(navigateMock).not.toHaveBeenCalled();
   });
+
+  it('separates an own entry that sits below the visible top list', () => {
+    const entries = [
+      entry({ uid: 'a', rank: 19 }),
+      entry({ uid: 'b', rank: 20 }),
+      entry({ uid: 'me', isCurrentUser: true, rank: 27 }),
+    ];
+    const { container } = render(
+      <RankingList entries={entries} category="episodesThisMonth" unit="Ep." />
+    );
+    expect(container.querySelectorAll('.lb-race-gap')).toHaveLength(1);
+  });
 });

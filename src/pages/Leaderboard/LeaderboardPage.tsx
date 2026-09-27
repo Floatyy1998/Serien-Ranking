@@ -79,6 +79,8 @@ const TOTAL_CATEGORIES: CategoryDef[] = [
   },
 ];
 
+const TOP_LIMIT = 20;
+
 export const LeaderboardPage = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -108,7 +110,11 @@ export const LeaderboardPage = () => {
     [categories, activeCategory]
   );
   const topThree = rankings.slice(0, 3);
-  const rest = rankings.slice(3);
+  const rest = useMemo(() => {
+    const visible = rankings.slice(3, TOP_LIMIT);
+    const self = rankings.find((entry) => entry.isCurrentUser);
+    return self && self.rank > TOP_LIMIT ? [...visible, self] : visible;
+  }, [rankings]);
 
   const controls = (
     <div className="lb-deck">

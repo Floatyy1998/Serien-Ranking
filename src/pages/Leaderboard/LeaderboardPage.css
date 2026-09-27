@@ -457,6 +457,17 @@
   margin: 0 16px;
 }
 
+.lb-race-gap {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin: 6px 12px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--glass-border-subtle) 0 6px,
+    transparent 6px 12px
+  );
+}
+
 .lb-lane {
   display: grid;
   grid-template-columns: 22px auto 1fr;
