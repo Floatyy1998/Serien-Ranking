@@ -881,3 +881,127 @@
     max-width: none;
   }
 }
+
+/* Desktop: Insights flach halten — Mobile bleibt wie es ist */
+@media (min-width: 1100px) {
+  .fp-insights-content {
+    gap: 14px;
+  }
+
+  .fp-watching-card,
+  .fp-pet-card {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .fp-watching-poster {
+    width: 92px;
+  }
+
+  .fp-watching-body {
+    gap: 4px;
+  }
+
+  .fp-watching-title,
+  .fp-pet-name {
+    font-size: 17px;
+  }
+
+  .fp-watching-chips {
+    margin-top: 2px;
+  }
+
+  .fp-watching-spoiler {
+    padding-top: 6px;
+  }
+
+  .fp-pet-sprite {
+    width: 92px;
+  }
+
+  .fp-pet-stats {
+    gap: 6px;
+    margin: 6px 0 10px;
+  }
+
+  .fp-pet-stat-label {
+    margin-bottom: 3px;
+  }
+
+  .fp-pet-snack-btn,
+  .mobile-app button.fp-pet-snack-btn {
+    min-height: 34px;
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .fp-compare {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .fp-compare-head {
+    align-items: center;
+  }
+
+  .fp-compare-titles {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .fp-compare-link,
+  .mobile-app button.fp-compare-link {
+    width: 24px;
+    height: 24px;
+  }
+
+  .fp-compare-list {
+    display: grid;
+    grid-template-columns: auto minmax(40px, 1fr) auto;
+    grid-auto-flow: row dense;
+    align-content: space-evenly;
+    column-gap: 10px;
+    row-gap: 3px;
+  }
+
+  .fp-compare-row,
+  .fp-compare-values {
+    display: contents;
+  }
+
+  .fp-compare-label {
+    grid-column: 1 / -1;
+  }
+
+  .fp-compare-row:not(:first-child) .fp-compare-label {
+    margin-top: 6px;
+  }
+
+  .fp-compare-track {
+    grid-column: 2;
+    align-self: center;
+  }
+
+  .fp-compare-values > :first-child {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .fp-compare-values > :last-child {
+    grid-column: 3;
+    text-align: right;
+  }
+
+  .fp-compare-values span {
+    font-size: 13.5px;
+  }
+
+  .fp-anticipation-item {
+    padding: 8px;
+  }
+
+  .fp-anticipation-poster {
+    width: 44px;
+  }
+}
