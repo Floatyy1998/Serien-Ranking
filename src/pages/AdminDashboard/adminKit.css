@@ -92,6 +92,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.adm-note {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--adm-muted);
+}
+
 /* ── Tabelle ─────────────────────────────────────────────────────────── */
 .adm-table__wrap {
   overflow-x: auto;
@@ -472,6 +478,7 @@
 }
 
 .adm-chip {
+  text-decoration: none;
   padding: 6px 14px;
   border-radius: var(--radius-full);
   cursor: pointer;
@@ -601,6 +608,16 @@
 .adm-row__acts {
   display: flex;
   gap: 2px;
+}
+
+@media (max-width: 520px) {
+  .adm-row__head {
+    grid-template-columns: 4px auto 1fr;
+  }
+
+  .adm-row__acts {
+    grid-column: 3;
+  }
 }
 
 .adm-row__body {

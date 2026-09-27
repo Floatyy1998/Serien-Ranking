@@ -12,6 +12,7 @@ import {
   HealthAndSafety,
   History,
   Message,
+  NewReleases,
   Refresh,
   ReportProblem,
   Settings,
@@ -41,6 +42,7 @@ import { TicketsTab } from './tabs/TicketsTab';
 import { ConfigTab } from './tabs/ConfigTab';
 import { NewEpisodesTab } from './tabs/NewEpisodesTab';
 import { AnimeFillerTab } from './tabs/AnimeFillerTab';
+import { TmdbAheadTab } from './tabs/TmdbAheadTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
 import { ModerationTab } from './tabs/ModerationTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
@@ -103,6 +105,12 @@ const TABS = [
     label: 'Neue Folgen',
     group: 'Inhalte',
     icon: <FiberNew style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'tmdb-ahead',
+    label: 'TMDB voraus',
+    group: 'Inhalte',
+    icon: <NewReleases style={{ fontSize: 16 }} />,
   },
   {
     id: 'anime-filler',
@@ -269,6 +277,7 @@ export function AdminDashboardPage() {
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
+              {activeTab === 'tmdb-ahead' && <TmdbAheadTab />}
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
               {activeTab === 'client-errors' && <ClientErrorsTab />}
