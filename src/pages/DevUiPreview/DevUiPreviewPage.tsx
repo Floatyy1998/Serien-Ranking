@@ -9,6 +9,7 @@ import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import {
   CatchUpPreview,
+  RatingsYearFilterPreview,
   DropOffPreview,
   FriendAddCardPreview,
   FriendInsightsPreview,
@@ -176,6 +177,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'watchnextfilter', label: 'Weiter: Filter', render: () => <WatchNextFilterPreview /> },
   { id: 'plan-new', label: 'Plan: Serientermin', render: () => <WatchPlanNewPreview /> },
   { id: 'plan-group', label: 'Plan: Reihe', render: () => <WatchPlanGroupPreview /> },
+  {
+    id: 'yearfilter',
+    label: 'Filter: Erscheinungsjahr',
+    render: () => <RatingsYearFilterPreview />,
+  },
   { id: 'watchnextbadge', label: 'Weiter: Filter aktiv', render: () => <WatchNextBadgePreview /> },
 ];
 

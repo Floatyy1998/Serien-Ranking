@@ -8,6 +8,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { PublicItem, PublicFilters } from './publicProfileHelpers';
 import { useResolvedTheme, calculatePublicRating, applyFilters } from './publicProfileHelpers';
 import { t } from '../../services/i18n';
+import { hasYearRange, isReleaseSort } from '../../lib/filters/releaseYearFilter';
+import { useSeriesFirstAirDates } from '../../hooks/series/useSeriesFirstAirDates';
 
 // Re-export types for backward compatibility
 export type {
@@ -47,6 +49,7 @@ export function usePublicProfileData() {
     quickFilter: searchParams.get('filter') || undefined,
     search: searchParams.get('search') || undefined,
     sortBy: searchParams.get('sort') || undefined,
+    year: searchParams.get('year') || undefined,
   }));
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export function usePublicProfileData() {
     sync('filter', filters.quickFilter);
     sync('search', filters.search);
     sync('sort', filters.sortBy);
+    sync('year', filters.year);
     if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
   }, [activeTab, filters, searchParams, setSearchParams]);
@@ -180,9 +184,22 @@ export function usePublicProfileData() {
     loadPublicProfileData();
   }, [publicId]);
 
+  const profileSeriesIds = useMemo(() => profileSeries.map((s) => s.id), [profileSeries]);
+  const firstAirDates = useSeriesFirstAirDates(
+    profileSeriesIds,
+    hasYearRange(filters.year) || isReleaseSort(filters.sortBy)
+  );
+  const datedSeries = useMemo(
+    () =>
+      firstAirDates
+        ? profileSeries.map((s) => ({ ...s, release_date: s.release_date || firstAirDates[s.id] }))
+        : profileSeries,
+    [profileSeries, firstAirDates]
+  );
+
   const ratedSeries = useMemo(
-    () => applyFilters(profileSeries, filters, false),
-    [profileSeries, filters]
+    () => applyFilters(datedSeries, filters, false),
+    [datedSeries, filters]
   );
 
   const ratedMovies = useMemo(

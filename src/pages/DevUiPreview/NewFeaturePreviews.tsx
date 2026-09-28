@@ -34,6 +34,8 @@ import {
   Tv,
 } from '@mui/icons-material';
 import { PageHeader, TabSwitcher } from '../../components/ui';
+import { QuickFilterPanel } from '../../components/ui/input/QuickFilterPanel';
+import { ratingsQuickFilters } from '../../components/ui/input/QuickFilterConstants';
 import {
   RatingFolderActionsSheet,
   RatingFolderBar,
@@ -1237,3 +1239,32 @@ export const WatchPlanGroupPreview = () => (
     />
   </PlanPreviewLists>
 );
+
+export const RatingsYearFilterPreview = () => {
+  const [year, setYear] = useState('2010-2019');
+  const [quick, setQuick] = useState('');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
+      <QuickFilterPanel
+        isMovieMode={false}
+        isRatingsMode
+        hasBottomNav={false}
+        searchQuery=""
+        setSearchQuery={() => {}}
+        selectedGenre=""
+        setSelectedGenre={() => {}}
+        selectedProvider=""
+        setSelectedProvider={() => {}}
+        selectedQuickFilter={quick}
+        setSelectedQuickFilter={setQuick}
+        selectedSort="rating-desc"
+        setSelectedSort={() => {}}
+        selectedYear={year}
+        setSelectedYear={setYear}
+        quickFilters={ratingsQuickFilters}
+        activeFiltersCount={year ? 1 : 0}
+        clearFilters={() => setYear('')}
+      />
+    </div>
+  );
+};

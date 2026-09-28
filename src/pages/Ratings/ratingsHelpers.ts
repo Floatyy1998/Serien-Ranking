@@ -3,6 +3,7 @@ import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating'
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import type { RatingFolder } from '../../lib/rating/ratingFolders';
+import { compareByRelease } from '../../lib/filters/releaseYearFilter';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -57,6 +58,7 @@ export interface UseRatingsDataResult {
     provider?: string;
     quickFilter?: string;
     search?: string;
+    year?: string;
   };
   /** Handlers */
   handleTabChange: (id: string) => void;
@@ -66,6 +68,7 @@ export interface UseRatingsDataResult {
     provider?: string;
     quickFilter?: string;
     search?: string;
+    year?: string;
   }) => void;
   handleGridClick: (e: React.MouseEvent) => void;
   /** Ref to attach to the scroll container */
@@ -101,6 +104,11 @@ export function mergePreparedItems(
       return merged.sort((a, b) => byTitle(b, a));
     case 'date-desc':
       return merged;
+    case 'release-desc':
+    case 'release-asc':
+      return merged.sort(
+        (a, b) => compareByRelease(a.releaseDate, b.releaseDate, sortBy) || byTitle(a, b)
+      );
     default:
       return merged.sort((a, b) => b.rating - a.rating || byTitle(a, b));
   }
@@ -171,22 +179,25 @@ function extractYear(dateStr?: string): string | undefined {
   return String(dateStr).slice(0, 4) || undefined;
 }
 
-function getSeriesYear(s: Series): string | undefined {
-  // 1. Explicit dates
+export function getSeriesReleaseDate(s: Series): string | undefined {
   const explicit = s.first_air_date || s.release_date;
-  if (explicit) return extractYear(explicit);
-  // 2. Fallback: first episode air_date
+  if (explicit) return String(explicit);
+  // Fallback: erste Folge mit Datum
   if (s.seasons) {
     for (const season of s.seasons) {
       if (!season.episodes) continue;
       for (const ep of season.episodes) {
         if (!ep) continue;
         const d = ep.air_date || ep.airDate || ep.firstAired;
-        if (d) return extractYear(d);
+        if (d) return String(d);
       }
     }
   }
   return undefined;
+}
+
+export function getSeriesYear(s: Series): string | undefined {
+  return extractYear(getSeriesReleaseDate(s));
 }
 
 export function prepareSeriesItem(s: Series, r: number): PreparedItem {
@@ -200,6 +211,7 @@ export function prepareSeriesItem(s: Series, r: number): PreparedItem {
     watched: progress === 100,
     isMovie: false,
     watchlist: s.watchlist === true,
+    releaseDate: getSeriesReleaseDate(s),
     year: getSeriesYear(s),
     genres: extractGenres(s),
     providers: extractProviders(s),

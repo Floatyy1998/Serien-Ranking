@@ -103,10 +103,18 @@ const dict: Record<string, string> = {
   'Film suchen...': 'Search movies...',
   'Serie suchen...': 'Search shows...',
   Schnellfilter: 'Quick filters',
+  Erscheinungsjahr: 'Release year',
+  'Dieses Jahr': 'This year',
+  '{jahrzehnt}er': '{jahrzehnt}s',
+  'Vor {jahr}': 'Before {jahr}',
+  'Jahr von': 'From year',
+  'Jahr bis': 'To year',
   Sortierung: 'Sort by',
   'Beste zuerst': 'Highest rated',
   'Schlechteste zuerst': 'Lowest rated',
   'Neueste zuerst': 'Newest first',
+  'Erscheinung: neueste zuerst': 'Release: newest first',
+  'Erscheinung: älteste zuerst': 'Release: oldest first',
   Alle: 'All',
 
   // QuickRatingSheet / RatingQueueSheet

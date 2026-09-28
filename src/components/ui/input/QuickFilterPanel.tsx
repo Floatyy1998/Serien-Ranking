@@ -7,6 +7,7 @@ import { t } from '../../../services/i18n';
 import { SearchInput } from './SearchInput';
 import { GradientText } from '../display/GradientText';
 import { ThemedSelect } from './ThemedSelect';
+import { YearRangeFilter } from './YearRangeFilter';
 
 interface QuickFilterPanelProps {
   isMovieMode: boolean;
@@ -22,6 +23,8 @@ interface QuickFilterPanelProps {
   setSelectedQuickFilter: (v: string) => void;
   selectedSort: string;
   setSelectedSort: (v: string) => void;
+  selectedYear?: string;
+  setSelectedYear?: (v: string) => void;
   quickFilters: { value: string; label: string; icon: React.ElementType }[];
   activeFiltersCount: number;
   clearFilters: () => void;
@@ -41,6 +44,8 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
   setSelectedQuickFilter,
   selectedSort,
   setSelectedSort,
+  selectedYear = '',
+  setSelectedYear,
   quickFilters,
   activeFiltersCount,
   clearFilters,
@@ -200,8 +205,27 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
               { value: 'name-asc', label: 'Name A-Z' },
               { value: 'name-desc', label: 'Name Z-A' },
               { value: 'date-desc', label: t('Neueste zuerst') },
+              { value: 'release-desc', label: t('Erscheinung: neueste zuerst') },
+              { value: 'release-asc', label: t('Erscheinung: älteste zuerst') },
             ]}
           />
+        </div>
+      )}
+
+      {setSelectedYear && (
+        <div style={{ marginBottom: '24px' }}>
+          <label
+            style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: currentTheme.text.secondary,
+              display: 'block',
+              marginBottom: '12px',
+            }}
+          >
+            {t('Erscheinungsjahr')}
+          </label>
+          <YearRangeFilter value={selectedYear} onChange={setSelectedYear} />
         </div>
       )}
 

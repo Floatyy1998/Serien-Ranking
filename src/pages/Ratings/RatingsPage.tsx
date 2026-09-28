@@ -264,7 +264,7 @@ export const RatingsPage: React.FC = () => {
           <RatingsEmptyState
             theme={currentTheme}
             activeTab={activeTab}
-            hasQuickFilter={!!quickFilter}
+            hasQuickFilter={!!quickFilter || !!filters.year}
           />
         ) : null}
       </div>

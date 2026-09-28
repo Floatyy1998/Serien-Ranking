@@ -1,5 +1,11 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
+import {
+  compareByRelease,
+  hasYearRange,
+  matchesYearRange,
+  releaseYearOf,
+} from '../../lib/filters/releaseYearFilter';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -48,6 +54,7 @@ export interface PublicFilters {
   quickFilter?: string;
   search?: string;
   sortBy?: string;
+  year?: string;
 }
 
 export interface PublicUserData {
@@ -236,6 +243,9 @@ const sortItems = (items: PublicItem[], sortBy: string): PublicItem[] => {
         };
         return toMs(b.addedAt) - toMs(a.addedAt);
       }
+      case 'release-desc':
+      case 'release-asc':
+        return compareByRelease(a.release_date, b.release_date, sortBy);
       default:
         return ratingB - ratingA;
     }
@@ -261,6 +271,11 @@ export function applyFilters(
   }
   if (filters.quickFilter) {
     filtered = filterByQuickFilter(filtered, filters.quickFilter, isMovieMode);
+  }
+  if (hasYearRange(filters.year)) {
+    filtered = filtered.filter((item) =>
+      matchesYearRange(filters.year, releaseYearOf(item.release_date))
+    );
   }
 
   const sortBy =

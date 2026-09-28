@@ -118,7 +118,7 @@ export const PublicProfilePage: React.FC = () => {
     itemsWithRatingCount,
     activeTab,
     setActiveTab,
-    filters: _filters,
+    filters,
     setFilters,
     ratedSeries,
     ratedMovies,
@@ -150,6 +150,7 @@ export const PublicProfilePage: React.FC = () => {
           isMovieMode={activeTab === 'movies'}
           isRatingsMode={true}
           hasBottomNav={false}
+          initialFilters={filters}
         />
 
         <TabSwitcher

@@ -7,6 +7,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
+import {
+  compareByRelease,
+  hasYearRange,
+  isReleaseSort,
+  matchesYearRange,
+  releaseYearOf,
+} from '../../lib/filters/releaseYearFilter';
+import { useSeriesFirstAirDates } from '../../hooks/series/useSeriesFirstAirDates';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -54,6 +62,7 @@ export interface Filters {
   quickFilter?: string;
   search?: string;
   sortBy?: string;
+  year?: string;
 }
 
 export const calculateFriendRating = (item: FriendItem): string => {
@@ -192,6 +201,9 @@ const sortItems = (items: FriendItem[], sortBy: string): FriendItem[] => {
         };
         return toMs(b.addedAt) - toMs(a.addedAt);
       }
+      case 'release-desc':
+      case 'release-asc':
+        return compareByRelease(a.release_date, b.release_date, sortBy);
       default:
         return ratingB - ratingA;
     }
@@ -217,6 +229,11 @@ const applyFiltersAndSort = (
   }
   if (filters.quickFilter) {
     filtered = filterByQuickFilter(filtered, filters.quickFilter, isMovieMode);
+  }
+  if (hasYearRange(filters.year)) {
+    filtered = filtered.filter((item) =>
+      matchesYearRange(filters.year, releaseYearOf(item.release_date))
+    );
   }
 
   const sortBy =
@@ -279,6 +296,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     quickFilter: searchParams.get('filter') || undefined,
     search: searchParams.get('search') || undefined,
     sortBy: searchParams.get('sort') || undefined,
+    year: searchParams.get('year') || undefined,
   }));
 
   useEffect(() => {
@@ -294,6 +312,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     sync('filter', filters.quickFilter);
     sync('search', filters.search);
     sync('sort', filters.sortBy);
+    sync('year', filters.year);
     if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
   }, [activeTab, openFolderId, filters, searchParams, setSearchParams]);
@@ -387,9 +406,22 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     loadFriendData();
   }, [friendId]);
 
+  const friendSeriesIds = useMemo(() => friendSeries.map((s) => s.id), [friendSeries]);
+  const firstAirDates = useSeriesFirstAirDates(
+    friendSeriesIds,
+    hasYearRange(filters.year) || isReleaseSort(filters.sortBy)
+  );
+  const datedSeries = useMemo(
+    () =>
+      firstAirDates
+        ? friendSeries.map((s) => ({ ...s, release_date: s.release_date || firstAirDates[s.id] }))
+        : friendSeries,
+    [friendSeries, firstAirDates]
+  );
+
   const ratedSeries = useMemo(
-    () => applyFiltersAndSort(friendSeries, filters, false),
-    [friendSeries, filters]
+    () => applyFiltersAndSort(datedSeries, filters, false),
+    [datedSeries, filters]
   );
 
   const ratedMovies = useMemo(

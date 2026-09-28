@@ -15,8 +15,16 @@ import { preloadImage } from '../../lib/image/preloadImage';
 import { isMovieWatched } from '../../lib/rating/rating';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
 import {
+  compareByRelease,
+  hasYearRange,
+  matchesYearRange,
+  releaseYearOf,
+} from '../../lib/filters/releaseYearFilter';
+import {
   getRating,
   getSeriesProgress,
+  getSeriesReleaseDate,
+  getSeriesYear,
   hasWatchedEpisodes,
   mergePreparedItems,
   parseTab,
@@ -57,6 +65,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     () => searchParams.get('filter') || null
   );
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [yearRange, setYearRange] = useState(() => searchParams.get('year') || '');
   const [folderId, setFolderId] = useState<string | null>(() => searchParams.get('folder'));
 
   const [, startTransition] = useTransition();
@@ -104,6 +113,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     setSelectedProvider(searchParams.get('provider') || null);
     setQuickFilter(searchParams.get('filter') || null);
     setSearchQuery(searchParams.get('search') || '');
+    setYearRange(searchParams.get('year') || '');
     setFolderId(searchParams.get('folder'));
   }, [searchParams]);
 
@@ -172,8 +182,9 @@ export const useRatingsData = (): UseRatingsDataResult => {
       provider: selectedProvider || undefined,
       quickFilter: quickFilter || undefined,
       search: searchQuery || undefined,
+      year: yearRange || undefined,
     }),
-    [sortOption, selectedGenre, selectedProvider, quickFilter, searchQuery]
+    [sortOption, selectedGenre, selectedProvider, quickFilter, searchQuery, yearRange]
   );
 
   const handleQuickFilterChange = useCallback(
@@ -183,6 +194,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
       provider?: string;
       quickFilter?: string;
       search?: string;
+      year?: string;
     }) => {
       if (isUpdatingFromQuickFilter.current) return;
       isUpdatingFromQuickFilter.current = true;
@@ -194,6 +206,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
         provider: newFilters.provider,
         filter: newFilters.quickFilter,
         search: newFilters.search,
+        year: newFilters.year,
       };
       const defaults: Record<string, string> = { sort: 'rating-desc', genre: 'Alle' };
 
@@ -215,6 +228,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
         if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider || null);
         if (newFilters.quickFilter !== undefined) setQuickFilter(newFilters.quickFilter || null);
         if (newFilters.search !== undefined) setSearchQuery(newFilters.search || '');
+        if (newFilters.year !== undefined) setYearRange(newFilters.year || '');
       });
 
       queueMicrotask(() => {
@@ -318,6 +332,10 @@ export const useRatingsData = (): UseRatingsDataResult => {
       items = items.filter(({ s }) => s.title?.toLowerCase().includes(q));
     }
 
+    if (hasYearRange(yearRange)) {
+      items = items.filter(({ s }) => matchesYearRange(yearRange, releaseYearOf(getSeriesYear(s))));
+    }
+
     if (quickFilter === 'watchlist') {
       items = items.filter(({ s }) => s.watchlist === true);
     } else if (quickFilter === 'unrated') {
@@ -363,13 +381,28 @@ export const useRatingsData = (): UseRatingsDataResult => {
           };
           return toMs(b.s.addedAt) - toMs(a.s.addedAt);
         }
+        case 'release-desc':
+        case 'release-asc':
+          return compareByRelease(
+            getSeriesReleaseDate(a.s),
+            getSeriesReleaseDate(b.s),
+            effectiveSortBy
+          );
         default:
           return b.r - a.r;
       }
     });
 
     return items.map(({ s, r }) => prepareSeriesItem(s, r));
-  }, [seriesList, selectedGenre, selectedProvider, searchQuery, quickFilter, effectiveSortBy]);
+  }, [
+    seriesList,
+    selectedGenre,
+    selectedProvider,
+    searchQuery,
+    yearRange,
+    quickFilter,
+    effectiveSortBy,
+  ]);
 
   const preparedMovies = useMemo(() => {
     let items = movieList.map((m) => ({ m, r: getRating(m) }));
@@ -387,6 +420,10 @@ export const useRatingsData = (): UseRatingsDataResult => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       items = items.filter(({ m }) => m.title?.toLowerCase().includes(q));
+    }
+
+    if (hasYearRange(yearRange)) {
+      items = items.filter(({ m }) => matchesYearRange(yearRange, releaseYearOf(m.release_date)));
     }
 
     if (quickFilter === 'watchlist') {
@@ -424,13 +461,24 @@ export const useRatingsData = (): UseRatingsDataResult => {
           };
           return toMs(b.m.addedAt) - toMs(a.m.addedAt);
         }
+        case 'release-desc':
+        case 'release-asc':
+          return compareByRelease(a.m.release_date, b.m.release_date, effectiveSortBy);
         default:
           return b.r - a.r;
       }
     });
 
     return items.map(({ m, r }) => prepareMovieItem(m, r));
-  }, [movieList, selectedGenre, selectedProvider, searchQuery, quickFilter, effectiveSortBy]);
+  }, [
+    movieList,
+    selectedGenre,
+    selectedProvider,
+    searchQuery,
+    yearRange,
+    quickFilter,
+    effectiveSortBy,
+  ]);
 
   const currentItems = useMemo(() => {
     if (activeTab === 'series') return preparedSeries;
@@ -446,7 +494,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // Progressive rendering via derived state pattern:
   // When the filter fingerprint changes, reset to initial batch.
   // Then rAF fills in remaining items without blocking the UI.
-  const filterKey = `${activeTab}\0${inFolder?.id}\0${inFolder?.items.size}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
+  const filterKey = `${activeTab}\0${inFolder?.id}\0${inFolder?.items.size}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${yearRange}\0${effectiveSortBy}`;
   const [renderState, setRenderState] = useState({ key: filterKey, count: 60 });
 
   // Derived state: reset count when filters change (React-safe setState during render)

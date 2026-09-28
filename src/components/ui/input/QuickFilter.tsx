@@ -2,6 +2,7 @@ import { FilterList } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { hasYearRange } from '../../../lib/filters/releaseYearFilter';
 import { t } from '../../../services/i18n';
 import { BottomSheet } from '../overlay/BottomSheet';
 import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';
@@ -14,6 +15,7 @@ interface QuickFilterProps {
     quickFilter?: string;
     search?: string;
     sortBy?: string;
+    year?: string;
   }) => void;
   isMovieMode?: boolean;
   isRatingsMode?: boolean;
@@ -24,6 +26,7 @@ interface QuickFilterProps {
     quickFilter?: string;
     search?: string;
     sortBy?: string;
+    year?: string;
   };
 }
 
@@ -43,6 +46,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState(initialFilters.search || '');
   const [selectedSort, setSelectedSort] = useState<string>(initialFilters.sortBy || 'rating-desc');
+  const [selectedYear, setSelectedYear] = useState<string>(initialFilters.year || '');
 
   // Aenderungen der Eltern-Filter uebernehmen (z.B. Reset durch die Seite) —
   // sonst zeigt der FAB einen Filter an, der laengst nicht mehr wirksam ist.
@@ -52,21 +56,26 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
     setSelectedQuickFilter(initialFilters.quickFilter || '');
     setSearchQuery(initialFilters.search || '');
     setSelectedSort(initialFilters.sortBy || 'rating-desc');
+    setSelectedYear(initialFilters.year || '');
   }, [
     initialFilters.genre,
     initialFilters.provider,
     initialFilters.quickFilter,
     initialFilters.search,
     initialFilters.sortBy,
+    initialFilters.year,
   ]);
   const quickFilters = isRatingsMode
     ? ratingsQuickFilters
     : isMovieMode
       ? movieQuickFilters
       : seriesQuickFilters;
-  const activeFiltersCount = [selectedGenre, selectedProvider, selectedQuickFilter].filter(
-    Boolean
-  ).length;
+  const activeFiltersCount = [
+    selectedGenre,
+    selectedProvider,
+    selectedQuickFilter,
+    hasYearRange(selectedYear),
+  ].filter(Boolean).length;
 
   // Lock body scroll when filter panel is open
   useEffect(() => {
@@ -124,9 +133,17 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       quickFilter: selectedQuickFilter,
       search: searchQuery,
       sortBy: selectedSort,
+      year: selectedYear,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onFilterChange is a callback, not a synced value
-  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort]);
+  }, [
+    selectedGenre,
+    selectedProvider,
+    selectedQuickFilter,
+    searchQuery,
+    selectedSort,
+    selectedYear,
+  ]);
 
   const clearFilters = () => {
     setSelectedGenre('');
@@ -134,6 +151,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
     setSelectedQuickFilter('');
     setSearchQuery('');
     setSelectedSort('rating-desc');
+    setSelectedYear('');
   };
 
   return (
@@ -200,6 +218,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           setSelectedQuickFilter={setSelectedQuickFilter}
           selectedSort={selectedSort}
           setSelectedSort={setSelectedSort}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
           quickFilters={quickFilters}
           activeFiltersCount={activeFiltersCount}
           clearFilters={clearFilters}
