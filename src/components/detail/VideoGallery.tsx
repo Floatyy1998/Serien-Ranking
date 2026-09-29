@@ -472,7 +472,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                           }}
                         >
                           <iframe
-                            src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1`}
+                            src={`https://www.youtube-nocookie.com/embed/${selectedVideo.key}?autoplay=1`}
                             title={selectedVideo.name}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
