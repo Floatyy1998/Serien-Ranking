@@ -128,6 +128,16 @@ export const DataCollectionSection = memo(({ data }: DataCollectionSectionProps)
           </p>
         </>
       )}
+      {data.subsections.videoEmbeds && (
+        <>
+          <h3 className="priv-subtitle" style={{ color: currentTheme.text.primary }}>
+            {data.subsections.videoEmbeds.title}
+          </h3>
+          <p className="priv-card-text" style={{ color: currentTheme.text.secondary }}>
+            {data.subsections.videoEmbeds.text}
+          </p>
+        </>
+      )}
     </PrivacySection>
   );
 });

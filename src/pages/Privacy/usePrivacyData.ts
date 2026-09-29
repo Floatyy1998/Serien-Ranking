@@ -32,6 +32,10 @@ export interface PrivacyData {
           title: string;
           text: string;
         };
+        videoEmbeds?: {
+          title: string;
+          text: string;
+        };
       };
     };
     firebase: {
