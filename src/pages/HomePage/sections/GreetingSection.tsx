@@ -115,7 +115,11 @@ export const GreetingSection = React.memo(function GreetingSection({
 
     if (greetingInfo) {
       document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      const hideTimer = setTimeout(() => setGreetingInfo(null), 4000);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        clearTimeout(hideTimer);
+      };
     }
   }, [greetingInfo]);
 
