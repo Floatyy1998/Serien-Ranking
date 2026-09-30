@@ -874,6 +874,14 @@ button:active:not(:disabled),
   opacity: 0.7;
 }
 
+/* Kind mit eigener Opacity fällt aus der background-clip:text-Maske und wird unsichtbar */
+.gradient-text [role='button']:active {
+  opacity: 1;
+}
+.gradient-text:has([role='button']:active) {
+  opacity: 0.7;
+}
+
 /* Cinematic card lift - höherer Kontrast */
 .card-cinematic {
   transition:
