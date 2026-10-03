@@ -43,6 +43,15 @@ describe('buildSeasonMapsFromCatalog', () => {
   it('returns empty maps without a record', () => {
     expect(totalEpisodesOf(buildSeasonMapsFromCatalog(null))).toBe(0);
   });
+
+  it('accepts episodes stored as a sparse object instead of an array', () => {
+    const maps = buildSeasonMapsFromCatalog({
+      '0': { episodes: { '1': { id: 11 }, '2': { id: 12 } } },
+      '1': { episodes: 'kaputt' },
+    } as never);
+    expect(totalEpisodesOf(maps)).toBe(2);
+    expect(maps.epIdToPos.get(12)).toEqual({ seasonNumber: 1, episodeNumber: 2, absIndex: 2 });
+  });
 });
 
 describe('analyzeFriendWatch', () => {

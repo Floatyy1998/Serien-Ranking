@@ -174,6 +174,8 @@ function onWindowError(event: ErrorEvent): void {
     // Waehrend die Seite ersetzt wird (Update-Reload, Chunk-Retry) bricht der
     // Browser laufende Ladevorgaenge ab bzw. alte Chunks sind schon weg.
     if (pageLeaving) return;
+    // Ohne Netz scheitert jedes nachgeladene Skript (z. B. Googles Auth-Iframe).
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
     const src = target.getAttribute?.('src') || target.getAttribute?.('href') || '';
     captureError({
       kind: 'resource',

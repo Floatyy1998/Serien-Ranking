@@ -15,6 +15,12 @@ export interface SeriesWatchSnap {
   seasons?: Record<string, SeasonWatch | null>;
 }
 
+function toEpisodeList<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object') return Object.values(value as Record<string, T>);
+  return [];
+}
+
 export interface SeasonMaps {
   /** TMDB-Episoden-ID → Position (Compact-Format `{eps}`). */
   epIdToPos: Map<number, EpPosition>;
@@ -32,10 +38,11 @@ export function buildSeasonMaps(seasons: Series['seasons'] | null | undefined): 
   if (!seasons) return { epIdToPos, seasonArrayPositions };
   let absIndex = 0;
   for (const season of seasons) {
-    if (!season?.episodes) continue;
+    const episodes = toEpisodeList<{ id?: number | null } | null>(season?.episodes);
+    if (episodes.length === 0) continue;
     const sn = (season.seasonNumber ?? 0) + 1;
     const arr: EpPosition[] = [];
-    season.episodes.forEach((ep, idx) => {
+    episodes.forEach((ep, idx) => {
       absIndex += 1;
       const pos: EpPosition = {
         seasonNumber: sn,
@@ -63,7 +70,7 @@ export function buildSeasonMapsFromCatalog(
   const seasons = Object.entries(record)
     .map(([key, season]) => ({
       seasonNumber: Number(key),
-      episodes: (season?.episodes ?? []) as { id: number }[],
+      episodes: toEpisodeList<{ id: number }>(season?.episodes),
     }))
     .sort((a, b) => a.seasonNumber - b.seasonNumber);
   return buildSeasonMaps(seasons as unknown as Series['seasons']);

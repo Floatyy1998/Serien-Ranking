@@ -206,6 +206,15 @@ describe('globale Handler', () => {
     expect(fb.sets).toHaveLength(0);
   });
 
+  it('ignoriert Ressourcenfehler ohne Netz', async () => {
+    setErrorReporterUser('u1');
+    const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    fireResourceError('script', 'src', 'https://apis.google.com/js/api.js');
+    onLine.mockRestore();
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+  });
+
   it('ignoriert Ressourcenfehler, sobald die Seite fuer ein Update ersetzt wird', async () => {
     setErrorReporterUser('u1');
     window.dispatchEvent(new Event(PAGE_REPLACING_EVENT));
