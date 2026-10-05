@@ -17,27 +17,7 @@ import '../styles/performance.css';
 import { AuthProvider } from './authProvider';
 import { AuthContext } from '../contexts/AuthContext';
 import { loadSavedTheme } from './themeHelpers';
-import { lazy, type ComponentType } from 'react';
-
-// Retry wrapper: on chunk load failure (after deploy), reload the page once
-const RELOAD_KEY = 'chunk-reload';
-// React.lazy itself constrains T to ComponentType<any>; we mirror that so the
-// retry wrapper accepts the same shapes (FC<{}>, ComponentType<Props>, ...).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
-  return lazy(() =>
-    factory().catch((error: unknown) => {
-      const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY);
-      if (!alreadyReloaded) {
-        sessionStorage.setItem(RELOAD_KEY, '1');
-        window.location.reload();
-        return new Promise(() => {});
-      }
-      sessionStorage.removeItem(RELOAD_KEY);
-      throw error;
-    })
-  );
-}
+import { lazyWithRetry } from './lazyWithRetry';
 
 // Lazy load mobile app for all platforms
 const MobileApp = lazyWithRetry(() =>

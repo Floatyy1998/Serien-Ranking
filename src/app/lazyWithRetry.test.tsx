@@ -2,7 +2,7 @@
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { Suspense, type ComponentType } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { lazyWithRetry } from './lazyRoutes';
+import { lazyWithRetry } from './lazyWithRetry';
 
 const Page = () => <div>page inhalt</div>;
 
