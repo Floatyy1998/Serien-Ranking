@@ -176,7 +176,7 @@ export const LeaderboardPage = () => {
             <motion.button
               whileTap={tapScale}
               className="lb-empty-cta"
-              onClick={() => navigate('/activity')}
+              onClick={() => navigate('/activity?tab=friends')}
             >
               <PersonAddAlt1 style={{ fontSize: 18 }} />
               {t('Freunde finden')}

@@ -49,7 +49,7 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
     friends: {
       icon: <Group style={{ fontSize: '22px' }} />,
       label: t('Freunde'),
-      path: '/activity',
+      path: '/activity?tab=friends',
       color: currentTheme.status.info.main,
     },
   };

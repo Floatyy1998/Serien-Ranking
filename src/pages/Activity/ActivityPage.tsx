@@ -8,7 +8,7 @@ import PersonAddRounded from '@mui/icons-material/PersonAddRounded';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useScrollRestore } from '../../hooks/ui/useScrollRestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -29,6 +29,9 @@ import './ActivityPage.css';
 import { tapScaleTight } from '../../lib/motion';
 
 type TabId = 'activity' | 'friends' | 'requests' | 'discussions';
+
+const isTabId = (v: string | null): v is TabId =>
+  v === 'activity' || v === 'friends' || v === 'requests' || v === 'discussions';
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
@@ -70,10 +73,15 @@ export const ActivityPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState<TabId>(() =>
-    tabParam === 'requests' || tabParam === 'friends' || tabParam === 'discussions'
-      ? tabParam
-      : 'activity'
+    isTabId(tabParam) ? tabParam : 'activity'
   );
+  // Keep-Alive haelt die Seite gemountet; ein neuer Link mit ?tab= muss trotzdem umschalten.
+  const { pathname } = useLocation();
+  const [syncedTabParam, setSyncedTabParam] = useState(tabParam);
+  if (pathname === '/activity' && tabParam !== syncedTabParam) {
+    setSyncedTabParam(tabParam);
+    if (isTabId(tabParam) && tabParam !== activeTab) setActiveTab(tabParam);
+  }
   // Reiter in die URL (replace): nach einem Profilbesuch fuehrt Zurueck wieder hierher.
   const selectTab = useCallback(
     (id: TabId) => {

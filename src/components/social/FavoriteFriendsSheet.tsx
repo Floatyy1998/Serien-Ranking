@@ -59,7 +59,7 @@ export const FavoriteFriendsSheet: React.FC<FavoriteFriendsSheetProps> = ({
               label: t('Freunde finden'),
               onClick: () => {
                 onClose();
-                navigate('/activity');
+                navigate('/activity?tab=friends');
               },
             }}
           />

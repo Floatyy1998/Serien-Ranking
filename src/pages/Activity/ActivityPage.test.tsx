@@ -68,6 +68,7 @@ const { navigateMock, friendsValue, notificationsValue, routeState } = vi.hoiste
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigateMock,
   useSearchParams: () => [new URLSearchParams(routeState.search), () => {}],
+  useLocation: () => ({ pathname: '/activity', search: routeState.search }),
 }));
 vi.mock('../../hooks/ui/useScrollRestore', () => ({
   useScrollRestore: () => ({ saveNow: vi.fn() }),
@@ -153,6 +154,16 @@ describe('ActivityPage', () => {
     render(<ActivityPage />);
     expect(screen.getByText('REQUESTS_TAB')).toBeInTheDocument();
     expect(screen.queryByText('FEED_TAB')).not.toBeInTheDocument();
+  });
+
+  it('wechselt den Reiter, wenn die gemountete Seite einen neuen ?tab= bekommt', () => {
+    // Keep-Alive: die Seite bleibt gemountet, der Freunde-Button auf Home muss trotzdem greifen.
+    routeState.search = '';
+    const { rerender } = render(<ActivityPage />);
+    expect(screen.getByText('FEED_TAB')).toBeInTheDocument();
+    routeState.search = '?tab=friends';
+    rerender(<ActivityPage />);
+    expect(screen.getByText('FRIENDS_TAB')).toBeInTheDocument();
   });
 
   it('zählt Bitten um Einblick in den Zähler am Anfragen-Reiter', () => {

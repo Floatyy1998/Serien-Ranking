@@ -142,7 +142,7 @@ export const PatchNotesPage = () => {
           description: t(
             'In deiner Freundesliste sitzt jetzt ein Stern neben jedem Namen. Wen du markierst, rückt in der Liste nach oben — und nur von diesen Leuten zeigt dir die App Bewertungen und Kalender. Du entscheidest also selbst, wessen Meinung dich interessiert.'
           ),
-          link: { label: t('Freunde öffnen'), path: '/activity' },
+          link: { label: t('Freunde öffnen'), path: '/activity?tab=friends' },
         },
         {
           icon: <Visibility />,

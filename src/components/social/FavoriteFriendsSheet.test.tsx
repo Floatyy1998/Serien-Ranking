@@ -77,7 +77,7 @@ describe('FavoriteFriendsSheet', () => {
     expect(screen.getByText('Noch keine Freunde')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Freunde finden' }));
     expect(onClose).toHaveBeenCalled();
-    expect(navigate).toHaveBeenCalledWith('/activity');
+    expect(navigate).toHaveBeenCalledWith('/activity?tab=friends');
   });
 
   it('kennzeichnet Favoriten, die noch auf die Freigabe warten', () => {

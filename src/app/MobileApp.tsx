@@ -533,7 +533,7 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
-              <Route path="/friends" element={<Navigate to="/activity" />} />
+              <Route path="/friends" element={<Navigate to="/activity?tab=friends" />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           )}
