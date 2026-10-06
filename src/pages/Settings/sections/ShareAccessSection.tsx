@@ -5,7 +5,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
 
 /**
- * „Wer meine Serien sieht" — Liste der erteilten Freigaben mit Entzug, plus die
+ * „Wer meinen Kalender sieht" — Liste der erteilten Freigaben mit Entzug, plus die
  * Abkürzung, allen bestehenden Freunden auf einmal freizugeben.
  */
 export const ShareAccessSection: React.FC = () => {
@@ -41,7 +41,7 @@ export const ShareAccessSection: React.FC = () => {
             fontFamily: 'var(--font-display)',
           }}
         >
-          {t('Wer meine Serien sieht')}
+          {t('Wer meinen Kalender sieht')}
         </h3>
       </div>
 
@@ -54,13 +54,13 @@ export const ShareAccessSection: React.FC = () => {
         }}
       >
         {t(
-          'Freunde sehen deine Serienliste, deinen Fortschritt, deinen Kalender und deine Bewertungen nur, wenn du es erlaubst. Ohne Freigabe steht im Verlauf nur, dass du etwas gesehen hast — ohne Titel.'
+          'Deinen Kalender sehen Freunde nur, wenn du es erlaubst. Serienliste, Fortschritt, Bewertungen und Verlauf sehen alle deine Freunde.'
         )}
       </p>
 
       {withAccess.length === 0 ? (
         <p style={{ fontSize: 13, color: currentTheme.text.secondary, margin: '0 0 14px' }}>
-          {t('Aktuell sieht niemand deine Serien.')}
+          {t('Aktuell sieht niemand deinen Kalender.')}
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>

@@ -45,8 +45,6 @@ const { friendsState, dbState, dbGetMock, navigateMock } = vi.hoisted(() => {
       sendFriendRequest: vi.fn(async () => true),
       acceptFriendRequest: vi.fn(async () => {}),
       declineFriendRequest: vi.fn(async () => {}),
-      // Freigabe-Pflicht: ohne Einblick zeigt die Seite die Anfrage statt der
-      // Einblicke. Standardfall in den Tests ist „freigegeben".
       grantedToMe: new Set(['friend-1']),
       shareState: (() => 'granted') as () => 'granted' | 'pending' | 'none',
       requestShare: vi.fn(async () => true),
@@ -362,12 +360,11 @@ describe('FriendProfilePage', () => {
     await waitFor(() => expect(friendsState.declineFriendRequest).toHaveBeenCalledWith('req-1'));
   });
 
-  it('bietet die Anfrage an, statt die Einblicke leer zu lassen', async () => {
-    // Genau der Weg, auf dem ein titelloser Feed-Eintrag hier landet.
+  it('zeigt Freunden die Einblicke auch ohne Kalender-Freigabe', async () => {
     friendsState.grantedToMe = new Set<string>();
     friendsState.shareState = () => 'none';
     render(<FriendProfilePage />);
-    expect(await screen.findByText(/teilt die eigenen Serien nicht/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Einblick anfragen/ })).toBeInTheDocument();
+    expect(await screen.findByText('Nichts Aktuelles')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Einblick anfragen/ })).not.toBeInTheDocument();
   });
 });

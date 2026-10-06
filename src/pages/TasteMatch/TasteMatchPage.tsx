@@ -23,7 +23,6 @@ import { SeriesTab } from './tabs/SeriesTab';
 import { MoviesTab } from './tabs/MoviesTab';
 import { GenresTab } from './tabs/GenresTab';
 import { useTasteMatchData } from './useTasteMatchData';
-import { ShareGate } from '../../components/social/ShareGate';
 import './TasteMatchPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -130,8 +129,6 @@ export const TasteMatchPage: React.FC = () => {
   const {
     loading,
     result,
-    friendId,
-    shared,
     friendName,
     friendPhoto,
     userName,
@@ -143,17 +140,6 @@ export const TasteMatchPage: React.FC = () => {
 
   if (loading) {
     return <LoadingState bgDefault={bgDefault} textPrimary={textPrimary} />;
-  }
-
-  // Ohne Freigabe steht hier die Erklaerung samt Anfrage statt einer leeren Seite.
-  if (!shared && friendId) {
-    return (
-      <div className="tm-page" style={{ background: bgDefault, padding: '24px 16px' }}>
-        <ShareGate friendId={friendId} friendName={friendName} what={t('die eigenen Serien')}>
-          <span />
-        </ShareGate>
-      </div>
-    );
   }
 
   if (!result) return null;

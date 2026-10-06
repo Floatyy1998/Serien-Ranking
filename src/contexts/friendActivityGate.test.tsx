@@ -4,10 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EnhancedCacheResult } from '../hooks/data/firebaseCache/types';
 
 /**
- * Der Aktivitaets-Feed liest fuer Freunde MIT Freigabe `activities` (mit Titel)
- * und sonst `activityTeaser` (ohne). Die Freigaben kommen aber ueber eigene
- * Abos und treffen erst NACH dem ersten Laden ein — ohne erneutes Laden bliebe
- * der Feed titellos, obwohl jemand laengst freigegeben hat.
+ * Die Freigabe gilt nur noch fuer den Kalender. Der Aktivitaets-Feed liest fuer
+ * jeden Freund `activities` mit Titel — unabhaengig davon, ob er freigegeben hat.
  */
 
 interface Snap {
@@ -125,39 +123,13 @@ const renderProvider = () =>
     </OptimizedFriendsProvider>
   );
 
-describe('Aktivitaets-Feed und Freigabe', () => {
-  it('liest ohne Freigabe den titellosen Teaser', async () => {
+describe('Aktivitaets-Feed ohne Freigabe-Sperre', () => {
+  it('zeigt die Titel auch ohne Kalender-Freigabe', async () => {
     // readTimes muessen gesetzt sein, sonst startet der Lader nicht.
     fb.werte.set('users/me/readTimes', { requests: 1, activities: 1 });
-    renderProvider();
-
-    await waitFor(() => expect(fb.gelesen.some((p) => p.includes('activityTeaser'))).toBe(true));
-    expect(fb.gelesen).not.toContain('users/f1/activities');
-  });
-
-  it('laedt neu und nimmt die Titel, sobald die Freigabe eintrifft', async () => {
-    fb.werte.set('users/me/readTimes', { requests: 1, activities: 1 });
-    renderProvider();
-
-    await waitFor(() => expect(fb.gelesen.some((p) => p.includes('activityTeaser'))).toBe(true));
-    fb.gelesen.length = 0;
-
-    // Die Freigabe trifft erst jetzt ein — genau der reale Ablauf.
-    const cb = fb.listener.get('users/f1/shares/me');
-    expect(cb).toBeTypeOf('function');
-    await act(async () => {
-      cb?.({ val: () => true, exists: () => true });
-    });
-
-    await waitFor(() => expect(fb.gelesen.some((p) => p === 'users/f1/activities')).toBe(true));
-  });
-
-  it('ein langsamer Lauf ohne Freigabe überschreibt den Feed mit Titeln nicht', async () => {
-    fb.werte.set('users/me/readTimes', { requests: 1, activities: 1 });
     fb.werte.set('users/f1/activities', {
-      a1: { type: 'episode_watched', itemTitle: 'Dark', timestamp: Date.now() },
+      a1: { type: 'series_added', itemTitle: 'Dark', timestamp: Date.now() },
     });
-    fb.verzoegert.set('users/f1/activityTeaser', () => {});
     const seen: { current: { itemTitle?: string }[] } = { current: [] };
     const Probe = () => {
       seen.current = useOptimizedFriends().friendActivities;
@@ -169,15 +141,20 @@ describe('Aktivitaets-Feed und Freigabe', () => {
       </OptimizedFriendsProvider>
     );
 
-    await waitFor(() => expect(fb.gelesen).toContain('users/f1/activityTeaser'));
+    await waitFor(() => expect(seen.current.map((a) => a.itemTitle)).toEqual(['Dark']));
+    expect(fb.gelesen.some((p) => p.includes('activityTeaser'))).toBe(false);
+  });
+
+  it('laedt den Feed nicht neu, wenn eine Freigabe eintrifft', async () => {
+    fb.werte.set('users/me/readTimes', { requests: 1, activities: 1 });
+    renderProvider();
+
+    await waitFor(() => expect(fb.gelesen).toContain('users/f1/activities'));
+    fb.gelesen.length = 0;
+
     await act(async () => {
       fb.listener.get('users/f1/shares/me')?.({ val: () => true, exists: () => true });
     });
-    await waitFor(() => expect(seen.current.map((a) => a.itemTitle)).toEqual(['Dark']));
-
-    await act(async () => {
-      fb.verzoegert.get('users/f1/activityTeaser')?.();
-    });
-    expect(seen.current.map((a) => a.itemTitle)).toEqual(['Dark']);
+    expect(fb.gelesen).not.toContain('users/f1/activities');
   });
 });

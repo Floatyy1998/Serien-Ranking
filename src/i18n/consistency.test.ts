@@ -55,15 +55,12 @@ describe.each(TRANSLATION_LOCALES)('Wörterbuch %s', (lang) => {
  * ankommen — und zwar uebersetzt, nicht als deutscher Rueckfall.
  */
 const FREIGABE_TEXTE = [
-  'Wer meine Serien sieht',
-  'Aktuell sieht niemand deine Serien.',
+  'Wer meinen Kalender sieht',
+  'Aktuell sieht niemand deinen Kalender.',
   'Allen {n} Freunden freigeben',
   'Entziehen',
-  'Einblick anfragen',
   'Bitten um Einblick',
-  '{name} möchte deine Serien sehen',
-  '{name} teilt {was} nicht',
-  'die eigenen Serien',
+  '{name} möchte deinen Kalender sehen',
   'Favoriten wählen',
   'Favoriten bearbeiten',
   'Kalender wählen',
@@ -72,7 +69,6 @@ const FREIGABE_TEXTE = [
   'durchgeschaut',
   'noch nicht gestartet',
   'unbewertet',
-  'Etwas Neues',
   'Keiner deiner Favoriten hat die Serie in der Liste.',
 ];
 

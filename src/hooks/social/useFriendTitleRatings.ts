@@ -44,14 +44,7 @@ export function useFriendTitleRatings(
   mediaType: 'series' | 'movie',
   enabled: boolean
 ): { loading: boolean; entries: FriendTitleRating[] } {
-  const { favoriteFriends: alleFavoriten, grantedToMe } = useOptimizedFriends();
-  // Ohne Freigabe gibt es nichts zu lesen — die Rules lehnen den Punkt-Read ab.
-  const grantedKey = [...grantedToMe].sort().join(',');
-  const favoriteFriends = useMemo(
-    () => alleFavoriten.filter((friend) => grantedToMe.has(friend.uid)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [alleFavoriten, grantedKey]
-  );
+  const { favoriteFriends } = useOptimizedFriends();
   const [entries, setEntries] = useState<FriendTitleRating[] | null>(null);
 
   // Stabiler Schlüssel: die Favoritenliste ist bei jedem Render ein neues Array.

@@ -43,27 +43,6 @@ export const removeBadgeCallback = (userId: string) => {
   badgeCallbacks.delete(userId);
 };
 
-/** Titelloser Zwilling für Freunde ohne Freigabe (gleicher Schlüssel wie in activities). */
-const writeActivityTeaser = async (userId: string, key: string | null, type: string) => {
-  if (!key) return;
-  try {
-    await dbRef(`${userPath(userId, 'activityTeaser')}/${key}`).set({
-      type,
-      timestamp: serverTimestamp(),
-    });
-  } catch {
-    /* Beiwerk */
-  }
-};
-
-const trimActivityTeaser = async (userId: string, updates: Record<string, null>) => {
-  try {
-    await dbRef(userPath(userId, 'activityTeaser')).update(updates);
-  } catch {
-    /* Beiwerk */
-  }
-};
-
 /**
  * Friend-Activity Logger (nur für Freunde-Feed)
  */
@@ -79,7 +58,6 @@ const logFriendActivity = async (
       ...activityData,
       timestamp: serverTimestamp(),
     });
-    await writeActivityTeaser(userId, newActivityRef.key, activityData.type);
 
     // Limit to max 30 activities
     const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
@@ -101,7 +79,6 @@ const logFriendActivity = async (
         });
 
         await activitiesRef.update(updates);
-        await trimActivityTeaser(userId, updates);
       }
     }
   } catch {
@@ -360,7 +337,6 @@ export const logEpisodeWatchedActivity = async (
         timestamp: serverTimestamp(),
         ...(posterPath && { posterPath }),
       });
-      await writeActivityTeaser(userId, existingKey, type);
       return;
     }
 
@@ -376,7 +352,6 @@ export const logEpisodeWatchedActivity = async (
       ...(posterPath && { posterPath }),
       timestamp: serverTimestamp(),
     });
-    await writeActivityTeaser(userId, newRef.key, 'episode_watched');
 
     // Cap bei 30 (wie logFriendActivity).
     const fresh = await activitiesRef.orderByChild('timestamp').once('value');
@@ -390,7 +365,6 @@ export const logEpisodeWatchedActivity = async (
         updates[key] = null;
       });
       await activitiesRef.update(updates);
-      await trimActivityTeaser(userId, updates);
     }
   } catch {
     /* ignore — non-critical Feed-Write */

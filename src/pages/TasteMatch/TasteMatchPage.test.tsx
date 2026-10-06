@@ -62,7 +62,6 @@ function baseData(overrides: Partial<TasteMatchData> = {}): TasteMatchData {
     loading: false,
     result: makeResult(),
     friendId: 'f1',
-    shared: true,
     friendName: 'Bob',
     friendPhoto: null,
     userName: 'Alice',
@@ -104,12 +103,5 @@ describe('TasteMatchPage', () => {
     expect(screen.queryByTestId('share-sheet')).not.toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Taste Match als Bild teilen'));
     expect(screen.getByTestId('share-sheet')).toBeInTheDocument();
-  });
-
-  it('asks for access instead of the comparison when nothing is shared', () => {
-    data.value = baseData({ shared: false });
-    render(<TasteMatchPage />);
-    expect(screen.getByText(/teilt die eigenen Serien nicht/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Einblick anfragen/ })).toBeInTheDocument();
   });
 });

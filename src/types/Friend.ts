@@ -56,8 +56,6 @@ export interface FriendActivity {
     | 'movie_added_to_watchlist'
     | 'movie_removed_from_watchlist';
   itemTitle: string;
-  /** Aus dem titellosen Teaser — der Freund hat keinen Einblick gegeben. */
-  redacted?: boolean;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
   itemId?: number | string; // Fallback-ID wenn tmdbId fehlt
   itemType?: 'series' | 'movie'; // Typ des Items

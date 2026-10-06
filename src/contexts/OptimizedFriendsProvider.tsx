@@ -148,24 +148,12 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   // jeweiligen Freundes, ist also je Freund ein gezielter Punkt-Read (dieselbe
   // Bauart wie `FriendsWhoHaveThis`) statt eines Abos auf fremde Daten.
   const [grantedToMe, setGrantedToMe] = useState<Set<string>>(() => new Set());
-  // Erst wenn jedes Freigabe-Abo einmal geantwortet hat, darf der Feed laden.
-  const [grantsReady, setGrantsReady] = useState(false);
-  // Der Aktivitaets-Lader laeuft in einem eigenen Effect und darf nicht bei
-  // jeder Freigabe-Aenderung neu aufgesetzt werden.
-  const grantedRef = useRef(grantedToMe);
-  useEffect(() => {
-    grantedRef.current = grantedToMe;
-  }, [grantedToMe]);
 
-  // Die Freundes-Caches sind modulweit. Sie müssen weg beim Kontowechsel
-  // (sonst sieht der nächste Nutzer die Daten des vorherigen) UND bei jeder
-  // Änderung der Freigaben — ein Entzug wirkt sonst erst, wenn der Cache von
-  // allein abläuft.
-  const grantedCacheKey = [...grantedToMe].sort().join(',');
+  // Die Freundes-Caches sind modulweit und müssen beim Kontowechsel weg.
   useEffect(() => {
     clearFriendSeriesCache();
     clearFriendTitleRatingsCache();
-  }, [user?.uid, grantedCacheKey]);
+  }, [user?.uid]);
 
   const friendUidKey = useMemo(() => friendIdsOf(friendsData).join(','), [friendsData]);
 
@@ -176,23 +164,14 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     if (!user || !friendUidKey) {
       setGrantedToMe(new Set());
-      setGrantsReady(true);
       return;
     }
     const ids = friendUidKey.split(',');
-    const pending = new Set(ids);
-    setGrantsReady(false);
-    const settle = (id: string) => {
-      if (!pending.delete(id)) return;
-      if (pending.size === 0) setGrantsReady(true);
-    };
-    const fallback = setTimeout(() => setGrantsReady(true), 3000);
     const refs = ids.map((id) => ({ id, ref: dbRef(paths.share(id, user.uid)) }));
     const listeners = refs.map(({ id, ref }) =>
       onValue(
         ref,
         (snap) => {
-          settle(id);
           const erlaubt = snap.val() === true;
           setGrantedToMe((prev) => {
             if (prev.has(id) === erlaubt) return prev;
@@ -204,7 +183,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         },
         {
           onError: () => {
-            settle(id);
             // Kein Leserecht heisst schlicht: nicht freigegeben.
             setGrantedToMe((prev) => {
               if (!prev.has(id)) return prev;
@@ -217,7 +195,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       )
     );
     return () => {
-      clearTimeout(fallback);
       refs.forEach(({ ref }, i) => ref.off('value', listeners[i]));
     };
   }, [user, friendUidKey]);
@@ -394,7 +371,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     // localStorage-Cache (5 min TTL): spart N-parallel-Reads bei Tab-Wechseln.
     // Periodischer Poll statt permanenter child_added Listener bringt neue
     // Activities trotzdem zeitnah rein.
-    const cacheKey = `friendActivities:${user.uid}`;
+    const cacheKey = `friendActivities:v2:${user.uid}`;
     const cacheTTL = 5 * 60 * 1000;
     try {
       const rawCached = localStorage.getItem(cacheKey);
@@ -402,7 +379,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         const cached = JSON.parse(rawCached) as {
           savedAt: number;
           friendIds: string[];
-          grantedIds?: string[];
           activities: FriendActivity[];
         };
         const friendIdsKey = friends
@@ -410,17 +386,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           .sort()
           .join(',');
         const cachedIdsKey = [...cached.friendIds].sort().join(',');
-        // Der Freigabe-Stand gehoert in die Pruefung: sonst zeigt der Cache
-        // nach einem Entzug bis zu fuenf Minuten weiter Titel, die der Nutzer
-        // gerade verborgen hat. Alter Bestand ohne das Feld faellt raus.
-        const grantedKey = [...grantedRef.current].sort().join(',');
-        const cachedGrantedKey = Array.isArray(cached.grantedIds)
-          ? [...cached.grantedIds].sort().join(',')
-          : null;
         if (
           Date.now() - cached.savedAt < cacheTTL &&
           friendIdsKey === cachedIdsKey &&
-          cachedGrantedKey === grantedKey &&
           Array.isArray(cached.activities)
         ) {
           setFriendActivities(cached.activities);
@@ -444,12 +412,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const activityPromises = friends.map(async (friend) => {
-        // Ohne Freigabe nur den titellosen Zwilling lesen: „hat eine Folge
-        // gesehen" statt des Titels. Der volle Knoten ist per Rules gesperrt.
-        const freigegeben = grantedRef.current.has(friend.uid);
-        const knoten = freigegeben ? 'activities' : 'activityTeaser';
         try {
-          const activitiesRef = dbRef(userPath(friend.uid, knoten))
+          const activitiesRef = dbRef(userPath(friend.uid, 'activities'))
             .orderByChild('timestamp')
             .startAt(sevenDaysAgo)
             .limitToLast(30);
@@ -463,8 +427,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
               userId: friend.uid,
               userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
               ...data[key],
-              // Der Teaser traegt keinen Titel — die Anzeige erkennt das daran.
-              ...(freigegeben ? {} : { redacted: true, itemTitle: '' }),
             }));
           }
           return [];
@@ -474,7 +436,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       });
 
       const activityResults = await Promise.all(activityPromises);
-      // Ein älterer Lauf (z. B. vor dem Eintreffen der Freigaben) darf den neueren nicht überschreiben.
+      // Ein älterer Lauf darf den neueren nicht überschreiben.
       if (gen !== loadGenRef.current) return;
 
       activityResults.forEach((activities) => {
@@ -501,7 +463,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           JSON.stringify({
             savedAt: Date.now(),
             friendIds: friends.map((f) => f.uid),
-            grantedIds: [...grantedRef.current],
             activities: recentActivities,
           })
         );
@@ -519,13 +480,11 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
   // Einmaliger Load + Realtime child_added Listener pro Freund für neue Activities
   useEffect(() => {
-    if (!user || friends.length === 0 || !readTimesLoaded || !grantsReady) {
+    if (!user || friends.length === 0 || !readTimesLoaded) {
       return;
     }
 
-    // 1. Initialer Load. Laeuft auch neu, sobald sich die Freigaben aendern:
-    //    die Abos auf `shares` loesen erst NACH dem ersten Durchlauf aus, sonst
-    //    bliebe der Feed titellos, obwohl jemand laengst freigegeben hat.
+    // 1. Initialer Load.
     loadFriendActivitiesRef.current?.();
 
     // 2. Periodischer Poll alle 5 Min statt N child_added-Listener.
@@ -565,7 +524,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       document.removeEventListener('visibilitychange', onVisibility);
       stop();
     };
-  }, [user, friends, readTimesLoaded, grantsReady, grantedCacheKey]);
+  }, [user, friends, readTimesLoaded]);
 
   // Sync eigenes Profil (photoURL, displayName, username) in die friend-Einträge
   // bei allen Freunden. Der Snapshot in users/{friend}/friends/{user} wird sonst

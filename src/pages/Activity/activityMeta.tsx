@@ -58,14 +58,12 @@ export const activityMediaTargetProps = (
   title: string,
   posterUrl?: string
 ): Record<string, string> =>
-  activity.redacted
-    ? {}
-    : mediaTargetProps({
-        type: isMovieActivity(activity) ? 'movie' : 'series',
-        id: activity.tmdbId || activity.itemId,
-        title,
-        poster: posterUrl && !isPlaceholderUrl(posterUrl) ? posterUrl : undefined,
-      });
+  mediaTargetProps({
+    type: isMovieActivity(activity) ? 'movie' : 'series',
+    id: activity.tmdbId || activity.itemId,
+    title,
+    poster: posterUrl && !isPlaceholderUrl(posterUrl) ? posterUrl : undefined,
+  });
 
 export const getActivityMeta = (activity: FriendActivity): ActivityMeta => {
   const isMovie = isMovieActivity(activity);

@@ -56,7 +56,6 @@ import { useFriendFolders } from './useFriendFolders';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
 import { folderItemKey } from '../../lib/rating/ratingFolders';
-import { ShareGate } from '../../components/social/ShareGate';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
 
@@ -79,7 +78,6 @@ export const FriendProfilePage = memo(() => {
     sendFriendRequest,
     acceptFriendRequest,
     declineFriendRequest,
-    grantedToMe,
   } = useOptimizedFriends();
 
   const {
@@ -188,17 +186,14 @@ export const FriendProfilePage = memo(() => {
         ? t('Fehler — nochmal versuchen')
         : t('Freundschaftsanfrage senden');
 
-  // Einblick ist seit der Freigabe-Pflicht eine eigene Bedingung: befreundet
-  // sein reicht nicht mehr, um zu sehen, was jemand schaut.
-  const darfSehen = !!friendId && grantedToMe.has(friendId);
+  const darfSehen = !!friendId;
   const currentlyWatching = useFriendCurrentlyWatching(
     restricted || !darfSehen ? undefined : friendId
   );
-  // Die Bibliothek ist bei Freigabe oder öffentlichem Profil lesbar.
+  // Die Bibliothek ist für Freunde oder bei öffentlichem Profil lesbar.
   const libraryVisible = publicViewer || (!restricted && darfSehen);
   const anticipation = useFriendAnticipation(libraryVisible ? friendId : undefined);
   const friendPet = useFriendPet(restricted ? undefined : friendId);
-  // Aggregierte Gesamtzahlen: haengen an der Freundschaft, nicht an der Freigabe.
   const comparison = useFriendComparison(restricted && !publicViewer ? undefined : friendId);
   const friendFolders = useFriendFolders(restricted || !darfSehen ? undefined : friendId);
   const folders = friendFolders.folders;
@@ -508,18 +503,6 @@ export const FriendProfilePage = memo(() => {
                   style={{ overflow: 'hidden' }}
                 >
                   <div className="fp-insights-content">
-                    {!darfSehen && !publicViewer && friendId && (
-                      <div style={{ marginBottom: 12 }}>
-                        <ShareGate
-                          friendId={friendId}
-                          friendName={friendName}
-                          what={t('die eigenen Serien')}
-                        >
-                          <span />
-                        </ShareGate>
-                      </div>
-                    )}
-
                     <div
                       className={`fp-insights-row fp-insights-row--${publicViewer ? 1 : darfSehen ? 3 : 2}`}
                     >
@@ -554,7 +537,7 @@ export const FriendProfilePage = memo(() => {
                           </div>
                         </div>
                       )}
-                      {/* Gesamtvergleich — aggregierte Zahlen, bewusst ohne Freigabe-Gate */}
+                      {/* Gesamtvergleich — aggregierte Zahlen */}
                       <FriendComparisonCard
                         friendName={friendName}
                         own={comparison.own}

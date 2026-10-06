@@ -71,7 +71,7 @@ export const ShareRequestList: React.FC = () => {
             <VisibilityRounded style={{ fontSize: 20, color: currentTheme.primary }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: currentTheme.text.primary }}>
-                {t('{name} möchte deine Serien sehen', { name })}
+                {t('{name} möchte deinen Kalender sehen', { name })}
               </div>
               <div style={{ fontSize: 12, color: currentTheme.text.muted }}>
                 {t('Serienliste, Fortschritt, Kalender und Bewertungen — jederzeit widerrufbar.')}

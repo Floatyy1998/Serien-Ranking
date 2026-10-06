@@ -144,14 +144,13 @@ describe('useFriendTitleRatings', () => {
     expect(db.get.mock.calls.length).toBe(callsAfterFirst);
   });
 
-  it('ignoriert Favoriten ohne Freigabe', async () => {
+  it('liest Favoriten auch ohne Kalender-Freigabe', async () => {
     db.values.set('users/f1/series/42', { rating: { Drama: 8 } });
     ctx.favoriteFriends = [friend('f1', 'Flo')];
     ctx.grantedToMe = new Set();
 
     const { result } = renderHook(() => useFriendTitleRatings(42, 'series', true));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.entries).toEqual([]);
-    expect(db.get).not.toHaveBeenCalled();
+    await waitFor(() => expect(result.current.entries).toHaveLength(1));
+    expect(db.get).toHaveBeenCalled();
   });
 });
