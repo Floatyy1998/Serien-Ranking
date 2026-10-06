@@ -63,6 +63,7 @@ import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import { FriendComparisonCard } from '../FriendProfile/FriendComparisonCard';
 import { FriendCurrentlyWatchingCard } from '../FriendProfile/FriendCurrentlyWatchingCard';
 import { FriendPetCard } from '../FriendProfile/FriendPetCard';
+import { IncomingRequestActions } from '../FriendProfile/IncomingRequestActions';
 import { FriendAnticipationSection } from '../FriendProfile/FriendAnticipationSection';
 import type { Pet } from '../../types/pet.types';
 import '../FriendProfile/FriendProfilePage.css';
@@ -1265,6 +1266,42 @@ export const RatingsYearFilterPreview = () => {
         activeFiltersCount={year ? 1 : 0}
         clearFilters={() => setYear('')}
       />
+    </div>
+  );
+};
+
+export const IncomingRequestPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div style={{ padding: 16 }}>
+      <Case label="Öffentliches Profil mit eingehender Anfrage">
+        <header className="fp-hero">
+          <div className="fp-hero-top">
+            <h1 className="fp-hero-name" style={{ color: currentTheme.text.primary }}>
+              Bärbel
+            </h1>
+          </div>
+          <IncomingRequestActions name="Bärbel" responding={false} onRespond={() => {}} />
+        </header>
+      </Case>
+      <Case label="Privates Profil mit eingehender Anfrage">
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+            padding: '24px',
+            textAlign: 'center',
+          }}
+        >
+          <h2 style={{ margin: 0, color: currentTheme.text.primary, fontSize: 20 }}>Bärbel</h2>
+          <p style={{ margin: 0, color: currentTheme.text.muted, maxWidth: 320, lineHeight: 1.5 }}>
+            Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.
+          </p>
+          <IncomingRequestActions name="Bärbel" responding={false} onRespond={() => {}} />
+        </div>
+      </Case>
     </div>
   );
 };

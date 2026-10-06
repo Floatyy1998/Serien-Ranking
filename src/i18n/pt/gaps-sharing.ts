@@ -36,7 +36,7 @@ const dict: Record<string, string> = {
   'Wird gesendet …': 'A enviar …',
   durchgeschaut: 'terminada',
   'noch nicht gestartet': 'ainda não começou',
-  'seine Serien': 'as séries dele',
+  'die eigenen Serien': 'as próprias séries',
   unbewertet: 'sem avaliação',
   wartet: 'à espera',
   '{name} Einblick geben': 'Dar acesso a {name}',

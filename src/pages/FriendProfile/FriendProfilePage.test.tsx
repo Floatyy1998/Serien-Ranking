@@ -41,7 +41,10 @@ const { friendsState, dbState, dbGetMock, navigateMock } = vi.hoisted(() => {
       friends: [{ uid: 'friend-1' }] as { uid: string }[],
       loading: false,
       sentRequests: [] as { toUserId: string; status: string }[],
+      friendRequests: [] as { id: string; fromUserId: string; status: string }[],
       sendFriendRequest: vi.fn(async () => true),
+      acceptFriendRequest: vi.fn(async () => {}),
+      declineFriendRequest: vi.fn(async () => {}),
       // Freigabe-Pflicht: ohne Einblick zeigt die Seite die Anfrage statt der
       // Einblicke. Standardfall in den Tests ist „freigegeben".
       grantedToMe: new Set(['friend-1']),
@@ -115,6 +118,8 @@ vi.mock('./useFriendComparison', () => ({
 vi.mock('@mui/icons-material', () => ({
   ArrowBack: () => null,
   ChatBubbleOutlined: () => null,
+  CheckRounded: () => null,
+  CloseRounded: () => null,
   PersonAddRounded: () => null,
   ListAlt: () => null,
   CompareArrows: () => null,
@@ -203,6 +208,9 @@ beforeEach(() => {
   friendsState.loading = false;
   friendsState.sentRequests = [];
   friendsState.sendFriendRequest.mockClear();
+  friendsState.friendRequests = [];
+  friendsState.acceptFriendRequest.mockClear();
+  friendsState.declineFriendRequest.mockClear();
   friendsState.grantedToMe = new Set(['friend-1']);
   friendsState.shareState = () => 'granted';
   fpState.currentItems = [{ id: 1, title: 'Fringe', poster: '/p.jpg', seasons: [{}] }];
@@ -301,7 +309,7 @@ describe('FriendProfilePage', () => {
     expect(screen.queryByText(/Dieses Profil ist privat/)).not.toBeInTheDocument();
     // Chat, Match und der Freigabe-Hinweis gehoeren nur zu Freunden
     expect(screen.queryByText('Match')).not.toBeInTheDocument();
-    expect(screen.queryByText(/teilt seine Serien nicht/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/teilt die eigenen Serien nicht/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText('Freundschaftsanfrage senden'));
     expect(await screen.findByText('Anfrage gesendet ✓')).toBeInTheDocument();
@@ -327,12 +335,39 @@ describe('FriendProfilePage', () => {
     expect(await screen.findByText('Anfrage gesendet ✓')).toBeInTheDocument();
   });
 
+  it('bietet bei eingehender Anfrage Annehmen und Ablehnen statt Senden an', async () => {
+    friendsState.friends = [];
+    friendsState.friendRequests = [{ id: 'req-1', fromUserId: 'friend-1', status: 'pending' }];
+    dbState.isPublicProfile = true;
+    dbState.publicProfileId = 'abc123';
+
+    render(<FriendProfilePage />);
+
+    expect(
+      await screen.findByText(/hat dir eine Freundschaftsanfrage geschickt/)
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Freundschaftsanfrage senden')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Annehmen/ }));
+    await waitFor(() => expect(friendsState.acceptFriendRequest).toHaveBeenCalledWith('req-1'));
+  });
+
+  it('lehnt eine eingehende Anfrage auch auf dem privaten Profil ab', async () => {
+    friendsState.friends = [];
+    friendsState.friendRequests = [{ id: 'req-1', fromUserId: 'friend-1', status: 'pending' }];
+
+    render(<FriendProfilePage />);
+
+    expect(await screen.findByText(/Dieses Profil ist privat/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Ablehnen/ }));
+    await waitFor(() => expect(friendsState.declineFriendRequest).toHaveBeenCalledWith('req-1'));
+  });
+
   it('bietet die Anfrage an, statt die Einblicke leer zu lassen', async () => {
     // Genau der Weg, auf dem ein titelloser Feed-Eintrag hier landet.
     friendsState.grantedToMe = new Set<string>();
     friendsState.shareState = () => 'none';
     render(<FriendProfilePage />);
-    expect(await screen.findByText(/teilt seine Serien nicht/)).toBeInTheDocument();
+    expect(await screen.findByText(/teilt die eigenen Serien nicht/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Einblick anfragen/ })).toBeInTheDocument();
   });
 });

@@ -312,6 +312,7 @@ const dict: Record<string, string> = {
   '{name} eine Freundschaftsanfrage senden': 'Enviar um pedido de amizade para {name}',
   'Hat dich angefragt': 'Enviou um pedido',
   'Lädt …': 'Carregando …',
+  '{name} hat dir eine Freundschaftsanfrage geschickt': '{name} enviou-te um pedido de amizade',
 };
 
 export default dict;

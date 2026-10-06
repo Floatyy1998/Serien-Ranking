@@ -31,6 +31,7 @@ import {
   UnhideProviderPreview,
   WatchPlanGroupPreview,
   WatchPlanNewPreview,
+  IncomingRequestPreview,
 } from './NewFeaturePreviews';
 
 /**
@@ -132,6 +133,7 @@ const LightboxPreview = () => {
 };
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
+  { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },
   { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },
   { id: 'lightbox', label: 'Chat-Bild groß', render: () => <LightboxPreview /> },

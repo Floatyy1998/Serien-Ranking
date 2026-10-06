@@ -109,7 +109,7 @@ describe('TasteMatchPage', () => {
   it('asks for access instead of the comparison when nothing is shared', () => {
     data.value = baseData({ shared: false });
     render(<TasteMatchPage />);
-    expect(screen.getByText(/teilt seine Serien nicht/)).toBeInTheDocument();
+    expect(screen.getByText(/teilt die eigenen Serien nicht/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Einblick anfragen/ })).toBeInTheDocument();
   });
 });

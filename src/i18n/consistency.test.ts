@@ -63,7 +63,7 @@ const FREIGABE_TEXTE = [
   'Bitten um Einblick',
   '{name} möchte deine Serien sehen',
   '{name} teilt {was} nicht',
-  'seine Serien',
+  'die eigenen Serien',
   'Favoriten wählen',
   'Favoriten bearbeiten',
   'Kalender wählen',

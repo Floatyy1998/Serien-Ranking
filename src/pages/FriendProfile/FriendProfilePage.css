@@ -883,6 +883,29 @@
   opacity: 0.7;
 }
 
+.fp-hero-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.fp-request-hint {
+  position: relative;
+  z-index: 1;
+  margin: 16px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fp-request-actions {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 10px;
+}
+
+.fp-hero .fp-request-actions {
+  max-width: none;
+}
+
 /* 2050-Desktop: Insight-Platzhalter als schlanke Zeile statt Riesen-Leerbox */
 @media (min-width: 1100px) {
   .fp-insights-placeholder {

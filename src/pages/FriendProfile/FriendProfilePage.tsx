@@ -49,6 +49,7 @@ import { useFriendPet } from './useFriendPet';
 import { FriendCurrentlyWatchingCard } from './FriendCurrentlyWatchingCard';
 import { FriendAnticipationSection } from './FriendAnticipationSection';
 import { FriendPetCard } from './FriendPetCard';
+import { IncomingRequestActions } from './IncomingRequestActions';
 import { FriendComparisonCard } from './FriendComparisonCard';
 import { useFriendComparison } from './useFriendComparison';
 import { useFriendFolders } from './useFriendFolders';
@@ -74,7 +75,10 @@ export const FriendProfilePage = memo(() => {
     friends,
     loading: friendsLoading,
     sentRequests,
+    friendRequests,
     sendFriendRequest,
+    acceptFriendRequest,
+    declineFriendRequest,
     grantedToMe,
   } = useOptimizedFriends();
 
@@ -160,6 +164,20 @@ export const FriendProfilePage = memo(() => {
     // das Konto keinen oder einen abweichenden Benutzernamen hat.
     const ok = await sendFriendRequest(restrictedProfile?.username || '', friendId);
     setRequestState(ok ? 'sent' : 'error');
+  };
+
+  const incomingRequest = friendRequests.find(
+    (r) => r.fromUserId === friendId && r.status === 'pending'
+  );
+  const [responding, setResponding] = useState(false);
+  const respondToRequest = async (accept: boolean) => {
+    if (!incomingRequest || responding) return;
+    setResponding(true);
+    try {
+      await (accept ? acceptFriendRequest : declineFriendRequest)(incomingRequest.id);
+    } finally {
+      setResponding(false);
+    }
   };
 
   const requestLabel = alreadyRequested
@@ -285,30 +303,38 @@ export const FriendProfilePage = memo(() => {
               'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
             )}
           </p>
-          <motion.button
-            whileTap={tapScale}
-            onClick={handleSendRequest}
-            disabled={
-              alreadyRequested || requestState === 'sending' || !restrictedProfile?.username
-            }
-            style={{
-              border: 'none',
-              borderRadius: 999,
-              padding: '12px 24px',
-              fontWeight: 700,
-              fontSize: 15,
-              cursor: alreadyRequested ? 'default' : 'pointer',
-              color: onPrimary,
-              background: alreadyRequested
-                ? currentTheme.background.surface
-                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-              opacity: alreadyRequested ? 0.7 : 1,
-            }}
-          >
-            <span style={{ color: alreadyRequested ? currentTheme.text.muted : onPrimary }}>
-              {requestLabel}
-            </span>
-          </motion.button>
+          {incomingRequest ? (
+            <IncomingRequestActions
+              name={shownName}
+              responding={responding}
+              onRespond={respondToRequest}
+            />
+          ) : (
+            <motion.button
+              whileTap={tapScale}
+              onClick={handleSendRequest}
+              disabled={
+                alreadyRequested || requestState === 'sending' || !restrictedProfile?.username
+              }
+              style={{
+                border: 'none',
+                borderRadius: 999,
+                padding: '12px 24px',
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: alreadyRequested ? 'default' : 'pointer',
+                color: onPrimary,
+                background: alreadyRequested
+                  ? currentTheme.background.surface
+                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                opacity: alreadyRequested ? 0.7 : 1,
+              }}
+            >
+              <span style={{ color: alreadyRequested ? currentTheme.text.muted : onPrimary }}>
+                {requestLabel}
+              </span>
+            </motion.button>
+          )}
         </div>
       </PageLayout>
     );
@@ -396,7 +422,13 @@ export const FriendProfilePage = memo(() => {
             </div>
           </div>
 
-          {publicViewer ? (
+          {publicViewer && incomingRequest ? (
+            <IncomingRequestActions
+              name={friendName}
+              responding={responding}
+              onRespond={respondToRequest}
+            />
+          ) : publicViewer ? (
             <div className="fp-hero-actions">
               <motion.button
                 whileTap={tapScale}
@@ -481,7 +513,7 @@ export const FriendProfilePage = memo(() => {
                         <ShareGate
                           friendId={friendId}
                           friendName={friendName}
-                          what={t('seine Serien')}
+                          what={t('die eigenen Serien')}
                         >
                           <span />
                         </ShareGate>

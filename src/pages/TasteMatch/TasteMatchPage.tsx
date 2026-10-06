@@ -149,7 +149,7 @@ export const TasteMatchPage: React.FC = () => {
   if (!shared && friendId) {
     return (
       <div className="tm-page" style={{ background: bgDefault, padding: '24px 16px' }}>
-        <ShareGate friendId={friendId} friendName={friendName} what={t('seine Serien')}>
+        <ShareGate friendId={friendId} friendName={friendName} what={t('die eigenen Serien')}>
           <span />
         </ShareGate>
       </div>
