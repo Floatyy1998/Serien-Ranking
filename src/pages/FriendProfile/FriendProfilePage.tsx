@@ -1,6 +1,7 @@
 import {
   ArrowBack,
   ChatBubbleOutlined,
+  PersonAddRounded,
   ListAlt,
   CompareArrows,
   ExpandLess,
@@ -108,6 +109,7 @@ export const FriendProfilePage = memo(() => {
 
   const [restrictedProfile, setRestrictedProfile] = useState<RestrictedProfile | null>(null);
   const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
+  const [publicChecked, setPublicChecked] = useState(false);
   const [requestState, setRequestState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   useEffect(() => {
@@ -118,11 +120,12 @@ export const FriendProfilePage = memo(() => {
   }, [restricted, friendId]);
 
   // Wer sein Profil oeffentlich geschaltet hat, ist auch ohne Freundschaft
-  // einsehbar — die Rules geben series/movies dann frei. Ohne diese Abfrage
-  // behauptete die Sperrseite auch bei solchen Konten "privat".
+  // einsehbar — die Rules geben series/movies dann frei, die Seite zeigt dann
+  // die volle Ansicht ohne die Freundes-Teile.
   useEffect(() => {
     if (!restricted || !friendId) {
       setPublicProfileId(null);
+      setPublicChecked(false);
       return;
     }
     let cancelled = false;
@@ -133,12 +136,18 @@ export const FriendProfilePage = memo(() => {
       .then(([isPublic, publicId]) => {
         if (cancelled) return;
         setPublicProfileId(isPublic === true && publicId ? publicId : null);
+        setPublicChecked(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setPublicChecked(true);
+      });
     return () => {
       cancelled = true;
     };
   }, [restricted, friendId]);
+
+  const publicViewer = restricted && !!publicProfileId;
+  const locked = restricted && publicChecked && !publicProfileId;
 
   const alreadyRequested =
     requestState === 'sent' ||
@@ -153,16 +162,26 @@ export const FriendProfilePage = memo(() => {
     setRequestState(ok ? 'sent' : 'error');
   };
 
+  const requestLabel = alreadyRequested
+    ? t('Anfrage gesendet ✓')
+    : requestState === 'sending'
+      ? t('Sende…')
+      : requestState === 'error'
+        ? t('Fehler — nochmal versuchen')
+        : t('Freundschaftsanfrage senden');
+
   // Einblick ist seit der Freigabe-Pflicht eine eigene Bedingung: befreundet
   // sein reicht nicht mehr, um zu sehen, was jemand schaut.
   const darfSehen = !!friendId && grantedToMe.has(friendId);
   const currentlyWatching = useFriendCurrentlyWatching(
     restricted || !darfSehen ? undefined : friendId
   );
-  const anticipation = useFriendAnticipation(restricted || !darfSehen ? undefined : friendId);
+  // Die Bibliothek ist bei Freigabe oder öffentlichem Profil lesbar.
+  const libraryVisible = publicViewer || (!restricted && darfSehen);
+  const anticipation = useFriendAnticipation(libraryVisible ? friendId : undefined);
   const friendPet = useFriendPet(restricted ? undefined : friendId);
   // Aggregierte Gesamtzahlen: haengen an der Freundschaft, nicht an der Freigabe.
-  const comparison = useFriendComparison(restricted ? undefined : friendId);
+  const comparison = useFriendComparison(restricted && !publicViewer ? undefined : friendId);
   const friendFolders = useFriendFolders(restricted || !darfSehen ? undefined : friendId);
   const folders = friendFolders.folders;
   const openFolder =
@@ -238,7 +257,7 @@ export const FriendProfilePage = memo(() => {
     });
   };
 
-  if (restricted) {
+  if (locked) {
     const shownName = restrictedProfile?.displayName || restrictedProfile?.username || t('Profil');
     return (
       <PageLayout>
@@ -262,32 +281,10 @@ export const FriendProfilePage = memo(() => {
           />
           <h2 style={{ margin: 0, color: currentTheme.text.primary, fontSize: 20 }}>{shownName}</h2>
           <p style={{ margin: 0, color: currentTheme.text.muted, maxWidth: 320, lineHeight: 1.5 }}>
-            {publicProfileId
-              ? t(
-                  'Bibliothek und Bewertungen sind öffentlich. Aktivität, Pet und Fortschritt sehen nur Freunde.'
-                )
-              : t(
-                  'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
-                )}
+            {t(
+              'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
+            )}
           </p>
-          {publicProfileId && (
-            <motion.button
-              whileTap={tapScale}
-              onClick={() => navigate(`/public/${publicProfileId}`)}
-              style={{
-                border: 'none',
-                borderRadius: 999,
-                padding: '12px 24px',
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: 'pointer',
-                color: onPrimary,
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-              }}
-            >
-              {t('Öffentliches Profil ansehen')}
-            </motion.button>
-          )}
           <motion.button
             whileTap={tapScale}
             onClick={handleSendRequest}
@@ -295,40 +292,21 @@ export const FriendProfilePage = memo(() => {
               alreadyRequested || requestState === 'sending' || !restrictedProfile?.username
             }
             style={{
+              border: 'none',
               borderRadius: 999,
               padding: '12px 24px',
               fontWeight: 700,
               fontSize: 15,
               cursor: alreadyRequested ? 'default' : 'pointer',
               color: onPrimary,
-              background:
-                alreadyRequested || publicProfileId
-                  ? currentTheme.background.surface
-                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-              // Neben dem oeffentlichen Knopf ist die Anfrage die zweite Wahl
-              border:
-                publicProfileId && !alreadyRequested
-                  ? `1px solid ${currentTheme.primary}55`
-                  : 'none',
+              background: alreadyRequested
+                ? currentTheme.background.surface
+                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
               opacity: alreadyRequested ? 0.7 : 1,
             }}
           >
-            <span
-              style={{
-                color: alreadyRequested
-                  ? currentTheme.text.muted
-                  : publicProfileId
-                    ? currentTheme.text.primary
-                    : onPrimary,
-              }}
-            >
-              {alreadyRequested
-                ? t('Anfrage gesendet ✓')
-                : requestState === 'sending'
-                  ? t('Sende…')
-                  : requestState === 'error'
-                    ? t('Fehler — nochmal versuchen')
-                    : t('Freundschaftsanfrage senden')}
+            <span style={{ color: alreadyRequested ? currentTheme.text.muted : onPrimary }}>
+              {requestLabel}
             </span>
           </motion.button>
         </div>
@@ -336,7 +314,7 @@ export const FriendProfilePage = memo(() => {
     );
   }
 
-  if (loading || friendsLoading) {
+  if (loading || friendsLoading || (restricted && !publicChecked)) {
     return (
       <PageLayout
         style={{
@@ -410,7 +388,7 @@ export const FriendProfilePage = memo(() => {
               <UserAvatar
                 userId={friendId ?? ''}
                 username={friendName}
-                photoURL={friendEntry?.photoURL}
+                photoURL={friendEntry?.photoURL || restrictedProfile?.photoURL}
                 size={40}
                 navigable={false}
               />
@@ -418,32 +396,58 @@ export const FriendProfilePage = memo(() => {
             </div>
           </div>
 
-          <div className="fp-hero-actions">
-            <motion.button
-              whileTap={tapScale}
-              onClick={() => friendId && navigate(`/chat/${friendId}`)}
-              className="fp-hero-btn fp-hero-btn--ghost"
-              style={{
-                border: `1px solid ${currentTheme.primary}55`,
-                color: currentTheme.primary,
-              }}
-            >
-              <ChatBubbleOutlined style={{ fontSize: 19 }} />
-              {t('Chat')}
-            </motion.button>
-            <motion.button
-              whileTap={tapScale}
-              onClick={navigateToTasteMatch}
-              className="fp-hero-btn"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                color: onPrimary,
-              }}
-            >
-              <CompareArrows style={{ fontSize: 19 }} />
-              Match
-            </motion.button>
-          </div>
+          {publicViewer ? (
+            <div className="fp-hero-actions">
+              <motion.button
+                whileTap={tapScale}
+                onClick={handleSendRequest}
+                disabled={alreadyRequested || requestState === 'sending'}
+                className="fp-hero-btn"
+                style={
+                  alreadyRequested
+                    ? {
+                        border: `1px solid ${currentTheme.text.muted}40`,
+                        color: currentTheme.text.muted,
+                        cursor: 'default',
+                      }
+                    : {
+                        background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                        color: onPrimary,
+                      }
+                }
+              >
+                <PersonAddRounded style={{ fontSize: 19 }} />
+                {requestLabel}
+              </motion.button>
+            </div>
+          ) : (
+            <div className="fp-hero-actions">
+              <motion.button
+                whileTap={tapScale}
+                onClick={() => friendId && navigate(`/chat/${friendId}`)}
+                className="fp-hero-btn fp-hero-btn--ghost"
+                style={{
+                  border: `1px solid ${currentTheme.primary}55`,
+                  color: currentTheme.primary,
+                }}
+              >
+                <ChatBubbleOutlined style={{ fontSize: 19 }} />
+                {t('Chat')}
+              </motion.button>
+              <motion.button
+                whileTap={tapScale}
+                onClick={navigateToTasteMatch}
+                className="fp-hero-btn"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                  color: onPrimary,
+                }}
+              >
+                <CompareArrows style={{ fontSize: 19 }} />
+                Match
+              </motion.button>
+            </div>
+          )}
         </header>
 
         {/* Friend Insights — Currently Watching, Pet, Anticipation */}
@@ -472,7 +476,7 @@ export const FriendProfilePage = memo(() => {
                   style={{ overflow: 'hidden' }}
                 >
                   <div className="fp-insights-content">
-                    {!darfSehen && friendId && (
+                    {!darfSehen && !publicViewer && friendId && (
                       <div style={{ marginBottom: 12 }}>
                         <ShareGate
                           friendId={friendId}
@@ -484,8 +488,10 @@ export const FriendProfilePage = memo(() => {
                       </div>
                     )}
 
-                    <div className={`fp-insights-row fp-insights-row--${darfSehen ? 3 : 2}`}>
-                      {!darfSehen ? null : currentlyWatching.data ? (
+                    <div
+                      className={`fp-insights-row fp-insights-row--${publicViewer ? 1 : darfSehen ? 3 : 2}`}
+                    >
+                      {!darfSehen || publicViewer ? null : currentlyWatching.data ? (
                         <FriendCurrentlyWatchingCard
                           friendName={friendName}
                           data={currentlyWatching.data}
@@ -504,7 +510,7 @@ export const FriendProfilePage = memo(() => {
                           </div>
                         </div>
                       )}
-                      {friendPet.pet ? (
+                      {publicViewer ? null : friendPet.pet ? (
                         <FriendPetCard friendUid={friendId} pet={friendPet.pet} />
                       ) : (
                         <div className="fp-insights-placeholder">

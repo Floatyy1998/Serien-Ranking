@@ -50,9 +50,10 @@ const dict: Record<string, string> = {
   Türkei: 'Turquia',
   Einstellungen: 'Configurações',
   'TV-Rank beim Hochfahren starten': 'Abrir o TV-Rank ao iniciar o sistema',
-  'Andere können deine Serien und Filme sehen': 'Outras pessoas podem ver suas séries e filmes',
-  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen':
-    'Se você ativar, qualquer pessoa poderá ver suas séries e filmes avaliados sem fazer login',
+  'Andere können deine Serien und Filme sehen und dich unter „Öffentliche Profile“ finden':
+    'Outras pessoas podem ver suas séries e filmes e encontrar você em "Perfis públicos"',
+  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen. „Neuer Link“ macht den alten Link ungültig.':
+    'Se ativado, outras pessoas podem ver suas séries e filmes avaliados mesmo sem login. "Novo link" invalida o link antigo.',
   'TV-Rank für Windows herunterladen': 'Baixar o TV-Rank para Windows',
   'APK direkt herunterladen und installieren': 'Baixar e instalar o APK diretamente',
   'App bewerten': 'Avaliar o app',
@@ -137,6 +138,8 @@ const dict: Record<string, string> = {
   'Episoden-Informationen': 'Informações de episódios',
   'Film- & Seriendaten': 'Dados de filmes e séries',
   Bewertungen: 'Notas',
+  'Manga- & Webtoon-Daten': 'Dados de mangá e webtoons',
+  'Manga-Kapitel': 'Capítulos de mangá',
   Benachrichtigungen: 'Notificações',
   'Push-Benachrichtigungen': 'Notificações push',
   'Dein Pet': 'Seu mascote',
@@ -268,6 +271,10 @@ const dict: Record<string, string> = {
   'Android App': 'Android App',
   Autostart: 'Início automático',
   'Patch Notes': 'Patch Notes',
+  'Neuer Link': 'Novo link',
+  'In der globalen Rangliste erscheinen': 'Aparecer no ranking global',
+  'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
+    'Seus amigos continuam vendo você no ranking deles',
 };
 
 export default dict;

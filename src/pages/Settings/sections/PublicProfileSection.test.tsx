@@ -73,7 +73,7 @@ describe('PublicProfileSection', () => {
     expect(props.onShareLink).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByText('Kopieren'));
     expect(props.onCopyLink).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByText('Neu'));
+    fireEvent.click(screen.getByText('Neuer Link'));
     expect(props.onRegenerateId).toHaveBeenCalledTimes(1);
   });
 });

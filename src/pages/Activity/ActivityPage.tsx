@@ -67,12 +67,28 @@ export const ActivityPage = () => {
   // Der Reiter kommt aus der URL, damit eine Benachrichtigung direkt dorthin
   // fuehrt. Ohne das landete ein Push zu einer Anfrage im Verlauf-Reiter und
   // die Seite wirkte leer.
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     tabParam === 'requests' || tabParam === 'friends' || tabParam === 'discussions'
       ? tabParam
       : 'activity'
+  );
+  // Reiter in die URL (replace): nach einem Profilbesuch fuehrt Zurueck wieder hierher.
+  const selectTab = useCallback(
+    (id: TabId) => {
+      setActiveTab(id);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('tab', id);
+          if (id !== 'friends') next.delete('view');
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
   );
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
@@ -238,7 +254,7 @@ export const ActivityPage = () => {
               role="tab"
               aria-selected={active}
               aria-label={t(tab.label)}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => selectTab(tab.id)}
               className={`activity-nav__tab${active ? ' is-active' : ''}`}
               style={{
                 background: active

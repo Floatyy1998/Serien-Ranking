@@ -371,6 +371,22 @@
   }
 }
 
+/* Öffentliches Profil ohne Freundschaft: nur der Gesamtvergleich, über die volle Breite */
+@media (min-width: 720px) {
+  .fp-insights-row--1 {
+    grid-template-columns: 1fr;
+  }
+
+  .fp-insights-row--1 > .fp-compare .fp-compare-list {
+    flex-direction: row;
+    gap: 28px;
+  }
+
+  .fp-insights-row--1 > .fp-compare .fp-compare-row {
+    flex: 1 1 0;
+  }
+}
+
 .fp-insights-placeholder {
   display: flex;
   flex-direction: column;

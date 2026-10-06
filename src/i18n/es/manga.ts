@@ -16,6 +16,7 @@ const dict: Record<string, string> = {
   Bewertungen: 'Notas',
   Statistiken: 'Estadísticas',
   '{n} Kap.': '{n} cap.',
+  'Gefunden als „{title}“': 'Encontrado como «{title}»',
   Verlauf: 'Historial',
   Beliebt: 'Popular',
   'Top bewertet': 'Mejor valorados',

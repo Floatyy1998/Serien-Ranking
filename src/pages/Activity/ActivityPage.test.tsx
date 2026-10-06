@@ -67,7 +67,7 @@ const { navigateMock, friendsValue, notificationsValue, routeState } = vi.hoiste
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigateMock,
-  useSearchParams: () => [new URLSearchParams(routeState.search)],
+  useSearchParams: () => [new URLSearchParams(routeState.search), () => {}],
 }));
 vi.mock('../../hooks/ui/useScrollRestore', () => ({
   useScrollRestore: () => ({ saveNow: vi.fn() }),

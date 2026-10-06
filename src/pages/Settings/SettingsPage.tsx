@@ -13,6 +13,7 @@ import { t } from '../../services/i18n';
 import { isNativeApp } from '../../services/app/nativeShell';
 import { ProfileSection } from './sections/ProfileSection';
 import { PublicProfileSection } from './sections/PublicProfileSection';
+import { LeaderboardVisibilitySection } from './sections/LeaderboardVisibilitySection';
 import { ShareAccessSection } from './sections/ShareAccessSection';
 import { DeleteAccountSection } from './sections/DeleteAccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -177,6 +178,8 @@ export const SettingsPage = () => {
           onShareLink={sharePublicLink}
           onRegenerateId={regeneratePublicId}
         />
+
+        <LeaderboardVisibilitySection />
 
         <ShareAccessSection />
 

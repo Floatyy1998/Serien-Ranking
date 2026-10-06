@@ -62,9 +62,36 @@ async function fetchProfileSubnode(
 // bei jedem Watch-Event — ohne Cache wären das 3 Punkt-Reads pro Episode.
 const ownProfileCache = new Map<
   string,
-  { ts: number; displayName: string; username: string | null; photoURL: string | null }
+  {
+    ts: number;
+    displayName: string;
+    username: string | null;
+    photoURL: string | null;
+    hidden: boolean;
+  }
 >();
 const OWN_PROFILE_TTL_MS = 30 * 60 * 1000;
+
+const hiddenPath = (uid: string) => `leaderboardHidden/${uid}`;
+
+/** Wer sich ausblendet, erscheint nicht in der globalen Rangliste; Freunde sehen ihn weiter. */
+export async function isLeaderboardHidden(uid: string): Promise<boolean> {
+  try {
+    return (await dbGet<boolean>(hiddenPath(uid))) === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function setLeaderboardHidden(uid: string, hidden: boolean): Promise<void> {
+  ownProfileCache.delete(uid);
+  if (hidden) {
+    await dbUpdate({ [hiddenPath(uid)]: true, [`leaderboardStats/${uid}`]: null });
+    return;
+  }
+  await dbUpdate({ [hiddenPath(uid)]: null });
+  await seedLeaderboardStats(uid, []);
+}
 
 function getDefaultStats(): LeaderboardStats {
   return {
@@ -112,22 +139,25 @@ export async function updateLeaderboardStats(
     let displayName = 'Unbekannt';
     let username: string | null = null;
     let photoURL: string | null = null;
+    let hidden = false;
     const cached = ownProfileCache.get(userId);
     if (cached && Date.now() - cached.ts < OWN_PROFILE_TTL_MS) {
-      ({ displayName, username, photoURL } = cached);
+      ({ displayName, username, photoURL, hidden } = cached);
     } else {
       try {
-        const [dnameSnap, unameSnap, photoSnap] = await Promise.all([
+        const [dnameSnap, unameSnap, photoSnap, hiddenFlag] = await Promise.all([
           dbRef(paths.displayName(userId)).once('value'),
           dbRef(userPath(userId, 'username')).once('value'),
           dbRef(userPath(userId, 'photoURL')).once('value'),
+          isLeaderboardHidden(userId),
         ]);
         displayName = toDisplayName(dnameSnap.val(), unameSnap.val());
         const uname = unameSnap.val();
         username = typeof uname === 'string' && uname.trim().length > 0 ? uname : null;
         const photo = photoSnap.val();
         photoURL = typeof photo === 'string' && photo.length > 0 ? photo : null;
-        ownProfileCache.set(userId, { ts: Date.now(), displayName, username, photoURL });
+        hidden = hiddenFlag;
+        ownProfileCache.set(userId, { ts: Date.now(), displayName, username, photoURL, hidden });
       } catch {
         // defaults bleiben
       }
@@ -152,12 +182,14 @@ export async function updateLeaderboardStats(
         // Oeffentlicher Archiv-Knoten: ueberlebt den Reset von leaderboardStats
         // und ist fuer alle auth User lesbar, damit jeder User checkAndArchiveMonth
         // mit vollstaendigen Daten ausfuehren kann.
-        writes[`leaderboardArchive/${current.monthKey}/${userId}`] = {
-          ...historySnapshot,
-          displayName,
-          username,
-          photoURL,
-        };
+        if (!hidden) {
+          writes[`leaderboardArchive/${current.monthKey}/${userId}`] = {
+            ...historySnapshot,
+            displayName,
+            username,
+            photoURL,
+          };
+        }
       }
       current.episodesThisMonth = 0;
       current.moviesThisMonth = 0;
@@ -222,7 +254,7 @@ export async function updateLeaderboardStats(
     };
 
     writes[`users/${userId}/leaderboard/stats`] = current;
-    writes[`leaderboardStats/${userId}`] = publicEntry;
+    if (!hidden) writes[`leaderboardStats/${userId}`] = publicEntry;
 
     await dbUpdate(writes);
   } catch (error) {
@@ -292,7 +324,10 @@ export async function seedLeaderboardStats(
   currentUserId: string,
   friendUids: string[]
 ): Promise<void> {
-  const allUids = [currentUserId, ...friendUids];
+  // Fremde Flags sind nicht lesbar; deren leaderboardStats lassen die Rules
+  // ohnehin nur den Eigentümer schreiben.
+  const selfHidden = await isLeaderboardHidden(currentUserId);
+  const allUids = selfHidden ? friendUids : [currentUserId, ...friendUids];
   const currentMonth = getCurrentMonthKey();
 
   await Promise.all(

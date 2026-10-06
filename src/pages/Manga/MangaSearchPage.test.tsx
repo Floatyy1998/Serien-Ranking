@@ -27,8 +27,8 @@ vi.mock('../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isMobile: true }),
 }));
 
-const searchManga = vi.hoisted(() => vi.fn());
-vi.mock('../../services/api/anilistService', () => ({ searchManga }));
+const searchMangaWithTitleFallback = vi.hoisted(() => vi.fn());
+vi.mock('../../services/api/mangaSearch', () => ({ searchMangaWithTitleFallback }));
 
 const addMangaToList = vi.hoisted(() => vi.fn());
 vi.mock('./addMangaToList', () => ({ addMangaToList }));
@@ -58,7 +58,7 @@ function makeResult(overrides: Partial<AniListMangaSearchResult> = {}): AniListM
 
 beforeEach(() => {
   localStorage.clear();
-  searchManga.mockResolvedValue({ results: [makeResult()] });
+  searchMangaWithTitleFallback.mockResolvedValue({ results: [makeResult()], aliases: {} });
 });
 
 afterEach(() => {
@@ -80,8 +80,30 @@ describe('MangaSearchPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Manga, Manhwa, Manhua suchen...'), {
       target: { value: 'Naruto' },
     });
-    await waitFor(() => expect(searchManga).toHaveBeenCalled(), { timeout: 2000 });
+    await waitFor(() => expect(searchMangaWithTitleFallback).toHaveBeenCalled(), {
+      timeout: 2000,
+    });
     await waitFor(() => expect(screen.getByText('Naruto EN')).toBeInTheDocument());
+  });
+
+  it('zeigt den Titel, über den ein Eintrag gefunden wurde', async () => {
+    searchMangaWithTitleFallback.mockResolvedValue({
+      results: [
+        makeResult({
+          id: 7,
+          title: { romaji: 'Minamgwa Yasu', english: 'The Beau and the Beast', native: null },
+        }),
+      ],
+      aliases: { 7: 'Der Schöne und das Biest' },
+    });
+    render(<MangaSearchPage />);
+    fireEvent.change(screen.getByPlaceholderText('Manga, Manhwa, Manhua suchen...'), {
+      target: { value: 'Der Schöne und das Biest' },
+    });
+    await waitFor(() => expect(screen.getByText('The Beau and the Beast')).toBeInTheDocument(), {
+      timeout: 2000,
+    });
+    expect(screen.getByText('Gefunden als „Der Schöne und das Biest“')).toBeInTheDocument();
   });
 
   it('zeigt die Format-Filter an', () => {

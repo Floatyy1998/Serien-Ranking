@@ -337,6 +337,16 @@ const dict: Record<string, string> = {
   // Gleich geschrieben wie auf Deutsch — Eintrag noetig, damit Spanisch und
   // Franzoesisch sie ueberhaupt erreichen.
   Feed: 'Feed',
+  'Meine Freunde': 'My friends',
+  'Öffentliche Profile': 'Public profiles',
+  'Öffentliche Profile durchsuchen': 'Search public profiles',
+  'Noch keine öffentlichen Profile': 'No public profiles yet',
+  'Hier erscheint, wer sein Profil in den Einstellungen öffentlich geschaltet hat.':
+    'Everyone who made their profile public in the settings shows up here.',
+  '{n} Film': '{n} movie',
+  '{name} eine Freundschaftsanfrage senden': 'Send {name} a friend request',
+  'Hat dich angefragt': 'Sent you a request',
+  'Lädt …': 'Loading …',
 };
 
 export default dict;

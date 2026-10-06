@@ -46,7 +46,17 @@ import type { Friend } from '../../../types/Friend';
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
+vi.mock('react-router-dom', async () => {
+  const React = await import('react');
+  return {
+    useNavigate: () => navigateMock,
+    useSearchParams: () => {
+      const [params, setParams] = React.useState(() => new URLSearchParams());
+      const update = (fn: (prev: URLSearchParams) => URLSearchParams) => setParams((p) => fn(p));
+      return [params, update] as const;
+    },
+  };
+});
 
 const social = vi.hoisted(() => ({
   favoriteIds: new Set<string>(),
@@ -87,6 +97,10 @@ vi.mock('../../../components/ui', () => ({
       {action && <button onClick={action.onClick}>{action.label}</button>}
     </div>
   ),
+}));
+
+vi.mock('./PublicProfilesList', () => ({
+  PublicProfilesList: () => <div>PUBLIC_PROFILES</div>,
 }));
 
 import { FriendsTab } from './FriendsTab';
@@ -212,5 +226,28 @@ describe('FriendsTab', () => {
     const gedaempft = screen.getByLabelText(/nicht mehr als Favorit/).getAttribute('style');
 
     expect(gedaempft).not.toEqual(gold);
+  });
+});
+
+describe('FriendsTab – Öffentliche Profile', () => {
+  it('schaltet auf die öffentlichen Profile um, auch ohne Freunde', () => {
+    render(
+      <FriendsTab
+        friends={[]}
+        friendProfiles={{}}
+        saveScrollPosition={vi.fn()}
+        onAddFriend={vi.fn()}
+        onRemoveFriend={vi.fn()}
+      />
+    );
+    expect(screen.queryByText('PUBLIC_PROFILES')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Öffentliche Profile' }));
+
+    expect(screen.getByText('PUBLIC_PROFILES')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Öffentliche Profile' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
   });
 });

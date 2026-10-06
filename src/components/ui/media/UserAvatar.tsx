@@ -77,6 +77,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     <img
       src={src}
       alt=""
+      // Google-Fotos (googleusercontent) liefern mit Referer 403.
+      referrerPolicy="no-referrer"
       onError={onError}
       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
     />

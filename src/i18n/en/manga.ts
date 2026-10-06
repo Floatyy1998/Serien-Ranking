@@ -15,6 +15,7 @@ const dict: Record<string, string> = {
   Bewertungen: 'Ratings',
   Statistiken: 'Stats',
   '{n} Kap.': '{n} ch.',
+  'Gefunden als „{title}“': 'Found as "{title}"',
   Verlauf: 'History',
   Beliebt: 'Popular',
   'Top bewertet': 'Top rated',

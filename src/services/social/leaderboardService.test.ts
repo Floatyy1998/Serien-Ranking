@@ -172,7 +172,9 @@ import {
   fetchLeaderboardData,
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
+  isLeaderboardHidden,
   seedLeaderboardStats,
+  setLeaderboardHidden,
   syncStreakFromTracker,
   updateLeaderboardStats,
 } from './leaderboardService';
@@ -643,5 +645,67 @@ describe('fetchTrophyHistory', () => {
 
   it('liefert [] ohne Trophäen', async () => {
     await expect(fetchTrophyHistory()).resolves.toEqual([]);
+  });
+});
+
+describe('Ausblenden aus der globalen Rangliste', () => {
+  it('schreibt bei ausgeblendeten Nutzern nur die eigenen Stats, nichts Globales', async () => {
+    fb.setByPath('leaderboardHidden/hid1', true);
+    fb.setByPath('users/hid1/leaderboard/stats', {
+      episodesThisMonth: 1,
+      moviesThisMonth: 0,
+      watchtimeThisMonth: 45,
+      streakThisMonth: 1,
+      streakAllTime: 1,
+      streakCurrent: 1,
+      lastStreakDate: '2026-06-30',
+      lastUpdated: 0,
+      monthKey: '2026-06',
+    });
+
+    await updateLeaderboardStats('hid1', { episodesWatched: 1, watchtimeMinutes: 45 });
+
+    expect(fb.getByPath('users/hid1/leaderboard/stats/episodesThisMonth')).toBe(1);
+    expect(fb.getByPath('users/hid1/leaderboard/history/2026-06')).toBeTruthy();
+    expect(fb.getByPath('leaderboardStats/hid1')).toBeUndefined();
+    expect(fb.getByPath('leaderboardArchive/2026-06/hid1')).toBeUndefined();
+  });
+
+  it('setLeaderboardHidden(true) setzt das Flag und entfernt den globalen Eintrag', async () => {
+    fb.setByPath('leaderboardStats/hid2', { monthKey: '2026-07', episodesThisMonth: 4 });
+
+    await setLeaderboardHidden('hid2', true);
+
+    expect(fb.getByPath('leaderboardHidden/hid2')).toBe(true);
+    expect(fb.getByPath('leaderboardStats/hid2')).toBeUndefined();
+    expect(await isLeaderboardHidden('hid2')).toBe(true);
+  });
+
+  it('setLeaderboardHidden(false) nimmt das Flag weg und stellt den Eintrag wieder her', async () => {
+    fb.setByPath('leaderboardHidden/hid3', true);
+    fb.setByPath('users/hid3/leaderboard/stats', {
+      monthKey: '2026-07',
+      episodesThisMonth: 4,
+      moviesThisMonth: 0,
+      watchtimeThisMonth: 120,
+    });
+
+    await setLeaderboardHidden('hid3', false);
+
+    expect(fb.getByPath('leaderboardHidden/hid3')).toBeUndefined();
+    expect(fb.getByPath('leaderboardStats/hid3/episodesThisMonth')).toBe(4);
+  });
+
+  it('seedLeaderboardStats legt für Ausgeblendete keinen eigenen Eintrag an', async () => {
+    fb.setByPath('leaderboardHidden/hid4', true);
+    fb.setByPath('users/hid4/leaderboard/stats', {
+      monthKey: '2026-07',
+      episodesThisMonth: 4,
+      watchtimeThisMonth: 120,
+    });
+
+    await seedLeaderboardStats('hid4', []);
+
+    expect(fb.getByPath('leaderboardStats/hid4')).toBeUndefined();
   });
 });

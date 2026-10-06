@@ -44,6 +44,7 @@ export interface AniListMangaSearchResult {
     english: string | null;
     native: string | null;
   };
+  synonyms?: string[];
   coverImage: {
     large: string;
     medium: string;

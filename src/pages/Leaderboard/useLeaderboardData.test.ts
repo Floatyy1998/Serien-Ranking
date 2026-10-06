@@ -33,6 +33,7 @@ const svc = vi.hoisted(() => ({
   fetchLeaderboardProfiles: vi.fn(async () => ({}) as Record<string, unknown>),
   fetchTrophyHistory: vi.fn(async () => [] as MonthlyTrophy[]),
   forceRebuildArchive: vi.fn(async () => {}),
+  isLeaderboardHidden: vi.fn(async () => false),
   seedLeaderboardStats: vi.fn(async () => {}),
   syncStreakFromTracker: vi.fn(async () => {}),
 }));
@@ -97,6 +98,23 @@ describe('useLeaderboardData – global mode', () => {
     expect(result.current.rankings[0]?.uid).toBe('x');
     expect(result.current.rankings[0]?.value).toBe(20);
     expect(svc.seedLeaderboardStats).toHaveBeenCalledWith('u1', ['f1']);
+  });
+
+  it('blendet den eigenen Eintrag aus, wenn man sich aus der Rangliste genommen hat', async () => {
+    svc.isLeaderboardHidden.mockResolvedValue(true);
+    svc.fetchLeaderboardData.mockResolvedValue({
+      u1: { episodesThisMonth: 50 } as LeaderboardStats,
+    });
+    svc.fetchGlobalLeaderboard.mockResolvedValue([
+      { uid: 'x', displayName: 'X', episodesThisMonth: 20 },
+      { uid: 'u1', displayName: 'Me', episodesThisMonth: 3 },
+    ] as unknown[]);
+    const { result } = renderHook(() => useLeaderboardData());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.setMode('global'));
+    await waitFor(() => expect(svc.isLeaderboardHidden).toHaveBeenCalledWith('u1'));
+    await waitFor(() => expect(result.current.rankings.map((r) => r.uid)).toEqual(['x']));
   });
 });
 

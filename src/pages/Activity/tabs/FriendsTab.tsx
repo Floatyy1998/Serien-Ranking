@@ -1,5 +1,4 @@
 import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
-import PersonRounded from '@mui/icons-material/PersonRounded';
 import PersonRemoveRounded from '@mui/icons-material/PersonRemoveRounded';
 import GroupRounded from '@mui/icons-material/GroupRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
@@ -8,15 +7,19 @@ import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
 import HourglassTopRounded from '@mui/icons-material/HourglassTopRounded';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
 import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import { NameBadges } from '../../../components/ui/display/NameBadges';
+import { UserAvatar } from '../../../components/ui/media/UserAvatar';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
+import { PublicProfilesList } from './PublicProfilesList';
+
+type FriendsView = 'mine' | 'public';
 
 interface FriendsTabProps {
   friends: Friend[];
@@ -168,6 +171,19 @@ export const FriendsTab = ({
   const { currentTheme } = useTheme();
   const { favoriteIds, toggleFavoriteFriend, shareState, requestShare } = useOptimizedFriends();
   const [query, setQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view: FriendsView = searchParams.get('view') === 'public' ? 'public' : 'mine';
+  const setView = (next: FriendsView) =>
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.set('tab', 'friends');
+        if (next === 'public') params.set('view', 'public');
+        else params.delete('view');
+        return params;
+      },
+      { replace: true }
+    );
 
   const resolved = useMemo(
     () =>
@@ -192,6 +208,68 @@ export const FriendsTab = ({
     );
   }, [resolved, query]);
 
+  const viewSwitch = (
+    <div
+      role="tablist"
+      aria-label={t('Ansicht')}
+      style={{
+        display: 'flex',
+        gap: '4px',
+        padding: '4px',
+        marginBottom: '16px',
+        maxWidth: 420,
+        borderRadius: '14px',
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
+      }}
+    >
+      {(
+        [
+          ['mine', t('Meine Freunde')],
+          ['public', t('Öffentliche Profile')],
+        ] as const
+      ).map(([id, label]) => {
+        const active = view === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => setView(id)}
+            style={{
+              flex: 1,
+              padding: '9px 12px',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 600,
+              background: active ? `${currentTheme.primary}26` : 'transparent',
+              color: active ? currentTheme.primary : currentTheme.text.muted,
+            }}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  if (view === 'public') {
+    return (
+      <motion.div
+        key="friends"
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -16 }}
+      >
+        {viewSwitch}
+        <PublicProfilesList saveScrollPosition={saveScrollPosition} />
+      </motion.div>
+    );
+  }
+
   if (friends.length === 0) {
     return (
       <motion.div
@@ -200,6 +278,7 @@ export const FriendsTab = ({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -16 }}
       >
+        {viewSwitch}
         <EmptyState
           icon={<GroupRounded style={{ fontSize: 'inherit' }} />}
           title={t('Noch keine Freunde')}
@@ -219,6 +298,7 @@ export const FriendsTab = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -16 }}
     >
+      {viewSwitch}
       {/* Search */}
       <div
         style={{
@@ -297,31 +377,14 @@ export const FriendsTab = ({
               }}
             >
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    ...(photoURL
-                      ? {
-                          backgroundImage: `url("${photoURL}")`,
-                          backgroundPosition: 'center',
-                          backgroundSize: 'cover',
-                        }
-                      : {
-                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                        }),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {!photoURL && (
-                    <PersonRounded
-                      style={{ fontSize: '26px', color: currentTheme.text.secondary }}
-                    />
-                  )}
-                </div>
+                <UserAvatar
+                  userId={friend.uid}
+                  username={displayName}
+                  photoURL={photoURL || undefined}
+                  size={50}
+                  bordered={false}
+                  decorative
+                />
                 {isOnline && (
                   <span
                     style={{

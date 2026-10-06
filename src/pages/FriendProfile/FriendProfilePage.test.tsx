@@ -115,6 +115,7 @@ vi.mock('./useFriendComparison', () => ({
 vi.mock('@mui/icons-material', () => ({
   ArrowBack: () => null,
   ChatBubbleOutlined: () => null,
+  PersonAddRounded: () => null,
   ListAlt: () => null,
   CompareArrows: () => null,
   ExpandLess: () => null,
@@ -274,7 +275,7 @@ describe('FriendProfilePage', () => {
   it('zeigt Nicht-Freunden nur die Privat-Ansicht mit Anfrage-Button', async () => {
     friendsState.friends = [];
     render(<FriendProfilePage />);
-    expect(screen.getByText(/Dieses Profil ist privat/)).toBeInTheDocument();
+    expect(await screen.findByText(/Dieses Profil ist privat/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Fringe' })).not.toBeInTheDocument();
     await waitFor(() => expect(dbGetMock).toHaveBeenCalledWith('userSearchIndex/friend-1'));
     await waitFor(() =>
@@ -287,23 +288,24 @@ describe('FriendProfilePage', () => {
     expect(friendsState.sendFriendRequest).toHaveBeenCalledWith('mia', 'friend-1');
   });
 
-  it('bietet Nicht-Freunden bei oeffentlichem Profil die oeffentliche Seite an', async () => {
-    // publicProfile true: Bibliothek und Bewertungen gibt schon die Regel frei,
-    // die Sperrseite behauptete trotzdem "privat".
+  it('zeigt Nicht-Freunden mit oeffentlichem Profil die volle Ansicht ohne Freundes-Teile', async () => {
+    // publicProfile true: Bibliothek und Bewertungen gibt schon die Regel frei.
     friendsState.friends = [];
+    friendsState.grantedToMe = new Set<string>();
     dbState.isPublicProfile = true;
     dbState.publicProfileId = 'abc123';
 
     render(<FriendProfilePage />);
 
-    expect(await screen.findByText('Öffentliches Profil ansehen')).toBeInTheDocument();
-    expect(screen.getByText(/Bibliothek und Bewertungen sind öffentlich/)).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Fringe' })).toBeInTheDocument();
     expect(screen.queryByText(/Dieses Profil ist privat/)).not.toBeInTheDocument();
-    // Anfrage bleibt zusaetzlich moeglich
-    expect(screen.getByText('Freundschaftsanfrage senden')).toBeInTheDocument();
+    // Chat, Match und der Freigabe-Hinweis gehoeren nur zu Freunden
+    expect(screen.queryByText('Match')).not.toBeInTheDocument();
+    expect(screen.queryByText(/teilt seine Serien nicht/)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('Öffentliches Profil ansehen'));
-    expect(navigateMock).toHaveBeenCalledWith('/public/abc123');
+    fireEvent.click(screen.getByText('Freundschaftsanfrage senden'));
+    expect(await screen.findByText('Anfrage gesendet ✓')).toBeInTheDocument();
+    expect(friendsState.sendFriendRequest).toHaveBeenCalledWith('mia', 'friend-1');
   });
 
   it('bleibt bei privatem Profil bei der bisherigen Sperrseite', async () => {
@@ -314,15 +316,15 @@ describe('FriendProfilePage', () => {
     render(<FriendProfilePage />);
 
     await waitFor(() => expect(dbGetMock).toHaveBeenCalledWith('users/friend-1/isPublicProfile'));
-    expect(screen.getByText(/Dieses Profil ist privat/)).toBeInTheDocument();
-    expect(screen.queryByText('Öffentliches Profil ansehen')).not.toBeInTheDocument();
+    expect(await screen.findByText(/Dieses Profil ist privat/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Fringe' })).not.toBeInTheDocument();
   });
 
-  it('zeigt bei bereits gesendeter Anfrage den Gesendet-Status', () => {
+  it('zeigt bei bereits gesendeter Anfrage den Gesendet-Status', async () => {
     friendsState.friends = [];
     friendsState.sentRequests = [{ toUserId: 'friend-1', status: 'pending' }];
     render(<FriendProfilePage />);
-    expect(screen.getByText('Anfrage gesendet ✓')).toBeInTheDocument();
+    expect(await screen.findByText('Anfrage gesendet ✓')).toBeInTheDocument();
   });
 
   it('bietet die Anfrage an, statt die Einblicke leer zu lassen', async () => {

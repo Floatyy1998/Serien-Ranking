@@ -86,13 +86,14 @@ const settings: Record<string, string> = {
   // PublicProfileSection
   'Öffentliches Profil': 'Public profile',
   'Profil öffentlich teilen': 'Share profile publicly',
-  'Andere können deine Serien und Filme sehen': 'Others can see your shows and movies',
+  'Andere können deine Serien und Filme sehen und dich unter „Öffentliche Profile“ finden':
+    'Others can see your shows and movies and find you under "Public profiles"',
   'Dein öffentlicher Link': 'Your public link',
   Teilen: 'Share',
   Kopieren: 'Copy',
   Neu: 'New',
-  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen':
-    'When enabled, others can see your rated shows and movies without signing in',
+  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen. „Neuer Link“ macht den alten Link ungültig.':
+    'When enabled, others can see your rated shows and movies even without signing in. "New link" makes the old link stop working.',
 
   // DeleteAccountSection
   'Konto löschen': 'Delete account',
@@ -153,6 +154,8 @@ const settings: Record<string, string> = {
   'Episoden-Informationen': 'Episode information',
   'Film- & Seriendaten': 'Movie & TV data',
   Bewertungen: 'Ratings',
+  'Manga- & Webtoon-Daten': 'Manga & webtoon data',
+  'Manga-Kapitel': 'Manga chapters',
 
   // NotificationsSection
   Benachrichtigungen: 'Notifications',
@@ -304,6 +307,10 @@ const settings: Record<string, string> = {
   Autostart: 'Launch at startup',
   'Design & Themes': 'Appearance & Themes',
   'Patch Notes': 'Patch Notes',
+  'Neuer Link': 'New link',
+  'In der globalen Rangliste erscheinen': 'Appear in the global leaderboard',
+  'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
+    'Your friends still see you in their leaderboard',
 };
 
 export default settings;

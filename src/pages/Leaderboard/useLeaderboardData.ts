@@ -7,6 +7,7 @@ import {
   fetchLeaderboardData,
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
+  isLeaderboardHidden,
   seedLeaderboardStats,
   syncStreakFromTracker,
 } from '../../services/social/leaderboardService';
@@ -63,6 +64,7 @@ export function useLeaderboardData() {
   // Eigener Live-Wert für den Alle-Tab: der globale Snapshot (leaderboardTop)
   // wird nur alle ~15 Min neu geschrieben, der eigene Stats-Knoten aber sofort.
   const [selfStats, setSelfStats] = useState<LeaderboardStats | null>(null);
+  const [selfHidden, setSelfHidden] = useState(false);
   // Eigenes Profil aus der RTDB — Firebase-Auth displayName/photoURL sind in
   // dieser App meist leer (Profil lebt unter users/$uid), der Auth-Fallback
   // zeigte "Unbekannt" ohne Bild.
@@ -122,12 +124,14 @@ export function useLeaderboardData() {
       // Eigenen Live-Stand separat laden, um ihn über den (bis ~15 Min alten)
       // Snapshot zu legen — so ist der eigene Wert im Alle-Tab identisch zum
       // Freunde-Tab.
-      const [self, profileMap] = await Promise.all([
+      const [self, profileMap, hidden] = await Promise.all([
         fetchLeaderboardData(user.uid, []),
         fetchLeaderboardProfiles([user.uid]),
+        isLeaderboardHidden(user.uid),
       ]);
       setSelfStats(self[user.uid] ?? null);
       setSelfProfile(profileMap[user.uid] ?? null);
+      setSelfHidden(hidden);
     }
     const entries = await fetchGlobalLeaderboard();
     setGlobalEntries(entries);
@@ -237,7 +241,9 @@ export function useLeaderboardData() {
   const monthlyRankings: LeaderboardEntry[] = useMemo(() => {
     if (!user?.uid) return [];
     if (mode === 'global') {
-      const entries = globalEntries.map((e) => ({
+      // Der Snapshot kann den eigenen Eintrag bis zum nächsten Cron-Lauf noch tragen.
+      const visible = selfHidden ? globalEntries.filter((e) => e.uid !== user.uid) : globalEntries;
+      const entries = visible.map((e) => ({
         uid: e.uid,
         displayName:
           typeof e.displayName === 'string' && e.displayName.trim().length > 0
@@ -251,7 +257,7 @@ export function useLeaderboardData() {
       }));
       // Eigenen Wert auf den Live-Stand heben (Snapshot kann veraltet sein) —
       // Live zählt im laufenden Monat nur hoch, daher nie kleiner als Snapshot.
-      if (selfStats) {
+      if (selfStats && !selfHidden) {
         const liveValue = selfStats[monthCategory] || 0;
         const own = entries.find((e) => e.uid === user.uid);
         if (own) {
@@ -292,7 +298,17 @@ export function useLeaderboardData() {
       e.rank = i + 1;
     });
     return entries;
-  }, [statsData, profiles, monthCategory, user, mode, globalEntries, selfStats, selfProfile]);
+  }, [
+    statsData,
+    profiles,
+    monthCategory,
+    user,
+    mode,
+    globalEntries,
+    selfStats,
+    selfProfile,
+    selfHidden,
+  ]);
 
   const rankings = period === 'total' ? totalsRanking.entries : monthlyRankings;
 

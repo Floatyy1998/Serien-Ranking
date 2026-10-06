@@ -12,6 +12,8 @@ const DATA_SOURCES = [
   { label: 'Episoden-Informationen', link: 'https://www.tvmaze.com', name: 'TVmaze' },
   { label: 'Film- & Seriendaten', link: 'https://www.themoviedb.org', name: 'TMDB' },
   { label: 'Bewertungen', link: 'https://www.imdb.com', name: 'IMDb' },
+  { label: 'Manga- & Webtoon-Daten', link: 'https://anilist.co', name: 'AniList' },
+  { label: 'Manga-Kapitel', link: 'https://www.mangaupdates.com', name: 'MangaUpdates' },
 ] as const;
 
 interface LegalSectionProps {

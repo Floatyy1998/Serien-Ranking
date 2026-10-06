@@ -56,8 +56,8 @@ const dict: Record<string, string> = {
   Anzeigename: "Nom d'affichage",
   'Anzeigename eingeben': "Saisis ton nom d'affichage",
   'Anzeigename ändern': "Modifier le nom d'affichage",
-  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen':
-    'Si activé, les autres peuvent voir les séries et films que tu as notés, même sans être connectés',
+  'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen. „Neuer Link“ macht den alten Link ungültig.':
+    'Si activé, les autres peuvent voir tes séries et films notés même sans connexion. « Nouveau lien » rend l’ancien lien invalide.',
   'TV-Rank für Windows herunterladen': 'Télécharger TV-Rank pour Windows',
   'APK direkt herunterladen und installieren': "Télécharger et installer l'APK directement",
   'App bewerten': "Noter l'application",
@@ -78,7 +78,8 @@ const dict: Record<string, string> = {
   'Nicht festgelegt': 'Non défini',
   'Öffentliches Profil': 'Profil public',
   'Profil öffentlich teilen': 'Partager le profil publiquement',
-  'Andere können deine Serien und Filme sehen': 'Les autres peuvent voir tes séries et films',
+  'Andere können deine Serien und Filme sehen und dich unter „Öffentliche Profile“ finden':
+    'Les autres peuvent voir tes séries et films et te trouver dans « Profils publics »',
   'Dein öffentlicher Link': 'Ton lien public',
   Teilen: 'Partager',
   Kopieren: 'Copier',
@@ -137,6 +138,8 @@ const dict: Record<string, string> = {
   'Episoden-Informationen': 'Infos sur les épisodes',
   'Film- & Seriendaten': 'Données films et séries',
   Bewertungen: 'Notes',
+  'Manga- & Webtoon-Daten': 'Données manga et webtoons',
+  'Manga-Kapitel': 'Chapitres de manga',
   Benachrichtigungen: 'Notifications',
   'Push-Benachrichtigungen': 'Notifications push',
   'Dein Pet': 'Ton compagnon',
@@ -268,6 +271,10 @@ const dict: Record<string, string> = {
   Autostart: 'Démarrage auto',
   'Design & Themes': 'Design & thèmes',
   'Patch Notes': 'Notes de version',
+  'Neuer Link': 'Nouveau lien',
+  'In der globalen Rangliste erscheinen': 'Apparaître dans le classement global',
+  'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
+    'Tes amis te voient toujours dans leur classement',
 };
 
 export default dict;

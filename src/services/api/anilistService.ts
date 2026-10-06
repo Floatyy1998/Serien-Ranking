@@ -2,22 +2,14 @@ import type { AniListMangaSearchResult } from '../../types/Manga';
 
 const ANILIST_API = 'https://graphql.anilist.co';
 
-const SEARCH_QUERY = `
-query ($search: String!, $page: Int, $perPage: Int) {
-  Page(page: $page, perPage: $perPage) {
-    pageInfo {
-      total
-      currentPage
-      lastPage
-      hasNextPage
-    }
-    media(search: $search, type: MANGA, sort: POPULARITY_DESC, isAdult: false) {
+const SEARCH_MEDIA_FIELDS = `
       id
       title {
         romaji
         english
         native
       }
+      synonyms
       coverImage {
         large
         medium
@@ -36,7 +28,18 @@ query ($search: String!, $page: Int, $perPage: Int) {
         month
         day
       }
-      isAdult
+      isAdult`;
+
+const SEARCH_QUERY = `
+query ($search: String!, $page: Int, $perPage: Int) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+    }
+    media(search: $search, type: MANGA, sort: POPULARITY_DESC, isAdult: false) {${SEARCH_MEDIA_FIELDS}
     }
   }
 }
@@ -149,6 +152,24 @@ export async function searchManga(
     hasNextPage: data.Page.pageInfo.hasNextPage,
     total: data.Page.pageInfo.total,
   };
+}
+
+/** Mehrere Titelsuchen in einer Anfrage (GraphQL-Aliase), schont das AniList-Limit. */
+export async function searchMangaByTitles(titles: string[]): Promise<AniListMangaSearchResult[][]> {
+  if (titles.length === 0) return [];
+  const params = titles.map((_, i) => `$t${i}: String`).join(', ');
+  const pages = titles
+    .map(
+      (_, i) =>
+        `t${i}: Page(perPage: 5) { media(search: $t${i}, type: MANGA, sort: SEARCH_MATCH, isAdult: false) {${SEARCH_MEDIA_FIELDS}\n} }`
+    )
+    .join('\n');
+  const variables = Object.fromEntries(titles.map((title, i) => [`t${i}`, title]));
+  const data = await anilistFetch<Record<string, { media: AniListMangaSearchResult[] } | null>>(
+    `query (${params}) {\n${pages}\n}`,
+    variables
+  );
+  return titles.map((_, i) => data[`t${i}`]?.media ?? []);
 }
 
 export async function getMangaById(id: number): Promise<AniListMangaSearchResult> {

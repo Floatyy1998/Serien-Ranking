@@ -5,11 +5,13 @@
  * No API key needed. Requests go through backend proxy to avoid CORS.
  */
 
+import type { AliasHit } from '../../lib/manga/titleMatch';
 import { backendFetch } from './backendApi';
 
 // Simple in-memory cache
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
 const chapterCache = new Map<string, { data: MangaDexChapterInfo; timestamp: number }>();
+const titleCache = new Map<string, { hits: AliasHit[]; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export interface MangaDexInfo {
@@ -65,6 +67,48 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
     return result;
   } catch {
     return nullResult();
+  }
+}
+
+const decodeEntities = (value: string): string =>
+  value
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&');
+
+/**
+ * MangaUpdates-Treffer mit Haupttitel und dem Titel, über den sie gefunden
+ * wurden. MangaUpdates kennt Alternativtitel wie die deutschen Webtoon-Namen.
+ */
+export async function searchMangaUpdatesTitles(query: string): Promise<AliasHit[]> {
+  const cacheKey = query.toLowerCase().trim();
+  const cached = titleCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.hits;
+  }
+
+  try {
+    const res = await backendFetch('/mangaupdates/titles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ search: query }),
+    });
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const hits: AliasHit[] = (Array.isArray(data.hits) ? data.hits : [])
+      .filter(
+        (hit: { title?: unknown; hitTitle?: unknown }) =>
+          typeof hit.title === 'string' && typeof hit.hitTitle === 'string'
+      )
+      .map((hit: AliasHit) => ({
+        title: decodeEntities(hit.title),
+        hitTitle: decodeEntities(hit.hitTitle),
+      }));
+    titleCache.set(cacheKey, { hits, timestamp: Date.now() });
+    return hits;
+  } catch {
+    return [];
   }
 }
 

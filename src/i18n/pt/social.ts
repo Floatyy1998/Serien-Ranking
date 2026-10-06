@@ -302,6 +302,16 @@ const dict: Record<string, string> = {
   'Senden fehlgeschlagen': 'Falha ao enviar',
   Feed: 'Feed',
   Rewatch: 'Rewatch',
+  'Meine Freunde': 'Meus amigos',
+  'Öffentliche Profile': 'Perfis públicos',
+  'Öffentliche Profile durchsuchen': 'Pesquisar perfis públicos',
+  'Noch keine öffentlichen Profile': 'Ainda não há perfis públicos',
+  'Hier erscheint, wer sein Profil in den Einstellungen öffentlich geschaltet hat.':
+    'Aqui aparece quem tornou o perfil público nas configurações.',
+  '{n} Film': '{n} filme',
+  '{name} eine Freundschaftsanfrage senden': 'Enviar um pedido de amizade para {name}',
+  'Hat dich angefragt': 'Enviou um pedido',
+  'Lädt …': 'Carregando …',
 };
 
 export default dict;

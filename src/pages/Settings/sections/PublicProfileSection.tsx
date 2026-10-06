@@ -53,7 +53,9 @@ export const PublicProfileSection = memo(
                 {t('Profil öffentlich teilen')}
               </h3>
               <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
-                {t('Andere können deine Serien und Filme sehen')}
+                {t(
+                  'Andere können deine Serien und Filme sehen und dich unter „Öffentliche Profile“ finden'
+                )}
               </p>
             </div>
           </div>
@@ -146,7 +148,7 @@ export const PublicProfileSection = memo(
                 }}
               >
                 <Refresh style={{ fontSize: '16px' }} />
-                {t('Neu')}
+                {t('Neuer Link')}
               </motion.button>
             </div>
           </div>
@@ -157,7 +159,7 @@ export const PublicProfileSection = memo(
           <Public style={{ fontSize: '18px', color: currentTheme.primary, flexShrink: 0 }} />
           <p className="settings-info-text" style={{ color: currentTheme.text.muted }}>
             {t(
-              'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen'
+              'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen. „Neuer Link“ macht den alten Link ungültig.'
             )}
           </p>
         </div>

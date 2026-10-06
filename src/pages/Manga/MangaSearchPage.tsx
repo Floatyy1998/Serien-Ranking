@@ -7,7 +7,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
-import { searchManga } from '../../services/api/anilistService';
+import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
@@ -30,6 +30,7 @@ export const MangaSearchPage = () => {
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
+  const [aliases, setAliases] = useState<Record<number, string>>({});
   const [searching, setSearching] = useState(false);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [addingId, setAddingId] = useState<number | null>(null);
@@ -55,13 +56,17 @@ export const MangaSearchPage = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (!query.trim()) {
       setResults([]);
+      setAliases({});
       return;
     }
+    let cancelled = false;
     setSearching(true);
     timeoutRef.current = setTimeout(async () => {
       try {
-        const { results: r } = await searchManga(query.trim(), 1, 30);
-        setResults(r);
+        const outcome = await searchMangaWithTitleFallback(query.trim(), 30);
+        if (cancelled) return;
+        setResults(outcome.results);
+        setAliases(outcome.aliases);
         const updated = [
           query.trim(),
           ...recentSearchesRef.current.filter((s) => s !== query.trim()),
@@ -69,12 +74,13 @@ export const MangaSearchPage = () => {
         setRecentSearches(updated);
         localStorage.setItem('mangaRecentSearches', JSON.stringify(updated));
       } catch {
-        setResults([]);
+        if (!cancelled) setResults([]);
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 400);
     return () => {
+      cancelled = true;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [query]);
@@ -437,6 +443,20 @@ export const MangaSearchPage = () => {
                     >
                       {result.title.english || result.title.romaji}
                     </div>
+                    {aliases[result.id] && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: currentTheme.primary,
+                          marginTop: 2,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {t('Gefunden als „{title}“', { title: aliases[result.id] })}
+                      </div>
+                    )}
                     <div
                       style={{
                         fontSize: 11,

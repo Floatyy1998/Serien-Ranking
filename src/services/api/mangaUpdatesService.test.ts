@@ -183,3 +183,39 @@ describe('getMangaDexChapterDates', () => {
     expect(backendFetchMock).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('searchMangaUpdatesTitles', () => {
+  it('liefert Haupt- und Fundtitel, dekodiert HTML-Entities und verwirft kaputte Einträge', async () => {
+    backendFetchMock.mockResolvedValueOnce(
+      res({
+        hits: [
+          { title: 'Don&#039;t Look for Me', hitTitle: 'Suche nicht nach Mir', type: 'Manhwa' },
+          { title: 42, hitTitle: 'kaputt' },
+        ],
+      })
+    );
+    const { searchMangaUpdatesTitles } = await load();
+
+    expect(await searchMangaUpdatesTitles('Suche nicht nach mir')).toEqual([
+      { title: "Don't Look for Me", hitTitle: 'Suche nicht nach Mir' },
+    ]);
+    expect(backendFetchMock).toHaveBeenCalledWith(
+      '/mangaupdates/titles',
+      expect.objectContaining({ body: JSON.stringify({ search: 'Suche nicht nach mir' }) })
+    );
+  });
+
+  it('cached je Suchbegriff', async () => {
+    backendFetchMock.mockResolvedValue(res({ hits: [] }));
+    const { searchMangaUpdatesTitles } = await load();
+    await searchMangaUpdatesTitles('Biest');
+    await searchMangaUpdatesTitles(' biest ');
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('Fehler → leere Liste', async () => {
+    backendFetchMock.mockRejectedValueOnce(new Error('down'));
+    const { searchMangaUpdatesTitles } = await load();
+    expect(await searchMangaUpdatesTitles('X')).toEqual([]);
+  });
+});
