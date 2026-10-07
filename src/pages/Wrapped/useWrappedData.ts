@@ -10,6 +10,9 @@ import { DEFAULT_SLIDE_CONFIG } from '../../types/Wrapped';
 import { calculateWrappedStats } from '../../services/wrapped/wrappedCalculator';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
+import { fetchMangaEvents } from '../../services/discussion/readActivityService';
+import { useMangaList } from '../../contexts/MangaListContext';
+import type { WrappedMangaEvent } from '../../services/wrapped/manga';
 import { t } from '../../services/i18n';
 
 // Standard-Jahr (jedes Jahr hier ändern)
@@ -112,10 +115,28 @@ export const useWrappedData = (): UseWrappedDataResult => {
   // Aktivierte Slides basierend auf Konfiguration. Memoisiert, sonst wechselt die
   // Referenz bei jedem Render → goToSlide/next/prev bekommen neue Identität → die
   // Keyboard-/Wheel-Listener-Effekte hängen sich bei jedem Render neu ein/aus.
+  const hasManga = (stats?.manga?.totalChapters ?? 0) > 0;
   const enabledSlides = useMemo(
-    () => DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled).sort((a, b) => a.order - b.order),
-    []
+    () =>
+      DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled && (s.type !== 'top_manga' || hasManga)).sort(
+        (a, b) => a.order - b.order
+      ),
+    [hasManga]
   );
+
+  // Manga-Cover kommen aus der eigenen Sammlung (AniList-URLs, kein TMDB-Abruf nötig).
+  const { allMangaList } = useMangaList();
+  const statsWithMangaPosters = useMemo(() => {
+    if (!stats?.manga) return stats;
+    const posters = new Map(allMangaList.map((m) => [m.anilistId, m.poster]));
+    return {
+      ...stats,
+      manga: {
+        ...stats.manga,
+        topManga: stats.manga.topManga.map((m) => ({ ...m, poster: posters.get(m.anilistId) })),
+      },
+    };
+  }, [stats, allMangaList]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -128,16 +149,24 @@ export const useWrappedData = (): UseWrappedDataResult => {
       try {
         setLoading(true);
 
-        const events = await WatchActivityService.getEventsForYear(user.uid, year);
-        const bingeSessions = await WatchActivityService.getBingeSessionsForYear(user.uid, year);
+        const [events, bingeSessions, mangaEvents] = await Promise.all([
+          WatchActivityService.getEventsForYear(user.uid, year),
+          WatchActivityService.getBingeSessionsForYear(user.uid, year),
+          fetchMangaEvents(user.uid, year).catch(() => []),
+        ]);
 
-        if (events.length === 0) {
+        if (events.length === 0 && mangaEvents.length === 0) {
           setError(t('Keine Daten für {year} gefunden. Schau mehr Serien und Filme!', { year }));
           setLoading(false);
           return;
         }
 
-        let calculatedStats = calculateWrappedStats(events, bingeSessions, year);
+        let calculatedStats = calculateWrappedStats(
+          events,
+          bingeSessions,
+          year,
+          mangaEvents as WrappedMangaEvent[]
+        );
         calculatedStats = await enrichStatsWithPosters(calculatedStats);
 
         setStats(calculatedStats);
@@ -216,13 +245,14 @@ export const useWrappedData = (): UseWrappedDataResult => {
     [nextSlide, prevSlide]
   );
 
+  // `loading` in den Abhängigkeiten: beim ersten Lauf steht noch der Ladebildschirm, der Container fehlt.
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
       container.addEventListener('wheel', handleWheel, { passive: false });
       return () => container.removeEventListener('wheel', handleWheel);
     }
-  }, [handleWheel]);
+  }, [handleWheel, loading]);
 
   const handleShare = async () => {
     if (!stats) return;
@@ -234,9 +264,8 @@ export const useWrappedData = (): UseWrappedDataResult => {
       '\n' +
       t('{n} Filme', { n: stats.totalMoviesWatched }) +
       '\n' +
-      t('{n} Stunden', { n: Math.round(stats.totalHoursWatched) }) +
-      '\n' +
-      `${stats.achievements.filter((a) => a.unlocked).length} Achievements`;
+      (stats.manga ? t('{n} Manga-Kapitel', { n: stats.manga.totalChapters }) + '\n' : '') +
+      t('{n} Stunden', { n: Math.round(stats.totalHoursWatched) });
 
     if (navigator.share) {
       try {
@@ -262,7 +291,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
     wrappedConfig,
     user,
     navigate,
-    stats,
+    stats: statsWithMangaPosters,
     loading,
     error,
     currentSlide,

@@ -6,6 +6,23 @@
 
 // Basis-Statistiken
 
+export interface TopMangaEntry {
+  anilistId: number;
+  title: string;
+  chapters: number;
+  rating?: number;
+  poster?: string;
+}
+
+export interface MangaWrappedStats {
+  totalChapters: number;
+  uniqueManga: number;
+  topManga: TopMangaEntry[];
+  /** Monat 0–11 mit den meisten gelesenen Kapiteln. */
+  mostReadMonth: number;
+  mostReadMonthChapters: number;
+}
+
 export interface WrappedStats {
   year: number;
 
@@ -49,6 +66,9 @@ export interface WrappedStats {
 
   // Zusätzliche Fun Facts
   funFacts: FunFact[];
+
+  // Manga (aus wrapped/{Jahr}/mangaEvents); fehlt, wenn im Jahr nichts gelesen wurde
+  manga?: MangaWrappedStats | null;
 
   // Erstes & Letztes des Jahres
   firstWatch: FirstLastWatch | null;
@@ -245,6 +265,7 @@ export type WrappedSlideType =
   | 'total_time'
   | 'top_series'
   | 'top_movies'
+  | 'top_manga'
   | 'top_genres'
   | 'top_providers'
   | 'time_pattern'
@@ -273,6 +294,7 @@ export const DEFAULT_SLIDE_CONFIG: WrappedSlideConfig[] = [
   { type: 'first_last', title: 'Erstes & Letztes', enabled: true, order: 2 },
   { type: 'top_series', title: 'Top Serien', enabled: true, order: 3 },
   { type: 'top_movies', title: 'Top Filme', enabled: true, order: 4 },
+  { type: 'top_manga', title: 'Top Manga', enabled: true, order: 4.5 },
   { type: 'top_genres', title: 'Top Genres', enabled: true, order: 5 },
   { type: 'top_providers', title: 'Streaming-Dienste', enabled: true, order: 6 },
   { type: 'record_day', title: 'Rekord-Tag', enabled: true, order: 7 },
@@ -281,7 +303,6 @@ export const DEFAULT_SLIDE_CONFIG: WrappedSlideConfig[] = [
   { type: 'heatmap', title: 'Deine Watch-Zeiten', enabled: true, order: 10 },
   { type: 'binge_stats', title: 'Binge-Statistiken', enabled: true, order: 11 },
   { type: 'monthly_breakdown', title: 'Monatsübersicht', enabled: true, order: 12 },
-  { type: 'achievements', title: 'Achievements', enabled: true, order: 13 },
   { type: 'summary', title: 'Zusammenfassung', enabled: true, order: 14 },
 ];
 

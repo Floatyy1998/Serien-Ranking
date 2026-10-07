@@ -189,8 +189,7 @@ export async function markEpisodeWatched(
           isRewatch: previousCount > 0,
           source,
         });
-        // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
-        // isRewatch ohnehin false, wie zuvor hart kodiert.
+        // Wrapped zählt auch Rewatches (isRewatch markiert sie).
         await runEpisodeWatchFanout({
           userId: uid,
           seriesId: series.id,
@@ -203,7 +202,6 @@ export async function markEpisodeWatched(
           providers,
           episodeAirDate: airDate,
           seriesHidden: series.hidden,
-          wrappedEvent: previousCount === 0,
         });
       },
     });

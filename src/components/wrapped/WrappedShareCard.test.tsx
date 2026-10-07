@@ -111,15 +111,15 @@ describe('WrappedShareSheet', () => {
     expect(screen.getByText('Wrapped 2025 teilen')).toBeInTheDocument();
     expect(screen.getByText('Episoden')).toBeInTheDocument();
     expect(screen.getByText('Filme')).toBeInTheDocument();
-    expect(screen.getByText('Stunden')).toBeInTheDocument();
     expect(screen.getByText('Serien')).toBeInTheDocument();
+    expect(screen.getByText(/Stunden · ≈/)).toBeInTheDocument();
   });
 
-  it('renders the top series and unlocked-achievement count', () => {
+  it('renders the top series', () => {
     render(<WrappedShareSheet isOpen onClose={vi.fn()} stats={makeStats()} />);
     expect(screen.getByText('Meine Lieblingsserie')).toBeInTheDocument();
-    expect(screen.getByText('Meine #1 Serie')).toBeInTheDocument();
-    expect(screen.getByText('Achievements freigeschaltet')).toBeInTheDocument();
+    expect(screen.getByText('Meine Top Serien')).toBeInTheDocument();
+    expect(screen.queryByText('Achievements freigeschaltet')).not.toBeInTheDocument();
   });
 
   it('renders nothing visible when closed', () => {

@@ -2,41 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopGenreEntry } from '../../../types/Wrapped';
 import { t } from '../../../services/i18n';
+import { GenreIcon } from './GenreIcon';
 
 interface TopGenresSlideProps {
   topGenres: TopGenreEntry[];
   maxItems?: number;
 }
-
-const GENRE_ICONS: Record<string, string> = {
-  Action: '💥',
-  Adventure: '🗺️',
-  Animation: '🎨',
-  Comedy: '😂',
-  Crime: '🔍',
-  Documentary: '📹',
-  Drama: '🎭',
-  Family: '👨‍👩‍👧‍👦',
-  Fantasy: '🧙',
-  History: '📜',
-  Horror: '👻',
-  Music: '🎵',
-  Mystery: '🔮',
-  Romance: '💕',
-  'Science Fiction': '🚀',
-  'Sci-Fi & Fantasy': '🚀',
-  'TV Movie': '📺',
-  Thriller: '😱',
-  War: '⚔️',
-  Western: '🤠',
-  'Action & Adventure': '💥',
-  Kids: '🧒',
-  News: '📰',
-  Reality: '📷',
-  Soap: '💔',
-  Talk: '🎤',
-  'War & Politics': '⚔️',
-};
 
 // Farben für Genre-Balken
 const GENRE_COLORS = [
@@ -67,9 +38,9 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
-            style={{ fontSize: '4rem', marginBottom: '20px' }}
+            style={{ marginBottom: '20px' }}
           >
-            🎬
+            <GenreIcon genre="" style={{ fontSize: '4rem' }} />
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>{t('Keine Genre-Daten')}</h2>
           <p style={{ opacity: 0.6, marginTop: '10px' }}>{t('Schau mehr Serien und Filme!')}</p>
@@ -120,7 +91,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
               filter: 'blur(2px)',
             }}
           >
-            {GENRE_ICONS[genre.genre] || '🎬'}
+            <GenreIcon genre={genre.genre} style={{ fontSize: '8rem' }} />
           </motion.div>
         ))}
       </div>
@@ -166,12 +137,22 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
             ease: 'easeInOut',
           }}
           style={{
-            fontSize: 'clamp(5rem, 20vw, 8rem)',
-            marginBottom: '15px',
-            filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))',
+            width: 'clamp(104px, 28vw, 136px)',
+            height: 'clamp(104px, 28vw, 136px)',
+            marginBottom: '18px',
+            borderRadius: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06))',
+            border: '1px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 18px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.35)',
           }}
         >
-          {GENRE_ICONS[topGenre.genre] || '🎬'}
+          <GenreIcon
+            genre={topGenre.genre}
+            style={{ fontSize: 'clamp(3.2rem, 14vw, 4.4rem)', color: 'white' }}
+          />
         </motion.div>
 
         <motion.h2
@@ -187,7 +168,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
             textShadow: '0 4px 20px rgba(0,0,0,0.5)',
           }}
         >
-          {topGenre.genre}
+          {t(topGenre.genre)}
         </motion.h2>
 
         <motion.div
@@ -242,9 +223,12 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{GENRE_ICONS[genre.genre] || '🎬'}</span>
+                <GenreIcon
+                  genre={genre.genre}
+                  style={{ fontSize: '1.3rem', color: 'rgba(255,255,255,0.85)' }}
+                />
                 <span style={{ color: 'white', fontWeight: index === 0 ? 'bold' : 'normal' }}>
-                  {genre.genre}
+                  {t(genre.genre)}
                 </span>
               </div>
               <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>

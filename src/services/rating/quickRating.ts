@@ -6,9 +6,10 @@ import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { buildGenreRatingMap } from '../../lib/rating/rating';
 import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
-import { dbRef, paths, updateWithSeriesVersion } from '../db/ref';
+import { dbGet, dbRef, paths, updateWithSeriesVersion } from '../db/ref';
 import { trackRatingSaved } from '../firebase/analytics';
-import { WatchActivityService } from '../watchActivity/watchActivityService';
+import { wasMovieWatched, type MovieWatchState } from '../../lib/watch/movieWatchLog';
+import { logMovieWatchIfNew } from '../watchActivity/movieWatchLogging';
 
 export interface QuickRatingItem {
   id: number;
@@ -16,13 +17,15 @@ export interface QuickRatingItem {
   title: string;
 }
 
-/** Film als gesehen markieren (ohne Bewertung), atomar mit serienVersion-Bump. */
-export const markMovieWatched = (uid: string, movieId: number): Promise<void> => {
+/** Film als gesehen markieren (ohne Bewertung), atomar mit serienVersion-Bump, plus Wrapped-Ereignis. */
+export const markMovieWatched = async (uid: string, movieId: number): Promise<void> => {
   const base = paths.movieItem(uid, movieId);
-  return updateWithSeriesVersion(uid, {
+  const before = await dbGet<MovieWatchState>(base).catch(() => null);
+  await updateWithSeriesVersion(uid, {
     [`${base}/watched`]: true,
-    [`${base}/watchedAt`]: new Date().toISOString(),
+    [`${base}/watchedAt`]: before?.watchedAt || new Date().toISOString(),
   });
+  void logMovieWatchIfNew(uid, movieId, before);
 };
 
 /**
@@ -48,21 +51,19 @@ export async function saveQuickRating(
     const movie = owned as Movie | undefined;
     const base = paths.movieItem(uid, item.id);
     const now = new Date().toISOString();
+    const watchedAt = movie?.watchedAt || (wasMovieWatched(movie) ? null : now);
     await updateWithSeriesVersion(uid, {
       [`${base}/rating`]: ratings,
       [`${base}/ratedAt`]: now,
       [`${base}/watched`]: true,
-      [`${base}/watchedAt`]: movie?.watchedAt || now,
+      ...(watchedAt ? { [`${base}/watchedAt`]: watchedAt } : {}),
     });
-    void WatchActivityService.logMovieWatch(
-      uid,
-      item.id,
-      item.title,
-      movie?.runtime,
-      rating,
+    void logMovieWatchIfNew(uid, item.id, movie, rating, {
+      title: item.title,
+      runtime: movie?.runtime,
       genres,
-      movie?.provider?.provider?.map((p) => p.name)
-    );
+      providers: movie?.provider?.provider?.map((p) => p.name),
+    });
   }
 
   trackRatingSaved(String(item.id), item.type, rating);

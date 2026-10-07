@@ -427,6 +427,15 @@ const dict: Record<string, string> = {
   'vor {n} Wochen': '{n} weeks ago',
   '{n} Titel · {m} abgeschlossen': '{n} titles · {m} completed',
   '{n}× erneut gelesen': 'Reread {n}×',
+  '1 Kapitel': '1 chapter',
+  'Kap. {a}–{b}': 'Ch. {a}–{b}',
+  Erneut: 'Reread',
+  'Stand: Kap. {n}': 'Progress: ch. {n}',
+  Lesetage: 'Reading days',
+  Zeitraum: 'Time range',
+  '{n} Kapitel gelesen': '{n} chapters read',
+  'Verlauf wird geladen …': 'Loading history …',
+  'Stand nachgetragen: Kap. {n}': 'Progress added: ch. {n}',
 };
 
 export default dict;

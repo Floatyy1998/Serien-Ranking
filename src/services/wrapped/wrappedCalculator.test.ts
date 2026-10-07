@@ -901,7 +901,7 @@ describe('generateFunFacts', () => {
         topSeries: [{ id: 1, title: 'Dark', episodesWatched: 42, minutesWatched: 1890 }],
       })
     );
-    expect(facts[0].text).toBe('Mit 120 Stunden könntest du 10 Mal nach New York fliegen ✈️');
+    expect(facts[0].text).toBe('Mit 120 Stunden könntest du 10 Mal nach New York fliegen');
     expect(facts[1].text).toBe('Das entspricht 5 Tagen durchgehend schauen - ohne Schlaf!');
     expect(facts[2].text).toBe('"Dark" war dein Favorit mit 42 Episoden');
     expect(facts[3].text).toBe('Dein aktivster Monat war Juni mit 30 Titeln');
@@ -911,6 +911,6 @@ describe('generateFunFacts', () => {
     const facts = generateFunFacts(ffCtx());
     const tod = mustFind(facts, (f) => f.id === 'time_of_day');
     expect(tod.text).toBe('Du schaust am liebsten nachts (22-6 uhr)');
-    expect(tod.icon).toBe('🌙');
+    expect(tod.icon).toBe('moon');
   });
 });

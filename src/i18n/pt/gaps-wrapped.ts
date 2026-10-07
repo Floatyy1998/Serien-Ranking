@@ -38,6 +38,20 @@ const dict: Record<string, string> = {
   'Binge-Statistiken': 'Estatísticas de maratona',
   Monatsübersicht: 'Resumo mensal',
   Mär: 'Mar',
+  'Deine Top Manga': 'Seus mangás favoritos',
+  'Kapitel aus {n} Manga gelesen': 'capítulos lidos em {n} mangás',
+  'Am meisten gelesen': 'Mais lido',
+  'Lesemonat: {month} mit {n} Kapiteln': 'Mês de leitura: {month} com {n} capítulos',
+  '{n} Manga-Kapitel': '{n} capítulos de mangá',
+  'Folgen am Stück': 'episódios seguidos',
+  'Lieblings-Genre': 'Gênero favorito',
+  Lieblingszeit: 'Horário favorito',
+  'Meine Top Serien': 'Minhas séries favoritas',
+  Meistgenutzt: 'Mais usado',
+  Rekordtag: 'Dia recorde',
+  'Stunden · ≈ {n} Tage': 'horas · ≈ {n} dias',
+  'Tage Streak': 'dias de sequência',
+  'Top Manga': 'Mangás top',
 };
 
 export default dict;

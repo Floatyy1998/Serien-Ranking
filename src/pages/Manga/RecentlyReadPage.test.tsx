@@ -7,7 +7,12 @@ import { RecentlyReadPage } from './RecentlyReadPage';
 
 const listState = vi.hoisted(() => ({ list: [] as Manga[] }));
 vi.mock('../../contexts/MangaListContext', () => ({
-  useMangaList: () => ({ mangaList: listState.list }),
+  useMangaList: () => ({ mangaList: listState.list, hiddenMangaList: [] }),
+}));
+
+const eventsState = vi.hoisted(() => ({ events: [] as unknown[], loading: false }));
+vi.mock('../../hooks/manga/useMangaReadEvents', () => ({
+  useMangaReadEvents: () => eventsState,
 }));
 
 vi.mock('../../contexts/ThemeContext', () => ({
@@ -56,6 +61,7 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
 afterEach(() => {
   cleanup();
   listState.list = [];
+  eventsState.events = [];
   navigate.mockReset();
 });
 
@@ -74,5 +80,19 @@ describe('RecentlyReadPage', () => {
     expect(screen.getByText('Kürzlich gelesen')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Kürzlich gelesen'));
     expect(navigate).toHaveBeenCalledWith('/manga/8');
+  });
+
+  it('zeigt gelesene Kapitel aus den Ereignissen als Spanne pro Tag', () => {
+    const ts = Math.floor(Date.now() / 1000) - 60;
+    listState.list = [makeManga({ anilistId: 9, title: 'Solo Leveling' })];
+    eventsState.events = [
+      { ts, t: 'ch', s: 9, st: 'Solo Leveling', ch: 74 },
+      { ts, t: 'ch', s: 9, st: 'Solo Leveling', ch: 75 },
+      { ts, t: 'ch', s: 9, st: 'Solo Leveling', ch: 76 },
+    ];
+    render(<RecentlyReadPage />);
+    expect(screen.getByText('Kap. 74–76')).toBeInTheDocument();
+    expect(screen.getByText('+3')).toBeInTheDocument();
+    expect(screen.getAllByText('3 Kapitel').length).toBeGreaterThan(0);
   });
 });

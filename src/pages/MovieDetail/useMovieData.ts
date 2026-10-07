@@ -14,6 +14,11 @@ import { pickProviderRegion, watchRegion } from '../../services/settings/region'
 import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 import { backendFetch } from '../../services/api/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
+import { isMovieWatched } from '../../lib/rating/rating';
+import {
+  logMovieWatchIfNew,
+  removeMovieWatchEvent,
+} from '../../services/watchActivity/movieWatchLogging';
 import { t } from '../../services/i18n';
 
 interface TMDBGenre {
@@ -323,6 +328,17 @@ export const useMovieData = () => {
         // beim Zurücknehmen entfernen (null).
         [`${base}/watchedAt`]: next ? movie.watchedAt || new Date().toISOString() : null,
       });
+      if (next) {
+        void logMovieWatchIfNew(user.uid, movie.id, movie, undefined, {
+          title: movie.title,
+          runtime: movie.runtime,
+          genres: movie.genre?.genres,
+          providers: movie.provider?.provider?.map((p) => p.name),
+        });
+      } else if (!isMovieWatched({ ...movie, watched: false })) {
+        // Bleibt der Film bewertet, gilt er weiter als gesehen — Ereignis behalten.
+        void removeMovieWatchEvent(user.uid, movie.id).catch(() => {});
+      }
     } catch {
       // best-effort: bei Fehler kurz informieren, State kommt vom Listener
       setDialog({

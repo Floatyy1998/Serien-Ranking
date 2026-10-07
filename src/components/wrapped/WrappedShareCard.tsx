@@ -1,8 +1,8 @@
 /**
  * WrappedShareCard - Share-Card + Sheet für die Wrapped-Summary-Slide.
  *
- * Gießt die Kern-Zahlen des Wrapped-Jahres in die ShareCardFrame.
- * Das Top-Serien-Poster (TMDB) wird nur bei showImages=true gerendert —
+ * Gießt die Jahres-Bilanz (Stunden, Kennzahlen, Top-3-Serien, Highlights) in die ShareCardFrame.
+ * Die Serien-Poster (TMDB) werden nur bei showImages=true gerendert —
  * schlägt der Export daran fehl, rendert das Sheet die Karte ohne Poster
  * erneut (CORS-Fallback in ShareCardSheet).
  */
@@ -16,12 +16,7 @@ import { dateLocale as appDateLocale, t } from '../../services/i18n';
 
 // Karten-Bausteine
 
-interface StatTileProps {
-  value: string;
-  label: string;
-}
-
-const StatTile: React.FC<StatTileProps> = ({ value, label }) => {
+const StatTile: React.FC<{ value: string; label: string }> = ({ value, label }) => {
   const { currentTheme } = useTheme();
   return (
     <div
@@ -29,13 +24,13 @@ const StatTile: React.FC<StatTileProps> = ({ value, label }) => {
         background: 'var(--glass-medium)',
         border: '1px solid var(--glass-border-light)',
         borderRadius: 'var(--radius-2xl)',
-        padding: '52px 24px',
+        padding: '30px 14px',
         textAlign: 'center',
       }}
     >
       <div
         style={{
-          fontSize: 88,
+          fontSize: 64,
           fontWeight: 900,
           letterSpacing: '-0.02em',
           lineHeight: 1,
@@ -46,8 +41,8 @@ const StatTile: React.FC<StatTileProps> = ({ value, label }) => {
       </div>
       <div
         style={{
-          marginTop: 18,
-          fontSize: 32,
+          marginTop: 12,
+          fontSize: 24,
           fontWeight: 600,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
@@ -55,6 +50,123 @@ const StatTile: React.FC<StatTileProps> = ({ value, label }) => {
         }}
       >
         {label}
+      </div>
+    </div>
+  );
+};
+
+const PosterSlot: React.FC<{
+  rank: number;
+  title: string;
+  meta: string;
+  src?: string;
+  showImages: boolean;
+}> = ({ rank, title, meta, src, showImages }) => {
+  const { currentTheme } = useTheme();
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div style={{ position: 'relative' }}>
+        {showImages && src ? (
+          <img
+            src={src}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              width: '100%',
+              aspectRatio: '2 / 3',
+              objectFit: 'cover',
+              borderRadius: 'var(--radius-lg)',
+              display: 'block',
+            }}
+          />
+        ) : (
+          <div
+            aria-hidden
+            style={{
+              width: '100%',
+              aspectRatio: '2 / 3',
+              borderRadius: 'var(--radius-lg)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            }}
+          />
+        )}
+        <span
+          style={{
+            position: 'absolute',
+            top: 14,
+            left: 14,
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.65)',
+            color: 'white',
+            fontSize: 28,
+            fontWeight: 900,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {rank}
+        </span>
+      </div>
+      <div
+        style={{
+          marginTop: 14,
+          fontSize: 28,
+          fontWeight: 800,
+          lineHeight: 1.2,
+          color: currentTheme.text.secondary,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 24, fontWeight: 700, color: currentTheme.primary }}>
+        {meta}
+      </div>
+    </div>
+  );
+};
+
+const Highlight: React.FC<{ title: string; value: string }> = ({ title, value }) => {
+  const { currentTheme } = useTheme();
+  return (
+    <div
+      style={{
+        background: 'var(--glass-light)',
+        border: '1px solid var(--glass-border-subtle)',
+        borderRadius: 'var(--radius-2xl)',
+        padding: '24px 28px',
+        minWidth: 0,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: currentTheme.text.muted,
+        }}
+      >
+        {title}
+      </div>
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 34,
+          fontWeight: 800,
+          color: currentTheme.text.secondary,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {value}
       </div>
     </div>
   );
@@ -69,149 +181,107 @@ interface WrappedShareCardProps {
 
 const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }) => {
   const { currentTheme } = useTheme();
-  const topSerie = stats.topSeries[0];
-  const unlockedAchievements = stats.achievements.filter((a) => a.unlocked).length;
-  const numberLocale = appDateLocale();
+  const locale = appDateLocale();
+  const number = (n: number) => n.toLocaleString(locale);
+  const topGenre = stats.topGenres[0];
+  const topProvider = stats.topProviders[0];
+
+  const tiles = [
+    { value: number(stats.totalEpisodesWatched), label: t('Episoden') },
+    { value: number(stats.totalMoviesWatched), label: t('Filme') },
+    { value: number(stats.uniqueSeriesWatched), label: t('Serien') },
+    stats.manga
+      ? { value: number(stats.manga.totalChapters), label: t('Manga-Kapitel') }
+      : { value: number(stats.longestStreak), label: t('Tage Streak') },
+  ];
+
+  const highlights = [
+    topGenre && { title: t('Lieblings-Genre'), value: t(topGenre.genre) },
+    topProvider && { title: t('Meistgenutzt'), value: topProvider.name },
+  ].filter(Boolean) as { title: string; value: string }[];
 
   return (
     <ShareCardFrame
       title={t('Mein {year}', { year: stats.year })}
       subtitle={t('Mein Jahr in Serien & Filmen')}
     >
-      {/* Kern-Zahlen 2×2 */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: 24,
-        }}
-      >
-        <StatTile
-          value={stats.totalEpisodesWatched.toLocaleString(numberLocale)}
-          label={t('Episoden')}
-        />
-        <StatTile
-          value={stats.totalMoviesWatched.toLocaleString(numberLocale)}
-          label={t('Filme')}
-        />
-        <StatTile
-          value={Math.round(stats.totalHoursWatched).toLocaleString(numberLocale)}
-          label={t('Stunden')}
-        />
-        <StatTile
-          value={stats.uniqueSeriesWatched.toLocaleString(numberLocale)}
-          label={t('Serien')}
-        />
-      </div>
-
-      {/* Top-Serie */}
-      {topSerie && (
+      {/* Hero: Stunden */}
+      <div style={{ textAlign: 'center' }}>
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 36,
-            background: 'var(--glass-light)',
-            border: '1px solid var(--glass-border-subtle)',
-            borderRadius: 'var(--radius-2xl)',
-            padding: '36px 44px',
+            fontSize: 150,
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+            color: currentTheme.text.secondary,
           }}
         >
-          {showImages && topSerie.poster ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w185${topSerie.poster}`}
-              alt=""
-              crossOrigin="anonymous"
-              style={{
-                width: 128,
-                height: 192,
-                objectFit: 'cover',
-                borderRadius: 'var(--radius-lg)',
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <div
-              aria-hidden
-              style={{
-                width: 128,
-                height: 192,
-                borderRadius: 'var(--radius-lg)',
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 30,
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: currentTheme.text.muted,
-              }}
-            >
-              {t('Meine #1 Serie')}
-            </div>
-            <div
-              style={{
-                marginTop: 14,
-                fontSize: 48,
-                fontWeight: 800,
-                letterSpacing: '-0.01em',
-                lineHeight: 1.15,
-                color: currentTheme.text.secondary,
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {topSerie.title}
-            </div>
-            <div
-              style={{
-                marginTop: 14,
-                fontSize: 34,
-                fontWeight: 700,
-                color: currentTheme.primary,
-              }}
-            >
-              {t('{n} Episoden', { n: topSerie.episodesWatched })}
-            </div>
+          {number(Math.round(stats.totalHoursWatched))}
+        </div>
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 32,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: currentTheme.text.muted,
+          }}
+        >
+          {t('Stunden · ≈ {n} Tage', { n: stats.totalDaysEquivalent })}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 18 }}>
+        {tiles.map((tile) => (
+          <StatTile key={tile.label} value={tile.value} label={tile.label} />
+        ))}
+      </div>
+
+      {stats.topSeries.length > 0 && (
+        <div>
+          <div
+            style={{
+              fontSize: 26,
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: currentTheme.text.muted,
+              marginBottom: 18,
+            }}
+          >
+            {t('Meine Top Serien')}
+          </div>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
+          >
+            {stats.topSeries.slice(0, 3).map((serie, index) => (
+              <PosterSlot
+                key={serie.id}
+                rank={index + 1}
+                title={serie.title}
+                meta={t('{n} Episoden', { n: serie.episodesWatched })}
+                src={serie.poster ? `https://image.tmdb.org/t/p/w342${serie.poster}` : undefined}
+                showImages={showImages}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      {/* Achievements */}
-      <div
-        style={{
-          alignSelf: 'center',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 16,
-          background: 'var(--glass-light)',
-          border: '1px solid var(--glass-border-subtle)',
-          borderRadius: 'var(--radius-full)',
-          padding: '22px 48px',
-          fontSize: 34,
-          fontWeight: 600,
-          color: currentTheme.text.secondary,
-        }}
-      >
-        <span
-          aria-hidden
+      {highlights.length > 0 && (
+        <div
           style={{
-            width: 14,
-            height: 14,
-            borderRadius: '50%',
-            background: currentTheme.accent,
+            display: 'grid',
+            gridTemplateColumns: `repeat(${highlights.length}, minmax(0, 1fr))`,
+            gap: 18,
           }}
-        />
-        <strong style={{ fontWeight: 900 }}>{unlockedAchievements}</strong>
-        {t('Achievements freigeschaltet')}
-      </div>
+        >
+          {highlights.map((h) => (
+            <Highlight key={h.title} title={h.title} value={h.value} />
+          ))}
+        </div>
+      )}
     </ShareCardFrame>
   );
 };

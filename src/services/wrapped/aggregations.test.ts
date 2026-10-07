@@ -115,6 +115,25 @@ describe('calculateWrappedStats', () => {
     );
   });
 
+  it('zählt Einzelfolgen-Sessions nicht als Binge', () => {
+    const single = binge({
+      id: 'b-single',
+      episodes: [{ seasonNumber: 1, episodeNumber: 1, watchedAt: 'x' }],
+    });
+    const stats = calculateWrappedStats([], [single, binge({ id: 'b3' })], 2025);
+    expect(stats.totalBingeSessions).toBe(1);
+    expect(stats.averageBingeLength).toBe(3);
+  });
+
+  it('nimmt gelesene Manga-Kapitel in die Statistik auf', () => {
+    const ts = Math.floor(new Date(2025, 4, 2, 12).getTime() / 1000);
+    const stats = calculateWrappedStats([], [], 2025, [
+      { ts, t: 'ch', s: 9, st: 'Berserk', ch: 5, n: 5 },
+    ]);
+    expect(stats.manga).toMatchObject({ totalChapters: 5, uniqueManga: 1 });
+    expect(calculateWrappedStats([], [], 2025).manga).toBe(null);
+  });
+
   it('findet die längste Binge-Session und rundet den Schnitt', () => {
     const sessions: BingeSession[] = [
       binge({ id: 'b0', startedAt: '2024-12-30T20:00:00' }), // anderes Jahr

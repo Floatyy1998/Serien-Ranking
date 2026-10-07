@@ -22,17 +22,17 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
   // Zeit-Vergleiche
   facts.push({
     id: 'time_flights',
-    text: t('Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen ✈️', {
+    text: t('Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen', {
       hours,
       flights: Math.round(hours / 12),
     }),
-    icon: '✈️',
+    icon: 'flight',
   });
 
   facts.push({
     id: 'time_sleep',
     text: t('Das entspricht {days} Tagen durchgehend schauen - ohne Schlaf!', { days }),
-    icon: '😴',
+    icon: 'bedtime',
   });
 
   // Top Serie
@@ -44,7 +44,7 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
         title: top.title,
         episodes: top.episodesWatched,
       }),
-      icon: '🏆',
+      icon: 'trophy',
     });
   }
 
@@ -55,15 +55,15 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
       month: ctx.mostActiveMonth.monthName,
       count: ctx.mostActiveMonth.episodesWatched + ctx.mostActiveMonth.moviesWatched,
     }),
-    icon: '📅',
+    icon: 'calendar',
   });
 
   // Tageszeit
   const timeEmoji = {
-    morning: '🌅',
-    afternoon: '☀️',
-    evening: '🌆',
-    night: '🌙',
+    morning: 'sunrise',
+    afternoon: 'sun',
+    evening: 'sunset',
+    night: 'moon',
   };
   facts.push({
     id: 'time_of_day',

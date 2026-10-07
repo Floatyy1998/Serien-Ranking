@@ -72,6 +72,7 @@ vi.mock('../../services/db/ref', async () => {
       return { set: db.set };
     },
     updateWithSeriesVersion: (...a: unknown[]) => db.updateWithSeriesVersion(...a),
+    dbGet: async () => null,
   };
 });
 const trackRatingSaved = vi.fn();
@@ -79,8 +80,8 @@ vi.mock('../../services/firebase/analytics', () => ({
   trackRatingSaved: (...a: unknown[]) => trackRatingSaved(...a),
 }));
 const logMovieWatch = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
-vi.mock('../../services/watchActivity/watchActivityService', () => ({
-  WatchActivityService: { logMovieWatch: (...a: unknown[]) => logMovieWatch(...a) },
+vi.mock('../../services/watchActivity/movieWatchLogging', () => ({
+  logMovieWatchIfNew: (...a: unknown[]) => logMovieWatch(...a),
 }));
 
 // fetch fixtures
@@ -435,15 +436,12 @@ describe('useSearchPage', () => {
       'users/u1/movies/200/watched': true,
       'users/u1/movies/200/watchedAt': '2026-01-01T00:00:00.000Z',
     });
-    expect(logMovieWatch).toHaveBeenCalledWith(
-      'u1',
-      200,
-      'Sicario',
-      121,
-      7,
-      ['Thriller'],
-      undefined
-    );
+    expect(logMovieWatch).toHaveBeenCalledWith('u1', 200, expect.anything(), 7, {
+      title: 'Sicario',
+      runtime: 121,
+      genres: ['Thriller'],
+      providers: undefined,
+    });
     expect(logRatingAdded).toHaveBeenCalledWith('u1', 'Sicario', 'movie', 7, 200);
   });
 

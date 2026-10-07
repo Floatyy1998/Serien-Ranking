@@ -32,11 +32,13 @@ import {
 } from './temporal';
 import { calculateAchievements } from './achievements';
 import { generateFunFacts } from './funFacts';
+import { calculateMangaStats, type WrappedMangaEvent } from './manga';
 
 export function calculateWrappedStats(
   events: ActivityEvent[],
   bingeSessions: BingeSession[],
-  year: number
+  year: number,
+  mangaEvents: WrappedMangaEvent[] = []
 ): WrappedStats {
   const yearEvents = events.filter((e) => new Date(e.timestamp).getFullYear() === year);
   const episodeEvents = yearEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
@@ -65,8 +67,9 @@ export function calculateWrappedStats(
   const favoriteTimeOfDay = calculateFavoriteTimeOfDay(yearEvents);
   const favoriteDayOfWeek = calculateFavoriteDayOfWeek(yearEvents);
 
+  // Jede Einzelfolge legt eine Session an — als Binge zählen erst zwei Folgen am Stück.
   const yearBingeSessions = bingeSessions.filter(
-    (s) => new Date(s.startedAt).getFullYear() === year
+    (s) => new Date(s.startedAt).getFullYear() === year && (s.episodes?.length ?? 0) >= 2
   );
   const longestBinge = findLongestBingeSession(yearBingeSessions);
 
@@ -137,6 +140,7 @@ export function calculateWrappedStats(
     lastWatch,
     lateNightStats,
     heatmapData,
+    manga: calculateMangaStats(mangaEvents, year),
   };
 }
 

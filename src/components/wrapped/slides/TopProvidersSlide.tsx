@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopProviderEntry } from '../../../types/Wrapped';
 import { t } from '../../../services/i18n';
+import { LiveTv } from '@mui/icons-material';
 
 interface TopProvidersSlideProps {
   topProviders: TopProviderEntry[];
@@ -74,9 +75,9 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
-            style={{ fontSize: '4rem', marginBottom: '20px' }}
+            style={{ marginBottom: '20px' }}
           >
-            📺
+            <LiveTv style={{ fontSize: '4rem' }} />
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>{t('Keine Streaming-Daten')}</h2>
           <p style={{ opacity: 0.6, marginTop: '10px' }}>
@@ -186,11 +187,10 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
             animate={{ scale: 1 }}
             transition={{ delay: 0.5, type: 'spring' }}
             style={{
-              fontSize: '5rem',
               marginBottom: '20px',
             }}
           >
-            📺
+            <LiveTv style={{ fontSize: '5rem' }} />
           </motion.div>
         )}
 
@@ -328,7 +328,7 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
                       flexShrink: 0,
                     }}
                   >
-                    📺
+                    <LiveTv style={{ fontSize: '1.2rem' }} />
                   </div>
                 )}
 

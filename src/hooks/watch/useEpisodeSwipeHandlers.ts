@@ -251,8 +251,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 source: 'continue_watching_swipe',
               }
             );
-            // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
-            // isRewatch ohnehin false, wie zuvor hart kodiert.
+            // Wrapped zählt auch Rewatches (isRewatch markiert sie).
             await runEpisodeWatchFanout({
               userId: user.uid,
               seriesId: item.id,
@@ -264,7 +263,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               genres: item.genre?.genres,
               providers: item.provider?.provider?.map((p: { name: string }) => p.name),
               episodeAirDate: item.airDate,
-              wrappedEvent: snap.previousCount === 0,
             });
           },
         });
@@ -358,9 +356,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                   source: 'today_episodes_swipe',
                 }
               );
-              // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
-              // isRewatch ohnehin false, wie zuvor hart kodiert. Kein airDate
-              // (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
+              // Kein airDate (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
               await runEpisodeWatchFanout({
                 userId: user.uid,
                 seriesId: Number(episode.seriesId),
@@ -371,7 +367,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 isRewatch: snap.previousCount > 0,
                 genres: episode.seriesGenre,
                 providers: episode.seriesProviders,
-                wrappedEvent: snap.previousCount === 0,
               });
             },
           }

@@ -49,7 +49,7 @@ describe('generateFunFacts', () => {
         topSeries: [{ id: 1, title: 'Dark', episodesWatched: 42, minutesWatched: 1890 }],
       })
     );
-    expect(facts[0].text).toBe('Mit 120 Stunden könntest du 10 Mal nach New York fliegen ✈️');
+    expect(facts[0].text).toBe('Mit 120 Stunden könntest du 10 Mal nach New York fliegen');
     expect(facts[1].text).toBe('Das entspricht 5 Tagen durchgehend schauen - ohne Schlaf!');
     expect(facts[2].text).toBe('"Dark" war dein Favorit mit 42 Episoden');
     expect(facts[3].text).toBe('Dein aktivster Monat war Juni mit 30 Titeln');
@@ -59,7 +59,7 @@ describe('generateFunFacts', () => {
     const facts = generateFunFacts(ctx());
     const tod = facts.find((f) => f.id === 'time_of_day');
     expect(tod?.text).toBe('Du schaust am liebsten nachts (22-6 uhr)');
-    expect(tod?.icon).toBe('🌙');
+    expect(tod?.icon).toBe('moon');
   });
 
   it('mappt jede Tageszeit auf ihr Emoji', () => {
@@ -67,9 +67,9 @@ describe('generateFunFacts', () => {
       generateFunFacts(
         ctx({ favoriteTimeOfDay: { timeOfDay: t, label: 'X', count: 1, percentage: 1 } })
       ).find((f) => f.id === 'time_of_day')?.icon;
-    expect(emoji('morning')).toBe('🌅');
-    expect(emoji('afternoon')).toBe('☀️');
-    expect(emoji('evening')).toBe('🌆');
-    expect(emoji('night')).toBe('🌙');
+    expect(emoji('morning')).toBe('sunrise');
+    expect(emoji('afternoon')).toBe('sun');
+    expect(emoji('evening')).toBe('sunset');
+    expect(emoji('night')).toBe('moon');
   });
 });

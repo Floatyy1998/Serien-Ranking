@@ -1,0 +1,230 @@
+.rr-page {
+  padding: 0 16px var(--page-bottom-gap);
+}
+
+.rr-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.rr-ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mobile-app .rr-range,
+.rr-range {
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--glass-border-subtle);
+  background: var(--glass-subtle);
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-app .rr-range--active,
+.rr-range--active {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary-40);
+  background: var(--theme-primary-15);
+  box-shadow: inset 0 0 0 1px var(--theme-primary-20);
+}
+
+.rr-summary {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.rr-pod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border-radius: 16px;
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--glass-specular);
+}
+
+.rr-pod-icon {
+  display: flex;
+  color: var(--theme-primary);
+}
+
+.rr-pod-icon svg {
+  font-size: 18px;
+}
+
+.rr-pod-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.rr-pod-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--theme-text-secondary);
+  opacity: 0.7;
+}
+
+.rr-days {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rr-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mobile-app .rr-day-title,
+.rr-day-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.rr-day-count {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--theme-primary-12);
+  border: 1px solid var(--theme-primary-30);
+  color: var(--theme-primary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rr-entries {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.rr-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 10px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--glass-border-subtle);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rr-entry:active {
+  opacity: 0.7;
+}
+
+.rr-entry:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.rr-entry-poster {
+  width: 46px;
+  height: 66px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--glass-subtle);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.rr-entry-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rr-entry-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rr-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.rr-entry-reread {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--theme-secondary-20, rgba(255, 255, 255, 0.08));
+  color: var(--theme-text-secondary);
+  font-size: 10.5px;
+}
+
+.rr-entry-time {
+  font-size: 11.5px;
+  color: var(--theme-text-secondary);
+  opacity: 0.65;
+}
+
+.rr-entry-count {
+  flex-shrink: 0;
+  min-width: 40px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
+  color: rgba(255, 255, 255, 0.92);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .rr-page {
+    padding: 0 clamp(24px, 4vw, 72px) var(--page-bottom-gap);
+  }
+
+  .rr-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .rr-summary {
+    grid-auto-columns: 130px;
+  }
+
+  .rr-entries {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 10px;
+  }
+}

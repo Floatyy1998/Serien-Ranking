@@ -394,6 +394,15 @@ const dict: Record<string, string> = {
   'vor {n} Wochen': 'há {n} semanas',
   '{n} Titel · {m} abgeschlossen': '{n} títulos · {m} concluídos',
   '{n}× erneut gelesen': 'Relido {n}×',
+  '1 Kapitel': '1 capítulo',
+  'Kap. {a}–{b}': 'Cap. {a}–{b}',
+  Erneut: 'Releitura',
+  'Stand: Kap. {n}': 'Progresso: cap. {n}',
+  Lesetage: 'Dias de leitura',
+  Zeitraum: 'Período',
+  '{n} Kapitel gelesen': '{n} capítulos lidos',
+  'Verlauf wird geladen …': 'Carregando histórico …',
+  'Stand nachgetragen: Kap. {n}': 'Progresso adicionado: cap. {n}',
 };
 
 export default dict;

@@ -12,6 +12,7 @@ import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { t } from '../../services/i18n';
 import { EpisodeDataManager } from './EpisodeDataManager';
 import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 
 export interface TimeRange {
   days: number;
@@ -233,20 +234,18 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
         [paths.serienVersion(user.uid)]: serverTimestamp(),
       });
 
-      // Nur Pet-XP an dieser Site — keine Badge-Counter und kein Wrapped-Event
-      // (bestehendes Verhalten beibehalten).
+      // Pet-XP und Wrapped-Rewatch — keine Badge-Counter (bestehendes Verhalten).
       await runEpisodeWatchFanout({
         userId: user.uid,
         seriesId: episode.seriesId,
         seriesTitle: episode.seriesName,
         seasonNumber: episode.seasonNumber,
         episodeNumber: episode.episodeNumber,
-        runtimeMinutes: 0, // ungenutzt, solange wrappedEvent aus ist
+        runtimeMinutes: series?.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
         isRewatch: true,
         genres: series?.genre?.genres,
         seriesHidden: series?.hidden,
         badgeCounters: false,
-        wrappedEvent: false,
       });
 
       setCompletingEpisodes((prev) => new Set([...prev, key]));

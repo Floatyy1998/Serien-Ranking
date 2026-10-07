@@ -41,6 +41,20 @@ const dict: Record<string, string> = {
   Monatsübersicht: 'Month by month',
   // Monatskürzel (nur die abweichenden)
   Mär: 'Mar',
+  'Deine Top Manga': 'Your top manga',
+  'Kapitel aus {n} Manga gelesen': 'chapters read across {n} manga',
+  'Am meisten gelesen': 'Most read',
+  'Lesemonat: {month} mit {n} Kapiteln': 'Reading month: {month} with {n} chapters',
+  '{n} Manga-Kapitel': '{n} manga chapters',
+  'Folgen am Stück': 'episodes in a row',
+  'Lieblings-Genre': 'Favorite genre',
+  Lieblingszeit: 'Favorite time',
+  'Meine Top Serien': 'My top shows',
+  Meistgenutzt: 'Most used',
+  Rekordtag: 'Record day',
+  'Stunden · ≈ {n} Tage': 'hours · ≈ {n} days',
+  'Tage Streak': 'day streak',
+  'Top Manga': 'Top manga',
 };
 
 export default dict;

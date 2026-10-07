@@ -102,8 +102,8 @@ const dict: Record<string, string> = {
   'Mein {year} in Zahlen: {episodes} Episoden, {movies} Filme, {hours} Stunden. tv-rank.de':
     'My {year} in numbers: {episodes} episodes, {movies} movies, {hours} hours. tv-rank.de',
   'Wrapped {year} teilen': 'Share Wrapped {year}',
-  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen ✈️':
-    'With {hours} hours you could fly to New York {flights} times ✈️',
+  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen':
+    'With {hours} hours you could fly to New York {flights} times',
   'Das entspricht {days} Tagen durchgehend schauen - ohne Schlaf!':
     "That's {days} days of non-stop watching - no sleep!",
   '"{title}" war dein Favorit mit {episodes} Episoden':

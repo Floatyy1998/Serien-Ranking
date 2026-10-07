@@ -288,7 +288,6 @@ export const useCalendarData = () => {
                 episodeAirDate: episode?.air_date,
                 seriesHidden: series.hidden,
                 petXp: false,
-                wrappedEvent: prevCount === 0,
               });
             }
           },

@@ -168,7 +168,7 @@ describe('useEpisodeSwipeHandlers – handleContinueEpisodeComplete', () => {
     expect(result.current.swipeDirections['555-2-3']).toBe('left');
   });
 
-  it('onCommit tracks the watch and runs the fanout (rewatch, no wrapped event)', async () => {
+  it('onCommit tracks the watch and runs the fanout (rewatch counts for Wrapped)', async () => {
     fb.state.snapVal = { w: 0, c: 2, f: 0, l: 0 };
     const { result } = renderHook(() => useEpisodeSwipeHandlers());
     await act(async () => {
@@ -187,7 +187,7 @@ describe('useEpisodeSwipeHandlers – handleContinueEpisodeComplete', () => {
       expect.objectContaining({ isRewatch: true, source: 'continue_watching_swipe' })
     );
     expect(mocks.runEpisodeWatchFanout).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: 'u1', seriesId: 555, isRewatch: true, wrappedEvent: false })
+      expect.objectContaining({ userId: 'u1', seriesId: 555, isRewatch: true })
     );
   });
 
@@ -228,7 +228,7 @@ describe('useEpisodeSwipeHandlers – handleContinueEpisodeComplete', () => {
 });
 
 describe('useEpisodeSwipeHandlers – handleEpisodeComplete (today)', () => {
-  it('marks a first watch and flags a wrapped event when previousCount is 0', async () => {
+  it('marks a first watch and runs the fanout', async () => {
     fb.state.snapVal = { w: 0, c: 0, f: 0, l: 0 };
     const { result } = renderHook(() => useEpisodeSwipeHandlers());
     await act(async () => {
@@ -250,7 +250,6 @@ describe('useEpisodeSwipeHandlers – handleEpisodeComplete (today)', () => {
       expect.objectContaining({
         seriesId: 777,
         isRewatch: false,
-        wrappedEvent: true,
         seasonNumber: 1,
         episodeNumber: 4,
       })

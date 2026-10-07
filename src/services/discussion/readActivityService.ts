@@ -4,7 +4,8 @@ import type { Manga } from '../../types/Manga';
 /**
  * Manga events werden im Compact-Format gespeichert (gleiche Konvention wie wrapped/events).
  *   ts: unix seconds, t: "ch"/"rg", s: mangaId, st: title,
- *   ch: chapterNumber, vol: volumeNumber, fmt: format,
+ *   ch: (letztes) Kapitel, ch0: erstes Kapitel eines Sprungs, n: Anzahl Kapitel (fehlt = 1),
+ *   vol: volumeNumber, fmt: format,
  *   g: genres, rw: isReread (0/1), rat: rating
  */
 interface CompactMangaEvent {
@@ -13,6 +14,8 @@ interface CompactMangaEvent {
   s: number;
   st: string;
   ch?: number;
+  ch0?: number;
+  n?: number;
   vol?: number;
   fmt?: string;
   g?: string[];
@@ -31,31 +34,27 @@ export async function logChapterRead(
   chapterNumber: number,
   previousChapter: number
 ): Promise<void> {
-  const nowUnix = Math.floor(Date.now() / 1000);
   const chaptersRead = chapterNumber - previousChapter;
+  if (chaptersRead <= 0) return;
 
-  const promises: Promise<void>[] = [];
-  for (let i = 0; i < chaptersRead; i++) {
-    const event: CompactMangaEvent = {
-      ts: nowUnix,
-      t: 'ch',
-      s: manga.anilistId,
-      st: manga.title,
-      ch: previousChapter + i + 1,
-    };
-    if (manga.currentVolume) event.vol = manga.currentVolume;
-    if (manga.format) event.fmt = manga.format;
-    if (manga.genres && manga.genres.length > 0) event.g = manga.genres;
-    if ((manga.rereadCount || 0) > 0) event.rw = 1;
-
-    promises.push(
-      dbRef(getEventsPath(userId))
-        .push(event)
-        .then(() => undefined)
-    );
+  // Ein Ereignis pro Vorgang — ein Sprung über viele Kapitel war vorher ein Push je Kapitel.
+  const event: CompactMangaEvent = {
+    ts: Math.floor(Date.now() / 1000),
+    t: 'ch',
+    s: manga.anilistId,
+    st: manga.title,
+    ch: chapterNumber,
+  };
+  if (chaptersRead > 1) {
+    event.ch0 = previousChapter + 1;
+    event.n = chaptersRead;
   }
+  if (manga.currentVolume) event.vol = manga.currentVolume;
+  if (manga.format) event.fmt = manga.format;
+  if (manga.genres && manga.genres.length > 0) event.g = manga.genres;
+  if ((manga.rereadCount || 0) > 0) event.rw = 1;
 
-  await Promise.all(promises);
+  await dbRef(getEventsPath(userId)).push(event);
 }
 
 export async function logMangaRating(userId: string, manga: Manga, rating: number): Promise<void> {
@@ -68,4 +67,11 @@ export async function logMangaRating(userId: string, manga: Manga, rating: numbe
   };
 
   await dbRef(getEventsPath(userId)).push(event);
+}
+
+/** Kapitel- und Bewertungs-Ereignisse eines Jahres (für den Lese-Verlauf). */
+export async function fetchMangaEvents(userId: string, year: number): Promise<CompactMangaEvent[]> {
+  const snap = await dbRef(userPath(userId, 'wrapped', year, 'mangaEvents')).once('value');
+  const raw = (snap.val() || {}) as Record<string, CompactMangaEvent>;
+  return Object.values(raw);
 }

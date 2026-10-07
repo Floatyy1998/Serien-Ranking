@@ -1,15 +1,15 @@
-import { History } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { AutoStories, CalendarMonth, History, MenuBook, Replay } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState, PageHeader, PageLayout } from '../../components/ui';
+import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useDeviceType } from '../../hooks/platform/useDeviceType';
-import type { Manga } from '../../types/Manga';
-import { getEffectiveChapterCount } from './mangaUtils';
-import { tapScaleSmall } from '../../lib/motion';
+import { useMangaReadEvents } from '../../hooks/manga/useMangaReadEvents';
+import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
+import { buildReadHistory, type ReadHistoryEntry } from '../../lib/manga/readHistory';
 import { dateLocale, t } from '../../services/i18n';
+import './RecentlyReadPage.css';
 
 const TIME_RANGES = [
   { days: 7, label: t('7 Tage') },
@@ -17,71 +17,60 @@ const TIME_RANGES = [
   { days: 90, label: t('3 Monate') },
 ] as const;
 
-interface DateGroup {
-  date: string;
-  displayDate: string;
-  manga: Manga[];
-}
-
-function formatGroupDate(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-
-  const diff = today.getTime() - d.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return t('Heute');
+function formatDay(date: number, now: number): string {
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const days = Math.round((startOfToday.getTime() - date) / 86400000);
+  if (days <= 0) return t('Heute');
   if (days === 1) return t('Gestern');
-  if (days < 7) return t('Vor {n} Tagen', { n: days });
-
-  return d.toLocaleDateString(dateLocale(), {
+  return new Date(date).toLocaleDateString(dateLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
 }
 
+function chapterLabel(entry: ReadHistoryEntry): string {
+  if (entry.chapters === null) {
+    if (!entry.toChapter) return '';
+    return entry.imported
+      ? t('Stand nachgetragen: Kap. {n}', { n: entry.toChapter })
+      : t('Stand: Kap. {n}', { n: entry.toChapter });
+  }
+  if (
+    entry.fromChapter !== null &&
+    entry.toChapter !== null &&
+    entry.toChapter > entry.fromChapter
+  ) {
+    return t('Kap. {a}–{b}', { a: entry.fromChapter, b: entry.toChapter });
+  }
+  return entry.toChapter !== null ? t('Kap. {n}', { n: entry.toChapter }) : '';
+}
+
 export const RecentlyReadPage = () => {
   const { currentTheme } = useTheme();
-  const { mangaList } = useMangaList();
+  const { mangaList, hiddenMangaList } = useMangaList();
   const navigate = useNavigate();
-  const { isDesktop } = useDeviceType();
   const [rangeDays, setRangeDays] = useState(30);
-  const [mountTime] = useState(() => Date.now());
+  const [now] = useState(() => Date.now());
+  const { events, loading } = useMangaReadEvents(rangeDays, now);
 
-  const dateGroups = useMemo(() => {
-    const cutoff = mountTime - rangeDays * 24 * 60 * 60 * 1000;
+  const library = useMemo(
+    () => [...mangaList, ...(hiddenMangaList || [])],
+    [mangaList, hiddenMangaList]
+  );
+  const history = useMemo(
+    () => buildReadHistory(events, library, now, rangeDays),
+    [events, library, now, rangeDays]
+  );
 
-    const recentManga = mangaList
-      .filter((m) => m.lastReadAt && new Date(m.lastReadAt).getTime() > cutoff)
-      .sort(
-        (a, b) => new Date(b.lastReadAt || '').getTime() - new Date(a.lastReadAt || '').getTime()
-      );
-
-    const groups: Map<string, DateGroup> = new Map();
-
-    for (const manga of recentManga) {
-      if (!manga.lastReadAt) continue;
-      const date = new Date(manga.lastReadAt);
-      const key = date.toISOString().split('T')[0];
-
-      if (!groups.has(key)) {
-        groups.set(key, {
-          date: key,
-          displayDate: formatGroupDate(date),
-          manga: [],
-        });
-      }
-      const group = groups.get(key);
-      if (group) group.manga.push(manga);
-    }
-
-    return Array.from(groups.values());
-  }, [mangaList, rangeDays, mountTime]);
-
-  const totalRead = dateGroups.reduce((sum, g) => sum + g.manga.length, 0);
+  const summary = [
+    ...(history.totalChapters > 0
+      ? [{ key: 'chapters', icon: <MenuBook />, value: history.totalChapters, label: t('Kapitel') }]
+      : []),
+    { key: 'days', icon: <CalendarMonth />, value: history.activeDays, label: t('Lesetage') },
+    { key: 'manga', icon: <AutoStories />, value: history.mangaCount, label: 'Manga' },
+  ];
 
   return (
     <PageLayout>
@@ -89,161 +78,115 @@ export const RecentlyReadPage = () => {
         title={t('Lese-Verlauf')}
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
-        subtitle={totalRead > 0 ? t('{n} Manga gelesen', { n: totalRead }) : undefined}
+        subtitle={
+          history.totalChapters > 0
+            ? t('{n} Kapitel gelesen', { n: history.totalChapters })
+            : undefined
+        }
         icon={<History />}
       />
 
-      <div style={{ padding: '0 16px' }}>
-        {/* Time Range */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {TIME_RANGES.map((r) => {
-            const active = rangeDays === r.days;
-            return (
+      <div className="rr-page">
+        <div className="rr-toolbar">
+          <div className="rr-ranges" role="tablist" aria-label={t('Zeitraum')}>
+            {TIME_RANGES.map((r) => (
               <button
                 key={r.days}
+                type="button"
+                role="tab"
+                aria-selected={rangeDays === r.days}
+                className={`rr-range ${rangeDays === r.days ? 'rr-range--active' : ''}`}
                 onClick={() => setRangeDays(r.days)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 'var(--radius-full)',
-                  border: `1px solid ${active ? 'var(--theme-primary-40)' : 'var(--glass-border-subtle)'}`,
-                  background: active ? 'var(--theme-primary-15)' : 'var(--glass-subtle)',
-                  backdropFilter: 'var(--glass-filter-sm)',
-                  WebkitBackdropFilter: 'var(--glass-filter-sm)',
-                  boxShadow: active ? 'inset 0 0 0 1px var(--theme-primary-20)' : undefined,
-                  color: active ? currentTheme.primary : currentTheme.text.secondary,
-                  fontSize: 12,
-                  fontWeight: active ? 700 : 500,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                  transition:
-                    'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
-                }}
               >
                 {r.label}
               </button>
-            );
-          })}
-        </div>
-
-        {/* Date Groups */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-            paddingBottom: 'var(--page-bottom-gap)',
-          }}
-        >
-          {dateGroups.map((group) => (
-            <div key={group.date}>
-              {/* Date Header */}
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: currentTheme.text.secondary,
-                  marginBottom: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <span>{group.displayDate}</span>
-                <span style={{ opacity: 0.4, fontSize: 11 }}>({group.manga.length})</span>
-              </div>
-
-              {/* Manga Cards: Desktop als Karten-Grid statt 2500px-Zeilen */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: isDesktop
-                    ? 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))'
-                    : '1fr',
-                  gap: 8,
-                  alignItems: 'start',
-                }}
-              >
-                {group.manga.map((manga) => (
-                  <motion.div
-                    key={manga.anilistId}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('{title} öffnen', { title: manga.title })}
-                    onClick={() => navigate(`/manga/${manga.anilistId}`)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        navigate(`/manga/${manga.anilistId}`);
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      gap: 12,
-                      padding: 12,
-                      borderRadius: 12,
-                      background: `${currentTheme.text.primary}06`,
-                      cursor: 'pointer',
-                      alignItems: 'center',
-                    }}
-                    whileTap={tapScaleSmall}
-                  >
-                    <img
-                      src={manga.poster}
-                      alt={manga.title}
-                      style={{
-                        width: 42,
-                        height: 60,
-                        borderRadius: 8,
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                      }}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: currentTheme.text.primary,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {manga.title}
-                      </div>
-                      <div
-                        style={{ fontSize: 11, color: currentTheme.text.secondary, marginTop: 2 }}
-                      >
-                        {t('Kap.')} {manga.currentChapter}
-                        {getEffectiveChapterCount(manga)
-                          ? ` / ${getEffectiveChapterCount(manga)}`
-                          : ''}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.5 }}>
-                      {manga.lastReadAt &&
-                        new Date(manga.lastReadAt).toLocaleTimeString('de-DE', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+            ))}
+          </div>
+          {history.days.length > 0 && (
+            <div className="rr-summary">
+              {summary.map((pod) => (
+                <div key={pod.key} className="rr-pod">
+                  <span className="rr-pod-icon">{pod.icon}</span>
+                  <span className="rr-pod-value">{pod.value.toLocaleString()}</span>
+                  <span className="rr-pod-label">{pod.label}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
-        {dateGroups.length === 0 && (
+        {loading && history.days.length === 0 ? (
+          <LoadingSpinner text={t('Verlauf wird geladen …')} />
+        ) : history.days.length === 0 ? (
           <EmptyState
-            icon={<History style={{ fontSize: 40 }} />}
+            icon={<History style={{ fontSize: 48 }} />}
             title={t('Kein Lese-Verlauf')}
             description={t(
               'Hier siehst du deine zuletzt gelesenen Manga, sobald du Kapitel als gelesen markierst.'
             )}
           />
+        ) : (
+          <div className="rr-days">
+            {history.days.map((day) => (
+              <section key={day.key} className="rr-day">
+                <header className="rr-day-head">
+                  <h2 className="rr-day-title">{formatDay(day.date, now)}</h2>
+                  {day.chapters > 0 && (
+                    <span className="rr-day-count">
+                      {day.chapters === 1 ? t('1 Kapitel') : t('{n} Kapitel', { n: day.chapters })}
+                    </span>
+                  )}
+                </header>
+                <div className="rr-entries">
+                  {day.entries.map((entry) => (
+                    <div
+                      key={entry.anilistId}
+                      className="rr-entry"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={t('{title} öffnen', { title: entry.title })}
+                      onClick={() => navigate(`/manga/${entry.anilistId}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/manga/${entry.anilistId}`);
+                        }
+                      }}
+                    >
+                      <img
+                        className="rr-entry-poster"
+                        src={entry.poster || PLACEHOLDER_SVG}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="rr-entry-body">
+                        <div className="rr-entry-title">{entry.title}</div>
+                        <div className="rr-entry-meta">
+                          <span style={{ color: currentTheme.primary }}>{chapterLabel(entry)}</span>
+                          {entry.reread && (
+                            <span className="rr-entry-reread">
+                              <Replay style={{ fontSize: 12 }} />
+                              {t('Erneut')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="rr-entry-time">
+                          {new Date(entry.lastAt).toLocaleTimeString(dateLocale(), {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+                      {entry.chapters !== null && entry.chapters > 0 && (
+                        <span className="rr-entry-count">+{entry.chapters}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         )}
       </div>
     </PageLayout>

@@ -46,9 +46,9 @@ vi.mock('../../services/firebase/analytics', () => ({
   trackRatingSaved: vi.fn(),
   trackRatingDeleted: vi.fn(),
 }));
-const logMovieWatch = vi.hoisted(() => vi.fn());
-vi.mock('../../services/watchActivity/watchActivityService', () => ({
-  WatchActivityService: { logMovieWatch },
+const logMovieWatchIfNew = vi.hoisted(() => vi.fn());
+vi.mock('../../services/watchActivity/movieWatchLogging', () => ({
+  logMovieWatchIfNew,
 }));
 
 import { hapticSelect } from '../../lib/interaction/haptics';
@@ -150,7 +150,7 @@ describe('useRatingEditorData', () => {
     const childKeys = fb.childMock.mock.calls.map((c) => c[0]);
     expect(childKeys).toContain('ratedAt');
     expect(childKeys).toContain('watchedAt');
-    expect(logMovieWatch).toHaveBeenCalled();
+    expect(logMovieWatchIfNew).toHaveBeenCalled();
   });
 
   it('handleDelete opens a confirm dialog and only removes after confirmDelete', async () => {

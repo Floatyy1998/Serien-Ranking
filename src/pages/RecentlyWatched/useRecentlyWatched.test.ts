@@ -142,7 +142,7 @@ describe('useRecentlyWatched', () => {
       })
     );
     expect(runEpisodeWatchFanout).toHaveBeenCalledWith(
-      expect.objectContaining({ isRewatch: true, badgeCounters: false, wrappedEvent: false })
+      expect.objectContaining({ isRewatch: true, badgeCounters: false })
     );
     expect(result.current.completingEpisodes.has('1-0-0')).toBe(true);
   });

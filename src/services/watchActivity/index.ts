@@ -10,6 +10,7 @@
  */
 
 export { logEpisodeWatch, logMovieWatch } from './watchActivityCore';
+export { logMovieWatchIfNew, removeMovieWatchEvent } from './movieWatchLogging';
 export {
   getActiveBingeSession,
   updateBingeSession,

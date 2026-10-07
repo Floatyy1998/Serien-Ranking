@@ -8,7 +8,8 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
+import { wasMovieWatched } from '../../lib/watch/movieWatchLog';
+import { logMovieWatchIfNew } from '../../services/watchActivity/movieWatchLogging';
 import type { Movie as MovieType } from '../../types/Movie';
 import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import type { Series } from '../../types/Series';
@@ -156,19 +157,17 @@ export const useRatingEditorData = (): UseRatingDataResult => {
 
           await movieRef.child('ratedAt').set(now);
 
-          if (!movieItem.watchedAt) {
+          // Schon früher gesehene Filme bekommen kein neues Sehdatum — sonst zählt Neubewerten als neuer Film.
+          if (!movieItem.watchedAt && !wasMovieWatched(movieItem)) {
             await movieRef.child('watchedAt').set(now);
           }
 
-          WatchActivityService.logMovieWatch(
-            user.uid,
-            movieItem.id,
-            movieItem.title,
-            movieItem.runtime,
-            overallRating,
-            movieItem.genre?.genres,
-            movieItem.provider?.provider?.map((p) => p.name)
-          );
+          void logMovieWatchIfNew(user.uid, movieItem.id, movieItem, overallRating, {
+            title: movieItem.title,
+            runtime: movieItem.runtime,
+            genres: movieItem.genre?.genres,
+            providers: movieItem.provider?.provider?.map((p) => p.name),
+          });
         }
 
         // Activity-Logging fuer Friend + Badge-System

@@ -9,6 +9,8 @@ import type { ResolvedWatchPlanEntry } from '../../lib/watch/watchPlan';
 import { paths, updateWithSeriesVersion } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { markMovieWatched } from '../../services/rating/quickRating';
+import { wasMovieWatched } from '../../lib/watch/movieWatchLog';
+import { removeMovieWatchEvent } from '../../services/watchActivity/movieWatchLogging';
 
 /** Hakt Folge bzw. Film eines Plan-Eintrags ab; ohne bestimmte Folge die nächste ungesehene. `again` zählt eine gesehene Folge erneut. */
 export async function markPlanEntryWatched(
@@ -29,6 +31,7 @@ export async function markPlanEntryWatched(
       hapticSuccess();
       const base = paths.movieItem(uid, movie.id);
       showUndoToast(t('{title} als gesehen markiert', { title: movie.title }), () => {
+        if (!wasMovieWatched(movie)) void removeMovieWatchEvent(uid, movie.id).catch(() => {});
         void updateWithSeriesVersion(uid, {
           [`${base}/watched`]: null,
           [`${base}/watchedAt`]: movie.watchedAt ?? null,

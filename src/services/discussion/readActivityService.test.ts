@@ -40,18 +40,21 @@ afterEach(() => {
 });
 
 describe('logChapterRead', () => {
-  it('erzeugt ein Event pro gelesenem Kapitel mit fortlaufender Nummer', async () => {
+  it('fasst einen Sprung über mehrere Kapitel in ein Event mit Bereich und Anzahl', async () => {
     await logChapterRead('u1', makeManga(), 6, 3);
 
-    expect(fb.pushed).toHaveLength(3);
-    expect(fb.pushed.every((p) => p.path === eventsPath('u1'))).toBe(true);
-    expect(fb.pushed.map((p) => p.event.ch)).toEqual([4, 5, 6]);
-    for (const p of fb.pushed) {
-      expect(p.event.t).toBe('ch');
-      expect(p.event.s).toBe(555);
-      expect(p.event.st).toBe('One Piece');
-      expect(typeof p.event.ts).toBe('number');
-    }
+    expect(fb.pushed).toHaveLength(1);
+    const { path, event } = fb.pushed[0];
+    expect(path).toBe(eventsPath('u1'));
+    expect(event).toMatchObject({ t: 'ch', s: 555, st: 'One Piece', ch: 6, ch0: 4, n: 3 });
+    expect(typeof event.ts).toBe('number');
+  });
+
+  it('schreibt bei einem Einzelkapitel weder Bereich noch Anzahl', async () => {
+    await logChapterRead('u1', makeManga(), 7, 6);
+    expect(fb.pushed[0].event).toMatchObject({ ch: 7 });
+    expect(fb.pushed[0].event).not.toHaveProperty('n');
+    expect(fb.pushed[0].event).not.toHaveProperty('ch0');
   });
 
   it('hängt optionale Felder an (vol, fmt, g, rw)', async () => {

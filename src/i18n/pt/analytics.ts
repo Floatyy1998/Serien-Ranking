@@ -92,8 +92,8 @@ const dict: Record<string, string> = {
   'Als Bild teilen': 'Compartilhar como imagem',
   'Danke für ein tolles Jahr!': 'Obrigado por um ano incrível!',
   'Kommt bald': 'Em breve',
-  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen ✈️':
-    'Com {hours} horas você poderia voar até Nova York {flights} vezes ✈️',
+  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen':
+    'Com {hours} horas você poderia voar até Nova York {flights} vezes',
   'Du schaust am liebsten {time}': 'Você prefere assistir {time}',
   'Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende des Jahres zeigen wir dir deine persönlichen Highlights!':
     'Seu resumo do ano ainda não está disponível. Continue assistindo a séries e filmes: no fim do ano mostramos os seus destaques!',

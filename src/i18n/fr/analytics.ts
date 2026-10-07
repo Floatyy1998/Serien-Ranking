@@ -94,8 +94,8 @@ const dict: Record<string, string> = {
   'Kommt bald': 'Bientôt disponible',
   'Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende des Jahres zeigen wir dir deine persönlichen Highlights!':
     "Ton bilan de l'année n'est pas encore disponible. Continue à regarder des séries et des films – à la fin de l'année, on te montrera tes moments forts !",
-  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen ✈️':
-    'Avec {hours} heures, tu pourrais aller à New York {flights} fois en avion ✈️',
+  'Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen':
+    'Avec {hours} heures, tu pourrais aller à New York {flights} fois en avion',
   'Lade deinen Jahresrückblick...': "Chargement de ton bilan de l'année...",
   'Wischen zum Navigieren': 'Glisse pour naviguer',
   'Bitte melde dich an, um deinen Jahresrückblick zu sehen.':

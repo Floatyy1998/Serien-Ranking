@@ -4,11 +4,11 @@ import {
   TotalTimeSlide,
   TopSeriesSlide,
   TopMoviesSlide,
+  TopMangaSlide,
   TopGenresSlide,
   TopProvidersSlide,
   TimePatternSlide,
   BingeStatsSlide,
-  AchievementsSlide,
   MonthlyBreakdownSlide,
   SummarySlide,
   FirstLastSlide,
@@ -181,6 +181,8 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
         return <TopSeriesSlide topSeries={stats.topSeries} />;
       case 'top_movies':
         return <TopMoviesSlide topMovies={stats.topMovies} />;
+      case 'top_manga':
+        return stats.manga ? <TopMangaSlide manga={stats.manga} /> : null;
       case 'top_genres':
         return <TopGenresSlide topGenres={stats.topGenres} />;
       case 'top_providers':
@@ -200,8 +202,6 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
             averageBingeLength={stats.averageBingeLength}
           />
         );
-      case 'achievements':
-        return <AchievementsSlide achievements={stats.achievements} />;
       case 'monthly_breakdown':
         return (
           <MonthlyBreakdownSlide
