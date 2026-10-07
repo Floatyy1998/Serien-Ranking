@@ -73,7 +73,7 @@ query ($id: Int!) {
       day
     }
     isAdult
-    recommendations(page: 1, perPage: 8, sort: RATING_DESC) {
+    recommendations(page: 1, perPage: 12, sort: RATING_DESC) {
       edges {
         node {
           mediaRecommendation {
@@ -238,4 +238,34 @@ export async function discoverManga(
     hasNextPage: data.Page.pageInfo.hasNextPage,
     total: data.Page.pageInfo.total,
   };
+}
+
+const GENRE_QUERY = `
+query ($perPage: Int, $genres: [String]) {
+  Page(page: 1, perPage: $perPage) {
+    media(type: MANGA, genre_in: $genres, sort: [SCORE_DESC, POPULARITY_DESC], isAdult: false, popularity_greater: 15000) {
+      id
+      title { romaji english native }
+      coverImage { large medium }
+      bannerImage
+      chapters volumes status format countryOfOrigin
+      genres averageScore
+      startDate { year month day }
+      isAdult
+    }
+  }
+}
+`;
+
+/** Gut bewertete, bekannte Manga aus den angegebenen Genres. */
+export async function discoverMangaByGenres(
+  genres: string[],
+  perPage = 30
+): Promise<AniListMangaSearchResult[]> {
+  if (genres.length === 0) return [];
+  const data = await anilistFetch<{ Page: { media: AniListMangaSearchResult[] } }>(GENRE_QUERY, {
+    perPage,
+    genres,
+  });
+  return data.Page.media;
 }

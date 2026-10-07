@@ -57,6 +57,7 @@ import {
   MangaDiscoverPage,
   MangaReadJourneyPage,
   MangaReadingListPage,
+  MangaLayoutPage,
   AnimeSeasonPage,
   SerienKalenderPage,
   FilmKalenderPage,
@@ -492,6 +493,14 @@ export const MobileApp = () => {
                 element={
                   <Layout hideNav>
                     <MangaReadingListPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/layout"
+                element={
+                  <Layout hideNav>
+                    <MangaLayoutPage />
                   </Layout>
                 }
               />

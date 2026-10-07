@@ -1,15 +1,7 @@
 /** Homepage & Navigation als Direkt-Manipulation: die Vorschau IST der Editor (Canvas + Dock + Palette). */
 
-import {
-  Add,
-  Close,
-  DragIndicator,
-  MoreHoriz,
-  RestartAlt,
-  Visibility,
-  VisibilityOff,
-} from '@mui/icons-material';
-import { motion, Reorder, useDragControls } from 'framer-motion';
+import { Add, Close, DragIndicator, MoreHoriz, RestartAlt, Visibility } from '@mui/icons-material';
+import { motion, Reorder } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 import { NAV_SLOT_ICONS } from '../../components/layout/navSlotIcons';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
@@ -20,12 +12,10 @@ import { useNavSlots } from '../../hooks/ui/useNavConfig';
 import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 import { resetNavSlots, setNavSlots } from '../../services/settings/navConfig';
-import type { ExpandableConfig } from './useHomeLayoutData';
+import { LayoutCanvasSection, type SkeletonShape } from './LayoutCanvasSection';
 import { SECTION_LABELS, useHomeLayoutData } from './useHomeLayoutData';
 import './HomeLayoutPage.css';
 import { tapScaleTight } from '../../lib/motion';
-
-type SkeletonShape = 'bar' | 'banner' | 'banners' | 'posters' | 'cards' | 'tiles';
 
 const SECTION_SHAPES: Record<string, SkeletonShape> = {
   'activity-marquee': 'bar',
@@ -37,176 +27,6 @@ const SECTION_SHAPES: Record<string, SkeletonShape> = {
   trending: 'posters',
   'top-rated': 'posters',
   stats: 'tiles',
-};
-
-const BannerRow = () => (
-  <div className="hl-skel-banner-row">
-    <div className="hl-skel-thumb" />
-    <div className="hl-skel-lines">
-      <div className="hl-skel-line" style={{ width: '52%' }} />
-      <div className="hl-skel-line hl-skel-line--dim" style={{ width: '34%' }} />
-    </div>
-    <div className="hl-skel-progress" />
-  </div>
-);
-
-const SkeletonShapeBlock = ({ shape }: { shape: SkeletonShape }) => {
-  switch (shape) {
-    case 'bar':
-      return (
-        <div className="hl-skel-marquee">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="hl-skel-avatar" />
-          ))}
-          <div className="hl-skel-line hl-skel-line--dim" style={{ flex: 1 }} />
-        </div>
-      );
-    case 'banner':
-      return <BannerRow />;
-    case 'banners':
-      return (
-        <div className="hl-skel-col">
-          <BannerRow />
-          <BannerRow />
-        </div>
-      );
-    case 'posters':
-      return (
-        <div className="hl-skel-row">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="hl-skel-poster">
-              <div className="hl-skel-line hl-skel-line--dim" />
-            </div>
-          ))}
-        </div>
-      );
-    case 'cards':
-      return (
-        <div className="hl-skel-row">
-          {[0, 1].map((i) => (
-            <div key={i} className="hl-skel-card">
-              <div className="hl-skel-dot" />
-              <div className="hl-skel-lines">
-                <div className="hl-skel-line" style={{ width: '64%' }} />
-                <div className="hl-skel-line hl-skel-line--dim" style={{ width: '42%' }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    case 'tiles':
-      return (
-        <div className="hl-skel-row">
-          <div className="hl-skel-ring" />
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="hl-skel-tile">
-              <div className="hl-skel-line" style={{ width: '46%' }} />
-              <div className="hl-skel-line hl-skel-line--dim" style={{ width: '70%' }} />
-            </div>
-          ))}
-        </div>
-      );
-  }
-};
-
-interface CanvasSectionProps {
-  id: string;
-  hidden: boolean;
-  onToggle: () => void;
-  expandable: ExpandableConfig | null;
-}
-
-const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps) => {
-  const { currentTheme } = useTheme();
-  const chipDragRef = useRef(false);
-  // Drag nur am Griff — sonst frisst framer-motion auf Touch jede Berührung und blockiert das Scrollen
-  const dragControls = useDragControls();
-
-  return (
-    <Reorder.Item
-      value={id}
-      className={`hl-cv-section ${hidden ? 'hl-cv-section--off' : ''}`}
-      dragListener={false}
-      dragControls={dragControls}
-      whileDrag={{
-        scale: 1.02,
-        boxShadow: `0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px ${currentTheme.primary}40`,
-        zIndex: 10,
-      }}
-      layout
-    >
-      <div className="hl-cv-head">
-        <span
-          className="hl-grip"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            dragControls.start(e);
-          }}
-          aria-hidden
-        >
-          <DragIndicator className="hl-cv-drag" style={{ color: currentTheme.text.muted }} />
-        </span>
-        <span
-          className="hl-cv-label"
-          style={{ color: hidden ? currentTheme.text.muted : currentTheme.text.secondary }}
-        >
-          {SECTION_LABELS[id] || id}
-        </span>
-        <motion.button
-          whileTap={tapScaleTight}
-          className="hl-cv-eye"
-          onClick={onToggle}
-          aria-label={
-            hidden
-              ? t('{name} einblenden', { name: SECTION_LABELS[id] })
-              : t('{name} ausblenden', { name: SECTION_LABELS[id] })
-          }
-          style={{ color: hidden ? currentTheme.text.muted : currentTheme.primary }}
-        >
-          {hidden ? <VisibilityOff /> : <Visibility />}
-        </motion.button>
-      </div>
-
-      {!hidden && !expandable && <SkeletonShapeBlock shape={SECTION_SHAPES[id] || 'cards'} />}
-
-      {!hidden && expandable && (
-        <Reorder.Group
-          axis="x"
-          values={expandable.order}
-          onReorder={expandable.onReorder}
-          className="hl-cv-chips hide-scrollbar"
-        >
-          {expandable.order.map((sub) => {
-            const off = expandable.hiddenItems.includes(sub);
-            return (
-              <Reorder.Item
-                key={sub}
-                value={sub}
-                className={`hl-cv-chip ${off ? 'hl-cv-chip--off' : ''}`}
-                onDragStart={() => {
-                  chipDragRef.current = true;
-                }}
-                onDragEnd={() => {
-                  setTimeout(() => {
-                    chipDragRef.current = false;
-                  }, 0);
-                }}
-                onClick={() => {
-                  if (!chipDragRef.current) expandable.onToggle(sub);
-                }}
-                style={{
-                  color: off ? currentTheme.text.muted : currentTheme.text.secondary,
-                  touchAction: 'none',
-                }}
-              >
-                {expandable.labels[sub] || sub}
-              </Reorder.Item>
-            );
-          })}
-        </Reorder.Group>
-      )}
-    </Reorder.Item>
-  );
 };
 
 export const HomeLayoutPage = () => {
@@ -325,9 +145,11 @@ export const HomeLayoutPage = () => {
                 className="hl-canvas-list hide-scrollbar"
               >
                 {sectionOrder.map((id) => (
-                  <CanvasSection
+                  <LayoutCanvasSection
                     key={id}
                     id={id}
+                    label={SECTION_LABELS[id] || id}
+                    shape={SECTION_SHAPES[id] || 'cards'}
                     hidden={hiddenSections.includes(id)}
                     onToggle={() => handleSectionToggle(id)}
                     expandable={getExpandableConfig(id)}

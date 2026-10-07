@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { PageHeader, PageLayout } from '../../components/ui';
+import { LoadingSpinner, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { logChapterRead, logMangaRating } from '../../services/discussion/readActivityService';
 import type { Manga } from '../../types/Manga';
-import '../SeriesDetail/SeriesDetailPage.css';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
 import { MangaDetailHero } from './detail/MangaDetailHero';
 import { MangaDetailPreview } from './detail/MangaDetailPreview';
+import { buildHeroData } from './detail/mangaDetailData';
 import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount, shouldAutoComplete } from './mangaUtils';
@@ -23,11 +23,20 @@ export const MangaDetailPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { isMobile } = useDeviceType();
-  const { mangaList, toggleHideManga } = useMangaList();
+  const { mangaList, hiddenMangaList, toggleHideManga } = useMangaList();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const anilistId = Number(id);
-  const manga = mangaList.find((m) => m.anilistId === anilistId);
+  // Versteckte Manga gehören weiter zur Sammlung — sonst landet man auf der Vorschau.
+  const manga =
+    mangaList.find((m) => m.anilistId === anilistId) ||
+    hiddenMangaList.find((m) => m.anilistId === anilistId);
+  const ownedIds = useMemo(
+    () => new Set([...mangaList, ...hiddenMangaList].map((m) => m.anilistId)),
+    [mangaList, hiddenMangaList]
+  );
+  const [adding, setAdding] = useState(false);
 
   const [editChapter, setEditChapter] = useState(manga?.currentChapter || 0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -121,6 +130,33 @@ export const MangaDetailPage = () => {
     [user, manga, anilistId]
   );
 
+  const handleReread = useCallback(async () => {
+    if (!user || !manga) return;
+    const now = new Date().toISOString();
+    await dbRef(paths.mangaItem(user.uid, anilistId)).update({
+      readStatus: 'reading',
+      currentChapter: 0,
+      rereadCount: (manga.rereadCount || 0) + 1,
+      startedAt: now,
+      lastReadAt: now,
+      completedAt: null,
+    });
+  }, [user, manga, anilistId]);
+
+  const scrollToRating = useCallback(() => {
+    document
+      .getElementById('manga-rating')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
+
+  // Einstieg aus „Noch nicht bewertet" springt direkt zu den Sternen.
+  const hasManga = !!manga;
+  useEffect(() => {
+    if (location.hash !== '#rating' || !hasManga) return;
+    const timer = setTimeout(scrollToRating, 450);
+    return () => clearTimeout(timer);
+  }, [location.hash, hasManga, scrollToRating]);
+
   const handleRating = useCallback(
     async (rating: number) => {
       if (!user || !manga) return;
@@ -202,13 +238,17 @@ export const MangaDetailPage = () => {
     navigate('/manga');
   }, [user, anilistId, navigate]);
 
-  // Not in user's list yet → AniList preview with Add button
+  const heroData = useMemo(
+    () => buildHeroData(anilistId, manga, anilistData),
+    [anilistId, manga, anilistData]
+  );
+
+  // Noch nicht in der Sammlung → AniList-Vorschau mit Hinzufügen-Knopf
   if (!manga) {
     if (!anilistData) {
       return (
         <PageLayout>
-          <PageHeader title="Manga" />
-          <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>{t('Laden...')}</div>
+          <LoadingSpinner text={t('Laden...')} />
         </PageLayout>
       );
     }
@@ -216,20 +256,26 @@ export const MangaDetailPage = () => {
     return (
       <MangaDetailPreview
         anilistData={anilistData}
+        heroData={heroData}
         currentTheme={currentTheme}
-        anilistId={anilistId}
+        isMobile={isMobile}
+        ownedIds={ownedIds}
+        adding={adding}
         onAdd={async () => {
-          if (!user) return;
-          const nextNmr = mangaList.length > 0 ? Math.max(...mangaList.map((m) => m.nmr)) + 1 : 1;
-          await addMangaToList(user.uid, anilistData, nextNmr);
+          if (!user || adding) return;
+          setAdding(true);
+          const all = [...mangaList, ...hiddenMangaList];
+          const nextNmr = all.length > 0 ? Math.max(...all.map((m) => m.nmr)) + 1 : 1;
+          try {
+            await addMangaToList(user.uid, anilistData, nextNmr);
+          } finally {
+            setAdding(false);
+          }
         }}
       />
     );
   }
 
-  const displayData = anilistData;
-  const description = displayData?.description || manga.description || '';
-  const cleanDescription = description.replace(/<[^>]*>/g, '');
   const userRating = user ? manga.rating?.[user.uid] || 0 : 0;
 
   // Effective total chapters: MAX aus allen Quellen. AniList's chapters ist
@@ -248,28 +294,32 @@ export const MangaDetailPage = () => {
       ? Math.min((editChapter / effectiveChapters) * 100, 100)
       : 0;
 
-  const staff = displayData?.staff?.edges || [];
-
   return (
     <PageLayout>
       <MangaDetailHero
-        manga={manga}
+        data={heroData}
         currentTheme={currentTheme}
         isMobile={isMobile}
-        editChapter={editChapter}
-        effectiveChapters={effectiveChapters || null}
-        progress={progress}
-        staff={staff}
-        onChapterChange={handleChapterChange}
+        owned={{
+          manga,
+          editChapter,
+          effectiveChapters: effectiveChapters || null,
+          progress,
+          userRating,
+          nextChapterDate: chapterInfo?.estimatedNextDate ?? null,
+          onChapterChange: handleChapterChange,
+          onRate: scrollToRating,
+        }}
       />
 
       <MangaDetailBody
         manga={manga}
-        anilistId={anilistId}
+        heroData={heroData}
         currentTheme={currentTheme}
+        isMobile={isMobile}
         chapterInfo={chapterInfo}
-        displayData={displayData}
-        cleanDescription={cleanDescription}
+        displayData={anilistData}
+        ownedIds={ownedIds}
         userRating={userRating}
         notesValue={notesValue}
         notesStatus={notesStatus}
@@ -286,6 +336,7 @@ export const MangaDetailPage = () => {
         onNotesChange={handleNotesChange}
         onNotesFocus={handleNotesFocus}
         onNotesBlur={handleNotesBlur}
+        onReread={handleReread}
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
         onDelete={handleDelete}
       />

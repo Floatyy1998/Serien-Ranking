@@ -1,7 +1,10 @@
 import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogMovies,
+  fetchStaticCatalogSeasonsBulk,
 } from '../../services/catalog/staticCatalog';
+import { mergeToSeriesView } from '../../lib/series/seriesAdapter';
+import type { CatalogSeries, SeriesWatchData, UserSeriesRef } from '../../types/CatalogTypes';
 import { dbRef, dbGet, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -246,7 +249,7 @@ const applyFiltersAndSort = (
   return sortItems(filtered, sortBy);
 };
 
-export type FriendProfileTab = 'series' | 'movies' | 'lists';
+export type FriendProfileTab = 'series' | 'movies' | 'manga' | 'lists';
 
 export interface UseFriendProfileDataReturn {
   loading: boolean;
@@ -285,7 +288,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   // Component-State fiele dabei auf "Serien, ungefiltert, ganz oben" zurück.
   const [activeTab, setActiveTab] = useState<FriendProfileTab>(() => {
     const tab = searchParams.get('tab');
-    return tab === 'movies' || tab === 'lists' ? tab : 'series';
+    return tab === 'movies' || tab === 'manga' || tab === 'lists' ? tab : 'series';
   });
   const [openFolderId, setOpenFolderId] = useState<string | null>(() =>
     searchParams.get('tab') === 'lists' ? searchParams.get('list') : null
@@ -331,13 +334,26 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
 
         // Catalog wird aus statischen Server-Files geladen (kein Firebase-Egress),
         // mit Firebase-Fallback falls Static-Endpoint nicht erreichbar ist.
-        const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
-          await Promise.all([
-            dbRef(paths.series(friendId)).once('value'),
-            dbRef(paths.movies(friendId)).once('value'),
-            fetchStaticCatalogSeries(),
-            fetchStaticCatalogMovies(),
-          ]);
+        // Folgenstand fuer Ring + „S2 · E5" — fuer Nicht-Freunde (oeffentliches
+        // Profil) ist seriesWatch gesperrt, dann bleiben die Karten ohne Ring.
+        const [
+          seriesSnapshot,
+          moviesSnapshot,
+          staticSeriesCatalog,
+          staticMoviesCatalog,
+          watchData,
+          seasonsBulk,
+        ] = await Promise.all([
+          dbRef(paths.series(friendId)).once('value'),
+          dbRef(paths.movies(friendId)).once('value'),
+          fetchStaticCatalogSeries(),
+          fetchStaticCatalogMovies(),
+          dbRef(paths.seriesWatch(friendId))
+            .once('value')
+            .then((snap) => (snap.val() || {}) as Record<string, SeriesWatchData>)
+            .catch(() => ({}) as Record<string, SeriesWatchData>),
+          fetchStaticCatalogSeasonsBulk().catch(() => null),
+        ]);
 
         const seriesData = seriesSnapshot.val() || {};
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
@@ -349,6 +365,17 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         for (const [tmdbId, userRef] of Object.entries(seriesData)) {
           const ref = userRef as Record<string, unknown>;
           const catalog = catalogSeries[tmdbId] as Record<string, unknown> | undefined;
+          const catalogSeasons = seasonsBulk?.[tmdbId];
+          const watch = watchData[tmdbId];
+          const seasons =
+            catalog && catalogSeasons && watch
+              ? (mergeToSeriesView(
+                  parseInt(tmdbId),
+                  { ...(catalog as unknown as CatalogSeries), seasons: catalogSeasons },
+                  ref as unknown as UserSeriesRef,
+                  watch
+                ).seasons as unknown as FriendSeason[])
+              : [];
           seriesList.push({
             id: parseInt(tmdbId),
             title: (catalog?.title as string) || 'Unknown',
@@ -357,7 +384,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
             genre: catalog?.genres ? { genres: catalog.genres as string[] } : undefined,
             genres: (catalog?.genres as string[]) || [],
             provider: catalog?.providers ? { provider: catalog.providers as unknown[] } : undefined,
-            seasons: [],
+            seasons,
             status: catalog?.status as string | undefined,
             production:
               catalog?.production != null

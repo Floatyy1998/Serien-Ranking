@@ -5,21 +5,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AniListMangaSearchResult } from '../../../types/Manga';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { MangaDetailPreview } from './MangaDetailPreview';
+import { buildHeroData } from './mangaDetailData';
+
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 
 vi.mock('../../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  PageHeader: ({ title, subtitle }: { title?: ReactNode; subtitle?: ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      <span>{subtitle}</span>
-    </div>
-  ),
+  BackButton: () => <button type="button">back</button>,
 }));
 
 const theme = {
   primary: '#00d123',
   accent: '#00b0ff',
-  text: { primary: '#fff', secondary: '#aaa' },
+  text: { primary: '#fff', secondary: '#aaa', muted: '#777' },
 } as unknown as ThemeContextType['currentTheme'];
 
 function makeAniList(overrides: Partial<AniListMangaSearchResult> = {}): AniListMangaSearchResult {
@@ -49,15 +47,19 @@ describe('MangaDetailPreview', () => {
     render(
       <MangaDetailPreview
         anilistData={makeAniList()}
+        heroData={buildHeroData(123, undefined, makeAniList())}
         currentTheme={theme}
+        isMobile
+        ownedIds={new Set()}
+        adding={false}
         onAdd={vi.fn()}
-        anilistId={123}
       />
     );
     expect(screen.getByRole('heading', { name: 'Berserk EN' })).toBeInTheDocument();
     // HTML aus der Beschreibung wird herausgefiltert
     expect(screen.getByText('Ein dunkles Fantasy-Epos.')).toBeInTheDocument();
-    expect(screen.getByText('364 Kapitel')).toBeInTheDocument();
+    expect(screen.getByText(/364 Kapitel/)).toBeInTheDocument();
+    expect(screen.getByText('Erschienen ab')).toBeInTheDocument();
   });
 
   it('ruft onAdd beim Klick auf den Hinzufügen-Button auf', () => {
@@ -65,9 +67,12 @@ describe('MangaDetailPreview', () => {
     render(
       <MangaDetailPreview
         anilistData={makeAniList()}
+        heroData={buildHeroData(123, undefined, makeAniList())}
         currentTheme={theme}
+        isMobile
+        ownedIds={new Set()}
+        adding={false}
         onAdd={onAdd}
-        anilistId={123}
       />
     );
     fireEvent.click(screen.getByText('Zur Sammlung hinzufügen'));
@@ -78,9 +83,12 @@ describe('MangaDetailPreview', () => {
     render(
       <MangaDetailPreview
         anilistData={makeAniList()}
+        heroData={buildHeroData(123, undefined, makeAniList())}
         currentTheme={theme}
+        isMobile
+        ownedIds={new Set()}
+        adding={false}
         onAdd={vi.fn()}
-        anilistId={123}
       />
     );
     expect(screen.getByText('Action')).toBeInTheDocument();

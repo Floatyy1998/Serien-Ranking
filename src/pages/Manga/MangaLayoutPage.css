@@ -1,0 +1,46 @@
+.ml-legend {
+  list-style: none;
+  margin: 4px 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ml-legend-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+.ml-legend-row--off {
+  opacity: 0.4;
+}
+
+.ml-legend-name {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ml-legend-hint {
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.mobile-app .ml-legend-cta,
+.ml-legend-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-primary-30, rgba(255, 255, 255, 0.12));
+  background: var(--theme-primary-08, rgba(255, 255, 255, 0.04));
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}

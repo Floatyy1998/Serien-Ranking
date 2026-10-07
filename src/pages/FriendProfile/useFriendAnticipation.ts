@@ -12,7 +12,7 @@ import type { CatalogSeason, CatalogSeries } from '../../types/CatalogTypes';
 // No hard horizon — we want the SOONEST upcoming episodes regardless of how
 // far out they are. Sorted by air date ascending, the top MAX_RESULTS are
 // shown. If everything is years away, the user still gets a useful answer.
-const MAX_RESULTS = 6;
+const MAX_RESULTS = 5;
 
 export interface FriendAnticipationItem {
   seriesId: number;

@@ -1,5 +1,5 @@
 import type { useTheme } from '../../contexts/ThemeContext';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 
 /** Theme type alias to avoid `typeof import()` in component props */
 export type AppTheme = ReturnType<typeof useTheme>['currentTheme'];
@@ -195,4 +195,20 @@ export function shouldReopenCompleted(
   if (manga.readStatus !== 'completed' || current <= 0) return false;
   if (newTotal <= current) return false;
   return previousTotal <= current || wasAutoCompleted(manga);
+}
+
+/** Kurze relative Tagesangabe („heute", „vor 3 Tagen"); ältere Daten als Datum. */
+export function formatRelativeDay(iso: string, now = Date.now()): string {
+  const then = new Date(iso);
+  if (!Number.isFinite(then.getTime())) return '';
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOf(new Date(now)) - startOf(then)) / 86400000);
+  if (days <= 0) return t('heute');
+  if (days === 1) return t('gestern');
+  if (days < 7) return t('vor {n} Tagen', { n: days });
+  if (days < 35) {
+    const weeks = Math.round(days / 7);
+    return weeks === 1 ? t('vor einer Woche') : t('vor {n} Wochen', { n: weeks });
+  }
+  return then.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 }

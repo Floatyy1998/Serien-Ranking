@@ -7,7 +7,7 @@ import { MangaSearchPage } from './MangaSearchPage';
 
 const listState = vi.hoisted(() => ({ list: [] as Manga[] }));
 vi.mock('../../contexts/MangaListContext', () => ({
-  useMangaList: () => ({ mangaList: listState.list }),
+  useMangaList: () => ({ mangaList: listState.list, hiddenMangaList: [] }),
 }));
 
 vi.mock('../../contexts/ThemeContext', () => ({
@@ -16,7 +16,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
       primary: '#00d123',
       accent: '#00b0ff',
       background: { default: '#000' },
-      text: { primary: '#fff', secondary: '#aaa' },
+      text: { primary: '#fff', secondary: '#aaa', muted: '#777' },
     },
   }),
 }));
@@ -35,6 +35,21 @@ vi.mock('./addMangaToList', () => ({ addMangaToList }));
 
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
+
+function makeOwned(overrides: Partial<Manga> = {}): Manga {
+  return {
+    nmr: 1,
+    anilistId: 1,
+    title: 'Naruto EN',
+    titleRomaji: 'Naruto',
+    poster: 'p.jpg',
+    rating: {},
+    currentChapter: 120,
+    chapters: 700,
+    readStatus: 'reading',
+    ...overrides,
+  };
+}
 
 function makeResult(overrides: Partial<AniListMangaSearchResult> = {}): AniListMangaSearchResult {
   return {
@@ -110,5 +125,32 @@ describe('MangaSearchPage', () => {
     render(<MangaSearchPage />);
     expect(screen.getByText('Manhwa')).toBeInTheDocument();
     expect(screen.getByText('Manhua')).toBeInTheDocument();
+  });
+
+  it('zeigt eigene Manga sofort als Sammlungstreffer, ohne Hinzufügen-Knopf', async () => {
+    listState.list = [makeOwned()];
+    render(<MangaSearchPage />);
+    fireEvent.change(screen.getByPlaceholderText('Manga, Manhwa, Manhua suchen...'), {
+      target: { value: 'naru' },
+    });
+    expect(screen.getByText('In deiner Sammlung')).toBeInTheDocument();
+    expect(screen.getByText('Kap. 120 / 700')).toBeInTheDocument();
+    await waitFor(() => expect(searchMangaWithTitleFallback).toHaveBeenCalled(), {
+      timeout: 2000,
+    });
+    expect(screen.queryByLabelText('Naruto EN zur Sammlung hinzufügen')).not.toBeInTheDocument();
+  });
+
+  it('markiert eigene Manga unter den AniList-Treffern statt sie auszublenden', async () => {
+    listState.list = [makeOwned({ title: 'Ganz anders', titleRomaji: 'X', readStatus: 'paused' })];
+    render(<MangaSearchPage />);
+    fireEvent.change(screen.getByPlaceholderText('Manga, Manhwa, Manhua suchen...'), {
+      target: { value: 'Naruto' },
+    });
+    await waitFor(() => expect(screen.getByText('Naruto EN')).toBeInTheDocument(), {
+      timeout: 2000,
+    });
+    expect(screen.getByText('Pausiert')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Naruto EN zur Sammlung hinzufügen')).not.toBeInTheDocument();
   });
 });

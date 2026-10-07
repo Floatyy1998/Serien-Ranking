@@ -1,4 +1,4 @@
-import { ChevronRight, Movie, Timer, Tv } from '@mui/icons-material';
+import { AutoStories, ChevronRight, Movie, Timer, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,8 @@ interface Props {
   own: ComparisonTotals;
   friend: ComparisonTotals | null;
   loading: boolean;
+  /** Gelesene Manga-Kapitel beider Seiten — nur gesetzt, wenn einer von beiden Manga hat. */
+  mangaChapters?: { own: number; friend: number };
 }
 
 interface Row {
@@ -37,6 +39,7 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
   own,
   friend,
   loading,
+  mangaChapters,
 }: Props) {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -70,8 +73,20 @@ export const FriendComparisonCard = memo(function FriendComparisonCard({
         friend: friend.movies,
         format: (value) => String(value),
       },
+      ...(mangaChapters
+        ? [
+            {
+              key: 'manga',
+              label: t('Manga-Kapitel'),
+              icon: <AutoStories sx={{ fontSize: 14 }} />,
+              own: mangaChapters.own,
+              friend: mangaChapters.friend,
+              format: (value: number) => value.toLocaleString(),
+            },
+          ]
+        : []),
     ];
-  }, [own, friend]);
+  }, [own, friend, mangaChapters]);
 
   if (loading || !friend) {
     return (

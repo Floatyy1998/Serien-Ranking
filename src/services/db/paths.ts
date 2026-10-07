@@ -54,6 +54,7 @@ export const paths = {
   theme: (uid: string) => `${user(uid)}/theme`,
   homeConfig: (uid: string) => `${user(uid)}/homeConfig`,
   navConfig: (uid: string) => `${user(uid)}/navConfig`,
+  mangaLayout: (uid: string) => `${user(uid)}/mangaLayout`,
 
   // Detection-Notification-States (Dismiss-Tabellen)
   notificationState: (uid: string, node: string) => `${user(uid)}/${node}`,

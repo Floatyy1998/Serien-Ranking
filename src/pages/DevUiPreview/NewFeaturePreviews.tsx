@@ -307,6 +307,7 @@ export const FriendAddCardPreview = () => {
             isMovie={false}
             rating={9.1}
             progress={64}
+            statusText="S2 · E5"
             providers={[provider('Netflix')]}
             year="2017"
             genres="Mystery"
@@ -319,6 +320,7 @@ export const FriendAddCardPreview = () => {
             posterUrl={POSTER}
             isMovie={false}
             rating={8.7}
+            progress={100}
             providers={[provider('Apple TV Plus'), provider('Netflix')]}
             year="2022"
             genres="Drama"
@@ -332,6 +334,7 @@ export const FriendAddCardPreview = () => {
             posterUrl={POSTER}
             isMovie
             rating={9.4}
+            watched
             providers={[]}
             year="2001"
             genres="Fantasy"
@@ -345,6 +348,9 @@ export const FriendAddCardPreview = () => {
             posterUrl={POSTER}
             isMovie={false}
             rating={7.2}
+            progress={18}
+            statusText="Kap. 23 / 125"
+            mediaType="none"
             providers={[provider('Disney Plus')]}
             year="2019"
             genres="Action"

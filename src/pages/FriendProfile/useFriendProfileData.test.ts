@@ -30,6 +30,7 @@ const routing = vi.hoisted(() => {
 const catalog = vi.hoisted(() => ({
   series: null as Record<string, unknown> | null,
   movies: null as Record<string, unknown> | null,
+  seasons: null as Record<string, unknown> | null,
 }));
 
 vi.mock('firebase/compat/app', () => ({
@@ -44,6 +45,7 @@ vi.mock('react-router-dom', () => ({
 vi.mock('../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeries: () => Promise.resolve(catalog.series),
   fetchStaticCatalogMovies: () => Promise.resolve(catalog.movies),
+  fetchStaticCatalogSeasonsBulk: () => Promise.resolve(catalog.seasons),
 }));
 
 import { useFriendProfileData } from './useFriendProfileData';
@@ -56,6 +58,7 @@ beforeEach(() => {
   routing.setSearchParams.mockClear();
   catalog.series = {};
   catalog.movies = {};
+  catalog.seasons = null;
 });
 
 afterEach(() => {
@@ -64,6 +67,33 @@ afterEach(() => {
 });
 
 describe('useFriendProfileData', () => {
+  it('setzt die Staffeln aus Katalog und Folgenstand des Freundes zusammen', async () => {
+    routing.params = { id: 'u1' };
+    fb.state.dataByPath['users/u1/displayName'] = 'Alice';
+    fb.state.dataByPath['users/u1/series'] = { '10': { rating: { Action: 8 }, addedAt: 1 } };
+    fb.state.dataByPath['users/u1/seriesWatch'] = {
+      '10': { seasons: { '0': { eps: { '101': { w: 1 }, '102': { w: 1 } } } } },
+    };
+    catalog.series = { '10': { title: 'Dark', poster: '/p.jpg', genres: [] } };
+    catalog.seasons = {
+      '10': {
+        '0': {
+          seasonNumber: 0,
+          episodes: [
+            { id: 101, name: 'A', airDate: '2020-01-01' },
+            { id: 102, name: 'B', airDate: '2020-01-02' },
+            { id: 103, name: 'C', airDate: '2020-01-03' },
+            { id: 104, name: 'D', airDate: '2020-01-04' },
+          ],
+        },
+      },
+    };
+    const { result } = renderHook(() => useFriendProfileData());
+    await waitFor(() => expect(result.current.allSeries).toHaveLength(1));
+    const watched = result.current.allSeries[0].seasons?.[0].episodes?.filter((e) => e.watched);
+    expect(watched).toHaveLength(2);
+  });
+
   it('lädt ohne friendId keine Daten (Guard bleibt im Loading)', () => {
     const { result } = renderHook(() => useFriendProfileData());
     expect(result.current.friendId).toBeUndefined();

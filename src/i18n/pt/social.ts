@@ -313,6 +313,10 @@ const dict: Record<string, string> = {
   'Hat dich angefragt': 'Enviou um pedido',
   'Lädt …': 'Carregando …',
   '{name} hat dir eine Freundschaftsanfrage geschickt': '{name} enviou-te um pedido de amizade',
+  'Was {name} gerade liest': 'O que {name} está lendo',
+  'Manga durchsuchen...': 'Buscar mangá...',
+  'Nichts in {name}s Manga passt zu deiner Suche.':
+    'Nenhum mangá de {name} corresponde à sua busca.',
 };
 
 export default dict;

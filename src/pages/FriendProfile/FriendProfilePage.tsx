@@ -1,5 +1,6 @@
 import {
   ArrowBack,
+  AutoStories,
   ChatBubbleOutlined,
   PersonAddRounded,
   ListAlt,
@@ -14,6 +15,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMangaList } from '../../contexts/MangaListContext';
+import {
+  mangaProgressPercent,
+  mangaTotalChapters,
+  userMangaRating,
+} from '../../lib/manga/overview';
+import { getMangaById } from '../../services/api/anilistService';
+import { addMangaToList } from '../Manga/addMangaToList';
+import { furthestWatchedPosition } from '../../lib/series/watchPosition';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { dbGet, userPath } from '../../services/db/ref';
@@ -53,6 +63,8 @@ import { IncomingRequestActions } from './IncomingRequestActions';
 import { FriendComparisonCard } from './FriendComparisonCard';
 import { useFriendComparison } from './useFriendComparison';
 import { useFriendFolders } from './useFriendFolders';
+import { useFriendManga } from './useFriendManga';
+import { FriendReadingSection } from './FriendReadingSection';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
 import { folderItemKey } from '../../lib/rating/ratingFolders';
@@ -197,6 +209,49 @@ export const FriendProfilePage = memo(() => {
   const comparison = useFriendComparison(restricted && !publicViewer ? undefined : friendId);
   const friendFolders = useFriendFolders(restricted || !darfSehen ? undefined : friendId);
   const folders = friendFolders.folders;
+  const friendManga = useFriendManga(restricted || !darfSehen ? undefined : friendId);
+  const { mangaList: ownManga, hiddenMangaList: ownHiddenManga } = useMangaList();
+  const ownMangaIds = useMemo(
+    () => new Set([...ownManga, ...ownHiddenManga].map((m) => m.anilistId)),
+    [ownManga, ownHiddenManga]
+  );
+  const [addingMangaId, setAddingMangaId] = useState<number | null>(null);
+  const addMangaFromFriend = async (anilistId: number) => {
+    if (!user || addingMangaId !== null) return;
+    setAddingMangaId(anilistId);
+    try {
+      const data = await getMangaById(anilistId);
+      const all = [...ownManga, ...ownHiddenManga];
+      const nextNmr = all.length > 0 ? Math.max(...all.map((m) => m.nmr)) + 1 : 1;
+      await addMangaToList(user.uid, data, nextNmr);
+    } catch (error) {
+      console.warn('[friendProfile] Manga konnte nicht hinzugefügt werden', error);
+    } finally {
+      setAddingMangaId(null);
+    }
+  };
+  const mangaItems = useMemo(() => {
+    const query = (filters.search || '').trim().toLowerCase();
+    return friendManga.list
+      .filter(
+        (m) =>
+          !query ||
+          [m.title, m.titleEnglish, m.titleRomaji].some((v) => v?.toLowerCase().includes(query))
+      )
+      .sort(
+        (a, b) =>
+          userMangaRating(b, friendId) - userMangaRating(a, friendId) ||
+          new Date(b.lastReadAt || b.addedAt || 0).getTime() -
+            new Date(a.lastReadAt || a.addedAt || 0).getTime()
+      );
+  }, [friendManga.list, filters.search, friendId]);
+  const mangaChapters = useMemo(
+    () => ({
+      own: ownManga.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
+      friend: friendManga.list.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
+    }),
+    [ownManga, friendManga.list]
+  );
   const openFolder =
     activeTab === 'lists' ? (folders.find((f) => f.id === openFolderId) ?? null) : null;
 
@@ -247,6 +302,12 @@ export const FriendProfilePage = memo(() => {
       setActiveTab('series');
     }
   }, [activeTab, friendFolders.loading, folders.length, setActiveTab]);
+
+  useEffect(() => {
+    if (activeTab === 'manga' && !friendManga.loading && friendManga.list.length === 0) {
+      setActiveTab('series');
+    }
+  }, [activeTab, friendManga.loading, friendManga.list.length, setActiveTab]);
 
   const showFolderOverview = activeTab === 'lists' && !openFolder;
   const gridItems = activeTab === 'lists' ? folderItems : currentItems;
@@ -543,6 +604,11 @@ export const FriendProfilePage = memo(() => {
                         own={comparison.own}
                         friend={comparison.friend}
                         loading={comparison.loading}
+                        mangaChapters={
+                          friendManga.list.length > 0 || mangaChapters.own > 0
+                            ? mangaChapters
+                            : undefined
+                        }
                       />
                     </div>
                     {anticipation.items.length > 0 ? (
@@ -564,6 +630,11 @@ export const FriendProfilePage = memo(() => {
                         </div>
                       )
                     )}
+                    <FriendReadingSection
+                      friendName={friendName}
+                      manga={friendManga.list}
+                      ownIds={ownMangaIds}
+                    />
                   </div>
                 </motion.div>
               )}
@@ -576,12 +647,14 @@ export const FriendProfilePage = memo(() => {
           <SearchInput
             value={filters.search || ''}
             onChange={(v) => setFilters((prev) => ({ ...prev, search: v }))}
-            placeholder={t('Serien & Filme durchsuchen...')}
+            placeholder={
+              activeTab === 'manga' ? t('Manga durchsuchen...') : t('Serien & Filme durchsuchen...')
+            }
           />
         </div>
 
         {/* Quick Filter */}
-        {!showFolderOverview && (
+        {!showFolderOverview && activeTab !== 'manga' && (
           <QuickFilter
             onFilterChange={setFilters}
             isMovieMode={activeTab === 'movies'}
@@ -597,6 +670,9 @@ export const FriendProfilePage = memo(() => {
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: ratedSeries.length },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },
+            ...(friendManga.list.length > 0
+              ? [{ id: 'manga', label: 'Manga', icon: AutoStories, count: friendManga.list.length }]
+              : []),
             ...(folders.length > 0
               ? [{ id: 'lists', label: t('Listen'), icon: ListAlt, count: folders.length }]
               : []),
@@ -637,7 +713,64 @@ export const FriendProfilePage = memo(() => {
             </div>
           )}
           <AnimatePresence mode="wait">
-            {showFolderOverview ? (
+            {activeTab === 'manga' ? (
+              mangaItems.length === 0 ? (
+                <motion.div
+                  key="manga-empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <EmptyState
+                    icon={<AutoStories style={{ fontSize: '56px' }} />}
+                    title={t('Keine Manga gefunden')}
+                    description={t('Nichts in {name}s Manga passt zu deiner Suche.', {
+                      name: friendName,
+                    })}
+                    iconColor={currentTheme.text.muted}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="manga-grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fp-grid"
+                >
+                  {mangaItems.map((manga, index) => {
+                    const progress = mangaProgressPercent(manga);
+                    const total = mangaTotalChapters(manga);
+                    return (
+                      <ProfileItemCard
+                        key={manga.anilistId}
+                        mediaType="none"
+                        statusText={
+                          manga.currentChapter > 0
+                            ? total > 0
+                              ? t('Kap. {a} / {b}', { a: manga.currentChapter, b: total })
+                              : t('Kap. {n}', { n: manga.currentChapter })
+                            : undefined
+                        }
+                        title={manga.title}
+                        posterUrl={manga.poster}
+                        isMovie={false}
+                        rating={userMangaRating(manga, friendId)}
+                        progress={progress > 0 ? progress : undefined}
+                        providers={[]}
+                        genres={manga.genres?.slice(0, 2).join(', ') || undefined}
+                        index={index}
+                        currentTheme={currentTheme}
+                        onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                        inList={ownMangaIds.has(manga.anilistId)}
+                        adding={addingMangaId === manga.anilistId}
+                        onAdd={isSelf ? undefined : () => void addMangaFromFriend(manga.anilistId)}
+                      />
+                    );
+                  })}
+                </motion.div>
+              )
+            ) : showFolderOverview ? (
               <motion.div
                 key="folders"
                 initial={{ opacity: 0 }}
@@ -705,6 +838,10 @@ export const FriendProfilePage = memo(() => {
                     isMovie && item.release_date ? item.release_date.slice(0, 4) : undefined;
 
                   const addType = isMovie ? 'movie' : 'series';
+                  const position =
+                    !isMovie && progress > 0 && progress < 100
+                      ? furthestWatchedPosition(item.seasons)
+                      : null;
 
                   return (
                     <ProfileItemCard
@@ -715,6 +852,10 @@ export const FriendProfilePage = memo(() => {
                       isMovie={isMovie}
                       rating={isNaN(rating) ? 0 : rating}
                       progress={progress > 0 ? progress : undefined}
+                      watched={isMovie && !isNaN(rating) && rating > 0}
+                      statusText={
+                        position ? `S${position.season} · E${position.episode}` : undefined
+                      }
                       providers={providers}
                       year={year}
                       genres={genres}

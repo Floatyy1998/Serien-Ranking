@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { Manga } from '../../../types/Manga';
 import { MangaDetailBody } from './MangaDetailBody';
+import { buildHeroData } from './mangaDetailData';
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 
@@ -11,7 +12,8 @@ const theme = {
   primary: '#00d123',
   accent: '#00b0ff',
   secondary: '#888888',
-  text: { primary: '#ffffff', secondary: '#aaaaaa' },
+  text: { primary: '#ffffff', secondary: '#aaaaaa', muted: '#777777' },
+  status: { success: '#22c55e', error: '#ef4444' },
 } as unknown as ThemeContextType['currentTheme'];
 
 function makeManga(overrides: Partial<Manga> = {}): Manga {
@@ -36,11 +38,12 @@ type BodyProps = Parameters<typeof MangaDetailBody>[0];
 function baseProps(overrides: Partial<BodyProps> = {}): BodyProps {
   return {
     manga: makeManga(),
-    anilistId: 123,
+    heroData: buildHeroData(123, makeManga(), null),
     currentTheme: theme,
+    isMobile: false,
     chapterInfo: null,
     displayData: null,
-    cleanDescription: '',
+    ownedIds: new Set([123]),
     userRating: 0,
     notesValue: '',
     notesStatus: 'idle',
@@ -57,6 +60,7 @@ function baseProps(overrides: Partial<BodyProps> = {}): BodyProps {
     onNotesChange: vi.fn(),
     onNotesFocus: vi.fn(),
     onNotesBlur: vi.fn(),
+    onReread: vi.fn(),
     onToggleHide: vi.fn(),
     onDelete: vi.fn(),
     ...overrides,
@@ -68,8 +72,9 @@ afterEach(() => cleanup());
 describe('MangaDetailBody', () => {
   it('rendert Status-, Bewertungs- und Notizen-Abschnitte', () => {
     render(<MangaDetailBody {...baseProps()} />);
-    expect(screen.getByText('Status')).toBeInTheDocument();
-    expect(screen.getByText('Bewertung')).toBeInTheDocument();
+    expect(screen.getByText('Lesestatus')).toBeInTheDocument();
+    expect(screen.getByText('Deine Bewertung')).toBeInTheDocument();
+    expect(screen.getByText('Wo du liest')).toBeInTheDocument();
     expect(screen.getByText('Notizen')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Deine Notizen zu diesem Manga…')).toBeInTheDocument();
   });
@@ -91,7 +96,7 @@ describe('MangaDetailBody', () => {
   it('ruft onStatusChange beim Klick auf einen Status-Button auf', () => {
     const onStatusChange = vi.fn<(status: Manga['readStatus']) => void>();
     render(<MangaDetailBody {...baseProps({ onStatusChange })} />);
-    fireEvent.click(screen.getByText('Abgeschlossen'));
+    fireEvent.click(screen.getByRole('button', { name: 'Abgeschlossen' }));
     expect(onStatusChange).toHaveBeenCalledWith('completed');
   });
 
@@ -156,5 +161,30 @@ describe('MangaDetailBody', () => {
     );
     fireEvent.click(screen.getByText('Einblenden'));
     expect(onToggleHide).toHaveBeenCalledTimes(1);
+  });
+
+  it('bietet abgeschlossenen Manga das Wiederlesen mit Bestätigung an', () => {
+    const onReread = vi.fn();
+    render(
+      <MangaDetailBody
+        {...baseProps({
+          manga: makeManga({
+            readStatus: 'completed',
+            addedAt: '2026-01-01T00:00:00Z',
+            completedAt: '2026-03-01T00:00:00Z',
+          }),
+          onReread,
+        })}
+      />
+    );
+    fireEvent.click(screen.getByText('Nochmal lesen'));
+    expect(onReread).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Los geht’s'));
+    expect(onReread).toHaveBeenCalledTimes(1);
+  });
+
+  it('zeigt das Wort zur eigenen Bewertung', () => {
+    render(<MangaDetailBody {...baseProps({ userRating: 9 })} />);
+    expect(screen.getByText('9/10 · Großartig')).toBeInTheDocument();
   });
 });

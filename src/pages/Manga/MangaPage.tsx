@@ -1,53 +1,57 @@
-import {
-  AutoStories,
-  BarChart,
-  Explore,
-  History,
-  MenuBook,
-  Search,
-  Timeline,
-  TrendingUp,
-} from '@mui/icons-material';
+import { AutoAwesome, Tune } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SectionHeader } from '../../components/ui';
+import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { useAuth } from '../../contexts/AuthContext';
-import { GradientText, HeaderActions, NavEscapeButtons, SectionHeader } from '../../components/ui';
-import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
-import { NotificationSheet } from '../HomePage/sheets/NotificationSheet';
-import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
-import { useUnifiedNotifications } from '../HomePage/hooks/useUnifiedNotifications';
-import { ContinueReadingSection } from './sections/ContinueReadingSection';
-import { HiddenMangaCard } from './sections/HiddenMangaCard';
-import { MangaCatchUpCard } from './sections/MangaCatchUpCard';
-import { MangaStatsSection } from './sections/MangaStatsSection';
-import { MangaCarouselSection } from './sections/MangaCarouselSection';
+import { useMangaLayout } from '../../hooks/manga/useMangaLayout';
 import {
-  useMangaTrending,
   useMangaPopular,
   useMangaTopRated,
+  useMangaTrending,
 } from '../../hooks/manga/useMangaTrending';
-import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
-import type { Manga } from '../../types/Manga';
-import {
-  getEffectiveChapterCount,
-  STATUS_COLORS,
-  STATUS_LABELS,
-  type AppTheme,
-} from './mangaUtils';
-import './MangaPage.css';
-import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
+import { useUnifiedNotifications } from '../HomePage/hooks/useUnifiedNotifications';
+import { NotificationSheet } from '../HomePage/sheets/NotificationSheet';
+import './MangaPage.css';
+import './components/MangaCards.css';
+import { ContinueReadingSection } from './sections/ContinueReadingSection';
+import { GenrePicksSection } from './sections/GenrePicksSection';
+import { HiddenMangaCard } from './sections/HiddenMangaCard';
+import { MangaCarouselSection } from './sections/MangaCarouselSection';
+import { MangaCatchUpCard } from './sections/MangaCatchUpCard';
+import { MangaCollectionSection } from './sections/MangaCollectionSection';
+import { MangaDeck } from './sections/MangaDeck';
+import { MangaQuickActions } from './sections/MangaQuickActions';
+import { MangaRatingQueueCard } from './sections/MangaRatingQueueCard';
+import { MangaRereadCard } from './sections/MangaRereadCard';
+import { MangaStatsSection } from './sections/MangaStatsSection';
+import { NewChaptersSection } from './sections/NewChaptersSection';
+import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
+import { UpNextSection } from './sections/UpNextSection';
+
+// Kurze persönliche Reihen laufen auf breiten Screens nebeneinander statt vor leerer Fläche.
+const SHELF_SECTIONS = new Set(['new-chapters', 'recently-added', 'up-next']);
+
+const FOR_YOU_CARDS: Record<string, React.ReactNode> = {
+  'catch-up': <MangaCatchUpCard key="catch-up" />,
+  'rating-queue': <MangaRatingQueueCard key="rating-queue" />,
+  reread: <MangaRereadCard key="reread" />,
+  hidden: <HiddenMangaCard key="hidden" />,
+};
 
 export const MangaPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const { mangaList, loading } = useMangaList();
+  const { mangaList, hiddenMangaList } = useMangaList();
   const navigate = useNavigate();
+  const layout = useMangaLayout();
   const notifs = useUnifiedNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [caseOpeningDrop, setCaseOpeningDrop] = useState<{
@@ -61,332 +65,151 @@ export const MangaPage = () => {
     { ttl: 5 * 60 * 1000, useRealtimeListener: true }
   );
   const photoURL = useOwnPhotoURL(userData?.photoURL || user?.photoURL);
-  const collectionRef = useRef<HTMLDivElement>(null);
-  const [collectionFilter, setCollectionFilter] = useState('all');
+  const collectionRef = useRef<HTMLElement>(null);
 
   const trendingItems = useMangaTrending();
   const popularItems = useMangaPopular();
   const topRatedItems = useMangaTopRated();
-
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    mangaList.forEach((m) => {
-      counts[m.readStatus] = (counts[m.readStatus] || 0) + 1;
-    });
-    return counts;
-  }, [mangaList]);
-
-  const quickStats = useMemo(() => {
-    const totalChapters = mangaList.reduce((sum, m) => sum + m.currentChapter, 0);
-    const reading = mangaList.filter((m) => m.readStatus === 'reading').length;
-    const completed = mangaList.filter((m) => m.readStatus === 'completed').length;
-    return { totalChapters, reading, completed };
-  }, [mangaList]);
-
-  const handleGoToReadingList = useCallback(() => {
-    navigate('/manga/reading-list');
-  }, [navigate]);
-
-  const filtered = useMemo(
-    () =>
-      collectionFilter === 'all'
-        ? mangaList
-        : mangaList.filter((m) => m.readStatus === collectionFilter),
-    [mangaList, collectionFilter]
+  const ownedIds = useMemo(
+    () => new Set([...mangaList, ...hiddenMangaList].map((m) => m.anilistId)),
+    [mangaList, hiddenMangaList]
   );
 
-  return (
-    <div
-      style={{
-        overflowY: 'auto',
-        position: 'relative',
-        minHeight: 'var(--vh, 100vh)',
-        background: currentTheme.background.default,
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          background: `linear-gradient(180deg, ${currentTheme.primary}40 0%, ${currentTheme.primary}10 50%, transparent 100%)`,
-          padding: '20px',
-          paddingTop: 'calc(30px + env(safe-area-inset-top))',
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 250, damping: 22 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-        >
-          <NavEscapeButtons />
-          <div style={{ flex: 1 }}>
-            <GradientText
-              as="h1"
-              from={currentTheme.primary}
-              to={currentTheme.accent}
-              style={{
-                fontSize: '22px',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
-                letterSpacing: '-0.01em',
-                margin: '0 0 4px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              <AutoStories />
-              Manga
-            </GradientText>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '15px',
-                margin: 0,
-                opacity: 0.7,
-              }}
-            >
-              {mangaList.length > 0
-                ? t('{n} Titel in deiner Sammlung', { n: mangaList.length })
-                : t('Deine Manga-Sammlung')}
-            </p>
-          </div>
+  const scrollToCollection = useCallback(() => {
+    collectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
-          <HeaderActions
-            totalUnreadBadge={notifs.totalUnreadBadge}
-            onNotificationsOpen={() => setShowNotifications(true)}
-            photoURL={photoURL}
-            displayName={user?.displayName}
+  const hasManga = mangaList.length > 0;
+  const visibleSections = layout.sections.order.filter(
+    (id) => !layout.sections.hidden.includes(id)
+  );
+
+  const renderSection = (id: string) => {
+    switch (id) {
+      case 'quick-actions':
+        return hasManga ? (
+          <MangaQuickActions key={id} order={layout.quick.order} hidden={layout.quick.hidden} />
+        ) : null;
+      case 'continue-reading':
+        return (
+          <ContinueReadingSection
+            key={id}
+            onFilterReading={() => navigate('/manga/reading-list')}
           />
-        </motion.div>
-      </header>
+        );
+      case 'new-chapters':
+        return <NewChaptersSection key={id} />;
+      case 'recently-added':
+        return <RecentlyAddedMangaSection key={id} />;
+      case 'up-next':
+        return <UpNextSection key={id} />;
+      case 'genre-picks':
+        return hasManga ? <GenrePicksSection key={id} /> : null;
+      case 'trending':
+        return (
+          <MangaCarouselSection
+            key={id}
+            variant="trending"
+            items={trendingItems}
+            ownedIds={ownedIds}
+            title="Trending"
+            onSeeAll={() => navigate('/manga/discover')}
+            iconColor={currentTheme.primary}
+          />
+        );
+      case 'popular':
+        return (
+          <MangaCarouselSection
+            key={id}
+            variant="popular"
+            items={popularItems}
+            ownedIds={ownedIds}
+            title={t('Beliebt')}
+            onSeeAll={() => navigate('/manga/discover?category=popular')}
+            iconColor={currentTheme.status?.error || currentTheme.accent}
+          />
+        );
+      case 'top-rated':
+        return (
+          <MangaCarouselSection
+            key={id}
+            variant="top-rated"
+            items={topRatedItems}
+            ownedIds={ownedIds}
+            title={t('Top bewertet')}
+            onSeeAll={() => navigate('/manga/discover?category=top_rated')}
+            iconColor={currentTheme.accent}
+          />
+        );
+      case 'for-you': {
+        if (!hasManga && hiddenMangaList.length === 0) return null;
+        const cards = layout.forYou.order
+          .filter((card) => !layout.forYou.hidden.includes(card))
+          .map((card) => FOR_YOU_CARDS[card]);
+        if (cards.length === 0) return null;
+        return (
+          <section key={id} className="manga-section manga-for-you">
+            <SectionHeader
+              icon={<AutoAwesome />}
+              iconColor={currentTheme.status?.warning || currentTheme.accent}
+              title={t('Für dich')}
+            />
+            <div className="manga-for-you-grid">{cards}</div>
+          </section>
+        );
+      }
+      case 'stats':
+        return <MangaStatsSection key={id} />;
+      case 'collection':
+        return <MangaCollectionSection key={id} ref={collectionRef} />;
+      default:
+        return null;
+    }
+  };
 
-      {/* Search Bar */}
-      <div style={{ padding: '0 20px', marginBottom: 20 }}>
+  return (
+    <div className="manga-page" style={{ background: currentTheme.background.default }}>
+      <MangaDeck
+        photoURL={photoURL}
+        displayName={user?.displayName ?? undefined}
+        totalUnreadBadge={notifs.totalUnreadBadge}
+        onNotificationsOpen={() => setShowNotifications(true)}
+        onShowCollection={scrollToCollection}
+      />
+
+      {visibleSections.reduce<React.ReactNode[]>((nodes, id, index) => {
+        if (!SHELF_SECTIONS.has(id)) {
+          nodes.push(renderSection(id));
+        } else if (index === 0 || !SHELF_SECTIONS.has(visibleSections[index - 1])) {
+          const run: string[] = [];
+          for (
+            let i = index;
+            i < visibleSections.length && SHELF_SECTIONS.has(visibleSections[i]);
+            i++
+          ) {
+            run.push(visibleSections[i]);
+          }
+          nodes.push(
+            <div key={`shelves-${id}`} className="manga-shelves">
+              {run.map(renderSection)}
+            </div>
+          );
+        }
+        return nodes;
+      }, [])}
+
+      <div className="manga-page-footer">
         <motion.button
           type="button"
           whileTap={tapScaleSmall}
-          onClick={() => navigate('/manga/search')}
-          aria-label={t('Manga suchen')}
-          style={{
-            width: '100%',
-            maxWidth: 860,
-            display: 'flex',
-            textAlign: 'left',
-            background: currentTheme.background.surface,
-            border: '1px solid var(--glass-border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '14px 16px',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: 12,
-            cursor: 'pointer',
-            fontFamily: 'var(--font-body)',
-            backdropFilter: 'var(--blur-sm)',
-            WebkitBackdropFilter: 'var(--blur-sm)',
-          }}
+          className="manga-customize-btn"
+          onClick={() => navigate('/manga/layout')}
+          style={{ color: currentTheme.text.secondary }}
         >
-          <Search style={{ fontSize: 16, color: currentTheme.text.secondary, opacity: 0.5 }} />
-          <span style={{ color: currentTheme.text.secondary, fontSize: 14, opacity: 0.5 }}>
-            {t('Manga, Manhwa, Manhua suchen...')}
-          </span>
+          <Tune style={{ fontSize: 18, color: currentTheme.primary }} />
+          {t('Übersicht anpassen')}
         </motion.button>
       </div>
-
-      {/* Quick Actions Grid */}
-      {mangaList.length > 0 && (
-        <div className="manga-quick-grid">
-          <QuickTile
-            icon={<MenuBook style={{ fontSize: 16 }} />}
-            label={t('Leseliste')}
-            stat={t('{n} aktiv', { n: quickStats.reading })}
-            onClick={() => navigate('/manga/reading-list')}
-            theme={currentTheme}
-            accent={currentTheme.primary}
-          />
-          <QuickTile
-            icon={<Explore style={{ fontSize: 16 }} />}
-            label={t('Entdecken')}
-            onClick={() => navigate('/manga/discover')}
-            theme={currentTheme}
-            accent="#3b82f6"
-          />
-          <QuickTile
-            icon={<BarChart style={{ fontSize: 16 }} />}
-            label={t('Bewertungen')}
-            onClick={() => navigate('/manga/ratings')}
-            theme={currentTheme}
-            accent={currentTheme.accent}
-          />
-          <QuickTile
-            icon={<TrendingUp style={{ fontSize: 16 }} />}
-            label={t('Statistiken')}
-            stat={t('{n} Kap.', { n: quickStats.totalChapters })}
-            onClick={() => navigate('/manga/stats')}
-            theme={currentTheme}
-            accent={currentTheme.status?.warning || '#f59e0b'}
-          />
-          <QuickTile
-            icon={<Timeline style={{ fontSize: 16 }} />}
-            label={t('Journey')}
-            onClick={() => navigate('/manga/journey')}
-            theme={currentTheme}
-            accent={currentTheme.status?.error || '#ef4444'}
-          />
-          <QuickTile
-            icon={<History style={{ fontSize: 16 }} />}
-            label={t('Verlauf')}
-            onClick={() => navigate('/manga/recently-read')}
-            theme={currentTheme}
-            accent="rgba(255,255,255,0.5)"
-          />
-        </div>
-      )}
-
-      {/* Continue Reading */}
-      <ContinueReadingSection onFilterReading={handleGoToReadingList} />
-
-      {/* Recently Added */}
-      <RecentlyAddedMangaSection />
-
-      {/* Trending Carousel */}
-      <MangaCarouselSection
-        variant="trending"
-        items={trendingItems}
-        title="Trending"
-        onSeeAll={() => navigate('/manga/discover')}
-        iconColor={currentTheme.primary}
-      />
-
-      {/* Popular Carousel */}
-      <MangaCarouselSection
-        variant="popular"
-        items={popularItems}
-        title={t('Beliebt')}
-        onSeeAll={() => navigate('/manga/discover')}
-        iconColor={currentTheme.status?.error || '#ef4444'}
-      />
-
-      {/* Top Rated Carousel */}
-      <MangaCarouselSection
-        variant="top-rated"
-        items={topRatedItems}
-        title={t('Top bewertet')}
-        onSeeAll={() => navigate('/manga/discover')}
-        iconColor={currentTheme.accent}
-      />
-
-      {/* For-You Cards */}
-      {mangaList.length > 0 && (
-        <section style={{ marginBottom: 32 }}>
-          <SectionHeader
-            icon={<AutoStories />}
-            iconColor={currentTheme.status?.warning || '#f59e0b'}
-            title={t('Für dich')}
-          />
-          {/* wie Home „Für dich": auto-fill-Grid, die NavCard-Eigenmargins (20px)
-              dienen als Gutter — Karten bleiben bei wenigen Einträgen kompakt */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))',
-              gap: '10px 0',
-            }}
-          >
-            <MangaCatchUpCard />
-            <HiddenMangaCard />
-          </div>
-        </section>
-      )}
-
-      {/* Stats */}
-      <MangaStatsSection />
-
-      {/* Collection Grid */}
-      {loading ? (
-        <LoadingSpinner text={t('Sammlung wird geladen …')} />
-      ) : mangaList.length > 0 ? (
-        <section ref={collectionRef} style={{ marginBottom: 32 }}>
-          <SectionHeader
-            icon={<AutoStories />}
-            iconColor={currentTheme.accent}
-            title={t('Sammlung')}
-          />
-
-          {/* Filter Tabs */}
-          <div className="manga-filter-tabs" style={{ padding: '0 20px' }}>
-            <button
-              className={`manga-filter-tab ${collectionFilter === 'all' ? 'manga-filter-tab--active' : ''}`}
-              onClick={() => setCollectionFilter('all')}
-              style={
-                collectionFilter === 'all'
-                  ? { borderColor: currentTheme.primary, background: `${currentTheme.primary}20` }
-                  : {}
-              }
-            >
-              {t('Alle')} ({mangaList.length})
-            </button>
-            {Object.entries(STATUS_LABELS).map(
-              ([key, label]) =>
-                (statusCounts[key] || 0) > 0 && (
-                  <button
-                    key={key}
-                    className={`manga-filter-tab ${collectionFilter === key ? 'manga-filter-tab--active' : ''}`}
-                    onClick={() => setCollectionFilter(key)}
-                    style={
-                      collectionFilter === key
-                        ? { borderColor: STATUS_COLORS[key], background: `${STATUS_COLORS[key]}20` }
-                        : {}
-                    }
-                  >
-                    {label} ({statusCounts[key]})
-                  </button>
-                )
-            )}
-          </div>
-
-          {/* Grid */}
-          <div
-            className="manga-collection-grid"
-            style={{ padding: '0 20px', paddingBottom: 'var(--page-bottom-gap)' }}
-          >
-            {filtered.map((manga) => (
-              <MangaCard
-                key={manga.anilistId}
-                manga={manga}
-                onClick={() => navigate(`/manga/${manga.anilistId}`)}
-                userId={user?.uid}
-              />
-            ))}
-          </div>
-
-          {filtered.length === 0 && (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: 40,
-                fontSize: 14,
-                color: currentTheme.text.secondary,
-                opacity: 0.6,
-              }}
-            >
-              {t('Keine Manga mit Filter "{filter}"', {
-                filter: STATUS_LABELS[collectionFilter],
-              })}
-            </div>
-          )}
-        </section>
-      ) : (
-        <div className="manga-empty">
-          <div className="manga-empty-icon">📚</div>
-          <div className="manga-empty-title" style={{ color: currentTheme.text.primary }}>
-            {t('Deine Manga-Sammlung')}
-          </div>
-          <div className="manga-empty-text" style={{ color: currentTheme.text.secondary }}>
-            {t('Suche oben nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.')}
-          </div>
-        </div>
-      )}
 
       <NotificationSheet
         isOpen={showNotifications}
@@ -406,104 +229,6 @@ export const MangaPage = () => {
       />
 
       <CaseOpeningOverlay dropData={caseOpeningDrop} onClose={() => setCaseOpeningDrop(null)} />
-    </div>
-  );
-};
-
-// Quick Tile
-
-const QuickTile = ({
-  icon,
-  label,
-  stat,
-  onClick,
-  theme,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  stat?: string;
-  onClick: () => void;
-  theme: AppTheme;
-  accent: string;
-}) => (
-  <motion.button
-    whileTap={tapScale}
-    onClick={onClick}
-    className="manga-quick-tile"
-    style={{ color: theme.text.primary }}
-  >
-    <div style={{ color: accent, display: 'flex' }}>{icon}</div>
-    <span className="manga-quick-tile__label">{label}</span>
-    {stat && <span className="manga-quick-tile__stat">· {stat}</span>}
-  </motion.button>
-);
-
-// Manga Card
-
-const MangaCard = ({
-  manga,
-  onClick,
-  userId,
-}: {
-  manga: Manga;
-  onClick: () => void;
-  userId?: string;
-}) => {
-  const totalChapters = getEffectiveChapterCount(manga);
-  const progress =
-    totalChapters && totalChapters > 0
-      ? Math.min((manga.currentChapter / totalChapters) * 100, 100)
-      : 0;
-
-  const userRating = userId ? manga.rating?.[userId] || 0 : 0;
-
-  return (
-    <div
-      className="manga-collection-item"
-      role="button"
-      tabIndex={0}
-      aria-label={manga.title}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-    >
-      <div className="manga-collection-card">
-        <img
-          className="manga-collection-poster"
-          src={manga.poster}
-          alt={manga.title}
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="manga-collection-overlay">
-          {/* Top badges */}
-          <div className="manga-collection-top">
-            {manga.readStatus === 'completed' && (
-              <span
-                className="manga-collection-badge"
-                style={{ background: STATUS_COLORS.completed }}
-              >
-                ✓
-              </span>
-            )}
-            {userRating > 0 && <span className="manga-collection-rating">★ {userRating}</span>}
-          </div>
-          {/* Bottom info */}
-          <div className="manga-collection-bottom">
-            <div className="manga-collection-title">{manga.title}</div>
-            {progress > 0 && (
-              <div className="manga-collection-progress">
-                <div className="manga-collection-progress-fill" style={{ width: `${progress}%` }} />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

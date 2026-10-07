@@ -314,6 +314,10 @@ const dict: Record<string, string> = {
   'Lädt …': 'Cargando …',
   '{name} hat dir eine Freundschaftsanfrage geschickt':
     '{name} te ha enviado una solicitud de amistad',
+  'Was {name} gerade liest': 'Lo que {name} está leyendo',
+  'Manga durchsuchen...': 'Buscar manga...',
+  'Nichts in {name}s Manga passt zu deiner Suche.':
+    'Ningún manga de {name} coincide con tu búsqueda.',
 };
 
 export default dict;

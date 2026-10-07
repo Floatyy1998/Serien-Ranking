@@ -215,6 +215,12 @@ export const MangaReadJourneyPage = lazyWithRetry(() =>
   )
 );
 
+export const MangaLayoutPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "manga-layout" */ '../pages/Manga/MangaLayoutPage').then((m) => ({
+    default: m.MangaLayoutPage,
+  }))
+);
+
 export const MangaReadingListPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "manga-reading-list" */ '../pages/Manga/MangaReadingListPage').then(
     (m) => ({
@@ -299,6 +305,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/Manga/MangaReadJourneyPage'),
     () => import('../pages/Manga/MangaReadingListPage'),
     () => import('../pages/Manga/HiddenMangaPage'),
+    () => import('../pages/Manga/MangaLayoutPage'),
     () => import('../pages/AnimeSeason'),
     () => import('../pages/SerienKalender'),
     () => import('../pages/FilmKalender'),

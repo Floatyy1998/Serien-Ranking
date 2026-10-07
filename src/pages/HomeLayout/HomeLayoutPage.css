@@ -466,6 +466,18 @@
   gap: 8px;
 }
 
+.hl-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hl-skel-grid .hl-skel-poster {
+  width: auto;
+  height: auto;
+  aspect-ratio: 2 / 3;
+}
+
 .hl-skel-col {
   display: flex;
   flex-direction: column;

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
+import { DEFAULT_FOR_YOU_ORDER } from '../HomePage/hooks/useHomeConfig';
 
 export const DEFAULT_SECTION_ORDER = [
   'activity-marquee',
@@ -25,16 +26,8 @@ export const DEFAULT_SECTION_ORDER = [
   'stats',
 ];
 
-export const DEFAULT_FOR_YOU_ORDER = [
-  'tonight',
-  'watch-streak',
-  'taste-profile',
-  'taste-match',
-  'watch-journey',
-  'rating-queue',
-  'catch-up',
-  'hidden-series',
-];
+// Gleiche Liste wie die Startseite — sonst fehlen neue Karten im Editor.
+export { DEFAULT_FOR_YOU_ORDER };
 
 export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 
@@ -59,11 +52,14 @@ export const SECTION_LABELS: Record<string, string> = {
 export const FOR_YOU_LABELS: Record<string, string> = {
   tonight: t('Heute Abend'),
   'watch-streak': t('Watch Streak'),
+  'daily-spin': t('Glücksrad'),
+  'milestone-box': t('Mystery Box'),
   'taste-profile': t('KI-Empfehlungen'),
   'taste-match': t('Taste Match'),
   'watch-journey': t('Watch Journey'),
   'rating-queue': t('Bewertungs-Queue'),
   'catch-up': t('Backlog'),
+  'streaming-reminder': t('Streaming-Erinnerung'),
   'hidden-series': t('Nicht weitergeschaut'),
 };
 

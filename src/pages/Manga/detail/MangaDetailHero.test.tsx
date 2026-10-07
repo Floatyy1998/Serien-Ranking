@@ -3,7 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { Manga } from '../../../types/Manga';
-import { MangaDetailHero } from './MangaDetailHero';
+import { buildHeroData } from './mangaDetailData';
+import { MangaDetailHero, type MangaHeroProgress } from './MangaDetailHero';
 
 vi.mock('../../../components/ui', () => ({
   BackButton: () => <button type="button">back</button>,
@@ -13,6 +14,7 @@ const theme = {
   primary: '#00d123',
   accent: '#00b0ff',
   background: { default: '#000' },
+  text: { secondary: '#aaa' },
 } as unknown as ThemeContextType['currentTheme'];
 
 function makeManga(overrides: Partial<Manga> = {}): Manga {
@@ -26,7 +28,8 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
     readStatus: 'reading',
     format: 'MANGA',
     countryOfOrigin: 'JP',
-    status: 'HIATUS',
+    status: 'FINISHED',
+    chapters: 327,
     genres: ['Action', 'Drama'],
     averageScore: 90,
     titleRomaji: 'Vagabond Romaji',
@@ -34,63 +37,81 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
   };
 }
 
+const owned = (over: Partial<MangaHeroProgress> = {}): MangaHeroProgress => ({
+  manga: makeManga(),
+  editChapter: 100,
+  effectiveChapters: 327,
+  progress: 30,
+  userRating: 0,
+  onChapterChange: vi.fn(),
+  onRate: vi.fn(),
+  ...over,
+});
+
 afterEach(() => cleanup());
 
 describe('MangaDetailHero', () => {
-  it('rendert Titel, Format und Kapitelinfo', () => {
+  it('rendert Titel, Format, Fakten und Fortschritt', () => {
+    const manga = makeManga();
     render(
       <MangaDetailHero
-        manga={makeManga()}
+        data={buildHeroData(123, manga, null)}
         currentTheme={theme}
         isMobile={false}
-        editChapter={100}
-        effectiveChapters={327}
-        progress={30}
-        staff={[]}
-        onChapterChange={vi.fn()}
+        owned={owned({ manga })}
       />
     );
     expect(screen.getByRole('heading', { name: 'Vagabond' })).toBeInTheDocument();
     expect(screen.getByText('Manga')).toBeInTheDocument();
-    expect(screen.getByText('327 Kapitel')).toBeInTheDocument();
-    expect(screen.getByText('von 327 Kapiteln')).toBeInTheDocument();
+    expect(screen.getByText('Vagabond Romaji')).toBeInTheDocument();
+    expect(screen.getByText('/ 327')).toBeInTheDocument();
+    expect(screen.getByText('227')).toBeInTheDocument();
+    expect(screen.getByText('30%')).toBeInTheDocument();
   });
 
-  it('ruft onChapterChange mit inkrementierten/dekrementierten Werten auf', () => {
-    const onChange = vi.fn<(next: number) => void>();
+  it('zählt Kapitel über Stepper und Hauptknopf hoch und runter', () => {
+    const onChapterChange = vi.fn<(next: number) => void>();
     render(
       <MangaDetailHero
-        manga={makeManga()}
+        data={buildHeroData(123, makeManga(), null)}
         currentTheme={theme}
-        isMobile={true}
-        editChapter={100}
-        effectiveChapters={327}
-        progress={30}
-        staff={[]}
-        onChapterChange={onChange}
+        isMobile
+        owned={owned({ onChapterChange })}
       />
     );
-    const buttons = screen.getAllByRole('button');
-    // buttons: [BackButton, minus, plus]
-    fireEvent.click(buttons[1]);
-    fireEvent.click(buttons[2]);
-    expect(onChange).toHaveBeenCalledWith(99);
-    expect(onChange).toHaveBeenCalledWith(101);
+    fireEvent.click(screen.getByLabelText('Ein Kapitel zurück'));
+    fireEvent.click(screen.getByLabelText('Ein Kapitel weiter'));
+    fireEvent.click(screen.getByText('Kapitel 101 gelesen'));
+    expect(onChapterChange).toHaveBeenCalledWith(99);
+    expect(onChapterChange).toHaveBeenNthCalledWith(2, 101);
+    expect(onChapterChange).toHaveBeenNthCalledWith(3, 101);
   });
 
-  it('zeigt Autoren aus dem staff-Array', () => {
+  it('meldet abgeschlossene Lektüre statt eines weiteren Kapitels', () => {
     render(
       <MangaDetailHero
-        manga={makeManga()}
+        data={buildHeroData(123, makeManga(), null)}
         currentTheme={theme}
         isMobile={false}
-        editChapter={100}
-        effectiveChapters={null}
-        progress={0}
-        staff={[{ role: 'Story & Art', node: { name: { full: 'Takehiko Inoue' } } }]}
-        onChapterChange={vi.fn()}
+        owned={owned({ editChapter: 327 })}
       />
     );
-    expect(screen.getByText('Takehiko Inoue')).toBeInTheDocument();
+    expect(screen.getByText('Alles gelesen')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ein Kapitel weiter')).toBeDisabled();
+  });
+
+  it('zeigt bei fremden Manga den Hinzufügen-Knopf', () => {
+    const onAdd = vi.fn();
+    render(
+      <MangaDetailHero
+        data={buildHeroData(123, makeManga(), null)}
+        currentTheme={theme}
+        isMobile={false}
+        onAdd={onAdd}
+      />
+    );
+    fireEvent.click(screen.getByText('Zur Sammlung hinzufügen'));
+    expect(onAdd).toHaveBeenCalled();
+    expect(screen.queryByLabelText('Ein Kapitel weiter')).not.toBeInTheDocument();
   });
 });

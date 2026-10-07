@@ -3,7 +3,7 @@
  * Horizontal scroll carousel with cinematic poster cards.
  * Variants: trending (with rank numbers), popular, top-rated
  */
-import { LocalFireDepartment, Star, Whatshot } from '@mui/icons-material';
+import { CheckCircle, LocalFireDepartment, Star, Whatshot } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,8 @@ interface MangaCarouselSectionProps {
   title: string;
   onSeeAll?: () => void;
   iconColor?: string;
+  /** AniList-IDs aus der eigenen Sammlung — bekommen einen Haken. */
+  ownedIds?: Set<number>;
 }
 
 export const MangaCarouselSection = React.memo(function MangaCarouselSection({
@@ -29,6 +31,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
   title,
   onSeeAll,
   iconColor,
+  ownedIds,
 }: MangaCarouselSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -166,7 +169,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                             userSelect: 'none',
                             letterSpacing: '-2px',
                             textShadow:
-                              '0 1px 0 rgba(255,255,255,0.3), 0 2px 0 rgba(0,80,60,0.4), 0 3px 0 rgba(0,70,50,0.3), 0 4px 0 rgba(0,60,40,0.2), 0 5px 10px rgba(0,0,0,0.35)',
+                              '0 1px 0 rgba(255,255,255,0.3), 0 2px 0 rgba(0,0,0,0.28), 0 3px 0 rgba(0,0,0,0.22), 0 4px 0 rgba(0,0,0,0.16), 0 5px 10px rgba(0,0,0,0.35)',
                           }}
                         >
                           {index + 1}
@@ -194,9 +197,11 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                       style={{
                         display: 'flex',
                         justifyContent: 'flex-end',
+                        gap: 6,
                         padding: isMobile ? '6px 8px' : '8px 10px',
                       }}
                     >
+                      {ownedIds?.has(item.id) && <OwnedBadge isMobile={isMobile} />}
                       <div
                         style={{
                           background: 'rgba(0,0,0,0.55)',
@@ -317,9 +322,11 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                     style={{
                       display: 'flex',
                       justifyContent: 'flex-end',
+                      gap: 6,
                       padding: isMobile ? '6px 8px' : '8px 10px',
                     }}
                   >
+                    {ownedIds?.has(item.id) && <OwnedBadge isMobile={isMobile} />}
                     <div
                       style={{
                         background: 'rgba(0,0,0,0.55)',
@@ -384,6 +391,17 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
     </section>
   );
 });
+
+const OwnedBadge = ({ isMobile }: { isMobile: boolean }) => (
+  <div
+    className="mpc-chip mpc-chip--owned"
+    title={t('In deiner Sammlung')}
+    aria-label={t('In deiner Sammlung')}
+    style={{ padding: isMobile ? '3px 6px' : '4px 8px' }}
+  >
+    <CheckCircle style={{ fontSize: isMobile ? 13 : 15 }} />
+  </div>
+);
 
 // Shared meta row for all variants
 const MetaRow = ({

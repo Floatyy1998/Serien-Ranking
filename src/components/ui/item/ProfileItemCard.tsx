@@ -8,6 +8,7 @@
 
 import { Add, CheckCircle, Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDrawInProgress } from '../../../hooks/ui/useDrawInProgress';
 import { createPortal } from 'react-dom';
 import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 import { primaryGenre } from '../../../lib/text/genreLabel';
@@ -16,6 +17,7 @@ import { t } from '../../../services/i18n';
 import { PosterFrame } from '../media/PosterFrame';
 import { LoadingSpinner } from '../feedback/LoadingSpinner';
 import './ProfileItemCard.css';
+import '../media/PosterRing.css';
 
 export interface ProfileCardProvider {
   id: number;
@@ -177,8 +179,14 @@ interface ProfileItemCardProps {
   posterUrl: string;
   isMovie: boolean;
   rating: number;
-  /** Optional progress (0-100). When undefined, no progress bar is rendered. */
+  /** Fortschritt 0–100 — zeichnet den Ring um das Poster (wie auf der Ratings-Seite). */
   progress?: number;
+  /** Filme: gesehen → voller Ring. */
+  watched?: boolean;
+  /** Wie weit die Person ist, z. B. „S2 · E5" oder „Kap. 12 / 80". */
+  statusText?: string;
+  /** Ohne Langdruck-Aktionen (z. B. Manga — die kennen nur Serien/Filme). */
+  mediaType?: 'series' | 'movie' | 'none';
   providers: ProfileCardProvider[];
   year?: string;
   genres?: string;
@@ -200,6 +208,9 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
     isMovie,
     rating,
     progress,
+    watched,
+    statusText,
+    mediaType,
     providers,
     year,
     genres,
@@ -209,6 +220,10 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
     onAdd,
     adding,
   }) => {
+    const ringRef = useRef<HTMLDivElement>(null);
+    const ringProgress = isMovie ? (watched ? 100 : 0) : Math.min(100, progress ?? 0);
+    useDrawInProgress(ringRef, ringProgress);
+    const ringDone = ringProgress >= 100;
     const warningColor = currentTheme.status?.warning ?? '#ffc107';
     const successColor = currentTheme.status?.success ?? '#10b981';
     const accentColor = currentTheme.accent ?? currentTheme.primary;
@@ -217,119 +232,128 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
     return (
       <div
         className="pic-grid-item"
-        {...mediaTargetProps({
-          type: isMovie ? 'movie' : 'series',
-          id: mediaId,
-          title,
-          poster: posterUrl,
-        })}
+        {...(mediaType === 'none'
+          ? {}
+          : mediaTargetProps({
+              type: isMovie ? 'movie' : 'series',
+              id: mediaId,
+              title,
+              poster: posterUrl,
+            }))}
         onClick={onClick}
       >
-        {/* Kein onClick am PosterFrame: der Klick liegt (wie bisher) auf .pic-grid-item.
+        <div
+          ref={ringRef}
+          className={`pic-ring-host${
+            ringProgress > 0 ? ` poster-ring${ringDone ? ' poster-ring--done' : ''}` : ''
+          }`}
+          style={
+            {
+              '--ring-color': ringDone ? successColor : currentTheme.primary,
+            } as React.CSSProperties
+          }
+        >
+          {/* Kein onClick am PosterFrame: der Klick liegt (wie bisher) auf .pic-grid-item.
             Scrim aus — der Bottom-Gradient kommt aus .pic-card-bottom. overflow bleibt
             visible (Spiegel des iOS-Safari-Fixes der Ratings-Karte); img/Overlay clippen
             sich selbst per border-radius. */}
-        <PosterFrame
-          className="pic-card"
-          posterUrl={posterUrl || PLACEHOLDER_SVG}
-          alt={title}
-          scrim={false}
-          imgClassName="pic-card-poster"
-          imgStyle={{ background: currentTheme.background.surface }}
-          style={{ overflow: 'visible' }}
-        >
-          <div className="pic-card-overlay">
-            <div className="pic-card-top">
-              <div className="pic-card-top-left">
-                {providers.length > 0 && (
-                  <ProviderBadgeArea
-                    providers={providers}
-                    bgColor={`${currentTheme.background.default}dd`}
-                    textColor={mutedColor}
-                  />
-                )}
-              </div>
-              {onAdd &&
-                (inList ? (
-                  <span
-                    className="pic-card-inlist"
-                    style={{
-                      background: `${currentTheme.background.default}dd`,
-                      color: successColor,
-                    }}
-                    title={t('In deiner Liste')}
-                  >
-                    <CheckCircle className="pic-card-add-icon" />
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="pic-card-add"
-                    style={{
-                      background: `${currentTheme.background.default}dd`,
-                      color: accentColor,
-                    }}
-                    title={t('Zur Liste hinzufügen')}
-                    aria-label={t('{title} zur Liste hinzufügen', { title })}
-                    aria-busy={adding}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      if (adding) return;
-                      onAdd();
-                    }}
-                  >
-                    {adding ? (
-                      <LoadingSpinner inline size={12} borderWidth={2} color={accentColor} />
-                    ) : (
-                      <Add className="pic-card-add-icon" />
-                    )}
-                  </button>
-                ))}
-            </div>
-
-            <div className="pic-card-bottom">
-              <h2 className="pic-card-title">{title}</h2>
-
-              <div className="pic-card-meta">
-                {rating > 0 && (
-                  <span className="pic-card-rating" style={{ color: warningColor }}>
-                    <Star className="pic-card-meta-icon" />
-                    {rating.toFixed(1)}
-                  </span>
-                )}
-
-                {rating > 0 && year && <span className="pic-card-dot">&bull;</span>}
-                {year && <span>{year}</span>}
-
-                {year && genres && <span className="pic-card-dot">&bull;</span>}
-                {genres && <span className="pic-card-genres">{primaryGenre(genres, t)}</span>}
-              </div>
-
-              {!isMovie && progress != null && progress > 0 && (
-                <div className="pic-card-progress">
-                  <div className="pic-card-progress-track">
-                    <div
-                      className="pic-card-progress-fill"
-                      style={{
-                        width: `${progress}%`,
-                        background:
-                          progress === 100
-                            ? successColor
-                            : `linear-gradient(90deg, ${currentTheme.primary}, ${accentColor})`,
-                      }}
+          <PosterFrame
+            className="pic-card"
+            posterUrl={posterUrl || PLACEHOLDER_SVG}
+            alt={title}
+            scrim={false}
+            imgClassName="pic-card-poster"
+            imgStyle={{ background: currentTheme.background.surface }}
+            style={{ overflow: 'visible' }}
+          >
+            <div className="pic-card-overlay">
+              <div className="pic-card-top">
+                <div className="pic-card-top-left">
+                  {providers.length > 0 && (
+                    <ProviderBadgeArea
+                      providers={providers}
+                      bgColor={`${currentTheme.background.default}dd`}
+                      textColor={mutedColor}
                     />
-                  </div>
-                  <span
-                    className="pic-card-progress-text"
-                    style={{ color: progress === 100 ? successColor : currentTheme.primary }}
-                  >
-                    {progress === 100 ? t('Fertig') : `${Math.round(progress)}%`}
-                  </span>
+                  )}
                 </div>
-              )}
+                {onAdd &&
+                  (inList ? (
+                    <span
+                      className="pic-card-inlist"
+                      style={{
+                        background: `${currentTheme.background.default}dd`,
+                        color: successColor,
+                      }}
+                      title={t('In deiner Liste')}
+                    >
+                      <CheckCircle className="pic-card-add-icon" />
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="pic-card-add"
+                      style={{
+                        background: `${currentTheme.background.default}dd`,
+                        color: accentColor,
+                      }}
+                      title={t('Zur Liste hinzufügen')}
+                      aria-label={t('{title} zur Liste hinzufügen', { title })}
+                      aria-busy={adding}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (adding) return;
+                        onAdd();
+                      }}
+                    >
+                      {adding ? (
+                        <LoadingSpinner inline size={12} borderWidth={2} color={accentColor} />
+                      ) : (
+                        <Add className="pic-card-add-icon" />
+                      )}
+                    </button>
+                  ))}
+              </div>
+
+              <div className="pic-card-bottom">
+                <h2 className="pic-card-title">{title}</h2>
+
+                <div className="pic-card-meta">
+                  {rating > 0 && (
+                    <span className="pic-card-rating" style={{ color: warningColor }}>
+                      <Star className="pic-card-meta-icon" />
+                      {rating.toFixed(1)}
+                    </span>
+                  )}
+
+                  {rating > 0 && year && <span className="pic-card-dot">&bull;</span>}
+                  {year && <span>{year}</span>}
+
+                  {year && genres && <span className="pic-card-dot">&bull;</span>}
+                  {genres && <span className="pic-card-genres">{primaryGenre(genres, t)}</span>}
+                </div>
+
+                {(ringProgress > 0 || statusText) && (
+                  <div className="pic-card-progress">
+                    {statusText && <span className="pic-card-status">{statusText}</span>}
+                    {ringProgress > 0 && (
+                      <span
+                        className="pic-card-progress-text"
+                        style={{ color: ringDone ? successColor : currentTheme.primary }}
+                      >
+                        {isMovie
+                          ? t('Gesehen')
+                          : ringDone
+                            ? t('Fertig')
+                            : `${Math.round(ringProgress)}%`}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </PosterFrame>
+          </PosterFrame>
+        </div>
       </div>
     );
   }

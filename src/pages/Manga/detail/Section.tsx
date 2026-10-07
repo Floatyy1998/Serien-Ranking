@@ -3,33 +3,35 @@ import type React from 'react';
 
 interface SectionProps {
   children: React.ReactNode;
-  bg?: string;
   delay?: number;
   className?: string;
+  id?: string;
+  /** Reihenfolge im einspaltigen Mobil-Layout (Spalten-Wrapper sind dort display: contents). */
+  order?: number;
 }
 
-export const Section = ({ children, bg, delay = 0, className }: SectionProps) => (
-  <motion.div
+export const Section = ({ children, delay = 0, className, id, order }: SectionProps) => (
+  <motion.section
+    id={id}
+    style={order !== undefined ? { order } : undefined}
     className={className ? `manga-detail-section ${className}` : 'manga-detail-section'}
-    style={{ borderRadius: 16, padding: 16, marginBottom: 12, background: bg }}
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay }}
   >
     {children}
-  </motion.div>
+  </motion.section>
 );
 
-export const SectionTitle = ({ children, color }: { children: React.ReactNode; color: string }) => (
-  <div
-    style={{
-      fontSize: 15,
-      fontWeight: 700,
-      marginBottom: 12,
-      fontFamily: 'var(--font-display)',
-      color,
-    }}
-  >
-    {children}
+export const SectionTitle = ({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) => (
+  <div className="manga-detail-section-head">
+    <h2 className="manga-detail-section-title">{children}</h2>
+    {action}
   </div>
 );

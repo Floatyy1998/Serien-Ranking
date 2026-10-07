@@ -5,10 +5,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
 import { MangaDetailPage } from './MangaDetailPage';
 
-const listState = vi.hoisted(() => ({ list: [] as Manga[] }));
+const listState = vi.hoisted(() => ({ list: [] as Manga[], hidden: [] as Manga[] }));
 const toggleHideManga = vi.hoisted(() => vi.fn());
 vi.mock('../../contexts/MangaListContext', () => ({
-  useMangaList: () => ({ mangaList: listState.list, toggleHideManga }),
+  useMangaList: () => ({
+    mangaList: listState.list,
+    hiddenMangaList: listState.hidden,
+    toggleHideManga,
+  }),
 }));
 
 vi.mock('../../contexts/ThemeContext', () => ({
@@ -59,11 +63,13 @@ const params = vi.hoisted(() => ({ id: '123' }));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
   useParams: () => params,
+  useLocation: () => ({ hash: '' }),
 }));
 
 vi.mock('../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   PageHeader: ({ title }: { title?: ReactNode }) => <h1>{title}</h1>,
+  LoadingSpinner: ({ text }: { text?: ReactNode }) => <div>{text}</div>,
 }));
 
 vi.mock('./detail/MangaDetailHero', () => ({
@@ -112,6 +118,7 @@ function makeAniList(): AniListMangaSearchResult {
 afterEach(() => {
   cleanup();
   listState.list = [];
+  listState.hidden = [];
   liveState.data = { anilistData: null, mangadexInfo: null, chapterInfo: null };
   navigate.mockReset();
 });
@@ -133,5 +140,13 @@ describe('MangaDetailPage', () => {
     render(<MangaDetailPage />);
     expect(screen.getByTestId('hero')).toBeInTheDocument();
     expect(screen.getByTestId('body')).toBeInTheDocument();
+  });
+
+  it('behandelt versteckte Manga als Teil der Sammlung', () => {
+    listState.hidden = [makeManga({ anilistId: 123, hidden: true })];
+    liveState.data = { anilistData: makeAniList(), mangadexInfo: null, chapterInfo: null };
+    render(<MangaDetailPage />);
+    expect(screen.getByTestId('hero')).toBeInTheDocument();
+    expect(screen.queryByTestId('preview')).not.toBeInTheDocument();
   });
 });

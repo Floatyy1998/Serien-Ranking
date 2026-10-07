@@ -68,6 +68,7 @@ vi.mock('../../contexts/OptimizedFriendsContext', () => ({
 }));
 vi.mock('../../services/db/ref', () => ({
   dbGet: dbGetMock,
+  dbRef: () => ({ once: () => Promise.resolve({ val: () => null }) }),
   userPath: (uid: string, ...segments: string[]) => ['users', uid, ...segments].join('/'),
 }));
 vi.mock('./useFriendProfileData', () => ({
@@ -86,6 +87,27 @@ vi.mock('./FriendCurrentlyWatchingCard', () => ({ FriendCurrentlyWatchingCard: (
 vi.mock('./FriendAnticipationSection', () => ({ FriendAnticipationSection: () => null }));
 vi.mock('./FriendPetCard', () => ({ FriendPetCard: () => null }));
 vi.mock('./FriendComparisonCard', () => ({ FriendComparisonCard: () => null }));
+const { mangaState } = vi.hoisted(() => ({
+  mangaState: {
+    list: [] as {
+      anilistId: number;
+      title: string;
+      poster: string;
+      rating: Record<string, number>;
+      currentChapter: number;
+      readStatus: string;
+      nmr: number;
+    }[],
+    loading: false,
+  },
+}));
+vi.mock('./useFriendManga', () => ({ useFriendManga: () => mangaState }));
+vi.mock('./FriendReadingSection', () => ({ FriendReadingSection: () => null }));
+vi.mock('../../contexts/MangaListContext', () => ({
+  useMangaList: () => ({ mangaList: [], hiddenMangaList: [] }),
+}));
+vi.mock('../../services/api/anilistService', () => ({ getMangaById: vi.fn() }));
+vi.mock('../Manga/addMangaToList', () => ({ addMangaToList: vi.fn() }));
 const { foldersState } = vi.hoisted(() => ({
   foldersState: {
     folders: [] as { id: string; name: string; createdAt: number; items: Set<string> }[],
@@ -115,6 +137,7 @@ vi.mock('./useFriendComparison', () => ({
 }));
 vi.mock('@mui/icons-material', () => ({
   ArrowBack: () => null,
+  AutoStories: () => null,
   ChatBubbleOutlined: () => null,
   CheckRounded: () => null,
   CloseRounded: () => null,
@@ -244,6 +267,28 @@ describe('FriendProfilePage', () => {
     render(<FriendProfilePage />);
     fireEvent.click(screen.getByText('tab-Filme'));
     expect(fpState.setActiveTab).toHaveBeenCalledWith('movies');
+  });
+
+  it('zeigt den Manga-Reiter nur, wenn der Freund Manga hat', () => {
+    render(<FriendProfilePage />);
+    expect(screen.queryByText('tab-Manga')).not.toBeInTheDocument();
+    cleanup();
+
+    mangaState.list = [
+      {
+        anilistId: 7,
+        title: 'Solo Leveling',
+        poster: 'p.jpg',
+        rating: {},
+        currentChapter: 3,
+        readStatus: 'reading',
+        nmr: 1,
+      },
+    ];
+    render(<FriendProfilePage />);
+    fireEvent.click(screen.getByText('tab-Manga'));
+    expect(fpState.setActiveTab).toHaveBeenCalledWith('manga');
+    mangaState.list = [];
   });
 
   it('zeigt den Listen-Reiter nur, wenn der Freund Listen hat', () => {

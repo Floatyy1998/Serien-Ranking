@@ -33,6 +33,13 @@ import {
   WatchPlanNewPreview,
   IncomingRequestPreview,
 } from './NewFeaturePreviews';
+import {
+  MangaDetailForeignPreview,
+  MangaDetailOwnedPreview,
+  MangaLayoutPreview,
+  MangaOverviewPreview,
+  MangaSearchPreview,
+} from './MangaPreviews';
 
 /**
  * Nur im Dev-Server: Overlays und Sheets in mehreren Fensterbreiten nebeneinander.
@@ -133,6 +140,11 @@ const LightboxPreview = () => {
 };
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
+  { id: 'manga', label: 'Manga: Übersicht', render: () => <MangaOverviewPreview /> },
+  { id: 'manga-detail', label: 'Manga: Detail', render: () => <MangaDetailOwnedPreview /> },
+  { id: 'manga-foreign', label: 'Manga: Vorschau', render: () => <MangaDetailForeignPreview /> },
+  { id: 'manga-search', label: 'Manga: Suche', render: () => <MangaSearchPreview /> },
+  { id: 'manga-layout', label: 'Manga: Layout', render: () => <MangaLayoutPreview /> },
   { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },
   { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },

@@ -1,18 +1,25 @@
-import { Add, Close, Search } from '@mui/icons-material';
+import { AutoStories, Close, History, Search, SearchOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EmptyState, HorizontalScrollContainer } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getOptimalTextColor } from '../../theme/colorUtils';
-import { useDeviceType } from '../../hooks/platform/useDeviceType';
-import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
-import type { AniListMangaSearchResult } from '../../types/Manga';
-import { addMangaToList } from './addMangaToList';
-import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
+import {
+  filterCollection,
+  mangaProgressPercent,
+  mangaTotalChapters,
+} from '../../lib/manga/overview';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
 import { t } from '../../services/i18n';
+import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
+import { addMangaToList } from './addMangaToList';
+import { MangaPosterCard } from './components/MangaPosterCard';
+import { MangaResultCard } from './components/MangaResultCard';
+import './components/MangaCards.css';
+import { STATUS_LABELS } from './mangaUtils';
 
 const FORMAT_FILTERS = [
   { key: 'all', label: t('Alle') },
@@ -21,12 +28,13 @@ const FORMAT_FILTERS = [
   { key: 'CN', label: 'Manhua' },
 ] as const;
 
+const COUNTRY_TO_FORMAT: Record<string, string> = { JP: 'MANGA', KR: 'MANHWA', CN: 'MANHUA' };
+
 export const MangaSearchPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const { mangaList } = useMangaList();
+  const { mangaList, hiddenMangaList } = useMangaList();
   const navigate = useNavigate();
-  const { isMobile } = useDeviceType();
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
@@ -85,34 +93,72 @@ export const MangaSearchPage = () => {
     };
   }, [query]);
 
-  const trackedIds = useMemo(() => new Set(mangaList.map((m) => m.anilistId)), [mangaList]);
+  const allOwned = useMemo(() => [...mangaList, ...hiddenMangaList], [mangaList, hiddenMangaList]);
+  const ownedById = useMemo(() => {
+    const map = new Map<number, Manga>();
+    for (const m of allOwned) map.set(m.anilistId, m);
+    return map;
+  }, [allOwned]);
 
-  // Filter: by country + remove tracked
-  const filteredResults = useMemo(() => {
-    let filtered = results.filter((r) => !trackedIds.has(r.id));
-    if (countryFilter !== 'all') {
-      filtered = filtered.filter((r) => r.countryOfOrigin === countryFilter);
-    }
-    return filtered;
-  }, [results, trackedIds, countryFilter]);
+  // Eigene Treffer sofort, ohne auf AniList zu warten — auch versteckte Manga.
+  const libraryMatches = useMemo(() => {
+    if (query.trim().length < 2) return [];
+    return filterCollection(
+      allOwned,
+      {
+        query,
+        status: 'all',
+        format: countryFilter === 'all' ? 'all' : COUNTRY_TO_FORMAT[countryFilter],
+        sort: 'recent',
+      },
+      user?.uid
+    );
+  }, [allOwned, query, countryFilter, user?.uid]);
+
+  const libraryIds = useMemo(
+    () => new Set(libraryMatches.map((m) => m.anilistId)),
+    [libraryMatches]
+  );
+
+  const filteredResults = useMemo(
+    () =>
+      results.filter(
+        (r) =>
+          !libraryIds.has(r.id) && (countryFilter === 'all' || r.countryOfOrigin === countryFilter)
+      ),
+    [results, libraryIds, countryFilter]
+  );
 
   const handleAdd = useCallback(
     async (e: React.MouseEvent, result: AniListMangaSearchResult) => {
       e.stopPropagation();
       if (!user) return;
       setAddingId(result.id);
-      const nextNmr = mangaList.length > 0 ? Math.max(...mangaList.map((m) => m.nmr)) + 1 : 1;
-      await addMangaToList(user.uid, result, nextNmr);
-      setAddingId(null);
+      const nextNmr = allOwned.length > 0 ? Math.max(...allOwned.map((m) => m.nmr)) + 1 : 1;
+      try {
+        await addMangaToList(user.uid, result, nextNmr);
+      } finally {
+        setAddingId(null);
+      }
     },
-    [user, mangaList]
+    [user, allOwned]
   );
 
-  const addButtonTextColor = getOptimalTextColor(currentTheme.primary);
+  const clearRecent = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem('mangaRecentSearches');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const hasQuery = !!query.trim();
+  const nothingFound =
+    hasQuery && !searching && filteredResults.length === 0 && libraryMatches.length === 0;
 
   return (
     <div style={{ minHeight: 'var(--vh, 100vh)', background: currentTheme.background.default }}>
-      {/* ─── Sticky Header ───────────────────────── */}
       <div
         style={{
           position: 'sticky',
@@ -130,7 +176,6 @@ export const MangaSearchPage = () => {
             paddingTop: 'calc(16px + env(safe-area-inset-top))',
           }}
         >
-          {/* Back + Search Input */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <motion.button
               type="button"
@@ -152,16 +197,15 @@ export const MangaSearchPage = () => {
             >
               <Close style={{ fontSize: 22 }} />
             </motion.button>
-            <div style={{ flex: 1, position: 'relative' }}>
+            <div style={{ flex: 1, position: 'relative', maxWidth: 860 }}>
               <Search
                 style={{
                   position: 'absolute',
-                  left: 12,
+                  left: 14,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  fontSize: 18,
-                  color: currentTheme.text.secondary,
-                  opacity: 0.4,
+                  fontSize: 20,
+                  color: currentTheme.primary,
                 }}
               />
               <input
@@ -169,46 +213,54 @@ export const MangaSearchPage = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('Manga, Manhwa, Manhua suchen...')}
+                aria-label={t('Manga suchen')}
                 style={{
                   width: '100%',
-                  padding: '12px 14px 12px 40px',
-                  borderRadius: 14,
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  background: 'rgba(255,255,255,0.06)',
+                  padding: '13px 44px 13px 44px',
+                  borderRadius: 16,
+                  border: `1px solid ${currentTheme.primary}33`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}14, transparent 45%), var(--glass-light)`,
                   color: currentTheme.text.primary,
-                  fontSize: 14,
+                  fontSize: 15,
                   outline: 'none',
                   fontFamily: 'var(--font-body)',
+                  boxShadow: 'var(--glass-specular)',
                 }}
               />
+              {query && (
+                <button
+                  type="button"
+                  className="manga-collection-clear"
+                  aria-label={t('Suche leeren')}
+                  onClick={() => {
+                    setQuery('');
+                    inputRef.current?.focus();
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: 6,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: currentTheme.text.muted,
+                  }}
+                >
+                  <Close style={{ fontSize: 16 }} />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Format Filters */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {FORMAT_FILTERS.map((f) => {
-              const active = countryFilter === f.key;
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => setCountryFilter(f.key)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: 10,
-                    border: `1px solid ${active ? currentTheme.primary : 'rgba(255,255,255,0.06)'}`,
-                    background: active ? `${currentTheme.primary}20` : 'rgba(255,255,255,0.04)',
-                    color: active ? currentTheme.primary : currentTheme.text.secondary,
-                    fontSize: 12,
-                    fontWeight: active ? 600 : 400,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-body)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {f.label}
-                </button>
-              );
-            })}
+          <div className="manga-pill-row" style={{ padding: 0, margin: 0 }}>
+            {FORMAT_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                className={`manga-pill ${countryFilter === f.key ? 'manga-pill--active' : ''}`}
+                onClick={() => setCountryFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
         <div
@@ -219,41 +271,29 @@ export const MangaSearchPage = () => {
         />
       </div>
 
-      {/* ─── Content ─────────────────────────────── */}
-      <div style={{ padding: '16px 20px', paddingBottom: 'var(--page-bottom-gap)' }}>
-        {/* Recent Searches */}
-        {!query && recentSearches.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: currentTheme.text.secondary,
-                marginBottom: 10,
-                opacity: 0.6,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
+      <div style={{ padding: '16px 0', paddingBottom: 'var(--page-bottom-gap)' }}>
+        {!hasQuery && recentSearches.length > 0 && (
+          <div style={{ marginBottom: 24, padding: '0 20px' }}>
+            <div className="manga-search-label" style={{ color: currentTheme.text.muted }}>
+              <History style={{ fontSize: 16 }} />
               {t('Letzte Suchen')}
+              <button
+                type="button"
+                className="manga-search-label-action"
+                onClick={clearRecent}
+                style={{ color: currentTheme.text.muted }}
+              >
+                {t('Leeren')}
+              </button>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {recentSearches.map((s) => (
                 <motion.button
                   key={s}
+                  type="button"
                   whileTap={tapScale}
+                  className="manga-pill"
                   onClick={() => setQuery(s)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    background:
-                      'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
-                    color: currentTheme.text.secondary,
-                    fontSize: 12,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-body)',
-                  }}
                 >
                   {s}
                 </motion.button>
@@ -262,265 +302,104 @@ export const MangaSearchPage = () => {
           </div>
         )}
 
-        {searching && (
-          <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
-            {t('Suche...')}
-          </div>
-        )}
-
-        {/* Results Grid - exact same cards as Discover */}
-        {!searching && filteredResults.length > 0 && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile
-                ? 'repeat(2, minmax(0, 1fr))'
-                : 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: isMobile ? 16 : 24,
-            }}
-          >
-            {filteredResults.map((result) => {
-              const displayFormat = getDisplayFormat(result.countryOfOrigin, result.format);
-              const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
-              const formatColor = FORMAT_COLORS[formatKey] || '#a78bfa';
-
-              return (
-                <motion.div
-                  key={result.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('{title} öffnen', {
-                    title: result.title.english || result.title.romaji,
-                  })}
-                  whileTap={{ opacity: 0.7 }}
-                  onClick={() => navigate(`/manga/${result.id}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/manga/${result.id}`);
+        {libraryMatches.length > 0 && (
+          <section style={{ marginBottom: 26 }}>
+            <div
+              className="manga-search-label"
+              style={{ color: currentTheme.text.muted, padding: '0 20px' }}
+            >
+              <AutoStories style={{ fontSize: 16, color: currentTheme.primary }} />
+              {t('In deiner Sammlung')}
+              <span className="manga-pill-count">{libraryMatches.length}</span>
+            </div>
+            <HorizontalScrollContainer gap={14} style={{ padding: '0 20px' }}>
+              {libraryMatches.map((manga) => {
+                const total = mangaTotalChapters(manga);
+                return (
+                  <MangaPosterCard
+                    key={manga.anilistId}
+                    title={manga.title}
+                    poster={manga.poster}
+                    format={manga.format}
+                    countryOfOrigin={manga.countryOfOrigin}
+                    owned
+                    progress={mangaProgressPercent(manga)}
+                    meta={
+                      manga.currentChapter > 0
+                        ? total > 0
+                          ? t('Kap. {a} / {b}', { a: manga.currentChapter, b: total })
+                          : t('Kap. {n}', { n: manga.currentChapter })
+                        : STATUS_LABELS[manga.readStatus]
                     }
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      borderRadius: 14,
-                      aspectRatio: '2/3',
-                      boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <img
-                      src={result.coverImage.large}
-                      alt={result.title.romaji}
-                      loading="lazy"
-                      decoding="async"
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block',
-                        borderRadius: 14,
-                      }}
+                    onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                  />
+                );
+              })}
+            </HorizontalScrollContainer>
+          </section>
+        )}
+
+        <div style={{ padding: '0 20px' }}>
+          {hasQuery && (searching || filteredResults.length > 0) && (
+            <div className="manga-search-label" style={{ color: currentTheme.text.muted }}>
+              <Search style={{ fontSize: 16 }} />
+              {libraryMatches.length > 0 ? t('Weitere Treffer') : t('Treffer')}
+            </div>
+          )}
+
+          {searching && filteredResults.length === 0 && (
+            <div className="manga-result-grid" aria-busy>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="mrc">
+                  <div className="mrc-art skeleton-shimmer" />
+                  <div className="mrc-info">
+                    <div
+                      className="skeleton-shimmer"
+                      style={{ height: 12, borderRadius: 6, width: '80%' }}
                     />
-
-                    {/* Format badge */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        fontSize: 9,
-                        fontWeight: 700,
-                        padding: '3px 7px',
-                        borderRadius: 6,
-                        background: 'rgba(0,0,0,0.6)',
-                        backdropFilter: 'var(--blur-sm)',
-                        WebkitBackdropFilter: 'var(--blur-sm)',
-                        color: formatColor,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {displayFormat}
-                    </div>
-
-                    {/* Score */}
-                    {result.averageScore && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: '3px 6px',
-                          borderRadius: 6,
-                          background: 'rgba(0,0,0,0.6)',
-                          backdropFilter: 'var(--blur-sm)',
-                          WebkitBackdropFilter: 'var(--blur-sm)',
-                          color: '#f59e0b',
-                        }}
-                      >
-                        ⭐ {result.averageScore}%
-                      </div>
-                    )}
-
-                    {/* Bottom gradient */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '60%',
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
-                        borderRadius: '0 0 14px 14px',
-                        pointerEvents: 'none',
-                      }}
-                    />
-
-                    {/* Add button */}
-                    <motion.button
-                      type="button"
-                      aria-label={t('{title} zur Sammlung hinzufügen', {
-                        title: result.title.english || result.title.romaji,
-                      })}
-                      whileTap={{ opacity: 0.7 }}
-                      onClick={(e) => handleAdd(e, result)}
-                      style={{
-                        position: 'absolute',
-                        bottom: 10,
-                        right: 10,
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        border: 'none',
-                        background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                        color: addButtonTextColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                        zIndex: 2,
-                      }}
-                    >
-                      {addingId === result.id ? (
-                        <div
-                          style={{
-                            width: 16,
-                            height: 16,
-                            border: '2px solid rgba(255,255,255,0.3)',
-                            borderTopColor: addButtonTextColor,
-                            borderRadius: '50%',
-                            animation: 'spin 0.6s linear infinite',
-                          }}
-                        />
-                      ) : (
-                        <Add style={{ fontSize: 20 }} />
-                      )}
-                    </motion.button>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-                  {/* Title + meta below card (like Discover) */}
-                  <div style={{ marginTop: 8 }}>
-                    <div
-                      style={{
-                        fontSize: isMobile ? 13 : 14,
-                        fontWeight: 600,
-                        color: currentTheme.text.primary,
-                        lineHeight: 1.3,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {result.title.english || result.title.romaji}
-                    </div>
-                    {aliases[result.id] && (
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: currentTheme.primary,
-                          marginTop: 2,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {t('Gefunden als „{title}“', { title: aliases[result.id] })}
-                      </div>
-                    )}
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: currentTheme.text.secondary,
-                        opacity: 0.6,
-                        marginTop: 2,
-                      }}
-                    >
-                      {result.startDate?.year || ''}
-                      {result.chapters ? ` · ${t('{n} Kap.', { n: result.chapters })}` : ''}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+          {filteredResults.length > 0 && (
+            <div className="manga-result-grid" style={{ opacity: searching ? 0.6 : 1 }}>
+              {filteredResults.map((result) => (
+                <MangaResultCard
+                  key={result.id}
+                  result={result}
+                  owned={ownedById.get(result.id)}
+                  alias={aliases[result.id]}
+                  adding={addingId === result.id}
+                  onOpen={() => navigate(`/manga/${result.id}`)}
+                  onAdd={(e) => handleAdd(e, result)}
+                />
+              ))}
+            </div>
+          )}
 
-        {!searching && query && filteredResults.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 60 }}>
-            <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.3 }}>🔍</div>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: currentTheme.text.primary,
-                marginBottom: 4,
-              }}
-            >
-              {t('Keine Ergebnisse')}
-            </div>
-            <div style={{ fontSize: 13, color: currentTheme.text.secondary, opacity: 0.6 }}>
-              {t('Versuche einen anderen Suchbegriff')}
-            </div>
-          </div>
-        )}
+          {nothingFound && (
+            <EmptyState
+              icon={<SearchOff style={{ fontSize: 44 }} />}
+              title={t('Keine Ergebnisse')}
+              description={t(
+                'Versuche einen anderen Suchbegriff — auch deutsche oder englische Titel funktionieren.'
+              )}
+            />
+          )}
 
-        {!query && recentSearches.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 60 }}>
-            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📚</div>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: currentTheme.text.primary,
-                marginBottom: 4,
-              }}
-            >
-              {t('Manga entdecken')}
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: currentTheme.text.secondary,
-                opacity: 0.6,
-                maxWidth: 240,
-                margin: '0 auto',
-                lineHeight: 1.5,
-              }}
-            >
-              {t('Suche nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.')}
-            </div>
-          </div>
-        )}
+          {!hasQuery && recentSearches.length === 0 && (
+            <EmptyState
+              icon={<AutoStories style={{ fontSize: 48 }} />}
+              title={t('Manga entdecken')}
+              description={t(
+                'Suche nach Manga, Manhwa oder Manhua — deine eigenen Titel findest du hier auch.'
+              )}
+              action={{ label: t('Entdecken'), onClick: () => navigate('/manga/discover') }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

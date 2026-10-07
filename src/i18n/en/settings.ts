@@ -311,6 +311,7 @@ const settings: Record<string, string> = {
   'In der globalen Rangliste erscheinen': 'Appear in the global leaderboard',
   'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
     'Your friends still see you in their leaderboard',
+  'Streaming-Erinnerung': 'Streaming reminder',
 };
 
 export default settings;

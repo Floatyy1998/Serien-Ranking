@@ -1,0 +1,43 @@
+/* Fortschritts-Ring um ein Poster (Ratings-Muster): ::before = gedimmter Track,
+   ::after = Bogen als Heat-Ramp rot → grün. --prog (0–100) schreibt
+   useDrawInProgress, --ring-color kommt inline. */
+.poster-ring::before,
+.poster-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  padding: 2px;
+  z-index: 2;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.poster-ring::before {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.poster-ring::after {
+  background: conic-gradient(
+    from -90deg,
+    hsl(4 85% 55%) 0deg,
+    hsl(calc(var(--prog, 0) * 0.6) 85% 52%) calc(var(--prog, 0) * 1.8deg),
+    hsl(calc(var(--prog, 0) * 1.2) 85% 50%) calc(var(--prog, 0) * 3.6deg),
+    transparent 0
+  );
+}
+
+.poster-ring--done::after {
+  background: conic-gradient(
+    from -90deg,
+    var(--ring-color) calc(var(--prog, 0) * 3.6deg),
+    transparent 0
+  );
+}

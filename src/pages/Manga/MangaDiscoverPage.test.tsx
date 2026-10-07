@@ -7,7 +7,7 @@ import { MangaDiscoverPage } from './MangaDiscoverPage';
 
 const listState = vi.hoisted(() => ({ list: [] as Manga[] }));
 vi.mock('../../contexts/MangaListContext', () => ({
-  useMangaList: () => ({ mangaList: listState.list }),
+  useMangaList: () => ({ mangaList: listState.list, hiddenMangaList: [] }),
 }));
 
 vi.mock('../../contexts/ThemeContext', () => ({
@@ -16,7 +16,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
       primary: '#00d123',
       accent: '#00b0ff',
       background: { default: '#000' },
-      text: { primary: '#fff', secondary: '#aaa' },
+      text: { primary: '#fff', secondary: '#aaa', muted: '#777' },
       status: { error: '#ef4444', success: '#22c55e' },
     },
   }),
@@ -35,12 +35,17 @@ const addMangaToList = vi.hoisted(() => vi.fn());
 vi.mock('./addMangaToList', () => ({ addMangaToList }));
 
 const navigate = vi.hoisted(() => vi.fn());
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
+const searchParams = vi.hoisted(() => ({ value: new URLSearchParams() }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigate,
+  useSearchParams: () => [searchParams.value],
+}));
 
 vi.mock('../../components/ui', () => ({
   BackButton: () => <button type="button">back</button>,
   GradientText: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
   ScrollToTopButton: () => null,
+  EmptyState: ({ title }: { title: string }) => <p>{title}</p>,
 }));
 
 function makeResult(overrides: Partial<AniListMangaSearchResult> = {}): AniListMangaSearchResult {
@@ -70,6 +75,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   listState.list = [];
+  searchParams.value = new URLSearchParams();
   navigate.mockReset();
   addMangaToList.mockReset();
 });
@@ -90,5 +96,31 @@ describe('MangaDiscoverPage', () => {
     await waitFor(() =>
       expect(discoverManga).toHaveBeenCalledWith('popular', 1, 30, expect.any(String))
     );
+  });
+
+  it('öffnet die Kategorie aus dem Link der Übersicht', async () => {
+    searchParams.value = new URLSearchParams('category=top_rated');
+    render(<MangaDiscoverPage />);
+    await waitFor(() =>
+      expect(discoverManga).toHaveBeenCalledWith('top_rated', 1, 30, expect.any(String))
+    );
+  });
+
+  it('zeigt eigene Manga markiert statt sie herauszufiltern', async () => {
+    listState.list = [
+      {
+        nmr: 1,
+        anilistId: 1,
+        title: 'Bleach EN',
+        poster: 'p.jpg',
+        rating: {},
+        currentChapter: 0,
+        readStatus: 'planned',
+      },
+    ];
+    render(<MangaDiscoverPage />);
+    await waitFor(() => expect(screen.getByText('Bleach EN')).toBeInTheDocument());
+    expect(screen.getByText('Geplant')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Bleach EN zur Sammlung hinzufügen')).not.toBeInTheDocument();
   });
 });

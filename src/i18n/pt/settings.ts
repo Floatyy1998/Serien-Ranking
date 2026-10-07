@@ -275,6 +275,7 @@ const dict: Record<string, string> = {
   'In der globalen Rangliste erscheinen': 'Aparecer no ranking global',
   'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
     'Seus amigos continuam vendo você no ranking deles',
+  'Streaming-Erinnerung': 'Lembrete de streaming',
 };
 
 export default dict;

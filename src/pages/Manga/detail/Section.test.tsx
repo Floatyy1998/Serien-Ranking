@@ -6,19 +6,19 @@ import { Section, SectionTitle } from './Section';
 afterEach(() => cleanup());
 
 describe('Section', () => {
-  it('rendert seine Kinder', () => {
+  it('rendert seine Kinder und setzt die Mobil-Reihenfolge', () => {
     render(
-      <Section bg="#111" delay={0.2}>
+      <Section delay={0.2} order={3} id="abschnitt">
         <span>Inhalt</span>
       </Section>
     );
     expect(screen.getByText('Inhalt')).toBeInTheDocument();
+    expect(document.getElementById('abschnitt')).toHaveStyle({ order: '3' });
   });
 
-  it('SectionTitle rendert Titel mit Farbe', () => {
-    render(<SectionTitle color="#00d123">Beschreibung</SectionTitle>);
-    const title = screen.getByText('Beschreibung');
-    expect(title).toBeInTheDocument();
-    expect(title).toHaveStyle({ color: '#00d123' });
+  it('SectionTitle rendert Überschrift und Zusatz', () => {
+    render(<SectionTitle action={<span>4/10</span>}>Bewertung</SectionTitle>);
+    expect(screen.getByRole('heading', { name: 'Bewertung' })).toBeInTheDocument();
+    expect(screen.getByText('4/10')).toBeInTheDocument();
   });
 });
