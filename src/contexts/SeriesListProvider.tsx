@@ -27,7 +27,7 @@ import {
   type AnimeMangaHandoff,
   type DetectionResults,
 } from './seriesListDetection';
-import { SeriesListContext } from './SeriesListContext';
+import { SeriesListContext, type SeriesNotificationList } from './SeriesListContext';
 
 // Per-Serie-Memoization für den Catalog↔User-Merge. Bewusst Modul-State
 // (kein Ref/Hook-Wert): reine Input→Output-Memoization, pro UID gehalten und
@@ -508,6 +508,22 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setUnratedSeries([]);
   }, []);
 
+  const resolveSeriesNotification = useCallback(
+    (lists: SeriesNotificationList[], seriesId: number) => {
+      const drop = (prev: Series[]) =>
+        prev.some((s) => s.id === seriesId) ? prev.filter((s) => s.id !== seriesId) : prev;
+      const setters: Record<SeriesNotificationList, typeof setInactiveSeries> = {
+        'new-season': setSeriesWithNewSeasons,
+        inactive: setInactiveSeries,
+        'inactive-rewatch': setInactiveRewatches,
+        completed: setCompletedSeries,
+        unrated: setUnratedSeries,
+      };
+      lists.forEach((list) => setters[list](drop));
+    },
+    []
+  );
+
   const clearProviderChanges = useCallback(() => {
     setProviderChanges([]);
   }, []);
@@ -685,6 +701,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearProviderChanges,
       clearHiddenProviderChanges,
       clearAnimeMangaHandoffs,
+      resolveSeriesNotification,
       recheckForNewSeasons,
       refetchSeries,
       refetchAfterAdd,
@@ -714,6 +731,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearProviderChanges,
       clearHiddenProviderChanges,
       clearAnimeMangaHandoffs,
+      resolveSeriesNotification,
       recheckForNewSeasons,
       refetchSeries,
       refetchAfterAdd,

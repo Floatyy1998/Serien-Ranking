@@ -22,7 +22,7 @@ import { dbRef, dbUpdate, paths, userPath } from '../../../services/db/ref';
 import { bumpSeriesVersion } from '../../../services/firebase/seriesVersionBump';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useSeriesList } from '../../../contexts/SeriesListContext';
+import { useSeriesList, type SeriesNotificationList } from '../../../contexts/SeriesListContext';
 import { showUndoToast } from '../../../lib/interaction/toast';
 import {
   snoozeNotifications,
@@ -37,6 +37,7 @@ import type { Series } from '../../../types/Series';
 import './CarouselNotification.css';
 
 const NOTIF_DAY_MS = 24 * 60 * 60 * 1000;
+const RESOLVE_DELAY_MS = 700;
 
 /**
  * Startdatum der angekündigten Staffel (`seasonCount`). Die NewSeason-Detection
@@ -99,6 +100,8 @@ interface VariantConfig {
   dismissFirebasePath: string;
   /** Watchlist-Update bei Action (für variants die Watchlist-Status togglen). */
   watchlistValue?: boolean;
+  /** Hinweis-Listen, die nach erledigter Aktion für diese Serie hinfällig sind. */
+  resolves: SeriesNotificationList[];
 }
 
 const variantConfigs: Record<Variant, VariantConfig> = {
@@ -116,6 +119,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     counterSuffix: t('neue Staffeln'),
     dismissFirebasePath: '',
     watchlistValue: true,
+    resolves: ['new-season'],
   },
   completed: {
     category: 'completed',
@@ -130,6 +134,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     counterSuffix: t('abgeschlossene Serien'),
     dismissFirebasePath: 'completedSeriesNotifications',
     watchlistValue: false,
+    resolves: ['completed', 'inactive'],
   },
   inactive: {
     category: 'inactive',
@@ -147,6 +152,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     counterSuffix: t('inaktive Serien'),
     dismissFirebasePath: 'inactiveSeriesNotifications',
     watchlistValue: false,
+    resolves: ['inactive', 'completed'],
   },
   'inactive-rewatch': {
     category: 'inactive-rewatch',
@@ -160,6 +166,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     ActionIcon: Stop,
     counterSuffix: t('inaktive Rewatches'),
     dismissFirebasePath: 'inactiveRewatchNotifications',
+    resolves: ['inactive-rewatch'],
   },
   unrated: {
     category: 'unrated',
@@ -173,6 +180,7 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     ActionIcon: Star,
     counterSuffix: t('unbewertete Serien'),
     dismissFirebasePath: 'unratedSeriesNotifications',
+    resolves: ['unrated'],
   },
 };
 
@@ -280,7 +288,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const { refetchSeries } = useSeriesList();
+  const { refetchSeries, resolveSeriesNotification } = useSeriesList();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [actionedIds, setActionedIds] = useState<Set<number>>(new Set());
   const [snoozeOpen, setSnoozeOpen] = useState(false);
@@ -411,6 +419,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));
       setTimeout(() => refetchSeries(), 100);
+      setTimeout(() => resolveSeriesNotification(config.resolves, seriesItem.id), RESOLVE_DELAY_MS);
       await markAsDismissed([seriesItem.id]);
     } catch (error) {
       console.error('Error executing action:', error);
@@ -449,12 +458,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         setTimeout(() => refetchSeries(), 100);
       });
       setTimeout(() => refetchSeries(), 100);
-      // Nächstes Item zeigen oder schließen
-      if (safeIndex < series.length - 1) {
-        setCurrentIndex(safeIndex + 1);
-      } else {
-        onDismiss();
-      }
+      resolveSeriesNotification(config.resolves, seriesItem.id);
     } catch (error) {
       console.error('Error saving rating:', error);
     } finally {

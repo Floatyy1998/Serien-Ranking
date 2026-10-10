@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CarouselNotification } from './CarouselNotification';
 import type { Series } from '../../../types/Series';
@@ -17,7 +17,10 @@ if (!window.matchMedia) {
   })) as unknown as typeof window.matchMedia;
 }
 
+Element.prototype.scrollIntoView ??= () => {};
+
 const navigate = vi.hoisted(() => vi.fn());
+const resolveSeriesNotification = vi.hoisted(() => vi.fn());
 const firebaseMock = vi.hoisted(() => {
   const ref = {
     update: vi.fn(() => Promise.resolve()),
@@ -40,7 +43,7 @@ vi.mock('../../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'u1' } }),
 }));
 vi.mock('../../../contexts/SeriesListContext', () => ({
-  useSeriesList: () => ({ refetchSeries: vi.fn() }),
+  useSeriesList: () => ({ refetchSeries: vi.fn(), resolveSeriesNotification }),
 }));
 vi.mock('../../../contexts/ThemeContext', () => ({
   useTheme: () => ({
@@ -54,6 +57,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
     },
   }),
 }));
+vi.mock('../../../services/firebase/seriesVersionBump', () => ({ bumpSeriesVersion: vi.fn() }));
 vi.mock('../../../lib/interaction/toast', () => ({ showUndoToast: vi.fn() }));
 vi.mock('../../../lib/settings/notificationSettings', () => ({
   snoozeNotifications: vi.fn(() => Promise.resolve()),
@@ -81,6 +85,7 @@ const makeSeries = (over: Partial<Series> = {}): Series =>
 afterEach(() => {
   cleanup();
   navigate.mockReset();
+  resolveSeriesNotification.mockReset();
 });
 
 describe('CarouselNotification', () => {
@@ -150,5 +155,35 @@ describe('CarouselNotification', () => {
       />
     );
     expect(screen.getByRole('button', { name: 'Minimieren' })).toBeInTheDocument();
+  });
+
+  it('nimmt eine von der Watchlist entfernte Serie aus inaktiv und abgeschlossen heraus', async () => {
+    render(
+      <CarouselNotification
+        series={[makeSeries({ watchlist: true }), makeSeries({ id: 7, watchlist: true })]}
+        onDismiss={vi.fn()}
+        variant="inactive"
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Entfernen/ }));
+    await waitFor(
+      () => expect(resolveSeriesNotification).toHaveBeenCalledWith(['inactive', 'completed'], 42),
+      { timeout: 2000 }
+    );
+  });
+
+  it('erledigt einen beendeten Rewatch nur in der Rewatch-Liste', async () => {
+    render(
+      <CarouselNotification
+        series={[makeSeries()]}
+        onDismiss={vi.fn()}
+        variant="inactive-rewatch"
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Beenden/ }));
+    await waitFor(
+      () => expect(resolveSeriesNotification).toHaveBeenCalledWith(['inactive-rewatch'], 42),
+      { timeout: 2000 }
+    );
   });
 });
