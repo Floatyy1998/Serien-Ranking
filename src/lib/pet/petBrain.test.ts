@@ -139,6 +139,17 @@ describe('PetBrain', () => {
     expect(brain.hasLetter).toBe(false);
   });
 
+  it('lässt den Brief liegen, bis er geöffnet wird, ohne das Pet zu blockieren', () => {
+    const brain = new PetBrain(200, seeded(8));
+    brain.update(1 / 60, ENV);
+    brain.react('letter');
+    run(brain, 150);
+    expect(brain.hasLetter).toBe(true);
+    expect(brain.engaged).toBe(false);
+    brain.dismissLetter();
+    expect(brain.hasLetter).toBe(false);
+  });
+
   it('spielt Ball und meldet die Schüsse', () => {
     const brain = new PetBrain(200, seeded(11));
     brain.update(1 / 60, ENV);

@@ -429,7 +429,7 @@ export class PetBrain {
       this.activity === 'eat' ||
       this.activity === 'deliver' ||
       this.activity === 'dead' ||
-      this.props.some((p) => p.kind === 'snack' || p.kind === 'letter')
+      this.props.some((p) => p.kind === 'snack' || (p.kind === 'letter' && p.carried))
     );
   }
 
@@ -1467,7 +1467,8 @@ export class PetBrain {
       letter.carried = false;
       letter.x = this.x + 14 * (this.dir > 0 ? 1 : -1);
       letter.h = 6;
-      letter.ttl = 90;
+      // bleibt liegen, bis er geöffnet wird
+      letter.ttl = Infinity;
     }
     this.burst('sparkle', 5, 6);
     this.start('sit', 6);
@@ -1477,7 +1478,7 @@ export class PetBrain {
     for (const p of this.props) {
       if (p.carried && p.kind === 'letter') {
         p.carried = false;
-        p.ttl = 90;
+        p.ttl = Infinity;
       }
     }
     this.props = this.props.filter((p) => !(p.carried && p.kind === 'popcorn'));

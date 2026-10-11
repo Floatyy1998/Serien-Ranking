@@ -309,17 +309,15 @@ export const PetStage = ({
     });
   }, [allSeriesList, showBubble, reactAll]);
 
-  // Brief: einmal am Tag, wenn heute neue Folgen laufen
+  // Brief: wenn heute neue Folgen laufen; er bleibt liegen, bis er geöffnet wird
   useEffect(() => {
-    if (!pet.isAlive || unwatchedToday <= 0) return;
-    if (readLetterDay() === dayKey()) return;
+    if (unwatchedToday <= 0) {
+      getBrain().dismissLetter();
+      return;
+    }
+    if (!pet.isAlive || readLetterDay() === dayKey() || getBrain().hasLetter) return;
     const timer = setTimeout(() => {
-      try {
-        localStorage.setItem(LETTER_KEY, dayKey());
-      } catch {
-        // ohne Storage kommt der Brief eben öfter
-      }
-      getBrain().react('letter');
+      if (!getBrain().hasLetter) getBrain().react('letter');
     }, 4500);
     return () => clearTimeout(timer);
   }, [pet.isAlive, unwatchedToday, getBrain]);
@@ -732,6 +730,11 @@ export const PetStage = ({
           className="pet-stage__letter"
           aria-label={t('Brief öffnen: neue Folgen heute')}
           onClick={() => {
+            try {
+              localStorage.setItem(LETTER_KEY, dayKey());
+            } catch {
+              // ohne Storage kommt der Brief eben beim nächsten Öffnen wieder
+            }
             getBrain().dismissLetter();
             onOpenCalendar();
           }}
