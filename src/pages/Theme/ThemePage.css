@@ -210,3 +210,9 @@
     margin: 0 auto;
   }
 }
+
+.theme-spooky-note {
+  margin: -6px 4px 16px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}

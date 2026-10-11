@@ -312,6 +312,11 @@ const settings: Record<string, string> = {
   'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
     'Your friends still see you in their leaderboard',
   'Streaming-Erinnerung': 'Streaming reminder',
+  'Jetzt Saison': 'In season now',
+  'Spinnennetze, Skelette und Kürbisfarben in der ganzen App':
+    'Cobwebs, skeletons and pumpkin colors across the whole app',
+  'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.':
+    'Spooky Season is covering your colors right now. Picking a theme or a color turns it off.',
 };
 
 export default settings;

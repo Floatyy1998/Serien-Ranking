@@ -9,6 +9,7 @@ import { t } from '../../services/i18n';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
 import { ResetSection } from './ResetSection';
+import { SpookySeasonCard } from './SpookySeasonCard';
 import './ThemePage.css';
 
 const presetThemes: PresetTheme[] = [
@@ -118,7 +119,7 @@ export const ThemePage = () => {
 
   const handleColorChange = useCallback(
     (key: string, value: string) => {
-      updateTheme({ [key]: value });
+      updateTheme({ [key]: value, spooky: false });
     },
     [updateTheme]
   );
@@ -131,12 +132,16 @@ export const ThemePage = () => {
         backgroundColor: preset.backgroundColor,
         surfaceColor: preset.surfaceColor,
         accentColor: preset.accentColor,
+        spooky: false,
       });
     },
     [updateTheme]
   );
 
+  const toggleSpooky = useCallback((next: boolean) => updateTheme({ spooky: next }), [updateTheme]);
+
   const isPresetActive = (preset: PresetTheme) =>
+    !userConfig.spooky &&
     userConfig.primaryColor === preset.primaryColor &&
     userConfig.backgroundColor === preset.backgroundColor &&
     userConfig.surfaceColor === preset.surfaceColor &&
@@ -155,6 +160,14 @@ export const ThemePage = () => {
       />
 
       <div className="theme-content">
+        <SpookySeasonCard active={!!userConfig.spooky} onToggle={toggleSpooky} />
+        {userConfig.spooky && (
+          <p className="theme-spooky-note" style={{ color: currentTheme.text.muted }}>
+            {t(
+              'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.'
+            )}
+          </p>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

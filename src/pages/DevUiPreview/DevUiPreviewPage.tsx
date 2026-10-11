@@ -7,6 +7,7 @@ import { PageTourSheet } from '../../features/tour/PageTourSheet';
 import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
+import { ThemePage } from '../Theme/ThemePage';
 import {
   CatchUpPreview,
   RatingsYearFilterPreview,
@@ -141,6 +142,7 @@ const LightboxPreview = () => {
 };
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
+  { id: 'theme', label: 'Design', render: () => <ThemePage /> },
   { id: 'manga', label: 'Manga: Übersicht', render: () => <MangaOverviewPreview /> },
   { id: 'manga-detail', label: 'Manga: Detail', render: () => <MangaDetailOwnedPreview /> },
   { id: 'manga-foreign', label: 'Manga: Vorschau', render: () => <MangaDetailForeignPreview /> },

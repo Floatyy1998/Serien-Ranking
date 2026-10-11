@@ -58,7 +58,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 vi.mock('../../theme/colorUtils', () => ({ getContrastRatio: () => contrastRef.current }));
-vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
+vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn(), hapticSelect: vi.fn() }));
 vi.mock('../../components/ui', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
   PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -80,6 +80,19 @@ vi.mock('./ColorEditor', () => ({
     category: ColorCategory;
     onColorChange: (k: string, v: string) => void;
   }) => <button onClick={() => onColorChange(category.key, '#00ff00')}>{category.name}</button>,
+}));
+vi.mock('./SpookySeasonCard', () => ({
+  SpookySeasonCard: ({
+    active,
+    onToggle,
+  }: {
+    active: boolean;
+    onToggle: (next: boolean) => void;
+  }) => (
+    <button role="switch" aria-checked={active} onClick={() => onToggle(!active)}>
+      spooky
+    </button>
+  ),
 }));
 vi.mock('./ResetSection', () => ({
   ResetSection: ({ onReset }: { onReset: () => void }) => (
@@ -114,13 +127,28 @@ describe('ThemePage', () => {
       backgroundColor: '#030d18',
       surfaceColor: '#060f20',
       accentColor: '#7c3aed',
+      spooky: false,
     });
   });
 
   it('updates a single color from a color editor', () => {
     render(<ThemePage />);
     fireEvent.click(screen.getByText('Primär'));
-    expect(updateTheme).toHaveBeenCalledWith({ primaryColor: '#00ff00' });
+    expect(updateTheme).toHaveBeenCalledWith({ primaryColor: '#00ff00', spooky: false });
+  });
+
+  it('toggles Spooky Season and shows the override hint while active', () => {
+    render(<ThemePage />);
+    fireEvent.click(screen.getByRole('switch'));
+    expect(updateTheme).toHaveBeenCalledWith({ spooky: true });
+    expect(screen.queryByText(/liegt gerade über deinen Farben/)).toBeNull();
+
+    cleanup();
+    configRef.current = { ...configRef.current, spooky: 'true' };
+    render(<ThemePage />);
+    expect(screen.getByText(/liegt gerade über deinen Farben/)).toBeInTheDocument();
+    const { spooky: _spooky, ...rest } = configRef.current;
+    configRef.current = rest;
   });
 
   it('shows a contrast warning when the ratio is too low', () => {

@@ -1,4 +1,5 @@
 import { dbGet, paths } from '../services/db/ref';
+import { SPOOKY_PALETTE } from '../theme/spookyTheme';
 
 // Funktion um eine Farbe heller oder dunkler zu machen
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
@@ -62,6 +63,11 @@ export const loadSavedTheme = async (userId?: string) => {
   // Theme anwenden oder Defaults verwenden
   const root = document.documentElement;
 
+  if (theme?.spooky) {
+    theme = { ...theme, ...SPOOKY_PALETTE };
+    root.dataset.season = 'spooky';
+  }
+
   if (theme) {
     const safe = (c: string | undefined, fallback: string) =>
       c && VALID_HEX.test(c) ? c : fallback;
@@ -77,7 +83,7 @@ export const loadSavedTheme = async (userId?: string) => {
     root.style.setProperty('--theme-background', bg);
     root.style.setProperty('--theme-surface', surface);
     root.style.setProperty('--theme-text-primary', primary);
-    root.style.setProperty('--theme-text-secondary', '#f1e8ee');
+    root.style.setProperty('--theme-text-secondary', safe(theme.textColor, '#f1e8ee'));
 
     // Mobile-first app - no background images needed
 

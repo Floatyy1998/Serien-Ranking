@@ -21,6 +21,7 @@ export interface UserThemeConfig {
   backgroundImageOpacity?: number;
   backgroundImageBlur?: number;
   backgroundIsVideo?: boolean;
+  spooky?: boolean;
 }
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
@@ -201,6 +202,7 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
       config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
     backgroundImageBlur: config.backgroundImageBlur ?? defaultThemeConfig.backgroundImageBlur,
     backgroundIsVideo: config.backgroundIsVideo ?? defaultThemeConfig.backgroundIsVideo,
+    ...(config.spooky === true ? { spooky: true } : {}),
   };
 }
 

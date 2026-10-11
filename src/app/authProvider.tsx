@@ -9,6 +9,7 @@ import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from '../services/firebase/userSearchIndex';
 import { dbGet, dbRef, paths, serverTimestamp, userPath } from '../services/db/ref';
 import { writeWelcomeNotifications } from '../services/notifications/welcomeNotifications';
+import { SPOOKY_PALETTE } from '../theme/spookyTheme';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -139,7 +140,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const themeRef = dbRef(paths.theme(user.uid));
                 try {
                   const themeSnapshot = await themeRef.once('value');
-                  const cloudTheme = themeSnapshot.val();
+                  const storedCloudTheme = themeSnapshot.val();
+                  const cloudTheme = storedCloudTheme?.spooky
+                    ? { ...storedCloudTheme, ...SPOOKY_PALETTE }
+                    : storedCloudTheme;
 
                   if (cloudTheme) {
                     const validHex = (c: string | undefined, fb: string) =>
@@ -163,7 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // WICHTIG: Cloud-Theme temporär im localStorage speichern,
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
                     // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
-                    localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
+                    localStorage.setItem('customTheme', JSON.stringify(storedCloudTheme));
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }

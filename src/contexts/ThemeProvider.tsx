@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import type { UserThemeConfig } from '../theme/dynamicTheme';
+import { resolveThemeConfig } from '../theme/spookyTheme';
 import {
   createMuiTheme,
   defaultThemeConfig,
@@ -18,10 +19,15 @@ import type { ThemeContextType } from './ThemeContext';
 // Zentrale Funktion zum Setzen aller CSS-Variablen
 function applyCSSVariables(
   theme: ReturnType<typeof generateDynamicTheme>,
-  config: UserThemeConfig,
+  userConfig: UserThemeConfig,
   isMobileDevice: boolean
 ) {
   const root = document.documentElement;
+  const config = resolveThemeConfig(userConfig);
+  if (config.spooky) root.dataset.season = 'spooky';
+  else delete root.dataset.season;
+  const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement | null;
+  if (metaThemeColor) metaThemeColor.content = theme.background.default;
 
   // Primäre Farben
   root.style.setProperty('--color-primary', theme.primary);
@@ -78,6 +84,8 @@ function applyCSSVariables(
   }
 }
 
+const buildTheme = (config: UserThemeConfig) => generateDynamicTheme(resolveThemeConfig(config));
+
 function isMobile(): boolean {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 }
@@ -131,7 +139,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const [userConfig, setUserConfig] = useState<UserThemeConfig>(initialConfig);
   const [currentTheme, setCurrentTheme] = useState(() => {
     try {
-      const theme = generateDynamicTheme(initialConfig);
+      const theme = buildTheme(initialConfig);
       setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
       // Themed Poster-Placeholder vor dem ersten Render setzen, sonst rendert
       // jede vor dem ThemeContext-Effect ausgefuehrte getImageUrl-Aufrufkette
@@ -188,7 +196,9 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
       if (syncMode === 'cloud' && user?.uid) {
         try {
-          await dbRef(paths.theme(user.uid)).set(config); // Gleicher Pfad wie Desktop!
+          // RTDB lehnt undefined-Felder (z. B. backgroundImage) mit einem Throw ab
+          const cloudConfig = JSON.parse(JSON.stringify(config)) as UserThemeConfig;
+          await dbRef(paths.theme(user.uid)).set(cloudConfig); // Gleicher Pfad wie Desktop!
         } catch {
           // ignore — theme is persisted in localStorage too, cloud sync is best-effort
         }
@@ -254,7 +264,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     setUserConfig(defaultThemeConfig);
     const newTheme = generateDynamicTheme(defaultThemeConfig);
     setCurrentTheme(newTheme);
-    updateCSSVariables(newTheme);
+    updateCSSVariables(newTheme, defaultThemeConfig);
     localStorage.removeItem('customTheme'); // Gleicher Key wie Desktop!
 
     // Lösche auch aus Firebase
@@ -313,7 +323,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       const validatedConfig = validateThemeConfig(loadedConfig);
       setUserConfig(validatedConfig);
 
-      const newTheme = generateDynamicTheme(validatedConfig);
+      const newTheme = buildTheme(validatedConfig);
       setCurrentTheme(newTheme);
       updateCSSVariables(newTheme, validatedConfig);
     } else {
@@ -337,7 +347,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       const validatedConfig = validateThemeConfig({ ...userConfig, ...newConfig });
       setUserConfig(validatedConfig);
 
-      const newTheme = generateDynamicTheme(validatedConfig);
+      const newTheme = buildTheme(validatedConfig);
       setCurrentTheme(newTheme);
 
       // CSS-Variablen für dynamisches Styling setzen (mit Config übergeben)

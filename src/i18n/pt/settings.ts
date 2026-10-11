@@ -276,6 +276,11 @@ const dict: Record<string, string> = {
   'Deine Freunde sehen dich in ihrer Rangliste weiterhin':
     'Seus amigos continuam vendo você no ranking deles',
   'Streaming-Erinnerung': 'Lembrete de streaming',
+  'Jetzt Saison': 'É a temporada',
+  'Spinnennetze, Skelette und Kürbisfarben in der ganzen App':
+    'Teias de aranha, esqueletos e cores de abóbora em todo o app',
+  'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.':
+    'A Spooky Season está cobrindo suas cores agora. Escolher um tema ou uma cor a desativa.',
 };
 
 export default dict;

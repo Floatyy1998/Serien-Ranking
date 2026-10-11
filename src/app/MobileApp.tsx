@@ -19,6 +19,7 @@ import { SharedListSync } from '../components/SharedListSync';
 import { MediaActionsHost } from '../features/mediaActions/MediaActionsHost';
 import { EpisodeRatingSheetHost } from '../components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from '../components/AvatarViewerHost';
+import { SpookySeasonHost } from '../components/seasonal/SpookySeasonHost';
 import { bindOwnPhotoURL } from '../services/profile/ownProfilePhoto';
 import { PageTourHost } from '../features/tour';
 import '../styles/App.css';
@@ -246,6 +247,7 @@ export const MobileApp = () => {
       <EpisodeRatingSheetHost />
       <PageTourHost />
       <AvatarViewerHost />
+      <SpookySeasonHost />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

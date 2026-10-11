@@ -1,0 +1,481 @@
+/* Spooky Season — Deko-Ebene über dem Seiteninhalt, unter Overlays, Dock und Sheets */
+.spooky-layer {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-overlay) - 50);
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+.spooky-moonlight {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      90% 42% at 88% -6%,
+      color-mix(in srgb, var(--theme-primary) 11%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 40% at 0% 104%,
+      color-mix(in srgb, var(--theme-accent) 10%, transparent),
+      transparent 72%
+    );
+}
+
+/* Bodennebel: zwei Bänder, nahtlos gekachelt und gegeneinander verschoben */
+.spooky-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+}
+
+.spooky-fog__band {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  will-change: transform;
+}
+
+.spooky-fog__band--back {
+  background-image:
+    radial-gradient(34% 46% at 18% 88%, rgba(214, 200, 236, 0.09), transparent 70%),
+    radial-gradient(28% 38% at 52% 96%, rgba(214, 200, 236, 0.07), transparent 70%),
+    radial-gradient(36% 50% at 84% 90%, rgba(214, 200, 236, 0.08), transparent 70%);
+  animation: spooky-fog-drift 70s linear infinite;
+}
+
+.spooky-fog__band--front {
+  background-image:
+    radial-gradient(30% 40% at 30% 100%, rgba(239, 230, 214, 0.08), transparent 70%),
+    radial-gradient(40% 44% at 72% 100%, rgba(239, 230, 214, 0.07), transparent 70%);
+  animation: spooky-fog-drift 44s linear infinite reverse;
+}
+
+@keyframes spooky-fog-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Spinnennetze in den oberen Ecken */
+.spooky-corner {
+  position: absolute;
+  top: 0;
+  width: clamp(124px, 34vw, 236px);
+  aspect-ratio: 1;
+}
+
+.spooky-corner--left {
+  left: 0;
+}
+
+.spooky-corner--right {
+  right: 0;
+  width: clamp(96px, 25vw, 176px);
+  transform: scaleX(-1);
+}
+
+.spooky-web {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.spk-dew {
+  fill: #fff8ec;
+  animation: spooky-dew 5.2s ease-in-out infinite;
+}
+
+@keyframes spooky-dew {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* Spinne */
+.spooky-spider {
+  position: absolute;
+  overflow: visible;
+  filter: drop-shadow(0 0 2px rgba(255, 196, 140, 0.45)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7));
+}
+
+.spk-femur,
+.spk-tibia,
+.spk-palp {
+  fill: none;
+  stroke: #0f0b13;
+  stroke-linecap: round;
+}
+
+.spk-femur {
+  stroke-width: 2.3;
+}
+
+.spk-tibia {
+  stroke-width: 1.5;
+}
+
+.spk-palp {
+  stroke-width: 1.3;
+}
+
+.spk-mark {
+  fill: var(--theme-primary);
+  opacity: 0.92;
+}
+
+.spk-sheen {
+  fill: #fff;
+  opacity: 0.16;
+}
+
+.spk-eye {
+  fill: #ff5a24;
+}
+
+.spk-eye--small {
+  fill: #ff8a4a;
+  opacity: 0.8;
+}
+
+.spk-legs {
+  transform-box: view-box;
+  transform-origin: 0 -6px;
+}
+
+.spooky-spider--resting {
+  width: clamp(26px, 7.4vw, 38px);
+  transform: translate(-50%, -50%) rotate(-38deg);
+}
+
+.spooky-spider--resting .spk-legs--l {
+  animation: spooky-twitch-l 6.5s ease-in-out infinite;
+}
+
+.spooky-spider--resting .spk-legs--r {
+  animation: spooky-twitch-r 6.5s ease-in-out infinite;
+}
+
+@keyframes spooky-twitch-l {
+  0%,
+  84%,
+  100% {
+    transform: rotate(0deg);
+  }
+  87% {
+    transform: rotate(-7deg);
+  }
+  90% {
+    transform: rotate(3deg);
+  }
+  93% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes spooky-twitch-r {
+  0%,
+  84%,
+  100% {
+    transform: rotate(0deg);
+  }
+  87% {
+    transform: rotate(6deg);
+  }
+  90% {
+    transform: rotate(-4deg);
+  }
+  93% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Abseilende Spinne: Pendel am langen Faden, gelegentlicher Fall und Aufstieg */
+.spooky-dangler {
+  position: absolute;
+  top: -240px;
+  right: clamp(56px, 17vw, 260px);
+  transform-origin: 50% 0;
+  animation: spooky-sway 8s ease-in-out infinite;
+}
+
+.spooky-dangler__bob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: spooky-drop 18s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+.spooky-dangler__thread {
+  width: 1px;
+  height: calc(240px + env(safe-area-inset-top, 0px) + 40px);
+  background: linear-gradient(
+    to bottom,
+    rgba(239, 230, 214, 0.08),
+    rgba(239, 230, 214, 0.5) 85%,
+    rgba(239, 230, 214, 0.7)
+  );
+}
+
+.spooky-spider--hanging {
+  position: relative;
+  width: clamp(30px, 8.6vw, 42px);
+  margin-top: -6px;
+  transform: rotate(180deg);
+}
+
+.spooky-spider--hanging .spk-legs--l {
+  animation: spooky-twitch-l 4.4s ease-in-out infinite;
+}
+
+.spooky-spider--hanging .spk-legs--r {
+  animation: spooky-twitch-r 4.4s ease-in-out infinite 0.15s;
+}
+
+@keyframes spooky-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+
+@keyframes spooky-drop {
+  0%,
+  100% {
+    transform: translateY(-26px);
+  }
+  34% {
+    transform: translateY(-14px);
+  }
+  41% {
+    transform: translateY(62px);
+  }
+  45% {
+    transform: translateY(48px);
+  }
+  49% {
+    transform: translateY(56px);
+  }
+  70% {
+    transform: translateY(52px);
+  }
+}
+
+/* Schädel, der ab und zu vom linken Rand hereinlugt */
+.spooky-peek {
+  position: absolute;
+  left: 0;
+  top: 52%;
+  width: clamp(92px, 24vw, 128px);
+  transform-origin: 0 50%;
+  transform: translateX(-115%);
+  animation: spooky-peek 32s ease-in-out infinite;
+  animation-delay: -18s;
+}
+
+.spooky-peek__skull {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, 0.6));
+}
+
+@keyframes spooky-peek {
+  0%,
+  66% {
+    transform: translateX(-115%) rotate(0deg);
+  }
+  71% {
+    transform: translateX(-30%) rotate(9deg);
+  }
+  76% {
+    transform: translateX(-27%) rotate(15deg);
+  }
+  81% {
+    transform: translateX(-29%) rotate(6deg);
+  }
+  87% {
+    transform: translateX(-28%) rotate(12deg);
+  }
+  92%,
+  100% {
+    transform: translateX(-115%) rotate(0deg);
+  }
+}
+
+.skl-socket {
+  fill: #150e17;
+}
+
+.skl-crack {
+  fill: none;
+  stroke: #7a6852;
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
+.skl-line {
+  fill: none;
+  stroke: #6f5f4b;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.skl-line--thin {
+  stroke-width: 1;
+}
+
+.skl-knuckle {
+  fill: none;
+  stroke: #8f7f66;
+  stroke-width: 0.7;
+}
+
+.skl-glow {
+  animation: spooky-ember 2.6s ease-in-out infinite;
+}
+
+@keyframes spooky-ember {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  40% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.7;
+  }
+  62% {
+    opacity: 0.95;
+  }
+}
+
+/* Fledermäuse — vom Mond angestrahlt, kreuzen gelegentlich den oberen Bereich */
+.spooky-bat {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-80px, 16vh);
+  animation: spooky-bat-flight 24s linear infinite;
+}
+
+.spooky-bat__svg {
+  display: block;
+  width: 100%;
+  fill: #0a070d;
+  overflow: visible;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-primary) 45%, transparent));
+}
+
+.bat-eye {
+  fill: var(--theme-primary);
+}
+
+.bat-wings {
+  transform-box: view-box;
+  transform-origin: 32px 15px;
+  animation: spooky-flap 0.24s ease-in-out infinite alternate;
+}
+
+.spooky-bat--0 {
+  width: 34px;
+  animation-delay: -21s;
+}
+
+.spooky-bat--1 {
+  width: 24px;
+  animation-delay: -20.4s;
+  animation-duration: 25s;
+  margin-top: 26px;
+}
+
+.spooky-bat--1 .bat-wings {
+  animation-duration: 0.19s;
+}
+
+.spooky-bat--2 {
+  width: 18px;
+  animation-delay: -9s;
+  animation-duration: 27s;
+  margin-top: 44px;
+}
+
+.spooky-bat--2 .bat-wings {
+  animation-duration: 0.17s;
+}
+
+@keyframes spooky-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(-0.45);
+  }
+}
+
+@keyframes spooky-bat-flight {
+  0% {
+    transform: translate(-80px, 22vh) rotate(4deg);
+  }
+  5% {
+    transform: translate(22vw, 13vh) rotate(-6deg);
+  }
+  10% {
+    transform: translate(46vw, 18vh) rotate(5deg);
+  }
+  15% {
+    transform: translate(72vw, 8vh) rotate(-8deg);
+  }
+  20%,
+  100% {
+    transform: translate(calc(100vw + 80px), 12vh) rotate(0deg);
+  }
+}
+
+/* Kleine Netz-Ecke am Dock */
+:root[data-season='spooky'] .mobile-bottom-navigation::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 46px;
+  height: 46px;
+  border-top-right-radius: var(--radius-xl);
+  pointer-events: none;
+  opacity: 0.55;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 46' fill='none' stroke='%23efe6d6' stroke-width='0.7' stroke-linecap='round'%3E%3Cpath d='M46 0L4 0M46 0L14 18M46 0L28 32M46 0L46 42M46 0L36 38'/%3E%3Cpath d='M35 0Q37 5 38 6Q40 9 46 10M24 0Q26 9 29 11Q33 16 37 22Q40 23 46 22M14 0Q17 11 21 14Q26 21 31 27Q36 32 46 33' stroke-opacity='0.8'/%3E%3C/svg%3E")
+    no-repeat top right / 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spooky-layer *,
+  .spooky-layer *::before,
+  .spooky-layer *::after {
+    animation: none !important;
+  }
+
+  .spooky-bats,
+  .spooky-peek {
+    display: none;
+  }
+
+  .spooky-dangler__bob {
+    transform: translateY(-10px);
+  }
+}
