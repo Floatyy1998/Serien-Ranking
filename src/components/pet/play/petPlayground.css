@@ -1,0 +1,319 @@
+.pet-play {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.pet-play__stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.pet-play__floor {
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.14) 45%, transparent);
+  pointer-events: none;
+}
+
+.pet-play__canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 300px;
+  cursor: pointer;
+}
+
+.pet-play__hud {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  right: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px 12px;
+  pointer-events: none;
+}
+
+.pet-play__score {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pet-play__combo {
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.pet-play__time {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.pet-play__time-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.1s linear;
+}
+
+.pet-play__countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 900;
+  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.pet-play__how {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  margin: 0;
+  padding: 9px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+}
+
+.pet-play__result {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(260px, 86%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 14px 14px;
+  border: 1px solid;
+  border-radius: 22px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.pet-play__result-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pet-play__result-score {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.pet-play__result-best,
+.pet-play__reward {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pet-play__result-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.mobile-app .pet-play .pet-play__btn,
+.pet-play .pet-play__btn {
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pet-play .pet-play__btn--primary {
+  border: none;
+}
+
+.pet-play__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity 0.2s ease;
+}
+
+.pet-play__panel.is-busy {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.pet-play__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.pet-play__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.pet-play__meta {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pet-play__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobile-app .pet-play .pet-play__tile,
+.pet-play .pet-play__tile {
+  min-width: 0;
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 11px 3px 9px;
+  border: 1px solid;
+  border-radius: 18px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.pet-play .pet-play__tile.is-locked {
+  cursor: default;
+}
+
+.pet-play__tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pet-play__tile-icon svg {
+  font-size: 20px;
+}
+
+.pet-play__tile-label {
+  max-width: 100%;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.pet-play__tile-level {
+  margin-top: -3px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.mobile-app .pet-play .pet-play__game,
+.pet-play .pet-play__game {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 12px 14px 12px 12px;
+  border: 1px solid;
+  border-radius: 20px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.pet-play__game-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 14px;
+}
+
+.pet-play__game-icon svg {
+  font-size: 24px;
+}
+
+.pet-play__game-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pet-play__game-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.pet-play__game-sub {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pet-play .pet-play__game-play {
+  flex-shrink: 0;
+  font-size: 30px;
+}
+
+@media (min-width: 768px) {
+  .pet-play__canvas {
+    height: 340px;
+  }
+
+  .pet-play__grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}

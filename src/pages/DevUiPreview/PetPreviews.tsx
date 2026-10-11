@@ -5,6 +5,7 @@ import type { PetReaction, PetReactionTone } from '../../hooks/pet/usePetReactio
 import { pickReaction } from '../../hooks/pet/usePetReactions';
 import type { PetBrain, PetView, Reaction } from '../../lib/pet/petBrain';
 import { walkCycle } from '../../lib/pet/petMotion';
+import { PetCard } from '../Pets/PetCard';
 import type { SeasonId } from '../../theme/seasonalThemes';
 import type { Pet } from '../../types/pet.types';
 
@@ -17,6 +18,8 @@ function poseView(name: PoseName): PetView {
     x: 0,
     h: 0,
     flip: 1,
+    turn: 1,
+    roll: 0,
     tilt: 0,
     bob: 0,
     squashX: 1,
@@ -198,3 +201,35 @@ function btn(active: boolean): React.CSSProperties {
     minWidth: 0,
   };
 }
+
+export const PetPlaygroundPreview = ({ background = 'saturnView' }: { background?: string }) => {
+  const [type, setType] = useState<Pet['type']>('cat');
+  const [level, setLevel] = useState(12);
+  const pet = makeDevPet(type, level, { equippedBackground: background });
+  return (
+    <div style={{ minHeight: '100vh', paddingBottom: 40 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '12px 16px' }}>
+        {TYPES.map((tp) => (
+          <button key={tp} type="button" onClick={() => setType(tp)} style={btn(tp === type)}>
+            {tp}
+          </button>
+        ))}
+        {[1, 12, 30].map((lv) => (
+          <button key={lv} type="button" onClick={() => setLevel(lv)} style={btn(lv === level)}>
+            Lv {lv}
+          </button>
+        ))}
+      </div>
+      <PetCard
+        pet={pet}
+        currentMood="loved"
+        hungerPercentage={90}
+        happinessPercentage={95}
+        experiencePercentage={40}
+        experienceNeeded={300}
+        isHealthy
+        xpBonusHint=""
+      />
+    </div>
+  );
+};

@@ -50,6 +50,7 @@ export const PetsPage: React.FC = () => {
     createPet,
     feedPet,
     playWithPet,
+    cheerUpPet,
     revivePet,
     releasePet,
     changeColor,
@@ -168,6 +169,7 @@ export const PetsPage: React.FC = () => {
         experienceNeeded={experienceNeeded}
         isHealthy={isHealthy}
         xpBonusHint={xpBonusHint}
+        onPlayed={cheerUpPet}
       />
 
       {/* Action Buttons */}

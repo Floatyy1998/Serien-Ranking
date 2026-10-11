@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
 import { PetCard } from './PetCard';
@@ -15,6 +16,13 @@ vi.mock('../../contexts/ThemeContext', () => ({
       status: { error: '#f00' },
     },
   }),
+}));
+
+vi.mock('../../components/pet/play/PetPlayground', () => ({
+  PetPlayground: ({ scene }: { scene?: (stage: ReactNode) => ReactNode }) => {
+    const stage = <div data-testid="pet-canvas" />;
+    return <>{scene ? scene(stage) : stage}</>;
+  },
 }));
 
 vi.mock('../../components/pet', () => ({

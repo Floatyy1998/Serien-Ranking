@@ -13,6 +13,7 @@ import {
 import {
   feedPet,
   playWithPet,
+  cheerUpPet,
   updatePetStatus,
   updateAllPetsStatus,
   revivePet,
@@ -58,6 +59,7 @@ export const petService = {
   savePetWidgetPosition,
   feedPet,
   playWithPet,
+  cheerUpPet,
   updatePetStatus,
   updateAllPetsStatus,
   revivePet,

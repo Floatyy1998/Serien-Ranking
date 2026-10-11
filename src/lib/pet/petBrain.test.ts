@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PetBrain, type Activity, type BrainEnv } from './petBrain';
+import { PetBrain, SIGNATURE_OF, type Activity, type BrainEnv, type Species } from './petBrain';
 import { walkCycle } from './petMotion';
 
 function seeded(seed = 1) {
@@ -166,5 +166,57 @@ describe('PetBrain', () => {
     const seen = run(brain, 10, { alive: false });
     expect([...seen]).toEqual(['dead']);
     expect(brain.view().pose.eyes).toBe('closed');
+  });
+
+  it('bleibt stehen, wenn das Ziel hinter dem Rand liegt', () => {
+    const brain = new PetBrain(200, seeded(4));
+    brain.update(1 / 60, ENV);
+    brain.walkTo(ENV.maxX + 80, 1.4);
+    for (let i = 0; i < 60 * 15; i++) {
+      brain.update(1 / 60, ENV);
+      if (brain.activity !== 'walk') break;
+    }
+    expect(brain.activity).not.toBe('walk');
+    expect(brain.x).toBe(ENV.maxX);
+  });
+
+  it('lässt zwischen zwei Aktionen genug Ruhe', () => {
+    const ACTION: Activity[] = ['trick', 'hunt', 'chase', 'zoomies'];
+    const brain = new PetBrain(200, seeded(13));
+    const starts: number[] = [];
+    let prev: Activity = brain.activity;
+    let t = 0;
+    for (; t < 300; t += 1 / 60) {
+      brain.update(1 / 60, ENV);
+      if (ACTION.includes(brain.activity) && !ACTION.includes(prev)) starts.push(t);
+      prev = brain.activity;
+    }
+    expect(starts.length).toBeGreaterThan(2);
+    expect(starts[0]).toBeGreaterThan(9);
+    for (let i = 1; i < starts.length; i++) expect(starts[i] - starts[i - 1]).toBeGreaterThan(20);
+  });
+
+  it('zeigt für jede Tierart ihre Spezialbewegung und landet wieder', () => {
+    for (const species of Object.keys(SIGNATURE_OF) as Species[]) {
+      const brain = new PetBrain(200, seeded(3));
+      const env = { ...ENV, species };
+      brain.update(1 / 60, env);
+      brain.trick('signature');
+      expect(brain.activity).toBe('trick');
+      let rose = false;
+      for (let i = 0; i < 60 * 4; i++) {
+        brain.update(1 / 60, env);
+        const v = brain.view();
+        expect(Number.isFinite(v.x) && Number.isFinite(v.h) && Number.isFinite(v.roll)).toBe(true);
+        if (brain.h > 0) rose = true;
+      }
+      expect(brain.activity).not.toBe('trick');
+      expect(brain.h).toBe(0);
+      if (
+        ['fly', 'soar', 'float', 'pounce', 'mousejump', 'binky'].includes(SIGNATURE_OF[species])
+      ) {
+        expect(rose).toBe(true);
+      }
+    }
   });
 });

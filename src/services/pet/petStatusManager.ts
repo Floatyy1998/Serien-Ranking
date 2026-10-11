@@ -44,6 +44,16 @@ export async function playWithPet(userId: string, petId: string): Promise<Pet | 
   return pet;
 }
 
+// Ballspiel auf dem Dock und das Mini-Spiel: nur gute Laune, kein Hunger
+export async function cheerUpPet(userId: string, petId: string): Promise<Pet | null> {
+  const pet = await getUserPet(userId, petId);
+  if (!pet) return null;
+  if (!pet.isAlive) return pet;
+  pet.happiness = Math.min(100, pet.happiness + PET_CONFIG.HAPPINESS_INCREASE_PER_PLAY);
+  await dbRef(userPath(userId, 'pets', petId)).update({ happiness: pet.happiness });
+  return pet;
+}
+
 // Auto-Update (Hunger steigt ueber Zeit)
 export async function updatePetStatus(userId: string, petId: string): Promise<Pet | null> {
   const pet = await getUserPet(userId, petId);

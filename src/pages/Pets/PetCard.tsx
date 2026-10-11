@@ -1,6 +1,17 @@
+import {
+  Bedtime,
+  Celebration,
+  Favorite,
+  Mood,
+  MoodBad,
+  Restaurant,
+  SentimentVerySatisfied,
+  SportsEsports,
+  Warning,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { memo } from 'react';
-import { EvolvingPixelPet } from '../../components/pet';
+import { memo, type ReactNode } from 'react';
+import { PetPlayground } from '../../components/pet/play/PetPlayground';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
@@ -9,14 +20,16 @@ import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 
-const MOOD_EMOJIS: Record<string, string> = {
-  happy: '😊',
-  excited: '🤩',
-  playful: '🎮',
-  sleepy: '😴',
-  hungry: '🍖',
-  sad: '😢',
-  festive: '🎄',
+const MOOD_ICONS: Record<string, ReactNode> = {
+  happy: <Mood />,
+  excited: <SentimentVerySatisfied />,
+  playful: <SportsEsports />,
+  sleepy: <Bedtime />,
+  hungry: <Restaurant />,
+  sad: <MoodBad />,
+  festive: <Celebration />,
+  scared: <Warning />,
+  loved: <Favorite />,
 };
 
 interface PetCardProps {
@@ -28,6 +41,8 @@ interface PetCardProps {
   experienceNeeded: number;
   isHealthy: boolean;
   xpBonusHint: string;
+  /** Erste Mini-Spiel-Runde des Tages macht das Pet glücklicher. */
+  onPlayed?: () => void;
 }
 
 export const PetCard = memo(function PetCard({
@@ -39,6 +54,7 @@ export const PetCard = memo(function PetCard({
   experienceNeeded,
   isHealthy,
   xpBonusHint,
+  onPlayed,
 }: PetCardProps) {
   const { currentTheme } = useTheme();
 
@@ -140,66 +156,70 @@ export const PetCard = memo(function PetCard({
         transition={{ delay: 0.2 }}
         className="pet-card-display-wrapper"
       >
-        <div
-          className={`pet-card-display${
-            pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.animationClass
-              ? ` ${PET_BACKGROUNDS[pet.equippedBackground].animationClass}`
-              : ''
-          }`}
-          style={{
-            background:
-              pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]
-                ? PET_BACKGROUNDS[pet.equippedBackground].background
-                : `${currentTheme.background.surface}ee`,
-            border: `1px solid ${currentTheme.border.default}`,
-          }}
-        >
-          {/* Custom overlay layer (e.g. scanlines, stars) */}
-          {pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.overlay && (
+        <PetPlayground
+          pet={pet}
+          onPlayed={onPlayed}
+          scene={(stage) => (
             <div
-              className="pet-card-display-overlay"
-              style={{ background: PET_BACKGROUNDS[pet.equippedBackground].overlay }}
-            />
-          )}
-          {/* Glow */}
-          <div
-            className="pet-card-glow"
-            style={
-              pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.glowColor
-                ? {
-                    background: `radial-gradient(circle, ${PET_BACKGROUNDS[pet.equippedBackground].glowColor}, transparent 70%)`,
-                  }
-                : undefined
-            }
-          />
-
-          <div className="pet-card-pet-wrapper">
-            <EvolvingPixelPet pet={pet} size={160} animated={pet.isAlive} />
-          </div>
-
-          {/* Mood Badge */}
-          <div className="pet-card-mood-badges">
-            {!pet.isAlive && (
-              <div
-                className="pet-card-dead-badge"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.status.error}, ${currentTheme.status?.error || '#ef4444'})`,
-                }}
-              >
-                {t('Tot')}
-              </div>
-            )}
-            <div
-              className="pet-card-mood-emoji"
+              className={`pet-card-display pet-card-display--room${
+                pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.animationClass
+                  ? ` ${PET_BACKGROUNDS[pet.equippedBackground].animationClass}`
+                  : ''
+              }`}
               style={{
-                background: currentTheme.background.default,
+                background:
+                  pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]
+                    ? PET_BACKGROUNDS[pet.equippedBackground].background
+                    : `${currentTheme.background.surface}ee`,
                 border: `1px solid ${currentTheme.border.default}`,
               }}
             >
-              {(currentMood && MOOD_EMOJIS[currentMood]) || '😊'}
+              {/* Custom overlay layer (e.g. scanlines, stars) */}
+              {pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.overlay && (
+                <div
+                  className="pet-card-display-overlay"
+                  style={{ background: PET_BACKGROUNDS[pet.equippedBackground].overlay }}
+                />
+              )}
+              {/* Glow */}
+              <div
+                className="pet-card-glow"
+                style={
+                  pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.glowColor
+                    ? {
+                        background: `radial-gradient(circle, ${PET_BACKGROUNDS[pet.equippedBackground].glowColor}, transparent 70%)`,
+                      }
+                    : undefined
+                }
+              />
+
+              {stage}
+
+              {/* Mood Badge */}
+              <div className="pet-card-mood-badges">
+                {!pet.isAlive && (
+                  <div
+                    className="pet-card-dead-badge"
+                    style={{
+                      background: `linear-gradient(135deg, ${currentTheme.status.error}, ${currentTheme.status?.error || '#ef4444'})`,
+                    }}
+                  >
+                    {t('Tot')}
+                  </div>
+                )}
+                <div
+                  className="pet-card-mood-emoji"
+                  style={{
+                    background: currentTheme.background.default,
+                    border: `1px solid ${currentTheme.border.default}`,
+                  }}
+                >
+                  {(currentMood && MOOD_ICONS[currentMood]) || <Mood />}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        />
       </motion.div>
 
       {/* Stats Grid */}

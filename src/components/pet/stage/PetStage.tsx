@@ -340,6 +340,7 @@ export const PetStage = ({
         roam: props.roam && !reduce,
         alive: p.isAlive,
         ps: PS,
+        species: p.type,
       };
       brain.update(dt, env);
 

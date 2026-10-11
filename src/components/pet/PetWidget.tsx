@@ -174,7 +174,7 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
   const handlePlay = useCallback(() => {
     if (!user || !pet) return;
     petService
-      .playWithPet(user.uid, pet.id)
+      .cheerUpPet(user.uid, pet.id)
       .then((updated) => {
         if (updated) setPet({ ...updated });
       })

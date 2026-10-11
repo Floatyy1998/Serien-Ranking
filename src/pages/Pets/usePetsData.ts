@@ -168,6 +168,16 @@ export function usePetsData(enabled = true) {
     }
   };
 
+  const cheerUpPet = async () => {
+    if (!user || !pet) return;
+    try {
+      const updatedPet = await petService.cheerUpPet(user.uid, pet.id);
+      if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
+    } catch (error) {
+      console.error('Error cheering up pet:', error);
+    }
+  };
+
   const revivePet = async () => {
     if (!user || !pet) return;
     try {
@@ -327,6 +337,7 @@ export function usePetsData(enabled = true) {
     createPet,
     feedPet,
     playWithPet,
+    cheerUpPet,
     revivePet,
     releasePet,
     changeColor,

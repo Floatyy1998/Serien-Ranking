@@ -75,19 +75,28 @@ export interface StageFrame {
 }
 
 const CONFETTI = ['#ff5c8a', '#ffd166', '#7bdff2', '#b388ff', '#9be15d'];
+const NOTE_COLORS = ['#ffd166', '#7bdff2', '#ff8fb1', '#b9f6ca', '#d1b3ff'];
 
 export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): void {
   const { view, ps, groundY } = f;
 
   drawShadow(ctx, view.x, groundY, view.h, ps);
 
-  for (const p of f.props) if (!p.carried) drawProp(ctx, p, groundY, ps, f.time, f.accent);
+  drawProps(ctx, f.props, groundY, ps, f.time, f.accent);
 
+  const feet = feetY(f.pet);
+  const turn = Math.sign(view.turn || 1) * Math.max(0.14, Math.abs(view.turn));
   ctx.save();
   ctx.translate(view.x, groundY - view.h - view.bob);
   ctx.rotate(view.tilt);
-  ctx.scale(view.flip * view.squashX, view.squashY);
-  ctx.translate(-16 * ps, -feetY(f.pet) * ps);
+  if (view.roll) {
+    const mid = (feet - 13) * ps;
+    ctx.translate(0, -mid);
+    ctx.rotate(view.roll);
+    ctx.translate(0, mid);
+  }
+  ctx.scale(view.flip * view.squashX * turn, view.squashY);
+  ctx.translate(-16 * ps, -feet * ps);
   drawPetFigure(ctx, f.pet, {
     ps,
     offset: 0,
@@ -104,7 +113,27 @@ export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): vo
     if (p.carried) drawCarried(ctx, p, view, groundY, ps, f.time);
   }
 
-  for (const p of f.particles) drawParticle(ctx, p, groundY, ps);
+  drawParticles(ctx, f.particles, groundY, ps);
+}
+
+export function drawProps(
+  ctx: CanvasRenderingContext2D,
+  props: Prop[],
+  groundY: number,
+  ps: number,
+  time: number,
+  accent: string
+): void {
+  for (const p of props) if (!p.carried) drawProp(ctx, p, groundY, ps, time, accent);
+}
+
+export function drawParticles(
+  ctx: CanvasRenderingContext2D,
+  particles: Particle[],
+  groundY: number,
+  ps: number
+): void {
+  for (const p of particles) drawParticle(ctx, p, groundY, ps);
 }
 
 function drawShadow(
@@ -186,6 +215,48 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle, groundY: numbe
       ctx.fill();
       break;
     }
+    case 'note': {
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin(p.rot) * 0.3);
+      ctx.fillStyle = NOTE_COLORS[p.tint % NOTE_COLORS.length];
+      const s = ps * p.size;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 1.5 * s, 1.1 * s, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(1.1 * s, -5.5 * s, 0.6 * s, 5.5 * s);
+      ctx.beginPath();
+      ctx.moveTo(1.7 * s, -5.5 * s);
+      ctx.quadraticCurveTo(3.6 * s, -4.6 * s, 3.2 * s, -2.6 * s);
+      ctx.lineTo(2.6 * s, -3);
+      ctx.quadraticCurveTo(2.9 * s, -4.2 * s, 1.7 * s, -4.4 * s);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'fire': {
+      const r = ps * 1.6 * p.size * (0.6 + alpha * 0.6);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, '#fff3b0');
+      g.addColorStop(0.45, '#ffb347');
+      g.addColorStop(1, 'rgba(255, 90, 40, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'bubble': {
+      ctx.strokeStyle = 'rgba(200, 240, 255, 0.85)';
+      ctx.lineWidth = Math.max(1, ps * 0.35);
+      ctx.beginPath();
+      ctx.arc(x, y, ps * 1.3 * p.size, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.beginPath();
+      ctx.arc(x - ps * 0.45, y - ps * 0.45, ps * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
     case 'dust': {
       ctx.fillStyle = '#d9d2e6';
       ctx.beginPath();
@@ -243,6 +314,28 @@ function drawProp(
     ctx.shadowColor = `rgba(255, 220, 140, ${glow})`;
     ctx.shadowBlur = 10;
     drawEnvelope(ctx, ps, accent);
+  } else if (p.kind === 'butterfly') {
+    const y = groundY - p.h;
+    const flap = Math.abs(Math.sin(time * 18));
+    ctx.translate(p.x, y);
+    ctx.rotate(Math.sin(time * 3) * 0.2);
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.scale(side * (0.35 + flap * 0.65), 1);
+      const g = ctx.createLinearGradient(0, -4 * ps, 4 * ps, 3 * ps);
+      g.addColorStop(0, '#ffd166');
+      g.addColorStop(1, '#ff7aa8');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(1.8 * ps, -1.4 * ps, 2 * ps, 1.5 * ps, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(1.4 * ps, 1.1 * ps, 1.3 * ps, 1 * ps, 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#2b1d33';
+    ctx.fillRect(-0.3 * ps, -1.6 * ps, 0.6 * ps, 3.2 * ps);
   } else if (p.kind === 'snack') {
     const y = groundY - p.h - 2 * ps;
     drawShadow(ctx, p.x, groundY, p.h, ps * 0.45);
