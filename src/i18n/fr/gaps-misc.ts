@@ -41,6 +41,7 @@ const dict: Record<string, string> = {
   'Winter-Abende': "Soirées d'hiver",
   'Sommer-Blockbuster': "Blockbusters de l'été",
   'Herbst-Krimis': "Polars d'automne",
+  'Silvester & Neujahr': 'Réveillon & Nouvel An',
   'Halloween & Grusel': 'Halloween & frissons',
   Empfehlungen: 'Recommandations',
 };

@@ -40,6 +40,7 @@ const dict: Record<string, string> = {
   'Winter-Abende': 'Noches de invierno',
   'Sommer-Blockbuster': 'Blockbusters de verano',
   'Herbst-Krimis': 'Intriga de otoño',
+  'Silvester & Neujahr': 'Nochevieja y Año Nuevo',
   'Halloween & Grusel': 'Halloween y terror',
   'Weihnachts-Highlights': 'Destacados navideños',
   Empfehlungen: 'Recomendaciones',

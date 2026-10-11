@@ -105,6 +105,26 @@ describe('useSeasonalRecommendations', () => {
     expect(result.current.badgeGradient).toContain('linear-gradient');
   });
 
+  it('zwischen den Jahren: Silvesterfilme und Comedy-Serien wie das Neujahrs-Design', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 11, 30));
+    try {
+      stubDiscoverFetch([tvItem(1, 500)], [movieItem(2, 900)]);
+      const { result } = renderHook(() => useSeasonalRecommendations());
+      expect(result.current.title).toBe('Silvester & Neujahr');
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      const urls = fetchMock.mock.calls.map(([url]) => decodeURIComponent(String(url)));
+      const movieUrl = urls.find((u) => u.includes('/discover/movie')) ?? '';
+      const tvUrl = urls.find((u) => u.includes('/discover/tv')) ?? '';
+      expect(movieUrl).toContain('with_keywords=613|318862|306028');
+      expect(tvUrl).not.toContain('with_keywords');
+      expect(tvUrl).toContain('without_genres=10767');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('loads discover results, then sorts merged items by voteCount desc and caps at 20', async () => {
     stubDiscoverFetch([tvItem(1, 500), tvItem(2, 100)], [movieItem(3, 900), movieItem(4, 50)]);
 

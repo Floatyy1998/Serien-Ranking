@@ -62,6 +62,7 @@ const dict: Record<string, string> = {
   Frühlingsgefühle: 'Spring Fever',
   'Sommer-Blockbuster': 'Summer Blockbusters',
   'Herbst-Krimis': 'Autumn Mysteries',
+  'Silvester & Neujahr': 'New Year’s Eve & New Year',
   'Halloween & Grusel': 'Halloween & Horror',
   'Weihnachts-Highlights': 'Christmas Highlights',
   Empfehlungen: 'Recommendations',

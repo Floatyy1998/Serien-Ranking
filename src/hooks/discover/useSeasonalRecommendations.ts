@@ -10,6 +10,7 @@ import type { TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 import { mapGenreIds } from '../../utils/genreMap';
 import { getImageUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
+import { currentSeason } from '../../theme/seasonalThemes';
 
 interface SeasonConfig {
   title: string;
@@ -18,6 +19,8 @@ interface SeasonConfig {
   tvGenres?: string;
   movieGenres?: string;
   keywords?: string;
+  movieKeywords?: string;
+  tvWithoutGenres?: string;
 }
 
 export interface SeasonalProvider {
@@ -62,6 +65,19 @@ function getSeasonConfig(): SeasonConfig {
   const now = new Date();
   const month = now.getMonth();
   const day = now.getDate();
+
+  // Gleiches Fenster wie das Neujahrs-Design: Silvesterfilme + Feel-good-Comedys
+  if (currentSeason(now) === 'newyear') {
+    return {
+      title: t('Silvester & Neujahr'),
+      iconColor: '#f2c75c',
+      badgeGradient: 'linear-gradient(135deg, #f2c75c, #8f9bff)',
+      tvGenres: '35',
+      tvWithoutGenres: '10767,10763,10764,10762,16',
+      movieGenres: '35|10749',
+      movieKeywords: '613|318862|306028',
+    };
+  }
 
   if (month === 1 && day <= 14) {
     return {
@@ -250,7 +266,9 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
             // 100 made some genres (Sommer-Action&Adventure) nearly empty.
             'vote_count.gte': kind === 'tv' ? 50 : 100,
             with_genres: kind === 'tv' ? config.tvGenres : config.movieGenres,
-            with_keywords: config.keywords,
+            with_keywords:
+              kind === 'movie' ? (config.movieKeywords ?? config.keywords) : config.keywords,
+            without_genres: kind === 'tv' ? config.tvWithoutGenres : undefined,
             page,
           }).catch((err) => {
             // Wie zuvor (kein `!res.ok`-Check): eine HTTP-Fehlerseite liefert
@@ -312,7 +330,14 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
     return () => {
       cancelled = true;
     };
-  }, [config.title, config.tvGenres, config.movieGenres, config.keywords]);
+  }, [
+    config.title,
+    config.tvGenres,
+    config.movieGenres,
+    config.keywords,
+    config.movieKeywords,
+    config.tvWithoutGenres,
+  ]);
 
   const items = useMemo(() => {
     const seriesIds = new Set(allSeriesList.map((s) => s.id));
