@@ -292,6 +292,10 @@ const dict: Record<string, string> = {
   'Bis 31. Oktober': 'Hasta el 31 de octubre',
   'Bis 26. Dezember': 'Hasta el 26 de diciembre',
   'Bis 6. Januar': 'Hasta el 6 de enero',
+  'Schwebende Herzen, Rosenblätter und Amors Pfeil in der ganzen App':
+    'Corazones flotantes, pétalos de rosa y la flecha de Cupido en toda la app',
+  'Bis 14. Februar': 'Hasta el 14 de febrero',
+  'Alles Liebe zum Valentinstag': 'Feliz San Valentín',
 };
 
 export default dict;

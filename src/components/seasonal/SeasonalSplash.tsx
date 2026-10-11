@@ -5,6 +5,8 @@ import { LightString, PineTree, Sleigh } from './christmas/ChristmasArt';
 import { Snowfall } from './christmas/ChristmasLayer';
 import { FireworkBurst, Skyline, Sparkle } from './newyear/NewYearArt';
 import { Confetti } from './newyear/NewYearLayer';
+import { GlossyHeart, HeartGarland } from './valentine/ValentineArt';
+import { FallingPetals, RisingHearts } from './valentine/ValentineLayer';
 import './seasonalSplash.css';
 
 const BAT_BURST = [
@@ -109,10 +111,52 @@ const NewYearSplash = () => (
   </div>
 );
 
+const HEART_BURST = [
+  { tx: '-40vw', ty: '-30vh', s: 1.1, d: '0.15s' },
+  { tx: '36vw', ty: '-34vh', s: 0.9, d: '0.22s' },
+  { tx: '-34vw', ty: '6vh', s: 0.8, d: '0.35s' },
+  { tx: '42vw', ty: '-4vh', s: 1, d: '0.3s' },
+  { tx: '-10vw', ty: '-44vh', s: 0.7, d: '0.45s' },
+  { tx: '16vw', ty: '-42vh', s: 0.85, d: '0.18s' },
+  { tx: '28vw', ty: '20vh', s: 0.6, d: '0.55s' },
+  { tx: '-24vw', ty: '24vh', s: 0.65, d: '0.5s' },
+];
+
+const ValentineSplash = () => (
+  <div className="season-splash vt-splash" aria-hidden="true">
+    <div className="vt-splash__glow" />
+    <GlossyHeart gloss={false} className="vt-splash__heart" />
+    {HEART_BURST.map((h, i) => (
+      <div
+        key={i}
+        className="vt-splash__burst"
+        style={
+          {
+            '--tx': h.tx,
+            '--ty': h.ty,
+            '--s': h.s,
+            animationDelay: h.d,
+          } as React.CSSProperties
+        }
+      >
+        <GlossyHeart tone={i % 3 === 0 ? 'blush' : 'rose'} />
+      </div>
+    ))}
+    <RisingHearts />
+    <FallingPetals />
+    <div className="vt-splash__garland">
+      {Array.from({ length: 12 }, (_, i) => (
+        <HeartGarland key={i} offset={i} />
+      ))}
+    </div>
+  </div>
+);
+
 export const SeasonalSplashDecor = ({ season }: { season: SeasonId | null }) => {
   if (season === 'spooky') return <SpookySplash />;
   if (season === 'christmas') return <ChristmasSplash />;
   if (season === 'newyear') return <NewYearSplash />;
+  if (season === 'valentine') return <ValentineSplash />;
   return null;
 };
 
@@ -126,6 +170,8 @@ export const SeasonalSplashEyebrow = ({ season }: { season: SeasonId | null }) =
       ? 'Spooky Season'
       : season === 'christmas'
         ? t('Frohe Weihnachten')
-        : `${t('Frohes neues Jahr')} ${newYearNumber()}`;
+        : season === 'valentine'
+          ? t('Alles Liebe zum Valentinstag')
+          : `${t('Frohes neues Jahr')} ${newYearNumber()}`;
   return <span className={`season-eyebrow season-eyebrow--${season}`}>{label}</span>;
 };

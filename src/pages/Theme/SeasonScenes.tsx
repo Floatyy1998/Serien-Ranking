@@ -8,6 +8,12 @@ import {
 import { LightString, PineTree, Sleigh } from '../../components/seasonal/christmas/ChristmasArt';
 import { Snowfall } from '../../components/seasonal/christmas/ChristmasLayer';
 import { FireworkBurst, Skyline, Sparkle } from '../../components/seasonal/newyear/NewYearArt';
+import {
+  CupidArrow,
+  GlossyHeart,
+  HeartGarland,
+} from '../../components/seasonal/valentine/ValentineArt';
+import { FallingPetals } from '../../components/seasonal/valentine/ValentineLayer';
 import type { SeasonId } from '../../theme/seasonalThemes';
 
 const SpookyScene = () => (
@@ -63,8 +69,28 @@ const NewYearScene = () => (
   </>
 );
 
+const ValentineScene = () => (
+  <>
+    <div className="vt-scene__bokeh" />
+    <FallingPetals />
+    <GlossyHeart tone="blush" className="vt-scene__mini vt-scene__mini--a" />
+    <GlossyHeart className="vt-scene__mini vt-scene__mini--b" />
+    <GlossyHeart tone="blush" className="vt-scene__mini vt-scene__mini--c" />
+    <div className="vt-scene__hero">
+      <GlossyHeart className="vt-scene__heart" />
+      <CupidArrow className="vt-scene__arrow" />
+    </div>
+    <div className="vt-scene__garland">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <HeartGarland key={i} offset={i} />
+      ))}
+    </div>
+  </>
+);
+
 export const SeasonScene = ({ season }: { season: SeasonId }) => {
   if (season === 'spooky') return <SpookyScene />;
   if (season === 'christmas') return <ChristmasScene />;
+  if (season === 'valentine') return <ValentineScene />;
   return <NewYearScene />;
 };

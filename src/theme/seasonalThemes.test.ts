@@ -24,6 +24,9 @@ describe('seasonalThemes', () => {
     expect(currentSeason(new Date(2026, 11, 27))).toBe('newyear');
     expect(currentSeason(new Date(2027, 0, 6))).toBe('newyear');
     expect(currentSeason(new Date(2027, 0, 7))).toBeNull();
+    expect(currentSeason(new Date(2027, 1, 1))).toBe('valentine');
+    expect(currentSeason(new Date(2027, 1, 14))).toBe('valentine');
+    expect(currentSeason(new Date(2027, 1, 15))).toBeNull();
   });
 
   it('is on by default during its season and off outside', () => {

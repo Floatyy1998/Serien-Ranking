@@ -4,6 +4,7 @@ import { activeSeason } from '../../theme/seasonalThemes';
 import { ChristmasLayer } from './christmas/ChristmasLayer';
 import { NewYearLayer } from './newyear/NewYearLayer';
 import { SpookyLayer } from './spooky/SpookyLayer';
+import { ValentineLayer } from './valentine/ValentineLayer';
 
 export const SeasonalHost = () => {
   const config = useContext(ThemeContext)?.userConfig;
@@ -11,5 +12,6 @@ export const SeasonalHost = () => {
   if (season === 'spooky') return <SpookyLayer />;
   if (season === 'christmas') return <ChristmasLayer />;
   if (season === 'newyear') return <NewYearLayer />;
+  if (season === 'valentine') return <ValentineLayer />;
   return null;
 };

@@ -327,6 +327,10 @@ const settings: Record<string, string> = {
   'Bis 31. Oktober': 'Until October 31',
   'Bis 26. Dezember': 'Until December 26',
   'Bis 6. Januar': 'Until January 6',
+  'Schwebende Herzen, Rosenblätter und Amors Pfeil in der ganzen App':
+    "Floating hearts, rose petals and Cupid's arrow across the whole app",
+  'Bis 14. Februar': 'Until February 14',
+  'Alles Liebe zum Valentinstag': "Happy Valentine's Day",
 };
 
 export default settings;

@@ -27,6 +27,11 @@ const COPY: Record<SeasonId, { title: () => string; sub: () => string; until: ()
     sub: () => t('Feuerwerk, Konfetti und Champagnergold in der ganzen App'),
     until: () => t('Bis 6. Januar'),
   },
+  valentine: {
+    title: () => t('Valentinstag'),
+    sub: () => t('Schwebende Herzen, Rosenblätter und Amors Pfeil in der ganzen App'),
+    until: () => t('Bis 14. Februar'),
+  },
 };
 
 export const SeasonCard = ({ season, active, onToggle }: SeasonCardProps) => {

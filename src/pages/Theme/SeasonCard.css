@@ -402,6 +402,92 @@
   height: 62px;
 }
 
+/* Valentinstag */
+.season-scene--valentine {
+  background:
+    radial-gradient(1px 1px at 18% 26%, rgba(255, 220, 230, 0.6), transparent),
+    radial-gradient(1px 1px at 76% 18%, rgba(255, 220, 230, 0.5), transparent),
+    radial-gradient(120% 90% at 50% 100%, #4a1027 0%, #2a0b19 50%, var(--sc-bg) 100%);
+}
+
+.vt-scene__bokeh {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 14% 70%, rgba(255, 120, 160, 0.24), transparent 46px),
+    radial-gradient(circle at 86% 64%, rgba(255, 170, 200, 0.2), transparent 58px),
+    radial-gradient(circle at 70% 22%, rgba(243, 198, 160, 0.18), transparent 32px);
+}
+
+.vt-scene__hero {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 96px;
+  transform: translate(-50%, -50%);
+}
+
+.vt-scene__heart {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(0 0 22px rgba(255, 77, 125, 0.75));
+  animation: vt-heartbeat 1.6s ease-in-out infinite;
+}
+
+.vt-scene__arrow {
+  position: absolute;
+  left: -46%;
+  top: 34%;
+  width: 190%;
+  transform: rotate(-18deg);
+  overflow: visible;
+  filter: drop-shadow(0 0 4px rgba(255, 190, 210, 0.6));
+}
+
+.vt-scene__mini {
+  position: absolute;
+  filter: drop-shadow(0 0 6px rgba(255, 77, 125, 0.5));
+  animation: vt-sway 3.2s ease-in-out infinite alternate;
+}
+
+.vt-scene__mini--a {
+  left: 12%;
+  top: 46%;
+  width: 22px;
+}
+
+.vt-scene__mini--b {
+  right: 14%;
+  top: 30%;
+  width: 28px;
+  animation-delay: -1.2s;
+}
+
+.vt-scene__mini--c {
+  right: 26%;
+  bottom: 14%;
+  width: 16px;
+  animation-delay: -2s;
+}
+
+.vt-scene__garland {
+  position: absolute;
+  top: -8px;
+  left: -10px;
+  right: -10px;
+  display: flex;
+}
+
+.vt-scene__garland svg {
+  flex: 0 0 auto;
+  width: 96px;
+  overflow: visible;
+}
+
+.season-scene--valentine .vt-petals__piece {
+  animation-duration: 6s !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .season-card *,
   .season-card *::before,

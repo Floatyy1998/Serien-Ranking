@@ -1,9 +1,9 @@
 import type { UserThemeConfig } from './dynamicTheme';
 
-export type SeasonId = 'spooky' | 'christmas' | 'newyear';
+export type SeasonId = 'spooky' | 'christmas' | 'newyear' | 'valentine';
 export type SeasonFlags = Partial<Record<SeasonId, false>>;
 
-export const SEASON_IDS: SeasonId[] = ['spooky', 'christmas', 'newyear'];
+export const SEASON_IDS: SeasonId[] = ['spooky', 'christmas', 'newyear', 'valentine'];
 
 interface SeasonPalette {
   primaryColor: string;
@@ -38,6 +38,14 @@ export const SEASON_PALETTES: Record<SeasonId, SeasonPalette> = {
     surfaceColor: '#121729',
     textColor: '#f3f0ea',
   },
+  // Rosé auf tiefem Weinrot, Champagner als Akzent
+  valentine: {
+    primaryColor: '#ff4d7d',
+    accentColor: '#f3c6a0',
+    backgroundColor: '#14070d',
+    surfaceColor: '#24101a',
+    textColor: '#f8e9ee',
+  },
 };
 
 export function isInSeason(id: SeasonId, date: Date = new Date()): boolean {
@@ -45,6 +53,7 @@ export function isInSeason(id: SeasonId, date: Date = new Date()): boolean {
   const day = date.getDate();
   if (id === 'spooky') return month === 9;
   if (id === 'christmas') return month === 11 && day <= 26;
+  if (id === 'valentine') return month === 1 && day <= 14;
   return (month === 11 && day >= 27) || (month === 0 && day <= 6);
 }
 

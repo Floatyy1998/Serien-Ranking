@@ -159,6 +159,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     label: 'Splash: Neujahr',
     render: () => <SplashScreen previewSeason="newyear" />,
   },
+  {
+    id: 'splash-valentine',
+    label: 'Splash: Valentinstag',
+    render: () => <SplashScreen previewSeason="valentine" />,
+  },
   { id: 'splash', label: 'Splash: normal', render: () => <SplashScreen previewSeason={null} /> },
   { id: 'manga', label: 'Manga: Übersicht', render: () => <MangaOverviewPreview /> },
   { id: 'manga-detail', label: 'Manga: Detail', render: () => <MangaDetailOwnedPreview /> },

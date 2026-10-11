@@ -64,7 +64,6 @@ interface TMDBDiscoverItem {
 function getSeasonConfig(): SeasonConfig {
   const now = new Date();
   const month = now.getMonth();
-  const day = now.getDate();
 
   // Gleiches Fenster wie das Neujahrs-Design: Silvesterfilme + Feel-good-Comedys
   if (currentSeason(now) === 'newyear') {
@@ -79,7 +78,7 @@ function getSeasonConfig(): SeasonConfig {
     };
   }
 
-  if (month === 1 && day <= 14) {
+  if (currentSeason(now) === 'valentine') {
     return {
       title: t('Valentinstag'),
       iconColor: '#e91e63',

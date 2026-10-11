@@ -33,6 +33,11 @@
   text-shadow: 0 0 12px rgba(233, 185, 73, 0.7);
 }
 
+.season-eyebrow--valentine {
+  color: #ffc2d4;
+  text-shadow: 0 0 12px rgba(255, 77, 125, 0.75);
+}
+
 .season-eyebrow--newyear {
   color: #ffe4a0;
   text-shadow: 0 0 12px rgba(242, 199, 92, 0.75);
@@ -444,4 +449,74 @@
   bottom: 0;
   width: 100%;
   height: clamp(80px, 16vh, 140px);
+}
+
+/* Valentinstag */
+.vt-splash__glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(120vw, 680px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 77, 125, 0.26) 0%, transparent 60%);
+}
+
+.vt-splash__heart {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(64vw, 340px);
+  margin-left: calc(min(64vw, 340px) / -2);
+  margin-top: calc(min(64vw, 340px) * -0.46);
+  opacity: 0.32;
+  filter: drop-shadow(0 0 40px rgba(255, 77, 125, 0.8));
+  animation: vt-heartbeat 1.4s ease-in-out infinite;
+}
+
+.vt-splash__burst {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 30px;
+  margin-left: -15px;
+  opacity: 0;
+  animation: vt-burst 2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.vt-splash__burst svg {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(0 0 6px rgba(255, 77, 125, 0.6));
+}
+
+@keyframes vt-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2);
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(var(--s));
+  }
+}
+
+.vt-splash__garland {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) - 4px);
+  left: -12px;
+  display: flex;
+  width: max-content;
+}
+
+.vt-splash__garland svg {
+  flex: 0 0 auto;
+  width: clamp(100px, 28vw, 140px);
+  overflow: visible;
 }
