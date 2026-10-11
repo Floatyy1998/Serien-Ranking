@@ -682,11 +682,7 @@ export const PetStage = ({
 
   return (
     <div ref={stageRef} className="pet-stage">
-      <canvas
-        ref={canvasRef}
-        className="pet-stage__canvas"
-        style={{ filter: pet.isAlive ? undefined : 'grayscale(1) opacity(0.8)' }}
-      />
+      <canvas ref={canvasRef} className="pet-stage__canvas" />
 
       {cast.map((c) => (
         <div key={c.id}>

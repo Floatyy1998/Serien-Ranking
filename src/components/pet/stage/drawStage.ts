@@ -3,6 +3,7 @@ import type { SeasonId } from '../../../theme/seasonalThemes';
 import type { Pet } from '../../../types/pet.types';
 import { drawPetFigure, petColors, type PetColors } from '../renderPet';
 import { seasonCostume } from '../seasonCostume';
+import { drawGravestone } from './drawGravestone';
 
 const feetCache = new Map<string, BodyGeom>();
 
@@ -102,6 +103,12 @@ const NOTE_COLORS = ['#ffd166', '#7bdff2', '#ff8fb1', '#b9f6ca', '#d1b3ff'];
 export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): void {
   const { view, ps, groundY } = f;
 
+  if (view.activity === 'dead') {
+    drawGravestone(ctx, f.pet.name, view.x, groundY, ps, f.time);
+    drawParticles(ctx, f.particles, groundY, ps);
+    return;
+  }
+
   drawShadow(ctx, view.x, groundY, view.h, ps);
 
   drawProps(ctx, f.props, groundY, ps, f.time, f.accent);
@@ -128,7 +135,7 @@ export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): vo
   drawPetFigure(ctx, f.pet, {
     ps,
     offset: 0,
-    animated: view.activity !== 'dead',
+    animated: true,
     frame: f.time * 60,
     animationSpeed: 1,
     pose: view.pose,

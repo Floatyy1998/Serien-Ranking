@@ -115,14 +115,25 @@ const COMPANIONS: Pet[] = [
 ];
 const GROUP_SCENES: GroupScene[] = ['greet', 'chase', 'dance', 'race', 'parade', 'wave'];
 
-export const PetStagePreview = ({ initialCompanions = 0 }: { initialCompanions?: number }) => {
+export const PetStagePreview = ({
+  initialCompanions = 0,
+  initialDead = false,
+}: {
+  initialCompanions?: number;
+  initialDead?: boolean;
+}) => {
   const [companions, setCompanions] = useState(initialCompanions);
+  const [dead, setDead] = useState(initialDead);
   const [type, setType] = useState<Pet['type']>('cat');
   const [level, setLevel] = useState(12);
   const [hungry, setHungry] = useState(false);
   const [reaction, setReaction] = useState<PetReaction | null>(null);
   const [season, setSeason] = useState<SeasonId | null>(null);
-  const pet = makeDevPet(type, level, { hunger: hungry ? 85 : 10 });
+  const pet = makeDevPet(type, level, {
+    hunger: hungry ? 85 : 10,
+    isAlive: !dead,
+    name: level === 55 ? 'Prinzessin Wuschelpfote' : 'Mochi',
+  });
   const brain = () => (window as unknown as { petBrain?: PetBrain }).petBrain;
 
   return (
@@ -144,6 +155,9 @@ export const PetStagePreview = ({ initialCompanions = 0 }: { initialCompanions?:
         ))}
         <button type="button" onClick={() => setHungry((h) => !h)} style={btn(hungry)}>
           hungrig
+        </button>
+        <button type="button" onClick={() => setDead((d) => !d)} style={btn(dead)}>
+          tot
         </button>
         {(['spooky', 'christmas', 'newyear', 'valentine'] as SeasonId[]).map((s) => (
           <button
@@ -208,7 +222,7 @@ export const PetStagePreview = ({ initialCompanions = 0 }: { initialCompanions?:
         style={{ height: 62, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       />
       <PetStage
-        key={`${type}-${level}`}
+        key={`${type}-${level}-${dead}`}
         pet={pet}
         companions={COMPANIONS.slice(0, companions)}
         mood={hungry ? 'hungry' : 'happy'}
@@ -239,10 +253,16 @@ function btn(active: boolean): React.CSSProperties {
   };
 }
 
-export const PetPlaygroundPreview = ({ background = 'saturnView' }: { background?: string }) => {
+export const PetPlaygroundPreview = ({
+  background = 'saturnView',
+  dead = false,
+}: {
+  background?: string;
+  dead?: boolean;
+}) => {
   const [type, setType] = useState<Pet['type']>('cat');
   const [level, setLevel] = useState(12);
-  const pet = makeDevPet(type, level, { equippedBackground: background });
+  const pet = makeDevPet(type, level, { equippedBackground: background, isAlive: !dead });
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 40 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '12px 16px' }}>

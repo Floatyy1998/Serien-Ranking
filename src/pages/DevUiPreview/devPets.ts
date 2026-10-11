@@ -29,7 +29,7 @@ export function makeDevPet(type: Pet['type'], level: number, extras: Partial<Pet
   return {
     id: `dev-${type}-${level}`,
     userId: 'dev',
-    name: 'Mochi',
+    name: extras.name ?? 'Mochi',
     type,
     color: COLORS[DEV_PET_TYPES.indexOf(type)] ?? 'blau',
     level,

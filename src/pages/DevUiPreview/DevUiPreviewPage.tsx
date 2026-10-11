@@ -170,6 +170,16 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'pet-sig', label: 'Pet: Spezialbewegungen', render: () => <SignatureStripPreview /> },
   { id: 'pet-play', label: 'Pet: Spielplatz', render: () => <PetPlaygroundPreview /> },
   {
+    id: 'pet-play-dead',
+    label: 'Pet: Spielplatz tot',
+    render: () => <PetPlaygroundPreview background="flowerMeadow" dead />,
+  },
+  {
+    id: 'pet-stage-dead',
+    label: 'Pet: Dock tot',
+    render: () => <PetStagePreview initialDead />,
+  },
+  {
     id: 'pet-play-meadow',
     label: 'Pet: Spielplatz Wiese',
     render: () => <PetPlaygroundPreview background="flowerMeadow" />,

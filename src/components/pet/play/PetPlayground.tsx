@@ -274,7 +274,6 @@ export const PetPlayground = ({ pet, onPlayed, scene }: Props) => {
         ref={canvasRef}
         className="pet-play__canvas"
         style={{
-          filter: pet.isAlive ? undefined : 'grayscale(1)',
           touchAction: mode === 'game' ? 'none' : 'pan-y',
         }}
         onPointerDown={onPointer}
