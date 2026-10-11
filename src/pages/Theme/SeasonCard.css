@@ -1,0 +1,540 @@
+.season-card {
+  position: relative;
+  margin-bottom: 16px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--sc-surface);
+  border: 1px solid rgba(239, 230, 214, 0.1);
+  box-shadow: var(--shadow-lg);
+  transition:
+    box-shadow var(--duration-slow) var(--ease-out),
+    border-color var(--duration-slow) var(--ease-out);
+}
+
+.season-card.is-on {
+  border-color: color-mix(in srgb, var(--sc-primary) 45%, transparent);
+  box-shadow:
+    var(--shadow-lg),
+    0 18px 48px -20px color-mix(in srgb, var(--sc-primary) 70%, transparent);
+}
+
+.season-card__scene {
+  position: relative;
+  height: 156px;
+  overflow: hidden;
+  filter: saturate(0.7) brightness(0.82);
+  transition: filter var(--duration-slow) var(--ease-out);
+}
+
+.season-card.is-on .season-card__scene {
+  filter: none;
+}
+
+.season-scene--spooky {
+  background:
+    radial-gradient(1px 1px at 12% 22%, rgba(255, 246, 224, 0.7), transparent),
+    radial-gradient(1px 1px at 34% 12%, rgba(255, 246, 224, 0.5), transparent),
+    radial-gradient(1.4px 1.4px at 48% 30%, rgba(255, 246, 224, 0.6), transparent),
+    radial-gradient(1px 1px at 61% 9%, rgba(255, 246, 224, 0.45), transparent),
+    radial-gradient(1px 1px at 92% 34%, rgba(255, 246, 224, 0.5), transparent),
+    radial-gradient(120% 90% at 74% 10%, #2a1636 0%, #170d1f 55%, var(--sc-bg) 100%);
+}
+
+.spooky-card__moon {
+  position: absolute;
+  top: 18px;
+  right: 9%;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 64% 60%, rgba(176, 128, 72, 0.35) 0 5px, transparent 6px),
+    radial-gradient(circle at 34% 68%, rgba(176, 128, 72, 0.28) 0 3px, transparent 4px),
+    radial-gradient(circle at 46% 30%, rgba(176, 128, 72, 0.22) 0 4px, transparent 5px),
+    radial-gradient(circle at 36% 34%, #fff7e4 0%, #f7dcaa 55%, #dba664 100%);
+  box-shadow:
+    0 0 28px 6px rgba(255, 196, 120, 0.35),
+    0 0 90px 26px color-mix(in srgb, var(--sc-primary) 22%, transparent);
+}
+
+.spooky-card__web {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 132px;
+  height: 132px;
+  overflow: visible;
+}
+
+.spooky-card__dangler {
+  position: absolute;
+  top: 0;
+  right: 31%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: spooky-card-bob 5.5s ease-in-out infinite;
+}
+
+.spooky-card__thread {
+  width: 1px;
+  height: 64px;
+  background: linear-gradient(to bottom, rgba(239, 230, 214, 0.1), rgba(239, 230, 214, 0.6));
+}
+
+.spooky-card__spider {
+  width: 30px;
+  margin-top: -5px;
+  overflow: visible;
+  transform: rotate(180deg);
+  filter: drop-shadow(0 0 2px rgba(255, 196, 140, 0.45)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7));
+}
+
+@keyframes spooky-card-bob {
+  0%,
+  100% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.spooky-card__bat {
+  position: absolute;
+  fill: #0a070d;
+  overflow: visible;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--sc-primary) 50%, transparent));
+}
+
+.spooky-card__bat--a {
+  top: 52px;
+  right: 46%;
+  width: 30px;
+  transform: rotate(-8deg);
+}
+
+.spooky-card__bat--b {
+  top: 30px;
+  right: 24%;
+  width: 18px;
+  transform: rotate(10deg);
+}
+
+.spooky-card__bat--b .bat-wings {
+  animation-duration: 0.2s;
+}
+
+.spooky-card__bat .bat-eye {
+  fill: var(--sc-primary);
+}
+
+.spooky-card__graves {
+  height: 70px;
+}
+
+.spooky-card__pumpkin {
+  position: absolute;
+  bottom: 12px;
+  left: 56%;
+  width: 36px;
+  filter: drop-shadow(0 0 14px rgba(255, 140, 40, 0.55));
+}
+
+.pumpkin-face {
+  animation: spooky-candle 3.2s ease-in-out infinite;
+}
+
+@keyframes spooky-candle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  18% {
+    opacity: 0.78;
+  }
+  24% {
+    opacity: 0.95;
+  }
+  52% {
+    opacity: 0.84;
+  }
+  70% {
+    opacity: 1;
+  }
+}
+
+.season-card__badge {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sc-primary) 45%, #fff);
+  background: color-mix(in srgb, var(--sc-primary) 22%, rgba(12, 9, 17, 0.6));
+  border: 1px solid color-mix(in srgb, var(--sc-primary) 50%, transparent);
+}
+
+.season-card .season-card__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  border: none;
+  background: linear-gradient(180deg, var(--sc-bg), var(--sc-surface));
+  text-align: left;
+  cursor: pointer;
+  color: var(--sc-text);
+}
+
+.season-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.season-card__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sc-primary) 55%, #fff),
+    var(--sc-primary) 45%,
+    var(--sc-accent)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.season-card__sub {
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(239, 230, 214, 0.66);
+}
+
+.season-card__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: rgba(239, 230, 214, 0.14);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition:
+    background var(--duration-normal) var(--ease-default),
+    box-shadow var(--duration-normal) var(--ease-default);
+}
+
+.season-card.is-on .season-card__switch {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--sc-primary) 70%, #fff),
+    var(--sc-primary) 50%,
+    color-mix(in srgb, var(--sc-primary) 75%, #000)
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 0 18px color-mix(in srgb, var(--sc-primary) 60%, transparent);
+}
+
+.season-card__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fffaf0, #e8dcc6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.season-card.is-on .season-card__knob {
+  transform: translateX(22px);
+}
+
+/* Weihnachten */
+.season-scene--christmas {
+  background:
+    radial-gradient(1px 1px at 14% 30%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 52% 14%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 88% 40%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(120% 90% at 30% 8%, #17322a 0%, #0b1d17 55%, var(--sc-bg) 100%);
+}
+
+.season-scene--christmas .xmas-snow__layer--near {
+  --tile: 150px;
+}
+
+.season-scene--christmas .xmas-snow__layer--mid {
+  --tile: 110px;
+}
+
+.xmas-scene__lights {
+  position: absolute;
+  top: -8px;
+  left: -10px;
+  right: -10px;
+  display: flex;
+}
+
+.xmas-scene__lights svg {
+  flex: 0 0 auto;
+  width: 96px;
+  overflow: visible;
+}
+
+.xmas-scene__moon {
+  position: absolute;
+  top: 34px;
+  right: 12%;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #ffffff 0%, #e9eef3 55%, #b9c6cf 100%);
+  box-shadow:
+    0 0 24px 6px rgba(220, 235, 255, 0.28),
+    0 0 80px 22px color-mix(in srgb, var(--sc-primary) 16%, transparent);
+}
+
+.xmas-scene__sleigh {
+  position: absolute;
+  top: 46px;
+  right: 6%;
+  width: 116px;
+  overflow: visible;
+  filter: drop-shadow(0 0 3px rgba(255, 228, 160, 0.6));
+}
+
+.xmas-scene__hills {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 56px;
+}
+
+.xmas-scene__tree {
+  position: absolute;
+  bottom: 14px;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.15));
+}
+
+.xmas-scene__tree--a {
+  left: 8%;
+  width: 46px;
+}
+
+.xmas-scene__tree--b {
+  left: 22%;
+  width: 30px;
+  bottom: 12px;
+}
+
+.xmas-scene__tree--c {
+  left: 60%;
+  width: 36px;
+  bottom: 8px;
+}
+
+/* Neujahr */
+.season-scene--newyear {
+  background:
+    radial-gradient(1px 1px at 20% 20%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 70% 12%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(120% 90% at 50% 0%, #1b2146 0%, #0d1128 55%, var(--sc-bg) 100%);
+}
+
+.season-scene--newyear .ny-burst {
+  width: 104px;
+}
+
+.season-scene--newyear .ny-burst--a {
+  left: 4%;
+  top: 2%;
+}
+
+.season-scene--newyear .ny-burst--b {
+  right: 2%;
+  top: -4%;
+}
+
+.season-scene--newyear .ny-burst--c {
+  left: 56%;
+  top: 18%;
+  width: 70px;
+}
+
+.ny-scene__year {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #fff6d8 10%, #f2c75c 55%, #b9862a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 14px rgba(242, 199, 92, 0.45));
+}
+
+.ny-scene__skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 62px;
+}
+
+/* Kompakte Karten für die anderen Saisons */
+.season-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.season-grid .season-card {
+  margin-bottom: 0;
+}
+
+.season-card.is-compact .season-card__scene {
+  height: 92px;
+}
+
+.season-card.is-compact .season-card__toggle {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 14px;
+}
+
+.season-card.is-compact .season-card__title {
+  font-size: 15px;
+}
+
+.season-card.is-compact .season-card__sub {
+  font-size: 11.5px;
+}
+
+.season-card.is-compact .season-card__badge {
+  top: 8px;
+  left: 8px;
+  transform: none;
+  white-space: nowrap;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+}
+
+.season-card.is-compact .xmas-scene__hills {
+  height: 30px;
+}
+
+.season-card.is-compact .xmas-scene__tree {
+  bottom: 8px;
+  transform: scale(0.62);
+  transform-origin: bottom center;
+}
+
+.season-card.is-compact .xmas-scene__lights {
+  display: none;
+}
+
+.season-card.is-compact .ny-scene__skyline {
+  height: 38px;
+}
+
+.season-card.is-compact .spooky-card__web,
+.season-card.is-compact .spooky-card__dangler,
+.season-card.is-compact .xmas-scene__sleigh {
+  display: none;
+}
+
+.season-card.is-compact .xmas-scene__moon,
+.season-card.is-compact .spooky-card__moon {
+  top: 14px;
+  width: 34px;
+  height: 34px;
+}
+
+.season-card.is-compact .ny-scene__year {
+  font-size: 28px;
+  top: 52%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-card *,
+  .season-card *::before,
+  .season-card *::after {
+    animation: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .season-card__scene {
+    height: 190px;
+  }
+
+  .season-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .season-card.is-compact .season-card__scene {
+    height: 170px;
+  }
+
+  .season-card.is-compact .ny-scene__year {
+    font-size: 40px;
+    top: 44%;
+  }
+
+  .season-card.is-compact .ny-scene__skyline {
+    height: 62px;
+  }
+
+  .season-card.is-compact .xmas-scene__hills {
+    height: 56px;
+  }
+
+  .season-card.is-compact .xmas-scene__tree {
+    bottom: 14px;
+    transform: none;
+  }
+
+  .season-card.is-compact .xmas-scene__moon,
+  .season-card.is-compact .spooky-card__moon {
+    top: 22px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .spooky-card__web {
+    width: 170px;
+    height: 170px;
+  }
+
+  .spooky-card__graves {
+    height: 86px;
+  }
+
+  .spooky-card__pumpkin {
+    width: 44px;
+  }
+}

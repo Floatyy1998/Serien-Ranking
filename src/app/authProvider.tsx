@@ -9,7 +9,7 @@ import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from '../services/firebase/userSearchIndex';
 import { dbGet, dbRef, paths, serverTimestamp, userPath } from '../services/db/ref';
 import { writeWelcomeNotifications } from '../services/notifications/welcomeNotifications';
-import { SPOOKY_PALETTE } from '../theme/spookyTheme';
+import { activeSeason, SEASON_PALETTES } from '../theme/seasonalThemes';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -141,8 +141,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 try {
                   const themeSnapshot = await themeRef.once('value');
                   const storedCloudTheme = themeSnapshot.val();
-                  const cloudTheme = storedCloudTheme?.spooky
-                    ? { ...storedCloudTheme, ...SPOOKY_PALETTE }
+                  const cloudSeason = storedCloudTheme ? activeSeason(storedCloudTheme) : null;
+                  const cloudTheme = cloudSeason
+                    ? { ...storedCloudTheme, ...SEASON_PALETTES[cloudSeason] }
                     : storedCloudTheme;
 
                   if (cloudTheme) {

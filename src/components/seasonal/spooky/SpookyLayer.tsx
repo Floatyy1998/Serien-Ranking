@@ -1,12 +1,13 @@
 import { Bat, Cobweb, PeekingSkull, Spider } from './SpookyArt';
 import { webPoint, WEB_SIZE } from './cobweb';
+import '../seasonal.css';
 import './spooky.css';
 
 const restingSpot = webPoint(5, 5);
 const BATS = [0, 1, 2];
 
 export const SpookyLayer = () => (
-  <div className="spooky-layer" aria-hidden="true">
+  <div className="season-layer spooky-layer" aria-hidden="true">
     <div className="spooky-moonlight" />
     <div className="spooky-fog">
       <div className="spooky-fog__band spooky-fog__band--back" />

@@ -254,3 +254,71 @@ export const Pumpkin = ({ className, style }: ArtProps) => {
     </svg>
   );
 };
+
+const HAND_FINGERS = [
+  { x: 24, a: -16, len: [15, 10, 8] },
+  { x: 31, a: -5, len: [17, 11, 8] },
+  { x: 38, a: 5, len: [16, 11, 8] },
+  { x: 45, a: 15, len: [13, 9, 7] },
+];
+
+export const SkeletonHand = ({ className, style }: ArtProps) => {
+  const id = useId().replace(/:/g, '');
+  const bone = `url(#${id}h)`;
+  return (
+    <svg className={className} style={style} viewBox="0 0 70 130" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}h`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#bfb19a" />
+          <stop offset="0.45" stopColor="#f4ecdd" />
+          <stop offset="1" stopColor="#a89880" />
+        </linearGradient>
+      </defs>
+      <rect x="27" y="84" width="7" height="46" rx="3.5" fill={bone} />
+      <rect x="36" y="84" width="6" height="46" rx="3" fill={bone} />
+      <circle cx="30" cy="80" r="5" fill={bone} />
+      <circle cx="39" cy="80" r="4.6" fill={bone} />
+      <circle cx="34" cy="73" r="4.4" fill={bone} />
+      <circle cx="25" cy="73" r="3.8" fill={bone} />
+      <circle cx="43" cy="73" r="3.8" fill={bone} />
+      {HAND_FINGERS.map((finger) => (
+        <g key={finger.x} transform={`translate(${finger.x} 70) rotate(${finger.a})`}>
+          <rect x="-2.6" y="-20" width="5.2" height="20" rx="2.6" fill={bone} />
+          {finger.len.map((len, i) => {
+            const y = -20 - finger.len.slice(0, i + 1).reduce((sum, l) => sum + l + 1.6, 0);
+            const w = 4.8 - i * 0.6;
+            return (
+              <g key={i}>
+                <rect x={-w / 2} y={y} width={w} height={len} rx={w / 2} fill={bone} />
+                <circle cx="0" cy={y + len + 0.8} r={w / 2 + 0.4} className="skl-knuckle" />
+              </g>
+            );
+          })}
+        </g>
+      ))}
+      <g transform="translate(20 76) rotate(-48)">
+        <rect x="-2.6" y="-14" width="5.2" height="14" rx="2.6" fill={bone} />
+        <rect x="-2.3" y="-26" width="4.6" height="10.4" rx="2.3" fill={bone} />
+        <rect x="-2" y="-35" width="4" height="7.6" rx="2" fill={bone} />
+      </g>
+    </svg>
+  );
+};
+
+export const Graveyard = ({ className }: ArtProps) => (
+  <div className={`graveyard ${className ?? ''}`} aria-hidden="true">
+    <svg className="graveyard__hills" viewBox="0 0 360 90" preserveAspectRatio="none">
+      <path d="M0 52Q50 36 110 46T230 42T360 48V90H0Z" className="graveyard__far" />
+      <path d="M0 70Q70 58 150 66T300 62T360 66V90H0Z" />
+    </svg>
+    <svg className="graveyard__tree" viewBox="20 8 46 60">
+      <path d="M42 66V30M42 30l-9-10M42 38l11-12M42 26l-3-9M42 46l-13-6M53 26l6-3M33 20l-5 1" />
+    </svg>
+    <svg className="graveyard__stones" viewBox="148 44 42 30">
+      <path d="M150 74V55a8 8 0 0 1 16 0v19ZM174 74V61a6 6 0 0 1 12 0v13Z" />
+    </svg>
+    <svg className="graveyard__cross" viewBox="290 34 24 40">
+      <path d="M300 74V48h-6v-5h6v-6h5v6h6v5h-6v26Z" />
+    </svg>
+  </div>
+);

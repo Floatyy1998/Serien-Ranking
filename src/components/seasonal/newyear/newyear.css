@@ -1,0 +1,281 @@
+.ny-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      90% 40% at 50% -10%,
+      color-mix(in srgb, var(--theme-primary) 12%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 40% at 0% 106%,
+      color-mix(in srgb, var(--theme-accent) 10%, transparent),
+      transparent 72%
+    );
+}
+
+/* Funkelnde Sterne */
+.ny-sparkle {
+  position: absolute;
+  fill: #fff4d0;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-primary) 80%, transparent));
+  animation: ny-twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes ny-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+/* Feuerwerk */
+.ny-burst {
+  position: absolute;
+  width: clamp(110px, 32vw, 220px);
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.1);
+  animation: ny-burst 7s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
+}
+
+.ny-burst--a {
+  left: 6%;
+  top: 9%;
+}
+
+.ny-burst--b {
+  right: 4%;
+  top: 4%;
+  animation-delay: -4.6s;
+  animation-duration: 8.2s;
+}
+
+.ny-burst--c {
+  left: 42%;
+  top: 22%;
+  width: clamp(80px, 22vw, 150px);
+  animation-delay: -2.2s;
+  animation-duration: 9.4s;
+}
+
+.ny-burst__ray {
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.ny-burst--gold .ny-burst__ray,
+.ny-burst--gold .ny-burst__spark,
+.ny-burst--gold .ny-burst__flash {
+  stroke: #ffd36b;
+  fill: #ffe9a8;
+}
+
+.ny-burst--violet .ny-burst__ray,
+.ny-burst--violet .ny-burst__spark,
+.ny-burst--violet .ny-burst__flash {
+  stroke: #a9b2ff;
+  fill: #dfe2ff;
+}
+
+.ny-burst--rose .ny-burst__ray,
+.ny-burst--rose .ny-burst__spark,
+.ny-burst--rose .ny-burst__flash {
+  stroke: #ff9fc0;
+  fill: #ffd9e6;
+}
+
+.ny-burst__flash {
+  stroke: none !important;
+  opacity: 0.85;
+}
+
+@keyframes ny-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.08);
+  }
+  3% {
+    opacity: 1;
+    transform: scale(0.35);
+  }
+  14% {
+    opacity: 0.95;
+    transform: scale(1) translateY(0);
+  }
+  26% {
+    opacity: 0;
+    transform: scale(1.12) translateY(7%);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.12) translateY(7%);
+  }
+}
+
+/* Konfetti */
+.ny-confetti {
+  position: absolute;
+  inset: 0;
+}
+
+.ny-confetti__piece {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 10px;
+  border-radius: 1.5px;
+  animation: ny-fall 11s linear infinite;
+  will-change: transform;
+}
+
+.ny-confetti__piece.is-wide {
+  width: 10px;
+  height: 5px;
+}
+
+.ny-confetti__piece--0 {
+  background: linear-gradient(135deg, #fff1bf, #e2ad3c);
+}
+
+.ny-confetti__piece--1 {
+  background: linear-gradient(135deg, #dfe2ff, #7f8cff);
+}
+
+.ny-confetti__piece--2 {
+  background: linear-gradient(135deg, #fffaf0, #cfc6b4);
+}
+
+.ny-confetti__piece--3 {
+  background: linear-gradient(135deg, #ffd9e6, #ff7fa8);
+}
+
+@keyframes ny-fall {
+  0% {
+    transform: translate3d(0, -6vh, 0) rotate(0deg) rotateX(0deg);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(18px, 52vh, 0) rotate(220deg) rotateX(360deg);
+  }
+  92% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(-12px, 104vh, 0) rotate(420deg) rotateX(720deg);
+    opacity: 0;
+  }
+}
+
+/* Champagnerperlen vom unteren Rand */
+.ny-bubbles {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, transparent 100%);
+}
+
+.ny-bubbles__layer {
+  --tile: 180px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100% + var(--tile));
+  background-size: var(--tile) var(--tile);
+  background-image:
+    radial-gradient(
+      circle at 18% 30%,
+      transparent 0 2px,
+      rgba(255, 230, 170, 0.45) 2.4px 3px,
+      transparent 3.4px
+    ),
+    radial-gradient(
+      circle at 62% 70%,
+      transparent 0 1.4px,
+      rgba(255, 230, 170, 0.4) 1.8px 2.3px,
+      transparent 2.7px
+    ),
+    radial-gradient(
+      circle at 84% 18%,
+      transparent 0 2.6px,
+      rgba(255, 230, 170, 0.35) 3px 3.6px,
+      transparent 4px
+    ),
+    radial-gradient(
+      circle at 40% 90%,
+      transparent 0 1px,
+      rgba(255, 230, 170, 0.45) 1.3px 1.8px,
+      transparent 2.2px
+    );
+  animation: ny-rise 10s linear infinite;
+  will-change: transform;
+}
+
+@keyframes ny-rise {
+  to {
+    transform: translateY(calc(-1 * var(--tile)));
+  }
+}
+
+/* Stadtsilhouette (Karte + Splash), gekachelt, damit sie auf breiten Flächen nicht aufbläht */
+.ny-skyline {
+  display: flex;
+  overflow: hidden;
+}
+
+.ny-skyline svg {
+  flex: 0 0 auto;
+  height: 100%;
+  width: auto;
+}
+
+.ny-city {
+  fill: #04050c;
+}
+
+.ny-windows {
+  fill: #ffd36b;
+  opacity: 0.75;
+}
+
+/* Goldkante am Dock */
+:root[data-season='newyear'] .mobile-bottom-navigation::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 18%;
+  right: 18%;
+  height: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #ffe4a0, #f2c75c, #ffe4a0, transparent);
+  box-shadow: 0 0 10px rgba(242, 199, 92, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ny-layer *,
+  .ny-layer *::before,
+  .ny-layer *::after,
+  .ny-splash *,
+  .ny-splash *::before,
+  .ny-splash *::after {
+    animation: none !important;
+  }
+
+  .ny-confetti,
+  .ny-burst {
+    display: none;
+  }
+}

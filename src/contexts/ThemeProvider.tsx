@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import type { UserThemeConfig } from '../theme/dynamicTheme';
-import { resolveThemeConfig } from '../theme/spookyTheme';
+import { activeSeason, resolveThemeConfig } from '../theme/seasonalThemes';
 import {
   createMuiTheme,
   defaultThemeConfig,
@@ -24,7 +24,8 @@ function applyCSSVariables(
 ) {
   const root = document.documentElement;
   const config = resolveThemeConfig(userConfig);
-  if (config.spooky) root.dataset.season = 'spooky';
+  const season = activeSeason(userConfig);
+  if (season) root.dataset.season = season;
   else delete root.dataset.season;
   const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement | null;
   if (metaThemeColor) metaThemeColor.content = theme.background.default;

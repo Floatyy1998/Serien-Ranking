@@ -279,8 +279,22 @@ const dict: Record<string, string> = {
   'Jetzt Saison': 'C’est la saison',
   'Spinnennetze, Skelette und Kürbisfarben in der ganzen App':
     'Toiles d’araignée, squelettes et couleurs citrouille dans toute l’app',
-  'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.':
-    'Spooky Season recouvre tes couleurs en ce moment. Choisir un thème ou une couleur la désactive.',
+  'Das Saison-Design liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet es.':
+    'Le design de saison recouvre tes couleurs en ce moment. Choisir un thème ou une couleur le désactive.',
+  'Im Oktober': 'En octobre',
+  Weihnachten: 'Noël',
+  'Schneefall, Lichterketten und ein Rentierschlitten in der ganzen App':
+    'Neige, guirlandes lumineuses et un traîneau de rennes dans toute l’app',
+  '1. bis 26. Dezember': 'Du 1er au 26 décembre',
+  Neujahr: 'Nouvel An',
+  'Feuerwerk, Konfetti und Champagnergold in der ganzen App':
+    'Feux d’artifice, confettis et or champagne dans toute l’app',
+  '27. Dezember bis 6. Januar': 'Du 27 décembre au 6 janvier',
+  'Frohe Weihnachten': 'Joyeux Noël',
+  'Frohes neues Jahr': 'Bonne année',
+  'Neu: Spooky Season': 'Nouveau : Spooky Season',
+  'TV-Rank hat jetzt ein Halloween-Design mit Spinnennetzen, Fledermäusen und einem Skelett, das vom Rand hereinlugt. Es ist den ganzen Oktober automatisch an. Ist dir das zu viel, schaltest du es unter Design mit einem Tipp ab, deine eigenen Farben bleiben erhalten.':
+    'TV-Rank a maintenant un design d’Halloween avec des toiles d’araignée, des chauves-souris et un squelette qui jette un œil depuis le bord. Il est activé automatiquement pendant tout octobre. Si c’est trop pour toi, désactive-le dans Design d’un simple toucher ; tes propres couleurs sont conservées.',
 };
 
 export default dict;

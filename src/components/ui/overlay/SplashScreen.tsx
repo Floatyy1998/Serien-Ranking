@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { APP_READY_EVENT, APP_READY_KEYS, countAppReady } from '../../../services/app/appReady';
 import { t } from '../../../services/i18n';
+import { SeasonalSplashDecor, SeasonalSplashEyebrow } from '../../seasonal/SeasonalSplash';
+import { readStoredSeason } from '../../../services/settings/storedSeason';
+import { SEASON_PALETTES, type SeasonId } from '../../../theme/seasonalThemes';
 import {
   BackgroundMesh,
   CornerAccent,
@@ -24,6 +27,8 @@ interface SplashScreenProps {
   /** Feuert, sobald das Ausblenden startet — die App darunter wird dann sichtbar. */
   onHideStart?: () => void;
   waitForCondition?: () => boolean;
+  /** Nur Dev-Vorschau: feste Saison, Splash bleibt stehen. */
+  previewSeason?: SeasonId | null;
 }
 
 /** Kurze Sichtbarkeit der vollen Fortschrittsleiste, bevor ausgeblendet wird. */
@@ -31,12 +36,31 @@ const FULL_BAR_HOLD_MS = 140;
 /** Muss zur fadeOut-Dauer in SplashScreen.styled.tsx passen. */
 const FADE_OUT_MS = 180;
 
-export const SplashScreen = ({ onComplete, onHideStart, waitForCondition }: SplashScreenProps) => {
+export const SplashScreen = ({
+  onComplete,
+  onHideStart,
+  waitForCondition,
+  previewSeason,
+}: SplashScreenProps) => {
+  const isPreview = previewSeason !== undefined;
   const [isHiding, setIsHiding] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState(t('Initialisiere System'));
+  const [season] = useState(() => (isPreview ? previewSeason : readStoredSeason()));
+  const palette = season ? SEASON_PALETTES[season] : null;
+  const seasonVars = palette
+    ? ({
+        '--theme-primary': palette.primaryColor,
+        '--color-primary': palette.primaryColor,
+        '--gradient-primary': `linear-gradient(135deg, ${palette.primaryColor}, ${palette.accentColor})`,
+        '--theme-secondary-gradient': palette.accentColor,
+        '--theme-background': palette.backgroundColor,
+        '--theme-surface': palette.surfaceColor,
+      } as React.CSSProperties)
+    : undefined;
 
   useEffect(() => {
+    if (isPreview) return;
     const startTime = Date.now();
     let completed = false;
     let holdTimer: ReturnType<typeof setTimeout> | undefined;
@@ -109,22 +133,26 @@ export const SplashScreen = ({ onComplete, onHideStart, waitForCondition }: Spla
       if (holdTimer) clearTimeout(holdTimer);
       if (fadeTimer) clearTimeout(fadeTimer);
     };
-  }, [onComplete, onHideStart, waitForCondition]);
+  }, [onComplete, onHideStart, waitForCondition, isPreview]);
 
   return (
-    <SplashContainer isHiding={isHiding}>
+    <SplashContainer isHiding={isHiding} style={seasonVars}>
       <BackgroundMesh />
+      <SeasonalSplashDecor season={season} />
 
       {/* Floating particles */}
       {[...Array(5)].map((_, i) => (
         <Particle key={i} delay={i * 3} left={`${20 + i * 15}%`} />
       ))}
 
-      {/* Corner accents */}
-      <CornerAccent cornerPos="top-left" />
-      <CornerAccent cornerPos="top-right" />
-      <CornerAccent cornerPos="bottom-left" />
-      <CornerAccent cornerPos="bottom-right" />
+      {!season && (
+        <>
+          <CornerAccent cornerPos="top-left" />
+          <CornerAccent cornerPos="top-right" />
+          <CornerAccent cornerPos="bottom-left" />
+          <CornerAccent cornerPos="bottom-right" />
+        </>
+      )}
 
       {/* Logo with glow */}
       <LogoContainer>
@@ -143,6 +171,7 @@ export const SplashScreen = ({ onComplete, onHideStart, waitForCondition }: Spla
       </LogoContainer>
 
       {/* Title and subtitle */}
+      <SeasonalSplashEyebrow season={season} />
       <Title>TV-RANK</Title>
       <Subtitle>{t('Serien, Filme & Manga im Blick')}</Subtitle>
 

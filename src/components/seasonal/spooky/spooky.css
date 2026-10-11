@@ -1,13 +1,3 @@
-/* Spooky Season — Deko-Ebene über dem Seiteninhalt, unter Overlays, Dock und Sheets */
-.spooky-layer {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--z-overlay) - 50);
-  pointer-events: none;
-  overflow: hidden;
-  contain: strict;
-}
-
 .spooky-moonlight {
   position: absolute;
   inset: 0;
@@ -466,7 +456,10 @@
 @media (prefers-reduced-motion: reduce) {
   .spooky-layer *,
   .spooky-layer *::before,
-  .spooky-layer *::after {
+  .spooky-layer *::after,
+  .spooky-splash *,
+  .spooky-splash *::before,
+  .spooky-splash *::after {
     animation: none !important;
   }
 
@@ -478,4 +471,53 @@
   .spooky-dangler__bob {
     transform: translateY(-10px);
   }
+}
+
+/* Friedhof (Karte + Splash) */
+.graveyard {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  fill: #08050b;
+  stroke: #08050b;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.graveyard svg {
+  position: absolute;
+  overflow: visible;
+}
+
+.graveyard__hills {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke: none;
+}
+
+.graveyard__far {
+  fill: #160c1d;
+}
+
+.graveyard__tree {
+  left: 6%;
+  bottom: 22%;
+  height: 78%;
+  fill: none;
+}
+
+.graveyard__stones {
+  left: 40%;
+  bottom: 12%;
+  height: 40%;
+  stroke: none;
+}
+
+.graveyard__cross {
+  left: 78%;
+  bottom: 16%;
+  height: 50%;
+  stroke: none;
 }

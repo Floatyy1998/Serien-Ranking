@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('firebase/compat/app', () => ({
   default: {
@@ -57,15 +57,47 @@ describe('updateThemeColorMeta', () => {
 });
 
 describe('loadSavedTheme', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 2, 1));
+  });
+  afterEach(() => vi.useRealTimers());
+
   const stubDom = () => {
     const setProperty = vi.fn();
     const meta = { content: '' } as HTMLMetaElement;
+    const dataset: Record<string, string> = {};
     vi.stubGlobal('document', {
-      documentElement: { style: { setProperty } },
+      documentElement: { style: { setProperty }, dataset },
       getElementById: vi.fn(() => meta),
     });
-    return { setProperty, meta };
+    return { setProperty, meta, dataset };
   };
+
+  it('legt im Oktober die Spooky-Palette über ein Theme ohne eigene Wahl', async () => {
+    vi.setSystemTime(new Date(2026, 9, 11));
+    const { setProperty, dataset } = stubDom();
+    vi.stubGlobal('localStorage', { getItem: vi.fn(() => null), setItem: vi.fn() });
+
+    await loadSavedTheme();
+
+    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#ff7a1f');
+    expect(dataset.season).toBe('spooky');
+  });
+
+  it('respektiert eine abgeschaltete Saison', async () => {
+    vi.setSystemTime(new Date(2026, 9, 11));
+    const { setProperty, dataset } = stubDom();
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => JSON.stringify({ primaryColor: '#ff0000', seasons: { spooky: false } })),
+      setItem: vi.fn(),
+    });
+
+    await loadSavedTheme();
+
+    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#ff0000');
+    expect(dataset.season).toBeUndefined();
+  });
 
   it('ohne lokales Theme und ohne userId → Defaults angewendet', async () => {
     const { setProperty, meta } = stubDom();

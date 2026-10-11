@@ -315,8 +315,22 @@ const settings: Record<string, string> = {
   'Jetzt Saison': 'In season now',
   'Spinnennetze, Skelette und Kürbisfarben in der ganzen App':
     'Cobwebs, skeletons and pumpkin colors across the whole app',
-  'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.':
-    'Spooky Season is covering your colors right now. Picking a theme or a color turns it off.',
+  'Das Saison-Design liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet es.':
+    'The seasonal design is covering your colors right now. Picking a theme or a color turns it off.',
+  'Im Oktober': 'In October',
+  Weihnachten: 'Christmas',
+  'Schneefall, Lichterketten und ein Rentierschlitten in der ganzen App':
+    'Snowfall, fairy lights and a reindeer sleigh across the whole app',
+  '1. bis 26. Dezember': 'December 1 to 26',
+  Neujahr: 'New Year',
+  'Feuerwerk, Konfetti und Champagnergold in der ganzen App':
+    'Fireworks, confetti and champagne gold across the whole app',
+  '27. Dezember bis 6. Januar': 'December 27 to January 6',
+  'Frohe Weihnachten': 'Merry Christmas',
+  'Frohes neues Jahr': 'Happy New Year',
+  'Neu: Spooky Season': 'New: Spooky Season',
+  'TV-Rank hat jetzt ein Halloween-Design mit Spinnennetzen, Fledermäusen und einem Skelett, das vom Rand hereinlugt. Es ist den ganzen Oktober automatisch an. Ist dir das zu viel, schaltest du es unter Design mit einem Tipp ab, deine eigenen Farben bleiben erhalten.':
+    'TV-Rank now has a Halloween design with cobwebs, bats and a skeleton peeking in from the edge. It is on automatically for all of October. If it’s too much for you, turn it off under Design with a single tap; your own colors are kept.',
 };
 
 export default settings;

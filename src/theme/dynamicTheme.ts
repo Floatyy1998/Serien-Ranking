@@ -9,6 +9,7 @@ import {
   generateComplementaryColor,
   normalizeThemeColors,
 } from './colorUtils';
+import { sanitizeSeasonFlags, type SeasonFlags } from './seasonalThemes';
 
 // Interface für Benutzer-Theme-Konfiguration
 export interface UserThemeConfig {
@@ -21,7 +22,7 @@ export interface UserThemeConfig {
   backgroundImageOpacity?: number;
   backgroundImageBlur?: number;
   backgroundIsVideo?: boolean;
-  spooky?: boolean;
+  seasons?: SeasonFlags;
 }
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
@@ -202,7 +203,9 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
       config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
     backgroundImageBlur: config.backgroundImageBlur ?? defaultThemeConfig.backgroundImageBlur,
     backgroundIsVideo: config.backgroundIsVideo ?? defaultThemeConfig.backgroundIsVideo,
-    ...(config.spooky === true ? { spooky: true } : {}),
+    ...(sanitizeSeasonFlags(config.seasons)
+      ? { seasons: sanitizeSeasonFlags(config.seasons) }
+      : {}),
   };
 }
 

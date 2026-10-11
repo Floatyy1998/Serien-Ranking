@@ -1,5 +1,5 @@
 import { dbGet, paths } from '../services/db/ref';
-import { SPOOKY_PALETTE } from '../theme/spookyTheme';
+import { activeSeason, SEASON_PALETTES } from '../theme/seasonalThemes';
 
 // Funktion um eine Farbe heller oder dunkler zu machen
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
@@ -63,9 +63,10 @@ export const loadSavedTheme = async (userId?: string) => {
   // Theme anwenden oder Defaults verwenden
   const root = document.documentElement;
 
-  if (theme?.spooky) {
-    theme = { ...theme, ...SPOOKY_PALETTE };
-    root.dataset.season = 'spooky';
+  const season = activeSeason(theme);
+  if (season) {
+    theme = { ...theme, ...SEASON_PALETTES[season] };
+    root.dataset.season = season;
   }
 
   if (theme) {

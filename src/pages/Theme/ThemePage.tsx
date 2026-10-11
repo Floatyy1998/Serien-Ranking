@@ -9,7 +9,15 @@ import { t } from '../../services/i18n';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
 import { ResetSection } from './ResetSection';
-import { SpookySeasonCard } from './SpookySeasonCard';
+import { SeasonCard } from './SeasonCard';
+import {
+  activeSeason,
+  currentSeason,
+  SEASON_IDS,
+  withActiveSeasonOff,
+  withSeasonFlag,
+  type SeasonId,
+} from '../../theme/seasonalThemes';
 import './ThemePage.css';
 
 const presetThemes: PresetTheme[] = [
@@ -99,6 +107,9 @@ const colorCategories: ColorCategory[] = [
   { key: 'accentColor', name: t('Akzent'), icon: <Palette />, description: t('Akzentfarbe') },
 ];
 
+const upcomingSeason = (date = new Date()): SeasonId =>
+  date.getMonth() === 10 ? 'christmas' : 'spooky';
+
 const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
 export const ThemePage = () => {
@@ -119,9 +130,9 @@ export const ThemePage = () => {
 
   const handleColorChange = useCallback(
     (key: string, value: string) => {
-      updateTheme({ [key]: value, spooky: false });
+      updateTheme({ [key]: value, seasons: withActiveSeasonOff(userConfig) });
     },
-    [updateTheme]
+    [updateTheme, userConfig]
   );
 
   const applyPresetTheme = useCallback(
@@ -132,16 +143,24 @@ export const ThemePage = () => {
         backgroundColor: preset.backgroundColor,
         surfaceColor: preset.surfaceColor,
         accentColor: preset.accentColor,
-        spooky: false,
+        seasons: withActiveSeasonOff(userConfig),
       });
     },
-    [updateTheme]
+    [updateTheme, userConfig]
   );
 
-  const toggleSpooky = useCallback((next: boolean) => updateTheme({ spooky: next }), [updateTheme]);
+  const toggleSeason = useCallback(
+    (season: SeasonId, next: boolean) =>
+      updateTheme({ seasons: withSeasonFlag(userConfig.seasons, season, next) }),
+    [updateTheme, userConfig.seasons]
+  );
+
+  const season = activeSeason(userConfig);
+  const leadSeason = season ?? currentSeason() ?? upcomingSeason();
+  const otherSeasons = SEASON_IDS.filter((id) => id !== leadSeason);
 
   const isPresetActive = (preset: PresetTheme) =>
-    !userConfig.spooky &&
+    !season &&
     userConfig.primaryColor === preset.primaryColor &&
     userConfig.backgroundColor === preset.backgroundColor &&
     userConfig.surfaceColor === preset.surfaceColor &&
@@ -160,11 +179,22 @@ export const ThemePage = () => {
       />
 
       <div className="theme-content">
-        <SpookySeasonCard active={!!userConfig.spooky} onToggle={toggleSpooky} />
-        {userConfig.spooky && (
-          <p className="theme-spooky-note" style={{ color: currentTheme.text.muted }}>
+        <SeasonCard season={leadSeason} active={season === leadSeason} onToggle={toggleSeason} />
+        <div className="season-grid">
+          {otherSeasons.map((id) => (
+            <SeasonCard
+              key={id}
+              season={id}
+              active={season === id}
+              compact
+              onToggle={toggleSeason}
+            />
+          ))}
+        </div>
+        {season && (
+          <p className="theme-season-note" style={{ color: currentTheme.text.muted }}>
             {t(
-              'Spooky Season liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet sie.'
+              'Das Saison-Design liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet es.'
             )}
           </p>
         )}

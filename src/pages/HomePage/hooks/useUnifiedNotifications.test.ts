@@ -98,7 +98,7 @@ const defaultFriends = (): FriendsState => ({
 beforeEach(() => {
   vi.useFakeTimers();
   // Nach allen Announcement-Daten → hydration markiert alle als gelesen
-  vi.setSystemTime(new Date('2026-10-01T12:00:00Z'));
+  vi.setSystemTime(new Date('2026-10-12T12:00:00Z'));
   fb.state.data = null;
   fb.set.mockClear();
   fb.once.mockClear();

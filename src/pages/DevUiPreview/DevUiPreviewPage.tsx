@@ -8,6 +8,7 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
+import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
 import {
   CatchUpPreview,
   RatingsYearFilterPreview,
@@ -143,6 +144,22 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  {
+    id: 'splash-spooky',
+    label: 'Splash: Spooky',
+    render: () => <SplashScreen previewSeason="spooky" />,
+  },
+  {
+    id: 'splash-christmas',
+    label: 'Splash: Weihnachten',
+    render: () => <SplashScreen previewSeason="christmas" />,
+  },
+  {
+    id: 'splash-newyear',
+    label: 'Splash: Neujahr',
+    render: () => <SplashScreen previewSeason="newyear" />,
+  },
+  { id: 'splash', label: 'Splash: normal', render: () => <SplashScreen previewSeason={null} /> },
   { id: 'manga', label: 'Manga: Übersicht', render: () => <MangaOverviewPreview /> },
   { id: 'manga-detail', label: 'Manga: Detail', render: () => <MangaDetailOwnedPreview /> },
   { id: 'manga-foreign', label: 'Manga: Vorschau', render: () => <MangaDetailForeignPreview /> },

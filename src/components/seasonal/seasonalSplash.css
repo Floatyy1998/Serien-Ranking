@@ -1,0 +1,447 @@
+.season-splash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.season-eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0;
+  animation: season-eyebrow-in 0.9s 0.25s ease-out forwards;
+}
+
+.season-eyebrow--spooky {
+  color: #ffb070;
+  text-shadow:
+    0 0 10px rgba(255, 122, 31, 0.85),
+    0 0 26px rgba(255, 90, 20, 0.45);
+  animation:
+    season-eyebrow-in 0.9s 0.25s ease-out forwards,
+    spooky-flicker 2.8s 1.2s linear infinite;
+}
+
+.season-eyebrow--christmas {
+  color: #f6dc8e;
+  text-shadow: 0 0 12px rgba(233, 185, 73, 0.7);
+}
+
+.season-eyebrow--newyear {
+  color: #ffe4a0;
+  text-shadow: 0 0 12px rgba(242, 199, 92, 0.75);
+}
+
+@keyframes season-eyebrow-in {
+  from {
+    opacity: 0;
+    letter-spacing: 0.6em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.34em;
+  }
+}
+
+@keyframes spooky-flicker {
+  0%,
+  19%,
+  22%,
+  62%,
+  64%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  63% {
+    opacity: 0.35;
+  }
+}
+
+/* Spooky */
+.spooky-splash__moon {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(120vw, 680px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 160, 70, 0.32) 0%,
+    rgba(255, 110, 30, 0.14) 28%,
+    transparent 62%
+  );
+  animation: spooky-moon 3.4s ease-in-out infinite;
+}
+
+@keyframes spooky-moon {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.spooky-splash__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%, transparent 38%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.spooky-splash__web {
+  position: absolute;
+  top: 0;
+  width: clamp(150px, 46vw, 340px);
+  height: clamp(150px, 46vw, 340px);
+  overflow: visible;
+  opacity: 0;
+  animation: season-fade 0.8s 0.1s ease-out forwards;
+}
+
+.spooky-splash__web--l {
+  left: 0;
+}
+
+.spooky-splash__web--r {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+@keyframes season-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+.spooky-splash__drop {
+  position: absolute;
+  top: 0;
+  left: 68%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(-100%);
+  animation: spooky-splash-drop 1.5s 0.2s cubic-bezier(0.3, 1.3, 0.5, 1) forwards;
+}
+
+.spooky-splash__thread {
+  width: 1px;
+  height: 27vh;
+  background: linear-gradient(to bottom, rgba(239, 230, 214, 0.15), rgba(239, 230, 214, 0.7));
+}
+
+.spooky-splash__spider {
+  width: 40px;
+  margin-top: -6px;
+  overflow: visible;
+  transform: rotate(180deg);
+  filter: drop-shadow(0 0 3px rgba(255, 170, 110, 0.55)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.8));
+}
+
+.spooky-splash__spider .spk-legs--l {
+  animation: spooky-twitch-l 2.2s ease-in-out infinite;
+}
+
+.spooky-splash__spider .spk-legs--r {
+  animation: spooky-twitch-r 2.2s ease-in-out infinite;
+}
+
+@keyframes spooky-splash-drop {
+  to {
+    transform: translateY(0);
+  }
+}
+
+.spooky-splash__bat {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 40px;
+  margin-left: -20px;
+  opacity: 0;
+  animation: spooky-bat-burst 2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes spooky-bat-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2);
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--r)) scale(var(--s));
+  }
+}
+
+.spooky-splash__hand {
+  position: absolute;
+  left: 20%;
+  bottom: clamp(36px, 6vh, 60px);
+  width: clamp(58px, 16vw, 90px);
+  transform: translateY(115%) rotate(-6deg);
+  filter: drop-shadow(0 0 6px rgba(255, 140, 60, 0.25));
+  animation:
+    spooky-hand-rise 1.8s 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) forwards,
+    spooky-hand-claw 2.4s 2.3s ease-in-out infinite;
+}
+
+@keyframes spooky-hand-rise {
+  60% {
+    transform: translateY(8%) rotate(4deg);
+  }
+  to {
+    transform: translateY(14%) rotate(-3deg);
+  }
+}
+
+@keyframes spooky-hand-claw {
+  0%,
+  100% {
+    transform: translateY(14%) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(10%) rotate(3deg);
+  }
+}
+
+.spooky-splash__graves {
+  height: clamp(100px, 15vh, 150px);
+  fill: #050307;
+  stroke: #050307;
+}
+
+.spooky-splash__skull {
+  position: absolute;
+  right: 0;
+  top: 69%;
+  width: clamp(80px, 22vw, 120px);
+  transform: translateX(115%) scaleX(-1);
+  filter: drop-shadow(-4px 8px 10px rgba(0, 0, 0, 0.6));
+  animation: spooky-splash-peek 2.2s 0.9s ease-in-out forwards;
+}
+
+@keyframes spooky-splash-peek {
+  50% {
+    transform: translateX(28%) scaleX(-1) rotate(12deg);
+  }
+  to {
+    transform: translateX(32%) scaleX(-1) rotate(6deg);
+  }
+}
+
+.spooky-splash__lightning {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 70% 0%,
+    rgba(220, 210, 255, 0.55),
+    rgba(180, 160, 255, 0.12) 60%
+  );
+  opacity: 0;
+  animation: spooky-lightning 5s 0.9s linear infinite;
+}
+
+@keyframes spooky-lightning {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  1% {
+    opacity: 0.9;
+  }
+  3% {
+    opacity: 0.1;
+  }
+  5% {
+    opacity: 0.7;
+  }
+  10% {
+    opacity: 0;
+  }
+}
+
+.spooky-splash__eyes {
+  position: absolute;
+  display: flex;
+  gap: 9px;
+  opacity: 0;
+  animation: spooky-eyes 3.6s ease-in-out infinite;
+}
+
+.spooky-splash__eyes i {
+  width: 9px;
+  height: 5px;
+  border-radius: 50% 50% 45% 45%;
+  background: radial-gradient(circle at 50% 60%, #ffe08a 0 20%, #ff6a1a 55%, #b3200a);
+  box-shadow: 0 0 8px 2px rgba(255, 90, 20, 0.65);
+  transform: rotate(8deg);
+}
+
+.spooky-splash__eyes i + i {
+  transform: rotate(-8deg);
+}
+
+@keyframes spooky-eyes {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+  15%,
+  55% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  35% {
+    transform: scaleY(0.1);
+  }
+  38% {
+    transform: scaleY(1);
+  }
+  70% {
+    opacity: 0;
+  }
+}
+
+/* Weihnachten */
+.xmas-splash__glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(120vw, 680px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 210, 120, 0.22) 0%, transparent 60%);
+}
+
+.xmas-splash__lights {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) - 4px);
+  left: -12px;
+  display: flex;
+  width: max-content;
+}
+
+.xmas-splash__lights svg {
+  flex: 0 0 auto;
+  width: clamp(100px, 28vw, 140px);
+  overflow: visible;
+}
+
+.xmas-splash__sleigh {
+  position: absolute;
+  top: 16%;
+  left: 0;
+  width: clamp(160px, 44vw, 280px);
+  overflow: visible;
+  filter: drop-shadow(0 0 5px rgba(255, 220, 140, 0.6));
+  transform: translateX(calc(100vw + 20px));
+  animation: xmas-splash-fly 3.6s 0.15s linear forwards;
+}
+
+@keyframes xmas-splash-fly {
+  to {
+    transform: translateX(-320px) translateY(-4vh);
+  }
+}
+
+.xmas-splash__hills {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(80px, 16vh, 140px);
+}
+
+.xmas-splash__tree {
+  position: absolute;
+  bottom: clamp(48px, 10vh, 90px);
+}
+
+.xmas-splash__tree--a {
+  left: 7%;
+  width: clamp(60px, 16vw, 96px);
+}
+
+.xmas-splash__tree--b {
+  left: 22%;
+  width: clamp(36px, 10vw, 60px);
+}
+
+.xmas-splash__tree--c {
+  right: 9%;
+  width: clamp(52px, 14vw, 84px);
+}
+
+.xmas-splash__tree--d {
+  right: 26%;
+  width: clamp(30px, 8vw, 50px);
+}
+
+/* Neujahr */
+.ny-splash__glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(120vw, 680px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(242, 199, 92, 0.2) 0%, transparent 60%);
+}
+
+.ny-splash__burst {
+  position: absolute;
+  width: clamp(120px, 36vw, 240px);
+  overflow: visible;
+  opacity: 0;
+  animation: ny-burst 2.8s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
+}
+
+.ny-splash__burst--a {
+  left: 4%;
+  top: 10%;
+  animation-delay: 0.1s;
+}
+
+.ny-splash__burst--b {
+  right: 2%;
+  top: 6%;
+  animation-delay: 0.55s;
+}
+
+.ny-splash__burst--c {
+  left: 0;
+  top: 54%;
+  animation-delay: 1s;
+}
+
+.ny-splash__burst--d {
+  right: 4%;
+  top: 50%;
+  animation-delay: 1.4s;
+}
+
+.ny-splash__skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(80px, 16vh, 140px);
+}

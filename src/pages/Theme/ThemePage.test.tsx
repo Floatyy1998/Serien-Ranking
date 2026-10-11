@@ -35,7 +35,7 @@ const { updateTheme, resetTheme, configRef, contrastRef } = vi.hoisted(() => ({
       surfaceColor: '#111111',
       accentColor: '#22d3ee',
       textColor: '#ffffff',
-    } as Record<string, string>,
+    } as Record<string, unknown>,
   },
   contrastRef: { current: 10 },
 }));
@@ -81,16 +81,23 @@ vi.mock('./ColorEditor', () => ({
     onColorChange: (k: string, v: string) => void;
   }) => <button onClick={() => onColorChange(category.key, '#00ff00')}>{category.name}</button>,
 }));
-vi.mock('./SpookySeasonCard', () => ({
-  SpookySeasonCard: ({
+vi.mock('./SeasonCard', () => ({
+  SeasonCard: ({
+    season,
     active,
     onToggle,
   }: {
+    season: string;
     active: boolean;
-    onToggle: (next: boolean) => void;
+    onToggle: (season: string, next: boolean) => void;
   }) => (
-    <button role="switch" aria-checked={active} onClick={() => onToggle(!active)}>
-      spooky
+    <button
+      role="switch"
+      aria-label={season}
+      aria-checked={active}
+      onClick={() => onToggle(season, !active)}
+    >
+      {season}
     </button>
   ),
 }));
@@ -103,12 +110,17 @@ vi.mock('./ResetSection', () => ({
 import { ThemePage } from './ThemePage';
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(2026, 9, 11));
   updateTheme.mockReset();
   resetTheme.mockReset();
   contrastRef.current = 10;
 });
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('ThemePage', () => {
   it('renders the header, preset cards and color editors', () => {
@@ -127,27 +139,31 @@ describe('ThemePage', () => {
       backgroundColor: '#030d18',
       surfaceColor: '#060f20',
       accentColor: '#7c3aed',
-      spooky: false,
+      seasons: { spooky: false },
     });
   });
 
   it('updates a single color from a color editor', () => {
     render(<ThemePage />);
     fireEvent.click(screen.getByText('Primär'));
-    expect(updateTheme).toHaveBeenCalledWith({ primaryColor: '#00ff00', spooky: false });
+    expect(updateTheme).toHaveBeenCalledWith({
+      primaryColor: '#00ff00',
+      seasons: { spooky: false },
+    });
   });
 
-  it('toggles Spooky Season and shows the override hint while active', () => {
-    render(<ThemePage />);
-    fireEvent.click(screen.getByRole('switch'));
-    expect(updateTheme).toHaveBeenCalledWith({ spooky: true });
-    expect(screen.queryByText(/liegt gerade über deinen Farben/)).toBeNull();
-
-    cleanup();
-    configRef.current = { ...configRef.current, spooky: 'true' };
+  it('turns the running season off and shows the override hint while active', () => {
     render(<ThemePage />);
     expect(screen.getByText(/liegt gerade über deinen Farben/)).toBeInTheDocument();
-    const { spooky: _spooky, ...rest } = configRef.current;
+    fireEvent.click(screen.getByRole('switch', { name: 'spooky' }));
+    expect(updateTheme).toHaveBeenCalledWith({ seasons: { spooky: false } });
+  });
+
+  it('hides the hint once the season is switched off', () => {
+    configRef.current = { ...configRef.current, seasons: { spooky: false } };
+    render(<ThemePage />);
+    expect(screen.queryByText(/liegt gerade über deinen Farben/)).toBeNull();
+    const { seasons: _seasons, ...rest } = configRef.current;
     configRef.current = rest;
   });
 

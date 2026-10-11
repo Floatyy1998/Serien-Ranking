@@ -1,0 +1,9 @@
+/* Saison-Deko: über dem Seiteninhalt, unter Overlays, Dock und Sheets */
+.season-layer {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-overlay) - 50);
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
