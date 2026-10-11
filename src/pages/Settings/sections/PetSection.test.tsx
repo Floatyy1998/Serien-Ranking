@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 
-vi.mock('@mui/icons-material', () => ({ Pets: () => null }));
+vi.mock('@mui/icons-material', () => ({ Pets: () => null, DirectionsWalk: () => null }));
 vi.mock('framer-motion', async () => {
   const React = await import('react');
   const skip = new Set(['initial', 'animate', 'exit', 'transition']);

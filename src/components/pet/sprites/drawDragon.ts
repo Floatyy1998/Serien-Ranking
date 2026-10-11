@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -102,7 +104,8 @@ export const drawDragon = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const wyvern = level >= 50;
@@ -185,8 +188,8 @@ export const drawDragon = (
 
   // PFOTEN
   ctx.fillStyle = dark;
-  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
-  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[0], 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[1], 1.25, 0.8, ps, offset);
 
   // KLEINE RUNDE HÖRNCHEN (cremefarben, weichen Kopf-Accessoires)
   if (equippedSlot !== 'head') {
@@ -242,7 +245,10 @@ export const drawDragon = (
   // AUGEN (groß und freundlich; Wyvern: Bernstein)
   const eyeY = headCY - 0.3;
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 2.7, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.7, eyeY, 1, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 2.7, eyeY, 1, 0.25, ps, offset);
@@ -264,6 +270,8 @@ export const drawDragon = (
     arcFill(ctx, centerX - 3, eyeY - 0.4, 0.35, ps, offset);
     arcFill(ctx, centerX + 2.4, eyeY - 0.4, 0.35, ps, offset);
   }
+
+  ctx.restore();
 
   // MUND (breites Lächeln + ein Zähnchen)
   ctx.strokeStyle = '#1A1A1A';

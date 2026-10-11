@@ -83,8 +83,7 @@ const dict: Record<string, string> = {
   'ist verhungert': 'murió de hambre',
   'ist vor Kummer gestorben': 'murió de pena',
   'Dein Haustier': 'Tu mascota',
-  '{name} {cause} 😢 – tippe es an, um es wiederzubeleben':
-    '{name} {cause} – tócala para revivirla',
+  '{name} {cause} – tippe es an, um es wiederzubeleben': '{name} {cause} – tócala para revivirla',
   'Sättigung: {n}%': 'Saciedad: {n}%',
   Sättigung: 'Saciedad',
   'Gesundes Pet: +50% XP-Bonus aktiv': 'Mascota sana: +50% de XP extra activo',
@@ -420,6 +419,20 @@ const dict: Record<string, string> = {
   'in {n} h': 'en {n} h',
   'Pet Name...': 'Nombre de la mascota...',
   'Mystery Box': 'Caja misteriosa',
+  '{name} anstupsen': 'Toca a {name}',
+  'Ball kicken': 'Patear la pelota',
+  'Brief öffnen: neue Folgen heute': 'Abrir carta: episodios nuevos hoy',
+  'Satt {n}%': 'Lleno {n} %',
+  'Snack geben': 'Dar un snack',
+  Snack: 'Snack',
+  Ball: 'Pelota',
+  'Snack aufs Pet ziehen': 'Arrastra el snack hasta tu mascota',
+  'Serie durch! Was für ein Ritt': '¡Serie terminada! Qué viaje',
+  'Staffel geschafft!': '¡Temporada completada!',
+  Herumlaufen: 'Pasear',
+  'Dein Pet läuft frei über die Navigationsleiste.':
+    'Tu mascota pasea libremente por la barra de navegación.',
+  'Dein Pet bleibt an seinem Platz sitzen.': 'Tu mascota se queda sentada en su sitio.',
 };
 
 export default dict;

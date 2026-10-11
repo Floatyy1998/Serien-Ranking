@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -46,7 +48,8 @@ export const drawRabbit = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const moonRabbit = level >= 50;
@@ -148,11 +151,11 @@ export const drawRabbit = (
 
   // FÜSSE (große Ovale)
   ctx.fillStyle = color;
-  ellipseFill(ctx, centerX - 2.4, bodyCY + bodyRy - 0.3, 1.7, 0.95, ps, offset);
-  ellipseFill(ctx, centerX + 2.4, bodyCY + bodyRy - 0.3, 1.7, 0.95, ps, offset);
+  ellipseFill(ctx, centerX - 2.4, bodyCY + bodyRy - 0.3 - pose.pawLift[0], 1.7, 0.95, ps, offset);
+  ellipseFill(ctx, centerX + 2.4, bodyCY + bodyRy - 0.3 - pose.pawLift[1], 1.7, 0.95, ps, offset);
   ctx.fillStyle = '#FFB6C1';
-  ellipseFill(ctx, centerX - 2.4, bodyCY + bodyRy - 0.25, 0.9, 0.45, ps, offset);
-  ellipseFill(ctx, centerX + 2.4, bodyCY + bodyRy - 0.25, 0.9, 0.45, ps, offset);
+  ellipseFill(ctx, centerX - 2.4, bodyCY + bodyRy - 0.25 - pose.pawLift[0], 0.9, 0.45, ps, offset);
+  ellipseFill(ctx, centerX + 2.4, bodyCY + bodyRy - 0.25 - pose.pawLift[1], 0.9, 0.45, ps, offset);
 
   // KOPF
   ctx.fillStyle = color;
@@ -167,7 +170,10 @@ export const drawRabbit = (
   // AUGEN
   const eyeY = headCY + 0.3;
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 2.5, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.5, eyeY, 0.95, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 2.5, eyeY, 0.95, 0.25, ps, offset);
@@ -187,6 +193,8 @@ export const drawRabbit = (
     arcFill(ctx, centerX - 2.8, eyeY - 0.35, 0.32, ps, offset);
     arcFill(ctx, centerX + 2.2, eyeY - 0.35, 0.32, ps, offset);
   }
+
+  ctx.restore();
 
   // NASE + HASENZÄHNE
   ctx.fillStyle = '#FF8A9D';

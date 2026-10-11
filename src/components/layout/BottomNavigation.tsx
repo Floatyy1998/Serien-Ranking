@@ -210,7 +210,7 @@ export const BottomNavigation = () => {
 
   return (
     <>
-      {petEnabled && <PetWidget />}
+      {petEnabled && <PetWidget unwatchedToday={unwatchedToday} />}
 
       <nav className="mobile-bottom-navigation" aria-label={t('Hauptnavigation')}>
         <div

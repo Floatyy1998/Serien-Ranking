@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -87,7 +89,8 @@ export const drawPenguin = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -140,7 +143,10 @@ export const drawPenguin = (
 
   // AUGEN
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, headCY, 1.7, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 1.7, headCY, 0.9, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 1.7, headCY, 0.9, 0.25, ps, offset);
@@ -152,6 +158,8 @@ export const drawPenguin = (
     arcFill(ctx, centerX - 2, headCY - 0.35, 0.32, ps, offset);
     arcFill(ctx, centerX + 1.4, headCY - 0.35, 0.32, ps, offset);
   }
+
+  ctx.restore();
 
   // SCHNABEL
   ctx.fillStyle = '#FF9E42';
@@ -184,8 +192,26 @@ export const drawPenguin = (
 
   // FÜSSE
   ctx.fillStyle = '#FF9E42';
-  ellipseFill(ctx, centerX - 2.1, bodyCY + bodyRy - 0.3, 1.5, 0.8, ps, offset, -0.15);
-  ellipseFill(ctx, centerX + 2.1, bodyCY + bodyRy - 0.3, 1.5, 0.8, ps, offset, 0.15);
+  ellipseFill(
+    ctx,
+    centerX - 2.1,
+    bodyCY + bodyRy - 0.3 - pose.pawLift[0],
+    1.5,
+    0.8,
+    ps,
+    offset,
+    -0.15
+  );
+  ellipseFill(
+    ctx,
+    centerX + 2.1,
+    bodyCY + bodyRy - 0.3 - pose.pawLift[1],
+    1.5,
+    0.8,
+    ps,
+    offset,
+    0.15
+  );
 
   // KAISER-DETAILS (Lv50+): Eiskrone, Gold-Kragen, Schneeflocken-Emblem
   if (emperor) {

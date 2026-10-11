@@ -96,7 +96,7 @@ const dict: Record<string, string> = {
   'ist vor Kummer gestorben': 'died of a broken heart',
   'wurde zu lange vernachlässigt': 'was neglected for too long',
   'Dein Haustier': 'Your pet',
-  '{name} {cause} 😢 – tippe es an, um es wiederzubeleben': '{name} {cause} 😢 – tap to revive',
+  '{name} {cause} – tippe es an, um es wiederzubeleben': '{name} {cause} – tap to revive',
   'Sättigung: {n}%': 'Fullness: {n}%',
   Sättigung: 'Fullness',
   'Gesundes Pet: +50% XP-Bonus aktiv': 'Healthy pet: +50% XP bonus active',
@@ -454,6 +454,20 @@ const dict: Record<string, string> = {
   // Produktname der App — steht hier, damit Spanisch und Franzoesisch ihn
   // uebersetzen koennen ("Caja misteriosa", "Boite mystere").
   'Mystery Box': 'Mystery Box',
+  '{name} anstupsen': 'Poke {name}',
+  'Ball kicken': 'Kick the ball',
+  'Brief öffnen: neue Folgen heute': 'Open letter: new episodes today',
+  'Satt {n}%': 'Full {n}%',
+  'Snack geben': 'Give a snack',
+  Snack: 'Snack',
+  Ball: 'Ball',
+  'Snack aufs Pet ziehen': 'Drag the snack onto your pet',
+  'Serie durch! Was für ein Ritt': 'Show finished! What a ride',
+  'Staffel geschafft!': 'Season done!',
+  Herumlaufen: 'Roam around',
+  'Dein Pet läuft frei über die Navigationsleiste.':
+    'Your pet roams freely across the navigation bar.',
+  'Dein Pet bleibt an seinem Platz sitzen.': 'Your pet stays put in its spot.',
 };
 
 export default dict;

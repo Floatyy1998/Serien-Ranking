@@ -73,8 +73,8 @@ const dict: Record<string, string> = {
   '2x XP — 2 Episoden': '2x XP — 2 épisodes',
   '3x XP — 10 Episoden': '3x XP — 10 épisodes',
   '2x XP — 5 Episoden': '2x XP — 5 épisodes',
-  '{name} {cause} 😢 – tippe es an, um es wiederzubeleben':
-    '{name} {cause} 😢 – appuie dessus pour le réanimer',
+  '{name} {cause} – tippe es an, um es wiederzubeleben':
+    '{name} {cause} – appuie dessus pour le réanimer',
   'Pet ist verstorben – Tippe zum Wiederbeleben':
     'Ton compagnon est mort – appuie pour le réanimer',
   'Tippe zum Starten': 'Appuie pour commencer',
@@ -423,6 +423,20 @@ const dict: Record<string, string> = {
   'in {n} h': 'dans {n} h',
   'Pet Name...': 'Nom du compagnon...',
   'Mystery Box': 'Boîte mystère',
+  '{name} anstupsen': 'Chatouiller {name}',
+  'Ball kicken': 'Taper dans le ballon',
+  'Brief öffnen: neue Folgen heute': 'Ouvrir la lettre : nouveaux épisodes aujourd’hui',
+  'Satt {n}%': 'Rassasié {n} %',
+  'Snack geben': 'Donner un snack',
+  Snack: 'Snack',
+  Ball: 'Ballon',
+  'Snack aufs Pet ziehen': 'Glisse le snack sur ton compagnon',
+  'Serie durch! Was für ein Ritt': 'Série terminée ! Quelle aventure',
+  'Staffel geschafft!': 'Saison terminée !',
+  Herumlaufen: 'Se balader',
+  'Dein Pet läuft frei über die Navigationsleiste.':
+    'Ton compagnon se balade librement sur la barre de navigation.',
+  'Dein Pet bleibt an seinem Platz sitzen.': 'Ton compagnon reste assis à sa place.',
 };
 
 export default dict;

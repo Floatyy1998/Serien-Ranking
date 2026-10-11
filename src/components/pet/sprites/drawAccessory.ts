@@ -154,7 +154,7 @@ const DEFAULT_ANCHORS: PetAnchors = {
   neckHalfWidth: 4,
 };
 
-function getAnchors(
+export function getAnchors(
   petType:
     'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl',
   level: number

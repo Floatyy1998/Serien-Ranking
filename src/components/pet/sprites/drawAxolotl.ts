@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -46,7 +48,8 @@ export const drawAxolotl = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  _equippedSlot?: AccessorySlot | null
+  _equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -103,6 +106,14 @@ export const drawAxolotl = (
   // BAUCH
   ctx.fillStyle = light;
   ellipseFill(ctx, centerX, bodyCY + 1, bodyRx * 0.6, bodyRy * 0.55, ps, offset);
+
+  // STUMMELFÜSSE
+  ctx.fillStyle = color;
+  ellipseFill(ctx, centerX - 2.3, bodyCY + bodyRy - 0.5 - pose.pawLift[0], 1.15, 0.75, ps, offset);
+  ellipseFill(ctx, centerX + 2.3, bodyCY + bodyRy - 0.5 - pose.pawLift[1], 1.15, 0.75, ps, offset);
+  ctx.fillStyle = dark + '55';
+  ellipseFill(ctx, centerX - 2.3, bodyCY + bodyRy - 0.25 - pose.pawLift[0], 0.8, 0.3, ps, offset);
+  ellipseFill(ctx, centerX + 2.3, bodyCY + bodyRy - 0.25 - pose.pawLift[1], 0.8, 0.3, ps, offset);
 
   // MINI-ÄRMCHEN
   ctx.fillStyle = color;
@@ -179,7 +190,10 @@ export const drawAxolotl = (
   // AUGEN (weit auseinander, freundliche Knopfaugen)
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
   const eyeY = headCY + 0.3;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 3.1, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 3.1, eyeY, 0.95, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 3.1, eyeY, 0.95, 0.25, ps, offset);
@@ -191,6 +205,8 @@ export const drawAxolotl = (
     arcFill(ctx, centerX - 3.4, eyeY - 0.35, 0.35, ps, offset);
     arcFill(ctx, centerX + 2.8, eyeY - 0.35, 0.35, ps, offset);
   }
+
+  ctx.restore();
 
   // DAS AXOLOTL-LÄCHELN (breiter, zufriedener Bogen)
   ctx.strokeStyle = '#1A1A1A';

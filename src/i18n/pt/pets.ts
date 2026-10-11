@@ -84,7 +84,7 @@ const dict: Record<string, string> = {
   'ist verhungert': 'morreu de fome',
   'ist vor Kummer gestorben': 'morreu de tristeza',
   'Dein Haustier': 'Seu bichinho',
-  '{name} {cause} 😢 – tippe es an, um es wiederzubeleben':
+  '{name} {cause} – tippe es an, um es wiederzubeleben':
     '{name} {cause} – toque nele para revivê-lo',
   'Sättigung: {n}%': 'Saciedade: {n}%',
   Sättigung: 'Saciedade',
@@ -421,6 +421,20 @@ const dict: Record<string, string> = {
   'in {n} h': 'em {n} h',
   'Pet Name...': 'Nome do bichinho...',
   'Mystery Box': 'Caixa misteriosa',
+  '{name} anstupsen': 'Cutucar {name}',
+  'Ball kicken': 'Chutar a bola',
+  'Brief öffnen: neue Folgen heute': 'Abrir carta: episódios novos hoje',
+  'Satt {n}%': 'Satisfeito {n}%',
+  'Snack geben': 'Dar um petisco',
+  Snack: 'Petisco',
+  Ball: 'Bola',
+  'Snack aufs Pet ziehen': 'Arraste o petisco até o seu pet',
+  'Serie durch! Was für ein Ritt': 'Série concluída! Que jornada',
+  'Staffel geschafft!': 'Temporada concluída!',
+  Herumlaufen: 'Passear',
+  'Dein Pet läuft frei über die Navigationsleiste.':
+    'Seu pet passeia livremente pela barra de navegação.',
+  'Dein Pet bleibt an seinem Platz sitzen.': 'Seu pet fica sentado no lugar dele.',
 };
 
 export default dict;

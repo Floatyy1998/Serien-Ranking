@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -85,7 +87,8 @@ export const drawDog = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const wolf = level >= 50;
@@ -173,8 +176,8 @@ export const drawDog = (
 
   // PFOTEN
   ctx.fillStyle = dark;
-  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
-  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[0], 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[1], 1.25, 0.8, ps, offset);
 
   // WOLFS-OHREN (Lv50+): breit und aufrecht mit runder Spitze — bewusst
   // anders als die schmalen Katzen-Dreiecke
@@ -307,7 +310,10 @@ export const drawDog = (
   // AUGEN + BRAUEN-PUNKTE
   const eyeY = headCY - 0.4;
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 2.6, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.6, eyeY, 0.95, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 2.6, eyeY, 0.95, 0.25, ps, offset);
@@ -326,6 +332,8 @@ export const drawDog = (
     arcFill(ctx, centerX - 2.9, eyeY - 0.35, 0.32, ps, offset);
     arcFill(ctx, centerX + 2.3, eyeY - 0.35, 0.32, ps, offset);
   }
+  ctx.restore();
+
   if (!wolf) {
     ctx.fillStyle = dark;
     ellipseFill(ctx, centerX - 2.6, eyeY - 1.7, 0.55, 0.32, ps, offset);

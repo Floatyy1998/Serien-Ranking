@@ -8,6 +8,7 @@ import { getActiveBingeSession, updateBingeSession } from './bingeSessionTrackin
 import { updateWatchStreak } from './watchStreakTracking';
 import { triggerPetReaction } from '../../hooks/pet/usePetReactions';
 import { bumpSeriesVersion, dbGet, dbRef, paths } from '../db/ref';
+import { emitPetEpisode } from '../pet/petEvents';
 
 /** Einzel-Marks setzen die Serie auf die Watchlist („Weiterschauen"); Bulk-Abhaken bewusst nicht. */
 async function ensureOnWatchlist(userId: string, seriesId: number): Promise<void> {
@@ -100,6 +101,7 @@ export async function logEpisodeWatch(
 
   // Pet-Reaktion: binge > rewatch > cheer; bei Bulk-Marking übersprungen (Bubble-Spam).
   if (!isBulkMarking) {
+    emitPetEpisode({ seriesId, seasonNumber, episodeNumber, isRewatch });
     if (isBingeSession) triggerPetReaction({ tone: 'binge' });
     else if (isRewatch) triggerPetReaction({ tone: 'rewatch' });
     else triggerPetReaction({ tone: 'cheer' });

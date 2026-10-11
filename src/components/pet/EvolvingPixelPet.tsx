@@ -1,35 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
-import type { Pet, AccessorySlot } from '../../types/pet.types';
-import { PET_COLORS } from '../../types/pet.types';
-import { ACCESSORIES } from './data/accessories';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { ThemeContext } from '../../contexts/ThemeContext';
+import { activeSeason } from '../../theme/seasonalThemes';
+import type { Pet } from '../../types/pet.types';
 import { petMoodService } from '../../services/pet/petMoodService';
-import { adjustColor } from './colorUtils';
-import { drawAccessory } from './sprites/drawAccessory';
-import { drawCat } from './sprites/drawCat';
-import { drawDog } from './sprites/drawDog';
-import { drawDragon, drawDragonWingsOverlay } from './sprites/drawDragon';
-import { drawBird } from './sprites/drawBird';
-import { drawFox } from './sprites/drawFox';
-import { drawRabbit } from './sprites/drawRabbit';
-import { drawPanda } from './sprites/drawPanda';
-import { drawOwl } from './sprites/drawOwl';
-import { drawPenguin } from './sprites/drawPenguin';
-import { drawAxolotl } from './sprites/drawAxolotl';
+import { drawPetFigure, petColors } from './renderPet';
+import { seasonCostume } from './seasonCostume';
 
 interface EvolvingPixelPetProps {
   pet: Pet;
   size?: number;
   animated?: boolean;
+  /** Saison-Hut, solange das Saison-Design läuft. */
+  costume?: boolean;
 }
 
 export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
   pet,
   size = 128,
   animated = true,
+  costume = true,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
   const [currentMood] = useState(() => petMoodService.calculateCurrentMood(pet));
+  const themeConfig = useContext(ThemeContext)?.userConfig;
+  const season = costume && themeConfig ? activeSeason(themeConfig) : null;
 
   const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -60,10 +55,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
 
     const gridSize = 32;
     const pixelSize = Math.floor(size / gridSize);
-    const color = PET_COLORS[pet.color as keyof typeof PET_COLORS] || PET_COLORS.blau;
-
-    const darkColor = adjustColor(color, -40);
-    const lightColor = adjustColor(color, 40);
+    const { color, dark: darkColor, light: lightColor } = petColors(pet);
 
     const drawPet = () => {
       ctx.clearRect(0, 0, size, size);
@@ -112,175 +104,15 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
               ? bounceOffset * 0.5
               : bounceOffset;
 
-      const equippedAcc = pet.accessories?.find((a) => a.equipped);
-      const equippedSlot: AccessorySlot | null = equippedAcc
-        ? (ACCESSORIES[equippedAcc.id]?.slot ?? null)
-        : null;
-
-      if (pet.type === 'cat') {
-        drawCat(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'dog') {
-        drawDog(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'dragon') {
-        drawDragon(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'bird') {
-        drawBird(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'fox') {
-        drawFox(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'rabbit') {
-        drawRabbit(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'panda') {
-        drawPanda(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'owl') {
-        drawOwl(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'penguin') {
-        drawPenguin(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      } else if (pet.type === 'axolotl') {
-        drawAxolotl(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          lightColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed,
-          equippedSlot
-        );
-      }
-
-      // Dann zeichne ALLE Accessoires OBEN DRAUF
-      if (pet.accessories && pet.accessories.length > 0) {
-        pet.accessories.forEach((accessory) => {
-          if (!accessory.equipped) return;
-          drawAccessory(ctx, accessory, pixelSize, moodBounce, pet.type, pet.level);
-        });
-      }
-
-      // Drachen-Flügel ÜBER Accessories zeichnen (damit sie vor dem Schal erscheinen)
-      if (pet.type === 'dragon') {
-        drawDragonWingsOverlay(
-          ctx,
-          pet.level,
-          pixelSize,
-          color,
-          darkColor,
-          moodBounce,
-          animated,
-          frameRef.current,
-          animationSpeed
-        );
-      }
+      drawPetFigure(ctx, pet, {
+        ps: pixelSize,
+        offset: moodBounce,
+        animated,
+        frame: frameRef.current,
+        animationSpeed,
+        colors: { color, dark: darkColor, light: lightColor },
+        overlay: seasonCostume(pet, season, pixelSize, moodBounce),
+      });
 
       // Mood-Indikator entfernt - wird schon im PetWidget angezeigt
 
@@ -627,7 +459,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [pet, size, animated, animationSpeed, currentMood, moodSpeedMultiplier]);
+  }, [pet, size, animated, animationSpeed, currentMood, moodSpeedMultiplier, season]);
 
   return (
     <canvas

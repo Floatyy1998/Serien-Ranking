@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -62,7 +64,8 @@ export const drawFox = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const kitsune = level >= 50;
@@ -120,8 +123,8 @@ export const drawFox = (
 
   // PFOTEN (dunkle „Socken")
   ctx.fillStyle = dark;
-  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
-  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4, 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX - 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[0], 1.25, 0.8, ps, offset);
+  ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[1], 1.25, 0.8, ps, offset);
 
   // OHREN (groß, OBEN auf dem Kopf, mit dunklen Spitzen und hellem Innenohr)
   const earBaseY = headCY - headR * 0.62;
@@ -237,7 +240,10 @@ export const drawFox = (
   // AUGEN (leicht schräg — Fuchs-Charme)
   const eyeY = headCY - 0.2;
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 2.6, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.6, eyeY, 0.95, 0.25, ps, offset, -0.15);
     ellipseFill(ctx, centerX + 2.6, eyeY, 0.95, 0.25, ps, offset, 0.15);
@@ -256,6 +262,8 @@ export const drawFox = (
     arcFill(ctx, centerX - 2.9, eyeY - 0.35, 0.3, ps, offset);
     arcFill(ctx, centerX + 2.3, eyeY - 0.35, 0.3, ps, offset);
   }
+
+  ctx.restore();
 
   // NASE (dunkel, sitzt auf der Masken-Spitze) + MUND
   ctx.fillStyle = '#3E2723';

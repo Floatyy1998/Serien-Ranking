@@ -14,15 +14,19 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
 }));
 
-vi.mock('../../contexts/ThemeContext', () => ({
-  useTheme: () => ({
-    currentTheme: {
-      primary: '#00d123',
-      text: { primary: '#fff', secondary: '#eee' },
-      background: { default: '#000', surface: '#111', card: '#222' },
-    },
-  }),
-}));
+vi.mock('../../contexts/ThemeContext', async () => {
+  const React = await import('react');
+  return {
+    ThemeContext: React.createContext(undefined),
+    useTheme: () => ({
+      currentTheme: {
+        primary: '#00d123',
+        text: { primary: '#fff', secondary: '#eee' },
+        background: { default: '#000', surface: '#111', card: '#222' },
+      },
+    }),
+  };
+});
 
 vi.mock('../../lib/interaction/toast', () => ({ showToast: vi.fn() }));
 
@@ -48,8 +52,8 @@ const petSvc = vi.hoisted(() => ({
 vi.mock('../../services/pet/petService', () => ({ petService: petSvc }));
 
 // Kind-Komponenten (Canvas / MUI-Toast) durch schlanke Stubs ersetzen.
-vi.mock('./EvolvingPixelPet', () => ({
-  EvolvingPixelPet: () => <div data-testid="evolving-pet" />,
+vi.mock('./stage/PetStage', () => ({
+  PetStage: () => <div data-testid="pet-stage" />,
 }));
 vi.mock('./PetHungerToast', () => ({ PetHungerToast: () => null }));
 vi.mock('./PetWidgetNoPet', () => ({
@@ -102,7 +106,7 @@ describe('PetWidget', () => {
 
   it('rendert das aktive Pet nach dem Laden', async () => {
     render(<PetWidget />);
-    await waitFor(() => expect(screen.getByTestId('evolving-pet')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('pet-stage')).toBeInTheDocument());
   });
 
   it('rendert den No-Pet-Zustand wenn kein Pet existiert', async () => {

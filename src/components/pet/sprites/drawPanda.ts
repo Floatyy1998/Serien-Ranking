@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -41,7 +43,8 @@ export const drawPanda = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -59,7 +62,8 @@ export const drawPanda = (
       animated,
       frame,
       animationSpeed,
-      equippedSlot
+      equippedSlot,
+      pose
     );
     return;
   }
@@ -83,12 +87,12 @@ export const drawPanda = (
 
   // KLEINE SCHWARZE PFOTEN unten
   ctx.fillStyle = '#1A1A1A';
-  ellipseFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.5, 1.5, 0.9, ps, offset);
-  ellipseFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.5, 1.5, 0.9, ps, offset);
+  ellipseFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.5 - pose.pawLift[0], 1.5, 0.9, ps, offset);
+  ellipseFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.5 - pose.pawLift[1], 1.5, 0.9, ps, offset);
   // Pfotenballen (kleine braune Punkte)
   ctx.fillStyle = '#5C3A2E';
-  arcFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.3, 0.4, ps, offset);
-  arcFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.3, 0.4, ps, offset);
+  arcFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.3 - pose.pawLift[0], 0.4, ps, offset);
+  arcFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.3 - pose.pawLift[1], 0.4, ps, offset);
 
   // KLEINE SCHWARZE ÄRMCHEN (kuschelnd seitlich angelegt)
   ctx.fillStyle = '#1A1A1A';
@@ -134,21 +138,27 @@ export const drawPanda = (
   ellipseFill(ctx, centerX + 2.8, headCY - 0.3, 1.8, 2.2, ps, offset, 0.4);
 
   // GROSSE KAWAII-AUGEN
-  // Weißer Hintergrund
-  ctx.fillStyle = '#FFFFFF';
-  arcFill(ctx, centerX - 2.6, headCY + 0.3, 0.9, ps, offset);
-  arcFill(ctx, centerX + 2.6, headCY + 0.3, 0.9, ps, offset);
-  // Schwarze Pupille
-  ctx.fillStyle = '#000';
-  arcFill(ctx, centerX - 2.4, headCY + 0.5, 0.55, ps, offset);
-  arcFill(ctx, centerX + 2.8, headCY + 0.5, 0.55, ps, offset);
-  // Großer Glanzpunkt (kawaii sparkle)
-  ctx.fillStyle = '#FFFFFF';
-  arcFill(ctx, centerX - 2.2, headCY + 0.3, 0.3, ps, offset);
-  arcFill(ctx, centerX + 3.0, headCY + 0.3, 0.3, ps, offset);
-  // Mini-Glanz
-  arcFill(ctx, centerX - 2.7, headCY + 0.7, 0.15, ps, offset);
-  arcFill(ctx, centerX + 2.5, headCY + 0.7, 0.15, ps, offset);
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, headCY + 0.4, 2.6, ps, offset, 1);
+  } else {
+    // Weißer Hintergrund
+    ctx.fillStyle = '#FFFFFF';
+    arcFill(ctx, centerX - 2.6, headCY + 0.3, 0.9, ps, offset);
+    arcFill(ctx, centerX + 2.6, headCY + 0.3, 0.9, ps, offset);
+    // Schwarze Pupille
+    ctx.fillStyle = '#000';
+    arcFill(ctx, centerX - 2.4, headCY + 0.5, 0.55, ps, offset);
+    arcFill(ctx, centerX + 2.8, headCY + 0.5, 0.55, ps, offset);
+    // Großer Glanzpunkt (kawaii sparkle)
+    ctx.fillStyle = '#FFFFFF';
+    arcFill(ctx, centerX - 2.2, headCY + 0.3, 0.3, ps, offset);
+    arcFill(ctx, centerX + 3.0, headCY + 0.3, 0.3, ps, offset);
+    // Mini-Glanz
+    arcFill(ctx, centerX - 2.7, headCY + 0.7, 0.15, ps, offset);
+    arcFill(ctx, centerX + 2.5, headCY + 0.7, 0.15, ps, offset);
+  }
+  ctx.restore();
 
   // ROSA WANGEN (Pummel-Look)
   ctx.fillStyle = '#FFB6C1CC';
@@ -284,7 +294,8 @@ function drawGuardianPanda(
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void {
   const centerX = 16;
   const centerY = 16;
@@ -311,11 +322,11 @@ function drawGuardianPanda(
 
   // Pfoten unten
   ctx.fillStyle = blackInk;
-  ellipseFill(ctx, centerX - 3, bodyCY + bodyR - 0.5, 1.7, 1, ps, offset);
-  ellipseFill(ctx, centerX + 3, bodyCY + bodyR - 0.5, 1.7, 1, ps, offset);
+  ellipseFill(ctx, centerX - 3, bodyCY + bodyR - 0.5 - pose.pawLift[0], 1.7, 1, ps, offset);
+  ellipseFill(ctx, centerX + 3, bodyCY + bodyR - 0.5 - pose.pawLift[1], 1.7, 1, ps, offset);
   ctx.fillStyle = '#5C3A2E' + bodyAlpha;
-  arcFill(ctx, centerX - 3, bodyCY + bodyR - 0.3, 0.5, ps, offset);
-  arcFill(ctx, centerX + 3, bodyCY + bodyR - 0.3, 0.5, ps, offset);
+  arcFill(ctx, centerX - 3, bodyCY + bodyR - 0.3 - pose.pawLift[0], 0.5, ps, offset);
+  arcFill(ctx, centerX + 3, bodyCY + bodyR - 0.3 - pose.pawLift[1], 0.5, ps, offset);
 
   // Schwarze Fäuste seitlich (Kampfbereit)
   ctx.fillStyle = blackInk;
@@ -364,19 +375,25 @@ function drawGuardianPanda(
   ellipseFill(ctx, centerX + 3, headCY - 0.3, 2, 2.4, ps, offset, 0.4);
 
   // Leuchtende Wächter-Augen
-  const eyeColor = isLegend ? '#FFD700' : '#90EE90';
-  ctx.shadowColor = eyeColor;
-  ctx.shadowBlur = ps * 4;
-  ctx.fillStyle = eyeColor;
-  arcFill(ctx, centerX - 2.7, headCY + 0.3, 1, ps, offset);
-  arcFill(ctx, centerX + 2.9, headCY + 0.3, 1, ps, offset);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#000';
-  arcFill(ctx, centerX - 2.5, headCY + 0.5, 0.55, ps, offset);
-  arcFill(ctx, centerX + 3.1, headCY + 0.5, 0.55, ps, offset);
-  ctx.fillStyle = '#FFF';
-  arcFill(ctx, centerX - 2.3, headCY + 0.3, 0.25, ps, offset);
-  arcFill(ctx, centerX + 3.3, headCY + 0.3, 0.25, ps, offset);
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX + 0.1, headCY + 0.4, 2.8, ps, offset, 1.1);
+  } else {
+    const eyeColor = isLegend ? '#FFD700' : '#90EE90';
+    ctx.shadowColor = eyeColor;
+    ctx.shadowBlur = ps * 4;
+    ctx.fillStyle = eyeColor;
+    arcFill(ctx, centerX - 2.7, headCY + 0.3, 1, ps, offset);
+    arcFill(ctx, centerX + 2.9, headCY + 0.3, 1, ps, offset);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#000';
+    arcFill(ctx, centerX - 2.5, headCY + 0.5, 0.55, ps, offset);
+    arcFill(ctx, centerX + 3.1, headCY + 0.5, 0.55, ps, offset);
+    ctx.fillStyle = '#FFF';
+    arcFill(ctx, centerX - 2.3, headCY + 0.3, 0.25, ps, offset);
+    arcFill(ctx, centerX + 3.3, headCY + 0.3, 0.25, ps, offset);
+  }
+  ctx.restore();
 
   // Rosa Wangen (auch im Wächter-Modus, für Kuschel-Faktor)
   ctx.fillStyle = '#FFB6C188';

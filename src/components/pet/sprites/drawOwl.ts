@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -60,7 +62,8 @@ export const drawOwl = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -172,7 +175,10 @@ export const drawOwl = (
 
   // Blinzeln alle ~4s
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeCY, 2.6, ps, offset, 1.4);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.6, eyeCY, 1.5, 0.3, ps, offset);
     ellipseFill(ctx, centerX + 2.6, eyeCY, 1.5, 0.3, ps, offset);
@@ -192,6 +198,8 @@ export const drawOwl = (
     arcFill(ctx, centerX + 2.1, eyeCY - 0.5, 0.4, ps, offset);
   }
 
+  ctx.restore();
+
   // SCHNABEL (kleines Dreieck zwischen den Augen)
   ctx.fillStyle = '#FF9E42';
   triFill(
@@ -207,8 +215,8 @@ export const drawOwl = (
 
   // FÜSSE (kleine orange Krallen)
   ctx.fillStyle = '#FF9E42';
-  ellipseFill(ctx, centerX - 2, bodyCY + bodyRy - 0.4, 1.1, 0.7, ps, offset);
-  ellipseFill(ctx, centerX + 2, bodyCY + bodyRy - 0.4, 1.1, 0.7, ps, offset);
+  ellipseFill(ctx, centerX - 2, bodyCY + bodyRy - 0.4 - pose.pawLift[0], 1.1, 0.7, ps, offset);
+  ellipseFill(ctx, centerX + 2, bodyCY + bodyRy - 0.4 - pose.pawLift[1], 1.1, 0.7, ps, offset);
 
   // ERZMAGIER-DETAILS (Lv50+): Stirnjuwel + Mondsichel-Brustzeichen
   if (archmage) {

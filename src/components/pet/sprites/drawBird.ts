@@ -1,4 +1,6 @@
 import type { AccessorySlot } from '../../../types/pet.types';
+import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
+import type { PetPose } from './pose';
 
 // Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
 const arcFill = (
@@ -87,7 +89,8 @@ export const drawBird = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null
+  equippedSlot?: AccessorySlot | null,
+  pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -192,7 +195,10 @@ export const drawBird = (
   // AUGEN (groß und glänzend)
   const eyeY = bodyCY - bodyRy * 0.35;
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;
-  if (blink) {
+  beginLook(ctx, pose, ps);
+  if (pose.eyes !== 'auto') {
+    drawPoseEyes(ctx, pose.eyes, centerX, eyeY, 2.2, ps, offset, 1);
+  } else if (blink) {
     ctx.fillStyle = '#1A1A1A';
     ellipseFill(ctx, centerX - 2.2, eyeY, 0.95, 0.25, ps, offset);
     ellipseFill(ctx, centerX + 2.2, eyeY, 0.95, 0.25, ps, offset);
@@ -212,6 +218,8 @@ export const drawBird = (
     arcFill(ctx, centerX - 2.5, eyeY - 0.35, 0.32, ps, offset);
     arcFill(ctx, centerX + 1.9, eyeY - 0.35, 0.32, ps, offset);
   }
+
+  ctx.restore();
 
   // SCHNABEL
   ctx.fillStyle = '#FF9E42';
@@ -235,12 +243,13 @@ export const drawBird = (
   ctx.strokeStyle = '#FF9E42';
   ctx.lineWidth = ps * 0.45;
   for (let side = -1; side <= 1; side += 2) {
+    const lift = side < 0 ? pose.pawLift[0] : pose.pawLift[1];
     ctx.beginPath();
     ctx.moveTo((centerX + side * 1.8) * ps, (bodyCY + bodyRy - 0.6) * ps + offset);
-    ctx.lineTo((centerX + side * 1.8) * ps, (bodyCY + bodyRy + 1.4) * ps + offset);
+    ctx.lineTo((centerX + side * 1.8) * ps, (bodyCY + bodyRy + 1.4 - lift) * ps + offset);
     ctx.stroke();
   }
   ctx.fillStyle = '#FF9E42';
-  ellipseFill(ctx, centerX - 1.8, bodyCY + bodyRy + 1.5, 1, 0.5, ps, offset);
-  ellipseFill(ctx, centerX + 1.8, bodyCY + bodyRy + 1.5, 1, 0.5, ps, offset);
+  ellipseFill(ctx, centerX - 1.8, bodyCY + bodyRy + 1.5 - pose.pawLift[0], 1, 0.5, ps, offset);
+  ellipseFill(ctx, centerX + 1.8, bodyCY + bodyRy + 1.5 - pose.pawLift[1], 1, 0.5, ps, offset);
 };

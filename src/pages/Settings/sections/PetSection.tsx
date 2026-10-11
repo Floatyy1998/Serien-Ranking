@@ -1,11 +1,12 @@
 /** Pet-Begleiter an/aus — ausgeschaltet steht die Zeit für die Pets still. */
 
-import { Pets } from '@mui/icons-material';
+import { DirectionsWalk, Pets } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { usePetEnabled } from '../../../hooks/pet/usePetEnabled';
+import { setPetRoam, usePetRoam } from '../../../hooks/pet/usePetRoam';
 import { t } from '../../../services/i18n';
 import { setPetEnabled } from '../../../services/pet/petPreferences';
 
@@ -13,6 +14,7 @@ export const PetSection = memo(() => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const enabled = usePetEnabled();
+  const roam = usePetRoam();
   const [busy, setBusy] = useState(false);
 
   const handleToggle = async (next: boolean) => {
@@ -80,6 +82,48 @@ export const PetSection = memo(() => {
           </span>
         </label>
       </div>
+
+      {enabled && (
+        <div
+          className="settings-toggle-row"
+          style={{
+            background: currentTheme.background.default,
+            borderColor: currentTheme.border.default,
+            marginTop: 10,
+          }}
+        >
+          <div className="settings-toggle-info">
+            <DirectionsWalk style={{ fontSize: '22px', color: currentTheme.primary }} />
+            <div>
+              <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
+                {t('Herumlaufen')}
+              </h3>
+              <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
+                {roam
+                  ? t('Dein Pet läuft frei über die Navigationsleiste.')
+                  : t('Dein Pet bleibt an seinem Platz sitzen.')}
+              </p>
+            </div>
+          </div>
+          <label className="settings-toggle-switch">
+            <input
+              type="checkbox"
+              checked={roam}
+              onChange={(e) => setPetRoam(e.target.checked)}
+              aria-label={t('Herumlaufen')}
+              className="settings-toggle-input"
+            />
+            <span
+              className="settings-toggle-track"
+              style={{
+                backgroundColor: roam ? currentTheme.primary : `${currentTheme.text.muted}30`,
+              }}
+            >
+              <span className="settings-toggle-thumb" style={{ left: roam ? '26px' : '4px' }} />
+            </span>
+          </label>
+        </div>
+      )}
     </motion.div>
   );
 });
