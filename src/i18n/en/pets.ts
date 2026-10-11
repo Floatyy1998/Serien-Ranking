@@ -499,6 +499,19 @@ const dict: Record<string, string> = {
   '{name} ist jetzt glücklicher': '{name} is happier now',
   '{n}er-Serie': '{n} in a row',
   '{guest} besucht {host}': '{guest} is visiting {host}',
+  'Auf dem Dock': 'On the dock',
+  '{n} von {total}': '{n} of {total}',
+  'Bis zu drei Pets laufen zusammen über die Leiste und spielen miteinander.':
+    'Up to three pets roam the bar together and play with each other.',
+  'Braucht Hilfe': 'Needs help',
+  Dabei: 'Joined',
+  Dazuholen: 'Bring along',
+  'Dock voll': 'Dock full',
+  'Spieltreff beenden': 'End play date',
+  'Spieltreff bei {name}': "Play date at {name}'s",
+  'Spieltreff mit {name}': 'Play date with {name}',
+  '{guest} und {host} spielen zusammen': '{guest} and {host} are playing together',
+  '{name} hat Spaß und bekommt bessere Laune': '{name} is having fun and gets a mood boost',
 };
 
 export default dict;

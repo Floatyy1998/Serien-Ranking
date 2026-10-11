@@ -57,6 +57,10 @@ export const SIGNATURE_OF: Record<Species, Signature> = {
   axolotl: 'float',
 };
 
+/** Purzelbaum: Rollphase in Sekunden. */
+const ROLL_START = 0.35;
+const ROLL_END = 1.6;
+
 const SIGNATURE_SECONDS: Record<Signature, number> = {
   fly: 3.4,
   soar: 3.6,
@@ -64,7 +68,7 @@ const SIGNATURE_SECONDS: Record<Signature, number> = {
   tailchase: 2.6,
   mousejump: 2.3,
   binky: 2.0,
-  roll: 2.7,
+  roll: 3.1,
   slide: 2.6,
   float: 3.2,
 };
@@ -189,7 +193,6 @@ export class PetBrain {
   private flipping = false;
   private sig: Signature = 'pounce';
   private sigFlag = 0;
-  private sigX0 = 0;
 
   constructor(
     x: number,
@@ -353,7 +356,8 @@ export class PetBrain {
         this.startJump(470);
         break;
       case 'sit':
-        this.start('sit', seconds ?? 3);
+        this.sigFlag = 0;
+        this.start('trick', seconds ?? 3.4);
         break;
       case 'spin':
         this.start('trick', seconds ?? 1.3);
@@ -369,7 +373,6 @@ export class PetBrain {
         const env = this.env;
         this.sig = SIGNATURE_OF[env?.species ?? 'cat'];
         this.sigFlag = 0;
-        this.sigX0 = this.x;
         if (env) {
           // Richtung so wählen, dass genug Platz nach vorn ist
           const mid = (env.minX + env.maxX) / 2;
@@ -391,6 +394,11 @@ export class PetBrain {
   /** Funkeln an der aktuellen Position (Spiel-Effekte). */
   sparkle(count = 5): void {
     this.burst('sparkle', count, 14);
+  }
+
+  /** Nach einer gemeinsamen Szene: erst einmal keine eigene Aktion. */
+  rest(): void {
+    this.lastActionAt = this.elapsed;
   }
 
   get canAct(): boolean {
@@ -542,7 +550,7 @@ export class PetBrain {
         break;
       case 'sit':
       case 'popcorn':
-        squashY = 0.92;
+        squashY = 0.88;
         eyes = this.activity === 'popcorn' && this.t % 2.2 > 1.6 ? 'happy' : 'auto';
         break;
       case 'beg':
@@ -561,6 +569,19 @@ export class PetBrain {
         } else if (this.trickKind === 'moonwalk') {
           motion = walkCycle(this.phase, 0.9);
           tilt = -this.dir * 0.08;
+        } else if (this.trickKind === 'sit') {
+          // hinplumpsen, Pfötchen geben, wieder aufstehen
+          const t = this.t;
+          const rise = this.duration - 0.3;
+          if (t < 0.22) squashY = 1 - 0.26 * (t / 0.22);
+          else if (t < rise) squashY = 0.8 + squashSpring(t - 0.22, 0.06) - 1;
+          else squashY = 0.8 + 0.2 * ((t - rise) / 0.3);
+          if (t > 0.9 && t < rise - 0.3) {
+            const wave = Math.sin((t - 0.9) * 9);
+            motion = { pawLift: [1.3 + wave * 0.35, 0], tilt: 0, bob: 0 };
+            tilt = this.dir * 0.06;
+          }
+          eyes = t > 0.3 && t < rise ? 'happy' : 'auto';
         } else if (this.trickKind === 'signature') {
           const v = this.signatureView();
           motion = v.motion;
@@ -737,10 +758,14 @@ export class PetBrain {
         } else if (t < 1.6) {
           const u = (t - 0.7) / 0.9;
           out.motion = air;
-          out.roll = u > 0.45 ? -this.dir * (u - 0.45) * Math.PI * 1.4 : this.dir * u * 0.4;
+          // Nase hoch beim Absprung, dann kopfüber in den Schnee
+          out.roll =
+            u > 0.45 ? this.dir * ((u - 0.45) / 0.55) * (Math.PI / 2) : -this.dir * u * 0.5;
           out.eyes = 'happy';
         } else {
-          out.squashY = t < 1.9 ? 0.72 : squashSpring(t - 1.9, 0.25);
+          const stuck = t < 1.9 ? 1 : Math.max(0, 1 - (t - 1.9) / 0.25);
+          out.roll = this.dir * (Math.PI / 2) * stuck;
+          out.squashY = t < 1.9 ? 0.9 : squashSpring(t - 1.9, 0.25);
           out.eyes = t < 1.9 ? 'closed' : 'happy';
         }
         break;
@@ -754,18 +779,32 @@ export class PetBrain {
         break;
       }
       case 'roll':
-        if (t < 1.9) {
-          out.roll = (-this.dir * Math.abs(this.x - this.sigX0)) / 22;
-          out.squashY = 0.92;
+        if (t < ROLL_START) {
+          // abducken und Kopf einziehen
+          const k = t / ROLL_START;
+          out.squashY = 1 - 0.16 * k;
+          out.tilt = this.dir * 0.3 * k;
           out.eyes = 'closed';
+        } else if (t < ROLL_END) {
+          // zwei Vorwärtsrollen, sanft an- und auslaufend
+          const u = (t - ROLL_START) / (ROLL_END - ROLL_START);
+          const eased = u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+          out.roll = this.dir * eased * Math.PI * 4;
+          out.squashY = 0.86;
+          out.eyes = 'closed';
+        } else if (t < ROLL_END + 0.4) {
+          out.squashY = squashSpring(t - ROLL_END, 0.3);
+          out.eyes = 'happy';
         } else {
-          out.tilt = Math.sin(t * 13) * 0.16 * Math.max(0, 1 - (t - 1.9) * 1.2);
+          // kurz schwindelig
+          const fade = Math.max(0, 1 - (t - ROLL_END - 0.4) / 0.9);
+          out.tilt = Math.sin(t * 11) * 0.2 * fade;
           out.eyes = 'happy';
         }
         break;
       case 'slide': {
         const lie = t < 0.3 ? t / 0.3 : t < 2.0 ? 1 : Math.max(0, 1 - (t - 2.0) / 0.5);
-        out.roll = -this.dir * (Math.PI / 2) * lie;
+        out.roll = this.dir * (Math.PI / 2) * lie;
         out.eyes = lie > 0.5 ? 'happy' : 'auto';
         break;
       }
@@ -1113,6 +1152,11 @@ export class PetBrain {
   }
 
   private updateTrick(dt: number, env: BrainEnv): void {
+    if (this.trickKind === 'sit' && this.t > 0.3 && this.sigFlag === 0) {
+      this.sigFlag = 1;
+      this.burst('sparkle', 4, 6);
+      this.burst('dust', 4, 0);
+    }
     if (this.trickKind === 'signature') {
       this.updateSignature(dt, env);
       return;
@@ -1247,10 +1291,32 @@ export class PetBrain {
         break;
       }
       case 'roll': {
-        if (t < 1.9) {
-          const next = this.x + this.dir * 44 * dt;
-          if (next < env.minX || next > env.maxX) this.dir = this.dir > 0 ? -1 : 1;
-          this.x += this.dir * 44 * dt;
+        if (t >= ROLL_START && t < ROLL_END) {
+          const u = (t - ROLL_START) / (ROLL_END - ROLL_START);
+          const speed = 70 * Math.sin(Math.PI * u) * (Math.PI / 2);
+          this.x = clamp(this.x + this.dir * speed * dt, env.minX, env.maxX);
+          // bei jeder Rolle kurz über den runden Rücken
+          this.h = Math.abs(Math.sin(u * Math.PI * 2)) * 5;
+        } else {
+          this.h = 0;
+        }
+        if (t >= ROLL_END && this.sigFlag === 0) {
+          this.sigFlag = 1;
+          this.burst('dust', 7, 0);
+        }
+        if (t >= ROLL_END + 0.45 && this.sigFlag === 1) {
+          this.sigFlag = 2;
+          for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * Math.PI * 2;
+            this.spawn(
+              'sparkle',
+              this.x + Math.cos(a) * 14,
+              24 * ps,
+              Math.cos(a + Math.PI / 2) * 26,
+              8,
+              0.9
+            );
+          }
         }
         break;
       }

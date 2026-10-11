@@ -12,6 +12,7 @@ import { getOptimalTextColor } from '../../theme/colorUtils';
 import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
+import { PetDockPicker } from './PetDockPicker';
 import { PetCustomization } from './PetCustomization';
 import { XpBoostHeaderButton } from './XpBoostHeaderButton';
 import { PetReleaseConfirm } from './PetReleaseConfirm';
@@ -57,6 +58,8 @@ export const PetsPage: React.FC = () => {
     toggleAccessory,
     equipBackground,
     selectPet,
+    toggleDock,
+    dockIds,
     openCreateModal,
     openReleaseConfirm,
     closeReleaseConfirm,
@@ -174,6 +177,8 @@ export const PetsPage: React.FC = () => {
 
       {/* Action Buttons */}
       <PetActions pet={pet} onFeed={feedPet} onPlay={playWithPet} onRevive={openReviveConfirm} />
+
+      <PetDockPicker pets={pets} activeId={pet.id} dockIds={dockIds} onToggle={toggleDock} />
 
       {/* Customization: Colors, Accessories, Backgrounds */}
       <PetCustomization

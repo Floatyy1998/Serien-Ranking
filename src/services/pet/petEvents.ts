@@ -23,3 +23,16 @@ export function onPetEpisode(handler: (detail: PetEpisodeEvent) => void): () => 
   window.addEventListener(EPISODE_EVENT, listener);
   return () => window.removeEventListener(EPISODE_EVENT, listener);
 }
+
+const DOCK_EVENT = 'pet-dock-changed';
+
+/** Aktives Pet oder Dock-Begleiter wurden auf der Pet-Seite geändert. */
+export function emitPetDockChanged(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(DOCK_EVENT));
+}
+
+export function onPetDockChanged(handler: () => void): () => void {
+  window.addEventListener(DOCK_EVENT, handler);
+  return () => window.removeEventListener(DOCK_EVENT, handler);
+}

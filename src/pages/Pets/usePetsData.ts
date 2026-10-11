@@ -6,6 +6,8 @@ import { subscribeValue } from '../../services/db/subscribeValue';
 import { useAuth } from '../../contexts/AuthContext';
 import { petService } from '../../services/pet/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
+import { emitPetDockChanged } from '../../services/pet/petEvents';
+import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { t } from '../../services/i18n';
@@ -25,6 +27,7 @@ export function usePetsData(enabled = true) {
   const [activeColorBorder, setActiveColorBorder] = useState<string | null>(null);
   const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
   const [showReviveConfirm, setShowReviveConfirm] = useState(false);
+  const [dockIds, setDockIds] = useState<string[]>([]);
 
   const pet = pets[selectedPetIndex] ?? null;
 
@@ -68,6 +71,10 @@ export function usePetsData(enabled = true) {
 
       const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
+      petService
+        .getDockPetIds(user.uid)
+        .then(setDockIds)
+        .catch(() => {});
     } catch (error) {
       console.error('Error loading pets:', error);
     } finally {
@@ -296,7 +303,23 @@ export function usePetsData(enabled = true) {
   const selectPet = async (idx: number) => {
     setSelectedPetIndex(idx);
     setActiveColorBorder(pets[idx].color);
-    if (user) await petService.setActivePetId(user.uid, pets[idx].id);
+    if (user) {
+      await petService.setActivePetId(user.uid, pets[idx].id);
+      emitPetDockChanged();
+    }
+  };
+
+  const toggleDock = (petId: string) => {
+    if (!user || petId === pet?.id) return;
+    const next = dockIds.includes(petId)
+      ? dockIds.filter((id) => id !== petId)
+      : [...dockIds.filter((id) => id !== pet?.id), petId];
+    if (next.length > MAX_DOCK_PETS - 1) return;
+    setDockIds(next);
+    petService
+      .setDockPetIds(user.uid, next)
+      .then(emitPetDockChanged)
+      .catch(() => setDockIds(dockIds));
   };
 
   const openCreateModal = () => setShowCreateModal(true);
@@ -319,6 +342,7 @@ export function usePetsData(enabled = true) {
     activeColorBorder,
     showReleaseConfirm,
     showReviveConfirm,
+    dockIds,
 
     // Derived
     currentMood,
@@ -344,6 +368,7 @@ export function usePetsData(enabled = true) {
     toggleAccessory,
     equipBackground,
     selectPet,
+    toggleDock,
     openCreateModal,
     closeCreateModal,
     openReleaseConfirm,

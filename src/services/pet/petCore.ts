@@ -1,7 +1,7 @@
 import { dbRef, dbGet, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
-import { PET_CONFIG } from './petConstants';
+import { MAX_DOCK_PETS, PET_CONFIG } from './petConstants';
 import { generateStarterAccessories } from './petAccessoryManager';
 
 /** Erkennt das alte Single-Pet-Format (direkt name/type/id auf Root-Ebene) */
@@ -231,6 +231,19 @@ export async function getActivePetId(userId: string): Promise<string | null> {
 
 export async function setActivePetId(userId: string, petId: string): Promise<void> {
   await dbRef(userPath(userId, 'petWidget', 'activePetId')).set(petId);
+}
+
+export async function getDockPetIds(userId: string): Promise<string[]> {
+  const value = await dbGet<string[] | Record<string, string>>(
+    userPath(userId, 'petWidget', 'dockPetIds')
+  );
+  const ids = Array.isArray(value) ? value : value ? Object.values(value) : [];
+  return ids.filter((id): id is string => typeof id === 'string').slice(0, MAX_DOCK_PETS - 1);
+}
+
+export async function setDockPetIds(userId: string, ids: string[]): Promise<void> {
+  const clean = [...new Set(ids)].slice(0, MAX_DOCK_PETS - 1);
+  await dbRef(userPath(userId, 'petWidget', 'dockPetIds')).set(clean.length ? clean : null);
 }
 
 export async function canCreateNewPet(userId: string): Promise<boolean> {

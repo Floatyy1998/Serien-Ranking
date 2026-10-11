@@ -8,6 +8,7 @@ import { usePetReactions, triggerPetReaction } from '../../hooks/pet/usePetReact
 import { showToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
 import { PET_CONFIG } from '../../services/pet/petConstants';
+import { onPetDockChanged } from '../../services/pet/petEvents';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { petService } from '../../services/pet/petService';
 import { activeSeason } from '../../theme/seasonalThemes';
@@ -28,6 +29,7 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
   const themeConfig = useContext(ThemeContext)?.userConfig;
   const roam = usePetRoam();
   const [pet, setPet] = useState<Pet | null>(null);
+  const [companions, setCompanions] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showWidget, setShowWidget] = useState(true);
   const [showHungerToast, setShowHungerToast] = useState(false);
@@ -80,6 +82,20 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
     };
   }, []);
 
+  const loadCompanions = useCallback(
+    async (activeId: string) => {
+      if (!user) return;
+      try {
+        const ids = (await petService.getDockPetIds(user.uid)).filter((id) => id !== activeId);
+        const loaded = await Promise.all(ids.map((id) => petService.getUserPet(user.uid, id)));
+        setCompanions(loaded.filter((p): p is Pet => !!p));
+      } catch {
+        setCompanions([]);
+      }
+    },
+    [user]
+  );
+
   useEffect(() => {
     if (!user || !pet) return;
 
@@ -110,6 +126,7 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
               setPet(updatedPet);
               notifyIfDied(updatedPet);
               checkHungerToast(updatedPet);
+              loadCompanions(updatedPet.id);
             }
           }
         } catch (error) {
@@ -145,6 +162,7 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
           const updatedPet = await petService.updatePetStatus(user.uid, petId);
           const resolvedPet = updatedPet || userPet;
           setPet(resolvedPet);
+          loadCompanions(resolvedPet.id);
           // Baseline für die Tod-Erkennung setzen (feuert nicht beim ersten Mal).
           notifyIfDied(resolvedPet);
         }
@@ -154,32 +172,43 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, notifyIfDied]);
+  }, [user, notifyIfDied, loadCompanions]);
 
   // Async External-Sync (Firebase). Promise-Pfad ist fuer die Rule unsichtbar.
   useEffect(() => {
     if (user) loadPet();
   }, [user, loadPet]);
 
-  const handleFeed = useCallback(() => {
-    if (!user || !pet) return;
-    petService
-      .feedPet(user.uid, pet.id)
-      .then((updated) => {
-        if (updated) setPet({ ...updated });
-      })
-      .catch(() => {});
-  }, [user, pet]);
+  // Auf der Pet-Seite gewechselt oder Begleiter geändert
+  useEffect(() => onPetDockChanged(() => loadPet()), [loadPet]);
 
-  const handlePlay = useCallback(() => {
-    if (!user || !pet) return;
-    petService
-      .cheerUpPet(user.uid, pet.id)
-      .then((updated) => {
-        if (updated) setPet({ ...updated });
-      })
-      .catch(() => {});
-  }, [user, pet]);
+  const applyUpdate = useCallback((updated: Pet | null) => {
+    if (!updated) return;
+    setPet((current) => (current?.id === updated.id ? { ...updated } : current));
+    setCompanions((list) => list.map((c) => (c.id === updated.id ? { ...updated } : c)));
+  }, []);
+
+  const handleFeed = useCallback(
+    (petId: string) => {
+      if (!user) return;
+      petService
+        .feedPet(user.uid, petId)
+        .then(applyUpdate)
+        .catch(() => {});
+    },
+    [user, applyUpdate]
+  );
+
+  const handlePlay = useCallback(
+    (petId: string) => {
+      if (!user) return;
+      petService
+        .cheerUpPet(user.uid, petId)
+        .then(applyUpdate)
+        .catch(() => {});
+    },
+    [user, applyUpdate]
+  );
 
   if (!user || !showWidget || isLoading) return null;
 
@@ -207,6 +236,7 @@ export const PetWidget = ({ unwatchedToday = 0 }: PetWidgetProps) => {
       />
       <PetStage
         pet={pet}
+        companions={companions}
         mood={petMoodService.calculateCurrentMood(pet)}
         roam={roam}
         reaction={reaction}

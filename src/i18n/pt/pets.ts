@@ -466,6 +466,19 @@ const dict: Record<string, string> = {
   '{name} ist jetzt glücklicher': '{name} está mais feliz agora',
   '{n}er-Serie': '{n} seguidos',
   '{guest} besucht {host}': '{guest} está visitando {host}',
+  'Auf dem Dock': 'No dock',
+  '{n} von {total}': '{n} de {total}',
+  'Bis zu drei Pets laufen zusammen über die Leiste und spielen miteinander.':
+    'Até três pets passeiam juntos pela barra e brincam entre si.',
+  'Braucht Hilfe': 'Precisa de ajuda',
+  Dabei: 'Junto',
+  Dazuholen: 'Trazer',
+  'Dock voll': 'Dock cheio',
+  'Spieltreff beenden': 'Encerrar encontro',
+  'Spieltreff bei {name}': 'Encontro na casa de {name}',
+  'Spieltreff mit {name}': 'Encontro com {name}',
+  '{guest} und {host} spielen zusammen': '{guest} e {host} estão brincando juntos',
+  '{name} hat Spaß und bekommt bessere Laune': '{name} está se divertindo e fica mais animado',
 };
 
 export default dict;

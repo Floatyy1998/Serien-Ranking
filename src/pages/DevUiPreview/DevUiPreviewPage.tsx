@@ -8,7 +8,12 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
-import { PetPlaygroundPreview, PetPoseGalleryPreview, PetStagePreview } from './PetPreviews';
+import {
+  PetPlaygroundPreview,
+  PetPoseGalleryPreview,
+  PetStagePreview,
+  SignatureStripPreview,
+} from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
 import {
   CatchUpPreview,
@@ -157,6 +162,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <PetPoseGalleryPreview season="spooky" />,
   },
   { id: 'pet-stage', label: 'Pet: Bühne', render: () => <PetStagePreview /> },
+  {
+    id: 'pet-dock-trio',
+    label: 'Pet: Dock zu dritt',
+    render: () => <PetStagePreview initialCompanions={2} />,
+  },
+  { id: 'pet-sig', label: 'Pet: Spezialbewegungen', render: () => <SignatureStripPreview /> },
   { id: 'pet-play', label: 'Pet: Spielplatz', render: () => <PetPlaygroundPreview /> },
   {
     id: 'pet-play-meadow',

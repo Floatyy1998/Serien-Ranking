@@ -17,16 +17,23 @@ import {
   WbTwilight,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+} from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { PetReaction, PetReactionTone } from '../../../hooks/pet/usePetReactions';
 import { PetBrain, type BrainEnv, type Reaction } from '../../../lib/pet/petBrain';
 import { detectFinale } from '../../../lib/pet/petFinale';
+import { GroupDirector } from '../../../lib/pet/petGroup';
 import { t } from '../../../services/i18n';
 import { onPetEpisode } from '../../../services/pet/petEvents';
 import { PET_CONFIG } from '../../../services/pet/petConstants';
+import { petMoodService } from '../../../services/pet/petMoodService';
 import type { SeasonId } from '../../../theme/seasonalThemes';
 import type { Pet } from '../../../types/pet.types';
 import { drawStageFrame } from './drawStage';
@@ -53,6 +60,9 @@ const TONE_ICON: Record<PetReactionTone, ReactNode> = {
   movie: <Movie />,
   rated: <Star />,
 };
+
+/** Diese Reaktionen feiern die Begleiter auf dem Dock mit. */
+const SHARED_REACTIONS = new Set<Reaction>(['cheer', 'party', 'levelup', 'love', 'rated']);
 
 const TONE_ACTION: Partial<Record<PetReactionTone, Reaction>> = {
   cheer: 'cheer',
@@ -86,6 +96,8 @@ interface Bubble {
 
 interface PetStageProps {
   pet: Pet;
+  /** Weitere Pets, die mit auf dem Dock laufen (höchstens zwei). */
+  companions?: Pet[];
   mood: Pet['mood'];
   roam: boolean;
   reaction: PetReaction | null;
@@ -93,8 +105,8 @@ interface PetStageProps {
   unwatchedToday: number;
   onOpenPets: () => void;
   onOpenCalendar: () => void;
-  onFeed: () => void;
-  onPlay: () => void;
+  onFeed: (petId: string) => void;
+  onPlay: (petId: string) => void;
 }
 
 function readNumber(key: string): number | null {
@@ -151,6 +163,7 @@ function prefersReducedMotion(): boolean {
 
 export const PetStage = ({
   pet,
+  companions = [],
   mood,
   roam,
   reaction,
@@ -166,21 +179,32 @@ export const PetStage = ({
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const hitRef = useRef<HTMLDivElement>(null);
+  const hitRefs = useRef(new Map<string, HTMLDivElement>());
+  const hungerRefs = useRef(new Map<string, HTMLDivElement>());
   const bubbleRef = useRef<HTMLDivElement>(null);
   const bubbleBoxRef = useRef<HTMLDivElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
   const chipBoxRef = useRef<HTMLDivElement>(null);
-  const hungerRef = useRef<HTMLDivElement>(null);
   const ballRef = useRef<HTMLButtonElement>(null);
   const letterRef = useRef<HTMLButtonElement>(null);
 
-  const brainRef = useRef<PetBrain | null>(null);
-  const getBrain = useCallback((): PetBrain => {
-    if (brainRef.current == null) {
-      brainRef.current = new PetBrain(readNumber(POS_KEY) ?? window.innerWidth * 0.75);
+  const brainsRef = useRef(new Map<string, PetBrain>());
+  const brainFor = useCallback((id: string, startX?: number): PetBrain => {
+    let brain = brainsRef.current.get(id);
+    if (!brain) {
+      brain = new PetBrain(startX ?? readNumber(POS_KEY) ?? window.innerWidth * 0.75);
+      brainsRef.current.set(id, brain);
     }
-    return brainRef.current;
+    return brain;
+  }, []);
+  const leadId = pet.id;
+  const getBrain = useCallback((): PetBrain => brainFor(leadId), [brainFor, leadId]);
+  const groupRef = useRef<GroupDirector | null>(null);
+  const getGroup = useCallback((): GroupDirector => {
+    if (groupRef.current == null) {
+      groupRef.current = new GroupDirector([], { gap: [24, 38], first: 16 });
+    }
+    return groupRef.current;
   }, []);
   const geoRef = useRef({
     width: window.innerWidth,
@@ -192,18 +216,45 @@ export const PetStage = ({
     stageH: 200,
   });
   const petRef = useRef(pet);
+  const castRef = useRef<Pet[]>([pet]);
   const propsRef = useRef({ mood, roam, onFeed, onPlay, accent: currentTheme.primary, season });
-  const playedRef = useRef(false);
+  const playedRef = useRef(new Set<string>());
+  const selectedRef = useRef(pet.id);
+  const ballBrainRef = useRef<PetBrain | null>(null);
 
   const [bubble, setBubble] = useState<Bubble | null>(null);
   const [chipOpen, setChipOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(pet.id);
   const [snackGhost, setSnackGhost] = useState<{ x: number; y: number } | null>(null);
   const [letterVisible, setLetterVisible] = useState(false);
   const [ballVisible, setBallVisible] = useState(false);
 
+  const cast = pet.isAlive
+    ? [pet, ...companions.filter((c) => c.isAlive && c.id !== pet.id)]
+    : [pet];
+  const castKey = cast.map((c) => c.id).join(',');
+
   useEffect(() => {
     petRef.current = pet;
   }, [pet]);
+
+  // Wer läuft mit? Neue Begleiter starten neben dem aktiven Pet, der Regisseur kennt alle
+  useEffect(() => {
+    castRef.current = cast;
+    const lead = brainFor(pet.id);
+    cast.forEach((c, i) => {
+      if (i > 0) brainFor(c.id, lead.x + (i % 2 === 1 ? -64 : 64) * Math.ceil(i / 2));
+    });
+    for (const id of [...brainsRef.current.keys()]) {
+      if (!cast.some((c) => c.id === id)) brainsRef.current.delete(id);
+    }
+    getGroup().setBrains(cast.map((c) => brainFor(c.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [castKey, brainFor, getGroup]);
+
+  useEffect(() => {
+    castRef.current = castRef.current.map((c) => cast.find((n) => n.id === c.id) ?? c);
+  });
 
   useEffect(() => {
     propsRef.current = { mood, roam, onFeed, onPlay, accent: currentTheme.primary, season };
@@ -212,6 +263,17 @@ export const PetStage = ({
   const showBubble = useCallback((icon: ReactNode, message: string) => {
     setBubble({ id: Date.now(), icon, message });
   }, []);
+
+  const reactAll = useCallback(
+    (action: Reaction) => {
+      getBrain().react(action);
+      if (!SHARED_REACTIONS.has(action)) return;
+      castRef.current.slice(1).forEach((c, i) => {
+        setTimeout(() => brainsRef.current.get(c.id)?.react(action), 260 * (i + 1));
+      });
+    },
+    [getBrain]
+  );
 
   useEffect(() => {
     if (!bubble) return;
@@ -224,7 +286,7 @@ export const PetStage = ({
     if (!reaction || !pet.isAlive) return;
     showBubble(TONE_ICON[reaction.tone] ?? <AutoAwesome />, reaction.message);
     const action = TONE_ACTION[reaction.tone];
-    if (action) getBrain().react(action);
+    if (action) reactAll(action);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reaction?.id]);
 
@@ -238,14 +300,14 @@ export const PetStage = ({
       const finale = detectFinale(series, ev.seasonNumber, ev.episodeNumber);
       if (!finale) return;
       setTimeout(() => {
-        getBrain().react('party');
+        reactAll('party');
         showBubble(
           <EmojiEvents />,
           finale === 'series' ? t('Serie durch! Was für ein Ritt') : t('Staffel geschafft!')
         );
       }, 900);
     });
-  }, [allSeriesList, showBubble, getBrain]);
+  }, [allSeriesList, showBubble, reactAll]);
 
   // Brief: einmal am Tag, wenn heute neue Folgen laufen
   useEffect(() => {
@@ -269,9 +331,12 @@ export const PetStage = ({
     if (!canvas || !stage) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const brain = getBrain();
     const reduce = prefersReducedMotion();
-    if (import.meta.env.DEV) (window as unknown as { petBrain?: PetBrain }).petBrain = brain;
+    if (import.meta.env.DEV) {
+      const w = window as unknown as { petBrain?: PetBrain; petGroup?: GroupDirector };
+      w.petBrain = getBrain();
+      w.petGroup = getGroup();
+    }
 
     let raf = 0;
     let last = performance.now();
@@ -325,54 +390,79 @@ export const PetStage = ({
       if (frameCount % 30 === 0) dpr = measure();
       if (frameCount % 600 === 0) hour = new Date().getHours();
 
-      const p = petRef.current;
+      const lead = petRef.current;
+      const brain = brainFor(lead.id);
+      const actors = castRef.current;
       const props = propsRef.current;
       const geo = geoRef.current;
-      const env: BrainEnv = {
-        minX: geo.minX,
-        maxX: geo.maxX,
-        hour,
-        hungry: p.isAlive && p.hunger >= PET_CONFIG.STATUS_WARNING_HUNGER,
-        sad: p.happiness < 30,
-        sleepy: props.mood === 'sleepy',
-        playful: props.mood === 'playful' || props.mood === 'excited',
-        tired: recentEpisodeCountCached(frameCount),
-        roam: props.roam && !reduce,
-        alive: p.isAlive,
-        ps: PS,
-        species: p.type,
-      };
-      brain.update(dt, env);
+      const tired = recentEpisodeCountCached(frameCount);
+      const groundY = geo.stageH - GROUND_INSET;
 
-      for (const ev of brain.drainEvents()) {
-        if (ev === 'fed') props.onFeed();
-        if (ev === 'kicked' && !playedRef.current) {
-          playedRef.current = true;
-          props.onPlay();
+      if (actors.length > 1 && props.roam && !reduce) {
+        getGroup().update(dt, { minX: geo.minX, maxX: geo.maxX });
+      }
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, geo.width, geo.stageH);
+
+      const drawn = actors.map((p) => ({ p, b: brainFor(p.id) }));
+      // Getragene Pets liegen über den anderen
+      drawn.sort((a, c) => Number(a.b.activity === 'carried') - Number(c.b.activity === 'carried'));
+      for (const { p, b } of drawn) {
+        const mood = p.id === lead.id ? props.mood : petMoodService.calculateCurrentMood(p);
+        const env: BrainEnv = {
+          minX: geo.minX,
+          maxX: geo.maxX,
+          hour,
+          hungry: p.isAlive && p.hunger >= PET_CONFIG.STATUS_WARNING_HUNGER,
+          sad: p.happiness < 30,
+          sleepy: mood === 'sleepy',
+          playful: mood === 'playful' || mood === 'excited',
+          tired,
+          roam: props.roam && !reduce,
+          alive: p.isAlive,
+          ps: PS,
+          species: p.type,
+        };
+        b.update(dt, env);
+
+        for (const ev of b.drainEvents()) {
+          if (ev === 'fed') props.onFeed(p.id);
+          if (ev === 'kicked' && !playedRef.current.has(p.id)) {
+            playedRef.current.add(p.id);
+            props.onPlay(p.id);
+          }
+        }
+
+        const view = b.view();
+        drawStageFrame(ctx, {
+          pet: p,
+          view,
+          props: b.props,
+          particles: b.particles,
+          groundY,
+          ps: PS,
+          time: now / 1000,
+          season: props.season,
+          accent: props.accent,
+        });
+
+        const petTop = groundY - view.h;
+        const hit = hitRefs.current.get(p.id);
+        if (hit) hit.style.transform = `translate3d(${view.x - 36}px, ${petTop - 80}px, 0)`;
+        const hunger = hungerRefs.current.get(p.id);
+        if (hunger) {
+          const show = env.hungry && view.activity !== 'sleep' && view.activity !== 'carried';
+          hunger.style.opacity = show ? '1' : '0';
+          hunger.style.transform = `translate3d(${view.x - 11}px, ${petTop - 106 + Math.sin(now / 300) * 3}px, 0)`;
         }
       }
 
       const view = brain.view();
-      const groundY = geo.stageH - GROUND_INSET;
-
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, geo.width, geo.stageH);
-      drawStageFrame(ctx, {
-        pet: p,
-        view,
-        props: brain.props,
-        particles: brain.particles,
-        groundY,
-        ps: PS,
-        time: now / 1000,
-        season: props.season,
-        accent: props.accent,
-      });
-
       const top = groundY - view.h;
-      if (hitRef.current) {
-        hitRef.current.style.transform = `translate3d(${view.x - 36}px, ${top - 80}px, 0)`;
-      }
+      const selected = brainsRef.current.get(selectedRef.current) ?? brain;
+      const selView = selected.view();
+      const selTop = groundY - selView.h;
       if (bubbleRef.current) {
         const w = bubbleBoxRef.current?.offsetWidth ?? 0;
         const left = Math.max(10, Math.min(geo.width - w - 10, view.x - w / 2));
@@ -385,18 +475,13 @@ export const PetStage = ({
       if (chipRef.current) {
         const dockW = geo.dockRight - geo.dockLeft;
         const w = Math.min(dockW, 360);
-        const left = Math.max(geo.dockLeft, Math.min(geo.dockRight - w, view.x - w / 2));
-        chipRef.current.style.transform = `translate3d(${left}px, ${top - 92}px, 0)`;
+        const left = Math.max(geo.dockLeft, Math.min(geo.dockRight - w, selView.x - w / 2));
+        chipRef.current.style.transform = `translate3d(${left}px, ${selTop - 92}px, 0)`;
         chipRef.current.style.width = `${w}px`;
         chipBoxRef.current?.style.setProperty(
           '--tail-x',
-          `${Math.max(24, Math.min(w - 24, view.x - left))}px`
+          `${Math.max(24, Math.min(w - 24, selView.x - left))}px`
         );
-      }
-      if (hungerRef.current) {
-        const show = env.hungry && view.activity !== 'sleep' && view.activity !== 'carried';
-        hungerRef.current.style.opacity = show ? '1' : '0';
-        hungerRef.current.style.transform = `translate3d(${view.x - 11}px, ${top - 106 + Math.sin(now / 300) * 3}px, 0)`;
       }
 
       const letter = brain.props.find((pr) => pr.kind === 'letter' && !pr.carried);
@@ -407,7 +492,9 @@ export const PetStage = ({
       if (letter && letterRef.current) {
         letterRef.current.style.transform = `translate3d(${letter.x - 22}px, ${groundY - letter.h - 40}px, 0)`;
       }
-      const ball = brain.props.find((pr) => pr.kind === 'ball');
+      const ballOwner = drawn.find(({ b }) => b.props.some((pr) => pr.kind === 'ball'))?.b;
+      ballBrainRef.current = ballOwner ?? null;
+      const ball = ballOwner?.props.find((pr) => pr.kind === 'ball');
       if (!!ball !== ballShown) {
         ballShown = !!ball;
         setBallVisible(ballShown);
@@ -437,10 +524,11 @@ export const PetStage = ({
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
     };
-  }, [getBrain]);
+  }, [getBrain, brainFor, getGroup]);
 
   // Anfassen, Tragen, Werfen
   const gesture = useRef<{
+    petId: string;
     id: number;
     startX: number;
     startY: number;
@@ -458,11 +546,15 @@ export const PetStage = ({
     return { x: clientX, h: groundScreenY - clientY };
   };
 
+  const actorOf = (petId: string) => castRef.current.find((c) => c.id === petId) ?? petRef.current;
+
   const onPetDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const petId = e.currentTarget.dataset.petId ?? petRef.current.id;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const brain = getBrain();
+    const brain = brainFor(petId);
     const { h } = stageCoords(e.clientX, e.clientY);
     gesture.current = {
+      petId,
       id: e.pointerId,
       startX: e.clientX,
       startY: e.clientY,
@@ -470,7 +562,7 @@ export const PetStage = ({
       offsetY: h - brain.h,
       lastX: e.clientX,
       lastY: e.clientY,
-      lastT: performance.now(),
+      lastT: e.timeStamp,
       vx: 0,
       vy: 0,
     };
@@ -479,8 +571,8 @@ export const PetStage = ({
   const onPetMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const g = gesture.current;
     if (!g || g.id !== e.pointerId) return;
-    const brain = getBrain();
-    const now = performance.now();
+    const brain = brainFor(g.petId);
+    const now = e.timeStamp;
     const dt = Math.max(0.001, (now - g.lastT) / 1000);
     g.vx = g.vx * 0.6 + ((e.clientX - g.lastX) / dt) * 0.4;
     g.vy = g.vy * 0.6 + ((e.clientY - g.lastY) / dt) * 0.4;
@@ -489,7 +581,7 @@ export const PetStage = ({
     g.lastT = now;
     const moved = Math.hypot(e.clientX - g.startX, e.clientY - g.startY);
     const { x, h } = stageCoords(e.clientX, e.clientY);
-    if (!g.grabbed && moved > 7 && petRef.current.isAlive) {
+    if (!g.grabbed && moved > 7 && actorOf(g.petId).isAlive) {
       g.grabbed = true;
       setChipOpen(false);
       brain.grab(x, Math.max(0, h - g.offsetY));
@@ -501,17 +593,30 @@ export const PetStage = ({
     const g = gesture.current;
     gesture.current = null;
     if (!g || g.id !== e.pointerId) return;
-    const brain = getBrain();
+    const brain = brainFor(g.petId);
     if (g.grabbed) {
       brain.release(g.vx, -g.vy);
       return;
     }
-    if (!petRef.current.isAlive) {
+    if (!actorOf(g.petId).isAlive) {
       onOpenPets();
       return;
     }
     brain.tap();
-    setChipOpen((open) => !open);
+    openCardFor(g.petId);
+  };
+
+  const onPetKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const petId = e.currentTarget.dataset.petId ?? petRef.current.id;
+    brainFor(petId).tap();
+    openCardFor(petId);
+  };
+
+  const openCardFor = (petId: string) => {
+    selectedRef.current = petId;
+    setChipOpen((open) => !(open && selectedId === petId));
+    setSelectedId(petId);
   };
 
   useEffect(() => {
@@ -541,7 +646,7 @@ export const PetStage = ({
     snackDrag.current = null;
     setSnackGhost(null);
     if (!drag || drag.id !== e.pointerId) return;
-    const brain = getBrain();
+    const brain = brainFor(cardPet.id);
     const geo = geoRef.current;
     setChipOpen(false);
     if (!drag.moved) {
@@ -555,16 +660,18 @@ export const PetStage = ({
 
   const onPlayClick = () => {
     setChipOpen(false);
-    playedRef.current = false;
-    getBrain().react('play');
+    playedRef.current.delete(cardPet.id);
+    brainFor(cardPet.id).react('play');
   };
 
-  const satiety = Math.round(Math.max(0, Math.min(100, 100 - pet.hunger)));
-  const moodLabel = MOOD_LABEL[mood ?? 'happy'] ?? MOOD_LABEL.happy;
+  const cardPet = cast.find((c) => c.id === selectedId) ?? pet;
+  const cardMood = cardPet.id === pet.id ? mood : petMoodService.calculateCurrentMood(cardPet);
+  const satiety = Math.round(Math.max(0, Math.min(100, 100 - cardPet.hunger)));
+  const moodLabel = MOOD_LABEL[cardMood ?? 'happy'] ?? MOOD_LABEL.happy;
   const moodColor =
-    mood === 'hungry' || mood === 'sad' || mood === 'scared'
+    cardMood === 'hungry' || cardMood === 'sad' || cardMood === 'scared'
       ? currentTheme.status.warning
-      : mood === 'sleepy'
+      : cardMood === 'sleepy'
         ? currentTheme.text.muted
         : currentTheme.status.success;
   const glass: CSSProperties = {
@@ -581,31 +688,36 @@ export const PetStage = ({
         style={{ filter: pet.isAlive ? undefined : 'grayscale(1) opacity(0.8)' }}
       />
 
-      <div
-        ref={hitRef}
-        className="pet-stage__hit"
-        role="button"
-        tabIndex={0}
-        aria-label={t('{name} anstupsen', { name: pet.name })}
-        onPointerDown={onPetDown}
-        onPointerMove={onPetMove}
-        onPointerUp={onPetUp}
-        onPointerCancel={onPetUp}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            getBrain().tap();
-            setChipOpen((open) => !open);
-          }
-        }}
-      />
-
-      <div
-        ref={hungerRef}
-        className="pet-stage__hunger"
-        style={{ color: currentTheme.status.warning }}
-      >
-        <Restaurant />
-      </div>
+      {cast.map((c) => (
+        <div key={c.id}>
+          <div
+            ref={(el) => {
+              if (el) hitRefs.current.set(c.id, el);
+              else hitRefs.current.delete(c.id);
+            }}
+            className="pet-stage__hit"
+            role="button"
+            tabIndex={0}
+            aria-label={t('{name} anstupsen', { name: c.name })}
+            data-pet-id={c.id}
+            onPointerDown={onPetDown}
+            onPointerMove={onPetMove}
+            onPointerUp={onPetUp}
+            onPointerCancel={onPetUp}
+            onKeyDown={onPetKey}
+          />
+          <div
+            ref={(el) => {
+              if (el) hungerRefs.current.set(c.id, el);
+              else hungerRefs.current.delete(c.id);
+            }}
+            className="pet-stage__hunger"
+            style={{ color: currentTheme.status.warning }}
+          >
+            <Restaurant />
+          </div>
+        </div>
+      ))}
 
       {ballVisible && (
         <button
@@ -613,7 +725,7 @@ export const PetStage = ({
           type="button"
           className="pet-stage__ball"
           aria-label={t('Ball kicken')}
-          onClick={() => getBrain().kickBall()}
+          onClick={() => (ballBrainRef.current ?? getBrain()).kickBall()}
         />
       )}
 
@@ -669,7 +781,7 @@ export const PetStage = ({
               <div className="pet-card__head">
                 <div className="pet-card__title">
                   <span className="pet-card__name" style={{ color: currentTheme.text.primary }}>
-                    {pet.name}
+                    {cardPet.name}
                   </span>
                   <span className="pet-card__mood">
                     <span className="pet-card__mood-dot" style={{ background: moodColor }} />
@@ -683,7 +795,7 @@ export const PetStage = ({
                     borderColor: `color-mix(in srgb, ${currentTheme.primary} 40%, transparent)`,
                   }}
                 >
-                  Lv. {pet.level}
+                  Lv. {cardPet.level}
                 </span>
               </div>
 
@@ -703,7 +815,7 @@ export const PetStage = ({
               </div>
 
               <div className="pet-card__actions">
-                {pet.isAlive && (
+                {cardPet.isAlive && (
                   <button
                     type="button"
                     className="pet-card__tile"
@@ -719,7 +831,7 @@ export const PetStage = ({
                     <span>{t('Snack')}</span>
                   </button>
                 )}
-                {pet.isAlive && (
+                {cardPet.isAlive && (
                   <button type="button" className="pet-card__tile" onClick={onPlayClick}>
                     <span className="pet-card__tile-icon" style={{ color: currentTheme.primary }}>
                       <SportsSoccer />
@@ -742,10 +854,10 @@ export const PetStage = ({
                   <span className="pet-card__tile-icon pet-card__tile-icon--solid">
                     <ChevronRight />
                   </span>
-                  <span>{pet.isAlive ? t('Profil') : t('Wiederbeleben')}</span>
+                  <span>{cardPet.isAlive ? t('Profil') : t('Wiederbeleben')}</span>
                 </button>
               </div>
-              {pet.isAlive && <p className="pet-card__hint">{t('Snack aufs Pet ziehen')}</p>}
+              {cardPet.isAlive && <p className="pet-card__hint">{t('Snack aufs Pet ziehen')}</p>}
             </motion.div>
           )}
         </AnimatePresence>

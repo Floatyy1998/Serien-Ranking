@@ -34,6 +34,8 @@ const svc = vi.hoisted(() => ({
   revivePet: vi.fn<(uid: string, id: string) => Promise<Pet | null>>(),
   deletePet: vi.fn<(uid: string, id: string) => Promise<void>>(),
   setActivePetId: vi.fn<(uid: string, id: string) => Promise<void>>(),
+  getDockPetIds: vi.fn<(uid: string) => Promise<string[]>>(() => Promise.resolve([])),
+  setDockPetIds: vi.fn<(uid: string, ids: string[]) => Promise<void>>(() => Promise.resolve()),
   changePetColor: vi.fn<(uid: string, id: string, c: string) => Promise<Pet | null>>(),
   toggleAccessory: vi.fn<(uid: string, id: string, a: string) => Promise<Pet | null>>(),
   equipBackground: vi.fn<(uid: string, id: string, b: string | null) => Promise<Pet | null>>(),

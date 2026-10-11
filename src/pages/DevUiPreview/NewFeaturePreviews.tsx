@@ -1131,6 +1131,23 @@ export const FriendInsightsPreview = () => {
                   isAlive: true,
                 } as Pet
               }
+              ownPetOverride={
+                {
+                  id: 'p-own',
+                  userId: 'me',
+                  name: 'Mochi',
+                  type: 'cat',
+                  color: 'orange',
+                  level: 12,
+                  experience: 0,
+                  hunger: 10,
+                  happiness: 90,
+                  lastFed: new Date(),
+                  episodesWatched: 0,
+                  createdAt: new Date(),
+                  isAlive: true,
+                } as Pet
+              }
             />
             <FriendComparisonCard friendName="Flo" own={own} friend={friend} loading={false} />
           </div>

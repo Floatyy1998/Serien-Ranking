@@ -3,7 +3,9 @@ import { PetStage } from '../../components/pet/stage/PetStage';
 import { drawStageFrame } from '../../components/pet/stage/drawStage';
 import type { PetReaction, PetReactionTone } from '../../hooks/pet/usePetReactions';
 import { pickReaction } from '../../hooks/pet/usePetReactions';
-import type { PetBrain, PetView, Reaction } from '../../lib/pet/petBrain';
+import { PetBrain as PetBrainClass } from '../../lib/pet/petBrain';
+import type { PetBrain, PetView, Reaction, Trick } from '../../lib/pet/petBrain';
+import type { GroupDirector, GroupScene } from '../../lib/pet/petGroup';
 import { walkCycle } from '../../lib/pet/petMotion';
 import { PetCard } from '../Pets/PetCard';
 import type { SeasonId } from '../../theme/seasonalThemes';
@@ -107,7 +109,14 @@ export const PetPoseGalleryPreview = ({
 const TONES: PetReactionTone[] = ['cheer', 'binge', 'levelup', 'love', 'movie', 'rated'];
 const ACTIONS: Reaction[] = ['party', 'play', 'letter', 'feed'];
 
-export const PetStagePreview = () => {
+const COMPANIONS: Pet[] = [
+  makeDevPet('dog', 9, { name: 'Bello' }),
+  makeDevPet('dragon', 22, { name: 'Funke' }),
+];
+const GROUP_SCENES: GroupScene[] = ['greet', 'chase', 'dance', 'race', 'parade', 'wave'];
+
+export const PetStagePreview = ({ initialCompanions = 0 }: { initialCompanions?: number }) => {
+  const [companions, setCompanions] = useState(initialCompanions);
   const [type, setType] = useState<Pet['type']>('cat');
   const [level, setLevel] = useState(12);
   const [hungry, setHungry] = useState(false);
@@ -167,6 +176,33 @@ export const PetStagePreview = () => {
           snack
         </button>
       </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {[0, 1, 2].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setCompanions(n)}
+            style={btn(n === companions)}
+          >
+            +{n}
+          </button>
+        ))}
+        {GROUP_SCENES.map((scene) => (
+          <button
+            key={scene}
+            type="button"
+            style={btn(false)}
+            onClick={() =>
+              (window as unknown as { petGroup?: GroupDirector }).petGroup?.play(scene, {
+                minX: 42,
+                maxX: window.innerWidth - 42,
+              })
+            }
+          >
+            {scene}
+          </button>
+        ))}
+      </div>
       <div
         className="mobile-bottom-navigation"
         style={{ height: 62, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -174,6 +210,7 @@ export const PetStagePreview = () => {
       <PetStage
         key={`${type}-${level}`}
         pet={pet}
+        companions={COMPANIONS.slice(0, companions)}
         mood={hungry ? 'hungry' : 'happy'}
         roam
         reaction={reaction}
@@ -233,3 +270,81 @@ export const PetPlaygroundPreview = ({ background = 'saturnView' }: { background
     </div>
   );
 };
+
+const STRIP_FRAMES = 14;
+
+function SignatureStrip({ pet, trick = 'signature' }: { pet: Pet; trick?: Trick }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    const cellW = 92;
+    const cellH = 150;
+    const dpr = 2;
+    canvas.width = cellW * STRIP_FRAMES * dpr;
+    canvas.height = cellH * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cellW * STRIP_FRAMES, cellH);
+    const env = {
+      minX: 0,
+      maxX: 4000,
+      hour: 14,
+      hungry: false,
+      sad: false,
+      sleepy: false,
+      playful: false,
+      tired: false,
+      roam: false,
+      alive: true,
+      ps: 2.5,
+      species: pet.type,
+    };
+    const brain = new PetBrainClass(200, () => 0.5);
+    brain.update(1 / 60, env);
+    brain.trick(trick);
+    const total = 3.4;
+    const x0 = brain.x;
+    const step = total / (STRIP_FRAMES - 1);
+    for (let i = 0; i < STRIP_FRAMES; i++) {
+      if (i > 0) for (let k = 0; k < Math.round(step * 60); k++) brain.update(1 / 60, env);
+      const view = brain.view();
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(i * cellW, 0, cellW, cellH);
+      ctx.clip();
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)';
+      ctx.fillRect(i * cellW, 0, cellW, cellH);
+      drawStageFrame(ctx, {
+        pet,
+        view: { ...view, x: i * cellW + cellW / 2 + (view.x - x0) * 0.25 },
+        props: [],
+        particles: [],
+        groundY: cellH - 16,
+        ps: 2.5,
+        time: 0,
+        season: null,
+        accent: '#ff7a1f',
+      });
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '10px sans-serif';
+      ctx.fillText(
+        `${(i * (total / (STRIP_FRAMES - 1))).toFixed(1)}s ${view.activity}`,
+        i * cellW + 4,
+        12
+      );
+      ctx.restore();
+    }
+  }, [pet, trick]);
+  return <canvas ref={ref} style={{ width: 92 * STRIP_FRAMES, height: 150, display: 'block' }} />;
+}
+
+export const SignatureStripPreview = () => (
+  <div style={{ padding: 12, display: 'grid', gap: 8, overflowX: 'auto' }}>
+    <SignatureStrip pet={makeDevPet('dog', 12)} trick="sit" />
+    <SignatureStrip pet={makeDevPet('cat', 12)} trick="sit" />
+    {TYPES.map((tp) => (
+      <SignatureStrip key={tp} pet={makeDevPet(tp, 12)} />
+    ))}
+  </div>
+);

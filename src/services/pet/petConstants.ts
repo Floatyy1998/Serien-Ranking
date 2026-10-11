@@ -69,3 +69,6 @@ export const PET_CONFIG = {
     legendary: 2,
   },
 } as const;
+
+/** Das aktive Pet plus bis zu zwei Begleiter laufen zusammen über das Dock. */
+export const MAX_DOCK_PETS = 3;

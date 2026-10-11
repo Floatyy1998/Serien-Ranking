@@ -4,7 +4,7 @@ import type { Pet } from '../../../types/pet.types';
 import { drawPetFigure, petColors, type PetColors } from '../renderPet';
 import { seasonCostume } from '../seasonCostume';
 
-const feetCache = new Map<string, number>();
+const feetCache = new Map<string, BodyGeom>();
 
 function levelBucket(level: number): number {
   return level >= 50
@@ -20,12 +20,23 @@ function levelBucket(level: number): number {
             : 1;
 }
 
+interface BodyGeom {
+  feet: number;
+  top: number;
+  halfW: number;
+}
+
 /** Unterkante der Füße im 32er-Raster, einmal pro Typ/Stufe ausgemessen. */
 export function feetY(pet: Pet): number {
+  return bodyGeom(pet).feet;
+}
+
+/** Umriss der Figur im 32er-Raster: Füße, Scheitel und halbe Breite. */
+function bodyGeom(pet: Pet): BodyGeom {
   const key = `${pet.type}:${levelBucket(pet.level)}`;
   const cached = feetCache.get(key);
   if (cached !== undefined) return cached;
-  let result = 27;
+  const result: BodyGeom = { feet: 27, top: 5, halfW: 10 };
   try {
     const scale = 4;
     const canvas = document.createElement('canvas');
@@ -45,13 +56,24 @@ export function feetY(pet: Pet): number {
         }
       );
       const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      outer: for (let y = height - 1; y >= 0; y--) {
+      let minX = width;
+      let maxX = -1;
+      let minY = height;
+      let maxY = -1;
+      for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (data[(y * width + x) * 4 + 3] > 40) {
-            result = (y + 1) / scale;
-            break outer;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
           }
         }
+      }
+      if (maxY >= 0) {
+        result.feet = (maxY + 1) / scale;
+        result.top = minY / scale;
+        result.halfW = Math.max(16 - minX / scale, (maxX + 1) / scale - 16);
       }
     }
   } catch {
@@ -84,14 +106,20 @@ export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): vo
 
   drawProps(ctx, f.props, groundY, ps, f.time, f.accent);
 
-  const feet = feetY(f.pet);
+  const body = bodyGeom(f.pet);
+  const feet = body.feet;
   const turn = Math.sign(view.turn || 1) * Math.max(0.14, Math.abs(view.turn));
   ctx.save();
   ctx.translate(view.x, groundY - view.h - view.bob);
   ctx.rotate(view.tilt);
   if (view.roll) {
-    const mid = (feet - 13) * ps;
-    ctx.translate(0, -mid);
+    // um die Körpermitte drehen und so weit absenken, dass die Figur auf dem Boden bleibt
+    const halfH = (feet - body.top) / 2;
+    const c = Math.cos(view.roll);
+    const s = Math.sin(view.roll);
+    const reach = Math.sqrt((halfH * c) ** 2 + (body.halfW * s) ** 2);
+    const mid = halfH * ps;
+    ctx.translate(0, (halfH - reach) * ps - mid);
     ctx.rotate(view.roll);
     ctx.translate(0, mid);
   }

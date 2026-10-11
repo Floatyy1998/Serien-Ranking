@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { Pet } from '../../types/pet.types';
 
-const { authValue, sendGiftMock, canSendMock } = vi.hoisted(() => ({
+const { authValue, sendGiftMock, canSendMock, ownPet, cheerUpMock } = vi.hoisted(() => ({
+  ownPet: { value: null as Pet | null },
+  cheerUpMock: vi.fn<() => Promise<null>>(() => Promise.resolve(null)),
   authValue: { user: { uid: 'me', displayName: 'Konrad' } },
   sendGiftMock: vi.fn<() => Promise<void>>(() => Promise.resolve()),
   canSendMock: vi.fn<() => { allowed: boolean; nextAvailableAt?: number }>(() => ({
@@ -15,6 +17,13 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../components/pet', () => ({
   EvolvingPixelPet: () => <div data-testid="pet-sprite" />,
 }));
+vi.mock('../../hooks/pet/useOwnActivePet', () => ({ useOwnActivePet: () => ownPet.value }));
+vi.mock('../../components/pet/stage/PetVisitScene', () => ({
+  PetVisitScene: () => <div data-testid="visit-scene" />,
+}));
+vi.mock('../../services/pet/petService', () => ({
+  petService: { cheerUpPet: () => cheerUpMock() },
+}));
 vi.mock('../../services/pet/petMoodService', () => ({
   petMoodService: { calculateCurrentMood: () => 'happy' },
 }));
@@ -25,7 +34,7 @@ vi.mock('../../services/pet/petGifts', () => ({
 }));
 vi.mock('framer-motion', async () => {
   const React = await import('react');
-  const skip = new Set(['initial', 'animate', 'whileTap']);
+  const skip = new Set(['initial', 'animate', 'exit', 'whileTap']);
   const make = (tag: string) =>
     React.forwardRef(function Motion(props: Record<string, unknown>, ref: unknown) {
       const clean: Record<string, unknown> = { ref };
@@ -34,6 +43,7 @@ vi.mock('framer-motion', async () => {
     });
   return {
     motion: new Proxy({} as Record<string, unknown>, { get: (_t, tag) => make(String(tag)) }),
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
   };
 });
 vi.mock('../../contexts/ThemeContext', () => {
@@ -93,5 +103,24 @@ describe('FriendPetCard', () => {
     canSendMock.mockReturnValue({ allowed: false, nextAvailableAt: Date.now() + 7200000 });
     render(<FriendPetCard friendUid="friend-1" pet={pet} />);
     expect(screen.getByText(/Schon verwöhnt/)).toBeInTheDocument();
+  });
+
+  it('startet einen Spieltreff mit dem eigenen Pet und gibt einmal am Tag gute Laune', () => {
+    localStorage.clear();
+    ownPet.value = { ...pet, id: 'mine', userId: 'me', name: 'Mochi', type: 'cat' };
+    render(<FriendPetCard friendUid="friend-1" pet={pet} />);
+    fireEvent.click(screen.getByText('Spieltreff mit Mochi'));
+    expect(screen.getByTestId('visit-scene')).toBeInTheDocument();
+    expect(cheerUpMock).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByText('Spieltreff beenden'));
+    fireEvent.click(screen.getByText('Spieltreff mit Mochi'));
+    expect(cheerUpMock).toHaveBeenCalledTimes(1);
+    ownPet.value = null;
+  });
+
+  it('bietet keinen Spieltreff ohne eigenes Pet an', () => {
+    ownPet.value = null;
+    render(<FriendPetCard friendUid="friend-1" pet={pet} />);
+    expect(screen.queryByText(/Spieltreff/)).toBeNull();
   });
 });
