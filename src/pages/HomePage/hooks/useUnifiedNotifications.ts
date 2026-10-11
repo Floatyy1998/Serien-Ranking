@@ -73,15 +73,6 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
-    id: 'announcement_spooky-season-2026-10',
-    title: 'Neu: Spooky Season',
-    message:
-      'TV-Rank hat jetzt ein Halloween-Design mit Spinnennetzen, Fledermäusen und einem Skelett, das vom Rand hereinlugt. Es ist den ganzen Oktober automatisch an. Ist dir das zu viel, schaltest du es unter Design mit einem Tipp ab, deine eigenen Farben bleiben erhalten.',
-    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik)
-    timestamp: new Date('2026-10-11T23:00:00+02:00').getTime(),
-    navigateTo: '/theme',
-  },
-  {
     id: 'announcement_watch-plan-2026-09',
     title: 'Neu: Dein eigener Schau-Plan',
     message:

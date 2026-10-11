@@ -8,6 +8,7 @@ import { AppWithSplash } from './app/AppWithSplash';
 import { installErrorReporting } from './services/errorReporting/errorReporter';
 import { ensureAllDictionaries } from './services/i18n';
 import { APP_READY_EVENT, isAppReady } from './services/app/appReady';
+import { installSeasonPreview } from './services/app/seasonPreview';
 import './styles/index.css';
 // Die Anzeigegröße (zoom) wird in AppWithSplash gesetzt — erst NACHDEM der
 // Splash verschwunden ist, damit der Splash nie mitskaliert.
@@ -22,6 +23,8 @@ import './services/app/nativeShell';
 // werden. Geschrieben wird erst, sobald der Nutzer feststeht (authProvider).
 // Der Dev-Server meldet nicht: HMR/Dep-Neuoptimierung erzeugen Fehler, die es im Build nicht gibt.
 if (!import.meta.env.DEV) installErrorReporting();
+
+installSeasonPreview();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 

@@ -1,7 +1,7 @@
 import type { UserThemeConfig } from './dynamicTheme';
 
 export type SeasonId = 'spooky' | 'christmas' | 'newyear';
-export type SeasonFlags = Partial<Record<SeasonId, boolean>>;
+export type SeasonFlags = Partial<Record<SeasonId, false>>;
 
 export const SEASON_IDS: SeasonId[] = ['spooky', 'christmas', 'newyear'];
 
@@ -48,46 +48,45 @@ export function isInSeason(id: SeasonId, date: Date = new Date()): boolean {
   return (month === 11 && day >= 27) || (month === 0 && day <= 6);
 }
 
+let previewSeason: SeasonId | null = null;
+
+/** Nur Dev-Vorschau: tut so, als liefe gerade diese Saison. */
+export function setSeasonPreview(id: SeasonId | null): void {
+  previewSeason = id;
+}
+
 export function currentSeason(date: Date = new Date()): SeasonId | null {
+  if (previewSeason) return previewSeason;
   return SEASON_IDS.find((id) => isInSeason(id, date)) ?? null;
 }
 
+// Gespeichert wird nur das Abschalten; alles andere folgt dem Kalender.
 export function sanitizeSeasonFlags(raw: unknown): SeasonFlags | undefined {
   if (!raw || typeof raw !== 'object') return undefined;
   const flags: SeasonFlags = {};
   for (const id of SEASON_IDS) {
-    const value = (raw as Record<string, unknown>)[id];
-    if (typeof value === 'boolean') flags[id] = value;
+    if ((raw as Record<string, unknown>)[id] === false) flags[id] = false;
   }
   return Object.keys(flags).length ? flags : undefined;
 }
 
-// Ein ausdrücklich eingeschaltetes Design gewinnt, sonst läuft das Design der Saison,
-// solange es nicht abgeschaltet wurde.
 export function activeSeason(
   config: { seasons?: unknown } | null | undefined,
   date: Date = new Date()
 ): SeasonId | null {
-  const flags = sanitizeSeasonFlags(config?.seasons) ?? {};
-  const forced = SEASON_IDS.find((id) => flags[id] === true);
-  if (forced) return forced;
-  return SEASON_IDS.find((id) => isInSeason(id, date) && flags[id] !== false) ?? null;
+  const season = currentSeason(date);
+  if (!season) return null;
+  return sanitizeSeasonFlags(config?.seasons)?.[season] === false ? null : season;
 }
 
 export function withSeasonFlag(
   seasons: unknown,
   id: SeasonId,
-  on: boolean,
-  date: Date = new Date()
+  on: boolean
 ): SeasonFlags | undefined {
   const next: SeasonFlags = { ...sanitizeSeasonFlags(seasons) };
-  if (on) {
-    for (const other of SEASON_IDS) if (next[other] === true) delete next[other];
-    if (isInSeason(id, date)) delete next[id];
-    else next[id] = true;
-  } else {
-    next[id] = false;
-  }
+  if (on) delete next[id];
+  else next[id] = false;
   return Object.keys(next).length ? next : undefined;
 }
 
@@ -97,7 +96,7 @@ export function withActiveSeasonOff(
 ): SeasonFlags | undefined {
   const season = activeSeason(config, date);
   return season
-    ? withSeasonFlag(config.seasons, season, false, date)
+    ? withSeasonFlag(config.seasons, season, false)
     : sanitizeSeasonFlags(config.seasons);
 }
 

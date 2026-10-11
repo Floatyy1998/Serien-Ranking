@@ -1,36 +1,35 @@
 import { motion } from 'framer-motion';
 import { hapticSelect } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
-import { isInSeason, SEASON_PALETTES, type SeasonId } from '../../theme/seasonalThemes';
+import { SEASON_PALETTES, type SeasonId } from '../../theme/seasonalThemes';
 import { SeasonScene } from './SeasonScenes';
 import './SeasonCard.css';
 
 interface SeasonCardProps {
   season: SeasonId;
   active: boolean;
-  compact?: boolean;
   onToggle: (season: SeasonId, next: boolean) => void;
 }
 
-const COPY: Record<SeasonId, { title: () => string; sub: () => string; window: () => string }> = {
+const COPY: Record<SeasonId, { title: () => string; sub: () => string; until: () => string }> = {
   spooky: {
     title: () => 'Spooky Season',
     sub: () => t('Spinnennetze, Skelette und Kürbisfarben in der ganzen App'),
-    window: () => t('Im Oktober'),
+    until: () => t('Bis 31. Oktober'),
   },
   christmas: {
     title: () => t('Weihnachten'),
     sub: () => t('Schneefall, Lichterketten und ein Rentierschlitten in der ganzen App'),
-    window: () => t('1. bis 26. Dezember'),
+    until: () => t('Bis 26. Dezember'),
   },
   newyear: {
     title: () => t('Neujahr'),
     sub: () => t('Feuerwerk, Konfetti und Champagnergold in der ganzen App'),
-    window: () => t('27. Dezember bis 6. Januar'),
+    until: () => t('Bis 6. Januar'),
   },
 };
 
-export const SeasonCard = ({ season, active, compact, onToggle }: SeasonCardProps) => {
+export const SeasonCard = ({ season, active, onToggle }: SeasonCardProps) => {
   const palette = SEASON_PALETTES[season];
   const copy = COPY[season];
   const vars = {
@@ -50,14 +49,12 @@ export const SeasonCard = ({ season, active, compact, onToggle }: SeasonCardProp
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`season-card${active ? ' is-on' : ''}${compact ? ' is-compact' : ''}`}
+      className={`season-card${active ? ' is-on' : ''}`}
       style={vars}
     >
       <div className={`season-card__scene season-scene--${season}`} aria-hidden="true">
         <SeasonScene season={season} />
-        <span className="season-card__badge">
-          {isInSeason(season) ? t('Jetzt Saison') : copy.window()}
-        </span>
+        <span className="season-card__badge">{copy.until()}</span>
       </div>
 
       <button

@@ -5,6 +5,7 @@ import {
   currentSeason,
   resolveThemeConfig,
   SEASON_PALETTES,
+  setSeasonPreview,
   withActiveSeasonOff,
   withSeasonFlag,
 } from './seasonalThemes';
@@ -32,17 +33,27 @@ describe('seasonalThemes', () => {
     expect(activeSeason({}, MAR)).toBeNull();
   });
 
-  it('respects an opt-out and a forced design', () => {
+  it('respects an opt-out and ignores anything but false', () => {
     expect(activeSeason({ seasons: { spooky: false } }, OCT)).toBeNull();
-    expect(activeSeason({ seasons: { christmas: true } }, OCT)).toBe('christmas');
-    expect(activeSeason({ seasons: { newyear: true } }, MAR)).toBe('newyear');
+    expect(activeSeason({ seasons: { spooky: false } }, DEC)).toBe('christmas');
+    expect(activeSeason({ seasons: { christmas: true } }, OCT)).toBe('spooky');
+    expect(activeSeason({ seasons: { newyear: true } }, MAR)).toBeNull();
   });
 
-  it('switches on in season without pinning the flag', () => {
-    expect(withSeasonFlag({ spooky: false }, 'spooky', true, OCT)).toBeUndefined();
-    expect(withSeasonFlag(undefined, 'christmas', true, OCT)).toEqual({ christmas: true });
-    expect(withSeasonFlag({ christmas: true }, 'spooky', true, OCT)).toBeUndefined();
-    expect(withSeasonFlag(undefined, 'spooky', false, OCT)).toEqual({ spooky: false });
+  it('stores only the opt-out', () => {
+    expect(withSeasonFlag({ spooky: false }, 'spooky', true)).toBeUndefined();
+    expect(withSeasonFlag(undefined, 'spooky', false)).toEqual({ spooky: false });
+    expect(withSeasonFlag({ christmas: false }, 'spooky', false)).toEqual({
+      christmas: false,
+      spooky: false,
+    });
+  });
+
+  it('can preview a season outside its window', () => {
+    setSeasonPreview('christmas');
+    expect(activeSeason({}, MAR)).toBe('christmas');
+    setSeasonPreview(null);
+    expect(activeSeason({}, MAR)).toBeNull();
   });
 
   it('turns only the running design off when colors change', () => {
@@ -64,7 +75,7 @@ describe('seasonalThemes', () => {
   it('keeps only valid season flags through validation', () => {
     const validated = validateThemeConfig({
       ...defaultThemeConfig,
-      seasons: { spooky: false, bogus: true } as never,
+      seasons: { spooky: false, christmas: true, bogus: false } as never,
     });
     expect(validated.seasons).toEqual({ spooky: false });
     expect('seasons' in validateThemeConfig(defaultThemeConfig)).toBe(false);

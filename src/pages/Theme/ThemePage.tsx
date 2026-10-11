@@ -13,7 +13,6 @@ import { SeasonCard } from './SeasonCard';
 import {
   activeSeason,
   currentSeason,
-  SEASON_IDS,
   withActiveSeasonOff,
   withSeasonFlag,
   type SeasonId,
@@ -107,9 +106,6 @@ const colorCategories: ColorCategory[] = [
   { key: 'accentColor', name: t('Akzent'), icon: <Palette />, description: t('Akzentfarbe') },
 ];
 
-const upcomingSeason = (date = new Date()): SeasonId =>
-  date.getMonth() === 10 ? 'christmas' : 'spooky';
-
 const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
 export const ThemePage = () => {
@@ -156,8 +152,7 @@ export const ThemePage = () => {
   );
 
   const season = activeSeason(userConfig);
-  const leadSeason = season ?? currentSeason() ?? upcomingSeason();
-  const otherSeasons = SEASON_IDS.filter((id) => id !== leadSeason);
+  const runningSeason = currentSeason();
 
   const isPresetActive = (preset: PresetTheme) =>
     !season &&
@@ -179,18 +174,13 @@ export const ThemePage = () => {
       />
 
       <div className="theme-content">
-        <SeasonCard season={leadSeason} active={season === leadSeason} onToggle={toggleSeason} />
-        <div className="season-grid">
-          {otherSeasons.map((id) => (
-            <SeasonCard
-              key={id}
-              season={id}
-              active={season === id}
-              compact
-              onToggle={toggleSeason}
-            />
-          ))}
-        </div>
+        {runningSeason && (
+          <SeasonCard
+            season={runningSeason}
+            active={season === runningSeason}
+            onToggle={toggleSeason}
+          />
+        )}
         {season && (
           <p className="theme-season-note" style={{ color: currentTheme.text.muted }}>
             {t(
