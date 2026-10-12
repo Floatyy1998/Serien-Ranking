@@ -38,18 +38,14 @@ installDomTranslationGuard();
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 /**
- * Warmstart der beiden Chunks, die auf dem kritischen Pfad des Splashscreens
- * liegen. Ohne das startet ihr Download erst, nachdem React gemountet und das
- * Theme geladen ist — also mehrere hundert ms zu spaet:
- *   - initFirebase: der AuthProvider importiert es dynamisch, und erst danach
- *     koennen die Flags auth/firebase/emailVerification ueberhaupt fallen.
- *   - MobileApp: haelt MainTabs + HomePage statisch, also auch useHomeConfig
- *     mit dem homeConfig-Flag.
- * Fehler sind egal — die echten Imports laufen gleich sowieso und haben ihr
+ * Warmstart des MobileApp-Chunks, der auf dem kritischen Pfad des Splashscreens
+ * liegt. Ohne das startet sein Download erst, nachdem React gemountet und das
+ * Theme geladen ist — also mehrere hundert ms zu spaet. MobileApp haelt
+ * MainTabs + HomePage statisch, also auch useHomeConfig mit dem homeConfig-Flag.
+ * Fehler sind egal — der echte Import laeuft gleich sowieso und hat sein
  * eigenes Retry.
  */
 function warmCriticalChunks(): void {
-  void import('./services/firebase/initFirebase').catch(() => {});
   void import('./app/MobileApp').catch(() => {});
 }
 

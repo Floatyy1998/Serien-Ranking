@@ -10,6 +10,7 @@ import { syncUserSearchIndex } from '../services/firebase/userSearchIndex';
 import { dbGet, dbRef, paths, serverTimestamp, userPath } from '../services/db/ref';
 import { writeWelcomeNotifications } from '../services/notifications/welcomeNotifications';
 import { activeSeason, SEASON_PALETTES } from '../theme/seasonalThemes';
+import { initFirebase } from '../services/firebase/initFirebase';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -37,250 +38,242 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let unsubscribeAuth: (() => void) | null = null;
     let cancelled = false;
 
-    import('../services/firebase/initFirebase')
-      .then((module) => {
-        if (cancelled) return;
-        try {
-          module.initFirebase();
-          initAnalyticsIfConsented();
-          setFirebaseInitialized(true);
-          window.setAppReady?.('firebase', true);
+    // Statisch importiert: ein gescheiterter Chunk ließ jeden Login in app-compat/no-app laufen.
+    try {
+      initFirebase();
+      initAnalyticsIfConsented();
+      setFirebaseInitialized(true);
+      window.setAppReady?.('firebase', true);
 
-          // Service Worker initialisieren
-          if ('serviceWorker' in navigator) {
-            // Service Worker Manager ist bereits als Singleton initialisiert
+      // Service Worker initialisieren
+      if ('serviceWorker' in navigator) {
+        // Service Worker Manager ist bereits als Singleton initialisiert
+      }
+
+      authTimeout = setTimeout(
+        () => {
+          setAuthStateResolved(true);
+          window.setAppReady?.('emailVerification', true); // No verification check on timeout
+
+          // Wenn offline, versuche gespeicherten User zu laden
+          if (!navigator.onLine) {
+            const savedUser = localStorage.getItem('cachedUser');
+            if (savedUser) {
+              try {
+                const parsedUser = JSON.parse(savedUser);
+                setUser(parsedUser);
+              } catch {
+                // ignore — corrupted cached user is non-fatal, auth will re-resolve
+              }
+            }
+          }
+        },
+        !navigator.onLine ? 2000 : 5000
+      ); // Kürzerer Timeout wenn offline
+
+      unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
+        if (authTimeout) clearTimeout(authTimeout);
+        setUser(user);
+        setAuthStateResolved(true);
+        setAnalyticsUser(user?.uid ?? null);
+        // Gibt gepufferte Fehlerberichte frei — vor dem Login verbieten
+        // die Rules den Write.
+        setErrorReporterUser(user?.uid ?? null);
+        window.setAppReady?.('auth', true);
+        window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
+
+        // User für Offline-Zugriff speichern
+        if (user) {
+          localStorage.setItem(
+            'cachedUser',
+            JSON.stringify({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+            })
+          );
+
+          // Automatischer Badge-Check beim App-Start
+          // Verzögerung damit alle Daten geladen sind
+          if (badgeCheckTimeout) clearTimeout(badgeCheckTimeout);
+          badgeCheckTimeout = setTimeout(async () => {
+            if (cancelled) return;
+            try {
+              const badgeSystem = getOfflineBadgeSystem(user.uid);
+
+              // Prüfe ob wir kürzlich schon gecheckt haben (innerhalb der letzten 5 Minuten)
+              const lastCheckKey = `lastBadgeCheck_${user.uid}`;
+              const lastCheck = localStorage.getItem(lastCheckKey);
+              const now = Date.now();
+              const fiveMinutes = 5 * 60 * 1000;
+
+              if (!lastCheck || now - parseInt(lastCheck) > fiveMinutes) {
+                const newBadges = await badgeSystem.checkForNewBadges();
+
+                if (newBadges.length > 0) {
+                  window.dispatchEvent(
+                    new CustomEvent('badgeProgressUpdate', {
+                      detail: { newBadges },
+                    })
+                  );
+                }
+
+                localStorage.setItem(lastCheckKey, now.toString());
+              }
+            } catch (error) {
+              console.error('Error during automatic badge check:', error);
+            }
+          }, 3000); // 3 Sekunden Verzögerung für App-Initialisierung
+        } else {
+          localStorage.removeItem('cachedUser');
+        }
+
+        // User Profile in Firebase initialisieren falls noch nicht vorhanden
+        if (user) {
+          // WICHTIG: Lokales Theme hat Vorrang - Cloud-Theme nur als Fallback
+          const localTheme = localStorage.getItem('customTheme');
+
+          if (!localTheme) {
+            // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
+            const themeRef = dbRef(paths.theme(user.uid));
+            try {
+              const themeSnapshot = await themeRef.once('value');
+              const storedCloudTheme = themeSnapshot.val();
+              const cloudSeason = storedCloudTheme ? activeSeason(storedCloudTheme) : null;
+              const cloudTheme = cloudSeason
+                ? { ...storedCloudTheme, ...SEASON_PALETTES[cloudSeason] }
+                : storedCloudTheme;
+
+              if (cloudTheme) {
+                const validHex = (c: string | undefined, fb: string) =>
+                  c && /^#?[0-9a-fA-F]{6}$/.test(c) ? c : fb;
+                const primary = validHex(cloudTheme.primaryColor, '#ef6f8a');
+                const accent = validHex(cloudTheme.accentColor, '#008a6e');
+                const bg = validHex(cloudTheme.backgroundColor, '#000000');
+                const surface = validHex(cloudTheme.surfaceColor, '#0f0f0f');
+
+                const root = document.documentElement;
+                root.style.setProperty('--theme-primary', primary);
+                root.style.setProperty('--theme-primary-hover', adjustBrightness(primary, 10));
+                root.style.setProperty('--theme-accent', accent);
+                root.style.setProperty('--theme-background', bg);
+                root.style.setProperty('--theme-surface', surface);
+                root.style.setProperty('--theme-text-primary', primary);
+                root.style.setProperty('--theme-text-secondary', '#ffffff');
+
+                updateThemeColorMeta(bg);
+
+                // WICHTIG: Cloud-Theme temporär im localStorage speichern,
+                // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
+                // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
+                localStorage.setItem('customTheme', JSON.stringify(storedCloudTheme));
+
+                window.dispatchEvent(new CustomEvent('themeChanged'));
+              }
+            } catch {
+              // ignore — cloud theme is a fallback, defaults apply otherwise
+            }
+          }
+          // else: local theme exists, keep it — cloud updates are ignored
+
+          const userRef = dbRef(paths.user(user.uid));
+          // NUR die sechs benoetigten Felder lesen. Ein once('value') auf
+          // paths.user(uid) zieht den kompletten Nutzerknoten — series,
+          // seriesWatch, movies, manga, wrapped, Benachrichtigungen — bei
+          // einem grossen Konto rund 3 MB, bei JEDEM Login, um sechs
+          // Strings zu pruefen. Gemessen war das der groesste Einzelposten
+          // im Startvorgang.
+          const [uidField, onboardingComplete, username, displayName, photoURL, bio] =
+            await Promise.all([
+              dbGet<string>(userPath(user.uid, 'uid')),
+              dbGet<boolean>(userPath(user.uid, 'onboardingComplete')),
+              dbGet<string>(userPath(user.uid, 'username')),
+              dbGet<string>(userPath(user.uid, 'displayName')),
+              dbGet<string>(userPath(user.uid, 'photoURL')),
+              dbGet<string>(userPath(user.uid, 'bio')),
+            ]);
+
+          // Neuling auch dann erkennen, wenn der Knoten schon als RUMPF
+          // existiert: beim (Social-)Erstlogin mounten App-Provider parallel
+          // und schreiben z. B. readTimes/language, BEVOR dieser Check läuft
+          // — dann wäre exists() true und der Nutzer bekäme nie ein
+          // Onboarding. Echte Bestandsnutzer haben immer ein uid-Feld
+          // (RegisterPage/dieser Zweig schreiben es seit jeher). Fehlender
+          // Knoten und Rumpf-Knoten laufen damit auf dieselbe Bedingung
+          // hinaus: beide Felder fehlen.
+          const isFreshAccount = uidField === null && onboardingComplete === null;
+
+          if (isFreshAccount) {
+            // Neuer Benutzer - nur grundlegende Daten setzen (Username wird in ProfileDialog gesetzt)
+            const userData = {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
+              photoURL: user.photoURL || null,
+              createdAt: serverTimestamp(),
+              lastActive: serverTimestamp(),
+              isOnline: true,
+              onboardingComplete: false,
+            };
+
+            // update statt set: parallel entstandene Felder (readTimes,
+            // language …) nicht überschreiben.
+            await userRef.update(userData);
+            setOnboardingComplete(false);
+
+            void writeWelcomeNotifications(user.uid);
+
+            // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
+            void syncUserSearchIndex(user.uid, userData);
+
+            // Cache User-Daten für Offline-Zugriff
+            await offlineFirebaseService.cacheData(
+              `users/${user.uid}`,
+              userData,
+              60 * 60 * 1000 // 1 Stunde Cache
+            );
+          } else {
+            // Bestehender Benutzer - Online-Status aktualisieren
+            setOnboardingComplete(onboardingComplete !== false);
+
+            const updateData = {
+              lastActive: serverTimestamp(),
+              isOnline: true,
+            };
+
+            await userRef.update(updateData);
+
+            // Self-Heal: Such-Index aus dem frischen Profil-Stand spiegeln
+            // (best-effort, wirft nie) — hält userSearchIndex für Bestands-
+            // nutzer aktuell, ohne dass ein Admin-Backfill nötig ist.
+            void syncUserSearchIndex(user.uid, {
+              username: username ?? undefined,
+              displayName: displayName ?? undefined,
+              photoURL: photoURL ?? undefined,
+              bio: bio ?? undefined,
+            });
+
+            // Nur die Profilfelder cachen. Frueher landete hier der ganze
+            // Nutzerknoten (mehrere MB) — gelesen hat den Eintrag nie
+            // jemand, geschrieben wurde er bei jedem Login.
+            await offlineFirebaseService.cacheData(
+              `users/${user.uid}`,
+              { uid: uidField, username, displayName, photoURL, bio, ...updateData },
+              60 * 60 * 1000 // 1 Stunde Cache
+            );
           }
 
-          authTimeout = setTimeout(
-            () => {
-              setAuthStateResolved(true);
-              window.setAppReady?.('emailVerification', true); // No verification check on timeout
-
-              // Wenn offline, versuche gespeicherten User zu laden
-              if (!navigator.onLine) {
-                const savedUser = localStorage.getItem('cachedUser');
-                if (savedUser) {
-                  try {
-                    const parsedUser = JSON.parse(savedUser);
-                    setUser(parsedUser);
-                  } catch {
-                    // ignore — corrupted cached user is non-fatal, auth will re-resolve
-                  }
-                }
-              }
-            },
-            !navigator.onLine ? 2000 : 5000
-          ); // Kürzerer Timeout wenn offline
-
-          unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
-            if (authTimeout) clearTimeout(authTimeout);
-            setUser(user);
-            setAuthStateResolved(true);
-            setAnalyticsUser(user?.uid ?? null);
-            // Gibt gepufferte Fehlerberichte frei — vor dem Login verbieten
-            // die Rules den Write.
-            setErrorReporterUser(user?.uid ?? null);
-            window.setAppReady?.('auth', true);
-            window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
-
-            // User für Offline-Zugriff speichern
-            if (user) {
-              localStorage.setItem(
-                'cachedUser',
-                JSON.stringify({
-                  uid: user.uid,
-                  email: user.email,
-                  displayName: user.displayName,
-                  photoURL: user.photoURL,
-                })
-              );
-
-              // Automatischer Badge-Check beim App-Start
-              // Verzögerung damit alle Daten geladen sind
-              if (badgeCheckTimeout) clearTimeout(badgeCheckTimeout);
-              badgeCheckTimeout = setTimeout(async () => {
-                if (cancelled) return;
-                try {
-                  const badgeSystem = getOfflineBadgeSystem(user.uid);
-
-                  // Prüfe ob wir kürzlich schon gecheckt haben (innerhalb der letzten 5 Minuten)
-                  const lastCheckKey = `lastBadgeCheck_${user.uid}`;
-                  const lastCheck = localStorage.getItem(lastCheckKey);
-                  const now = Date.now();
-                  const fiveMinutes = 5 * 60 * 1000;
-
-                  if (!lastCheck || now - parseInt(lastCheck) > fiveMinutes) {
-                    const newBadges = await badgeSystem.checkForNewBadges();
-
-                    if (newBadges.length > 0) {
-                      window.dispatchEvent(
-                        new CustomEvent('badgeProgressUpdate', {
-                          detail: { newBadges },
-                        })
-                      );
-                    }
-
-                    localStorage.setItem(lastCheckKey, now.toString());
-                  }
-                } catch (error) {
-                  console.error('Error during automatic badge check:', error);
-                }
-              }, 3000); // 3 Sekunden Verzögerung für App-Initialisierung
-            } else {
-              localStorage.removeItem('cachedUser');
-            }
-
-            // User Profile in Firebase initialisieren falls noch nicht vorhanden
-            if (user) {
-              // WICHTIG: Lokales Theme hat Vorrang - Cloud-Theme nur als Fallback
-              const localTheme = localStorage.getItem('customTheme');
-
-              if (!localTheme) {
-                // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
-                const themeRef = dbRef(paths.theme(user.uid));
-                try {
-                  const themeSnapshot = await themeRef.once('value');
-                  const storedCloudTheme = themeSnapshot.val();
-                  const cloudSeason = storedCloudTheme ? activeSeason(storedCloudTheme) : null;
-                  const cloudTheme = cloudSeason
-                    ? { ...storedCloudTheme, ...SEASON_PALETTES[cloudSeason] }
-                    : storedCloudTheme;
-
-                  if (cloudTheme) {
-                    const validHex = (c: string | undefined, fb: string) =>
-                      c && /^#?[0-9a-fA-F]{6}$/.test(c) ? c : fb;
-                    const primary = validHex(cloudTheme.primaryColor, '#ef6f8a');
-                    const accent = validHex(cloudTheme.accentColor, '#008a6e');
-                    const bg = validHex(cloudTheme.backgroundColor, '#000000');
-                    const surface = validHex(cloudTheme.surfaceColor, '#0f0f0f');
-
-                    const root = document.documentElement;
-                    root.style.setProperty('--theme-primary', primary);
-                    root.style.setProperty('--theme-primary-hover', adjustBrightness(primary, 10));
-                    root.style.setProperty('--theme-accent', accent);
-                    root.style.setProperty('--theme-background', bg);
-                    root.style.setProperty('--theme-surface', surface);
-                    root.style.setProperty('--theme-text-primary', primary);
-                    root.style.setProperty('--theme-text-secondary', '#ffffff');
-
-                    updateThemeColorMeta(bg);
-
-                    // WICHTIG: Cloud-Theme temporär im localStorage speichern,
-                    // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
-                    // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
-                    localStorage.setItem('customTheme', JSON.stringify(storedCloudTheme));
-
-                    window.dispatchEvent(new CustomEvent('themeChanged'));
-                  }
-                } catch {
-                  // ignore — cloud theme is a fallback, defaults apply otherwise
-                }
-              }
-              // else: local theme exists, keep it — cloud updates are ignored
-
-              const userRef = dbRef(paths.user(user.uid));
-              // NUR die sechs benoetigten Felder lesen. Ein once('value') auf
-              // paths.user(uid) zieht den kompletten Nutzerknoten — series,
-              // seriesWatch, movies, manga, wrapped, Benachrichtigungen — bei
-              // einem grossen Konto rund 3 MB, bei JEDEM Login, um sechs
-              // Strings zu pruefen. Gemessen war das der groesste Einzelposten
-              // im Startvorgang.
-              const [uidField, onboardingComplete, username, displayName, photoURL, bio] =
-                await Promise.all([
-                  dbGet<string>(userPath(user.uid, 'uid')),
-                  dbGet<boolean>(userPath(user.uid, 'onboardingComplete')),
-                  dbGet<string>(userPath(user.uid, 'username')),
-                  dbGet<string>(userPath(user.uid, 'displayName')),
-                  dbGet<string>(userPath(user.uid, 'photoURL')),
-                  dbGet<string>(userPath(user.uid, 'bio')),
-                ]);
-
-              // Neuling auch dann erkennen, wenn der Knoten schon als RUMPF
-              // existiert: beim (Social-)Erstlogin mounten App-Provider parallel
-              // und schreiben z. B. readTimes/language, BEVOR dieser Check läuft
-              // — dann wäre exists() true und der Nutzer bekäme nie ein
-              // Onboarding. Echte Bestandsnutzer haben immer ein uid-Feld
-              // (RegisterPage/dieser Zweig schreiben es seit jeher). Fehlender
-              // Knoten und Rumpf-Knoten laufen damit auf dieselbe Bedingung
-              // hinaus: beide Felder fehlen.
-              const isFreshAccount = uidField === null && onboardingComplete === null;
-
-              if (isFreshAccount) {
-                // Neuer Benutzer - nur grundlegende Daten setzen (Username wird in ProfileDialog gesetzt)
-                const userData = {
-                  uid: user.uid,
-                  email: user.email,
-                  displayName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
-                  photoURL: user.photoURL || null,
-                  createdAt: serverTimestamp(),
-                  lastActive: serverTimestamp(),
-                  isOnline: true,
-                  onboardingComplete: false,
-                };
-
-                // update statt set: parallel entstandene Felder (readTimes,
-                // language …) nicht überschreiben.
-                await userRef.update(userData);
-                setOnboardingComplete(false);
-
-                void writeWelcomeNotifications(user.uid);
-
-                // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
-                void syncUserSearchIndex(user.uid, userData);
-
-                // Cache User-Daten für Offline-Zugriff
-                await offlineFirebaseService.cacheData(
-                  `users/${user.uid}`,
-                  userData,
-                  60 * 60 * 1000 // 1 Stunde Cache
-                );
-              } else {
-                // Bestehender Benutzer - Online-Status aktualisieren
-                setOnboardingComplete(onboardingComplete !== false);
-
-                const updateData = {
-                  lastActive: serverTimestamp(),
-                  isOnline: true,
-                };
-
-                await userRef.update(updateData);
-
-                // Self-Heal: Such-Index aus dem frischen Profil-Stand spiegeln
-                // (best-effort, wirft nie) — hält userSearchIndex für Bestands-
-                // nutzer aktuell, ohne dass ein Admin-Backfill nötig ist.
-                void syncUserSearchIndex(user.uid, {
-                  username: username ?? undefined,
-                  displayName: displayName ?? undefined,
-                  photoURL: photoURL ?? undefined,
-                  bio: bio ?? undefined,
-                });
-
-                // Nur die Profilfelder cachen. Frueher landete hier der ganze
-                // Nutzerknoten (mehrere MB) — gelesen hat den Eintrag nie
-                // jemand, geschrieben wurde er bei jedem Login.
-                await offlineFirebaseService.cacheData(
-                  `users/${user.uid}`,
-                  { uid: uidField, username, displayName, photoURL, bio, ...updateData },
-                  60 * 60 * 1000 // 1 Stunde Cache
-                );
-              }
-
-              // Bei Disconnect offline setzen
-              userRef.child('isOnline').onDisconnect().set(false);
-              userRef.child('lastActive').onDisconnect().set(serverTimestamp());
-            }
-          });
-        } catch {
-          // Auch bei Fehler Auth-State als resolved setzen, sonst haengt der Splash.
-          setAuthStateResolved(true);
-          window.setAppReady?.('emailVerification', true);
+          // Bei Disconnect offline setzen
+          userRef.child('isOnline').onDisconnect().set(false);
+          userRef.child('lastActive').onDisconnect().set(serverTimestamp());
         }
-      })
-      .catch(() => {
-        // Firebase-Modul konnte nicht geladen werden — App im "logged out"-State starten.
-        setAuthStateResolved(true);
-        window.setAppReady?.('emailVerification', true);
       });
+    } catch {
+      // Auch bei Fehler Auth-State als resolved setzen, sonst haengt der Splash.
+      setAuthStateResolved(true);
+      window.setAppReady?.('emailVerification', true);
+    }
 
     return () => {
       cancelled = true;
