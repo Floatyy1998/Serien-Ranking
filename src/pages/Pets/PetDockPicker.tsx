@@ -1,7 +1,8 @@
 import { Check } from '@mui/icons-material';
 import { memo } from 'react';
-import { EvolvingPixelPet } from '../../components/pet';
+import { petPortrait } from '../../components/pet/pixelThumbs';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useActiveSeason } from '../../hooks/pet/useActiveSeason';
 import { t } from '../../services/i18n';
 import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
 import type { Pet } from '../../types/pet.types';
@@ -22,6 +23,7 @@ export const PetDockPicker = memo(function PetDockPicker({
   onToggle,
 }: Props) {
   const { currentTheme } = useTheme();
+  const season = useActiveSeason();
   if (pets.length < 2) return null;
 
   const onDock = (p: Pet) => p.id === activeId || dockIds.includes(p.id);
@@ -84,7 +86,7 @@ export const PetDockPicker = memo(function PetDockPicker({
                 className="pet-dock-picker__sprite"
                 style={dead ? { filter: 'grayscale(1)' } : undefined}
               >
-                <EvolvingPixelPet pet={p} size={52} animated={false} />
+                <img src={petPortrait(p, p.color, season)} alt="" draggable={false} />
               </span>
               <span className="pet-dock-picker__name" style={{ color: currentTheme.text.primary }}>
                 {p.name}

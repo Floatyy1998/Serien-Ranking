@@ -1,3 +1,4 @@
+import { Restaurant, SportsEsports } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import type { Pet } from '../../types/pet.types';
@@ -34,7 +35,8 @@ export const PetActions = memo(function PetActions({
               onClick={onFeed}
               className="pet-action-btn pet-action-btn--feed"
             >
-              🍖 {t('Füttern')}
+              <Restaurant />
+              {t('Füttern')}
             </motion.button>
             <motion.button
               key="play"
@@ -42,7 +44,8 @@ export const PetActions = memo(function PetActions({
               onClick={onPlay}
               className="pet-action-btn pet-action-btn--play"
             >
-              🎮 {t('Spielen')}
+              <SportsEsports />
+              {t('Spielen')}
             </motion.button>
           </>
         ) : (

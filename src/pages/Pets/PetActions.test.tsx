@@ -30,8 +30,8 @@ describe('PetActions', () => {
     const onFeed = vi.fn();
     const onPlay = vi.fn();
     render(<PetActions pet={makePet()} onFeed={onFeed} onPlay={onPlay} onRevive={vi.fn()} />);
-    fireEvent.click(screen.getByText('🍖 Füttern'));
-    fireEvent.click(screen.getByText('🎮 Spielen'));
+    fireEvent.click(screen.getByText('Füttern'));
+    fireEvent.click(screen.getByText('Spielen'));
     expect(onFeed).toHaveBeenCalledTimes(1);
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
@@ -46,7 +46,7 @@ describe('PetActions', () => {
         onRevive={onRevive}
       />
     );
-    expect(screen.queryByText('🍖 Füttern')).not.toBeInTheDocument();
+    expect(screen.queryByText('Füttern')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Wiederbeleben'));
     expect(onRevive).toHaveBeenCalledTimes(1);
   });

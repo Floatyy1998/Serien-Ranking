@@ -64,7 +64,7 @@ export const drawFox = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -275,7 +275,7 @@ export const drawFox = (
   ctx.stroke();
 
   // FUCHSFEUER (Lv50+): schwebende blaue Flamme neben dem Kopf
-  if (kitsune && equippedSlot !== 'head') {
+  if (kitsune && !wornSlots?.has('head')) {
     const flameAlpha = animated ? 0.55 + Math.sin(frame * 0.08 * animationSpeed) * 0.25 : 0.55;
     const flameY = headCY - headR - 1 + (animated ? Math.sin(frame * 0.04 * animationSpeed) : 0);
     ctx.fillStyle = `rgba(64, 196, 255, ${flameAlpha})`;

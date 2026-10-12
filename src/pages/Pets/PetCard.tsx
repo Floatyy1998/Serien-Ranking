@@ -7,6 +7,7 @@ import {
   Restaurant,
   SentimentVerySatisfied,
   SportsEsports,
+  Star,
   Warning,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -43,6 +44,8 @@ interface PetCardProps {
   xpBonusHint: string;
   /** Erste Mini-Spiel-Runde des Tages macht das Pet glücklicher. */
   onPlayed?: () => void;
+  /** Wohin die Trick-Leiste wandert; null blendet sie aus. */
+  trickHost?: HTMLElement | null;
 }
 
 export const PetCard = memo(function PetCard({
@@ -55,6 +58,7 @@ export const PetCard = memo(function PetCard({
   isHealthy,
   xpBonusHint,
   onPlayed,
+  trickHost,
 }: PetCardProps) {
   const { currentTheme } = useTheme();
 
@@ -71,21 +75,21 @@ export const PetCard = memo(function PetCard({
       label: t('Sättigung'),
       value: hungerPercentage,
       color: hungerColor,
-      icon: '🍖',
+      icon: <Restaurant />,
       text: `${Math.round(hungerPercentage)}%`,
     },
     {
       label: t('Glück'),
       value: happinessPercentage,
       color: currentTheme.primary,
-      icon: '😊',
+      icon: <Favorite />,
       text: `${Math.round(happinessPercentage)}%`,
     },
     {
       label: 'XP',
       value: experiencePercentage,
       color: currentTheme.accent,
-      icon: '⭐',
+      icon: <Star />,
       text: `${pet.experience}/${experienceNeeded}`,
     },
   ];
@@ -104,10 +108,10 @@ export const PetCard = memo(function PetCard({
           from={currentTheme.text.primary}
           to={currentTheme.accent}
           style={{
-            fontSize: '36px',
+            fontSize: '30px',
             fontWeight: 800,
             fontFamily: 'var(--font-display)',
-            margin: '0 0 12px',
+            margin: '0 0 8px',
           }}
         >
           {pet.name}
@@ -159,6 +163,7 @@ export const PetCard = memo(function PetCard({
         <PetPlayground
           pet={pet}
           onPlayed={onPlayed}
+          panelHost={trickHost}
           scene={(stage) => (
             <div
               className={`pet-card-display pet-card-display--room${
@@ -222,88 +227,72 @@ export const PetCard = memo(function PetCard({
         />
       </motion.div>
 
-      {/* Stats Grid */}
+      {/* Status: Sättigung, Glück, XP und der XP-Bonus in einer Karte */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="pet-card-stats-grid"
+        className="pet-status"
+        style={{
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
       >
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 + index * 0.05 }}
-            className="pet-card-stat"
-            style={{
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <div className="pet-card-stat-icon">{stat.icon}</div>
-            <div className="pet-card-stat-label" style={{ color: currentTheme.text.primary }}>
-              {stat.label}
+        <div className="pet-status__stats">
+          {stats.map((stat, index) => (
+            <div key={stat.label} className="pet-status__stat">
+              <div className="pet-status__top">
+                <span className="pet-status__icon" style={{ color: stat.color }}>
+                  {stat.icon}
+                </span>
+                <span className="pet-status__value" style={{ color: stat.color }}>
+                  {stat.text}
+                </span>
+              </div>
+              <div className="pet-status__label" style={{ color: currentTheme.text.muted }}>
+                {stat.label}
+              </div>
+              <div className="pet-card-stat-bar" style={{ background: `${stat.color}20` }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${stat.value}%` }}
+                  transition={{ duration: 0.8, delay: 0.4 + index * 0.1 }}
+                  className="pet-card-stat-bar-fill"
+                  style={{
+                    background: `linear-gradient(90deg, ${stat.color}, ${stat.color}cc)`,
+                  }}
+                />
+              </div>
             </div>
-            <div className="pet-card-stat-bar" style={{ background: `${stat.color}20` }}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${stat.value}%` }}
-                transition={{ duration: 0.8, delay: 0.4 + index * 0.1 }}
-                className="pet-card-stat-bar-fill"
-                style={{
-                  background: `linear-gradient(90deg, ${stat.color}, ${stat.color}cc)`,
-                }}
-              />
-            </div>
-            <div className="pet-card-stat-text" style={{ color: stat.color }}>
-              {stat.text}
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
+          ))}
+        </div>
 
-      {/* XP Bonus Status */}
-      {pet.isAlive && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="pet-card-xp-bonus-wrapper"
-        >
-          {isHealthy ? (
-            <div className="pet-card-xp-bonus pet-card-xp-bonus--active">
+        {pet.isAlive && (
+          <div
+            className={`pet-status__bonus${isHealthy ? ' is-on' : ''}`}
+            style={{ borderTopColor: currentTheme.border.default }}
+          >
+            {isHealthy ? (
               <span className="pet-card-xp-bonus-tag">+XP</span>
-              <div>
-                <div className="pet-card-xp-bonus-title pet-card-xp-bonus-title--active">
-                  {t('XP-Bonus aktiv: +50%')}
-                </div>
-                <div
-                  className="pet-card-xp-bonus-subtitle"
-                  style={{ color: currentTheme.text.muted }}
-                >
-                  {t('Dein gesundes Pet gibt dir mehr XP pro Episode!')}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="pet-card-xp-bonus pet-card-xp-bonus--inactive">
-              <span className="pet-card-xp-bonus-sleep-icon">💤</span>
-              <div>
-                <div className="pet-card-xp-bonus-title pet-card-xp-bonus-title--inactive">
-                  {t('XP-Bonus inaktiv')}
-                </div>
-                <div
-                  className="pet-card-xp-bonus-subtitle"
-                  style={{ color: currentTheme.text.muted }}
-                >
-                  {xpBonusHint}
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
+            ) : (
+              <Bedtime className="pet-card-xp-bonus-sleep-icon" />
+            )}
+            <span className="pet-status__bonus-text">
+              <span
+                className={`pet-card-xp-bonus-title pet-card-xp-bonus-title--${isHealthy ? 'active' : 'inactive'}`}
+              >
+                {isHealthy ? t('XP-Bonus aktiv: +50%') : t('XP-Bonus inaktiv')}
+              </span>
+              <span
+                className="pet-card-xp-bonus-subtitle"
+                style={{ color: currentTheme.text.muted }}
+              >
+                {isHealthy ? t('Dein gesundes Pet gibt dir mehr XP pro Episode!') : xpBonusHint}
+              </span>
+            </span>
+          </div>
+        )}
+      </motion.div>
     </>
   );
 });

@@ -151,6 +151,42 @@ describe('toggleAccessory', () => {
     expect(beanie?.equipped).toBe(false);
   });
 
+  it('trägt ab Lv 30 Kopf, Gesicht und Hals gleichzeitig', async () => {
+    petCore.getUserPet.mockResolvedValue(
+      makePet({
+        level: 30,
+        accessories: [
+          { id: 'beanie', type: 'head', name: 'Muetze', icon: 'x', equipped: true },
+          { id: 'roundGlasses', type: 'face', name: 'Brille', icon: 'z', equipped: true },
+          { id: 'bow', type: 'neck', name: 'Schleife', icon: 'y', equipped: false },
+        ],
+      })
+    );
+    const result = await toggleAccessory('u1', 'p1', 'bow');
+    expect(result?.accessories?.filter((a) => a.equipped).map((a) => a.id)).toEqual([
+      'beanie',
+      'roundGlasses',
+      'bow',
+    ]);
+    expect(fb.getAt('users/u1/pets/p1/accessories')).toEqual(result?.accessories);
+  });
+
+  it('schreibt nichts, wenn das Level kein weiteres Teil erlaubt', async () => {
+    petCore.getUserPet.mockResolvedValue(
+      makePet({
+        level: 12,
+        accessories: [
+          { id: 'beanie', type: 'head', name: 'Muetze', icon: 'x', equipped: true },
+          { id: 'roundGlasses', type: 'face', name: 'Brille', icon: 'z', equipped: true },
+          { id: 'bow', type: 'neck', name: 'Schleife', icon: 'y', equipped: false },
+        ],
+      })
+    );
+    const result = await toggleAccessory('u1', 'p1', 'bow');
+    expect(result?.accessories?.find((a) => a.id === 'bow')?.equipped).toBe(false);
+    expect(fb.getAt('users/u1/pets/p1/accessories')).toBeUndefined();
+  });
+
   it('unequipt ein bereits equipptes Accessoire', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({
@@ -260,7 +296,7 @@ describe('rollAccessoryDrop', () => {
     expect(drop).not.toBeNull();
     expect(drop?.rarity).toBe('common');
     expect(drop?.accessoryId).toBe('beanie');
-    expect(drop?.name).toBe('Muetze');
+    expect(drop?.name).toBe('Mütze');
     // Pending-Drop + Notification wurden geschrieben
     const pending = fb.getAt('users/u1/pendingAccessoryDrops') as Record<string, unknown>;
     const notifs = fb.getAt('users/u1/notifications') as Record<string, unknown>;

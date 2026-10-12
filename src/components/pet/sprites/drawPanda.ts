@@ -43,7 +43,7 @@ export const drawPanda = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -62,7 +62,7 @@ export const drawPanda = (
       animated,
       frame,
       animationSpeed,
-      equippedSlot,
+      wornSlots,
       pose
     );
     return;
@@ -187,7 +187,7 @@ export const drawPanda = (
   ctx.lineCap = 'butt';
 
   // Stufe 3 (Lv5+): Bambusblatt in der Hand
-  if (level >= 5 && equippedSlot !== 'neck') {
+  if (level >= 5 && !wornSlots?.has('neck')) {
     // Stamm
     ctx.fillStyle = '#558B2F';
     ctx.fillRect((centerX + bodyR * 0.85) * ps, (bodyCY - 1) * ps + offset, ps * 0.6, ps * 2.5);
@@ -220,7 +220,7 @@ export const drawPanda = (
 
   // Stufe 5 (Lv20+): Herz auf der Brust + Funken
   if (level >= 20) {
-    if (equippedSlot !== 'neck') {
+    if (!wornSlots?.has('neck')) {
       ctx.fillStyle = '#FF6B9D';
       // Pixel-Herz
       ctx.fillRect((centerX - 1.2) * ps, bodyCY * ps + offset, ps * 0.8, ps * 0.8);
@@ -245,7 +245,7 @@ export const drawPanda = (
 
   // Stufe 6 (Lv30+): Bambusblatt am Ohr + dickere Wangen
   if (level >= 30) {
-    if (equippedSlot !== 'head') {
+    if (!wornSlots?.has('head')) {
       ctx.fillStyle = '#8BC34A';
       ellipseFill(ctx, centerX + earOffsetX + 1, earOffsetY - 0.5, 1.3, 0.5, ps, offset, -0.5);
       ctx.fillStyle = '#558B2F';
@@ -294,7 +294,7 @@ function drawGuardianPanda(
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void {
   const centerX = 16;
@@ -422,7 +422,7 @@ function drawGuardianPanda(
   ctx.lineCap = 'butt';
 
   // Yin-Yang auf der Brust
-  if (equippedSlot !== 'neck') {
+  if (!wornSlots?.has('neck')) {
     ctx.fillStyle = whiteFur;
     arcFill(ctx, centerX, bodyCY + 0.5, 1.9, ps, offset);
     ctx.fillStyle = blackInk;
@@ -440,7 +440,7 @@ function drawGuardianPanda(
   }
 
   // Rotes Stirnband (hoch auf der Stirn, direkt unter den Ohren)
-  if (equippedSlot !== 'head') {
+  if (!wornSlots?.has('head')) {
     ctx.fillStyle = '#DC143C' + bodyAlpha;
     ctx.fillRect(
       (centerX - headR + 1.6) * ps,

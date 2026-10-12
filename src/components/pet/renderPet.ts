@@ -1,7 +1,7 @@
-import type { AccessorySlot, Pet } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
 import { PET_COLORS } from '../../types/pet.types';
-import { ACCESSORIES } from './data/accessories';
 import { adjustColor } from './colorUtils';
+import { slotOf, wornAccessories, wornSlots } from './outfit';
 import { drawAccessory } from './sprites/drawAccessory';
 import { drawAxolotl } from './sprites/drawAxolotl';
 import { drawBird } from './sprites/drawBird';
@@ -41,10 +41,7 @@ export function petColors(pet: Pick<Pet, 'color'>): PetColors {
   return { color, dark: adjustColor(color, -40), light: adjustColor(color, 40) };
 }
 
-export function equippedSlotOf(pet: Pick<Pet, 'accessories'>): AccessorySlot | null {
-  const equipped = pet.accessories?.find((a) => a.equipped);
-  return equipped ? (ACCESSORIES[equipped.id]?.slot ?? null) : null;
-}
+const DRAW_ORDER = ['neck', 'face', 'head'];
 
 export interface FigureOptions {
   ps: number;
@@ -73,13 +70,13 @@ export function drawPetFigure(ctx: CanvasRenderingContext2D, pet: Pet, o: Figure
     o.animated,
     o.frame,
     o.animationSpeed,
-    equippedSlotOf(pet),
+    wornSlots(pet),
     o.pose ?? NEUTRAL_POSE
   );
 
-  pet.accessories?.forEach((accessory) => {
-    if (accessory.equipped) drawAccessory(ctx, accessory, o.ps, o.offset, pet.type, pet.level);
-  });
+  wornAccessories(pet)
+    .sort((a, b) => DRAW_ORDER.indexOf(slotOf(a.id) ?? '') - DRAW_ORDER.indexOf(slotOf(b.id) ?? ''))
+    .forEach((accessory) => drawAccessory(ctx, accessory, o.ps, o.offset, pet.type, pet.level));
 
   o.overlay?.(ctx);
 

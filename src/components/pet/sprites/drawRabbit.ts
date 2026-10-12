@@ -48,7 +48,7 @@ export const drawRabbit = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -75,7 +75,7 @@ export const drawRabbit = (
   const bodyRy = 4.3 * sizeBoost;
 
   // MONDSCHEIBE (Lv50+, hinter dem Kopf; weicht Kopf-Accessoires)
-  if (moonRabbit && equippedSlot !== 'head') {
+  if (moonRabbit && !wornSlots?.has('head')) {
     const moonAlpha = animated ? 0.5 + Math.sin(frame * 0.04 * animationSpeed) * 0.15 : 0.5;
     ctx.fillStyle = `rgba(255, 224, 130, ${moonAlpha})`;
     arcFill(ctx, centerX, headCY - 2, headR + 3, ps, offset);
@@ -142,7 +142,7 @@ export const drawRabbit = (
   ellipseFill(ctx, centerX, bodyCY + 0.6, bodyRx * 0.55, bodyRy * 0.62, ps, offset);
 
   // MONDSICHEL-BRUSTZEICHEN (Lv50+, weicht Hals-Accessoires)
-  if (moonRabbit && equippedSlot !== 'neck') {
+  if (moonRabbit && !wornSlots?.has('neck')) {
     ctx.fillStyle = '#FFB300';
     arcFill(ctx, centerX, bodyCY + 0.6, 1.2, ps, offset);
     ctx.fillStyle = light;

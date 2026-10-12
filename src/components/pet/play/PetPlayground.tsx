@@ -12,6 +12,7 @@ import {
   ThreeSixty,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ThemeContext, useTheme } from '../../../contexts/ThemeContext';
 import { PetBrain, type BrainEnv, type Trick } from '../../../lib/pet/petBrain';
@@ -93,10 +94,12 @@ interface Props {
   onPlayed?: () => void;
   /** Umschließt die Bühne, z. B. mit dem ausgerüsteten Hintergrund. */
   scene?: (stage: ReactNode) => ReactNode;
+  /** Trick-Leiste woanders auf der Seite zeigen; null blendet sie aus. */
+  panelHost?: HTMLElement | null;
 }
 
 /** Bühne auf der Pet-Seite: Tricks auf Kommando, Ball und das Mini-Spiel „Snack-Regen". */
-export const PetPlayground = ({ pet, onPlayed, scene }: Props) => {
+export const PetPlayground = ({ pet, onPlayed, scene, panelHost }: Props) => {
   const { currentTheme } = useTheme();
   const themeConfig = useContext(ThemeContext)?.userConfig;
   const season = themeConfig ? activeSeason(themeConfig) : null;
@@ -378,72 +381,28 @@ export const PetPlayground = ({ pet, onPlayed, scene }: Props) => {
     </div>
   );
 
-  return (
-    <div className={`pet-play${busy ? ' is-busy' : ''}`}>
-      {scene ? scene(stage) : stage}
+  const panel = pet.isAlive ? (
+    <div className={`pet-play__panel${busy ? ' is-busy' : ''}`} aria-disabled={busy}>
+      <div className="pet-play__head">
+        <span className="pet-play__title" style={{ color: currentTheme.text.primary }}>
+          {t('Tricks')}
+        </span>
+        <span className="pet-play__meta" style={{ color: currentTheme.text.muted }}>
+          {t('{n} von {total} freigeschaltet', { n: unlocked, total: TRICKS.length })}
+        </span>
+      </div>
 
-      {pet.isAlive && (
-        <div className={`pet-play__panel${busy ? ' is-busy' : ''}`} aria-disabled={busy}>
-          <div className="pet-play__head">
-            <span className="pet-play__title" style={{ color: currentTheme.text.primary }}>
-              {t('Tricks')}
-            </span>
-            <span className="pet-play__meta" style={{ color: currentTheme.text.muted }}>
-              {t('{n} von {total} freigeschaltet', { n: unlocked, total: TRICKS.length })}
-            </span>
-          </div>
-
-          <div className="pet-play__grid">
-            {TRICKS.map((trick) => {
-              const locked = pet.level < trick.level;
-              const label = trick.kind === 'signature' ? signatureLabel : t(trick.label);
-              return (
-                <button
-                  key={trick.kind}
-                  type="button"
-                  className={`pet-play__tile${locked ? ' is-locked' : ''}`}
-                  disabled={locked || busy}
-                  onClick={() => getBrain().trick(trick.kind)}
-                  style={{
-                    background: currentTheme.background.surface,
-                    borderColor: currentTheme.border.default,
-                  }}
-                >
-                  <span
-                    className="pet-play__tile-icon"
-                    style={
-                      locked
-                        ? { color: currentTheme.text.muted }
-                        : {
-                            color: currentTheme.primary,
-                            background: `${currentTheme.primary}1f`,
-                          }
-                    }
-                  >
-                    {locked ? <Lock /> : trick.icon}
-                  </span>
-                  <span
-                    className="pet-play__tile-label"
-                    style={{ color: locked ? currentTheme.text.muted : currentTheme.text.primary }}
-                  >
-                    {label}
-                  </span>
-                  {locked && (
-                    <span
-                      className="pet-play__tile-level"
-                      style={{ color: currentTheme.text.muted }}
-                    >
-                      {t('ab Lv {level}', { level: trick.level })}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+      <div className="pet-play__grid">
+        {TRICKS.map((trick) => {
+          const locked = pet.level < trick.level;
+          const label = trick.kind === 'signature' ? signatureLabel : t(trick.label);
+          return (
             <button
+              key={trick.kind}
               type="button"
-              className="pet-play__tile"
-              disabled={busy}
-              onClick={() => getBrain().react('play')}
+              className={`pet-play__tile${locked ? ' is-locked' : ''}`}
+              disabled={locked || busy}
+              onClick={() => getBrain().trick(trick.kind)}
               style={{
                 background: currentTheme.background.surface,
                 borderColor: currentTheme.border.default,
@@ -451,50 +410,91 @@ export const PetPlayground = ({ pet, onPlayed, scene }: Props) => {
             >
               <span
                 className="pet-play__tile-icon"
-                style={{ color: currentTheme.accent, background: `${currentTheme.accent}1f` }}
+                style={
+                  locked
+                    ? { color: currentTheme.text.muted }
+                    : {
+                        color: currentTheme.primary,
+                        background: `${currentTheme.primary}1f`,
+                      }
+                }
               >
-                <SportsSoccer />
+                {locked ? <Lock /> : trick.icon}
               </span>
-              <span className="pet-play__tile-label" style={{ color: currentTheme.text.primary }}>
-                {t('Ball')}
+              <span
+                className="pet-play__tile-label"
+                style={{ color: locked ? currentTheme.text.muted : currentTheme.text.primary }}
+              >
+                {label}
               </span>
+              {locked && (
+                <span className="pet-play__tile-level" style={{ color: currentTheme.text.muted }}>
+                  {t('ab Lv {level}', { level: trick.level })}
+                </span>
+              )}
             </button>
-          </div>
-
-          <button
-            type="button"
-            className="pet-play__game"
-            disabled={busy}
-            onClick={startGame}
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}26, ${currentTheme.accent}14), ${currentTheme.background.surface}`,
-              borderColor: `${currentTheme.primary}55`,
-            }}
+          );
+        })}
+        <button
+          type="button"
+          className="pet-play__tile"
+          disabled={busy}
+          onClick={() => getBrain().react('play')}
+          style={{
+            background: currentTheme.background.surface,
+            borderColor: currentTheme.border.default,
+          }}
+        >
+          <span
+            className="pet-play__tile-icon"
+            style={{ color: currentTheme.accent, background: `${currentTheme.accent}1f` }}
           >
-            <span
-              className="pet-play__game-icon"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                color: currentTheme.background.default,
-              }}
-            >
-              <SportsEsports />
-            </span>
-            <span className="pet-play__game-text">
-              <span className="pet-play__game-title" style={{ color: currentTheme.text.primary }}>
-                {t('Snack-Regen')}
-              </span>
-              <span className="pet-play__game-sub" style={{ color: currentTheme.text.muted }}>
-                {best > 0 ? t('Rekord: {n}', { n: best }) : t('Snacks fangen, Brokkoli ausweichen')}
-              </span>
-            </span>
-            <PlayArrowRounded
-              className="pet-play__game-play"
-              style={{ color: currentTheme.primary }}
-            />
-          </button>
-        </div>
-      )}
+            <SportsSoccer />
+          </span>
+          <span className="pet-play__tile-label" style={{ color: currentTheme.text.primary }}>
+            {t('Ball')}
+          </span>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        className="pet-play__game"
+        disabled={busy}
+        onClick={startGame}
+        style={{
+          background: `linear-gradient(135deg, ${currentTheme.primary}26, ${currentTheme.accent}14), ${currentTheme.background.surface}`,
+          borderColor: `${currentTheme.primary}55`,
+        }}
+      >
+        <span
+          className="pet-play__game-icon"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            color: currentTheme.background.default,
+          }}
+        >
+          <SportsEsports />
+        </span>
+        <span className="pet-play__game-text">
+          <span className="pet-play__game-title" style={{ color: currentTheme.text.primary }}>
+            {t('Snack-Regen')}
+          </span>
+          <span className="pet-play__game-sub" style={{ color: currentTheme.text.muted }}>
+            {best > 0 ? t('Rekord: {n}', { n: best }) : t('Snacks fangen, Brokkoli ausweichen')}
+          </span>
+        </span>
+        <PlayArrowRounded className="pet-play__game-play" style={{ color: currentTheme.primary }} />
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <div className={`pet-play${busy ? ' is-busy' : ''}`}>
+      {scene ? scene(stage) : stage}
+      {panelHost === undefined
+        ? panel
+        : panelHost && panel && createPortal(<div className="pet-play">{panel}</div>, panelHost)}
     </div>
   );
 };

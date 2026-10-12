@@ -11,6 +11,7 @@ import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { PET_CONFIG } from './petConstants';
 import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
+import { toggleWorn } from '../../components/pet/outfit';
 
 // Fetch remote drop config fresh from Firebase each time
 async function getDropConfig(): Promise<{
@@ -66,7 +67,7 @@ function makeAccessory(
   return acc;
 }
 
-// Toggle Accessory - max 1 equipped per pet
+// An- und Ablegen: je Platz ein Teil, wie viele gleichzeitig hängt am Level (outfit.ts)
 
 export async function toggleAccessory(
   userId: string,
@@ -86,28 +87,15 @@ export async function toggleAccessory(
   const wasNew = !!target?.isNew;
   if (target?.isNew) delete target.isNew;
 
-  if (target) {
-    if (!target.equipped) {
-      // Equipping this one - unequip everything else first
-      pet.accessories.forEach((a) => {
-        a.equipped = false;
-      });
-      target.equipped = true;
-    } else {
-      // Unequipping
-      target.equipped = false;
-    }
-  } else {
-    // New accessory - add and equip, unequip all others
+  if (!target) {
     const accessoryData = ACCESSORIES[accessoryId];
-    if (accessoryData) {
-      pet.accessories.forEach((a) => {
-        a.equipped = false;
-      });
-
-      pet.accessories.push(makeAccessory(accessoryId, accessoryData, true));
-    }
+    if (!accessoryData) return pet;
+    pet.accessories.push(makeAccessory(accessoryId, accessoryData, false));
   }
+
+  const change = toggleWorn(pet, accessoryId);
+  if (change.blocked && !wasNew) return pet;
+  pet.accessories = change.accessories;
 
   await dbRef(userPath(userId, 'pets', petId, 'accessories')).set(pet.accessories);
 

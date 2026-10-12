@@ -1402,7 +1402,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   rollingHills: {
     id: 'rollingHills',
-    name: t('Sanfte Huegel'),
+    name: t('Sanfte Hügel'),
     description: 'Weites Huegelland',
     rarity: 'common',
     background: bgUrl(SVG_ROLLING_HILLS),
@@ -1438,7 +1438,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   springBlossoms: {
     id: 'springBlossoms',
-    name: t('Fruehlingszweige'),
+    name: t('Frühlingszweige'),
     description: 'Bluehende Zweige am Himmel',
     rarity: 'common',
     background: bgUrl(SVG_SPRING_BLOSSOMS),
@@ -1456,7 +1456,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   dandelionField: {
     id: 'dandelionField',
-    name: t('Loewenzahnwiese'),
+    name: t('Löwenzahnwiese'),
     description: 'Wiese voller Pusteblumen',
     rarity: 'common',
     background: bgUrl(SVG_DANDELION_FIELD),
@@ -1465,7 +1465,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   countryRoad: {
     id: 'countryRoad',
-    name: t('Landstrasse'),
+    name: t('Landstraße'),
     description: 'Geschlungene Strasse durchs Land',
     rarity: 'common',
     background: bgUrl(SVG_COUNTRY_ROAD),
@@ -1512,7 +1512,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   cherryTrees: {
     id: 'cherryTrees',
-    name: t('Kirschbluete'),
+    name: t('Kirschblüte'),
     description: 'Sakura-Baeume im Fruehling',
     rarity: 'uncommon',
     background: bgUrl(SVG_CHERRY_TREES),
@@ -1539,7 +1539,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   pumpkinPatch: {
     id: 'pumpkinPatch',
-    name: t('Kuerbisfeld'),
+    name: t('Kürbisfeld'),
     description: 'Herbstliches Kuerbisfeld',
     rarity: 'uncommon',
     background: bgUrl(SVG_PUMPKIN_PATCH),
@@ -1575,7 +1575,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   windmill: {
     id: 'windmill',
-    name: t('Windmuehle'),
+    name: t('Windmühle'),
     description: 'Alte Windmuehle auf gruenem Feld',
     rarity: 'uncommon',
     background: bgUrl(SVG_WINDMILL),
@@ -1584,7 +1584,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   oldBridge: {
     id: 'oldBridge',
-    name: t('Alte Holzbruecke'),
+    name: t('Alte Holzbrücke'),
     description: 'Bogenbruecke im Abendlicht',
     rarity: 'uncommon',
     background: bgUrl(SVG_OLD_BRIDGE),
@@ -1593,7 +1593,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   hotAirBalloon: {
     id: 'hotAirBalloon',
-    name: t('Heissluftballon'),
+    name: t('Heißluftballon'),
     description: 'Ballonfahrt ueber gruene Felder',
     rarity: 'uncommon',
     background: bgUrl(SVG_HOT_AIR_BALLOON),
@@ -1604,7 +1604,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── RARE ──────────────────────────────────────────────────
   desertDunes: {
     id: 'desertDunes',
-    name: t('Wuestenduenen'),
+    name: t('Wüstendünen'),
     description: 'Goldene Duenen im Abendlicht',
     rarity: 'rare',
     background: bgUrl(SVG_DESERT_DUNES),
@@ -1703,7 +1703,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   fireflyForest: {
     id: 'fireflyForest',
-    name: t('Gluehwuermchen-Wald'),
+    name: t('Glühwürmchen-Wald'),
     description: 'Wald voller tanzender Lichter',
     rarity: 'rare',
     background: bgUrl(SVG_FIREFLY_FOREST),
@@ -1712,7 +1712,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   redwoodForest: {
     id: 'redwoodForest',
-    name: t('Mammutbaeume'),
+    name: t('Mammutbäume'),
     description: 'Riesige Redwoods im Goldlicht',
     rarity: 'rare',
     background: bgUrl(SVG_REDWOOD_FOREST),
@@ -1730,7 +1730,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   hotSprings: {
     id: 'hotSprings',
-    name: t('Heisse Quellen'),
+    name: t('Heiße Quellen'),
     description: 'Dampfende Onsen im Schnee',
     rarity: 'rare',
     background: bgUrl(SVG_HOT_SPRINGS),
@@ -1804,7 +1804,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   crystalCave: {
     id: 'crystalCave',
-    name: t('Kristallhoehle'),
+    name: t('Kristallhöhle'),
     description: 'Leuchtende Kristalle im Untergrund',
     rarity: 'epic',
     background: bgUrl(SVG_CRYSTAL_CAVE),
@@ -1860,7 +1860,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   milkyWay: {
     id: 'milkyWay',
-    name: t('Milchstrasse'),
+    name: t('Milchstraße'),
     description: 'Milchstrasse ueber dem Horizont',
     rarity: 'legendary',
     background: bgUrl(SVG_MILKY_WAY),

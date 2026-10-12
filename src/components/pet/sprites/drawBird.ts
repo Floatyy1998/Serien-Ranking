@@ -89,7 +89,7 @@ export const drawBird = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -158,7 +158,7 @@ export const drawBird = (
   }
 
   // FEDERSCHOPF (weicht Kopf-Accessoires; Phönix: Flammenkamm)
-  if (equippedSlot !== 'head') {
+  if (!wornSlots?.has('head')) {
     const crownY = bodyCY - bodyRy;
     if (phoenix) {
       const crestColors = ['#FF7043', '#FFB300', '#FFD54F'];

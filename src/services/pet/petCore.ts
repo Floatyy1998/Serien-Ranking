@@ -156,10 +156,12 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
         bestAccessories = generateStarterAccessories();
       }
       for (const p of pets) {
-        const equippedId = p.accessories?.find((a) => a.equipped)?.id;
+        const equippedIds = new Set(
+          (p.accessories || []).filter((a) => a.equipped).map((a) => a.id)
+        );
         const synced = bestAccessories.map((a) => ({
           ...a,
-          equipped: a.id === equippedId,
+          equipped: equippedIds.has(a.id),
         }));
         if (!synced.some((a) => a.equipped) && synced.length > 0) {
           synced[0].equipped = true;

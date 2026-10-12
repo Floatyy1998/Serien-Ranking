@@ -1,7 +1,7 @@
 /** Kompositions-Komponente — Logik in usePetsData, UI in Subkomponenten. */
 
-import { Pets } from '@mui/icons-material';
-import React, { useState } from 'react';
+import { AutoAwesome, Checkroom, Pets } from '@mui/icons-material';
+import React, { useState, type ReactNode } from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -27,45 +27,9 @@ export const PetsPage: React.FC = () => {
   const petEnabled = usePetEnabled();
   const [enabling, setEnabling] = useState(false);
 
-  const {
-    pets,
-    pet,
-    selectedPetIndex,
-    canAddNewPet,
-    isLoading,
-    showCreateModal,
-    petName,
-    selectedType,
-    activeColorBorder,
-    showReleaseConfirm,
-    showReviveConfirm,
-    currentMood,
-    hungerPercentage,
-    happinessPercentage,
-    experienceNeeded,
-    experiencePercentage,
-    isHealthy,
-    xpBonusHint,
-    setPetName,
-    setSelectedType,
-    createPet,
-    feedPet,
-    playWithPet,
-    cheerUpPet,
-    revivePet,
-    releasePet,
-    changeColor,
-    toggleAccessory,
-    equipBackground,
-    selectPet,
-    toggleDock,
-    dockIds,
-    openCreateModal,
-    openReleaseConfirm,
-    closeReleaseConfirm,
-    openReviveConfirm,
-    closeReviveConfirm,
-  } = usePetsData(petEnabled);
+  const data = usePetsData(petEnabled);
+  const { isLoading, showCreateModal, petName, selectedType, setPetName, setSelectedType } = data;
+  const { createPet, pet } = data;
 
   const enablePet = async () => {
     if (!user || enabling) return;
@@ -143,6 +107,61 @@ export const PetsPage: React.FC = () => {
 
   if (!pet) return null;
 
+  return <PetsPageView data={data} />;
+};
+
+export type PetsPageData = ReturnType<typeof usePetsData>;
+
+type Section = 'tricks' | 'wardrobe' | 'dock';
+
+/** Die eigentliche Seite; die Vorschau unter /dev/ui-preview füttert sie mit Testdaten. */
+export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
+  const { currentTheme } = useTheme();
+  const {
+    pets,
+    pet,
+    selectedPetIndex,
+    canAddNewPet,
+    activeColorBorder,
+    showReleaseConfirm,
+    showReviveConfirm,
+    currentMood,
+    hungerPercentage,
+    happinessPercentage,
+    experienceNeeded,
+    experiencePercentage,
+    isHealthy,
+    xpBonusHint,
+    feedPet,
+    playWithPet,
+    cheerUpPet,
+    revivePet,
+    releasePet,
+    changeColor,
+    toggleAccessory,
+    equipBackground,
+    selectPet,
+    toggleDock,
+    dockIds,
+    openCreateModal,
+    openReleaseConfirm,
+    closeReleaseConfirm,
+    openReviveConfirm,
+    closeReviveConfirm,
+  } = data;
+  const [section, setSection] = useState<Section>('tricks');
+  const [trickHost, setTrickHost] = useState<HTMLDivElement | null>(null);
+  if (!pet) return null;
+
+  const sections = (
+    [
+      pet.isAlive && { id: 'tricks', label: t('Tricks'), icon: <AutoAwesome /> },
+      { id: 'wardrobe', label: t('Garderobe'), icon: <Checkroom /> },
+      pets.length > 1 && { id: 'dock', label: t('Dock'), icon: <Pets /> },
+    ] as const
+  ).filter(Boolean) as { id: Section; label: string; icon: ReactNode }[];
+  const current = sections.some((s) => s.id === section) ? section : sections[0].id;
+
   return (
     <div className="pet-page" style={{ background: currentTheme.background.default }}>
       {/* Header */}
@@ -173,21 +192,60 @@ export const PetsPage: React.FC = () => {
         isHealthy={isHealthy}
         xpBonusHint={xpBonusHint}
         onPlayed={cheerUpPet}
+        trickHost={current === 'tricks' ? trickHost : null}
       />
 
-      {/* Action Buttons */}
       <PetActions pet={pet} onFeed={feedPet} onPlay={playWithPet} onRevive={openReviveConfirm} />
 
-      <PetDockPicker pets={pets} activeId={pet.id} dockIds={dockIds} onToggle={toggleDock} />
+      {/* Bereiche statt einer langen Liste */}
+      <div className="pet-sections" role="tablist" aria-label={t('Bereiche')}>
+        {sections.map((s) => {
+          const active = s.id === current;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={`pet-section-tab${active ? ' is-active' : ''}`}
+              onClick={() => setSection(s.id)}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                      borderColor: 'transparent',
+                      color: getOptimalTextColor(currentTheme.primary),
+                      boxShadow: `0 4px 16px ${currentTheme.primary}40`,
+                    }
+                  : {
+                      background: currentTheme.background.surface,
+                      borderColor: currentTheme.border.default,
+                      color: currentTheme.text.secondary,
+                    }
+              }
+            >
+              {s.icon}
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Customization: Colors, Accessories, Backgrounds */}
-      <PetCustomization
-        pet={pet}
-        activeColorBorder={activeColorBorder}
-        onChangeColor={changeColor}
-        onToggleAccessory={toggleAccessory}
-        onEquipBackground={equipBackground}
-      />
+      {current === 'tricks' && <div ref={setTrickHost} className="pet-section-body" />}
+
+      {current === 'wardrobe' && (
+        <PetCustomization
+          pet={pet}
+          activeColorBorder={activeColorBorder}
+          onChangeColor={changeColor}
+          onToggleAccessory={toggleAccessory}
+          onEquipBackground={equipBackground}
+        />
+      )}
+
+      {current === 'dock' && (
+        <PetDockPicker pets={pets} activeId={pet.id} dockIds={dockIds} onToggle={toggleDock} />
+      )}
 
       {/* Release Button */}
       <div className="pet-release-footer">

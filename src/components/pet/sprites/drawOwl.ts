@@ -62,7 +62,7 @@ export const drawOwl = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -220,7 +220,7 @@ export const drawOwl = (
 
   // ERZMAGIER-DETAILS (Lv50+): Stirnjuwel + Mondsichel-Brustzeichen
   if (archmage) {
-    if (equippedSlot !== 'head') {
+    if (!wornSlots?.has('head')) {
       const gemPulse = animated ? 0.15 + Math.sin(frame * 0.05 * animationSpeed) * 0.1 : 0.15;
       ctx.fillStyle = '#B388FF';
       triFill(
@@ -236,7 +236,7 @@ export const drawOwl = (
       ctx.fillStyle = `rgba(179, 136, 255, ${gemPulse})`;
       arcFill(ctx, centerX, eyeCY - ringR - 1, 1.8, ps, offset);
     }
-    if (equippedSlot !== 'neck') {
+    if (!wornSlots?.has('neck')) {
       // Mondsichel auf der Brust
       ctx.fillStyle = '#FFE082';
       arcFill(ctx, centerX, bodyCY + 2.6, 1.3, ps, offset);

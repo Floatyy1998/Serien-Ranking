@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import { petPortrait } from '../../components/pet/pixelThumbs';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useActiveSeason } from '../../hooks/pet/useActiveSeason';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
@@ -23,6 +25,7 @@ export const PetSelector = memo(function PetSelector({
   onOpenCreateModal,
 }: PetSelectorProps) {
   const { currentTheme } = useTheme();
+  const season = useActiveSeason();
 
   if (pets.length === 0) return null;
 
@@ -32,30 +35,41 @@ export const PetSelector = memo(function PetSelector({
       animate={{ opacity: 1, y: 0 }}
       className="pet-selector"
     >
-      {pets.map((p, idx) => (
-        <motion.button
-          key={p.id}
-          whileTap={tapScale}
-          onClick={() => onSelectPet(idx)}
-          className="pet-selector-btn"
-          style={{
-            background:
-              idx === selectedPetIndex
+      {pets.map((p, idx) => {
+        const active = idx === selectedPetIndex;
+        const portrait = petPortrait(p, p.color, season);
+        return (
+          <motion.button
+            key={p.id}
+            whileTap={tapScale}
+            onClick={() => onSelectPet(idx)}
+            className="pet-selector-btn"
+            aria-pressed={active}
+            style={{
+              background: active
                 ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
-            border:
-              idx === selectedPetIndex
-                ? '1px solid transparent'
-                : `1px solid ${currentTheme.border.default}`,
-            color:
-              idx === selectedPetIndex ? currentTheme.text.secondary : currentTheme.text.primary,
-            boxShadow: idx === selectedPetIndex ? `0 0 12px ${currentTheme.primary}40` : 'none',
-          }}
-        >
-          {p.name}
-          <span className="pet-selector-level">Lv.{p.level}</span>
-        </motion.button>
-      ))}
+              border: active ? '1px solid transparent' : `1px solid ${currentTheme.border.default}`,
+              color: active ? getOptimalTextColor(currentTheme.primary) : currentTheme.text.primary,
+              boxShadow: active ? `0 4px 16px ${currentTheme.primary}45` : 'none',
+            }}
+          >
+            <span
+              className="pet-selector-avatar"
+              style={{
+                background: active ? 'rgba(0, 0, 0, 0.18)' : `${currentTheme.primary}14`,
+                filter: p.isAlive ? undefined : 'grayscale(1)',
+              }}
+            >
+              {portrait && <img src={portrait} alt="" draggable={false} />}
+            </span>
+            <span className="pet-selector-text">
+              {p.name}
+              <span className="pet-selector-level">Lv {p.level}</span>
+            </span>
+          </motion.button>
+        );
+      })}
 
       {/* Add new pet */}
       {canAddNewPet ? (

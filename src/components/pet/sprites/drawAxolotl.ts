@@ -48,7 +48,7 @@ export const drawAxolotl = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  _equippedSlot?: AccessorySlot | null,
+  _wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;

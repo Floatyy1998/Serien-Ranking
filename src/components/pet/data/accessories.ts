@@ -4,7 +4,7 @@ import { t } from '../../../services/i18n';
 export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   // ── HEAD SLOT ──────────────────────────────────────────
   // Common
-  beanie: { slot: 'head', name: t('Muetze'), icon: '\uD83E\uDDE2', rarity: 'common' },
+  beanie: { slot: 'head', name: t('Mütze'), icon: '\uD83E\uDDE2', rarity: 'common' },
   baseballCap: { slot: 'head', name: t('Basecap'), icon: '\uD83E\uDDE2', rarity: 'common' },
   flowerCrown: { slot: 'head', name: t('Blumenkranz'), icon: '\uD83C\uDF38', rarity: 'common' },
   beret: { slot: 'head', name: t('Baskenmütze'), icon: '\uD83C\uDFA8', rarity: 'common' },
@@ -23,7 +23,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   graduationCap: { slot: 'head', name: t('Doktorhut'), icon: '\uD83C\uDF93', rarity: 'uncommon' },
   strawHat: { slot: 'head', name: t('Strohhut'), icon: '\uD83C\uDF3E', rarity: 'uncommon' },
   // Rare
-  santaHat: { slot: 'head', name: t('Weihnachtsmuetze'), icon: '\uD83C\uDF85', rarity: 'rare' },
+  santaHat: { slot: 'head', name: t('Weihnachtsmütze'), icon: '\uD83C\uDF85', rarity: 'rare' },
   pirateHat: {
     slot: 'head',
     name: t('Piratenhut'),
@@ -31,7 +31,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
     rarity: 'rare',
   },
   wizardHat: { slot: 'head', name: t('Zauberhut'), icon: '\uD83E\uDDD9', rarity: 'rare' },
-  militaryHelmet: { slot: 'head', name: t('Militaerhelm'), icon: '\u26D1\uFE0F', rarity: 'rare' },
+  militaryHelmet: { slot: 'head', name: t('Militärhelm'), icon: '\u26D1\uFE0F', rarity: 'rare' },
   astronautHelmet: {
     slot: 'head',
     name: t('Astronautenhelm'),
@@ -47,7 +47,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   halo: { slot: 'head', name: t('Heiligenschein'), icon: '\uD83D\uDE07', rarity: 'legendary' },
   devilHorns: {
     slot: 'head',
-    name: t('Teufelshoerner'),
+    name: t('Teufelshörner'),
     icon: '\uD83D\uDE08',
     rarity: 'legendary',
   },
@@ -112,7 +112,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   locket: { slot: 'neck', name: t('Medaillon'), icon: '\uD83D\uDC9B', rarity: 'uncommon' },
   bellCollar: {
     slot: 'neck',
-    name: t('Gloeckchen-Halsband'),
+    name: t('Glöckchen-Halsband'),
     icon: '\uD83D\uDD14',
     rarity: 'uncommon',
   },
@@ -125,26 +125,26 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   // Rare
   goldChain: { slot: 'neck', name: t('Goldkette'), icon: '\u26D3\uFE0F', rarity: 'rare' },
   medal: { slot: 'neck', name: t('Medaille'), icon: '\uD83C\uDFC5', rarity: 'rare' },
-  rubyPendant: { slot: 'neck', name: t('Rubin-Anhaenger'), icon: '\u2764\uFE0F', rarity: 'rare' },
+  rubyPendant: { slot: 'neck', name: t('Rubin-Anhänger'), icon: '\u2764\uFE0F', rarity: 'rare' },
   anchorChain: { slot: 'neck', name: t('Anker-Kette'), icon: '\u2693', rarity: 'rare' },
   // Epic
   cape: { slot: 'neck', name: t('Umhang'), icon: '\uD83E\uDDB8', rarity: 'epic' },
   royalSash: {
     slot: 'neck',
-    name: t('Koenigliche Schaerpe'),
+    name: t('Königliche Schärpe'),
     icon: '\uD83C\uDF96\uFE0F',
     rarity: 'epic',
   },
   dragonPendant: {
     slot: 'neck',
-    name: t('Drachen-Anhaenger'),
+    name: t('Drachen-Anhänger'),
     icon: '\uD83D\uDC09',
     rarity: 'epic',
   },
   // Legendary
   phoenixFeatherNeck: {
     slot: 'neck',
-    name: t('Phoenix-Kette'),
+    name: t('Phönix-Kette'),
     icon: '\uD83D\uDD25',
     rarity: 'legendary',
   },
@@ -165,14 +165,14 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   ninjaMask: { slot: 'face', name: t('Ninja-Maske'), icon: '\uD83E\uDD77', rarity: 'epic' },
   royalCape: {
     slot: 'neck',
-    name: t('Koenigsumhang'),
+    name: t('Königsumhang'),
     icon: '\uD83E\uDDB8\u200D\u2642\uFE0F',
     rarity: 'legendary',
   },
   aviatorGoggles: { slot: 'face', name: t('Fliegerbrille'), icon: '\uD83E\uDD7D', rarity: 'rare' },
   chefHat: {
     slot: 'head',
-    name: t('Kochmuetze'),
+    name: t('Kochmütze'),
     icon: '\uD83E\uDDD1\u200D\uD83C\uDF73',
     rarity: 'uncommon',
   },
@@ -197,7 +197,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
     icon: '\uD83D\uDDA5\uFE0F',
     rarity: 'uncommon',
   },
-  luckyClover: { slot: 'neck', name: t('Gluecksklee-Kette'), icon: '\uD83C\uDF40', rarity: 'rare' },
+  luckyClover: { slot: 'neck', name: t('Glücksklee-Kette'), icon: '\uD83C\uDF40', rarity: 'rare' },
   // Spin Batch 2
   witchHat: {
     slot: 'head',
@@ -235,7 +235,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   // ── MILESTONE EXCLUSIVE ────────────────────────────────
   trophyNecklace: {
     slot: 'neck',
-    name: t('Trophaeen-Kette'),
+    name: t('Trophäen-Kette'),
     icon: '\uD83C\uDFC6',
     rarity: 'epic',
   },
@@ -248,13 +248,13 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   },
   phoenixFeather: {
     slot: 'head',
-    name: t('Phoenix-Feder'),
+    name: t('Phönix-Feder'),
     icon: '\uD83E\uDEB6',
     rarity: 'legendary',
   },
   infinityScarf: { slot: 'neck', name: t('Endlos-Schal'), icon: '\u267E\uFE0F', rarity: 'rare' },
   ancientCrown: { slot: 'head', name: t('Antike Krone'), icon: '\uD83D\uDC51', rarity: 'epic' },
-  championBelt: { slot: 'neck', name: t('Champion-Guertel'), icon: '\uD83E\uDD4A', rarity: 'epic' },
+  championBelt: { slot: 'neck', name: t('Champion-Gürtel'), icon: '\uD83E\uDD4A', rarity: 'epic' },
   cosmicHelm: {
     slot: 'head',
     name: t('Kosmischer Helm'),
@@ -316,7 +316,7 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   },
   sakuraPendant: {
     slot: 'neck',
-    name: t('Sakura-Anhaenger'),
+    name: t('Sakura-Anhänger'),
     icon: '\uD83C\uDF38',
     rarity: 'uncommon',
   },

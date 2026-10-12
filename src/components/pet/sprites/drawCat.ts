@@ -62,7 +62,7 @@ export const drawCat = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -189,7 +189,7 @@ export const drawCat = (
     offset
   );
   // Ohrbüschel ab Lv30 (weicht Kopf-Accessoires)
-  if ((level >= 30 || sabertooth) && equippedSlot !== 'head') {
+  if ((level >= 30 || sabertooth) && !wornSlots?.has('head')) {
     ctx.fillStyle = light;
     triFill(
       ctx,

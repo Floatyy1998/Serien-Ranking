@@ -104,7 +104,7 @@ export const drawDragon = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -172,7 +172,7 @@ export const drawDragon = (
   }
 
   // WYVERN-SCHUPPEN-EMBLEM (Lv50+, weicht Hals-Accessoires)
-  if (wyvern && equippedSlot !== 'neck') {
+  if (wyvern && !wornSlots?.has('neck')) {
     ctx.fillStyle = '#FFB300';
     triFill(
       ctx,
@@ -192,7 +192,7 @@ export const drawDragon = (
   ellipseFill(ctx, centerX + 2.2, bodyCY + bodyRy - 0.4 - pose.pawLift[1], 1.25, 0.8, ps, offset);
 
   // KLEINE RUNDE HÖRNCHEN (cremefarben, weichen Kopf-Accessoires)
-  if (equippedSlot !== 'head') {
+  if (!wornSlots?.has('head')) {
     const hornH = wyvern ? 2.6 : 1.9;
     ctx.fillStyle = '#FFECB3';
     ellipseFill(
@@ -224,7 +224,7 @@ export const drawDragon = (
   ellipseFill(ctx, centerX + headR * 0.45, headCY + 0.5, headR * 0.5, headR * 0.75, ps, offset);
 
   // WEICHER KAMM (helle Halbkreis-Zacken auf dem Scheitel, weicht Kopf-Accessoires)
-  if (equippedSlot !== 'head') {
+  if (!wornSlots?.has('head')) {
     ctx.fillStyle = light;
     const bumps = wyvern ? [-2.2, 0, 2.2] : [-1.8, 0, 1.8];
     for (let i = 0; i < bumps.length; i++) {

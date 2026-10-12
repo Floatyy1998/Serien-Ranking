@@ -87,7 +87,7 @@ export const drawDog = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -158,7 +158,7 @@ export const drawDog = (
   ctx.fillStyle = light;
   ellipseFill(ctx, centerX, bodyCY + 0.6, bodyRx * 0.55, bodyRy * 0.62, ps, offset);
   // Wolfs-Brustfell (Lv50+, weicht Hals-Accessoires)
-  if (wolf && equippedSlot !== 'neck') {
+  if (wolf && !wornSlots?.has('neck')) {
     ctx.fillStyle = light;
     for (let i = -1; i <= 1; i++) {
       triFill(

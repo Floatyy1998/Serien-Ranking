@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
 import { PetSelector } from './PetSelector';
 
+vi.mock('../../hooks/pet/useActiveSeason', () => ({ useActiveSeason: () => null }));
+
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {

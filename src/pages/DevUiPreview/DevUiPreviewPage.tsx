@@ -8,6 +8,7 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
+import { OutfitClashPreview, PetsPagePreview } from './PetsPagePreview';
 import {
   PetPlaygroundPreview,
   PetPoseGalleryPreview,
@@ -178,6 +179,18 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'pet-stage-dead',
     label: 'Pet: Dock tot',
     render: () => <PetStagePreview initialDead />,
+  },
+  { id: 'pets-page', label: 'Pets: Seite', render: () => <PetsPagePreview /> },
+  { id: 'pet-outfit-clash', label: 'Pet: Outfit-Kombis', render: () => <OutfitClashPreview /> },
+  {
+    id: 'pets-page-full',
+    label: 'Pets: Seite volles Outfit',
+    render: () => <PetsPagePreview level={34} worn={['crown', 'heartGlasses', 'auroraScarf']} />,
+  },
+  {
+    id: 'pets-page-low',
+    label: 'Pets: Seite Lv 3',
+    render: () => <PetsPagePreview level={3} worn={['beanie']} />,
   },
   {
     id: 'pet-play-meadow',

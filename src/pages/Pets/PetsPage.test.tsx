@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
@@ -33,6 +33,8 @@ vi.mock('../../components/pet/play/PetPlayground', () => ({
 vi.mock('../../components/pet', () => ({
   EvolvingPixelPet: () => <div data-testid="pet-canvas" />,
 }));
+
+vi.mock('../../hooks/pet/useActiveSeason', () => ({ useActiveSeason: () => null }));
 
 vi.mock('./XpBoostHeaderButton', () => ({
   XpBoostHeaderButton: () => <div data-testid="xp-boost" />,
@@ -128,6 +130,14 @@ describe('PetsPage', () => {
     expect(screen.getAllByText('Rex').length).toBeGreaterThan(0);
     expect(screen.getByTestId('pet-canvas')).toBeInTheDocument();
     expect(screen.getByText('Zur Adoption freigeben')).toBeInTheDocument();
+  });
+
+  it('teilt die Seite in Bereiche und zeigt das Dock erst ab zwei Pets', () => {
+    render(<PetsPage />);
+    expect(screen.getByRole('tab', { name: /Tricks/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('tab', { name: /Dock/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /Garderobe/ }));
+    expect(screen.getByRole('tab', { name: /Accessoires/ })).toBeInTheDocument();
   });
 
   it('rendert nichts wenn kein Pet vorhanden ist', () => {

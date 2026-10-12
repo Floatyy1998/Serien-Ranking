@@ -89,7 +89,7 @@ export const drawPenguin = (
   animated: boolean,
   frame: number,
   animationSpeed: number,
-  equippedSlot?: AccessorySlot | null,
+  wornSlots?: ReadonlySet<AccessorySlot>,
   pose: PetPose = NEUTRAL_POSE
 ): void => {
   const centerX = 16;
@@ -215,7 +215,7 @@ export const drawPenguin = (
 
   // KAISER-DETAILS (Lv50+): Eiskrone, Gold-Kragen, Schneeflocken-Emblem
   if (emperor) {
-    if (equippedSlot !== 'head') {
+    if (!wornSlots?.has('head')) {
       const crownY = bodyCY - bodyRy * 0.72 - bodyRx * 0.78;
       ctx.fillStyle = '#B3E5FC';
       for (let i = -1; i <= 1; i++) {
@@ -232,7 +232,7 @@ export const drawPenguin = (
       }
     }
     // Gold-Kragen um den Hals
-    if (equippedSlot !== 'neck') {
+    if (!wornSlots?.has('neck')) {
       ctx.fillStyle = '#FFD54F';
       ellipseFill(ctx, centerX, headCY + 3.1, bodyRx * 0.66, 0.55, ps, offset);
     }

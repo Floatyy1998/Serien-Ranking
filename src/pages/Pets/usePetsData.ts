@@ -9,7 +9,7 @@ import { petMoodService } from '../../services/pet/petMoodService';
 import { emitPetDockChanged } from '../../services/pet/petEvents';
 import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
 import { PET_CONFIG } from '../../services/pet/petConstants';
-import { ACCESSORIES } from '../../components/pet/data/accessories';
+import { toggleWorn } from '../../components/pet/outfit';
 import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 
@@ -236,48 +236,28 @@ export function usePetsData(enabled = true) {
     }
   };
 
-  const toggleAccessory = async (accessoryId: string) => {
-    if (!user || !pet) return;
-    const currentAccessories = pet.accessories || [];
-    const accessoryIndex = currentAccessories.findIndex((acc) => acc.id === accessoryId);
+  /** Gibt false zurück, wenn kein Platz mehr frei ist (Level zu niedrig). */
+  const toggleAccessory = (accessoryId: string): boolean => {
+    if (!user || !pet) return false;
+    const change = toggleWorn(pet, accessoryId);
+    if (change.blocked) return false;
 
-    let newAccessories;
-    if (accessoryIndex >= 0) {
-      const isEquipping = !currentAccessories[accessoryIndex].equipped;
-      newAccessories = currentAccessories.map((acc) => {
-        if (acc.id === accessoryId) return { ...acc, equipped: isEquipping };
-        // Unequip all others when equipping this one
-        if (isEquipping && acc.equipped) return { ...acc, equipped: false };
-        return acc;
+    const accessories = change.accessories.map((a) =>
+      a.id === accessoryId && a.isNew ? { ...a, isNew: undefined } : a
+    );
+    setPets((prev) => prev.map((p) => (p.id === pet.id ? { ...pet, accessories } : p)));
+
+    petService
+      .toggleAccessory(user.uid, pet.id, accessoryId)
+      .then((updatedPet) => {
+        if (updatedPet)
+          setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
+      })
+      .catch((error) => {
+        console.error('Error toggling accessory:', error);
+        setPets((prev) => prev.map((p) => (p.id === pet.id ? pet : p)));
       });
-    } else {
-      const accessoryInfo = ACCESSORIES[accessoryId];
-      if (accessoryInfo) {
-        newAccessories = [
-          ...currentAccessories,
-          {
-            id: accessoryId,
-            type: accessoryInfo.slot,
-            name: accessoryInfo.name,
-            icon: accessoryInfo.icon,
-            equipped: true,
-          },
-        ];
-      } else {
-        newAccessories = currentAccessories;
-      }
-    }
-
-    const optimisticPet = { ...pet, accessories: newAccessories };
-    setPets((prev) => prev.map((p) => (p.id === pet.id ? optimisticPet : p)));
-
-    try {
-      const updatedPet = await petService.toggleAccessory(user.uid, pet.id, accessoryId);
-      if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
-    } catch (error) {
-      console.error('Error toggling accessory:', error);
-      setPets((prev) => prev.map((p) => (p.id === pet.id ? pet : p)));
-    }
+    return true;
   };
 
   const equipBackground = async (backgroundId: string | null) => {
