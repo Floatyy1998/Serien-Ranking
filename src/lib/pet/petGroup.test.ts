@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PetBrain, type BrainEnv } from './petBrain';
-import { GroupDirector, type GroupScene } from './petGroup';
+import { GROUP_SCENES, GroupDirector, type GroupScene } from './petGroup';
 
 function seeded(seed = 1) {
   let s = seed;
@@ -24,10 +24,10 @@ const ENV: BrainEnv = {
   ps: 2.5,
 };
 
-function makeGroup(count: number, first = 1) {
+function makeGroup(count: number, first = 1, gap: [number, number] = [20, 30]) {
   const rand = seeded(5);
   const brains = Array.from({ length: count }, (_, i) => new PetBrain(80 + i * 90, rand));
-  const director = new GroupDirector(brains, { gap: [20, 30], first, rand });
+  const director = new GroupDirector(brains, { gap, first, rand });
   const step = (seconds: number) => {
     for (let t = 0; t < seconds; t += 1 / 60) {
       director.update(1 / 60, ENV);
@@ -42,14 +42,13 @@ function makeGroup(count: number, first = 1) {
 
 describe('GroupDirector', () => {
   it('spielt jede Szene mit zwei und drei Pets durch und gibt sie wieder frei', () => {
-    const scenes: GroupScene[] = ['greet', 'chase', 'dance', 'race', 'parade', 'wave'];
     for (const count of [2, 3]) {
-      for (const scene of scenes) {
-        const { brains, director, step } = makeGroup(count, 999);
+      for (const scene of GROUP_SCENES) {
+        const { brains, director, step } = makeGroup(count, 999, [60, 70]);
         step(0.2);
         expect(director.play(scene, ENV)).toBe(true);
         expect(director.scene).toBe(scene);
-        step(20);
+        step(30);
         expect(director.scene).toBeNull();
         for (const b of brains) {
           expect(b.x).toBeGreaterThanOrEqual(ENV.minX);
@@ -87,5 +86,27 @@ describe('GroupDirector', () => {
     const { director, step } = makeGroup(1, 0);
     step(5);
     expect(director.scene).toBeNull();
+  });
+
+  it('Fußball: der Ball fällt ins Spiel, wird mehrfach gespielt und verschwindet am Ende', () => {
+    for (const count of [2, 3]) {
+      const { brains, director, step } = makeGroup(count, 999, [60, 70]);
+      step(0.2);
+      expect(director.play('soccer', ENV)).toBe(true);
+      const balls = () => brains.flatMap((b) => b.props.filter((p) => p.kind === 'ball'));
+      expect(balls()).toHaveLength(1);
+
+      let kicks = 0;
+      let lastVx = 0;
+      for (let t = 0; t < 30 && director.scene; t += 1 / 60) {
+        step(1 / 60);
+        const ball = balls()[0];
+        if (ball && Math.abs(ball.vx) > 150 && Math.abs(lastVx) < 150) kicks += 1;
+        lastVx = ball?.vx ?? 0;
+      }
+      expect(kicks).toBeGreaterThanOrEqual(3);
+      expect(director.scene).toBeNull();
+      expect(balls()).toHaveLength(0);
+    }
   });
 });

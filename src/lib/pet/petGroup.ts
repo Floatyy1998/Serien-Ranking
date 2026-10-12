@@ -1,11 +1,23 @@
-import type { PetBrain } from './petBrain';
+import type { PetBrain, Prop } from './petBrain';
 
 /** Regie für zwei oder drei Pets auf einer Bühne: gemeinsame Szenen mit ruhigen Pausen dazwischen. */
 
-export type GroupScene = 'greet' | 'chase' | 'dance' | 'race' | 'parade' | 'wave';
+export type GroupScene = 'greet' | 'chase' | 'dance' | 'race' | 'parade' | 'wave' | 'soccer';
 
-const SCENES: GroupScene[] = ['greet', 'chase', 'dance', 'race', 'parade', 'wave'];
+export const GROUP_SCENES: GroupScene[] = [
+  'greet',
+  'chase',
+  'dance',
+  'race',
+  'parade',
+  'wave',
+  'soccer',
+];
 const MAX_SCENE_SECONDS = 18;
+/** Fußball darf länger dauern als die anderen Szenen. */
+const SOCCER_SECONDS = 26;
+/** So nah muss ein Pet am Ball sein, um ihn zu spielen. */
+const REACH = 12;
 const PET_GAP = 56;
 
 export interface GroupOptions {
@@ -32,6 +44,12 @@ export class GroupDirector {
   private sub = 0;
   private last: GroupScene | null = null;
   private winner: PetBrain | null = null;
+  private ball: Prop | null = null;
+  private ballHolder: PetBrain | null = null;
+  private lastKicker: PetBrain | null = null;
+  private kickCooldown = 0;
+  private kicks = 0;
+  private goals = 0;
   private readonly rand: () => number;
   private readonly gap: [number, number];
   private readonly spacing: number;
@@ -67,11 +85,12 @@ export class GroupDirector {
         this.wait = 3;
         return;
       }
-      const options = SCENES.filter((s) => s !== this.last);
+      const options = GROUP_SCENES.filter((s) => s !== this.last);
       this.begin(options[Math.floor(this.rand() * options.length)], cast, bounds);
       return;
     }
-    if (this.cast.some((b) => !b.canAct || b.engaged) || this.t > MAX_SCENE_SECONDS) {
+    const limit = this.scene === 'soccer' ? SOCCER_SECONDS : MAX_SCENE_SECONDS;
+    if (this.cast.some((b) => !b.canAct || b.engaged) || this.t > limit) {
       this.end();
       return;
     }
@@ -102,6 +121,7 @@ export class GroupDirector {
   }
 
   private end(): void {
+    this.removeBall();
     for (const b of this.cast) {
       b.setScripted(false);
       b.rest();
@@ -109,6 +129,26 @@ export class GroupDirector {
     this.cast = [];
     this.scene = null;
     this.wait = this.nextGap();
+  }
+
+  /** Ball fällt bei x aus der Höhe h; er hängt physikalisch am ersten Pet der Szene. */
+  private dropBall(x: number, h: number): void {
+    this.removeBall();
+    const holder = this.cast[0];
+    if (!holder) return;
+    const ball: Prop = { kind: 'ball', x, h, vx: 0, vh: 0, rot: 0, ttl: Infinity, carried: false };
+    holder.props.push(ball);
+    this.ball = ball;
+    this.ballHolder = holder;
+  }
+
+  private removeBall(): void {
+    if (this.ball && this.ballHolder) {
+      const ball = this.ball;
+      this.ballHolder.props = this.ballHolder.props.filter((p) => p !== ball);
+    }
+    this.ball = null;
+    this.ballHolder = null;
   }
 
   private nextGap(): number {
@@ -248,6 +288,10 @@ export class GroupDirector {
         }
         break;
       }
+      case 'soccer': {
+        this.soccer(dt, minX, maxX);
+        break;
+      }
       case 'wave': {
         // La-Ola: nebeneinander aufstellen, dann nacheinander hochhüpfen, zweimal
         if (this.sub === 0) {
@@ -271,5 +315,116 @@ export class GroupDirector {
         break;
       }
     }
+  }
+
+  /** Fußball: Pässe hin und her, ab und zu ein Torschuss; wer trifft, jubelt. */
+  private soccer(dt: number, minX: number, maxX: number): void {
+    const cast = this.cast;
+    const span = maxX - minX;
+    const mid = (minX + maxX) / 2;
+    const home = (i: number) => minX + span * (0.18 + (0.64 * i) / Math.max(1, cast.length - 1));
+    this.kickCooldown -= dt;
+
+    if (this.sub === 0) {
+      this.kicks = 0;
+      this.goals = 0;
+      this.lastKicker = null;
+      cast.forEach((b, i) => b.walkTo(home(i), 1.15));
+      this.dropBall(mid, 70);
+      this.sub = 1;
+      this.t = 0;
+      return;
+    }
+
+    const ball = this.ball;
+    if (!ball) {
+      this.end();
+      return;
+    }
+
+    if (this.sub === 1) {
+      // Anstoß, sobald der Ball liegt
+      if (this.t > 1.1 && ball.h === 0) {
+        this.sub = 2;
+        this.t = 0;
+      }
+      return;
+    }
+
+    if (this.sub === 2) {
+      // Tor, wenn der Ball an die Bande rollt
+      if (this.lastKicker && (ball.x <= minX - 7 || ball.x >= maxX + 7)) {
+        const scorer = this.lastKicker;
+        scorer.react('cheer');
+        scorer.sparkle(6);
+        cast.forEach((b) => b !== scorer && b.sitFor(1.4, b.x < scorer.x ? 1 : -1));
+        this.goals += 1;
+        this.sub = 3;
+        this.t = 0;
+        return;
+      }
+
+      const chaser = cast.reduce((best, b) =>
+        Math.abs(b.x - ball.x) < Math.abs(best.x - ball.x) ? b : best
+      );
+      const reach = Math.abs(ball.x - chaser.x) < REACH && ball.h < 16;
+      if (reach && this.kickCooldown <= 0) {
+        const others = cast.filter((b) => b !== chaser);
+        const target = others[Math.floor(this.rand() * others.length)];
+        const shot = this.rand() < 0.3;
+        let dir: 1 | -1 = target.x >= ball.x ? 1 : -1;
+        if (Math.abs(target.x - ball.x) < 8) dir = ball.x < mid ? 1 : -1;
+        const dist = Math.abs(target.x - ball.x);
+        ball.vx =
+          dir * (shot ? 380 + this.rand() * 60 : Math.min(330, Math.max(170, dist * 1.4 + 60)));
+        ball.vh = shot ? 90 + this.rand() * 60 : 150 + this.rand() * 140;
+        chaser.kick(dir);
+        this.lastKicker = chaser;
+        this.kicks += 1;
+        this.kickCooldown = 0.6;
+      } else if (this.every(0.2, dt) && this.kickCooldown <= 0.1) {
+        chaser.walkTo(ball.x, 1.75);
+      }
+
+      if (this.every(0.5, dt)) {
+        cast.forEach((b, i) => {
+          if (b === chaser) return;
+          if (Math.abs(b.x - home(i)) > 20) b.walkTo(home(i), 1);
+          else if (!b.busy) b.face(ball.x > b.x ? 1 : -1);
+        });
+      }
+
+      if (this.t > 15 || this.kicks >= 12) {
+        this.sub = 4;
+        this.t = 0;
+      }
+      return;
+    }
+
+    if (this.sub === 3 && this.t > 1.9 && this.allArrived()) {
+      // nach dem Tor neuer Anstoß, nach zwei Toren Schluss
+      if (this.goals >= 2) {
+        this.sub = 4;
+        this.t = 0;
+      } else {
+        this.dropBall(mid, 70);
+        this.lastKicker = null;
+        cast.forEach((b, i) => b.walkTo(home(i), 1.1));
+        this.sub = 1;
+        this.t = 0;
+      }
+      return;
+    }
+
+    if (this.sub === 4) {
+      // Abpfiff: alle jubeln zusammen
+      this.removeBall();
+      cast.forEach((b) => b.react('cheer'));
+      this.sub = 5;
+      this.t = 0;
+      return;
+    }
+
+    if (this.sub === 5 && this.t > 1.6 && this.allArrived()) this.end();
   }
 }

@@ -5,7 +5,7 @@ import type { PetReaction, PetReactionTone } from '../../hooks/pet/usePetReactio
 import { pickReaction } from '../../hooks/pet/usePetReactions';
 import { PetBrain as PetBrainClass } from '../../lib/pet/petBrain';
 import type { PetBrain, PetView, Reaction, Trick } from '../../lib/pet/petBrain';
-import type { GroupDirector, GroupScene } from '../../lib/pet/petGroup';
+import { GROUP_SCENES, type GroupDirector } from '../../lib/pet/petGroup';
 import { walkCycle } from '../../lib/pet/petMotion';
 import { PetCard } from '../Pets/PetCard';
 import type { SeasonId } from '../../theme/seasonalThemes';
@@ -113,7 +113,6 @@ const COMPANIONS: Pet[] = [
   makeDevPet('dog', 9, { name: 'Bello' }),
   makeDevPet('dragon', 22, { name: 'Funke' }),
 ];
-const GROUP_SCENES: GroupScene[] = ['greet', 'chase', 'dance', 'race', 'parade', 'wave'];
 
 export const PetStagePreview = ({
   initialCompanions = 0,

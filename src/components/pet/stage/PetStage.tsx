@@ -202,7 +202,7 @@ export const PetStage = ({
   const groupRef = useRef<GroupDirector | null>(null);
   const getGroup = useCallback((): GroupDirector => {
     if (groupRef.current == null) {
-      groupRef.current = new GroupDirector([], { gap: [24, 38], first: 16 });
+      groupRef.current = new GroupDirector([], { gap: [16, 28], first: 12 });
     }
     return groupRef.current;
   }, []);

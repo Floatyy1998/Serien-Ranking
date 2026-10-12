@@ -396,6 +396,16 @@ export class PetBrain {
     this.start('land', 0.75);
   }
 
+  /** Schuss in einer Gruppenszene: nach vorn lehnen, kurz federn, Staub. */
+  kick(dir: 1 | -1): void {
+    if (!this.canAct) return;
+    this.start('idle', 0.5);
+    this.face(dir);
+    this.recoil = 0.2;
+    this.tiltShake = dir * 0.14;
+    this.burst('dust', 3, 0);
+  }
+
   /** Funkeln an der aktuellen Position (Spiel-Effekte). */
   sparkle(count = 5): void {
     this.burst('sparkle', count, 14);
