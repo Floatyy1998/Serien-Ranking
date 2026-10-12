@@ -243,6 +243,7 @@ export default defineConfig({
         'src/hooks/wrapped/useWrappedConfig.ts',
         'src/services/api/anilistProviderFallback.ts',
         'src/services/app/appReview.ts',
+        'src/services/app/domTranslationGuard.ts',
         'src/services/api/backendApi.ts',
         'src/services/catalog/catalogIDB.ts',
         'src/lib/watch/compactWatch.ts',

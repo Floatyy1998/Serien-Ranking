@@ -6,8 +6,9 @@ import './services/app/localStorageBootstrap';
 import ReactDOM from 'react-dom/client';
 import { AppWithSplash } from './app/AppWithSplash';
 import { installErrorReporting } from './services/errorReporting/errorReporter';
-import { ensureAllDictionaries } from './services/i18n';
+import { LOCALE_TAG, appLocale, ensureAllDictionaries } from './services/i18n';
 import { APP_READY_EVENT, isAppReady } from './services/app/appReady';
+import { installDomTranslationGuard } from './services/app/domTranslationGuard';
 import { installSeasonPreview } from './services/app/seasonPreview';
 import './styles/index.css';
 // Die Anzeigegröße (zoom) wird in AppWithSplash gesetzt — erst NACHDEM der
@@ -25,6 +26,10 @@ import './services/app/nativeShell';
 if (!import.meta.env.DEV) installErrorReporting();
 
 installSeasonPreview();
+
+// index.html steht fest auf "de" — sonst bietet Chrome Nicht-Deutschen eine Übersetzung an.
+document.documentElement.lang = LOCALE_TAG[appLocale];
+installDomTranslationGuard();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 

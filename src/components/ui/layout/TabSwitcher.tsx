@@ -98,8 +98,10 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             )}
 
             {Icon && <Icon style={{ fontSize: '18px' }} />}
-            {tab.label}
-            {tab.count !== undefined && ` (${tab.count})`}
+            <span>
+              {tab.label}
+              {tab.count !== undefined && ` (${tab.count})`}
+            </span>
           </motion.button>
         );
       })}
