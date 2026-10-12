@@ -4,6 +4,7 @@ import type { Pet } from '../../../types/pet.types';
 import { drawPetFigure, petColors, type PetColors } from '../renderPet';
 import { seasonCostume } from '../seasonCostume';
 import { drawGravestone } from './drawGravestone';
+import { DEFAULT_LIGHT, drawLitFigure, drawSoftShadow } from './litFigure';
 
 const feetCache = new Map<string, BodyGeom>();
 
@@ -33,7 +34,7 @@ export function feetY(pet: Pet): number {
 }
 
 /** Umriss der Figur im 32er-Raster: Füße, Scheitel und halbe Breite. */
-function bodyGeom(pet: Pet): BodyGeom {
+export function bodyGeom(pet: Pet): BodyGeom {
   const key = `${pet.type}:${levelBucket(pet.level)}`;
   const cached = feetCache.get(key);
   if (cached !== undefined) return cached;
@@ -98,6 +99,16 @@ export interface StageFrame {
 }
 
 const CONFETTI = ['#ff5c8a', '#ffd166', '#7bdff2', '#b388ff', '#9be15d'];
+
+const pixelRatio = () =>
+  typeof window === 'undefined' ? 2 : Math.min(3, Math.max(1, window.devicePixelRatio || 1));
+
+/** Ruhiges Atmen: im Schlaf tiefer und langsamer. */
+function breath(view: PetView, time: number): number {
+  if (view.activity === 'sleep') return Math.sin(time * 1.5) * 0.028;
+  if (view.activity === 'trick' || view.activity === 'walk') return 0;
+  return Math.sin(time * 2.3) * 0.014;
+}
 const NOTE_COLORS = ['#ffd166', '#7bdff2', '#ff8fb1', '#b9f6ca', '#d1b3ff'];
 
 export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): void {
@@ -109,13 +120,13 @@ export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): vo
     return;
   }
 
-  drawShadow(ctx, view.x, groundY, view.h, ps);
+  const body = bodyGeom(f.pet);
+  drawSoftShadow(ctx, view.x, groundY, view.h, ps, body.halfW);
 
   drawProps(ctx, f.props, groundY, ps, f.time, f.accent);
 
-  const body = bodyGeom(f.pet);
   const feet = body.feet;
-  const turn = Math.sign(view.turn || 1) * Math.max(0.14, Math.abs(view.turn));
+  const turn = Math.sign(view.turn || 1) * Math.max(0.42, Math.abs(view.turn));
   ctx.save();
   ctx.translate(view.x, groundY - view.h - view.bob);
   ctx.rotate(view.tilt);
@@ -130,19 +141,33 @@ export function drawStageFrame(ctx: CanvasRenderingContext2D, f: StageFrame): vo
     ctx.rotate(view.roll);
     ctx.translate(0, mid);
   }
-  ctx.scale(view.flip * view.squashX * turn, view.squashY);
+  const b = breath(view, f.time);
+  ctx.scale(view.flip * view.squashX * turn * (1 - b * 0.6), view.squashY * (1 + b));
   ctx.translate(-16 * ps, -feet * ps);
-  drawPetFigure(ctx, f.pet, {
+  const colors = f.colors ?? petColors(f.pet);
+  drawLitFigure(
+    ctx,
+    (target, scale) =>
+      drawPetFigure(target, f.pet, {
+        ps: scale,
+        offset: 0,
+        animated: true,
+        frame: f.time * 60,
+        animationSpeed: 1,
+        pose: view.pose,
+        colors,
+        overlay: seasonCostume(f.pet, f.season, scale, 0),
+      }),
     ps,
-    offset: 0,
-    animated: true,
-    frame: f.time * 60,
-    animationSpeed: 1,
-    pose: view.pose,
-    colors: f.colors ?? petColors(f.pet),
-    overlay: seasonCostume(f.pet, f.season, ps, 0),
-  });
+    body,
+    DEFAULT_LIGHT,
+    pixelRatio()
+  );
   ctx.restore();
+
+  if (view.activity === 'trick' && view.turn < 0.97) {
+    drawSpinSwirl(ctx, view.x, groundY - view.h - view.bob, body.halfW, ps, f.time);
+  }
 
   for (const p of f.props) {
     if (p.carried) drawCarried(ctx, p, view, groundY, ps, f.time);
@@ -184,6 +209,36 @@ function drawShadow(
   ctx.beginPath();
   ctx.ellipse(x, groundY - ps * 0.3, 7 * ps * k, 1.6 * ps * k, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+/** Wirbel-Bögen um das Pet bei Drehungen. */
+function drawSpinSwirl(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  feetY: number,
+  halfW: number,
+  ps: number,
+  time: number
+) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const start = (time * 13 + i * 2.1) % (Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 - i * 0.14})`;
+    ctx.lineWidth = Math.max(1, ps * (0.7 - i * 0.14));
+    ctx.beginPath();
+    ctx.ellipse(
+      x,
+      feetY - (5 + i * 5.5) * ps,
+      (halfW + 3 - i) * ps,
+      1.7 * ps,
+      0,
+      start,
+      start + 1.5
+    );
+    ctx.stroke();
+  }
   ctx.restore();
 }
 

@@ -22,6 +22,8 @@ import { PET_CONFIG } from '../../../services/pet/petConstants';
 import { petMoodService } from '../../../services/pet/petMoodService';
 import { activeSeason } from '../../../theme/seasonalThemes';
 import type { Pet } from '../../../types/pet.types';
+import { PET_BACKGROUNDS } from '../data/petBackgrounds';
+import { drawAmbienceBack, drawAmbienceFront, tintOf } from '../stage/drawAmbience';
 import { drawStageFrame } from '../stage/drawStage';
 import { useCanvasLoop, type LoopFrame } from '../stage/useCanvasLoop';
 import { SIGNATURE_LABEL } from './signature';
@@ -197,6 +199,10 @@ export const PetPlayground = ({ pet, onPlayed, scene, panelHost }: Props) => {
       brain.update(dt, env);
       brain.drainEvents();
 
+      const tint = tintOf(
+        pet.equippedBackground ? PET_BACKGROUNDS[pet.equippedBackground]?.glowColor : undefined
+      );
+      drawAmbienceBack(ctx, width, height, time, tint);
       drawStageFrame(ctx, {
         pet,
         view: brain.view(),
@@ -212,6 +218,7 @@ export const PetPlayground = ({ pet, onPlayed, scene, panelHost }: Props) => {
       if (game && modeRef.current === 'game') {
         for (const d of game.drops) drawDrop(ctx, d.kind as DropKind, d.x, groundY - d.h, d.spin);
       }
+      drawAmbienceFront(ctx, width, height, time, tint);
 
       floatsRef.current = floatsRef.current.filter((f) => (f.life -= dt) > 0);
       for (const f of floatsRef.current) {

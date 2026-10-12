@@ -154,6 +154,8 @@ export interface PetView {
 }
 
 const GRAVITY = 1900;
+/** Sekunden für das Umdrehen beim Richtungswechsel. */
+const TURN_TIME = 0.26;
 /** Sekunden Ruhe zwischen zwei Aktionen, die das Pet von selbst startet. */
 const ACTION_REST = 25;
 const STRIDE = 13;
@@ -175,6 +177,9 @@ export class PetBrain {
   private targetX = 0;
   private phase = 0;
   private lookX = 0;
+  private shownFlip: 1 | -1 = 1;
+  private turnFrom: 1 | -1 = 1;
+  private turnT = 1;
   private squash = 1;
   private tiltShake = 0;
   private reps = 0;
@@ -443,6 +448,7 @@ export class PetBrain {
     this.env = env;
     this.t += dt;
     this.elapsed += dt;
+    if (this.turnT < 1) this.turnT = Math.min(1, this.turnT + dt / TURN_TIME);
 
     if (!env.alive) {
       if (this.activity !== 'dead') this.start('dead', Infinity);
@@ -534,6 +540,8 @@ export class PetBrain {
     let motion: MotionFrame = STILL;
     let eyes: PetPose['eyes'] = 'auto';
     let squashY = 1;
+    /** Wie stark die Figur beim Stauchen in die Breite geht; beim Sitzen kaum. */
+    let widen = 0.6;
     let tilt = 0;
     let turn = 1;
     let roll = 0;
@@ -550,11 +558,13 @@ export class PetBrain {
         break;
       case 'sit':
       case 'popcorn':
-        squashY = 0.88;
+        squashY = 0.93;
+        widen = 0.15;
         eyes = this.activity === 'popcorn' && this.t % 2.2 > 1.6 ? 'happy' : 'auto';
         break;
       case 'beg':
-        squashY = 0.94;
+        squashY = 0.95;
+        widen = 0.15;
         break;
       case 'trick':
         if (this.trickKind === 'dance') {
@@ -573,9 +583,14 @@ export class PetBrain {
           // hinplumpsen, Pfötchen geben, wieder aufstehen
           const t = this.t;
           const rise = this.duration - 0.3;
-          if (t < 0.22) squashY = 1 - 0.26 * (t / 0.22);
-          else if (t < rise) squashY = 0.8 + squashSpring(t - 0.22, 0.06) - 1;
-          else squashY = 0.8 + 0.2 * ((t - rise) / 0.3);
+          if (t < 0.22) squashY = 1 - 0.16 * (t / 0.22);
+          else if (t < rise) {
+            squashY = 0.91 + squashSpring(t - 0.22, 0.05) - 1;
+            widen = 0.15;
+          } else {
+            squashY = 0.91 + 0.09 * ((t - rise) / 0.3);
+            widen = 0.15;
+          }
           if (t > 0.9 && t < rise - 0.3) {
             const wave = Math.sin((t - 0.9) * 9);
             motion = { pawLift: [1.3 + wave * 0.35, 0], tilt: 0, bob: 0 };
@@ -665,20 +680,32 @@ export class PetBrain {
           : this.lookX;
 
     const ps = env?.ps ?? 2;
+    const facing: 1 | -1 =
+      this.activity === 'trick' && this.trickKind === 'moonwalk'
+        ? this.dir > 0
+          ? 1
+          : -1
+        : this.flipSign();
+    // Richtungswechsel als kurzer Dreh mit Hüpfer statt hartem Spiegeln
+    if (facing !== this.shownFlip && this.turnT >= 1 && this.activity !== 'carried') {
+      this.turnFrom = this.shownFlip;
+      this.shownFlip = facing;
+      this.turnT = 0;
+    } else if (this.activity === 'carried') {
+      this.shownFlip = facing;
+    }
+    const turning = this.turnT < 1 ? Math.sin(this.turnT * Math.PI) : 0;
+    const flip = this.turnT < 0.5 ? this.turnFrom : this.shownFlip;
+
     return {
       x: this.x,
       h: this.h,
-      flip:
-        this.activity === 'trick' && this.trickKind === 'moonwalk'
-          ? this.dir > 0
-            ? 1
-            : -1
-          : this.flipSign(),
-      turn,
+      flip,
+      turn: turn * (1 - 0.5 * turning),
       roll,
       tilt: motion.tilt + tilt + this.tiltShake,
-      bob: motion.bob * ps,
-      squashX: 1 + (1 - squashY) * 0.6,
+      bob: motion.bob * ps + turning * 2.4 * ps,
+      squashX: 1 + (1 - squashY) * widen,
       squashY,
       pose: { pawLift: motion.pawLift, eyes, lookX },
       activity: this.activity,

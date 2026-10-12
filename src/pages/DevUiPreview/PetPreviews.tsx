@@ -293,7 +293,16 @@ export const PetPlaygroundPreview = ({
 
 const STRIP_FRAMES = 14;
 
-function SignatureStrip({ pet, trick = 'signature' }: { pet: Pet; trick?: Trick }) {
+function SignatureStrip({
+  pet,
+  trick = 'signature',
+  script,
+}: {
+  pet: Pet;
+  trick?: Trick;
+  /** Statt eines Tricks: vor jedem Bild aufgerufen, z. B. für Richtungswechsel. */
+  script?: (brain: PetBrainClass, frame: number) => void;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -322,11 +331,12 @@ function SignatureStrip({ pet, trick = 'signature' }: { pet: Pet; trick?: Trick 
     };
     const brain = new PetBrainClass(200, () => 0.5);
     brain.update(1 / 60, env);
-    brain.trick(trick);
+    if (!script) brain.trick(trick);
     const total = 3.4;
     const x0 = brain.x;
     const step = total / (STRIP_FRAMES - 1);
     for (let i = 0; i < STRIP_FRAMES; i++) {
+      script?.(brain, i);
       if (i > 0) for (let k = 0; k < Math.round(step * 60); k++) brain.update(1 / 60, env);
       const view = brain.view();
       ctx.save();
@@ -355,12 +365,19 @@ function SignatureStrip({ pet, trick = 'signature' }: { pet: Pet; trick?: Trick 
       );
       ctx.restore();
     }
-  }, [pet, trick]);
+  }, [pet, trick, script]);
   return <canvas ref={ref} style={{ width: 92 * STRIP_FRAMES, height: 150, display: 'block' }} />;
 }
 
+const turnAround = (brain: PetBrainClass, frame: number) => {
+  if (frame === 0) brain.walkTo(brain.x + 400);
+  if (frame === 4) brain.walkTo(brain.x - 400);
+};
+
 export const SignatureStripPreview = () => (
   <div style={{ padding: 12, display: 'grid', gap: 8, overflowX: 'auto' }}>
+    <SignatureStrip pet={makeDevPet('cat', 12)} script={turnAround} />
+    <SignatureStrip pet={makeDevPet('cat', 12)} trick="spin" />
     <SignatureStrip pet={makeDevPet('dog', 12)} trick="sit" />
     <SignatureStrip pet={makeDevPet('cat', 12)} trick="sit" />
     {TYPES.map((tp) => (

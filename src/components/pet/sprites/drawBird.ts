@@ -1,36 +1,7 @@
 import type { AccessorySlot } from '../../../types/pet.types';
 import { beginLook, drawPoseEyes, NEUTRAL_POSE } from './pose';
 import type { PetPose } from './pose';
-
-// Helper: gefüllter Kreis via Canvas-Arc (sieht beim Pixel-Skalieren weich-rund aus)
-const arcFill = (
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  r: number,
-  ps: number,
-  offset: number
-) => {
-  ctx.beginPath();
-  ctx.arc(cx * ps, cy * ps + offset, r * ps, 0, Math.PI * 2);
-  ctx.fill();
-};
-
-// Helper: gefüllte Ellipse
-const ellipseFill = (
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  ps: number,
-  offset: number,
-  rotation: number = 0
-) => {
-  ctx.beginPath();
-  ctx.ellipse(cx * ps, cy * ps + offset, rx * ps, ry * ps, rotation, 0, Math.PI * 2);
-  ctx.fill();
-};
+import { arcFill, ellipseFill, shadeEllipse } from './shapes';
 
 // Helper: gefülltes Dreieck
 const triFill = (
@@ -70,6 +41,7 @@ const swingLimb = (
   ctx.beginPath();
   ctx.ellipse((cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, rot, 0, Math.PI * 2);
   ctx.fill();
+  shadeEllipse(ctx, (cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, ps, rot, 0.9);
   ctx.restore();
 };
 
