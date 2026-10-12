@@ -112,7 +112,10 @@ vi.mock('../../../components/ui/overlay/QuickRatingSheet', () => ({
       </div>
     ) : null,
 }));
-vi.mock('../../../components/ui', () => ({ Snackbar: () => null }));
+vi.mock('../../../components/ui', () => ({
+  Snackbar: (p: { open: boolean; message: string }) =>
+    p.open ? <div role="status">{p.message}</div> : null,
+}));
 vi.mock('../../../services/i18n', () => ({ t: (s: string) => s }));
 vi.mock('./useHomeQuickSearch', () => ({
   useHomeQuickSearch: () => ({
@@ -252,6 +255,29 @@ describe('HomeSearchOverlay Poster-Aktionen', () => {
     // Optimistisch: Auge weg, Bewerten-Button da.
     expect(cardOf('Heat').querySelector('.hso__watched')).toBeNull();
     expect(cardOf('Heat').querySelector('.hso__rate')).not.toBeNull();
+  });
+
+  it('meldet, wenn das Hinzufügen am Backend scheitert', async () => {
+    state.user = { uid: 'u1' };
+    api.backendFetch.mockResolvedValue({ ok: false });
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    await act(async () => {
+      fireEvent.click(cardOf('Breaking Bad').querySelector('.hso__add') as HTMLElement);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Fehler beim Hinzufügen der Serie.');
+  });
+
+  it('meldet, wenn der Titel schon in der Liste ist', async () => {
+    state.user = { uid: 'u1' };
+    api.backendFetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: 'Film bereits vorhanden' }),
+    } as { ok: boolean });
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    await act(async () => {
+      fireEvent.click(cardOf('Heat').querySelector('.hso__add') as HTMLElement);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Film ist bereits in deiner Liste!');
   });
 
   it('markiert einen Film aus der Liste ohne Backend-Aufruf als gesehen', async () => {

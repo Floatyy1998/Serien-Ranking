@@ -155,12 +155,26 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
       if (!user) return;
       const key = keyOf(item);
       setPending({ key, action: 'add' });
+      const isSeries = item.type === 'series';
+      const failedText = isSeries
+        ? t('Fehler beim Hinzufügen der Serie.')
+        : t('Fehler beim Hinzufügen des Films.');
       try {
-        if ((await requestAdd(item, user.uid)) === 'added') {
+        const result = await requestAdd(item, user.uid);
+        if (result === 'added') {
           showSnack(t('„{title}" hinzugefügt', { title: item.title }));
+        } else if (result === 'exists') {
+          showSnack(
+            isSeries
+              ? t('Serie ist bereits in deiner Liste!')
+              : t('Film ist bereits in deiner Liste!')
+          );
+        } else {
+          showSnack(failedText);
         }
       } catch (err) {
         console.error('Add from search failed:', err);
+        showSnack(failedText);
       } finally {
         setPending(null);
       }
