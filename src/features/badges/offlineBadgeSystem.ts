@@ -13,7 +13,13 @@ import {
   type BadgeProgress,
   type EarnedBadge,
 } from './badgeDefinitions';
-import type { BadgeCounters, BadgeMovieItem, BadgeSeriesItem, BadgeUserData } from './badgeTypes';
+import type {
+  BadgeBookItem,
+  BadgeCounters,
+  BadgeMovieItem,
+  BadgeSeriesItem,
+  BadgeUserData,
+} from './badgeTypes';
 import { checkBadgeRequirement } from './badgeCheckers';
 import {
   getBingeProgress,
@@ -24,6 +30,7 @@ import {
   getExplorerProgress,
   getCollectorProgress,
   getSocialProgress,
+  getReaderProgress,
 } from './badgeProgressHelpers';
 import { registerBadgeDebugTools } from './badgeDebugTools';
 
@@ -77,14 +84,15 @@ export class OfflineBadgeSystem {
       return this.cachedData;
     }
 
-    const [series, movies, activities, badgeCounters] = await Promise.all([
+    const [series, movies, activities, badgeCounters, books] = await Promise.all([
       this.getSeriesData(),
       this.getMoviesData(),
       this.getActivitiesData(),
       this.getBadgeCounters(),
+      this.getBooksData(),
     ]);
 
-    this.cachedData = { series, movies, activities, badgeCounters };
+    this.cachedData = { series, movies, activities, badgeCounters, books };
     this.lastCacheTime = now;
     return this.cachedData;
   }
@@ -148,6 +156,18 @@ export class OfflineBadgeSystem {
     return Object.values(snapshot.val() as Record<string, Record<string, unknown>>).map((ref) => ({
       rating: ref.rating,
     })) as BadgeMovieItem[];
+  }
+
+  private async getBooksData(): Promise<BadgeBookItem[]> {
+    try {
+      const snapshot = await dbRef(paths.books(this.userId)).once('value');
+      if (!snapshot.exists()) return [];
+      return Object.values(snapshot.val() as Record<string, BadgeBookItem & { hidden?: boolean }>)
+        .filter((b) => b && !b.hidden)
+        .map((b) => ({ status: b.status, pageCount: b.pageCount, currentPage: b.currentPage }));
+    } catch {
+      return [];
+    }
   }
 
   private async getActivitiesData(): Promise<unknown[]> {
@@ -221,6 +241,9 @@ export class OfflineBadgeSystem {
       case 'social':
         return await getSocialProgress(badge, this.userId);
 
+      case 'reader':
+        return getReaderProgress(badge, userData.books ?? []);
+
       default:
         return null;
     }
@@ -266,13 +289,14 @@ export class OfflineBadgeSystem {
     const currentBadges = await this.getUserBadges();
     const earnedIds = new Set(currentBadges.map((b) => b.id));
 
-    const [series, movies, badgeCounters] = await Promise.all([
+    const [series, movies, badgeCounters, books] = await Promise.all([
       this.getSeriesData(),
       this.getMoviesData(),
       this.getBadgeCounters(),
+      this.getBooksData(),
     ]);
 
-    this.cachedData = { series, movies, activities: [], badgeCounters };
+    this.cachedData = { series, movies, activities: [], badgeCounters, books };
     this.lastCacheTime = Date.now();
 
     const progressData: Record<string, BadgeProgress> = {};
@@ -306,6 +330,9 @@ export class OfflineBadgeSystem {
           break;
         case 'social':
           progress = await getSocialProgress(badge, this.userId);
+          break;
+        case 'reader':
+          progress = getReaderProgress(badge, books ?? []);
           break;
       }
 

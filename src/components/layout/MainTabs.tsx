@@ -11,9 +11,11 @@ import {
 import { useLocation } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
 import { useNavSlots } from '../../hooks/ui/useNavConfig';
+import { resolveReadingPath } from '../../services/settings/readingTab';
 import {
   ActivityPage,
   BadgesPage,
+  BooksPage,
   CalendarPage,
   CatchUpPage,
   CountdownPage,
@@ -21,6 +23,7 @@ import {
   LeaderboardPage,
   MangaPage,
   PetsPage,
+  ReadingHubPage,
   RecentlyWatchedPage,
   StatsPage,
   SubscriptionsPage,
@@ -40,6 +43,8 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
   '/ratings': RatingsPage,
   '/calendar': CalendarPage,
   '/manga': MangaPage,
+  '/books': BooksPage,
+  '/reading': ReadingHubPage,
   '/discover': DiscoverPage,
   '/stats': StatsPage,
   '/leaderboard': LeaderboardPage,
@@ -75,7 +80,9 @@ export const MainTabs = () => {
   // Aktive Navbar-Ziele im Leerlauf versteckt vormounten (nicht alle 17 Tabs)
   useEffect(() => {
     if (!active) return;
-    const slotPaths = navSlots.map((id) => NAV_SLOT_PATHS[id]);
+    const slotPaths = navSlots.map((id) =>
+      id === 'manga' ? resolveReadingPath() : NAV_SLOT_PATHS[id]
+    );
     const premountOrder = ['/', ...slotPaths, '/profile', '/search'].filter(
       (p) => p in TAB_COMPONENTS
     );

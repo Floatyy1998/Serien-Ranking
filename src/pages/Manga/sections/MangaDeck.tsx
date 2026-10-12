@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HeaderActions } from '../../../components/ui';
+import { ReadingSwitch } from '../../../components/reading/ReadingSwitch';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getNewChapterEntries } from '../../../lib/manga/overview';
@@ -82,6 +83,7 @@ export const MangaDeck: React.FC<MangaDeckProps> = React.memo(
 
     return (
       <header className="manga-deck-wrap">
+        <ReadingSwitch active="manga" />
         <motion.div
           className="manga-deck liquid-glass"
           initial={{ opacity: 0, y: -10 }}

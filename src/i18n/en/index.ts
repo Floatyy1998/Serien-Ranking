@@ -23,6 +23,7 @@ import genres from './genres';
 import guest from './guest';
 import home from './home';
 import manga from './manga';
+import books from './books';
 import misc from './misc';
 import native from './native';
 import onboarding from './onboarding';
@@ -53,6 +54,7 @@ const en: Record<string, string> = {
   ...guest,
   ...home,
   ...manga,
+  ...books,
   ...misc,
   ...native,
   ...onboarding,

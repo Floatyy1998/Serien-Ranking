@@ -11,6 +11,7 @@ const CATEGORIES: BadgeCategory[] = [
   'series_explorer',
   'collector',
   'social',
+  'reader',
 ];
 const TIERS: BadgeTier[] = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
 const RARITIES = ['common', 'rare', 'epic', 'legendary'];

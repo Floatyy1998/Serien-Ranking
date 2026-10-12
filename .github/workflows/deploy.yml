@@ -105,6 +105,7 @@ jobs:
           VITE_API_TMDB: ${{ secrets.VITE_API_TMDB }}
           VITE_API_OMDb: ${{ secrets.VITE_API_OMDb }}
           VITE_BACKEND_API_URL: ${{ secrets.VITE_BACKEND_API_URL }}
+          VITE_GOOGLE_BOOKS_API_KEY: ${{ secrets.VITE_GOOGLE_BOOKS_API_KEY }}
 
       - name: Deploy to Firebase
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'

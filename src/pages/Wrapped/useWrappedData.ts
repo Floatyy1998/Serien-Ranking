@@ -12,6 +12,10 @@ import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { WatchActivityService } from '../../services/watchActivity/watchActivityService';
 import { fetchMangaEvents } from '../../services/discussion/readActivityService';
 import { useMangaList } from '../../contexts/MangaListContext';
+import { useBooksList } from '../../contexts/BooksListContext';
+import { fetchBookEvents } from '../../services/books/bookService';
+import { calculateBookWrappedStats } from '../../services/wrapped/books';
+import type { CompactBookEvent } from '../../lib/books/bookEvents';
 import type { WrappedMangaEvent } from '../../services/wrapped/manga';
 import { t } from '../../services/i18n';
 
@@ -116,27 +120,38 @@ export const useWrappedData = (): UseWrappedDataResult => {
   // Referenz bei jedem Render → goToSlide/next/prev bekommen neue Identität → die
   // Keyboard-/Wheel-Listener-Effekte hängen sich bei jedem Render neu ein/aus.
   const hasManga = (stats?.manga?.totalChapters ?? 0) > 0;
+  const { allBookList } = useBooksList();
+  const [bookEvents, setBookEvents] = useState<CompactBookEvent[]>([]);
+  const [now] = useState(() => Date.now());
+  const bookStats = useMemo(
+    () => calculateBookWrappedStats(allBookList, bookEvents, year, now),
+    [allBookList, bookEvents, year, now]
+  );
+  const hasBooks = !!bookStats;
   const enabledSlides = useMemo(
     () =>
-      DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled && (s.type !== 'top_manga' || hasManga)).sort(
-        (a, b) => a.order - b.order
-      ),
-    [hasManga]
+      DEFAULT_SLIDE_CONFIG.filter(
+        (s) =>
+          s.enabled && (s.type !== 'top_manga' || hasManga) && (s.type !== 'top_books' || hasBooks)
+      ).sort((a, b) => a.order - b.order),
+    [hasManga, hasBooks]
   );
 
   // Manga-Cover kommen aus der eigenen Sammlung (AniList-URLs, kein TMDB-Abruf nötig).
   const { allMangaList } = useMangaList();
   const statsWithMangaPosters = useMemo(() => {
-    if (!stats?.manga) return stats;
+    if (!stats) return stats;
+    if (!stats.manga) return { ...stats, books: bookStats };
     const posters = new Map(allMangaList.map((m) => [m.anilistId, m.poster]));
     return {
       ...stats,
+      books: bookStats,
       manga: {
         ...stats.manga,
         topManga: stats.manga.topManga.map((m) => ({ ...m, poster: posters.get(m.anilistId) })),
       },
     };
-  }, [stats, allMangaList]);
+  }, [stats, allMangaList, bookStats]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -149,13 +164,15 @@ export const useWrappedData = (): UseWrappedDataResult => {
       try {
         setLoading(true);
 
-        const [events, bingeSessions, mangaEvents] = await Promise.all([
+        const [events, bingeSessions, mangaEvents, readEvents] = await Promise.all([
           WatchActivityService.getEventsForYear(user.uid, year),
           WatchActivityService.getBingeSessionsForYear(user.uid, year),
           fetchMangaEvents(user.uid, year).catch(() => []),
+          fetchBookEvents(user.uid, year).catch(() => []),
         ]);
+        setBookEvents(readEvents);
 
-        if (events.length === 0 && mangaEvents.length === 0) {
+        if (events.length === 0 && mangaEvents.length === 0 && readEvents.length === 0) {
           setError(t('Keine Daten für {year} gefunden. Schau mehr Serien und Filme!', { year }));
           setLoading(false);
           return;

@@ -5,6 +5,9 @@ import { cleanup, render, screen } from '@testing-library/react';
 vi.mock('../contexts/MangaListProvider', () => ({
   MangaListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+vi.mock('../contexts/BooksListProvider', () => ({
+  BooksListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('../contexts/MovieListProvider', () => ({
   MovieListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

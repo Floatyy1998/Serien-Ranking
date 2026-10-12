@@ -249,7 +249,7 @@ const applyFiltersAndSort = (
   return sortItems(filtered, sortBy);
 };
 
-export type FriendProfileTab = 'series' | 'movies' | 'manga' | 'lists';
+export type FriendProfileTab = 'series' | 'movies' | 'manga' | 'books' | 'lists';
 
 export interface UseFriendProfileDataReturn {
   loading: boolean;
@@ -288,7 +288,9 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   // Component-State fiele dabei auf "Serien, ungefiltert, ganz oben" zurück.
   const [activeTab, setActiveTab] = useState<FriendProfileTab>(() => {
     const tab = searchParams.get('tab');
-    return tab === 'movies' || tab === 'manga' || tab === 'lists' ? tab : 'series';
+    return tab === 'movies' || tab === 'manga' || tab === 'books' || tab === 'lists'
+      ? tab
+      : 'series';
   });
   const [openFolderId, setOpenFolderId] = useState<string | null>(() =>
     searchParams.get('tab') === 'lists' ? searchParams.get('list') : null

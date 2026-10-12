@@ -43,6 +43,16 @@ import {
   IncomingRequestPreview,
 } from './NewFeaturePreviews';
 import {
+  BookDetailPreview,
+  BookImportPreview,
+  BookSearchPreview,
+  BookShelfPreview,
+  BooksEmptyPreview,
+  BooksOverviewPreview,
+  BookStatsPreview,
+  ReadingHubPreview,
+} from './BooksPreviews';
+import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
   MangaHistoryPreview,
@@ -225,6 +235,14 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'manga-search', label: 'Manga: Suche', render: () => <MangaSearchPreview /> },
   { id: 'manga-layout', label: 'Manga: Layout', render: () => <MangaLayoutPreview /> },
   { id: 'manga-history', label: 'Manga: Verlauf', render: () => <MangaHistoryPreview /> },
+  { id: 'books', label: 'Bücher: Übersicht', render: () => <BooksOverviewPreview /> },
+  { id: 'books-empty', label: 'Bücher: leer', render: () => <BooksEmptyPreview /> },
+  { id: 'book-detail', label: 'Bücher: Detail', render: () => <BookDetailPreview /> },
+  { id: 'book-search', label: 'Bücher: Suche', render: () => <BookSearchPreview /> },
+  { id: 'book-shelf', label: 'Bücher: Regal', render: () => <BookShelfPreview /> },
+  { id: 'book-stats', label: 'Bücher: Statistik', render: () => <BookStatsPreview /> },
+  { id: 'book-import', label: 'Bücher: Import', render: () => <BookImportPreview /> },
+  { id: 'reading-hub', label: 'Lesen: Alle', render: () => <ReadingHubPreview /> },
   { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },
   { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },

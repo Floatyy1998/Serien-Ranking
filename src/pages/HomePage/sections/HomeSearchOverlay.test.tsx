@@ -117,6 +117,10 @@ vi.mock('../../../components/ui', () => ({
     p.open ? <div role="status">{p.message}</div> : null,
 }));
 vi.mock('../../../services/i18n', () => ({ t: (s: string) => s }));
+vi.mock('../../Books/components/BookQuickResults', () => ({
+  BookQuickResults: () => null,
+  BookOverlayIdle: () => null,
+}));
 vi.mock('./useHomeQuickSearch', () => ({
   useHomeQuickSearch: () => ({
     query: 'breaking',

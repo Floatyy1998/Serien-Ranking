@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { NAV_SLOT_PATHS } from '../../config/navItems';
+import { NAV_SLOT_ALL_PATHS } from '../../config/navItems';
 import { getNavSlots, subscribeNavSlots } from '../../services/settings/navConfig';
 
 // React-Router/navigate nutzen history.pushState/replaceState ohne ein
@@ -35,7 +35,7 @@ const subscribe = (cb: () => void): (() => void) => {
 const getSnapshot = (): boolean => {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   if (pathname === '/' || pathname === '/profile') return true;
-  return getNavSlots().some((id) => NAV_SLOT_PATHS[id] === pathname);
+  return getNavSlots().some((id) => (NAV_SLOT_ALL_PATHS[id] ?? []).includes(pathname));
 };
 
 /** True auf Nav-Leisten-Zielen (Home, /profile, aktive Slots); liest window.location + reagiert auf Navigation, funktioniert so auch ohne Router-Kontext. */

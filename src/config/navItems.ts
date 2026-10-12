@@ -4,13 +4,15 @@ export interface NavSlotOption {
   id: string;
   path: string;
   label: string;
+  /** Weitere Seiten, auf denen der Slot als aktiv gilt (Lesen: Manga, Bücher, Alle). */
+  aliases?: string[];
 }
 
 export const NAV_SLOT_OPTIONS: NavSlotOption[] = [
   { id: 'watchnext', path: '/watchlist', label: 'Weiter' },
   { id: 'calendar', path: '/calendar', label: 'Kalender' },
   { id: 'ratings', path: '/ratings', label: 'Bewertungen' },
-  { id: 'manga', path: '/manga', label: 'Manga' },
+  { id: 'manga', path: '/manga', label: 'Lesen', aliases: ['/books', '/reading'] },
   { id: 'discover', path: '/discover', label: 'Entdecken' },
   { id: 'stats', path: '/stats', label: 'Statistiken' },
   { id: 'leaderboard', path: '/leaderboard', label: 'Rangliste' },
@@ -31,12 +33,17 @@ export const NAV_SLOT_PATHS: Record<string, string> = Object.fromEntries(
   NAV_SLOT_OPTIONS.map((o) => [o.id, o.path])
 );
 
+/** Hauptpfad plus Aliase eines Slots. */
+export const NAV_SLOT_ALL_PATHS: Record<string, string[]> = Object.fromEntries(
+  NAV_SLOT_OPTIONS.map((o) => [o.id, [o.path, ...(o.aliases ?? [])]])
+);
+
 // Ziele der Keep-Alive-Tab-Shell (MainTabs) — bleiben nach Besuch gemountet
 export const MAIN_TAB_PATHS: ReadonlySet<string> = new Set([
   '/',
   '/profile',
   '/search',
-  ...NAV_SLOT_OPTIONS.map((o) => o.path),
+  ...NAV_SLOT_OPTIONS.flatMap((o) => [o.path, ...(o.aliases ?? [])]),
 ]);
 
 export const DEFAULT_NAV_SLOTS = ['watchnext', 'calendar', 'ratings', 'manga'];

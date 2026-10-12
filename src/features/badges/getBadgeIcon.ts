@@ -41,6 +41,11 @@ import {
   Replay,
   RateReview,
   ConnectWithoutContact,
+  MenuBook,
+  AutoStories,
+  LocalLibrary,
+  ImportContacts,
+  CollectionsBookmark,
 } from '@mui/icons-material';
 import type { SvgIconProps } from '@mui/material';
 
@@ -92,6 +97,11 @@ const badgeIconMap: Record<string, React.ComponentType<SvgIconProps>> = {
   social_gold: Groups,
   social_platinum: ConnectWithoutContact,
   social_diamond: Language,
+  reader_bronze: MenuBook,
+  reader_silver: AutoStories,
+  reader_gold: ImportContacts,
+  reader_platinum: LocalLibrary,
+  reader_diamond: CollectionsBookmark,
 };
 
 const FallbackIcon = EmojiEvents;

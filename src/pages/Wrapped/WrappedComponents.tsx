@@ -5,6 +5,7 @@ import {
   TopSeriesSlide,
   TopMoviesSlide,
   TopMangaSlide,
+  TopBooksSlide,
   TopGenresSlide,
   TopProvidersSlide,
   TimePatternSlide,
@@ -183,6 +184,8 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
         return <TopMoviesSlide topMovies={stats.topMovies} />;
       case 'top_manga':
         return stats.manga ? <TopMangaSlide manga={stats.manga} /> : null;
+      case 'top_books':
+        return stats.books ? <TopBooksSlide books={stats.books} /> : null;
       case 'top_genres':
         return <TopGenresSlide topGenres={stats.topGenres} />;
       case 'top_providers':

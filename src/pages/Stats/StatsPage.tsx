@@ -3,6 +3,7 @@
  * Pods in StatsComponents/StatsDetailSections, Layout in StatsPage.css.
  */
 
+import { ReadingStatsBanner } from '../Books/components/ReadingStatsBanner';
 import { ChevronRight, EmojiEventsRounded, InsightsRounded, IosShare } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -124,6 +125,7 @@ export const StatsPage = () => {
           wide={stats.topGenres.length === 0}
         />
         <ActorUniverseBanner theme={currentTheme} onNavigate={navigateToActors} />
+        <ReadingStatsBanner />
       </div>
 
       <StatsShareSheet

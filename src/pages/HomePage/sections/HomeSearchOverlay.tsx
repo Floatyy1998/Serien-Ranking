@@ -37,9 +37,10 @@ import type { Movie } from '../../../types/Movie';
 import type { Series } from '../../../types/Series';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
+import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQuickResults';
 import './HomeSearchOverlay.css';
 
-type Filter = 'all' | 'series' | 'movies';
+type Filter = 'all' | 'series' | 'movies' | 'books';
 
 const keyOf = (item: QuickResult) => `${item.type}-${item.id}`;
 // Das Bewertungs-Sheet muss über dem Overlay liegen (.hso: z-index 1400).
@@ -49,707 +50,755 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: t('Alle') },
   { key: 'series', label: t('Serien') },
   { key: 'movies', label: t('Filme') },
+  { key: 'books', label: t('Bücher') },
 ];
 
 interface HomeSearchOverlayProps {
   open: boolean;
   onClose: () => void;
+  /** Seite, auf der das Overlay lebt (Home oder Bücher). */
+  homePath?: string;
+  initialFilter?: Filter;
 }
 
-export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps) => {
-  const navigate = useNavigate();
-  const { pathname, key } = useLocation();
-  // Home bleibt beim Sprung auf eine Detailseite gemountet (MainTabs-Keep-Alive),
-  // also wird das Overlay dort nur geparkt statt geschlossen — Zurück landet
-  // wieder in den Suchergebnissen. Jede andere Route schließt es.
-  const parked = /^\/(series|movie)\//.test(pathname);
-  // Zurueck stellt per POP denselben History-Eintrag wieder her; der Home-Button
-  // der Detailseite pusht dagegen einen neuen. Nur der Eintrag, auf dem die Suche
-  // geoeffnet wurde, bekommt sie zurueck — sonst landet man ueber Home wieder
-  // ungewollt in der Suche.
-  const homeKey = useRef<string | null>(null);
-  const visible = open && pathname === '/' && (homeKey.current === null || homeKey.current === key);
+export const HomeSearchOverlay = memo(
+  ({ open, onClose, homePath = '/', initialFilter }: HomeSearchOverlayProps) => {
+    const navigate = useNavigate();
+    const { pathname, key } = useLocation();
+    // Home bleibt beim Sprung auf eine Detailseite gemountet (MainTabs-Keep-Alive),
+    // also wird das Overlay dort nur geparkt statt geschlossen — Zurück landet
+    // wieder in den Suchergebnissen. Jede andere Route schließt es.
+    const parked = /^\/(series|movie|books)\//.test(pathname);
+    // Zurueck stellt per POP denselben History-Eintrag wieder her; der Home-Button
+    // der Detailseite pusht dagegen einen neuen. Nur der Eintrag, auf dem die Suche
+    // geoeffnet wurde, bekommt sie zurueck — sonst landet man ueber Home wieder
+    // ungewollt in der Suche.
+    const homeKey = useRef<string | null>(null);
+    const visible =
+      open && pathname === homePath && (homeKey.current === null || homeKey.current === key);
 
-  useEffect(() => {
-    if (!open) {
-      homeKey.current = null;
-      return;
-    }
-    if (pathname === '/' && homeKey.current === null) homeKey.current = key;
-  }, [open, pathname, key]);
-  const { currentTheme } = useTheme();
-  const communityMap = useCommunityRatingsMap();
-  const {
-    query,
-    setQuery,
-    results,
-    loading,
-    recent,
-    popular,
-    popularItems,
-    saveRecent,
-    removeRecent,
-  } = useHomeQuickSearch(open);
-  const [filter, setFilter] = useState<Filter>('all');
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
-  const onSuccess = getOptimalTextColor(currentTheme.status.success);
-  const { user } = useAuth() || {};
-  const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
-  const { movieList } = useMovieList();
-  // Optimistisch: hinzugefügt / gesehen, bis Katalog und Listen nachgezogen haben.
-  const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
-  const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
-  const [pending, setPending] = useState<{ key: string; action: 'add' | 'watched' } | null>(null);
-  const [snack, setSnack] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: '',
-  });
-
-  const showSnack = useCallback((message: string) => {
-    setSnack({ open: true, message });
-    setTimeout(() => setSnack({ open: false, message: '' }), 2500);
-  }, []);
-
-  const { quickRating, openQuickRating, closeQuickRating, saveQuickRating } = useQuickRatingSheet({
-    onSaved: showSnack,
-    onError: showSnack,
-  });
-
-  const ownedOf = useCallback(
-    (item: QuickResult): Series | Movie | undefined =>
-      item.type === 'series'
-        ? seriesList.find((s: Series) => s.id === item.id)
-        : movieList.find((m: Movie) => m.id === item.id),
-    [seriesList, movieList]
-  );
-
-  const requestAdd = useCallback(
-    async (item: QuickResult, uid: string): Promise<'added' | 'exists' | 'failed'> => {
-      const res = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: import.meta.env.VITE_USER, id: item.id, uuid: uid }),
-      });
-      if (!res.ok) {
-        const data = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
-        const message = typeof data?.error === 'string' ? data.error : '';
-        return message.includes('bereits vorhanden') ? 'exists' : 'failed';
+    useEffect(() => {
+      if (!open) {
+        homeKey.current = null;
+        return;
       }
-      setAddedKeys((prev) => new Set(prev).add(keyOf(item)));
-      if (item.type === 'series') {
-        void refetchAfterAdd(item.id);
-        trackSeriesAdded(String(item.id), item.title, 'search');
-        await logSeriesAdded(uid, item.title, item.id, item.poster_path);
-      } else {
-        trackMovieAdded(String(item.id), item.title, 'search');
-        await logMovieAdded(uid, item.title, item.id, item.poster_path);
-      }
-      return 'added';
-    },
-    [refetchAfterAdd]
-  );
+      if (pathname === homePath && homeKey.current === null) homeKey.current = key;
+    }, [open, pathname, key, homePath]);
+    const { currentTheme } = useTheme();
+    const communityMap = useCommunityRatingsMap();
+    const {
+      query,
+      setQuery,
+      results,
+      loading,
+      recent,
+      popular,
+      popularItems,
+      saveRecent,
+      removeRecent,
+    } = useHomeQuickSearch(open);
+    const [filter, setFilter] = useState<Filter>(initialFilter ?? 'all');
+    useEffect(() => {
+      if (open && initialFilter) setFilter(initialFilter);
+    }, [open, initialFilter]);
+    const onPrimary = getOptimalTextColor(currentTheme.primary);
+    const onSuccess = getOptimalTextColor(currentTheme.status.success);
+    const { user } = useAuth() || {};
+    const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
+    const { movieList } = useMovieList();
+    // Optimistisch: hinzugefügt / gesehen, bis Katalog und Listen nachgezogen haben.
+    const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
+    const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
+    const [pending, setPending] = useState<{ key: string; action: 'add' | 'watched' } | null>(null);
+    const [snack, setSnack] = useState<{ open: boolean; message: string }>({
+      open: false,
+      message: '',
+    });
 
-  const addToList = useCallback(
-    async (item: QuickResult, e: React.MouseEvent) => {
-      e.stopPropagation(); // nicht zur Detailseite navigieren
-      if (!user) return;
-      const key = keyOf(item);
-      setPending({ key, action: 'add' });
-      const isSeries = item.type === 'series';
-      const failedText = isSeries
-        ? t('Fehler beim Hinzufügen der Serie.')
-        : t('Fehler beim Hinzufügen des Films.');
-      try {
-        const result = await requestAdd(item, user.uid);
-        if (result === 'added') {
-          showSnack(t('„{title}" hinzugefügt', { title: item.title }));
-        } else if (result === 'exists') {
-          showSnack(
-            isSeries
-              ? t('Serie ist bereits in deiner Liste!')
-              : t('Film ist bereits in deiner Liste!')
-          );
+    const showSnack = useCallback((message: string) => {
+      setSnack({ open: true, message });
+      setTimeout(() => setSnack({ open: false, message: '' }), 2500);
+    }, []);
+
+    const { quickRating, openQuickRating, closeQuickRating, saveQuickRating } = useQuickRatingSheet(
+      {
+        onSaved: showSnack,
+        onError: showSnack,
+      }
+    );
+
+    const ownedOf = useCallback(
+      (item: QuickResult): Series | Movie | undefined =>
+        item.type === 'series'
+          ? seriesList.find((s: Series) => s.id === item.id)
+          : movieList.find((m: Movie) => m.id === item.id),
+      [seriesList, movieList]
+    );
+
+    const requestAdd = useCallback(
+      async (item: QuickResult, uid: string): Promise<'added' | 'exists' | 'failed'> => {
+        const res = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: import.meta.env.VITE_USER, id: item.id, uuid: uid }),
+        });
+        if (!res.ok) {
+          const data = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
+          const message = typeof data?.error === 'string' ? data.error : '';
+          return message.includes('bereits vorhanden') ? 'exists' : 'failed';
+        }
+        setAddedKeys((prev) => new Set(prev).add(keyOf(item)));
+        if (item.type === 'series') {
+          void refetchAfterAdd(item.id);
+          trackSeriesAdded(String(item.id), item.title, 'search');
+          await logSeriesAdded(uid, item.title, item.id, item.poster_path);
         } else {
-          showSnack(failedText);
+          trackMovieAdded(String(item.id), item.title, 'search');
+          await logMovieAdded(uid, item.title, item.id, item.poster_path);
         }
-      } catch (err) {
-        console.error('Add from search failed:', err);
-        showSnack(failedText);
-      } finally {
-        setPending(null);
-      }
-    },
-    [user, requestAdd, showSnack]
-  );
-
-  // Film: bei Bedarf hinzufügen, als gesehen markieren, dann Schnellbewertung anbieten.
-  const markWatched = useCallback(
-    async (item: QuickResult, inList: boolean, e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!user || item.type !== 'movie') return;
-      const key = keyOf(item);
-      setPending({ key, action: 'watched' });
-      try {
-        if (!inList && (await requestAdd(item, user.uid)) === 'failed') {
-          throw new Error('add failed');
-        }
-        await markMovieWatched(user.uid, item.id);
-        setWatchedKeys((prev) => new Set(prev).add(key));
-        openQuickRating({ id: item.id, type: item.type, title: item.title }, true);
-      } catch (err) {
-        console.error('Mark watched from search failed:', err);
-        showSnack(t('Der Gesehen-Status konnte nicht gespeichert werden.'));
-      } finally {
-        setPending(null);
-      }
-    },
-    [user, requestAdd, openQuickRating, showSnack]
-  );
-
-  const rateFromCard = useCallback(
-    (item: QuickResult, userRating: number, e: React.MouseEvent) => {
-      e.stopPropagation();
-      openQuickRating({ id: item.id, type: item.type, title: item.title, userRating });
-    },
-    [openQuickRating]
-  );
-
-  useEffect(() => {
-    if (open && !visible && !parked) onClose();
-  }, [open, visible, parked, onClose]);
-
-  useAndroidBack(visible, onClose);
-
-  // Scrollposition des Ergebnis-Grids über den Detail-Ausflug retten:
-  // display:none verwirft scrollTop.
-  const contentRef = useRef<HTMLDivElement>(null);
-  const contentScroll = useRef(0);
-  useLayoutEffect(() => {
-    if (visible && contentRef.current) contentRef.current.scrollTop = contentScroll.current;
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !quickRating.open) onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [visible, onClose, quickRating.open]);
-
-  // Beim Schließen zurücksetzen, damit das nächste Öffnen frisch startet —
-  // inklusive Scrollstand, der sonst aus der vorigen Suche stehen bliebe.
-  useEffect(() => {
-    if (!open) {
-      if (query) setQuery('');
-      setFilter('all');
-      contentScroll.current = 0;
-    }
-  }, [open, query, setQuery]);
-
-  const lastQueryFilter = useRef(`${query}|${filter}`);
-  useEffect(() => {
-    const sig = `${query}|${filter}`;
-    if (lastQueryFilter.current === sig) return;
-    lastQueryFilter.current = sig;
-    contentScroll.current = 0;
-    if (contentRef.current) contentRef.current.scrollTop = 0;
-  }, [query, filter]);
-
-  const shown = useMemo(
-    () =>
-      filter === 'all'
-        ? results
-        : results.filter((r) => (filter === 'series' ? r.type === 'series' : r.type === 'movie')),
-    [results, filter]
-  );
-
-  // Der Segment-Filter gilt für ALLES Sichtbare — auch für „Beliebt".
-  const shownPopular = useMemo(
-    () =>
-      filter === 'all'
-        ? popularItems
-        : popularItems.filter((r) =>
-            filter === 'series' ? r.type === 'series' : r.type === 'movie'
-          ),
-    [popularItems, filter]
-  );
-
-  const hasQuery = query.trim().length >= 2;
-
-  // Klick auf freie Fläche schließt. Interaktive Elemente (Suchfeld, Karten,
-  // Chips, Buttons) sind ausgenommen — deren Klicks bubbeln zwar hierher,
-  // treffen aber per closest() auf ein interaktives Ziel.
-  const onBackdropClick = useCallback(
-    (e: React.MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('button, input, [role="button"], .hso__field')) return;
-      onClose();
-    },
-    [onClose]
-  );
-
-  const goTo = (item: QuickResult) => {
-    if (query.trim()) saveRecent(query);
-    // Nur navigieren, nicht schliessen: das Overlay parkt sich selbst (siehe
-    // `parked`) und ist beim Zurueck mit Query, Treffern und Scrollstand da.
-    navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
-  };
-
-  // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
-  // Rating-Badge und Zur-Liste-Button), damit beide Grids gleich mächtig sind.
-  const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
-    const owned = ownedOf(item);
-    const added = addedKeys.has(keyOf(item)) || owned !== undefined;
-    const ownRating = owned ? overallRatingValue(owned) : 0;
-    const showWatched =
-      item.type === 'movie' &&
-      !watchedKeys.has(keyOf(item)) &&
-      !(owned !== undefined && isMovieWatched(owned as Movie));
-    const busy = pending?.key === keyOf(item);
-    const busyAction = busy ? pending?.action : null;
-    // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
-    const displayRating = pickDisplayRating(
-      communityMap,
-      item.type === 'series' ? 'series' : 'movies',
-      item.id,
-      item.vote_average
+        return 'added';
+      },
+      [refetchAfterAdd]
     );
-    return (
-      <motion.div
-        key={keyOf(item)}
-        {...mediaTargetProps({
-          type: item.type,
-          id: item.id,
-          title: item.title,
-          poster: item.poster_path,
-        })}
-        className="hso__card"
-        role="button"
-        tabIndex={0}
-        whileTap={tapScale}
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: Math.min(idx * delayStep, 0.35), duration: 0.28 }}
-        onClick={() => goTo(item)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            goTo(item);
+
+    const addToList = useCallback(
+      async (item: QuickResult, e: React.MouseEvent) => {
+        e.stopPropagation(); // nicht zur Detailseite navigieren
+        if (!user) return;
+        const key = keyOf(item);
+        setPending({ key, action: 'add' });
+        const isSeries = item.type === 'series';
+        const failedText = isSeries
+          ? t('Fehler beim Hinzufügen der Serie.')
+          : t('Fehler beim Hinzufügen des Films.');
+        try {
+          const result = await requestAdd(item, user.uid);
+          if (result === 'added') {
+            showSnack(t('„{title}" hinzugefügt', { title: item.title }));
+          } else if (result === 'exists') {
+            showSnack(
+              isSeries
+                ? t('Serie ist bereits in deiner Liste!')
+                : t('Film ist bereits in deiner Liste!')
+            );
+          } else {
+            showSnack(failedText);
           }
-        }}
-      >
-        <div className="hso__poster-wrap">
-          {item.poster_path ? (
-            <img
-              className="hso__poster"
-              src={getImageUrl(item.poster_path, 'w342')}
-              alt=""
-              loading="lazy"
-            />
-          ) : (
-            <div
-              className="hso__poster hso__poster--empty"
-              style={{ background: `${currentTheme.text.muted}22` }}
-            >
-              <Search style={{ fontSize: '28px', opacity: 0.4 }} />
-            </div>
-          )}
-          {displayRating ? (
-            <span
-              className="hso__rating"
-              style={{ background: `${currentTheme.background.default}d9` }}
-            >
-              <Star
-                style={{
-                  fontSize: '12px',
-                  color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
-                }}
-              />
-              {displayRating.value.toFixed(1)}
-            </span>
-          ) : null}
-          <span
-            className="hso__type"
-            style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}
-          >
-            {item.type === 'series' ? t('Serie') : t('Film')}
-          </span>
-
-          {showWatched && (
-            <button
-              type="button"
-              className="hso__watched"
-              aria-label={
-                added
-                  ? t('„{title}" als gesehen markieren', { title: item.title })
-                  : t('„{title}" hinzufügen und als gesehen markieren', { title: item.title })
-              }
-              disabled={busy}
-              onClick={(e) => markWatched(item, added, e)}
-              style={{
-                border: `1px solid ${currentTheme.status.success}99`,
-                color: currentTheme.status.success,
-                cursor: busy ? 'wait' : 'pointer',
-                opacity: busyAction === 'watched' ? 0.7 : 1,
-              }}
-            >
-              <Visibility style={{ fontSize: '18px' }} />
-            </button>
-          )}
-          {added ? (
-            <button
-              type="button"
-              className="hso__rate"
-              aria-label={
-                ownRating > 0
-                  ? t('„{title}" ist mit {rating} bewertet. Bewertung ändern', {
-                      title: item.title,
-                      rating: formatRatingShort(ownRating),
-                    })
-                  : t('„{title}" bewerten', { title: item.title })
-              }
-              onClick={(e) => rateFromCard(item, ownRating, e)}
-              style={{ background: currentTheme.status.success, color: onSuccess }}
-            >
-              {ownRating > 0 ? (
-                <span className="hso__rate-value">{formatRatingShort(ownRating)}</span>
-              ) : (
-                <Star style={{ fontSize: '20px' }} />
-              )}
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="hso__add"
-              aria-label={t('„{title}" zur Liste hinzufügen', { title: item.title })}
-              disabled={busy}
-              onClick={(e) => addToList(item, e)}
-              style={{
-                background:
-                  busyAction === 'add'
-                    ? 'var(--glass-heavy)'
-                    : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                color: onPrimary,
-                cursor: busy ? 'wait' : 'pointer',
-                opacity: busyAction === 'add' ? 0.7 : 1,
-              }}
-            >
-              <Add style={{ fontSize: '20px' }} />
-            </button>
-          )}
-        </div>
-        <span className="hso__card-title" style={{ color: currentTheme.text.primary }}>
-          {item.title}
-        </span>
-        {item.year && (
-          <span className="hso__card-year" style={{ color: currentTheme.text.muted }}>
-            {item.year}
-          </span>
-        )}
-      </motion.div>
+        } catch (err) {
+          console.error('Add from search failed:', err);
+          showSnack(failedText);
+        } finally {
+          setPending(null);
+        }
+      },
+      [user, requestAdd, showSnack]
     );
-  };
 
-  return createPortal(
-    <AnimatePresence>
-      {open && (
+    // Film: bei Bedarf hinzufügen, als gesehen markieren, dann Schnellbewertung anbieten.
+    const markWatched = useCallback(
+      async (item: QuickResult, inList: boolean, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!user || item.type !== 'movie') return;
+        const key = keyOf(item);
+        setPending({ key, action: 'watched' });
+        try {
+          if (!inList && (await requestAdd(item, user.uid)) === 'failed') {
+            throw new Error('add failed');
+          }
+          await markMovieWatched(user.uid, item.id);
+          setWatchedKeys((prev) => new Set(prev).add(key));
+          openQuickRating({ id: item.id, type: item.type, title: item.title }, true);
+        } catch (err) {
+          console.error('Mark watched from search failed:', err);
+          showSnack(t('Der Gesehen-Status konnte nicht gespeichert werden.'));
+        } finally {
+          setPending(null);
+        }
+      },
+      [user, requestAdd, openQuickRating, showSnack]
+    );
+
+    const rateFromCard = useCallback(
+      (item: QuickResult, userRating: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        openQuickRating({ id: item.id, type: item.type, title: item.title, userRating });
+      },
+      [openQuickRating]
+    );
+
+    useEffect(() => {
+      if (open && !visible && !parked) onClose();
+    }, [open, visible, parked, onClose]);
+
+    useAndroidBack(visible, onClose);
+
+    // Scrollposition des Ergebnis-Grids über den Detail-Ausflug retten:
+    // display:none verwirft scrollTop.
+    const contentRef = useRef<HTMLDivElement>(null);
+    const contentScroll = useRef(0);
+    useLayoutEffect(() => {
+      if (visible && contentRef.current) contentRef.current.scrollTop = contentScroll.current;
+    }, [visible]);
+
+    useEffect(() => {
+      if (!visible) return;
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && !quickRating.open) onClose();
+      };
+      document.addEventListener('keydown', onKey);
+      return () => {
+        document.body.style.overflow = prev;
+        document.removeEventListener('keydown', onKey);
+      };
+    }, [visible, onClose, quickRating.open]);
+
+    // Beim Schließen zurücksetzen, damit das nächste Öffnen frisch startet —
+    // inklusive Scrollstand, der sonst aus der vorigen Suche stehen bliebe.
+    useEffect(() => {
+      if (!open) {
+        if (query) setQuery('');
+        setFilter('all');
+        contentScroll.current = 0;
+      }
+    }, [open, query, setQuery]);
+
+    const lastQueryFilter = useRef(`${query}|${filter}`);
+    useEffect(() => {
+      const sig = `${query}|${filter}`;
+      if (lastQueryFilter.current === sig) return;
+      lastQueryFilter.current = sig;
+      contentScroll.current = 0;
+      if (contentRef.current) contentRef.current.scrollTop = 0;
+    }, [query, filter]);
+
+    const shown = useMemo(
+      () =>
+        filter === 'all'
+          ? results
+          : filter === 'books'
+            ? []
+            : results.filter((r) =>
+                filter === 'series' ? r.type === 'series' : r.type === 'movie'
+              ),
+      [results, filter]
+    );
+    const [bookHits, setBookHits] = useState({ count: 0, loading: false });
+    const onBookCount = useCallback(
+      (count: number, isLoading: boolean) => setBookHits({ count, loading: isLoading }),
+      []
+    );
+
+    // Der Segment-Filter gilt für ALLES Sichtbare — auch für „Beliebt".
+    const shownPopular = useMemo(
+      () =>
+        filter === 'all'
+          ? popularItems
+          : popularItems.filter((r) =>
+              filter === 'series' ? r.type === 'series' : r.type === 'movie'
+            ),
+      [popularItems, filter]
+    );
+
+    const hasQuery = query.trim().length >= 2;
+
+    // Klick auf freie Fläche schließt. Interaktive Elemente (Suchfeld, Karten,
+    // Chips, Buttons) sind ausgenommen — deren Klicks bubbeln zwar hierher,
+    // treffen aber per closest() auf ein interaktives Ziel.
+    const onBackdropClick = useCallback(
+      (e: React.MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('button, input, [role="button"], .hso__field')) return;
+        onClose();
+      },
+      [onClose]
+    );
+
+    const goTo = (item: QuickResult) => {
+      if (query.trim()) saveRecent(query);
+      // Nur navigieren, nicht schliessen: das Overlay parkt sich selbst (siehe
+      // `parked`) und ist beim Zurueck mit Query, Treffern und Scrollstand da.
+      navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
+    };
+
+    // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
+    // Rating-Badge und Zur-Liste-Button), damit beide Grids gleich mächtig sind.
+    const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
+      const owned = ownedOf(item);
+      const added = addedKeys.has(keyOf(item)) || owned !== undefined;
+      const ownRating = owned ? overallRatingValue(owned) : 0;
+      const showWatched =
+        item.type === 'movie' &&
+        !watchedKeys.has(keyOf(item)) &&
+        !(owned !== undefined && isMovieWatched(owned as Movie));
+      const busy = pending?.key === keyOf(item);
+      const busyAction = busy ? pending?.action : null;
+      // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
+      const displayRating = pickDisplayRating(
+        communityMap,
+        item.type === 'series' ? 'series' : 'movies',
+        item.id,
+        item.vote_average
+      );
+      return (
         <motion.div
-          key="home-search-overlay"
-          className="hso noise-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
-          onClick={onBackdropClick}
-          // Fast deckender Tint statt Blur (der kostete ~25 ms pro Frame). Die
-          // Orbs darueber halten die Flaeche lebendig, damit es auf dunklen
-          // Themes nicht wie eine schwarze Wand wirkt.
-          style={{
-            background: `${currentTheme.background.default}eb`,
-            display: visible ? undefined : 'none',
+          key={keyOf(item)}
+          {...mediaTargetProps({
+            type: item.type,
+            id: item.id,
+            title: item.title,
+            poster: item.poster_path,
+          })}
+          className="hso__card"
+          role="button"
+          tabIndex={0}
+          whileTap={tapScale}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: Math.min(idx * delayStep, 0.35), duration: 0.28 }}
+          onClick={() => goTo(item)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              goTo(item);
+            }
           }}
         >
-          {/* Ambient-Licht unter dem Glas — eigene Lichtquelle, damit das Overlay
-              lebendig aussieht, egal wie dunkel/leer der Home-Inhalt dahinter ist. */}
-          <motion.div
-            className="hso__orb hso__orb--1"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              // Intensität via --hso-orb-strength (CSS), weil framer die
-              // Element-Opacity inline auf 1 animiert und CSS-opacity schluckt.
-              background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.primary} var(--hso-orb-strength, 40%), transparent), transparent 70%)`,
-            }}
-          />
-          <motion.div
-            className="hso__orb hso__orb--2"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
-            style={{
-              background:
-                'radial-gradient(circle, color-mix(in srgb, var(--theme-secondary-gradient) var(--hso-orb-strength, 40%), transparent), transparent 70%)',
-            }}
-          />
-          <motion.div
-            className="hso__orb hso__orb--3"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            style={{
-              background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.accent} calc(var(--hso-orb-strength, 40%) * 0.75), transparent), transparent 70%)`,
-            }}
-          />
-
-          {/* Spotlight-Panel: auf Mobile full-bleed, auf Desktop zentrierte Palette. */}
-          <div className="hso__panel">
-            {/* Kopf */}
-            <motion.div
-              className="hso__head"
-              initial={{ y: -26, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -18, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 440, damping: 34 }}
-            >
-              <div className="hso__bar-row">
-                <div
-                  className="hso__field"
+          <div className="hso__poster-wrap">
+            {item.poster_path ? (
+              <img
+                className="hso__poster"
+                src={getImageUrl(item.poster_path, 'w342')}
+                alt=""
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="hso__poster hso__poster--empty"
+                style={{ background: `${currentTheme.text.muted}22` }}
+              >
+                <Search style={{ fontSize: '28px', opacity: 0.4 }} />
+              </div>
+            )}
+            {displayRating ? (
+              <span
+                className="hso__rating"
+                style={{ background: `${currentTheme.background.default}d9` }}
+              >
+                <Star
                   style={{
-                    background: `linear-gradient(135deg, ${currentTheme.primary}1f, transparent 45%), var(--glass-medium)`,
-                    borderColor: `${currentTheme.primary}59`,
-                    boxShadow: `0 10px 40px -10px ${currentTheme.primary}55, inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 0 1px ${currentTheme.primary}14`,
+                    fontSize: '12px',
+                    color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
                   }}
-                >
-                  <Search
-                    style={{ fontSize: '22px', color: currentTheme.primary, flexShrink: 0 }}
-                  />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && shown.length > 0) goTo(shown[0]);
-                    }}
-                    placeholder={t('Serien & Filme suchen…')}
-                    aria-label={t('Serien und Filme suchen')}
-                    autoFocus
-                    className="hso__input"
-                    style={{ color: currentTheme.text.primary, outline: 'none' }}
-                  />
-                  {query && (
-                    <button
-                      type="button"
-                      className="hso__clear"
-                      aria-label={t('Suche leeren')}
-                      onClick={() => setQuery('')}
-                      style={{
-                        color: currentTheme.text.muted,
-                        background: `${currentTheme.text.muted}22`,
-                      }}
-                    >
-                      <Close style={{ fontSize: '15px' }} />
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  className="hso__done"
-                  onClick={onClose}
-                  aria-label={t('Suche schließen')}
-                  style={{ color: currentTheme.text.secondary }}
-                >
-                  {t('Fertig')}
-                </button>
-              </div>
-
-              {/* Segment-Filter */}
-              <div className="hso__filters">
-                {FILTERS.map((f) => {
-                  const active = filter === f.key;
-                  return (
-                    <button
-                      key={f.key}
-                      type="button"
-                      className="hso__filter"
-                      onClick={() => setFilter(f.key)}
-                      aria-pressed={active}
-                      style={{
-                        background: active
-                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                          : 'var(--glass-medium)',
-                        border: active ? 'none' : '1px solid var(--glass-border-light)',
-                        color: active ? onPrimary : currentTheme.text.muted,
-                        boxShadow: active
-                          ? `0 6px 18px -4px ${currentTheme.primary}66`
-                          : 'var(--glass-specular)',
-                        backdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                        WebkitBackdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                      }}
-                    >
-                      {f.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            {/* Inhalt */}
-            <div
-              className="hso__content"
-              ref={contentRef}
-              onScroll={(e) => {
-                contentScroll.current = e.currentTarget.scrollTop;
-              }}
+                />
+                {displayRating.value.toFixed(1)}
+              </span>
+            ) : null}
+            <span
+              className="hso__type"
+              style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}
             >
-              {/* Bewusst KEIN AnimatePresence mode="wait" hier: die Keys wechseln bei
+              {item.type === 'series' ? t('Serie') : t('Film')}
+            </span>
+
+            {showWatched && (
+              <button
+                type="button"
+                className="hso__watched"
+                aria-label={
+                  added
+                    ? t('„{title}" als gesehen markieren', { title: item.title })
+                    : t('„{title}" hinzufügen und als gesehen markieren', { title: item.title })
+                }
+                disabled={busy}
+                onClick={(e) => markWatched(item, added, e)}
+                style={{
+                  border: `1px solid ${currentTheme.status.success}99`,
+                  color: currentTheme.status.success,
+                  cursor: busy ? 'wait' : 'pointer',
+                  opacity: busyAction === 'watched' ? 0.7 : 1,
+                }}
+              >
+                <Visibility style={{ fontSize: '18px' }} />
+              </button>
+            )}
+            {added ? (
+              <button
+                type="button"
+                className="hso__rate"
+                aria-label={
+                  ownRating > 0
+                    ? t('„{title}" ist mit {rating} bewertet. Bewertung ändern', {
+                        title: item.title,
+                        rating: formatRatingShort(ownRating),
+                      })
+                    : t('„{title}" bewerten', { title: item.title })
+                }
+                onClick={(e) => rateFromCard(item, ownRating, e)}
+                style={{ background: currentTheme.status.success, color: onSuccess }}
+              >
+                {ownRating > 0 ? (
+                  <span className="hso__rate-value">{formatRatingShort(ownRating)}</span>
+                ) : (
+                  <Star style={{ fontSize: '20px' }} />
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="hso__add"
+                aria-label={t('„{title}" zur Liste hinzufügen', { title: item.title })}
+                disabled={busy}
+                onClick={(e) => addToList(item, e)}
+                style={{
+                  background:
+                    busyAction === 'add'
+                      ? 'var(--glass-heavy)'
+                      : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  color: onPrimary,
+                  cursor: busy ? 'wait' : 'pointer',
+                  opacity: busyAction === 'add' ? 0.7 : 1,
+                }}
+              >
+                <Add style={{ fontSize: '20px' }} />
+              </button>
+            )}
+          </div>
+          <span className="hso__card-title" style={{ color: currentTheme.text.primary }}>
+            {item.title}
+          </span>
+          {item.year && (
+            <span className="hso__card-year" style={{ color: currentTheme.text.muted }}>
+              {item.year}
+            </span>
+          )}
+        </motion.div>
+      );
+    };
+
+    return createPortal(
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="home-search-overlay"
+            className="hso noise-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            onClick={onBackdropClick}
+            // Fast deckender Tint statt Blur (der kostete ~25 ms pro Frame). Die
+            // Orbs darueber halten die Flaeche lebendig, damit es auf dunklen
+            // Themes nicht wie eine schwarze Wand wirkt.
+            style={{
+              background: `${currentTheme.background.default}eb`,
+              display: visible ? undefined : 'none',
+            }}
+          >
+            {/* Ambient-Licht unter dem Glas — eigene Lichtquelle, damit das Overlay
+              lebendig aussieht, egal wie dunkel/leer der Home-Inhalt dahinter ist. */}
+            <motion.div
+              className="hso__orb hso__orb--1"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{
+                // Intensität via --hso-orb-strength (CSS), weil framer die
+                // Element-Opacity inline auf 1 animiert und CSS-opacity schluckt.
+                background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.primary} var(--hso-orb-strength, 40%), transparent), transparent 70%)`,
+              }}
+            />
+            <motion.div
+              className="hso__orb hso__orb--2"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, delay: 0.08 }}
+              style={{
+                background:
+                  'radial-gradient(circle, color-mix(in srgb, var(--theme-secondary-gradient) var(--hso-orb-strength, 40%), transparent), transparent 70%)',
+              }}
+            />
+            <motion.div
+              className="hso__orb hso__orb--3"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              style={{
+                background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.accent} calc(var(--hso-orb-strength, 40%) * 0.75), transparent), transparent 70%)`,
+              }}
+            />
+
+            {/* Spotlight-Panel: auf Mobile full-bleed, auf Desktop zentrierte Palette. */}
+            <div className="hso__panel">
+              {/* Kopf */}
+              <motion.div
+                className="hso__head"
+                initial={{ y: -26, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -18, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 440, damping: 34 }}
+              >
+                <div className="hso__bar-row">
+                  <div
+                    className="hso__field"
+                    style={{
+                      background: `linear-gradient(135deg, ${currentTheme.primary}1f, transparent 45%), var(--glass-medium)`,
+                      borderColor: `${currentTheme.primary}59`,
+                      boxShadow: `0 10px 40px -10px ${currentTheme.primary}55, inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 0 1px ${currentTheme.primary}14`,
+                    }}
+                  >
+                    <Search
+                      style={{ fontSize: '22px', color: currentTheme.primary, flexShrink: 0 }}
+                    />
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && shown.length > 0) goTo(shown[0]);
+                      }}
+                      placeholder={t('Serien & Filme suchen…')}
+                      aria-label={t('Serien und Filme suchen')}
+                      autoFocus
+                      className="hso__input"
+                      style={{ color: currentTheme.text.primary, outline: 'none' }}
+                    />
+                    {query && (
+                      <button
+                        type="button"
+                        className="hso__clear"
+                        aria-label={t('Suche leeren')}
+                        onClick={() => setQuery('')}
+                        style={{
+                          color: currentTheme.text.muted,
+                          background: `${currentTheme.text.muted}22`,
+                        }}
+                      >
+                        <Close style={{ fontSize: '15px' }} />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="hso__done"
+                    onClick={onClose}
+                    aria-label={t('Suche schließen')}
+                    style={{ color: currentTheme.text.secondary }}
+                  >
+                    {t('Fertig')}
+                  </button>
+                </div>
+
+                {/* Segment-Filter */}
+                <div className="hso__filters">
+                  {FILTERS.map((f) => {
+                    const active = filter === f.key;
+                    return (
+                      <button
+                        key={f.key}
+                        type="button"
+                        className="hso__filter"
+                        onClick={() => setFilter(f.key)}
+                        aria-pressed={active}
+                        style={{
+                          background: active
+                            ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                            : 'var(--glass-medium)',
+                          border: active ? 'none' : '1px solid var(--glass-border-light)',
+                          color: active ? onPrimary : currentTheme.text.muted,
+                          boxShadow: active
+                            ? `0 6px 18px -4px ${currentTheme.primary}66`
+                            : 'var(--glass-specular)',
+                          backdropFilter: active ? undefined : 'var(--glass-filter-sm)',
+                          WebkitBackdropFilter: active ? undefined : 'var(--glass-filter-sm)',
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Inhalt */}
+              <div
+                className="hso__content"
+                ref={contentRef}
+                onScroll={(e) => {
+                  contentScroll.current = e.currentTarget.scrollTop;
+                }}
+              >
+                {/* Bewusst KEIN AnimatePresence mode="wait" hier: die Keys wechseln bei
                 jedem Tastendruck (loading/empty/results), und mode="wait" kann bei
                 schnellem Tippen im Exit hängen bleiben — dann klebt eine veraltete
                 „Keine Treffer"-Meldung fest. Einblenden reicht. */}
-              {hasQuery ? (
-                loading && shown.length === 0 ? (
-                  <motion.div
-                    key="loading"
-                    className="hso__grid"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="hso__skeleton"
-                        style={{ background: `${currentTheme.text.muted}18` }}
-                      />
-                    ))}
+                {hasQuery && filter === 'books' ? (
+                  <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <BookQuickResults query={query} variant="grid" sheetZIndex={OVERLAY_SHEET_Z} />
                   </motion.div>
-                ) : shown.length === 0 ? (
-                  <motion.div
-                    key="empty"
-                    className="hso__msg"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    style={{ color: currentTheme.text.muted }}
-                  >
-                    <Search style={{ fontSize: '40px', opacity: 0.5 }} />
-                    <p>{t('Keine Treffer für „{query}“', { query })}</p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="results"
-                    className="hso__grid"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    {shown.map((item, idx) => renderCard(item, idx, 0.03))}
-                  </motion.div>
-                )
-              ) : (
-                <motion.div
-                  key="suggest"
-                  className="hso__suggest"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  {recent.length > 0 && (
-                    <div className="hso__group">
-                      <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                        {t('Zuletzt gesucht')}
-                      </div>
-                      {recent.map((term) => (
-                        <div key={term} className="hso__recent-row">
-                          <button
-                            type="button"
-                            className="hso__recent"
-                            onClick={() => setQuery(term)}
-                            style={{ color: currentTheme.text.secondary }}
-                          >
-                            <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
-                            {term}
-                          </button>
-                          <button
-                            type="button"
-                            className="hso__recent-remove"
-                            aria-label={t('„{term}" entfernen', { term })}
-                            onClick={() => removeRecent(term)}
-                            style={{ color: currentTheme.text.muted }}
-                          >
-                            <Close style={{ fontSize: '15px' }} />
-                          </button>
-                        </div>
+                ) : hasQuery ? (
+                  loading && shown.length === 0 && bookHits.count === 0 ? (
+                    <motion.div
+                      key="loading"
+                      className="hso__grid"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="hso__skeleton"
+                          style={{ background: `${currentTheme.text.muted}18` }}
+                        />
                       ))}
-                    </div>
-                  )}
-                  <div className="hso__group">
-                    <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                      {t('Beliebt')}
-                    </div>
-                    {shownPopular.length > 0 ? (
-                      <div className="hso__pop-row">
-                        {shownPopular.map((item, i) => renderCard(item, i, 0.02))}
-                      </div>
-                    ) : (
-                      <div className="hso__chips">
-                        {popular.map((term, i) => (
-                          <motion.button
-                            key={term}
-                            type="button"
-                            className="hso__chip"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.05 + i * 0.04 }}
-                            whileTap={tapScale}
-                            onClick={() => setQuery(term)}
-                            style={{
-                              color: currentTheme.text.secondary,
-                              background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
-                              border: `1px solid ${currentTheme.primary}33`,
-                            }}
-                          >
-                            {term}
-                          </motion.button>
+                    </motion.div>
+                  ) : shown.length === 0 && bookHits.count === 0 && !bookHits.loading ? (
+                    <motion.div
+                      key="empty"
+                      className="hso__msg"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      style={{ color: currentTheme.text.muted }}
+                    >
+                      <Search style={{ fontSize: '40px', opacity: 0.5 }} />
+                      <p>{t('Keine Treffer für „{query}“', { query })}</p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="results"
+                      className="hso__grid"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      {shown.map((item, idx) => renderCard(item, idx, 0.03))}
+                    </motion.div>
+                  )
+                ) : null}
+                {hasQuery && filter === 'all' && (
+                  <BookQuickResults
+                    query={query}
+                    variant="row"
+                    sheetZIndex={OVERLAY_SHEET_Z}
+                    onCount={onBookCount}
+                    onSeeAll={() => setFilter('books')}
+                  />
+                )}
+                {hasQuery ? null : (
+                  <motion.div
+                    key="suggest"
+                    className="hso__suggest"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {recent.length > 0 && (
+                      <div className="hso__group">
+                        <div
+                          className="hso__group-title"
+                          style={{ color: currentTheme.text.muted }}
+                        >
+                          {t('Zuletzt gesucht')}
+                        </div>
+                        {recent.map((term) => (
+                          <div key={term} className="hso__recent-row">
+                            <button
+                              type="button"
+                              className="hso__recent"
+                              onClick={() => setQuery(term)}
+                              style={{ color: currentTheme.text.secondary }}
+                            >
+                              <Search
+                                style={{ fontSize: '18px', color: currentTheme.text.muted }}
+                              />
+                              {term}
+                            </button>
+                            <button
+                              type="button"
+                              className="hso__recent-remove"
+                              aria-label={t('„{term}" entfernen', { term })}
+                              onClick={() => removeRecent(term)}
+                              style={{ color: currentTheme.text.muted }}
+                            >
+                              <Close style={{ fontSize: '15px' }} />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
-                  </div>
-                </motion.div>
-              )}
+                    {filter === 'books' && <BookOverlayIdle sheetZIndex={OVERLAY_SHEET_Z} />}
+                    {filter !== 'books' && (
+                      <div className="hso__group">
+                        <div
+                          className="hso__group-title"
+                          style={{ color: currentTheme.text.muted }}
+                        >
+                          {t('Beliebt')}
+                        </div>
+                        {shownPopular.length > 0 ? (
+                          <div className="hso__pop-row">
+                            {shownPopular.map((item, i) => renderCard(item, i, 0.02))}
+                          </div>
+                        ) : (
+                          <div className="hso__chips">
+                            {popular.map((term, i) => (
+                              <motion.button
+                                key={term}
+                                type="button"
+                                className="hso__chip"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.05 + i * 0.04 }}
+                                whileTap={tapScale}
+                                onClick={() => setQuery(term)}
+                                style={{
+                                  color: currentTheme.text.secondary,
+                                  background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
+                                  border: `1px solid ${currentTheme.primary}33`,
+                                }}
+                              >
+                                {term}
+                              </motion.button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div onClick={(e) => e.stopPropagation()}>
-            <Snackbar open={snack.open} message={snack.message} />
-          </div>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Snackbar open={snack.open} message={snack.message} />
+            </div>
 
-          {/* Portal-Klicks bubbeln im React-Baum bis zum Backdrop-Handler — daher der Wrapper. */}
-          <div onClick={(e) => e.stopPropagation()}>
-            <QuickRatingSheet
-              isOpen={quickRating.open}
-              onClose={closeQuickRating}
-              seriesTitle={quickRating.title}
-              eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
-              initialRating={quickRating.initialRating}
-              genres={quickRating.genres}
-              mediaType={quickRating.mediaType}
-              itemId={quickRating.itemId}
-              initialGenreRatings={quickRating.genreRatings}
-              onRate={saveQuickRating}
-              zIndex={OVERLAY_SHEET_Z}
-            />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
-    document.body
-  );
-});
+            {/* Portal-Klicks bubbeln im React-Baum bis zum Backdrop-Handler — daher der Wrapper. */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <QuickRatingSheet
+                isOpen={quickRating.open}
+                onClose={closeQuickRating}
+                seriesTitle={quickRating.title}
+                eyebrow={
+                  quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')
+                }
+                initialRating={quickRating.initialRating}
+                genres={quickRating.genres}
+                mediaType={quickRating.mediaType}
+                itemId={quickRating.itemId}
+                initialGenreRatings={quickRating.genreRatings}
+                onRate={saveQuickRating}
+                zIndex={OVERLAY_SHEET_Z}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+  }
+);
 
 HomeSearchOverlay.displayName = 'HomeSearchOverlay';

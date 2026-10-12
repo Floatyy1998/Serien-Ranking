@@ -59,6 +59,11 @@ import {
   MangaReadJourneyPage,
   MangaReadingListPage,
   MangaLayoutPage,
+  BookSearchPage,
+  BookDetailPage,
+  BookShelfPage,
+  BookStatsPage,
+  BookImportPage,
   AnimeSeasonPage,
   SerienKalenderPage,
   FilmKalenderPage,
@@ -511,6 +516,47 @@ export const MobileApp = () => {
                 element={
                   <Layout hideNav>
                     <MangaDetailPage />
+                  </Layout>
+                }
+              />
+              {/* Bücher - feste Unterseiten vor :bookId */}
+              <Route
+                path="/books/search"
+                element={
+                  <Layout hideNav>
+                    <BookSearchPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/books/shelf"
+                element={
+                  <Layout hideNav>
+                    <BookShelfPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/books/stats"
+                element={
+                  <Layout hideNav>
+                    <BookStatsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/books/import"
+                element={
+                  <Layout hideNav>
+                    <BookImportPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/books/:bookId"
+                element={
+                  <Layout hideNav>
+                    <BookDetailPage />
                   </Layout>
                 }
               />

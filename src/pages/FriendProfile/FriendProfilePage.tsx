@@ -4,6 +4,7 @@ import {
   ChatBubbleOutlined,
   PersonAddRounded,
   ListAlt,
+  LocalLibrary,
   CompareArrows,
   ExpandLess,
   ExpandMore,
@@ -16,6 +17,12 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
+import { useBooksList } from '../../contexts/BooksListContext';
+import { bookMatchKey } from '../../lib/books/bookIdentity';
+import { coverAtSize } from '../../lib/books/bookSearchMapping';
+import { progressPercent as bookProgressPercent } from '../../lib/books/bookProgress';
+import { addBookCopy } from '../../services/books/bookService';
+import { showToast } from '../../lib/interaction/toast';
 import {
   mangaProgressPercent,
   mangaTotalChapters,
@@ -64,6 +71,7 @@ import { FriendComparisonCard } from './FriendComparisonCard';
 import { useFriendComparison } from './useFriendComparison';
 import { useFriendFolders } from './useFriendFolders';
 import { useFriendManga } from './useFriendManga';
+import { useFriendBooks } from './useFriendBooks';
 import { FriendReadingSection } from './FriendReadingSection';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
@@ -245,6 +253,47 @@ export const FriendProfilePage = memo(() => {
             new Date(a.lastReadAt || a.addedAt || 0).getTime()
       );
   }, [friendManga.list, filters.search, friendId]);
+  const friendBooks = useFriendBooks(restricted || !darfSehen ? undefined : friendId);
+  const { allBookList: ownBooks } = useBooksList();
+  const ownBookKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const b of ownBooks) {
+      keys.add(b.id);
+      keys.add(bookMatchKey(b.title, b.authors));
+    }
+    return keys;
+  }, [ownBooks]);
+  const ownsBook = (b: { id: string; title: string; authors?: string[] }) =>
+    ownBookKeys.has(b.id) || ownBookKeys.has(bookMatchKey(b.title, b.authors));
+  const [addingBookId, setAddingBookId] = useState<string | null>(null);
+  const addBookFromFriend = async (book: (typeof friendBooks.list)[number]) => {
+    if (!user || addingBookId !== null) return;
+    setAddingBookId(book.id);
+    try {
+      await addBookCopy(user.uid, book);
+      showToast(t('Auf deinen Stapel gelegt'));
+    } catch (error) {
+      console.warn('[friendProfile] Buch konnte nicht übernommen werden', error);
+    } finally {
+      setAddingBookId(null);
+    }
+  };
+  const bookItems = useMemo(() => {
+    const query = (filters.search || '').trim().toLowerCase();
+    return friendBooks.list
+      .filter(
+        (b) =>
+          !query ||
+          b.title.toLowerCase().includes(query) ||
+          b.authors.some((a) => a.toLowerCase().includes(query))
+      )
+      .sort(
+        (a, b) =>
+          (b.rating ?? 0) - (a.rating ?? 0) ||
+          new Date(b.completedAt || b.lastReadAt || b.addedAt || 0).getTime() -
+            new Date(a.completedAt || a.lastReadAt || a.addedAt || 0).getTime()
+      );
+  }, [friendBooks.list, filters.search]);
   const mangaChapters = useMemo(
     () => ({
       own: ownManga.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
@@ -308,6 +357,12 @@ export const FriendProfilePage = memo(() => {
       setActiveTab('series');
     }
   }, [activeTab, friendManga.loading, friendManga.list.length, setActiveTab]);
+
+  useEffect(() => {
+    if (activeTab === 'books' && !friendBooks.loading && friendBooks.list.length === 0) {
+      setActiveTab('series');
+    }
+  }, [activeTab, friendBooks.loading, friendBooks.list.length, setActiveTab]);
 
   const showFolderOverview = activeTab === 'lists' && !openFolder;
   const gridItems = activeTab === 'lists' ? folderItems : currentItems;
@@ -634,6 +689,8 @@ export const FriendProfilePage = memo(() => {
                       friendName={friendName}
                       manga={friendManga.list}
                       ownIds={ownMangaIds}
+                      books={friendBooks.list}
+                      ownsBook={ownsBook}
                     />
                   </div>
                 </motion.div>
@@ -648,13 +705,17 @@ export const FriendProfilePage = memo(() => {
             value={filters.search || ''}
             onChange={(v) => setFilters((prev) => ({ ...prev, search: v }))}
             placeholder={
-              activeTab === 'manga' ? t('Manga durchsuchen...') : t('Serien & Filme durchsuchen...')
+              activeTab === 'manga'
+                ? t('Manga durchsuchen...')
+                : activeTab === 'books'
+                  ? t('Bücher durchsuchen...')
+                  : t('Serien & Filme durchsuchen...')
             }
           />
         </div>
 
         {/* Quick Filter */}
-        {!showFolderOverview && activeTab !== 'manga' && (
+        {!showFolderOverview && activeTab !== 'manga' && activeTab !== 'books' && (
           <QuickFilter
             onFilterChange={setFilters}
             isMovieMode={activeTab === 'movies'}
@@ -672,6 +733,16 @@ export const FriendProfilePage = memo(() => {
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },
             ...(friendManga.list.length > 0
               ? [{ id: 'manga', label: 'Manga', icon: AutoStories, count: friendManga.list.length }]
+              : []),
+            ...(friendBooks.list.length > 0
+              ? [
+                  {
+                    id: 'books',
+                    label: t('Bücher'),
+                    icon: LocalLibrary,
+                    count: friendBooks.list.length,
+                  },
+                ]
               : []),
             ...(folders.length > 0
               ? [{ id: 'lists', label: t('Listen'), icon: ListAlt, count: folders.length }]
@@ -713,7 +784,78 @@ export const FriendProfilePage = memo(() => {
             </div>
           )}
           <AnimatePresence mode="wait">
-            {activeTab === 'manga' ? (
+            {activeTab === 'books' ? (
+              bookItems.length === 0 ? (
+                <motion.div
+                  key="books-empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <EmptyState
+                    icon={<LocalLibrary style={{ fontSize: '56px' }} />}
+                    title={t('Keine Bücher gefunden')}
+                    description={t('Nichts in {name}s Büchern passt zu deiner Suche.', {
+                      name: friendName,
+                    })}
+                    iconColor={currentTheme.text.muted}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="books-grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fp-grid"
+                >
+                  {bookItems.map((book, index) => {
+                    const progress = bookProgressPercent(book);
+                    const owned = ownsBook(book);
+                    const query = encodeURIComponent(
+                      [book.title, book.authors[0]].filter(Boolean).join(' ')
+                    );
+                    return (
+                      <ProfileItemCard
+                        key={book.id}
+                        mediaType="none"
+                        statusText={
+                          book.status === 'reading'
+                            ? book.pageCount
+                              ? t('S. {page} / {total}', {
+                                  page: book.currentPage,
+                                  total: book.pageCount,
+                                })
+                              : t('S. {page}', { page: book.currentPage })
+                            : book.status === 'planned'
+                              ? t('Will ich lesen')
+                              : undefined
+                        }
+                        title={book.title}
+                        posterUrl={coverAtSize(book.cover, 'M') ?? ''}
+                        isMovie={false}
+                        rating={book.rating ?? 0}
+                        progress={book.status === 'reading' && progress > 0 ? progress : undefined}
+                        providers={[]}
+                        genres={book.authors[0]}
+                        index={index}
+                        currentTheme={currentTheme}
+                        onClick={() =>
+                          navigate(
+                            owned
+                              ? '/books/' + encodeURIComponent(book.id)
+                              : '/books/search?q=' + query
+                          )
+                        }
+                        inList={owned}
+                        adding={addingBookId === book.id}
+                        onAdd={isSelf ? undefined : () => void addBookFromFriend(book)}
+                      />
+                    );
+                  })}
+                </motion.div>
+              )
+            ) : activeTab === 'manga' ? (
               mangaItems.length === 0 ? (
                 <motion.div
                   key="manga-empty"

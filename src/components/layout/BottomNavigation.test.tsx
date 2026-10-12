@@ -48,14 +48,14 @@ afterEach(() => {
 describe('BottomNavigation', () => {
   it('rendert alle Navigations-Labels', () => {
     render(<BottomNavigation />);
-    ['Home', 'Weiter', 'Kalender', 'Bewertungen', 'Manga', 'Mehr'].forEach((label) => {
+    ['Home', 'Weiter', 'Kalender', 'Bewertungen', 'Lesen', 'Mehr'].forEach((label) => {
       expect(screen.getByText(label)).toBeInTheDocument();
     });
   });
 
   it('navigiert beim Klick auf einen inaktiven Tab', () => {
     render(<BottomNavigation />);
-    fireEvent.click(screen.getByText('Manga'));
+    fireEvent.click(screen.getByText('Lesen'));
     expect(navigate).toHaveBeenCalledWith('/manga');
   });
 

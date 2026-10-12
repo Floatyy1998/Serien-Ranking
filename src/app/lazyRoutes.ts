@@ -229,6 +229,42 @@ export const MangaReadingListPage = lazyWithRetry(() =>
   )
 );
 
+export const BooksPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "books" */ '../pages/Books').then((m) => ({
+    default: m.BooksPage,
+  }))
+);
+export const ReadingHubPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading-hub" */ '../pages/Books/ReadingHubPage').then((m) => ({
+    default: m.ReadingHubPage,
+  }))
+);
+export const BookSearchPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "book-search" */ '../pages/Books/BookSearchPage').then((m) => ({
+    default: m.BookSearchPage,
+  }))
+);
+export const BookDetailPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "book-detail" */ '../pages/Books/BookDetailPage').then((m) => ({
+    default: m.BookDetailPage,
+  }))
+);
+export const BookShelfPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "book-shelf" */ '../pages/Books/BookShelfPage').then((m) => ({
+    default: m.BookShelfPage,
+  }))
+);
+export const BookStatsPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "book-stats" */ '../pages/Books/BookStatsPage').then((m) => ({
+    default: m.BookStatsPage,
+  }))
+);
+export const BookImportPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "book-import" */ '../pages/Books/BookImportPage').then((m) => ({
+    default: m.BookImportPage,
+  }))
+);
+
 export const AnimeSeasonPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "anime-season" */ '../pages/AnimeSeason').then((m) => ({
     default: m.AnimeSeasonPage,
@@ -276,6 +312,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/SeriesDetail'),
     () => import('../pages/MovieDetail'),
     () => import('../pages/Manga'),
+    () => import('../pages/Books'),
     () => import('../pages/Activity'),
     () => import('../pages/Discover'),
     () => import('../pages/RecentlyWatched'),
@@ -306,6 +343,12 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/Manga/MangaReadingListPage'),
     () => import('../pages/Manga/HiddenMangaPage'),
     () => import('../pages/Manga/MangaLayoutPage'),
+    () => import('../pages/Books/ReadingHubPage'),
+    () => import('../pages/Books/BookSearchPage'),
+    () => import('../pages/Books/BookDetailPage'),
+    () => import('../pages/Books/BookShelfPage'),
+    () => import('../pages/Books/BookStatsPage'),
+    () => import('../pages/Books/BookImportPage'),
     () => import('../pages/AnimeSeason'),
     () => import('../pages/SerienKalender'),
     () => import('../pages/FilmKalender'),

@@ -8,6 +8,7 @@ import {
   Speed,
   Star,
   TrendingUp,
+  MenuBook,
 } from '@mui/icons-material';
 import { createElement } from 'react';
 import type { Badge, BadgeCategory, EarnedBadge } from '../../features/badges/badgeDefinitions';
@@ -24,6 +25,7 @@ export const categories: { key: BadgeCategory | 'all'; label: string; icon: Reac
   { key: 'series_explorer', label: t('Explorer'), icon: createElement(Explore) },
   { key: 'collector', label: t('Collector'), icon: createElement(Star) },
   { key: 'social', label: t('Social'), icon: createElement(Groups) },
+  { key: 'reader', label: t('Lesen'), icon: createElement(MenuBook) },
 ];
 
 export function getEarnedCount(category: BadgeCategory | 'all', earnedBadges: EarnedBadge[]) {

@@ -2,6 +2,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import type { Badge } from './badgeDefinitions';
 import type {
+  BadgeBookItem,
   BadgeCounters,
   BadgeMovieItem,
   BadgeSeason,
@@ -302,6 +303,32 @@ export function checkRewatchBadgeFromSeries(
   return null;
 }
 
+/** Beendete Bücher bzw. gelesene Seiten (beendete komplett, laufende bis zur aktuellen Seite). */
+export function readerTotals(books: BadgeBookItem[]): { books: number; pages: number } {
+  let finished = 0;
+  let pages = 0;
+  for (const b of books) {
+    if (b.status === 'completed') {
+      finished += 1;
+      pages += b.pageCount ?? 0;
+    } else {
+      pages += b.currentPage ?? 0;
+    }
+  }
+  return { books: finished, pages };
+}
+
+export function checkReaderBadge(
+  badge: Badge,
+  books: BadgeBookItem[]
+): { earned: boolean; details?: string } | null {
+  const totals = readerTotals(books);
+  if (badge.requirements.books && totals.books >= badge.requirements.books) {
+    return { earned: true, details: t('{n} Bücher ausgelesen', { n: totals.books }) };
+  }
+  return null;
+}
+
 export function checkBadgeRequirement(
   badge: Badge,
   userData: BadgeUserData,
@@ -337,6 +364,9 @@ export function checkBadgeRequirement(
 
     case 'rewatch':
       return checkRewatchBadgeFromSeries(badge, series);
+
+    case 'reader':
+      return checkReaderBadge(badge, userData.books ?? []);
 
     default:
       return null;

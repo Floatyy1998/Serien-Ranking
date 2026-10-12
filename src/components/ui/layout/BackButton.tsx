@@ -10,6 +10,10 @@ interface BackButtonProps {
   showHome?: boolean;
 }
 
+/** Manga und Bücher haben eine eigene Übersicht — dorthin führt Home statt zur Startseite. */
+const areaHome = (path: string) =>
+  path.startsWith('/manga') ? '/manga' : path.startsWith('/books') ? '/books' : '/';
+
 export const BackButton = ({ label, style, showHome = true }: BackButtonProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +48,7 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
     if (historyIdx > 0) {
       navigate(-1);
     } else {
-      navigate(location.pathname.startsWith('/manga') ? '/manga' : '/');
+      navigate(areaHome(location.pathname));
     }
   };
 
@@ -79,12 +83,12 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
               }}
             />
           }
-          onClick={() => navigate(location.pathname.startsWith('/manga') ? '/manga' : '/')}
+          onClick={() => navigate(areaHome(location.pathname))}
           size={40}
           borderRadius="14px"
           variant="glass"
-          ariaLabel={t('Zur Startseite')}
-          tooltip={t('Zur Startseite')}
+          ariaLabel={areaHome(location.pathname) === '/books' ? t('Bücher') : t('Zur Startseite')}
+          tooltip={areaHome(location.pathname) === '/books' ? t('Bücher') : t('Zur Startseite')}
           style={style}
         />
       )}

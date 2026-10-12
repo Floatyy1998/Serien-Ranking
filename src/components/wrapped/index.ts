@@ -8,6 +8,7 @@ export { TotalTimeSlide } from './slides/TotalTimeSlide';
 export { TopSeriesSlide } from './slides/TopSeriesSlide';
 export { TopMoviesSlide } from './slides/TopMoviesSlide';
 export { TopMangaSlide } from './slides/TopMangaSlide';
+export { TopBooksSlide } from './slides/TopBooksSlide';
 export { TopGenresSlide } from './slides/TopGenresSlide';
 export { TopProvidersSlide } from './slides/TopProvidersSlide';
 export { TimePatternSlide } from './slides/TimePatternSlide';

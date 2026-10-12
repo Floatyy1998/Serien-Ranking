@@ -72,6 +72,7 @@ vi.mock('../HomePage/hooks/useUnifiedNotifications', () => ({
 }));
 
 vi.mock('../HomePage/sheets/NotificationSheet', () => ({ NotificationSheet: () => null }));
+vi.mock('../../components/reading/ReadingSwitch', () => ({ ReadingSwitch: () => null }));
 vi.mock('../../components/pet/CaseOpeningOverlay', () => ({ CaseOpeningOverlay: () => null }));
 
 vi.mock('./sections/ContinueReadingSection', () => ({ ContinueReadingSection: () => null }));

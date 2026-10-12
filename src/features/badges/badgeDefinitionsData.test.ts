@@ -11,6 +11,7 @@ const VALID_CATEGORIES: BadgeCategory[] = [
   'series_explorer',
   'collector',
   'social',
+  'reader',
 ];
 const VALID_TIERS: BadgeTier[] = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
 const VALID_RARITIES = ['common', 'rare', 'epic', 'legendary'];
@@ -25,6 +26,7 @@ const PRIMARY_METRIC: Record<BadgeCategory, keyof (typeof BADGE_DEFINITIONS)[0][
   series_explorer: 'series',
   collector: 'ratings',
   social: 'friends',
+  reader: 'books',
 };
 
 describe('BADGE_DEFINITIONS Integrität', () => {
@@ -61,7 +63,15 @@ describe('BADGE_DEFINITIONS Integrität', () => {
   });
 
   it('jede Definition hat mindestens eine numerische Schwelle', () => {
-    const numericKeys = ['episodes', 'seasons', 'days', 'series', 'ratings', 'friends'] as const;
+    const numericKeys = [
+      'episodes',
+      'seasons',
+      'days',
+      'series',
+      'ratings',
+      'friends',
+      'books',
+    ] as const;
     for (const b of BADGE_DEFINITIONS) {
       const hasThreshold = numericKeys.some(
         (k) => typeof b.requirements[k] === 'number' && (b.requirements[k] as number) > 0
@@ -99,7 +109,7 @@ describe('BADGE_DEFINITIONS Integrität', () => {
     }
   });
 
-  it('deckt alle acht Kategorien ab', () => {
+  it('deckt alle Kategorien ab', () => {
     const present = new Set(BADGE_DEFINITIONS.map((b) => b.category));
     for (const c of VALID_CATEGORIES) {
       expect(present.has(c)).toBe(true);

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_OPTIONS } from '../../config/navItems';
+import { resolveReadingPath } from '../../services/settings/readingTab';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -25,6 +26,8 @@ import './BottomNavigation.css';
 interface NavItem {
   id: string;
   path: string;
+  /** Weitere Pfade, auf denen der Eintrag aktiv ist. */
+  aliases?: string[];
   icon: React.ReactNode;
   label: string;
   badge?: number | boolean;
@@ -64,6 +67,7 @@ export const BottomNavigation = () => {
       .map((o) => ({
         id: o.id,
         path: o.path,
+        aliases: o.aliases,
         label: t(o.label),
         icon: NAV_SLOT_ICONS[o.id],
         badge: o.id === 'calendar' && unwatchedToday > 0 ? unwatchedToday : undefined,
@@ -108,11 +112,12 @@ export const BottomNavigation = () => {
     let best = 0;
     let bestLen = -1;
     navItems.forEach((item, i) => {
-      const match =
-        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path);
-      if (match && item.path.length > bestLen) {
-        best = i;
-        bestLen = item.path.length;
+      for (const path of [item.path, ...(item.aliases ?? [])]) {
+        const match = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+        if (match && path.length > bestLen) {
+          best = i;
+          bestLen = path.length;
+        }
       }
     });
     return best;
@@ -170,26 +175,26 @@ export const BottomNavigation = () => {
     };
   }, [pillTargetIndex, navItems.length, location.pathname]);
 
-  const isActive = (path: string) => {
+  const isActive = (path: string, aliases: string[] = []) => {
     if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+    return [path, ...aliases].some((p) => location.pathname.startsWith(p));
   };
 
-  const handleNavigation = (path: string, index: number) => {
+  const handleNavigation = (item: NavItem, index: number) => {
     hapticTap();
-    if (isActive(path)) {
+    if (isActive(item.path, item.aliases)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setPendingIndex(index);
-      navigate(path);
+      navigate(item.id === 'manga' ? resolveReadingPath() : item.path);
     }
   };
 
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
     currentIndex: activeIndex,
-    onIndexChange: (index) => handleNavigation(navItems[index].path, index),
+    onIndexChange: (index) => handleNavigation(navItems[index], index),
     orientation: 'horizontal',
     loop: true,
   });
@@ -228,7 +233,7 @@ export const BottomNavigation = () => {
           />
 
           {navItems.map((item, index) => {
-            const active = isActive(item.path);
+            const active = isActive(item.path, item.aliases);
             const isTarget = index === pillTargetIndex;
 
             return (
@@ -244,7 +249,7 @@ export const BottomNavigation = () => {
                 tabIndex={active ? 0 : -1}
                 className={`nav-item ${active ? 'active' : ''}`}
                 style={{ color: isTarget ? 'var(--color-primary)' : undefined }}
-                onClick={() => handleNavigation(item.path, index)}
+                onClick={() => handleNavigation(item, index)}
                 onMouseEnter={() => setHoveredIndex(index)}
                 whileTap={{ opacity: 0.7 }}
               >

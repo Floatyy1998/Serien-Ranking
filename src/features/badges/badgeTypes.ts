@@ -33,9 +33,17 @@ export interface BadgeCounters {
   [key: string]: unknown;
 }
 
+/** Nur was die Lese-Badges brauchen. */
+export interface BadgeBookItem {
+  status?: string;
+  pageCount?: number;
+  currentPage?: number;
+}
+
 export interface BadgeUserData {
   series: BadgeSeriesItem[];
   movies: BadgeMovieItem[];
   activities: unknown[];
   badgeCounters: BadgeCounters;
+  books?: BadgeBookItem[];
 }

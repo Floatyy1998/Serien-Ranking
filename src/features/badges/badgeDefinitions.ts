@@ -10,7 +10,8 @@ export type BadgeCategory =
   | 'rewatch'
   | 'series_explorer'
   | 'collector'
-  | 'social';
+  | 'social'
+  | 'reader';
 
 export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 
@@ -29,6 +30,7 @@ export interface Badge {
     series?: number;
     ratings?: number;
     friends?: number;
+    books?: number;
     timeframe?: string;
   };
   rarity: 'common' | 'rare' | 'epic' | 'legendary';

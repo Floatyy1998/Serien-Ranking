@@ -1,0 +1,56 @@
+.rs-wrap {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--glass-specular);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 12px;
+}
+
+.mobile-app .rs-tab,
+.rs-tab {
+  position: relative;
+  min-width: 84px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease;
+}
+
+.rs-tab:active {
+  opacity: 0.7;
+}
+
+.rs-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.rs-label {
+  position: relative;
+}
+
+@media (max-width: 360px) {
+  .mobile-app .rs-tab,
+  .rs-tab {
+    min-width: 72px;
+    padding: 0 12px;
+  }
+}

@@ -17,10 +17,11 @@ if (!window.matchMedia) {
 }
 
 const navigate = vi.hoisted(() => vi.fn());
+const location = vi.hoisted(() => ({ pathname: '/series/42' }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
-  useLocation: () => ({ pathname: '/series/42' }),
+  useLocation: () => location,
 }));
 
 vi.mock('../../../contexts/ThemeContext', () => ({
@@ -37,6 +38,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
 afterEach(() => {
   cleanup();
   navigate.mockReset();
+  location.pathname = '/series/42';
 });
 
 describe('BackButton', () => {
@@ -61,5 +63,14 @@ describe('BackButton', () => {
     render(<BackButton />);
     fireEvent.click(screen.getByRole('button', { name: 'Zur Startseite' }));
     expect(navigate).toHaveBeenCalledWith('/');
+  });
+
+  it('führt im Bücher-Bereich zur Bücher-Übersicht statt zur Startseite', () => {
+    location.pathname = '/books/gb-abc';
+    render(<BackButton />);
+    fireEvent.click(screen.getByRole('button', { name: 'Bücher' }));
+    expect(navigate).toHaveBeenCalledWith('/books');
+    fireEvent.click(screen.getByRole('button', { name: 'Zurück' }));
+    expect(navigate).toHaveBeenLastCalledWith('/books');
   });
 });

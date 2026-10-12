@@ -23,6 +23,25 @@ export interface MangaWrappedStats {
   mostReadMonthChapters: number;
 }
 
+export interface TopBookEntry {
+  id: string;
+  title: string;
+  author?: string;
+  pages?: number;
+  rating?: number;
+  cover?: string;
+}
+
+export interface BookWrappedStats {
+  booksFinished: number;
+  pagesRead: number;
+  topBooks: TopBookEntry[];
+  longestBook?: { title: string; pages: number };
+  /** Monat 0–11 mit den meisten gelesenen Seiten. */
+  mostReadMonth: number;
+  mostReadMonthPages: number;
+}
+
 export interface WrappedStats {
   year: number;
 
@@ -69,6 +88,9 @@ export interface WrappedStats {
 
   // Manga (aus wrapped/{Jahr}/mangaEvents); fehlt, wenn im Jahr nichts gelesen wurde
   manga?: MangaWrappedStats | null;
+
+  // Bücher (aus wrapped/{Jahr}/bookEvents + beendeten Büchern); fehlt ohne Lesejahr
+  books?: BookWrappedStats | null;
 
   // Erstes & Letztes des Jahres
   firstWatch: FirstLastWatch | null;
@@ -266,6 +288,7 @@ export type WrappedSlideType =
   | 'top_series'
   | 'top_movies'
   | 'top_manga'
+  | 'top_books'
   | 'top_genres'
   | 'top_providers'
   | 'time_pattern'
@@ -295,6 +318,7 @@ export const DEFAULT_SLIDE_CONFIG: WrappedSlideConfig[] = [
   { type: 'top_series', title: 'Top Serien', enabled: true, order: 3 },
   { type: 'top_movies', title: 'Top Filme', enabled: true, order: 4 },
   { type: 'top_manga', title: 'Top Manga', enabled: true, order: 4.5 },
+  { type: 'top_books', title: 'Top Bücher', enabled: true, order: 4.6 },
   { type: 'top_genres', title: 'Top Genres', enabled: true, order: 5 },
   { type: 'top_providers', title: 'Streaming-Dienste', enabled: true, order: 6 },
   { type: 'record_day', title: 'Rekord-Tag', enabled: true, order: 7 },

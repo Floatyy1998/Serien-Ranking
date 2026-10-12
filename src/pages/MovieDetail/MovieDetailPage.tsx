@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { BasedOnBookSection } from '../Books/components/BasedOnBookSection';
 import { Deferred } from '../../components/ui/feedback/Deferred';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MovieHeroSection } from './MovieHeroSection';
@@ -133,6 +134,9 @@ export const MovieDetailPage = memo(() => {
           <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
           <Deferred>
             <CollectionSection movieId={Number(movie.id)} isMobile={isMobile} />
+          </Deferred>
+          <Deferred>
+            <BasedOnBookSection tmdbId={Number(movie.id)} kind="movie" isMobile={isMobile} />
           </Deferred>
           <Deferred>
             <RecommendationsSection id={movie.id} mediaType="movie" />

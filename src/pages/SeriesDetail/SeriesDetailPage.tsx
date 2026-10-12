@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { BasedOnBookSection } from '../Books/components/BasedOnBookSection';
 import { Deferred } from '../../components/ui/feedback/Deferred';
 import { AnimeFillerBanner } from './sections/AnimeFillerBanner';
 import { RecapSheet } from '../../components/ui/overlay/RecapSheet';
@@ -594,6 +595,15 @@ export const SeriesDetailPage = memo(() => {
               </Deferred>
             </div>
           )}
+
+          {/* Buchvorlage aus Wikidata — rendert nur, wenn es eine gibt */}
+          <Deferred>
+            <BasedOnBookSection
+              tmdbId={Number(series.tmdb_id || series.id)}
+              kind="series"
+              isMobile={isMobile}
+            />
+          </Deferred>
 
           {/* TMDB-Empfehlungen */}
           <Deferred>

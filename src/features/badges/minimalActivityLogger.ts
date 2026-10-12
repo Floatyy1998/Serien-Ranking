@@ -247,6 +247,22 @@ export const logMovieAdded = async (
   }
 };
 
+/** Buch beendet: prüft die Lese-Badges (keine Aktivitätszeile, keine Zähler). */
+export const logBookFinished = async (userId: string): Promise<EarnedBadge[]> => {
+  try {
+    const badgeSystem = getOfflineBadgeSystem(userId);
+    badgeSystem.invalidateCache();
+    const newBadges = await badgeSystem.checkForNewBadges();
+    await triggerBadgeCallback(userId, newBadges);
+    window.dispatchEvent(
+      new CustomEvent('badgeProgressUpdate', { detail: { userId, type: 'book', newBadges } })
+    );
+    return newBadges;
+  } catch {
+    return [];
+  }
+};
+
 /**
  * Serie zu Watchlist hinzugefügt
  */

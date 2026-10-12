@@ -1,7 +1,7 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import type { Badge, BadgeProgress } from './badgeDefinitions';
-import type { BadgeCounters, BadgeMovieItem, BadgeSeriesItem } from './badgeTypes';
-import { hasValidRating } from './badgeCheckers';
+import type { BadgeBookItem, BadgeCounters, BadgeMovieItem, BadgeSeriesItem } from './badgeTypes';
+import { hasValidRating, readerTotals } from './badgeCheckers';
 
 export function getBingeProgress(badge: Badge, badgeCounters: BadgeCounters): BadgeProgress | null {
   if (!badge.requirements.episodes || !badge.requirements.timeframe) return null;
@@ -135,6 +135,19 @@ export function getRewatchProgress(badge: Badge, series: BadgeSeriesItem[]): Bad
     total: badge.requirements.episodes,
     lastUpdated: Date.now(),
   };
+}
+
+export function getReaderProgress(badge: Badge, books: BadgeBookItem[]): BadgeProgress | null {
+  const totals = readerTotals(books);
+  if (badge.requirements.books) {
+    return {
+      badgeId: badge.id,
+      current: totals.books,
+      total: badge.requirements.books,
+      lastUpdated: Date.now(),
+    };
+  }
+  return null;
 }
 
 export function getExplorerProgress(badge: Badge, series: BadgeSeriesItem[]): BadgeProgress | null {

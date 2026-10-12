@@ -36,6 +36,12 @@ export const paths = {
   manga: (uid: string) => `${user(uid)}/manga`,
   mangaItem: (uid: string, anilistId: string | number) => `${user(uid)}/manga/${anilistId}`,
 
+  // Bücher
+  books: (uid: string) => `${user(uid)}/books`,
+  bookItem: (uid: string, bookId: string) => `${user(uid)}/books/${bookId}`,
+  bookGoal: (uid: string, year: number) => `${user(uid)}/bookGoals/${year}`,
+  bookEvents: (uid: string, year: number) => `${user(uid)}/wrapped/${year}/bookEvents`,
+
   // Freunde
   friends: (uid: string) => `${user(uid)}/friends`,
   friendItem: (uid: string, friendId: string) => `${user(uid)}/friends/${friendId}`,
