@@ -5,6 +5,15 @@ import { toLocalDateString } from '../../lib/date/date.utils';
 import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
 import { getPetEnabled } from './petPreferences';
+import { agePetVitals, type PetAgingRules } from '../../lib/pet/petAging';
+
+const PET_AGING_RULES: PetAgingRules = {
+  stepHours: PET_CONFIG.AGING_STEP_HOURS,
+  hungerPerStep: PET_CONFIG.HUNGER_PER_STEP,
+  happinessLossPerStep: PET_CONFIG.HAPPINESS_LOSS_PER_STEP,
+  highHungerThreshold: PET_CONFIG.HIGH_HUNGER_THRESHOLD,
+  highHungerHappinessPenalty: PET_CONFIG.HIGH_HUNGER_HAPPINESS_PENALTY,
+};
 
 // Fuettere das Pet
 export async function feedPet(userId: string, petId: string): Promise<Pet | null> {
@@ -67,28 +76,29 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
   const lastUpdated = pet.lastUpdated ? new Date(pet.lastUpdated) : new Date(pet.createdAt);
   const lastFedTime = pet.lastFed instanceof Date ? pet.lastFed : new Date(pet.lastFed);
 
-  const minutesSinceLastUpdate = (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
-  if (minutesSinceLastUpdate < 1) return pet;
+  pet.hunger = isNaN(pet.hunger) ? PET_CONFIG.INITIAL_HUNGER : pet.hunger;
+  pet.happiness = isNaN(pet.happiness) ? PET_CONFIG.INITIAL_HAPPINESS : pet.happiness;
 
   const lastFedMissing = isNaN(lastFedTime.getTime());
+  const anchorMissing = isNaN(lastUpdated.getTime());
+  const neglected =
+    !lastFedMissing &&
+    (now.getTime() - lastFedTime.getTime()) / (1000 * 60 * 60 * 24) >=
+      PET_CONFIG.NEGLECT_DAYS_THRESHOLD;
+  const aged = agePetVitals(pet, now.getTime() - lastUpdated.getTime(), PET_AGING_RULES);
+  if (aged.steps < 1 && !lastFedMissing && !anchorMissing && !neglected) return pet;
+
+  let agedUntil = now;
   if (lastFedMissing) {
     console.warn('[PetService] Invalid lastFed date, resetting to current time');
     pet.lastFed = now;
     pet.hunger = 50;
-  } else {
-    const hoursSinceLastUpdate = minutesSinceLastUpdate / 60;
-    const hungerIncrease = Math.floor(hoursSinceLastUpdate * 1.5);
-    pet.hunger = Math.min(100, pet.hunger + hungerIncrease);
-    const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1);
-    pet.happiness = Math.max(0, pet.happiness - happinessDecrease);
+  } else if (!anchorMissing) {
+    pet.hunger = aged.hunger;
+    pet.happiness = aged.happiness;
+    agedUntil = new Date(lastUpdated.getTime() + aged.consumedMs);
   }
-
-  if (pet.hunger > PET_CONFIG.HIGH_HUNGER_THRESHOLD) {
-    pet.happiness = Math.max(0, pet.happiness - PET_CONFIG.HIGH_HUNGER_HAPPINESS_PENALTY);
-  }
-
-  pet.hunger = isNaN(pet.hunger) ? PET_CONFIG.INITIAL_HUNGER : pet.hunger;
-  pet.happiness = isNaN(pet.happiness) ? PET_CONFIG.INITIAL_HAPPINESS : pet.happiness;
+  pet.lastUpdated = agedUntil;
 
   // Death-Logik: klar getrennte Ursachen
   let hasDied = false;
@@ -100,12 +110,9 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
   } else if (pet.happiness <= PET_CONFIG.HAPPINESS_DEATH_THRESHOLD) {
     hasDied = true;
     deathCause = 'sadness';
-  } else if (!isNaN(lastFedTime.getTime())) {
-    const daysSinceLastFed = (now.getTime() - lastFedTime.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceLastFed >= PET_CONFIG.NEGLECT_DAYS_THRESHOLD) {
-      hasDied = true;
-      deathCause = 'neglect';
-    }
+  } else if (neglected) {
+    hasDied = true;
+    deathCause = 'neglect';
   }
 
   if (hasDied) {
@@ -125,7 +132,7 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
     await dbRef(userPath(userId, 'pets', petId)).update({
       hunger: pet.hunger,
       happiness: pet.happiness,
-      lastUpdated: now.toISOString(),
+      lastUpdated: agedUntil.toISOString(),
       ...(lastFedMissing ? { lastFed: now.toISOString() } : {}),
     });
   }

@@ -296,7 +296,7 @@ describe('createPet', () => {
     expect(pet.name).toBe('Bello');
     expect(pet.type).toBe('dog');
     expect(pet.level).toBe(1);
-    expect(pet.hunger).toBe(50); // INITIAL_HUNGER
+    expect(pet.hunger).toBe(20); // INITIAL_HUNGER
     expect(pet.happiness).toBe(75); // INITIAL_HAPPINESS
     expect(pet.isAlive).toBe(true);
     expect((pet.accessories ?? []).map((a) => a.id)).toEqual(['beanie', 'bow', 'roundGlasses']);

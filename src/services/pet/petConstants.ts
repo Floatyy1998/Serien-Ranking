@@ -17,18 +17,23 @@ export const PET_CONFIG = {
   XP_PER_LEVEL: 100,
 
   // Initial values
-  INITIAL_HUNGER: 50,
+  INITIAL_HUNGER: 20,
   INITIAL_HAPPINESS: 75,
 
   // Revival
-  REVIVAL_HUNGER: 50,
+  REVIVAL_HUNGER: 20,
   REVIVAL_HAPPINESS: 50,
+
+  // Altern ohne Pflege: ~5 Tage ab Start/Wiederbelebung, ~6 Tage satt (Backend push-notify.js spiegelt das)
+  AGING_STEP_HOURS: 3,
+  HUNGER_PER_STEP: 2,
+  HAPPINESS_LOSS_PER_STEP: 1,
 
   // Death thresholds
   HUNGER_DEATH_THRESHOLD: 100,
   HAPPINESS_DEATH_THRESHOLD: 0,
   NEGLECT_DAYS_THRESHOLD: 14,
-  HIGH_HUNGER_HAPPINESS_PENALTY: 3,
+  HIGH_HUNGER_HAPPINESS_PENALTY: 1,
   HIGH_HUNGER_THRESHOLD: 80,
 
   // Accessories

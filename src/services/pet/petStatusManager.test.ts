@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
+import { PET_CONFIG } from './petConstants';
 
 // Nested-Path Firebase-Mock (Baum-Struktur), damit .update()/.remove()/.once()
 // realistisch geschachtelt arbeiten.
@@ -148,16 +149,17 @@ describe('playWithPet', () => {
 });
 
 describe('updatePetStatus — Decay', () => {
-  it('unter 1 Minute seit letztem Update → keine Aenderung', async () => {
+  it('unter einem Alterungsschritt (3 h) → keine Aenderung, kein Write', async () => {
     petCore.getUserPet.mockResolvedValue(
-      makePet({ lastUpdated: new Date(NOW.getTime() - 30 * 1000), hunger: 10, happiness: 90 })
+      makePet({ lastUpdated: new Date(NOW.getTime() - 2 * HOUR), hunger: 10, happiness: 90 })
     );
     const result = await updatePetStatus('u1', 'p1');
     expect(result?.hunger).toBe(10);
     expect(result?.happiness).toBe(90);
+    expect(fb.getAt('users/u1/pets/p1/lastUpdated')).toBeUndefined();
   });
 
-  it('10 Stunden: Hunger +15, Happiness -10', async () => {
+  it('10 Stunden: drei Schritte, die angebrochene Stunde bleibt liegen', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({
         lastUpdated: new Date(NOW.getTime() - 10 * HOUR),
@@ -167,9 +169,63 @@ describe('updatePetStatus — Decay', () => {
       })
     );
     const result = await updatePetStatus('u1', 'p1');
-    expect(result?.hunger).toBe(15); // floor(10*1.5)
-    expect(result?.happiness).toBe(90); // 100 - floor(10)
+    expect(result?.hunger).toBe(6);
+    expect(result?.happiness).toBe(97);
     expect(result?.isAlive).toBe(true);
+    expect(fb.getAt('users/u1/pets/p1/lastUpdated')).toBe(
+      new Date(NOW.getTime() - HOUR).toISOString()
+    );
+  });
+
+  it('halbstuendliche Updates bei offener App verlieren keine Zeit', async () => {
+    const pet = makePet({ hunger: 0, happiness: 100 });
+    petCore.getUserPet.mockResolvedValue(pet);
+    for (let i = 1; i <= 12; i++) {
+      vi.setSystemTime(new Date(NOW.getTime() + i * 30 * 60 * 1000));
+      await updatePetStatus('u1', 'p1');
+    }
+    expect(pet.hunger).toBe(4);
+    expect(pet.happiness).toBe(98);
+  });
+
+  it('frisches Pet ueberlebt 5 Tage ohne Futter und Spielen', async () => {
+    const pet = makePet({
+      hunger: PET_CONFIG.INITIAL_HUNGER,
+      happiness: PET_CONFIG.INITIAL_HAPPINESS,
+      lastUpdated: new Date(NOW.getTime() - 5 * DAY + HOUR),
+      lastFed: new Date(NOW.getTime() - 5 * DAY + HOUR),
+    });
+    petCore.getUserPet.mockResolvedValue(pet);
+    const result = await updatePetStatus('u1', 'p1');
+    expect(result?.isAlive).toBe(true);
+  });
+
+  it('wiederbelebtes Pet ueberlebt knapp 5 Tage ohne Futter und Spielen', async () => {
+    const pet = makePet({
+      hunger: PET_CONFIG.REVIVAL_HUNGER,
+      happiness: PET_CONFIG.REVIVAL_HAPPINESS,
+      lastUpdated: new Date(NOW.getTime() - 5 * DAY + 4 * HOUR),
+      lastFed: new Date(NOW.getTime() - 5 * DAY + 4 * HOUR),
+    });
+    petCore.getUserPet.mockResolvedValue(pet);
+    const result = await updatePetStatus('u1', 'p1');
+    expect(result?.isAlive).toBe(true);
+  });
+
+  it('satt gefuettertes Pet verhungert nach gut 6 Tagen', async () => {
+    const pet = makePet({
+      hunger: 0,
+      happiness: 100,
+      lastUpdated: new Date(NOW.getTime() - 6 * DAY),
+      lastFed: new Date(NOW.getTime() - 6 * DAY),
+    });
+    petCore.getUserPet.mockResolvedValue(pet);
+    expect((await updatePetStatus('u1', 'p1'))?.isAlive).toBe(true);
+
+    vi.setSystemTime(new Date(NOW.getTime() + 7 * HOUR));
+    const later = await updatePetStatus('u1', 'p1');
+    expect(later?.isAlive).toBe(false);
+    expect(later?.deathCause).toBe('hunger');
   });
 
   it('ausgeschaltetes Pet: ein Jahr Pause, kein Decay, kein Write', async () => {
@@ -189,20 +245,18 @@ describe('updatePetStatus — Decay', () => {
     expect(fb.getAt('users/u1/pets/p1/lastUpdated')).toBeUndefined();
   });
 
-  it('sehr hoher Hunger (>80) zieht zusaetzlich Happiness ab', async () => {
+  it('sehr hoher Hunger (>80) zieht je Schritt zusaetzlich Happiness ab', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({
-        lastUpdated: new Date(NOW.getTime() - 2 * HOUR),
-        lastFed: new Date(NOW.getTime() - 2 * HOUR),
+        lastUpdated: new Date(NOW.getTime() - 6 * HOUR),
+        lastFed: new Date(NOW.getTime() - 6 * HOUR),
         hunger: 85,
         happiness: 50,
       })
     );
     const result = await updatePetStatus('u1', 'p1');
-    // hunger 85 + floor(2*1.5)=3 → 88 (>80) → happiness -3 zusaetzlich
-    expect(result?.hunger).toBe(88);
-    // happiness 50 - floor(2*1)=48, dann wegen Hunger>80 nochmal -3 = 45
-    expect(result?.happiness).toBe(45);
+    expect(result?.hunger).toBe(89);
+    expect(result?.happiness).toBe(46);
   });
 
   it('ungueltiges lastFed → Reset auf Hunger 50', async () => {
@@ -223,8 +277,8 @@ describe('updatePetStatus — Tod', () => {
   it('Hunger >= 100 → Tod durch hunger', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({
-        lastUpdated: new Date(NOW.getTime() - 4 * HOUR),
-        lastFed: new Date(NOW.getTime() - 4 * HOUR),
+        lastUpdated: new Date(NOW.getTime() - 9 * HOUR),
+        lastFed: new Date(NOW.getTime() - 9 * HOUR),
         hunger: 95,
         happiness: 100,
       })
@@ -238,10 +292,10 @@ describe('updatePetStatus — Tod', () => {
   it('Happiness <= 0 → Tod durch sadness', async () => {
     petCore.getUserPet.mockResolvedValue(
       makePet({
-        lastUpdated: new Date(NOW.getTime() - 10 * HOUR),
-        lastFed: new Date(NOW.getTime() - 10 * HOUR),
+        lastUpdated: new Date(NOW.getTime() - 9 * HOUR),
+        lastFed: new Date(NOW.getTime() - 9 * HOUR),
         hunger: 0,
-        happiness: 5,
+        happiness: 3,
       })
     );
     const result = await updatePetStatus('u1', 'p1');
@@ -304,8 +358,8 @@ describe('revivePet', () => {
     );
     const result = await revivePet('u1', 'p1');
     expect(result?.isAlive).toBe(true);
-    expect(result?.hunger).toBe(50);
-    expect(result?.happiness).toBe(50);
+    expect(result?.hunger).toBe(PET_CONFIG.REVIVAL_HUNGER);
+    expect(result?.happiness).toBe(PET_CONFIG.REVIVAL_HAPPINESS);
     expect(result?.level).toBe(4); // 5 - 1
     expect(result?.experience).toBe(300); // (4-1)*100
     expect(result?.reviveCount).toBe(2);
