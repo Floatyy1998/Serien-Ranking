@@ -13,6 +13,7 @@ import { buildFingerprint } from '../../lib/errorReport/fingerprint';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { shortStack, truncate } from '../../lib/errorReport/redact';
 import { decideThrottle, type ThrottleState } from '../../lib/errorReport/throttle';
+import { willRetryStylesheet } from '../app/stylesheetRetry';
 import { dbRef, serverTimestamp } from '../db/ref';
 import { addBreadcrumb, getBreadcrumbs, installBreadcrumbs } from './breadcrumbs';
 import { collectEnvironment, primeErrorContext } from './context';
@@ -171,6 +172,8 @@ function onWindowError(event: ErrorEvent): void {
     if (tag === 'link' && (target.getAttribute?.('rel') || '').toLowerCase() !== 'stylesheet') {
       return;
     }
+    // Erst der letzte Neuversuch zaehlt.
+    if (tag === 'link' && willRetryStylesheet(target)) return;
     // Waehrend die Seite ersetzt wird (Update-Reload, Chunk-Retry) bricht der
     // Browser laufende Ladevorgaenge ab bzw. alte Chunks sind schon weg.
     if (pageLeaving) return;

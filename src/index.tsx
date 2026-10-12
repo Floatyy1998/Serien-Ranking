@@ -9,6 +9,8 @@ import { installErrorReporting } from './services/errorReporting/errorReporter';
 import { LOCALE_TAG, appLocale, ensureAllDictionaries } from './services/i18n';
 import { APP_READY_EVENT, isAppReady } from './services/app/appReady';
 import { installDomTranslationGuard } from './services/app/domTranslationGuard';
+import { installNativeUpdateCheck } from './services/app/nativeUpdateCheck';
+import { installStylesheetRetry } from './services/app/stylesheetRetry';
 import { installSeasonPreview } from './services/app/seasonPreview';
 import './styles/index.css';
 // Die Anzeigegröße (zoom) wird in AppWithSplash gesetzt — erst NACHDEM der
@@ -24,6 +26,8 @@ import './services/app/nativeShell';
 // werden. Geschrieben wird erst, sobald der Nutzer feststeht (authProvider).
 // Der Dev-Server meldet nicht: HMR/Dep-Neuoptimierung erzeugen Fehler, die es im Build nicht gibt.
 if (!import.meta.env.DEV) installErrorReporting();
+installStylesheetRetry();
+installNativeUpdateCheck();
 
 installSeasonPreview();
 

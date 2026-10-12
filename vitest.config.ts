@@ -244,6 +244,8 @@ export default defineConfig({
         'src/services/api/anilistProviderFallback.ts',
         'src/services/app/appReview.ts',
         'src/services/app/domTranslationGuard.ts',
+        'src/services/app/nativeUpdateCheck.ts',
+        'src/services/app/stylesheetRetry.ts',
         'src/services/api/backendApi.ts',
         'src/services/catalog/catalogIDB.ts',
         'src/lib/watch/compactWatch.ts',

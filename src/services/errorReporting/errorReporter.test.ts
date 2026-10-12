@@ -27,6 +27,11 @@ vi.mock('./breadcrumbs', () => ({
   installBreadcrumbs: vi.fn(),
 }));
 
+const stylesheetRetry = { pending: false };
+vi.mock('../app/stylesheetRetry', () => ({
+  willRetryStylesheet: () => stylesheetRetry.pending,
+}));
+
 vi.mock('./context', () => ({
   collectEnvironment: (count: number) => ({ route: '/home', sessionErrorCount: count }),
   primeErrorContext: vi.fn(async () => {}),
@@ -51,6 +56,7 @@ beforeEach(() => {
   fb.sets = [];
   pushCounter = 0;
   localStorage.clear();
+  stylesheetRetry.pending = false;
   resetErrorReporter();
 });
 
@@ -192,6 +198,19 @@ describe('globale Handler', () => {
     el.remove();
     await flush();
     expect(fb.sets[0].value).toMatchObject({ kind: 'resource', source: '/assets/app.css' });
+  });
+
+  it('meldet ein Stylesheet erst, wenn kein Neuversuch mehr aussteht', async () => {
+    setErrorReporterUser('u1');
+    stylesheetRetry.pending = true;
+    const el = document.createElement('link');
+    el.setAttribute('rel', 'stylesheet');
+    el.setAttribute('href', '/assets/Discover-hWmp2J0w.css');
+    document.body.appendChild(el);
+    el.dispatchEvent(new Event('error'));
+    el.remove();
+    await flush();
+    expect(fb.sets).toHaveLength(0);
   });
 
   it('ignoriert fehlgeschlagene Modulepreloads — nur ein Hinweis, kein Fehler', async () => {

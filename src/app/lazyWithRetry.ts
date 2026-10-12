@@ -1,4 +1,5 @@
 import { createElement, lazy, type ComponentType } from 'react';
+import { stylesheetRetriesSettled } from '../services/app/stylesheetRetry';
 import { t } from '../services/i18n';
 
 // Nach Chunk-Fehler: Reload erst, wenn die App im Hintergrund ist
@@ -94,6 +95,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
       return await load();
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 1500));
+      await stylesheetRetriesSettled();
       try {
         return await load();
       } catch {
