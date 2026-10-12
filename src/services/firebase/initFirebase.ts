@@ -1,8 +1,18 @@
+import { getApp } from 'firebase/app';
+import {
+  browserLocalPersistence,
+  browserSessionPersistence,
+  debugErrorMap,
+  indexedDBLocalPersistence,
+  initializeAuth,
+  inMemoryPersistence,
+} from 'firebase/auth';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { appLocale } from '../i18n';
+import { hasNativeSocialLogin } from './socialAuth';
 
 export const initFirebase = () => {
   const config = {
@@ -23,6 +33,22 @@ export const initFirebase = () => {
 
   if (!Firebase.apps.length) {
     Firebase.initializeApp(config);
+    // Ohne Resolver wartet Auth auf Mobilgeräten nicht auf Googles Iframe (apis.google.com).
+    if (hasNativeSocialLogin()) {
+      try {
+        initializeAuth(getApp(), {
+          persistence: [
+            indexedDBLocalPersistence,
+            browserLocalPersistence,
+            browserSessionPersistence,
+            inMemoryPersistence,
+          ],
+          errorMap: debugErrorMap,
+        });
+      } catch {
+        /* compat initialisiert Auth dann mit Resolver */
+      }
+    }
     // Auth-Mails (Verifizierung, Passwort-Reset) in der App-Sprache verschicken.
     // Greift für Firebases Standard-Templates — angepasste Template-Texte in
     // der Console überschreiben die Lokalisierung.

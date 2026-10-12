@@ -40,6 +40,10 @@ const getCapacitor = (): CapacitorAuthGlobal | null => {
 /** 'web' im Browser/Electron, sonst 'ios' | 'android'. */
 export const getAuthPlatform = (): string => getCapacitor()?.getPlatform?.() ?? 'web';
 
+/** App-Hülle mit nativem Login-Plugin — Popup/Redirect laufen dort nie. */
+export const hasNativeSocialLogin = (): boolean =>
+  !!getCapacitor()?.Plugins?.FirebaseAuthentication;
+
 // Electron: Popups landen via setWindowOpenHandler im System-Browser (Login
 // käme dort nie zurück) — deshalb Redirect-Flow im selben Fenster.
 const isElectronShell = (): boolean =>
