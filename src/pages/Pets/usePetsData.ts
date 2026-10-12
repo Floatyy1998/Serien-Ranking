@@ -8,6 +8,7 @@ import { petService } from '../../services/pet/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { emitPetDockChanged } from '../../services/pet/petEvents';
 import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
+import { dockAfterSwitch } from '../../services/pet/petCore';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { toggleWorn } from '../../components/pet/outfit';
 import { t } from '../../services/i18n';
@@ -146,6 +147,13 @@ export function usePetsData(enabled = true) {
       const newPet = await petService.createPet(user.uid, petName.trim(), selectedType);
       setPets((prev) => [...prev, newPet]);
       setSelectedPetIndex(pets.length); // neues Pet auswählen
+      petService
+        .getDockPetIds(user.uid)
+        .then((ids) => {
+          setDockIds(ids);
+          emitPetDockChanged();
+        })
+        .catch(() => {});
       setShowCreateModal(false);
       setPetName('');
       const canAdd = await petService.canCreateNewPet(user.uid);
@@ -208,7 +216,8 @@ export function usePetsData(enabled = true) {
       if (remaining.length > 0) {
         setSelectedPetIndex(0);
         setActiveColorBorder(remaining[0].color);
-        await petService.setActivePetId(user.uid, remaining[0].id);
+        setDockIds(await petService.switchActivePet(user.uid, remaining[0].id, false));
+        emitPetDockChanged();
       } else {
         setSelectedPetIndex(0);
         setShowCreateModal(true);
@@ -281,10 +290,15 @@ export function usePetsData(enabled = true) {
   };
 
   const selectPet = async (idx: number) => {
+    const target = pets[idx];
     setSelectedPetIndex(idx);
-    setActiveColorBorder(pets[idx].color);
-    if (user) {
-      await petService.setActivePetId(user.uid, pets[idx].id);
+    setActiveColorBorder(target.color);
+    if (!user || target.id === pet?.id) return;
+    // das bisher aktive Pet bleibt als Begleiter auf dem Dock
+    setDockIds(dockAfterSwitch(dockIds, pet?.id ?? null, target.id));
+    try {
+      setDockIds(await petService.switchActivePet(user.uid, target.id));
+    } finally {
       emitPetDockChanged();
     }
   };

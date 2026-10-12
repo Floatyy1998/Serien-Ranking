@@ -34,6 +34,9 @@ const svc = vi.hoisted(() => ({
   revivePet: vi.fn<(uid: string, id: string) => Promise<Pet | null>>(),
   deletePet: vi.fn<(uid: string, id: string) => Promise<void>>(),
   setActivePetId: vi.fn<(uid: string, id: string) => Promise<void>>(),
+  switchActivePet: vi.fn<(uid: string, id: string, keep?: boolean) => Promise<string[]>>(() =>
+    Promise.resolve([])
+  ),
   getDockPetIds: vi.fn<(uid: string) => Promise<string[]>>(() => Promise.resolve([])),
   setDockPetIds: vi.fn<(uid: string, ids: string[]) => Promise<void>>(() => Promise.resolve()),
   changePetColor: vi.fn<(uid: string, id: string, c: string) => Promise<Pet | null>>(),
@@ -152,7 +155,7 @@ describe('usePetsData – actions', () => {
     await act(async () => {
       await result.current.selectPet(1);
     });
-    expect(svc.setActivePetId).toHaveBeenCalledWith('u1', 'p2');
+    expect(svc.switchActivePet).toHaveBeenCalledWith('u1', 'p2');
   });
 
   it('registriert einen Realtime-Listener auf den Pets-Node', async () => {

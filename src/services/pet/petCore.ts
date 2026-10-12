@@ -1,4 +1,4 @@
-import { dbRef, dbGet, userPath } from '../../services/db/ref';
+import { dbRef, dbGet, dbUpdate, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
 import { MAX_DOCK_PETS, PET_CONFIG } from './petConstants';
@@ -248,6 +248,33 @@ export async function setDockPetIds(userId: string, ids: string[]): Promise<void
   await dbRef(userPath(userId, 'petWidget', 'dockPetIds')).set(clean.length ? clean : null);
 }
 
+/** Begleiter nach einem Wechsel des aktiven Pets: das bisherige rückt nach, das neue scheidet aus. */
+export function dockAfterSwitch(
+  dock: string[],
+  from: string | null,
+  to: string,
+  keepPrevious = true
+): string[] {
+  const rest = dock.filter((id) => id !== to && id !== from);
+  const lead = keepPrevious && from && from !== to ? [from] : [];
+  return [...lead, ...rest].slice(0, MAX_DOCK_PETS - 1);
+}
+
+/** Wechselt das aktive Pet, ohne dass dabei ein Pet vom Dock fällt. */
+export async function switchActivePet(
+  userId: string,
+  petId: string,
+  keepPrevious = true
+): Promise<string[]> {
+  const [current, dock] = await Promise.all([getActivePetId(userId), getDockPetIds(userId)]);
+  const next = dockAfterSwitch(dock, current, petId, keepPrevious);
+  await dbUpdate({
+    [userPath(userId, 'petWidget', 'activePetId')]: petId,
+    [userPath(userId, 'petWidget', 'dockPetIds')]: next.length ? next : null,
+  });
+  return next;
+}
+
 export async function canCreateNewPet(userId: string): Promise<boolean> {
   const pets = await getUserPets(userId);
   if (pets.length === 0) return false;
@@ -301,7 +328,7 @@ export async function createPet(userId: string, name: string, type: Pet['type'])
     lastUpdated: now.toISOString(),
     createdAt: now.getTime(),
   });
-  await dbRef(userPath(userId, 'petWidget', 'activePetId')).set(newPet.id);
+  await switchActivePet(userId, newPet.id);
   return newPet;
 }
 

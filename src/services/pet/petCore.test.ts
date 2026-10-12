@@ -348,3 +348,32 @@ describe('Widget-Position', () => {
     ).resolves.toBeUndefined();
   });
 });
+
+describe('Dock beim Wechsel des aktiven Pets', () => {
+  it('das bisher aktive Pet rückt als Begleiter nach, das neue scheidet aus', async () => {
+    const { dockAfterSwitch } = await load();
+    expect(dockAfterSwitch(['b', 'c'], 'a', 'b')).toEqual(['a', 'c']);
+    expect(dockAfterSwitch([], 'a', 'b')).toEqual(['a']);
+    expect(dockAfterSwitch(['c'], null, 'b')).toEqual(['c']);
+  });
+
+  it('bei vollem Dock fliegt der letzte Begleiter, nie das bisher aktive Pet', async () => {
+    const { dockAfterSwitch } = await load();
+    expect(dockAfterSwitch(['c', 'd'], 'a', 'b')).toEqual(['a', 'c']);
+  });
+
+  it('ohne keepPrevious verschwindet das alte Pet ganz (Adoption)', async () => {
+    const { dockAfterSwitch } = await load();
+    expect(dockAfterSwitch(['b', 'c'], 'a', 'b', false)).toEqual(['c']);
+  });
+
+  it('switchActivePet schreibt aktives Pet und Begleiter in einem Rutsch', async () => {
+    fb.setAt('users/u1/petWidget/activePetId', 'a');
+    fb.setAt('users/u1/petWidget/dockPetIds', ['b', 'c']);
+    const { switchActivePet } = await load();
+    const next = await switchActivePet('u1', 'b');
+    expect(next).toEqual(['a', 'c']);
+    expect(fb.getAt('users/u1/petWidget/activePetId')).toBe('b');
+    expect(fb.getAt('users/u1/petWidget/dockPetIds')).toEqual(['a', 'c']);
+  });
+});
