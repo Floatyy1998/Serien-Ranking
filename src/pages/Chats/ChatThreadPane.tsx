@@ -69,6 +69,19 @@ const GROUP_WINDOW_MS = 5 * 60 * 1000;
 /** Bis hierher gilt der Verlauf als „unten" und wird weiter nachgeführt. */
 const BOTTOM_SLACK_PX = 80;
 
+/** Maus/Trackpad vorhanden: Enter schickt ab (auch iPad-App auf dem Mac, Touch-Laptops). */
+const hasFinePointer = (): boolean =>
+  !!window.matchMedia?.('(any-pointer: fine)')?.matches || !('ontouchstart' in window);
+
+/** Klicks auf Buttons lassen den Fokus im Textfeld, sonst springt das Layout unter dem Klick weg. */
+const keepFieldFocus = (e: React.MouseEvent) => {
+  const field = document.activeElement;
+  const isField = field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement;
+  if (isField && field !== e.target && (e.target as HTMLElement).closest('button')) {
+    e.preventDefault();
+  }
+};
+
 export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showBack: boolean }) => {
   const navigate = useNavigate();
   const { user } = useAuth() || {};
@@ -698,7 +711,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           )}
         </div>
       ) : canChat ? (
-        <div className="ch-input-bar">
+        <div className="ch-input-bar" onMouseDown={keepFieldFocus}>
           <AnimatePresence>
             {emojiOpen && <ChatComposerPicker onEmoji={insertEmoji} onSticker={sendSticker} />}
           </AnimatePresence>
@@ -762,7 +775,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               }
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) {
+              if (e.key === 'Enter' && !e.shiftKey && hasFinePointer()) {
                 e.preventDefault();
                 void handleSend();
               }
@@ -808,7 +821,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             <div className="ch-imgpreview-stage">
               <img src={pendingImage.url} alt="" />
             </div>
-            <div className="ch-imgpreview-bar">
+            <div className="ch-imgpreview-bar" onMouseDown={keepFieldFocus}>
               <input
                 type="text"
                 value={caption}
@@ -821,7 +834,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     void confirmSendImage();
                   }
                 }}
-                autoFocus={!('ontouchstart' in window)}
+                autoFocus={hasFinePointer()}
               />
               <button
                 className="ch-send-btn"
