@@ -19,7 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { bookMatchKey } from '../../lib/books/bookIdentity';
-import { coverAtSize } from '../../lib/books/bookSearchMapping';
+import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { progressPercent as bookProgressPercent } from '../../lib/books/bookProgress';
 import { addBookCopy } from '../../services/books/bookService';
 import { showToast } from '../../lib/interaction/toast';
@@ -73,6 +73,8 @@ import { useFriendFolders } from './useFriendFolders';
 import { useFriendManga } from './useFriendManga';
 import { useFriendBooks } from './useFriendBooks';
 import { FriendReadingSection } from './FriendReadingSection';
+import { FriendBooksInsights } from './FriendBooksInsights';
+import { useOpenResult } from '../Books/discover/DiscoverParts';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
 import { folderItemKey } from '../../lib/rating/ratingFolders';
@@ -265,6 +267,7 @@ export const FriendProfilePage = memo(() => {
   }, [ownBooks]);
   const ownsBook = (b: { id: string; title: string; authors?: string[] }) =>
     ownBookKeys.has(b.id) || ownBookKeys.has(bookMatchKey(b.title, b.authors));
+  const openBookResult = useOpenResult();
   const [addingBookId, setAddingBookId] = useState<string | null>(null);
   const addBookFromFriend = async (book: (typeof friendBooks.list)[number]) => {
     if (!user || addingBookId !== null) return;
@@ -783,6 +786,9 @@ export const FriendProfilePage = memo(() => {
               </div>
             </div>
           )}
+          {activeTab === 'books' && !isSelf && !(filters.search || '').trim() && (
+            <FriendBooksInsights friendName={friendName} books={friendBooks.list} />
+          )}
           <AnimatePresence mode="wait">
             {activeTab === 'books' ? (
               bookItems.length === 0 ? (
@@ -812,9 +818,6 @@ export const FriendProfilePage = memo(() => {
                   {bookItems.map((book, index) => {
                     const progress = bookProgressPercent(book);
                     const owned = ownsBook(book);
-                    const query = encodeURIComponent(
-                      [book.title, book.authors[0]].filter(Boolean).join(' ')
-                    );
                     return (
                       <ProfileItemCard
                         key={book.id}
@@ -840,13 +843,7 @@ export const FriendProfilePage = memo(() => {
                         genres={book.authors[0]}
                         index={index}
                         currentTheme={currentTheme}
-                        onClick={() =>
-                          navigate(
-                            owned
-                              ? '/books/' + encodeURIComponent(book.id)
-                              : '/books/search?q=' + query
-                          )
-                        }
+                        onClick={() => openBookResult(bookAsResult(book))}
                         inList={owned}
                         adding={addingBookId === book.id}
                         onAdd={isSelf ? undefined : () => void addBookFromFriend(book)}

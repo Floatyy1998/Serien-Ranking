@@ -5,7 +5,7 @@
  *   chats/$pairId/participants/{uidA,uidB}   — einmalig beim Anlegen (Rules: create-once, nur Freunde)
  *   chats/$pairId/summary                    — lastMessage/lastMessageAt/lastSender/createdAt
  *   chats/$pairId/blocked/{uid}              — Blocker trägt sich selbst ein; solange gesetzt: kein Senden
- *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms }
+ *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms } (+ st | img | ep)
  *   chatIndex/$uid/$pairId = lastMessageAt   — pro Nutzer die Chat-Liste (beide Seiten werden beim Senden gepflegt)
  *   users/$uid/chatState/$pairId/lastReadAt  — eigener Lese-Stand (Unread-Badges)
  *
@@ -32,10 +32,57 @@ export interface ChatMessage {
   imageHeight?: number;
   /** Als Spoiler markiert — Empfänger sieht den Text erst nach Tap. */
   isSpoiler?: boolean;
+  episode?: SharedEpisode;
+}
+
+/** Geteilte Folge — Staffel und Folge 1-basiert wie in der Folgen-URL. */
+export interface SharedEpisode {
+  seriesId: number;
+  season: number;
+  episode: number;
+  seriesTitle: string;
+  episodeTitle?: string;
+  poster?: string;
+}
+
+interface CompactEpisode {
+  id: number;
+  s: number;
+  e: number;
+  n: string;
+  et?: string;
+  p?: string;
 }
 
 export type OutgoingMessage =
-  { kind: 'text'; text: string; spoiler?: boolean } | { kind: 'sticker'; stickerId: string };
+  | { kind: 'text'; text: string; spoiler?: boolean }
+  | { kind: 'sticker'; stickerId: string }
+  | { kind: 'episode'; episode: SharedEpisode; text?: string; spoiler?: boolean };
+
+const compactEpisode = (ep: SharedEpisode): CompactEpisode => ({
+  id: ep.seriesId,
+  s: ep.season,
+  e: ep.episode,
+  n: ep.seriesTitle.slice(0, 120),
+  ...(ep.episodeTitle && { et: ep.episodeTitle.slice(0, 160) }),
+  ...(ep.poster && /^\/[\w.-]+$/.test(ep.poster) && { p: ep.poster }),
+});
+
+const expandEpisode = (ep: CompactEpisode | undefined): SharedEpisode | undefined =>
+  ep && typeof ep.id === 'number'
+    ? {
+        seriesId: ep.id,
+        season: ep.s,
+        episode: ep.e,
+        seriesTitle: ep.n,
+        episodeTitle: ep.et,
+        poster: ep.p,
+      }
+    : undefined;
+
+/** Vorschau für Chat-Liste und Push — ohne Folgentitel (könnte spoilern). */
+export const episodePreview = (ep: SharedEpisode) =>
+  `${ep.seriesTitle} S${ep.season}·E${ep.episode}`;
 
 export interface ChatSummary {
   lastMessage?: string;
@@ -99,6 +146,15 @@ export async function sendMessage(
     payload = message.spoiler ? { t: trimmed, sp: true } : { t: trimmed };
     // Spoiler dürfen weder über die Chat-Liste noch über den Push leaken
     preview = message.spoiler ? 'Spoiler' : trimmed.slice(0, 300);
+  } else if (message.kind === 'episode') {
+    const note = message.text?.trim().slice(0, MAX_MESSAGE_LENGTH) ?? '';
+    payload = {
+      ep: compactEpisode(message.episode),
+      ...(note && { t: note }),
+      ...(note && message.spoiler && { sp: true }),
+    };
+    const label = episodePreview(message.episode);
+    preview = note && !message.spoiler ? `${label} – ${note}`.slice(0, 300) : label;
   } else {
     payload = { st: message.stickerId.slice(0, 64) };
     preview = 'Sticker';
@@ -209,6 +265,7 @@ export function subscribeMessages(
         w?: number;
         h?: number;
         sp?: boolean;
+        ep?: CompactEpisode;
         ts: number;
       }
     >;
@@ -223,6 +280,7 @@ export function subscribeMessages(
         imageWidth: m.w,
         imageHeight: m.h,
         isSpoiler: m.sp === true,
+        episode: expandEpisode(m.ep),
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     cb(list);

@@ -10,6 +10,9 @@ interface HorizontalScrollContainerProps {
   style?: React.CSSProperties;
   gap?: number;
   showArrows?: 'always' | 'desktop' | 'never';
+  /** Eigene Klasse der scrollenden Reihe (Abstände, Snap) statt der eingebauten Flex-Stile. */
+  scrollerClassName?: string;
+  scrollerStyle?: React.CSSProperties;
 }
 
 export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps> = ({
@@ -18,6 +21,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   style,
   gap = 12,
   showArrows = 'desktop',
+  scrollerClassName,
+  scrollerStyle,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -135,16 +140,20 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
       <div
         ref={scrollRef}
         style={{
-          display: 'flex',
-          gap: `${gap}px`,
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          scrollbarWidth: 'none',
-          WebkitOverflowScrolling: 'touch',
+          ...(scrollerClassName
+            ? scrollerStyle
+            : {
+                display: 'flex',
+                gap: `${gap}px`,
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                scrollbarWidth: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }),
           ...(shouldShowArrows && canScrollLeft ? { paddingLeft: '40px' } : {}),
           ...(shouldShowArrows && canScrollRight ? { paddingRight: '40px' } : {}),
         }}
-        className="hide-scrollbar"
+        className={scrollerClassName ? `hide-scrollbar ${scrollerClassName}` : 'hide-scrollbar'}
       >
         {children}
       </div>

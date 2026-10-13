@@ -11,6 +11,7 @@ import {
   setBookHidden,
   setBookRating,
   setBookStatus,
+  setBookWish,
   updateBookFields,
   updateBookProgress,
   type AddBookOptions,
@@ -111,6 +112,16 @@ export function useBookActions() {
   );
 
   /** Entfernen mit Rückgängig: erst nach Ablauf wirklich löschen. */
+  const toggleWish = useCallback(
+    async (book: Book) => {
+      if (!uid) return;
+      await setBookWish(uid, book.id, !book.wishedAt).catch(() =>
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+      );
+    },
+    [uid]
+  );
+
   const remove = useCallback(
     (book: Book, onRemoved?: () => void) => {
       if (!uid) return;
@@ -134,7 +145,16 @@ export function useBookActions() {
   );
 
   return useMemo(
-    () => ({ add, saveProgress, changeStatus, rate, updateFields, remove, toggleHidden }),
-    [add, saveProgress, changeStatus, rate, updateFields, remove, toggleHidden]
+    () => ({
+      add,
+      saveProgress,
+      changeStatus,
+      rate,
+      updateFields,
+      toggleWish,
+      remove,
+      toggleHidden,
+    }),
+    [add, saveProgress, changeStatus, rate, updateFields, toggleWish, remove, toggleHidden]
   );
 }

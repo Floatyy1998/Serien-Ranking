@@ -24,10 +24,21 @@ const legPaths = (side: 1 | -1) =>
 const LEFT_LEGS = legPaths(1);
 const RIGHT_LEGS = legPaths(-1);
 
-export const Spider = ({ className, style }: ArtProps) => {
+const SPIDER_VIEWBOX = '-32 -34 64 64';
+
+const spiderLegs = (legs: typeof LEFT_LEGS) =>
+  legs.map((leg) => (
+    <g key={leg.femur}>
+      <path d={leg.femur} className="spk-femur" />
+      <path d={leg.tibia} className="spk-tibia" />
+    </g>
+  ));
+
+/** `layered`: Beine als eigene Elemente — das Zucken läuft dann auf der Grafikkarte (Dauer-Deko). */
+export const Spider = ({ className, style, layered }: ArtProps & { layered?: boolean }) => {
   const id = useId().replace(/:/g, '');
-  return (
-    <svg className={className} style={style} viewBox="-32 -34 64 64" aria-hidden="true">
+  const body = (
+    <>
       <defs>
         <radialGradient id={`${id}a`} cx="35%" cy="30%" r="75%">
           <stop offset="0" stopColor="#3b2f44" />
@@ -39,22 +50,6 @@ export const Spider = ({ className, style }: ArtProps) => {
           <stop offset="1" stopColor="#07050a" />
         </radialGradient>
       </defs>
-      <g className="spk-legs spk-legs--l">
-        {LEFT_LEGS.map((leg) => (
-          <g key={leg.femur}>
-            <path d={leg.femur} className="spk-femur" />
-            <path d={leg.tibia} className="spk-tibia" />
-          </g>
-        ))}
-      </g>
-      <g className="spk-legs spk-legs--r">
-        {RIGHT_LEGS.map((leg) => (
-          <g key={leg.femur}>
-            <path d={leg.femur} className="spk-femur" />
-            <path d={leg.tibia} className="spk-tibia" />
-          </g>
-        ))}
-      </g>
       <path d="M-1.6 -12.2q-1.4 -2.6 -0.4 -4.4M1.6 -12.2q1.4 -2.6 0.4 -4.4" className="spk-palp" />
       <ellipse cx="0" cy="8" rx="9.5" ry="11.5" fill={`url(#${id}a)`} />
       <path
@@ -67,15 +62,90 @@ export const Spider = ({ className, style }: ArtProps) => {
       <circle cx="1.9" cy="-10.3" r="1.15" className="spk-eye" />
       <circle cx="-3.7" cy="-8.8" r="0.7" className="spk-eye spk-eye--small" />
       <circle cx="3.7" cy="-8.8" r="0.7" className="spk-eye spk-eye--small" />
+    </>
+  );
+  if (layered) {
+    return (
+      <span className={`${className ?? ''} spk-layered`} style={style} aria-hidden="true">
+        <svg className="spk-legs spk-legs--l" viewBox={SPIDER_VIEWBOX}>
+          {spiderLegs(LEFT_LEGS)}
+        </svg>
+        <svg className="spk-legs spk-legs--r" viewBox={SPIDER_VIEWBOX}>
+          {spiderLegs(RIGHT_LEGS)}
+        </svg>
+        <svg viewBox={SPIDER_VIEWBOX}>{body}</svg>
+      </span>
+    );
+  }
+  return (
+    <svg className={className} style={style} viewBox={SPIDER_VIEWBOX} aria-hidden="true">
+      <g className="spk-legs spk-legs--l">{spiderLegs(LEFT_LEGS)}</g>
+      <g className="spk-legs spk-legs--r">{spiderLegs(RIGHT_LEGS)}</g>
+      {body}
     </svg>
   );
 };
 
-export const Cobweb = ({ className, style, seed }: ArtProps & { seed: number }) => {
+/** `layered`: Lichtschimmer und Tautropfen als eigene Elemente — laufen auf der Grafikkarte statt das ganze Netz pro Frame neu zu zeichnen. */
+export const Cobweb = ({
+  className,
+  style,
+  seed,
+  layered,
+}: ArtProps & { seed: number; layered?: boolean }) => {
   const id = useId().replace(/:/g, '');
   const web = useMemo(() => buildCobweb(seed), [seed]);
   const reduceMotion = useReducedMotion();
   const sweep = `-90;-90;${WEB_SIZE + 60}`;
+  const viewBox = `0 0 ${WEB_SIZE} ${WEB_SIZE}`;
+  const pct = (value: number) => `${(value / WEB_SIZE) * 100}%`;
+  if (layered) {
+    return (
+      <span className={`${className ?? ''} web-layered`} style={style} aria-hidden="true">
+        <svg viewBox={viewBox} overflow="visible">
+          <defs>
+            <radialGradient id={`${id}w`} cx="0" cy="0" r={WEB_SIZE} gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#f4ecdf" stopOpacity="0.62" />
+              <stop offset="0.55" stopColor="#e9dfcf" stopOpacity="0.34" />
+              <stop offset="1" stopColor="#e9dfcf" stopOpacity="0.04" />
+            </radialGradient>
+          </defs>
+          <g fill="none" stroke={`url(#${id}w)`} strokeLinecap="round">
+            <path d={web.spokes} strokeWidth="1.05" />
+            <path d={web.rings} strokeWidth="0.75" />
+            <path d={web.strands} strokeWidth="0.6" />
+          </g>
+        </svg>
+        <span
+          className="web-glint"
+          style={{ '--glint-dur': `${9 + (seed % 4)}s` } as React.CSSProperties}
+        >
+          <svg className="web-glint__web" viewBox={viewBox} overflow="visible">
+            <g fill="none" stroke="#fff8ec" strokeOpacity="0.95" strokeLinecap="round">
+              <path d={web.rings} strokeWidth="1.1" />
+              <path d={web.spokes} strokeWidth="1.3" />
+            </g>
+          </svg>
+        </span>
+        {web.drops.map((drop, i) => (
+          <svg
+            key={i}
+            className="spk-dew web-dew"
+            viewBox={`${-drop.r} ${-drop.r} ${drop.r * 2} ${drop.r * 2}`}
+            style={{
+              left: pct(drop.x - drop.r),
+              top: pct(drop.y - drop.r),
+              width: pct(drop.r * 2),
+              height: pct(drop.r * 2),
+              animationDelay: `${i * -1.7}s`,
+            }}
+          >
+            <circle r={drop.r} />
+          </svg>
+        ))}
+      </span>
+    );
+  }
   return (
     <svg
       className={className}
@@ -138,10 +208,25 @@ export const Cobweb = ({ className, style, seed }: ArtProps & { seed: number }) 
 
 const FINGERS = [0, 1, 2, 3];
 
-export const PeekingSkull = ({ className, style }: ArtProps) => {
+/** `layered`: Augen-Glut als eigenes Element — pulsiert auf der Grafikkarte; darüber liegt im Bild nichts. */
+export const PeekingSkull = ({ className, style, layered }: ArtProps & { layered?: boolean }) => {
   const id = useId().replace(/:/g, '');
-  return (
-    <svg className={className} style={style} viewBox="0 0 120 150" aria-hidden="true">
+  const glowGradient = (
+    <radialGradient id={`${id}e`} cx="50%" cy="50%" r="50%">
+      <stop offset="0" stopColor="#ffb36b" />
+      <stop offset="0.45" stopColor="#ff6a1a" />
+      <stop offset="1" stopColor="#ff6a1a" stopOpacity="0" />
+    </radialGradient>
+  );
+  const glowCircles = (className?: string) => (
+    <>
+      <circle cx="32" cy="49" r="7" fill={`url(#${id}e)`} className={className} />
+      <circle cx="68" cy="49" r="7" fill={`url(#${id}e)`} className={className} />
+    </>
+  );
+  const glowsInline = layered ? null : glowCircles('skl-glow');
+  const skull = (
+    <>
       <defs>
         <linearGradient id={`${id}b`} x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0" stopColor="#f6efe2" />
@@ -151,11 +236,6 @@ export const PeekingSkull = ({ className, style }: ArtProps) => {
         <radialGradient id={`${id}s`} cx="62%" cy="38%" r="70%">
           <stop offset="0.55" stopColor="#000" stopOpacity="0" />
           <stop offset="1" stopColor="#2a1d14" stopOpacity="0.45" />
-        </radialGradient>
-        <radialGradient id={`${id}e`} cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#ffb36b" />
-          <stop offset="0.45" stopColor="#ff6a1a" />
-          <stop offset="1" stopColor="#ff6a1a" stopOpacity="0" />
         </radialGradient>
       </defs>
       <g transform="translate(14 46)">
@@ -172,8 +252,7 @@ export const PeekingSkull = ({ className, style }: ArtProps) => {
           d="M21 47c0-10 9-15 17-12 6 2 8 11 5 18-3 6-12 9-18 5-3-2-4-6-4-11ZM79 47c0-10-9-15-17-12-6 2-8 11-5 18 3 6 12 9 18 5 3-2 4-6 4-11Z"
           className="skl-socket"
         />
-        <circle cx="32" cy="49" r="7" fill={`url(#${id}e)`} className="skl-glow" />
-        <circle cx="68" cy="49" r="7" fill={`url(#${id}e)`} className="skl-glow" />
+        {glowsInline}
         <path d="M50 58l-5.5 12.5c2-1 4-1.3 5.5 0 1.5-1.3 3.5-1 5.5 0Z" className="skl-socket" />
         <path d="M31 80h38" className="skl-line" />
         <path
@@ -203,21 +282,57 @@ export const PeekingSkull = ({ className, style }: ArtProps) => {
           </g>
         ))}
       </g>
+    </>
+  );
+  if (layered) {
+    return (
+      <span className={`${className ?? ''} skl-layered`} style={style} aria-hidden="true">
+        <svg viewBox="0 0 120 150">{skull}</svg>
+        <svg className="skl-glow" viewBox="0 0 120 150">
+          <defs>{glowGradient}</defs>
+          <g transform="translate(14 46)">{glowCircles()}</g>
+        </svg>
+      </span>
+    );
+  }
+  return (
+    <svg className={className} style={style} viewBox="0 0 120 150" aria-hidden="true">
+      <defs>{glowGradient}</defs>
+      {skull}
     </svg>
   );
 };
 
-export const Bat = ({ className, style }: ArtProps) => (
-  <svg className={className} style={style} viewBox="0 0 64 32" aria-hidden="true">
-    <g className="bat-wings">
-      <path d="M29 15C25 10 19 7 11 7c2 3 2 6 0 8-3-2-7-2-11 1 5 1 7 4 7 7 3-3 8-3 11 0 2-3 6-4 9-2Z" />
-      <path d="M35 15c4-5 10-8 18-8-2 3-2 6 0 8 3-2 7-2 11 1-5 1-7 4-7 7-3-3-8-3-11 0-2-3-6-4-9-2Z" />
-    </g>
+const BAT_WINGS = (
+  <>
+    <path d="M29 15C25 10 19 7 11 7c2 3 2 6 0 8-3-2-7-2-11 1 5 1 7 4 7 7 3-3 8-3 11 0 2-3 6-4 9-2Z" />
+    <path d="M35 15c4-5 10-8 18-8-2 3-2 6 0 8 3-2 7-2 11 1-5 1-7 4-7 7-3-3-8-3-11 0-2-3-6-4-9-2Z" />
+  </>
+);
+
+const BAT_BODY = (
+  <>
     <path d="M32 10.5c-2.2 0-3.4 2-3.4 4.6 0 4.3 1.6 8.4 3.4 9.4 1.8-1 3.4-5.1 3.4-9.4 0-2.6-1.2-4.6-3.4-4.6ZM29.6 11.4l-0.9-4 2.4 2.9ZM34.4 11.4l0.9-4-2.4 2.9Z" />
     <circle cx="30.8" cy="13.6" r="0.55" className="bat-eye" />
     <circle cx="33.2" cy="13.6" r="0.55" className="bat-eye" />
-  </svg>
+  </>
 );
+
+/** `layered`: Flügel als eigenes Element — so schlägt die Grafikkarte sie statt des Hauptthreads (Dauer-Deko). */
+export const Bat = ({ className, style, layered }: ArtProps & { layered?: boolean }) =>
+  layered ? (
+    <span className={`${className ?? ''} bat-layered`} style={style} aria-hidden="true">
+      <svg className="bat-wings" viewBox="0 0 64 32">
+        {BAT_WINGS}
+      </svg>
+      <svg viewBox="0 0 64 32">{BAT_BODY}</svg>
+    </span>
+  ) : (
+    <svg className={className} style={style} viewBox="0 0 64 32" aria-hidden="true">
+      <g className="bat-wings">{BAT_WINGS}</g>
+      {BAT_BODY}
+    </svg>
+  );
 
 export const Pumpkin = ({ className, style }: ArtProps) => {
   const id = useId().replace(/:/g, '');

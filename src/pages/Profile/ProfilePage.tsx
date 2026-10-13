@@ -102,7 +102,7 @@ export const ProfilePage = memo(() => {
 
       {mangaMenuItems.length > 0 && (
         <ProfileMenuGroup
-          title="Manga"
+          title={t('Lesen')}
           items={mangaMenuItems}
           currentTheme={currentTheme}
           onNavigate={goTo}

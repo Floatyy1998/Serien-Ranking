@@ -5,6 +5,7 @@ import {
   Movie,
   PlayCircle,
   Replay,
+  SendRounded,
   Star,
   Tv,
   Visibility,
@@ -14,7 +15,7 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { BackButton, Skeleton } from '../../components/ui';
+import { BackButton, IconButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/display/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
@@ -128,6 +129,8 @@ interface HeroSectionProps {
   fillerInfo?: { filler: boolean; recap: boolean } | null;
   getStillUrl: (path: string | null, size?: string) => string;
   navigate: NavigateFunction;
+  /** Folge an Freunde in den Chat schicken. */
+  onShare?: () => void;
 }
 
 export const HeroSection = memo(
@@ -151,6 +154,7 @@ export const HeroSection = memo(
     fillerInfo,
     getStillUrl,
     navigate,
+    onShare,
   }: HeroSectionProps) => {
     const spoilerLevel = useSpoilerLevel();
     const [spoilerRevealed, setSpoilerRevealed] = useState(false);
@@ -207,14 +211,34 @@ export const HeroSection = memo(
               border: '1px solid var(--glass-border-light)',
             }}
           />
-          <motion.button
-            whileTap={tapScale}
-            onClick={() => navigate(`/series/${seriesId}`)}
-            className="ed-hero-series-btn"
-          >
-            <Tv className="ed-hero-series-btn-icon" />
-            {seriesTitle}
-          </motion.button>
+          <div className="ed-hero-topbar-end">
+            <motion.button
+              whileTap={tapScale}
+              onClick={() => navigate(`/series/${seriesId}`)}
+              className="ed-hero-series-btn"
+            >
+              <Tv className="ed-hero-series-btn-icon" />
+              {seriesTitle}
+            </motion.button>
+            {onShare && (
+              <IconButton
+                icon={<SendRounded style={{ fontSize: 19 }} />}
+                onClick={onShare}
+                size={40}
+                borderRadius="14px"
+                variant="glass"
+                ariaLabel={t('Folge schicken')}
+                tooltip={t('Folge schicken')}
+                style={{
+                  backdropFilter: 'var(--blur-lg)',
+                  WebkitBackdropFilter: 'var(--blur-lg)',
+                  background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
+                  border: '1px solid var(--glass-border-light)',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* Episode Info Overlay */}

@@ -71,12 +71,12 @@ describe('ProfilePage', () => {
     expect(screen.getByText('NAME:Bob')).toBeInTheDocument();
   });
 
-  it('renders the manga menu group only when manga items exist', () => {
+  it('renders the reading menu group only when reading items exist', () => {
     useProfileDataMock.mockReturnValue({
       ...baseReturn(),
       mangaMenuItems: [{ path: '/manga', label: 'M', icon: () => null, color: '#f00' }],
     });
     render(<ProfilePage />);
-    expect(screen.getByText('Manga')).toBeInTheDocument();
+    expect(screen.getByText('Lesen')).toBeInTheDocument();
   });
 });

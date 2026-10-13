@@ -2,7 +2,7 @@ export type BookStatus = 'reading' | 'planned' | 'completed' | 'paused' | 'dropp
 
 export type BookFormat = 'print' | 'ebook' | 'audio';
 
-export type BookSource = 'google' | 'openlibrary' | 'goodreads';
+export type BookSource = 'google' | 'openlibrary' | 'goodreads' | 'dnb';
 
 export interface BookSeriesInfo {
   name: string;
@@ -25,6 +25,8 @@ export interface Book {
   isbn13?: string;
   googleId?: string;
   olWorkId?: string;
+  /** Wikidata-Werk, mit dem die Bände einer Reihe abgeglichen werden. */
+  wikidataId?: string;
   series?: BookSeriesInfo;
   source?: BookSource;
   status: BookStatus;
@@ -39,6 +41,8 @@ export interface Book {
   rereadCount?: number;
   notes?: string;
   hidden?: boolean;
+  /** Auf der Wunschliste seit — Freunde sehen das Buch als Geschenkidee. */
+  wishedAt?: string;
   /** Zeitpunkt der letzten Wikidata-Suche nach Reihe/Verfilmung (verhindert Dauer-Abfragen). */
   wdChecked?: string;
 }

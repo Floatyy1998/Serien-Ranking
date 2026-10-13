@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SectionHeader } from '../../../components/ui';
+import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { Book } from '../../../types/Book';
 import { BookCover } from '../components/BookCover';
@@ -38,7 +38,7 @@ export const BookCarouselSection: React.FC<Props> = ({
         onSeeAll={onSeeAll}
         seeAllLabel={seeAllLabel}
       />
-      <div className="bk-carousel">
+      <HorizontalScrollContainer scrollerClassName="bk-carousel">
         {books.map((book) => (
           <button
             key={book.id}
@@ -55,7 +55,7 @@ export const BookCarouselSection: React.FC<Props> = ({
             </span>
           </button>
         ))}
-      </div>
+      </HorizontalScrollContainer>
     </section>
   );
 };

@@ -3,11 +3,12 @@ import { memo, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { progressPercent } from '../../lib/books/bookProgress';
-import { coverAtSize } from '../../lib/books/bookSearchMapping';
+import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { mangaTotalChapters } from '../../lib/manga/overview';
 import { t } from '../../services/i18n';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
+import { useOpenResult } from '../Books/discover/DiscoverParts';
 import { formatRelativeDay } from '../Manga/mangaUtils';
 
 interface Props {
@@ -25,7 +26,7 @@ interface ReadingEntry {
   progressText: string;
   progress: number;
   lastAt?: string;
-  href: string;
+  open: () => void;
   shared: boolean;
 }
 
@@ -39,6 +40,7 @@ export const FriendReadingSection = memo(function FriendReadingSection({
 }: Props) {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
+  const openResult = useOpenResult();
   const [now] = useState(() => Date.now());
 
   const reading = useMemo(() => {
@@ -56,7 +58,7 @@ export const FriendReadingSection = memo(function FriendReadingSection({
             : t('Kap. {n}', { n: m.currentChapter }),
         progress: total > 0 ? Math.min(100, (m.currentChapter / total) * 100) : 0,
         lastAt: m.lastReadAt || m.addedAt,
-        href: `/manga/${m.anilistId}`,
+        open: () => navigate(`/manga/${m.anilistId}`),
         shared: ownIds.has(m.anilistId),
       });
     }
@@ -72,16 +74,14 @@ export const FriendReadingSection = memo(function FriendReadingSection({
           : t('S. {page}', { page: b.currentPage }),
         progress: progressPercent(b),
         lastAt: b.lastReadAt || b.startedAt || b.addedAt,
-        href: shared
-          ? `/books/${encodeURIComponent(b.id)}`
-          : `/books/search?q=${encodeURIComponent([b.title, b.authors?.[0]].filter(Boolean).join(' '))}`,
+        open: () => openResult(bookAsResult(b)),
         shared,
       });
     }
     return entries
       .sort((a, b) => new Date(b.lastAt || 0).getTime() - new Date(a.lastAt || 0).getTime())
       .slice(0, 5);
-  }, [manga, ownIds, books, ownsBook]);
+  }, [manga, ownIds, books, ownsBook, navigate, openResult]);
 
   if (reading.length === 0) return null;
 
@@ -101,11 +101,11 @@ export const FriendReadingSection = memo(function FriendReadingSection({
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05 }}
-            onClick={() => navigate(item.href)}
+            onClick={item.open}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                navigate(item.href);
+                item.open();
               }
             }}
             className="fp-card fp-anticipation-item"

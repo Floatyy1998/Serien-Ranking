@@ -1219,3 +1219,79 @@
 .bk-cover-face--loading {
   background-color: #1d1922;
 }
+
+[data-offscreen].bk-cover-face--loading,
+[data-offscreen] .dsc-skeleton,
+[data-offscreen] .dsc-skeleton-line {
+  animation-play-state: paused;
+}
+
+.bk-taste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bk-taste-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bk-taste-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+}
+
+.bk-taste-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bk-taste-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.bk-taste-bar {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.bk-taste-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.bk-taste-authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.bk-taste-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  font-weight: 700;
+}

@@ -2,7 +2,7 @@ import { AutoStories, LocalLibrary, MenuBook } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GradientText, SectionHeader } from '../../components/ui';
+import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -231,7 +231,7 @@ export const ReadingHubPage = () => {
             onSeeAll={() => navigate('/manga/reading-list')}
             seeAllLabel={t('Alle')}
           />
-          <div className="bk-carousel">
+          <HorizontalScrollContainer scrollerClassName="bk-carousel">
             {readingManga.map((m) => (
               <button
                 key={m.anilistId}
@@ -273,7 +273,7 @@ export const ReadingHubPage = () => {
                 </span>
               </button>
             ))}
-          </div>
+          </HorizontalScrollContainer>
         </section>
       )}
 

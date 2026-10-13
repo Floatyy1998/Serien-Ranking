@@ -4,9 +4,15 @@ import { eventPages, readingStreak, type CompactBookEvent } from './bookEvents';
 import { bookMatchKey, looksLikeIsbn, pickIsbn13, toIsbn13 } from './bookIdentity';
 import { applyPageUpdate, applyStatusChange, progressPercent } from './bookProgress';
 import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
-import { findNextVolume, normalizeSeriesParts } from './bookSeries';
+import { findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
 import { computeBookYearStats, goalPace } from './bookStats';
 import { guessLanguage, htmlToPlainText } from './bookText';
+import {
+  computeReadingTaste,
+  genresFromCategories,
+  hasReadingTaste,
+  tasteGenres,
+} from './readingTaste';
 import { buildImportPreview, parseCsv, splitSeriesFromTitle } from './goodreadsCsv';
 
 const book = (over: Partial<Book> = {}): Book => ({
@@ -128,6 +134,39 @@ describe('bookSeries', () => {
     expect(next?.state).toBe('upcoming');
     expect(next?.daysUntil).toBe(10);
   });
+
+  it('erkennt gelesene Bände auch unter Ausgabentitel, ID oder Klammer-Schreibweise', () => {
+    const parts = normalizeSeriesParts([
+      { wikidataId: 'Q10', title: 'Bis(s) zum Morgengrauen', position: '1' },
+      { wikidataId: 'Q11', title: 'Bis(s) zur Mittagsstunde', position: '2', olWorkId: 'OL2W' },
+      { wikidataId: 'Q12', title: 'Fourth Wing', position: '3' },
+      { wikidataId: 'Q13', title: 'Iron Flame', position: '4' },
+    ]);
+    expect(partPositionOf({ title: 'Biss zum Morgengrauen' }, parts)).toBe(1);
+    expect(partPositionOf({ title: 'Ganz anders', olWorkId: 'OL2W' }, parts)).toBe(2);
+    expect(partPositionOf({ title: 'Ganz anders', wikidataId: 'Q13' }, parts)).toBe(4);
+    expect(partPositionOf({ title: 'Fourth Wing – Flammengeküsst' }, parts)).toBe(3);
+    expect(partPositionOf({ title: 'Ein anderes Buch' }, parts)).toBeUndefined();
+  });
+
+  it('ordnet einen mehrdeutigen Kurztitel keinem Band zu', () => {
+    const parts = normalizeSeriesParts([
+      { wikidataId: 'Q20', title: 'Percy Jackson: Diebe im Olymp', position: '1' },
+      { wikidataId: 'Q21', title: 'Percy Jackson: Im Bann des Zyklopen', position: '2' },
+    ]);
+    expect(partPositionOf({ title: 'Percy Jackson: Im Bann des Zyklopen' }, parts)).toBe(2);
+    expect(partPositionOf({ title: 'Percy Jackson' }, parts)).toBeUndefined();
+  });
+
+  it('nimmt eine gespeicherte Bandnummer nur aus derselben Reihe', () => {
+    const parts = normalizeSeriesParts([
+      { wikidataId: 'Q30', title: 'Eins', position: '1' },
+      { wikidataId: 'Q31', title: 'Zwei', position: '2' },
+    ]);
+    const book = { title: 'Zwei', series: { wikidataId: 'QX', position: 7 } };
+    expect(partPositionOf(book, parts, 'QX')).toBe(7);
+    expect(partPositionOf(book, parts, 'Q-andere')).toBe(2);
+  });
 });
 
 describe('Import', () => {
@@ -208,5 +247,38 @@ describe('Mapping und Text', () => {
         'The boy and the cat are in the garden with the dog, and it is a sunny day for all'
       )
     ).toBe('en');
+  });
+});
+
+describe('readingTaste', () => {
+  it('liest Genres aus Google- und Open-Library-Kategorien', () => {
+    expect(genresFromCategories(['Fiction', 'Fantasy', 'Romance'])).toEqual(['fantasy', 'romance']);
+    expect(genresFromCategories(['Krimis und Thriller'])).toEqual(['thriller']);
+    expect(genresFromCategories(['Science fiction'])).toEqual(['scifi']);
+    expect(genresFromCategories(['History', 'Biography & Autobiography'])).toEqual(['nonfiction']);
+    expect(genresFromCategories(undefined)).toEqual([]);
+  });
+
+  it('gewichtet Gelesenes und gute Bewertungen stärker und nennt Lieblingsautoren', () => {
+    const taste = computeReadingTaste([
+      book({ id: '1', status: 'completed', categories: ['Fantasy'], rating: 9, authors: ['A'] }),
+      book({ id: '2', status: 'completed', categories: ['Fantasy'], authors: ['A'] }),
+      book({ id: '3', status: 'planned', categories: ['Thriller'], authors: ['B'] }),
+      book({ id: '4', status: 'dropped', categories: ['Horror'], authors: ['C'] }),
+      book({ id: '5', status: 'reading', title: 'Ohne Kategorie', authors: ['D'] }),
+    ]);
+    expect(taste.genres.map((g) => g.id)).toEqual(['fantasy', 'thriller']);
+    expect(taste.genres[0].share).toBe(86);
+    expect(taste.authors).toEqual([{ name: 'A', count: 2 }]);
+    expect(taste.classified).toBe(3);
+    expect(tasteGenres(taste)).toHaveLength(2);
+  });
+
+  it('nimmt Genres aus den Regalen dazu und zeigt erst ab drei eingeordneten Büchern welche', () => {
+    const shelf = (b: Book) => (b.id === 'x' ? (['romance'] as const).slice() : []);
+    const taste = computeReadingTaste([book({ id: 'x', status: 'completed' })], shelf);
+    expect(taste.genres).toEqual([{ id: 'romance', share: 100 }]);
+    expect(tasteGenres(taste)).toEqual([]);
+    expect(hasReadingTaste(taste)).toBe(false);
   });
 });

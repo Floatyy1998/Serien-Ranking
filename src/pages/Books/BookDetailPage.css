@@ -495,3 +495,61 @@
   overflow-wrap: anywhere;
   hyphens: auto;
 }
+
+.bd-wish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    filter 0.15s ease;
+}
+
+.mobile-app .bd-wish {
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+.bd-wish:active {
+  filter: brightness(0.88);
+}
+
+.bd-wish:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.bd-wish-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease;
+}
+
+.bd-wish-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bd-wish-label {
+  font-weight: 800;
+  font-size: 14.5px;
+}
+
+.bd-wish-hint {
+  font-size: 12.5px;
+  line-height: 1.35;
+}

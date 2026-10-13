@@ -1,36 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { bookMatchKey } from '../../../lib/books/bookIdentity';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
-import { findNextVolume, type NextVolume } from '../../../lib/books/bookSeries';
+import { seriesProgress, type SeriesProgress } from '../../../lib/books/bookSeries';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
 import { updateBookFields } from '../../../services/books/bookService';
 import type { Book, BookSeriesPart } from '../../../types/Book';
 
-export interface SeriesProgress {
-  seriesId: string;
-  seriesName: string;
-  author?: string;
-  next: NextVolume;
-  ownedCount: number;
-  total: number;
-  books: Book[];
-}
+export type { SeriesProgress };
 
 const MAX_LOOKUPS = 10;
 const RECHECK_MS = 30 * 86_400_000;
 
-const titleBase = (title: string, authors?: string[]) => bookMatchKey(title, authors).split('|')[0];
-
-/** Position eines eigenen Buchs in der Reihe: gespeichert oder über den Titel gefunden. */
-function positionOf(book: Book, parts: BookSeriesPart[]): number | undefined {
-  if (book.series?.position) return book.series.position;
-  const base = titleBase(book.title, book.authors);
-  return parts.find((p) => titleBase(p.title) === base)?.position;
-}
-
-/** Findet für gelesene Bücher die Reihe (Wikidata) und den nächsten Band, der dir noch fehlt. */
-export function useNextVolumes(books: Book[], now: number) {
+/** Findet für gelesene Bücher die Reihe (Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
+export function useNextVolumes(books: Book[], now: number, options: { readOnly?: boolean } = {}) {
+  const { readOnly = false } = options;
   const { user } = useAuth() || {};
   const uid = user?.uid;
   const [partsBySeries, setPartsBySeries] = useState<Record<string, BookSeriesPart[]>>({});
@@ -47,7 +30,7 @@ export function useNextVolumes(books: Book[], now: number) {
   const candidateKey = candidates.map((b) => `${b.id}:${b.series?.wikidataId ?? ''}`).join(',');
 
   useEffect(() => {
-    if (!uid || candidates.length === 0) return;
+    if (candidates.length === 0 || (!readOnly && !uid)) return;
     let alive = true;
     setLoading(true);
     (async () => {
@@ -55,19 +38,32 @@ export function useNextVolumes(books: Book[], now: number) {
       const names: Record<string, string> = {};
       let lookups = 0;
       for (const book of candidates) {
-        if (book.series?.wikidataId) {
-          seriesIds.add(book.series.wikidataId);
-          if (book.series.name) names[book.series.wikidataId] = book.series.name;
-          continue;
+        const known = book.series?.wikidataId;
+        if (known) {
+          seriesIds.add(known);
+          if (book.series?.name) names[known] = book.series.name;
         }
+        if (readOnly || !uid) continue;
         const checkedAt = book.wdChecked ? new Date(book.wdChecked).getTime() : 0;
-        if (Date.now() - checkedAt < RECHECK_MS || lookups >= MAX_LOOKUPS) continue;
+        const settled = known
+          ? !!(book.series?.position || book.wikidataId)
+          : Date.now() - checkedAt < RECHECK_MS;
+        if (settled || lookups >= MAX_LOOKUPS) continue;
         lookups += 1;
         try {
           const links = await fetchBookLinks(book.title, book.authors?.[0]);
           if (!alive) return;
-          const fields: Record<string, unknown> = { wdChecked: new Date().toISOString() };
-          if (links.series?.wikidataId) {
+          const fields: Record<string, unknown> = known
+            ? {}
+            : { wdChecked: new Date().toISOString() };
+          if (links.wikidataId && links.wikidataId !== book.wikidataId) {
+            fields.wikidataId = links.wikidataId;
+          }
+          if (known) {
+            if (links.series?.wikidataId === known && links.series.position && book.series) {
+              fields.series = { ...book.series, position: links.series.position };
+            }
+          } else if (links.series?.wikidataId) {
             seriesIds.add(links.series.wikidataId);
             if (links.series.name) names[links.series.wikidataId] = links.series.name;
             fields.series = {
@@ -78,7 +74,7 @@ export function useNextVolumes(books: Book[], now: number) {
                 : {}),
             };
           }
-          await updateBookFields(uid, book.id, fields);
+          if (Object.keys(fields).length) await updateBookFields(uid, book.id, fields);
         } catch {
           /* Wikidata nicht erreichbar — beim nächsten Besuch erneut */
         }
@@ -96,41 +92,12 @@ export function useNextVolumes(books: Book[], now: number) {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid, candidateKey]);
+  }, [uid, candidateKey, readOnly]);
 
-  const progress = useMemo(() => {
-    const out: SeriesProgress[] = [];
-    for (const [seriesId, parts] of Object.entries(partsBySeries)) {
-      if (parts.length < 2) continue;
-      const inSeries = books.filter(
-        (b) =>
-          b.series?.wikidataId === seriesId ||
-          parts.some((p) => titleBase(p.title) === titleBase(b.title, b.authors))
-      );
-      const readPositions = inSeries
-        .filter((b) => b.status === 'completed')
-        .map((b) => positionOf(b, parts))
-        .filter((p): p is number => !!p);
-      if (!readPositions.length) continue;
-      const next = findNextVolume(parts, readPositions, now);
-      if (!next) continue;
-      const owned = inSeries.some(
-        (b) => positionOf(b, parts) === next.part.position && b.status !== 'planned'
-      );
-      if (owned) continue;
-      const sample = inSeries[0];
-      out.push({
-        seriesId,
-        seriesName: seriesNames[seriesId] || sample?.series?.name || '',
-        author: sample?.authors?.[0],
-        next,
-        ownedCount: readPositions.length,
-        total: parts.length,
-        books: inSeries,
-      });
-    }
-    return out.sort((a, b) => (a.next.daysUntil ?? -1) - (b.next.daysUntil ?? -1));
-  }, [partsBySeries, seriesNames, books, now]);
+  const progress = useMemo(
+    () => seriesProgress(books, partsBySeries, seriesNames, now),
+    [partsBySeries, seriesNames, books, now]
+  );
 
   return { progress, loading };
 }

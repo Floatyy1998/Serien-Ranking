@@ -15,8 +15,9 @@ export const SpookyLayer = () => (
     </div>
 
     <div className="spooky-corner spooky-corner--left">
-      <Cobweb seed={3} className="spooky-web" />
+      <Cobweb layered seed={3} className="spooky-web" />
       <Spider
+        layered
         className="spooky-spider spooky-spider--resting"
         style={{
           left: `${(restingSpot.x / WEB_SIZE) * 100}%`,
@@ -26,24 +27,24 @@ export const SpookyLayer = () => (
     </div>
 
     <div className="spooky-corner spooky-corner--right">
-      <Cobweb seed={8} className="spooky-web" />
+      <Cobweb layered seed={8} className="spooky-web" />
     </div>
 
     <div className="spooky-dangler">
       <div className="spooky-dangler__bob">
         <span className="spooky-dangler__thread" />
-        <Spider className="spooky-spider spooky-spider--hanging" />
+        <Spider layered className="spooky-spider spooky-spider--hanging" />
       </div>
     </div>
 
     <div className="spooky-peek">
-      <PeekingSkull className="spooky-peek__skull" />
+      <PeekingSkull layered className="spooky-peek__skull" />
     </div>
 
     <div className="spooky-bats">
       {BATS.map((i) => (
         <div key={i} className={`spooky-bat spooky-bat--${i}`}>
-          <Bat className="spooky-bat__svg" />
+          <Bat layered className="spooky-bat__svg" />
         </div>
       ))}
     </div>

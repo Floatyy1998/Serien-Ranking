@@ -2,7 +2,8 @@ import { Check, Movie, Tv, ViewWeek } from '@mui/icons-material';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { bookMatchKey } from '../../../lib/books/bookIdentity';
+import { HorizontalScrollContainer } from '../../../components/ui';
+import { partPositionOf } from '../../../lib/books/bookSeries';
 import { t } from '../../../services/i18n';
 import type { Book, BookSeriesPart } from '../../../types/Book';
 import { getImageUrl } from '../../../utils/imageUrl';
@@ -12,14 +13,12 @@ import { bookPath } from '../helpers';
 import type { AdaptationMeta } from '../hooks/useAdaptationMeta';
 import { useSeriesPartBooks } from '../hooks/useSeriesPartBooks';
 
-const base = (title: string, authors?: string[]) => bookMatchKey(title, authors).split('|')[0];
-
-const ownedPart = (part: BookSeriesPart, seriesId: string, library: Book[]) =>
-  library.find(
-    (b) =>
-      (b.series?.wikidataId === seriesId && b.series.position === part.position) ||
-      base(b.title, b.authors) === base(part.title)
-  );
+const ownedPart = (
+  part: BookSeriesPart,
+  parts: BookSeriesPart[],
+  seriesId: string,
+  library: Book[]
+) => library.find((b) => partPositionOf(b, parts, seriesId) === part.position);
 
 export const BookSeriesPanel: React.FC<{
   seriesId: string;
@@ -39,7 +38,7 @@ export const BookSeriesPanel: React.FC<{
       parts.length < 2
         ? []
         : parts
-            .filter((part) => !ownedPart(part, seriesId, library))
+            .filter((part) => !ownedPart(part, parts, seriesId, library))
             .map((part) => ({ part, author })),
     [parts, seriesId, library, author]
   );
@@ -56,13 +55,13 @@ export const BookSeriesPanel: React.FC<{
           · {t('{n} Bände', { n: parts.length })}
         </span>
       </h2>
-      <div className="bd-series-strip">
+      <HorizontalScrollContainer scrollerClassName="bd-series-strip">
         {parts.map((part) => {
-          const owned = ownedPart(part, seriesId, library);
+          const owned = ownedPart(part, parts, seriesId, library);
           const match = found[part.wikidataId];
           const isCurrent =
             (currentPosition && part.position === currentPosition) ||
-            (!!current && base(current.title, current.authors) === base(part.title));
+            (!!current && partPositionOf(current, parts, seriesId) === part.position);
           const upcoming = !!part.publishedDate && part.publishedDate > today;
           const read = owned?.status === 'completed';
           return (
@@ -130,7 +129,7 @@ export const BookSeriesPanel: React.FC<{
             </button>
           );
         })}
-      </div>
+      </HorizontalScrollContainer>
     </div>
   );
 };
@@ -145,7 +144,7 @@ export const BookAdaptationsPanel: React.FC<{ items: AdaptationMeta[] }> = ({ it
         <Movie style={{ fontSize: 20, color: currentTheme.status.purple }} />
         {t('Verfilmt als')}
       </h2>
-      <div className="bd-series-strip">
+      <HorizontalScrollContainer scrollerClassName="bd-series-strip">
         {items.map((a) => (
           <button
             key={`${a.kind}-${a.tmdbId}`}
@@ -188,7 +187,7 @@ export const BookAdaptationsPanel: React.FC<{ items: AdaptationMeta[] }> = ({ it
             </span>
           </button>
         ))}
-      </div>
+      </HorizontalScrollContainer>
     </div>
   );
 };

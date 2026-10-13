@@ -1,7 +1,7 @@
 import { AutoStories, Edit } from '@mui/icons-material';
 import { forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SectionHeader } from '../../../components/ui';
+import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { progressPercent, remainingHours } from '../../../lib/books/bookProgress';
@@ -31,7 +31,7 @@ export const CurrentlyReadingSection = forwardRef<HTMLElement, Props>(
           iconColor={currentTheme.primary}
           title={title ?? t('Weiterlesen')}
         />
-        <div className="bk-reading-row">
+        <HorizontalScrollContainer scrollerClassName="bk-reading-row">
           {books.map((book) => {
             const percent = progressPercent(book);
             const hours = remainingHours(book);
@@ -108,7 +108,7 @@ export const CurrentlyReadingSection = forwardRef<HTMLElement, Props>(
               </article>
             );
           })}
-        </div>
+        </HorizontalScrollContainer>
       </section>
     );
   }

@@ -1,3 +1,5 @@
+import { bookMatchKey } from '../../lib/books/bookIdentity';
+import type { TasteGenre } from '../../lib/books/readingTaste';
 import { openLibraryCoverById } from '../../lib/books/bookSearchMapping';
 import type { BasedOnBook, BookSearchResult } from '../../types/Book';
 import { appLocale } from '../i18n';
@@ -65,6 +67,33 @@ export async function loadStaticShelf(id: string): Promise<BookSearchResult[] | 
   );
   const list = data.shelves?.[id];
   return list?.length ? list.map(toResult) : null;
+}
+
+const GENRE_SHELVES: TasteGenre[] = [
+  'fantasy',
+  'thriller',
+  'romance',
+  'scifi',
+  'ya',
+  'classics',
+  'horror',
+  'nonfiction',
+];
+
+/** Genre je Buch aus den Genre-Regalen (über Werk-ID und Titel + Autor) — ergänzt fehlende Kategorien. */
+export async function loadShelfGenreIndex(): Promise<Map<string, TasteGenre[]>> {
+  const index = new Map<string, TasteGenre[]>();
+  const data = await load<{ shelves?: Record<string, StaticShelfItem[]> }>(
+    `discover.${appLocale}.json`
+  ).catch(() => null);
+  for (const genre of GENRE_SHELVES) {
+    for (const item of data?.shelves?.[genre] ?? []) {
+      for (const key of [`ol-${item.w}`, bookMatchKey(item.t, item.a ? [item.a] : [])]) {
+        index.set(key, [...(index.get(key) ?? []), genre]);
+      }
+    }
+  }
+  return index;
 }
 
 /** Buchvorlagen aus dem Tagesexport; null heißt: Datei nicht erreichbar, live nachfragen. */

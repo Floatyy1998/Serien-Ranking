@@ -36,6 +36,8 @@ async function pushEvent(uid: string, event: CompactBookEvent): Promise<void> {
 export interface AddBookOptions {
   /** „Früher gelesen": beendet, aber ohne Datum — zählt in keinem Jahresrückblick. */
   finishedEarlier?: boolean;
+  /** Direkt auf die Wunschliste. */
+  wish?: boolean;
 }
 
 export async function addBook(
@@ -47,6 +49,7 @@ export async function addBook(
   const cover = await resolveCover(result);
   const book = searchResultToBook(result, status, nowIso(), cover);
   if (!cover) delete book.cover;
+  if (options.wish) book.wishedAt = nowIso();
   if (status === 'completed' && options.finishedEarlier) {
     delete book.completedAt;
     delete book.startedAt;
@@ -89,7 +92,9 @@ export async function updateBookProgress(
   page: number
 ): Promise<ProgressUpdate> {
   const result = applyPageUpdate(book, page, nowIso());
-  await dbRef(paths.bookItem(uid, book.id)).update(result.updates);
+  await dbRef(paths.bookItem(uid, book.id)).update(
+    book.wishedAt ? { ...result.updates, wishedAt: null } : result.updates
+  );
   if (result.pagesRead > 0) {
     const event = baseEvent(book, 'pg');
     event.p = result.newPage;
@@ -113,6 +118,7 @@ export async function setBookStatus(
   if (status !== 'completed' && book.status === 'completed' && status !== 'reading') {
     payload.completedAt = null;
   }
+  if (book.wishedAt && (status === 'reading' || status === 'completed')) payload.wishedAt = null;
   await dbRef(paths.bookItem(uid, book.id)).update(payload);
   if (status === 'completed' && !options.finishedEarlier && book.status !== 'completed') {
     const pagesLeft = book.pageCount ? book.pageCount - (book.currentPage || 0) : 0;
@@ -144,6 +150,10 @@ export async function updateBookFields(
   fields: Record<string, unknown>
 ): Promise<void> {
   await dbRef(paths.bookItem(uid, bookId)).update(fields);
+}
+
+export async function setBookWish(uid: string, bookId: string, wished: boolean): Promise<void> {
+  await dbRef(paths.bookItem(uid, bookId)).update({ wishedAt: wished ? nowIso() : null });
 }
 
 export async function removeBook(uid: string, bookId: string): Promise<void> {

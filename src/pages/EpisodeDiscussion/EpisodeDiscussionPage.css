@@ -597,3 +597,16 @@
     padding: 14px 32px;
   }
 }
+
+.ed-hero-topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 72%;
+}
+
+.ed-hero-topbar-end .ed-hero-series-btn {
+  max-width: none;
+  min-width: 0;
+}

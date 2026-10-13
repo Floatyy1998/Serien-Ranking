@@ -318,6 +318,18 @@ const dict: Record<string, string> = {
   'Manga durchsuchen...': 'Buscar manga...',
   'Nichts in {name}s Manga passt zu deiner Suche.':
     'Ningún manga de {name} coincide con tu búsqueda.',
+  'Manga-Leseliste': 'Lista de lectura de manga',
+  'Zuletzt gelesene Manga': 'Manga leídos recientemente',
+  'Manga-Journey': 'Ruta manga',
+  'Staffel {s} · Folge {e}': 'Temporada {s} · Episodio {e}',
+  'Titel erst nach dem Ansehen': 'Título oculto hasta que la veas',
+  'Folge schicken': 'Enviar episodio',
+  'Was willst du dazu sagen? (optional)': '¿Quieres decir algo? (opcional)',
+  Spoiler: 'Spoiler',
+  'Freund suchen...': 'Buscar amigos...',
+  'Füge Freunde hinzu, um Folgen zu teilen.': 'Añade amigos para compartir episodios.',
+  'Chat öffnen': 'Abrir chat',
+  'Sendet…': 'Enviando…',
 };
 
 export default dict;

@@ -208,6 +208,19 @@ const dict: Record<string, string> = {
   '50 Bücher ausgelesen': '50 books finished',
   'Lebende Bibliothek': 'Living library',
   '100 Bücher ausgelesen': '100 books finished',
+  'Auf deiner Wunschliste': 'On your wishlist',
+  'Auf die Wunschliste': 'Add to wishlist',
+  'Freunde sehen es als Geschenkidee · Tippen zum Entfernen':
+    'Friends see it as a gift idea · Tap to remove',
+  'Freunde sehen es als Geschenkidee': 'Friends see it as a gift idea',
+  'Deine Wunschliste': 'Your wishlist',
+  Wunschliste: 'Wishlist',
+  'Erscheint {date}': 'Out {date}',
+  'Band {n} fehlt': 'Missing vol. {n}',
+  'Geschenkideen für {name}': 'Gift ideas for {name}',
+  'Aus Wunschliste, offenen Reihen und Lieblingsgenre':
+    'From their wishlist, unfinished series and favorite genre',
+  '{name} liest am liebsten': '{name} loves to read',
 };
 
 export default dict;

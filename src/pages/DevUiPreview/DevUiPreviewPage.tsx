@@ -50,8 +50,10 @@ import {
   BooksEmptyPreview,
   BooksOverviewPreview,
   BookStatsPreview,
+  FriendBooksInsightsPreview,
   ReadingHubPreview,
 } from './BooksPreviews';
+import { EpisodeSharePreview } from './ChatSharePreviews';
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
@@ -241,6 +243,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'book-search', label: 'Bücher: Suche', render: () => <BookSearchPreview /> },
   { id: 'book-shelf', label: 'Bücher: Regal', render: () => <BookShelfPreview /> },
   { id: 'book-stats', label: 'Bücher: Statistik', render: () => <BookStatsPreview /> },
+  { id: 'episode-share', label: 'Chat: Folge teilen', render: () => <EpisodeSharePreview /> },
+  {
+    id: 'friend-books',
+    label: 'Freund: Geschenkideen',
+    render: () => <FriendBooksInsightsPreview />,
+  },
   { id: 'book-import', label: 'Bücher: Import', render: () => <BookImportPreview /> },
   { id: 'reading-hub', label: 'Lesen: Alle', render: () => <ReadingHubPreview /> },
   { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },

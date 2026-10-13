@@ -1,4 +1,11 @@
-import { Bookmarks, LocalLibrary, PauseCircle, Search, UploadFile } from '@mui/icons-material';
+import {
+  Bookmarks,
+  LocalLibrary,
+  PauseCircle,
+  Redeem,
+  Search,
+  UploadFile,
+} from '@mui/icons-material';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../components/ui';
@@ -71,8 +78,15 @@ export const BooksPage = () => {
   const planned = useMemo(
     () =>
       bookList
-        .filter((b) => b.status === 'planned')
+        .filter((b) => b.status === 'planned' && !b.wishedAt)
         .sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()),
+    [bookList]
+  );
+  const wished = useMemo(
+    () =>
+      bookList
+        .filter((b) => !!b.wishedAt)
+        .sort((a, b) => (b.wishedAt ?? '').localeCompare(a.wishedAt ?? '')),
     [bookList]
   );
   const paused = useMemo(() => sorted.filter((b) => b.status === 'paused'), [sorted]);
@@ -190,6 +204,13 @@ export const BooksPage = () => {
         iconColor={currentTheme.accent}
         onSeeAll={() => navigate('/books/shelf?status=planned')}
         seeAllLabel={t('Alle')}
+      />
+
+      <BookCarouselSection
+        books={wished.slice(0, 20)}
+        title={t('Deine Wunschliste')}
+        icon={<Redeem />}
+        iconColor={currentTheme.status.warning}
       />
 
       <BookCarouselSection

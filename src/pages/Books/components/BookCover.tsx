@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { coverAtSize, directCoverAtSize } from '../../../lib/books/bookSearchMapping';
 import { generatedCoverColors } from '../../../lib/books/bookSpine';
 import './books.css';
+import { pauseOffscreen } from './pauseOffscreen';
 
 interface BookCoverProps {
   book: { id: string; title: string; authors?: string[]; cover?: string };
@@ -40,7 +41,10 @@ export const BookCover: React.FC<BookCoverProps> = React.memo(
         className={`bk-cover${depth ? ' bk-cover--depth' : ''}${className ? ` ${className}` : ''}`}
         style={{ width, ...style }}
       >
-        <div className={`bk-cover-face${src && !loaded ? ' bk-cover-face--loading' : ''}`}>
+        <div
+          ref={pauseOffscreen}
+          className={`bk-cover-face${src && !loaded ? ' bk-cover-face--loading' : ''}`}
+        >
           {src ? (
             <img
               key={src}

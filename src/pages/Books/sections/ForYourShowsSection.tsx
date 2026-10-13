@@ -1,12 +1,13 @@
 import { Theaters } from '@mui/icons-material';
 import React from 'react';
-import { SectionHeader } from '../../../components/ui';
+import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { ShowBookSuggestion } from '../../../hooks/books/useBasedOnBooks';
 import { t } from '../../../services/i18n';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { useOpenByTitle } from '../discover/DiscoverParts';
 import '../discover/discover.css';
+import { pauseOffscreen } from '../components/pauseOffscreen';
 
 interface Props {
   suggestions: ShowBookSuggestion[];
@@ -27,10 +28,16 @@ export const ForYourShowsSection: React.FC<Props> = ({ suggestions, title, loadi
         iconColor={currentTheme.status.purple}
         title={title ?? t('Bücher zu deinen Serien')}
       />
-      <div className="bk-carousel" style={{ gap: 12 }}>
+      <HorizontalScrollContainer scrollerClassName="bk-carousel" scrollerStyle={{ gap: 12 }}>
         {suggestions.length === 0 &&
           [0, 1, 2].map((i) => (
-            <div key={i} className="bk-source-card" aria-hidden style={{ cursor: 'default' }}>
+            <div
+              key={i}
+              ref={pauseOffscreen}
+              className="bk-source-card"
+              aria-hidden
+              style={{ cursor: 'default' }}
+            >
               <div className="dsc-skeleton" style={{ width: 58 }} />
               <span style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="dsc-skeleton-line" style={{ width: 70 }} />
@@ -79,7 +86,7 @@ export const ForYourShowsSection: React.FC<Props> = ({ suggestions, title, loadi
             </span>
           </button>
         ))}
-      </div>
+      </HorizontalScrollContainer>
     </section>
   );
 };

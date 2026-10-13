@@ -17,10 +17,11 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useBooksList } from '../../contexts/BooksListContext';
-import { BackButton } from '../../components/ui';
+import { BackButton, HorizontalScrollContainer } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
+import { partPositionOf } from '../../lib/books/bookSeries';
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
 import { fetchMoreByAuthor } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
@@ -32,6 +33,7 @@ import './components/books.css';
 import { ProgressSheet } from './components/ProgressSheet';
 import { BookAdaptationsPanel, BookSeriesPanel } from './detail/BookLinksPanels';
 import { BookStatePanel } from './detail/BookStatePanel';
+import { WishToggle } from './detail/WishToggle';
 import { DiscoverCard, SkeletonCards } from './discover/DiscoverParts';
 import { useAddFlow } from './discover/useAddFlow';
 import { useAdaptationMeta } from './hooks/useAdaptationMeta';
@@ -76,13 +78,16 @@ const MoreByAuthor: React.FC<{ author: string; title: string }> = ({ author, tit
         <Person style={{ fontSize: 20, color: currentTheme.primary }} />
         {t('Mehr von {author}', { author })}
       </h2>
-      <div className="dsc-row" style={{ padding: '4px 0 6px', margin: '0 -4px' }}>
+      <HorizontalScrollContainer
+        scrollerClassName="dsc-row"
+        scrollerStyle={{ padding: '4px 0 6px', margin: '0 -4px' }}
+      >
         {items ? (
           items.slice(0, 14).map((r) => <DiscoverCard key={r.id} result={r} onAdd={openAdd} />)
         ) : (
           <SkeletonCards count={5} />
         )}
-      </div>
+      </HorizontalScrollContainer>
       {sheet}
     </div>
   );
@@ -126,18 +131,24 @@ export const BookDetailPage = () => {
   );
 
   useEffect(() => {
-    if (!owned || !links?.series?.wikidataId || owned.series?.wikidataId) return;
-    void actions.updateFields(owned, {
-      series: {
-        name: links.series.name || owned.series?.name || '',
-        wikidataId: links.series.wikidataId,
-        ...(links.series.position || owned.series?.position
-          ? { position: links.series.position ?? owned.series?.position }
-          : {}),
-      },
-      wdChecked: new Date().toISOString(),
-    });
-  }, [owned, links, actions]);
+    if (!owned || !links) return;
+    const fields: Partial<Book> = {};
+    if (links.wikidataId && !owned.wikidataId) fields.wikidataId = links.wikidataId;
+    const seriesId = owned.series?.wikidataId ?? links.series?.wikidataId;
+    const position =
+      owned.series?.position ??
+      (links.series?.wikidataId === seriesId ? links.series?.position : undefined) ??
+      (seriesId ? partPositionOf({ ...owned, ...fields }, parts, seriesId) : undefined);
+    if (seriesId && (!owned.series?.wikidataId || (!owned.series.position && position))) {
+      fields.series = {
+        name: owned.series?.name || links.series?.name || '',
+        wikidataId: seriesId,
+        ...(position ? { position } : {}),
+      };
+    }
+    if (Object.keys(fields).length === 0) return;
+    void actions.updateFields(owned, { ...fields, wdChecked: new Date().toISOString() });
+  }, [owned, links, parts, actions]);
 
   if (!view) {
     return (
@@ -196,6 +207,11 @@ export const BookDetailPage = () => {
       label: 'Open Library',
       href: `https://openlibrary.org/works/${view.olWorkId}`,
     },
+    view.source === 'dnb' &&
+      view.isbn13 && {
+        label: 'Deutsche Nationalbibliothek',
+        href: `https://portal.dnb.de/opac.htm?method=simpleSearch&query=${view.isbn13}`,
+      },
     links?.wikipedia && {
       label: 'Wikipedia',
       href: `https://${links.wikipedia.lang}.wikipedia.org/wiki/${encodeURIComponent(
@@ -210,6 +226,20 @@ export const BookDetailPage = () => {
     const book = await actions.add(preview, choice.status, {
       finishedEarlier: choice.finishedEarlier,
     });
+    setBusy(false);
+    if (book && book.id !== bookId) {
+      navigate(`/books/${encodeURIComponent(book.id)}`, { replace: true });
+    }
+  };
+
+  const toggleWish = async () => {
+    if (owned) {
+      void actions.toggleWish(owned);
+      return;
+    }
+    if (!preview) return;
+    setBusy(true);
+    const book = await actions.add(preview, 'planned', { wish: true });
     setBusy(false);
     if (book && book.id !== bookId) {
       navigate(`/books/${encodeURIComponent(book.id)}`, { replace: true });
@@ -342,6 +372,9 @@ export const BookDetailPage = () => {
               <AddOptions busy={busy} onPick={(c) => void pickAdd(c)} />
             </div>
           ) : null}
+          {(owned || preview) && (
+            <WishToggle wished={!!owned?.wishedAt} busy={busy} onToggle={() => void toggleWish()} />
+          )}
 
           {detailRows.length > 0 && (
             <div className="bd-panel">

@@ -112,6 +112,7 @@ vi.mock('./useEpisodeDiscussion', () => ({
   }),
 }));
 
+vi.mock('./ShareEpisodeSheet', () => ({ ShareEpisodeSheet: () => null }));
 vi.mock('./EpisodeDiscussionComponents', () => ({
   LoadingState: () => <div data-testid="loading" />,
   NotFoundState: () => <div data-testid="not-found" />,

@@ -165,6 +165,67 @@ export function mapOpenLibraryDoc(doc: OpenLibraryDoc): BookSearchResult | null 
   };
 }
 
+export const dnbCoverUrl = (isbn13: string) =>
+  `https://portal.dnb.de/opac/mvb/cover?isbn=${isbn13}`;
+
+const trimMarc = (value: string | undefined) =>
+  value
+    ?.split(' / ')[0]
+    .replace(/\s*[/:;,.=]\s*$/, '')
+    .trim() || undefined;
+
+/** MARC21-Datensatz der Deutschen Nationalbibliothek (SRU) — kennt fast jede deutsche ISBN. */
+export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | null {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const fields = [...doc.getElementsByTagNameNS('*', 'datafield')];
+  const subfields = (field: Element, code: string) =>
+    [...field.getElementsByTagNameNS('*', 'subfield')]
+      .filter((s) => s.getAttribute('code') === code)
+      .map((s) => s.textContent?.trim() ?? '')
+      .filter(Boolean);
+  const first = (tags: string[], code: string) => {
+    for (const field of fields) {
+      if (tags.includes(field.getAttribute('tag') ?? '')) {
+        const value = subfields(field, code)[0];
+        if (value) return value;
+      }
+    }
+    return undefined;
+  };
+
+  const mainTitle = trimMarc(first(['245'], 'a'));
+  if (!mainTitle) return null;
+  const partNumber = trimMarc(first(['245'], 'n'));
+  const authors = fields
+    .filter((f) => {
+      const tag = f.getAttribute('tag');
+      const roles = subfields(f, '4');
+      return tag === '100'
+        ? !roles.length || roles.includes('aut')
+        : tag === '700' && roles.includes('aut');
+    })
+    .map((f) => subfields(f, 'a')[0])
+    .filter((name): name is string => !!name)
+    .map((name) => name.split(/,\s*/).reverse().join(' ').trim());
+  const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
+  const lang = first(['041'], 'a');
+
+  return stripUndefined({
+    id: sanitizeBookKey(`dnb-${isbn13}`),
+    title: partNumber ? `${mainTitle} ${partNumber}` : mainTitle,
+    subtitle: trimMarc(first(['245'], 'b')) ?? trimMarc(first(['245'], 'p')),
+    authors,
+    cover: dnbCoverUrl(isbn13),
+    coverFallback: openLibraryCoverByIsbn(isbn13),
+    pageCount: pages ? Number(pages) : undefined,
+    publishedYear: parseYear(first(['264', '260'], 'c')),
+    publisher: trimMarc(first(['264', '260'], 'b')),
+    language: lang ? (LANG_3_TO_2[lang] ?? lang) : undefined,
+    isbn13,
+    source: 'dnb' as const,
+  });
+}
+
 /** Treffer → neuer Sammlungseintrag; undefined-Felder fliegen raus, RTDB lehnt sie ab. */
 export function searchResultToBook(
   result: BookSearchResult,
@@ -195,6 +256,26 @@ export function searchResultToBook(
     lastReadAt: status === 'reading' ? nowIso : undefined,
   };
   return stripUndefined(book);
+}
+
+/** Fremdes Buch (Freundesprofil) als Vorschau-Treffer — ohne Stand, Bewertung und Notizen. */
+export function bookAsResult(book: Book): BookSearchResult {
+  return stripUndefined({
+    id: book.id,
+    title: book.title,
+    subtitle: book.subtitle,
+    authors: book.authors ?? [],
+    cover: book.cover,
+    pageCount: book.pageCount,
+    publishedYear: book.publishedYear,
+    publisher: book.publisher,
+    language: book.language,
+    categories: book.categories,
+    isbn13: book.isbn13,
+    googleId: book.googleId,
+    olWorkId: book.olWorkId,
+    source: book.source ?? (book.googleId ? 'google' : 'openlibrary'),
+  });
 }
 
 export function stripUndefined<T extends object>(obj: T): T {

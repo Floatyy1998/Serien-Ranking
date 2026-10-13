@@ -11,6 +11,7 @@ import { showToast } from '../../lib/interaction/toast';
 import { fillerLookupKey } from '../../services/catalog/animeFillerService';
 import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
+import { ShareEpisodeSheet } from './ShareEpisodeSheet';
 import {
   CrewSection,
   DiscussionSection,
@@ -79,6 +80,18 @@ export const EpisodeDiscussionPage = memo(() => {
 
   const currentRating = localEpisode?.userRating || 0;
   const [draft, setDraft] = useState(currentRating);
+  const [shareOpen, setShareOpen] = useState(false);
+  const sharedEpisode = useMemo(
+    () => ({
+      seriesId: Number(seriesId),
+      season: Number(seasonNumber),
+      episode: Number(episodeNumber),
+      seriesTitle: seriesTitle || '',
+      episodeTitle: episodeName || undefined,
+      poster: seriesInfo?.poster_path || undefined,
+    }),
+    [seriesId, seasonNumber, episodeNumber, seriesTitle, episodeName, seriesInfo?.poster_path]
+  );
   // Auch auf die Folge hören, nicht nur auf den Wert: hat die nächste Folge
   // dieselbe Bewertung (meist 0), bliebe der Entwurf sonst stehen und würde
   // beim Speichern der FALSCHEN Folge zugeschrieben.
@@ -258,6 +271,7 @@ export const EpisodeDiscussionPage = memo(() => {
           watchCount={watchCount}
           isWatched={isWatched}
           fillerInfo={fillerInfo}
+          onShare={hasUser ? () => setShareOpen(true) : undefined}
           getStillUrl={getStillUrl}
           navigate={navigate}
         />
@@ -348,6 +362,13 @@ export const EpisodeDiscussionPage = memo(() => {
           />
         </div>
       </div>
+      {hasUser && sharedEpisode.seriesTitle && (
+        <ShareEpisodeSheet
+          episode={sharedEpisode}
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </div>
   );
 });

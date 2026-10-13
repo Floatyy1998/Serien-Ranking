@@ -50,6 +50,7 @@ import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
 import { ChatDesignSheet } from './ChatDesignSheet';
+import { EpisodeShareCard } from './EpisodeShareCard';
 import { StickerCanvas } from './StickerCanvas';
 import { isValidStickerId } from './stickers';
 import { useChatPartner } from './useChatPartner';
@@ -615,7 +616,25 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                           : { color: currentTheme.text.primary };
                       })()}
                     >
-                      {m.imageUrl ? (
+                      {m.episode ? (
+                        <>
+                          <EpisodeShareCard episode={m.episode} own={own} />
+                          {m.text &&
+                            (m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
+                              <button
+                                className="ch-spoiler-cover ch-episode-note"
+                                onClick={() =>
+                                  setRevealedSpoilers((prev) => new Set(prev).add(m.id))
+                                }
+                              >
+                                <VisibilityOffOutlined style={{ fontSize: 16 }} />
+                                {t('Spoiler — tippen zum Lesen')}
+                              </button>
+                            ) : (
+                              <div className="ch-episode-note">{m.text}</div>
+                            ))}
+                        </>
+                      ) : m.imageUrl ? (
                         <>
                           <img
                             className="ch-image"

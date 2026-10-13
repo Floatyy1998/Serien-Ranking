@@ -2,9 +2,11 @@ import type { BookDetails, BookSearchResult } from '../../types/Book';
 import { bookMatchKey, looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import {
   coverAtSize,
+  mapDnbRecord,
   mapGoogleDetails,
   mapGoogleVolume,
   mapOpenLibraryDoc,
+  stripUndefined,
   type GoogleVolume,
   type OpenLibraryDoc,
 } from '../../lib/books/bookSearchMapping';
@@ -16,6 +18,8 @@ const DAY = 24 * HOUR;
 
 const GOOGLE_API = 'https://www.googleapis.com/books/v1';
 const OPEN_LIBRARY = 'https://openlibrary.org';
+const DNB_SRU = 'https://services.dnb.de/sru/dnb';
+const NO_HITS = new Error('no hits');
 const OL_FIELDS = [
   'key',
   'title',
@@ -100,6 +104,47 @@ async function searchOpenLibrary(query: string, signal?: AbortSignal): Promise<B
   return (data.docs ?? []).map(mapOpenLibraryDoc).filter((r): r is BookSearchResult => !!r);
 }
 
+async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+  const params = new URLSearchParams({
+    version: '1.1',
+    operation: 'searchRetrieve',
+    query: `num=${isbn13}`,
+    recordSchema: 'MARC21-xml',
+    maximumRecords: '1',
+  });
+  const res = await fetch(`${DNB_SRU}?${params.toString()}`, { signal });
+  if (!res.ok) throw new Error(`DNB ${res.status}`);
+  const hit = mapDnbRecord(await res.text(), isbn13);
+  return hit ? [hit] : [];
+}
+
+/** Google und Open Library kennen viele deutsche ISBNs nicht (oder antworten mit 503) — die DNB fragt parallel mit. */
+async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+  const settle = (request: Promise<BookSearchResult[]>) =>
+    request.catch(() => [] as BookSearchResult[]);
+  const [google, openLibrary, dnb] = await Promise.all([
+    hasGoogleBooks() ? settle(searchGoogle(isbn13, signal)) : Promise.resolve([]),
+    settle(searchOpenLibrary(isbn13, signal)),
+    settle(searchDnb(isbn13, signal)),
+  ]);
+  const national = dnb[0];
+  const primary = google[0] ?? openLibrary[0] ?? national;
+  if (!primary || !national || primary === national) return primary ? [primary] : [];
+  const weakCover = !primary.cover || /\/b\/isbn\//.test(primary.cover);
+  return [
+    stripUndefined({
+      ...primary,
+      cover: weakCover ? national.cover : primary.cover,
+      coverFallback: weakCover ? primary.cover : (primary.coverFallback ?? national.cover),
+      authors: primary.authors.length ? primary.authors : national.authors,
+      pageCount: primary.pageCount ?? national.pageCount,
+      publisher: primary.publisher ?? national.publisher,
+      publishedYear: primary.publishedYear ?? national.publishedYear,
+      isbn13: primary.isbn13 ?? isbn13,
+    }),
+  ];
+}
+
 /** Treffer mit Cover und Seitenzahl nach oben, Dubletten (gleicher Titel + Autor) raus. */
 export function rankResults(results: BookSearchResult[], query: string): BookSearchResult[] {
   const q = query.toLowerCase().trim();
@@ -137,12 +182,28 @@ export async function searchBooks(
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
   const key = `${appLocale}:${hasGoogleBooks() ? 'g' : 'o'}:${trimmed.toLowerCase()}`;
-  const results = await cached('search', key, 6 * HOUR, () => runSearch(trimmed), 40);
+  const results = await cached(
+    'search',
+    key,
+    6 * HOUR,
+    async () => {
+      const found = await runSearch(trimmed);
+      if (!found.length) throw NO_HITS;
+      return found;
+    },
+    40
+  ).catch((err) => {
+    if (err === NO_HITS) return [] as BookSearchResult[];
+    throw err;
+  });
   if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
   return results;
 }
 
 async function runSearch(trimmed: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+  if (looksLikeIsbn(trimmed)) {
+    return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
+  }
   if (hasGoogleBooks()) {
     try {
       const google = await searchGoogle(trimmed, signal);

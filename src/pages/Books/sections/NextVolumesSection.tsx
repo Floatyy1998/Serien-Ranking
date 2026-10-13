@@ -1,6 +1,6 @@
 import { LibraryAddCheck } from '@mui/icons-material';
 import React, { useMemo } from 'react';
-import { SectionHeader } from '../../../components/ui';
+import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { dateLocale, t } from '../../../services/i18n';
 import { BookCover } from '../components/BookCover';
@@ -26,7 +26,7 @@ export const NextVolumesSection: React.FC<{ items: SeriesProgress[] }> = ({ item
         iconColor={currentTheme.accent}
         title={t('Nächster Band')}
       />
-      <div className="bk-carousel" style={{ gap: 12 }}>
+      <HorizontalScrollContainer scrollerClassName="bk-carousel" scrollerStyle={{ gap: 12 }}>
         {items.map((item) => {
           const { part, state, daysUntil } = item.next;
           const match = found[part.wikidataId];
@@ -99,7 +99,7 @@ export const NextVolumesSection: React.FC<{ items: SeriesProgress[] }> = ({ item
             </button>
           );
         })}
-      </div>
+      </HorizontalScrollContainer>
     </section>
   );
 };

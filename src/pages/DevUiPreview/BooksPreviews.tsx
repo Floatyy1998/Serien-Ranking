@@ -13,6 +13,7 @@ import { BookSearchPage } from '../Books/BookSearchPage';
 import { BookShelfPage } from '../Books/BookShelfPage';
 import { BooksPage } from '../Books/BooksPage';
 import { BookStatsPage } from '../Books/BookStatsPage';
+import { FriendBooksInsights } from '../FriendProfile/FriendBooksInsights';
 import { ReadingHubPage } from '../Books/ReadingHubPage';
 
 const cover = (id: number) => `https://covers.openlibrary.org/b/id/${id}-L.jpg`;
@@ -202,6 +203,8 @@ function buildBooks(): Book[] {
       status === 'reading' ? new Date(Date.now() - i * 3_600_000 * 20).toISOString() : undefined,
     completedAt: done ? new Date(`${done}T18:00:00`).toISOString() : undefined,
     categories: i % 2 ? ['Fantasy'] : ['Science Fiction', 'Roman'],
+    wishedAt:
+      status === 'planned' && i % 2 === 0 ? new Date(2026, 9, 1 + i).toISOString() : undefined,
   }));
 }
 
@@ -338,6 +341,17 @@ export const BookShelfPreview = () => (
     <BookShelfPage />
   </BooksPreviewShell>
 );
+
+export const FriendBooksInsightsPreview = () => {
+  const books = useMemo(() => buildBooks(), []);
+  return (
+    <BooksPreviewShell>
+      <div style={{ padding: '24px 16px' }}>
+        <FriendBooksInsights friendName="Florian" books={books} />
+      </div>
+    </BooksPreviewShell>
+  );
+};
 
 export const BookStatsPreview = () => (
   <BooksPreviewShell>

@@ -438,6 +438,121 @@
   }
 }
 
+/* Dauer-Deko: Beine und Flügel als eigene Elemente, damit ihr Zucken und Schlagen auf der
+   Grafikkarte läuft. Drehpunkte = die bisherigen view-box-Punkte, umgerechnet in Prozent der Box
+   (Spinne: 0 -6 in -32 -34 64 64; Fledermaus: 32 15 in 0 0 64 32). */
+.spk-layered {
+  display: block;
+  aspect-ratio: 1;
+}
+
+.bat-layered {
+  position: relative;
+  aspect-ratio: 2 / 1;
+}
+
+.spk-layered > svg,
+.bat-layered > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.spk-layered > .spk-legs {
+  transform-box: border-box;
+  transform-origin: 50% 43.75%;
+}
+
+.bat-layered > .bat-wings {
+  transform-box: border-box;
+  transform-origin: 50% 46.875%;
+}
+
+/* Netz-Schimmer ohne SVG-Animation: ein helles Netz-Duplikat hinter einer kreisförmigen Maske,
+   die übers Netz gleitet; das Duplikat läuft gegenläufig mit und steht dadurch still.
+   Werte aus dem bisherigen Verlauf: Netz 240, Lichtradius 46, Mitte von -90 nach 300,
+   die ersten 45 % geparkt. Box der Maske = Netz + 2 × Radius (332). */
+.web-layered {
+  position: relative;
+}
+
+.web-layered > svg:not(.web-dew) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.web-glint {
+  position: absolute;
+  left: -19.1667%;
+  top: -19.1667%;
+  width: 138.3333%;
+  height: 138.3333%;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    ellipse 13.8554% 13.8554% at 13.8554% 13.8554%,
+    #000,
+    transparent
+  );
+  mask-image: radial-gradient(ellipse 13.8554% 13.8554% at 13.8554% 13.8554%, #000, transparent);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transform: translate(-27.1084%, -27.1084%);
+  animation: web-glint-move var(--glint-dur, 12s) linear infinite;
+}
+
+.web-glint__web {
+  position: absolute;
+  left: 13.8554%;
+  top: 13.8554%;
+  width: 72.2892%;
+  height: 72.2892%;
+  overflow: visible;
+  transform: translate(37.5%, 37.5%);
+  animation: web-glint-counter var(--glint-dur, 12s) linear infinite;
+}
+
+@keyframes web-glint-move {
+  0%,
+  45% {
+    transform: translate(-27.1084%, -27.1084%);
+  }
+  100% {
+    transform: translate(90.3614%, 90.3614%);
+  }
+}
+
+@keyframes web-glint-counter {
+  0%,
+  45% {
+    transform: translate(37.5%, 37.5%);
+  }
+  100% {
+    transform: translate(-125%, -125%);
+  }
+}
+
+.web-dew {
+  position: absolute;
+  overflow: visible;
+}
+
+.skl-layered {
+  position: relative;
+  aspect-ratio: 120 / 150;
+}
+
+.skl-layered > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* Kleine Netz-Ecke am Dock */
 :root[data-season='spooky'] .mobile-bottom-navigation::after {
   content: '';

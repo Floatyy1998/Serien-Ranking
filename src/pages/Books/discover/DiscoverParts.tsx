@@ -2,7 +2,7 @@ import { Add, Check, ChevronRight, Whatshot } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SectionHeader } from '../../../components/ui';
+import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf } from '../../../hooks/books/useBookShelf';
 import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
@@ -14,6 +14,7 @@ import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { BookSearchResult } from '../../../types/Book';
 import { BookCover } from '../components/BookCover';
+import { pauseOffscreen } from '../components/pauseOffscreen';
 import '../components/books.css';
 import { GENRES, SHELF_TITLES } from '../data/genres';
 import { bookPath } from '../helpers';
@@ -111,7 +112,12 @@ export const SkeletonCards: React.FC<{ count?: number; ranked?: boolean }> = ({
 }) => (
   <>
     {Array.from({ length: count }, (_, i) => (
-      <div key={i} className={`dsc-card${ranked ? ' dsc-card--ranked' : ''}`} aria-hidden>
+      <div
+        key={i}
+        ref={pauseOffscreen}
+        className={`dsc-card${ranked ? ' dsc-card--ranked' : ''}`}
+        aria-hidden
+      >
         <div
           className="dsc-skeleton"
           style={ranked ? { width: '72%', marginLeft: 'auto' } : undefined}
@@ -150,7 +156,7 @@ export const DiscoverShelf: React.FC<{
         onSeeAll={() => navigate(`/books/search?genre=${id}`)}
         seeAllLabel={t('Alle')}
       />
-      <div className="dsc-row">
+      <HorizontalScrollContainer scrollerClassName="dsc-row">
         {loading && shown.length === 0 ? (
           <SkeletonCards ranked={ranked} />
         ) : (
@@ -158,7 +164,7 @@ export const DiscoverShelf: React.FC<{
             <DiscoverCard key={r.id} result={r} rank={ranked ? i + 1 : undefined} onAdd={onAdd} />
           ))
         )}
-      </div>
+      </HorizontalScrollContainer>
     </section>
   );
 };
@@ -328,7 +334,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
           </motion.div>
         </AnimatePresence>
       ) : (
-        <div className="dsc-hero-inner" aria-hidden>
+        <div className="dsc-hero-inner" ref={pauseOffscreen} aria-hidden>
           <div className="dsc-hero-copy">
             <div className="dsc-skeleton-line" style={{ width: 140 }} />
             <div className="dsc-skeleton-line" style={{ width: '80%', height: 30 }} />
