@@ -318,8 +318,6 @@ const dict: Record<string, string> = {
   'Nichts in {name}s Manga passt zu deiner Suche.':
     'Nenhum mangá de {name} corresponde à sua busca.',
   'Manga-Leseliste': 'Lista de leitura de mangá',
-  'Zuletzt gelesene Manga': 'Mangás lidos recentemente',
-  'Manga-Journey': 'Jornada mangá',
   'Staffel {s} · Folge {e}': 'Temporada {s} · Episódio {e}',
   'Titel erst nach dem Ansehen': 'Título oculto até a veres',
   'Folge schicken': 'Enviar episódio',

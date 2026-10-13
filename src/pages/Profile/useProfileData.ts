@@ -5,7 +5,6 @@ import {
   AdminPanelSettings,
   AutoAwesome,
   AutoStories,
-  BarChart,
   CalendarMonth,
   EmojiEvents,
   Explore,
@@ -24,7 +23,7 @@ import {
   Settings,
   Star,
   Subscriptions,
-  Timeline,
+  UploadFile,
   TrendingUp,
   ViewQuilt,
 } from '@mui/icons-material';
@@ -33,7 +32,6 @@ import 'firebase/compat/auth';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -177,7 +175,6 @@ export const useProfileData = (): UseProfileDataResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { mangaList } = useMangaList();
-  const { bookList } = useBooksList();
 
   const stats = useMemo(() => computeStats(seriesList, movieList), [seriesList, movieList]);
 
@@ -236,65 +233,50 @@ export const useProfileData = (): UseProfileDataResult => {
   const mangaMenuItems: ProfileMenuItem[] = useMemo(
     () => [
       { label: t('Bücher'), icon: LocalLibrary, color: currentTheme.primary, path: '/books' },
-      ...(bookList.length > 0
-        ? [
-            {
-              label: t('Dein Regal'),
-              icon: LibraryBooks,
-              color: currentTheme.status.warning,
-              path: '/books/shelf',
-            },
-            {
-              label: t('Lese-Statistik'),
-              icon: Insights,
-              color: currentTheme.accent,
-              path: '/books/stats',
-            },
-          ]
-        : []),
-      { label: t('Manga Home'), icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
       {
-        label: t('Manga entdecken'),
-        icon: Explore,
-        color: currentTheme.status.error,
-        path: '/manga/discover',
+        label: t('Dein Regal'),
+        icon: LibraryBooks,
+        color: currentTheme.status.warning,
+        path: '/books/shelf',
       },
+      {
+        label: t('Lese-Statistik'),
+        icon: Insights,
+        color: currentTheme.accent,
+        path: '/books/stats',
+      },
+      {
+        label: t('Bücher importieren'),
+        icon: UploadFile,
+        color: currentTheme.status.success,
+        path: '/books/import',
+      },
+      { label: t('Manga Home'), icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
       ...(mangaList.length > 0
         ? [
             {
               label: t('Manga-Leseliste'),
               icon: MenuBook,
-              color: currentTheme.primary,
+              color: currentTheme.status.error,
               path: '/manga/reading-list',
-            },
-            {
-              label: t('Manga-Bewertungen'),
-              icon: BarChart,
-              color: currentTheme.status.warning,
-              path: '/manga/ratings',
             },
             {
               label: t('Manga-Statistiken'),
               icon: TrendingUp,
-              color: currentTheme.accent,
+              color: currentTheme.secondary,
               path: '/manga/stats',
             },
-            {
-              label: t('Zuletzt gelesene Manga'),
-              icon: History,
-              color: currentTheme.status.success,
-              path: '/manga/recently-read',
-            },
-            {
-              label: t('Manga-Journey'),
-              icon: Timeline,
-              color: currentTheme.secondary,
-              path: '/manga/journey',
-            },
           ]
-        : []),
+        : [
+            {
+              label: t('Manga entdecken'),
+              icon: Explore,
+              color: currentTheme.status.error,
+              path: '/manga/discover',
+            },
+          ]),
     ],
-    [currentTheme, mangaList, bookList]
+    [currentTheme, mangaList]
   );
 
   const secondaryMenuItems: ProfileMenuItem[] = useMemo(
