@@ -4,7 +4,7 @@ import { ACCESSORIES } from './data/accessories';
 import { wornAccessories } from './outfit';
 import { drawPetFigure } from './renderPet';
 import { seasonCostume } from './seasonCostume';
-import { drawAccessory } from './sprites/drawAccessory';
+import { drawAccessory, drawAccessoryBack } from './sprites/drawAccessory';
 
 /** Hoch aufgelöst, damit die weich gezeichneten Pets auch auf Retina-Displays scharf bleiben. */
 const THUMB_PS = 12;
@@ -90,7 +90,10 @@ export function accessoryThumb(
       ...(color || def.color ? { color: color ?? def.color } : {}),
     };
     return render(
-      (ctx) => drawAccessory(ctx, accessory, THUMB_PS, 0, petType, bucket),
+      (ctx) => {
+        drawAccessoryBack(ctx, accessory, THUMB_PS, 0, petType, bucket);
+        drawAccessory(ctx, accessory, THUMB_PS, 0, petType, bucket);
+      },
       12,
       THUMB_PS
     );

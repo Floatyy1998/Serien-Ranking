@@ -11,9 +11,8 @@ export interface PetAnchors {
   eyeWidth: number;
   neckY: number;
   neckHalfWidth: number;
-  /** Umhänge: Oberkante und Saum, wenn sie nicht vom Hals bis Hals+8.6 reichen sollen. */
-  capeTopY?: number;
-  capeHemY?: number;
+  /** Umhänge: Schließe + Kragenbreite vorne, Rumpf-Ellipse, hinter der das Rückenteil hängt. */
+  cloak: { claspY: number; collarHw: number; bodyCY: number; bodyRx: number; bodyRy: number };
 }
 
 export function darken(hex: string, amount: number): string {

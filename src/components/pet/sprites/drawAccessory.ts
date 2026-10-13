@@ -99,7 +99,6 @@ import {
   drawBowtie,
   drawScarf,
   drawGoldChain,
-  drawCape,
   drawMedal,
   drawTie,
   drawBandkerchief,
@@ -112,9 +111,7 @@ import {
   drawDragonPendant,
   drawPhoenixFeatherNeck,
   drawCosmicAmulet,
-  drawRoyalCape,
   drawLei,
-  drawGalaxyCape,
   drawLuckyClover,
   drawRainbowScarf,
   drawShellNecklace,
@@ -129,7 +126,6 @@ import {
   drawSakuraPendant,
   drawObsidianAmulet,
   drawWoolScarf,
-  drawLeafCape,
   drawSeaweedScarf,
   drawHeadphonesNeck,
   drawPearlNecklace,
@@ -138,6 +134,9 @@ import {
   drawLavaAmulet,
   drawAuroraScarf,
   drawKrakenCharm,
+  drawCloakBack,
+  drawCloakFront,
+  isCloakId,
 } from '../accessories/neck';
 
 // Sicherer Default falls petType nicht bekannt (z.B. veralteter JS-Cache,
@@ -152,7 +151,12 @@ const DEFAULT_ANCHORS: PetAnchors = {
   eyeWidth: 2,
   neckY: 18,
   neckHalfWidth: 4,
+  cloak: { claspY: 18.4, collarHw: 5, bodyCY: 21.5, bodyRx: 4.9, bodyRy: 4.4 },
 };
+
+/** Kragenbreite bei Ei-Körpern: so weit, wie der Körper auf Höhe der Kragen-Enden reicht. */
+const eggCollar = (claspY: number, cy: number, rx: number, ry: number): number =>
+  rx * Math.sqrt(Math.max(0, 1 - ((claspY - 1.5 - cy) / ry) ** 2)) + 0.2;
 
 export function getAnchors(
   petType:
@@ -162,6 +166,9 @@ export function getAnchors(
   const cx = 16;
   // Kawaii-Skelett (seit Redesign Juli 2026): Kopf r=6.2*s bei y13, Körper bei y21.5
   const s = level >= 50 ? 1.16 : level >= 20 ? 1.12 : level >= 15 ? 1.08 : level >= 10 ? 1.05 : 1;
+  // Sprite-Wachstum inkl. Lv5-Stufe, für Umhänge, die sich an den Körper schmiegen
+  const b = level >= 5 && level < 10 ? 1.02 : s;
+  const torso = { bodyCY: 21.5, bodyRx: 4.9 * b, bodyRy: 4.4 * b };
   switch (petType) {
     case 'cat':
       return {
@@ -174,6 +181,7 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        cloak: { claspY: 12.7 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
       };
     case 'dog':
     case 'dragon':
@@ -189,9 +197,11 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        cloak: { claspY: 12.7 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
       };
-    case 'bird':
+    case 'bird': {
       // Ei-Silhouette (Küken): Körper-Oben = Kopf
+      const claspY = 17.5 - 6.2 * b * 0.35 + 3.3;
       return {
         headTopY: 17.5 - 6.2 * s,
         headCenterX: cx,
@@ -202,9 +212,15 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4 * s,
-        capeTopY: 17.5 - 6.2 * s * 0.35 + 2.9,
-        capeHemY: 17.5 + 6.2 * s - 0.7,
+        cloak: {
+          claspY,
+          collarHw: eggCollar(claspY, 17.5, 5.4 * b, 6.2 * b),
+          bodyCY: 17.5,
+          bodyRx: 5.4 * b,
+          bodyRy: 6.2 * b,
+        },
       };
+    }
     case 'rabbit':
       // Kopf r=6*s bei y13.5 (Ohren ragen darüber hinaus)
       return {
@@ -217,10 +233,12 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        cloak: { claspY: 13.2 + 6 * b, collarHw: 4.4 * b + 0.6, ...torso, bodyRy: 4.3 * b },
       };
     case 'panda':
       // Lv50+ = Kung-Fu-Wächter-Form (Kopf r=6.7 bei centerY-3.5=12.5)
       if (level >= 50) {
+        const bodyR = level >= 75 ? 7 : level >= 60 ? 6.5 : 6;
         return {
           headTopY: 6,
           headCenterX: cx,
@@ -231,6 +249,13 @@ export function getAnchors(
           eyeWidth: 1.8,
           neckY: 18,
           neckHalfWidth: 5,
+          cloak: {
+            claspY: 12.2 + (level >= 75 ? 7 : 6.7),
+            collarHw: 5.6,
+            bodyCY: 22,
+            bodyRx: bodyR,
+            bodyRy: bodyR,
+          },
         };
       }
       // Normal: Kopf r=6.5 bei centerY-3=13 → Top y=6.5, Augen y=13.3 (cx±2.6)
@@ -244,6 +269,13 @@ export function getAnchors(
         eyeWidth: 1.8,
         neckY: 19,
         neckHalfWidth: 4,
+        cloak: {
+          claspY: 12.7 + 6.5 * b,
+          collarHw: 4.4 * b + 0.6,
+          bodyCY: 22,
+          bodyRx: 5.5 * b,
+          bodyRy: 5.5 * b,
+        },
       };
     case 'owl': {
       // Ei-Silhouette: Körper-Oben = Kopf (Top ~10.1), Augen bei y≈14.7 (cx±2.6)
@@ -259,6 +291,7 @@ export function getAnchors(
                 : level >= 5
                   ? 1.02
                   : 1;
+      const claspY = 17.5 - 7.4 * s * 0.38 + 4;
       return {
         headTopY: 17.5 - 7.4 * s,
         headCenterX: cx,
@@ -269,7 +302,13 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4.5 * s,
-        capeHemY: 17.5 + 7.4 * s - 1.5,
+        cloak: {
+          claspY,
+          collarHw: eggCollar(claspY, 17.5, 6.2 * s, 7.4 * s),
+          bodyCY: 17.5,
+          bodyRx: 6.2 * s,
+          bodyRy: 7.4 * s,
+        },
       };
     }
     case 'penguin': {
@@ -285,6 +324,13 @@ export function getAnchors(
         eyeWidth: 1.8,
         neckY: 18 - 7.2 * s * 0.62 + 3,
         neckHalfWidth: 4 * s,
+        cloak: {
+          claspY: 18 - 7.2 * b * 0.62 + 3.3,
+          collarHw: eggCollar(18 - 7.2 * b * 0.62 + 3.3, 18, 5.6 * b, 7.2 * b),
+          bodyCY: 18,
+          bodyRx: 5.6 * b,
+          bodyRy: 7.2 * b,
+        },
       };
     }
     case 'axolotl': {
@@ -300,12 +346,32 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 18.5,
         neckHalfWidth: 4 * s,
+        cloak: {
+          claspY: 12.7 + 6.3 * b,
+          collarHw: 4 * b + 0.6,
+          bodyCY: 22,
+          bodyRx: 4.6 * b,
+          bodyRy: 4.2 * b,
+        },
       };
     }
     default:
       return DEFAULT_ANCHORS;
   }
 }
+
+/** Teile, die hinter dem Körper liegen — vor dem Pet zeichnen. */
+export const drawAccessoryBack = (
+  ctx: CanvasRenderingContext2D,
+  accessory: PetAccessory,
+  ps: number,
+  offset: number,
+  petType: Parameters<typeof getAnchors>[0] = 'cat',
+  level: number = 1
+): void => {
+  const a = getAnchors(petType, level);
+  if (isCloakId(accessory.id)) drawCloakBack(ctx, ps, offset, a, accessory.id);
+};
 
 export const drawAccessory = (
   ctx: CanvasRenderingContext2D,
@@ -407,7 +473,7 @@ export const drawAccessory = (
       drawGoldChain(ctx, ps, offset, a);
       break;
     case 'cape':
-      drawCape(ctx, ps, offset, a);
+      drawCloakFront(ctx, ps, offset, a, 'cape');
       break;
     case 'medal':
       drawMedal(ctx, ps, offset, a);
@@ -514,7 +580,7 @@ export const drawAccessory = (
       drawNinjaMask(ctx, ps, offset, a);
       break;
     case 'royalCape':
-      drawRoyalCape(ctx, ps, offset, a);
+      drawCloakFront(ctx, ps, offset, a, 'royalCape');
       break;
     case 'aviatorGoggles':
       drawAviatorGoggles(ctx, ps, offset, a);
@@ -532,7 +598,7 @@ export const drawAccessory = (
       drawNightOwlGoggles(ctx, ps, offset, a);
       break;
     case 'galaxyCape':
-      drawGalaxyCape(ctx, ps, offset, a);
+      drawCloakFront(ctx, ps, offset, a, 'galaxyCape');
       break;
     case 'samuraiHelmet':
       drawSamuraiHelmet(ctx, ps, offset, a);
@@ -719,7 +785,7 @@ export const drawAccessory = (
       drawWoolScarf(ctx, ps, offset, a);
       break;
     case 'leafCape':
-      drawLeafCape(ctx, ps, offset, a);
+      drawCloakFront(ctx, ps, offset, a, 'leafCape');
       break;
     case 'seaweedScarf':
       drawSeaweedScarf(ctx, ps, offset, a);

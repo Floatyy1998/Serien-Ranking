@@ -1,15 +1,6 @@
 import type { PetAnchors } from './shared';
 import { darken, lighten } from './shared';
 
-const CAPE_DROP = 8.6;
-
-/** Höhe am Umhang, gemessen in Hals-Abständen eines Standard-Umhangs (Saum bei 8.6). */
-function capeY(a: PetAnchors): (d: number) => number {
-  const top = a.capeTopY ?? a.neckY;
-  const k = ((a.capeHemY ?? a.neckY + CAPE_DROP) - top) / CAPE_DROP;
-  return (d) => top + d * k;
-}
-
 export function drawCollar(
   ctx: CanvasRenderingContext2D,
   ps: number,
@@ -333,80 +324,6 @@ export function drawGoldChain(
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.beginPath();
   ctx.arc((cx - 0.12) * ps, (my - 0.15) * ps + off, ps * 0.12, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-export function drawCape(
-  ctx: CanvasRenderingContext2D,
-  ps: number,
-  off: number,
-  a: PetAnchors
-): void {
-  const cx = a.headCenterX;
-  const at = capeY(a);
-  const nhw = a.neckHalfWidth;
-  const bl = cx - nhw - 1.3;
-  const br = cx + nhw + 1.3;
-  // Wehender Umhang mit gewelltem Saum
-  ctx.fillStyle = '#8B0000';
-  ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.4) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.9) * ps, at(4.5) * ps + off, bl * ps, at(8.6) * ps + off);
-  const w = (br - bl) / 3;
-  for (let i = 0; i < 3; i++) {
-    ctx.quadraticCurveTo(
-      (bl + w * (i + 0.5)) * ps,
-      at(9.5) * ps + off,
-      (bl + w * (i + 1)) * ps,
-      at(8.6) * ps + off
-    );
-  }
-  ctx.quadraticCurveTo(
-    (br + 0.9) * ps,
-    at(4.5) * ps + off,
-    (cx + nhw - 0.2) * ps,
-    at(0.4) * ps + off
-  );
-  ctx.closePath();
-  ctx.fill();
-  // Falten
-  ctx.strokeStyle = 'rgba(0,0,0,0.28)';
-  ctx.lineWidth = ps * 0.2;
-  for (let i = -1; i <= 1; i++) {
-    ctx.beginPath();
-    ctx.moveTo((cx + i * nhw * 0.8) * ps, at(1.2) * ps + off);
-    ctx.quadraticCurveTo(
-      (cx + i * (nhw + 0.9)) * ps,
-      at(5) * ps + off,
-      (cx + i * (nhw + 0.5)) * ps,
-      at(8.2) * ps + off
-    );
-    ctx.stroke();
-  }
-  // Lichtkante
-  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-  ctx.lineWidth = ps * 0.25;
-  ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.4) * ps, at(0.8) * ps + off);
-  ctx.quadraticCurveTo((bl + 0.4) * ps, at(4.4) * ps + off, (bl + 1) * ps, at(8) * ps + off);
-  ctx.stroke();
-  // Goldene Schliesse
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.arc((cx - 0.9) * ps, at(0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc((cx + 0.9) * ps, at(0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#DAA520';
-  ctx.lineWidth = ps * 0.18;
-  ctx.beginPath();
-  ctx.moveTo((cx - 0.55) * ps, at(0.2) * ps + off);
-  ctx.lineTo((cx + 0.55) * ps, at(0.2) * ps + off);
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.beginPath();
-  ctx.arc((cx - 1) * ps, at(0.08) * ps + off, ps * 0.12, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1196,85 +1113,6 @@ export function drawCosmicAmulet(
   ctx.fill();
 }
 
-export function drawRoyalCape(
-  ctx: CanvasRenderingContext2D,
-  ps: number,
-  off: number,
-  a: PetAnchors
-): void {
-  const cx = a.headCenterX;
-  const at = capeY(a);
-  const nhw = a.neckHalfWidth;
-  const bl = cx - nhw - 2;
-  const br = cx + nhw + 2;
-  // Koenigsmantel
-  ctx.fillStyle = '#4B0082';
-  ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.3) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.8) * ps, at(4.4) * ps + off, bl * ps, at(8.6) * ps + off);
-  ctx.lineTo(br * ps, at(8.6) * ps + off);
-  ctx.quadraticCurveTo(
-    (br + 0.8) * ps,
-    at(4.4) * ps + off,
-    (cx + nhw - 0.2) * ps,
-    at(0.3) * ps + off
-  );
-  ctx.closePath();
-  ctx.fill();
-  // Falten
-  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-  ctx.lineWidth = ps * 0.2;
-  for (let i = -1; i <= 1; i++) {
-    ctx.beginPath();
-    ctx.moveTo((cx + i * nhw * 0.9) * ps, at(1.4) * ps + off);
-    ctx.quadraticCurveTo(
-      (cx + i * (nhw + 1.1)) * ps,
-      at(5) * ps + off,
-      (cx + i * (nhw + 0.7)) * ps,
-      at(8) * ps + off
-    );
-    ctx.stroke();
-  }
-  // Hermelin-Saum
-  ctx.strokeStyle = '#FAFAFA';
-  ctx.lineWidth = ps * 1.1;
-  ctx.beginPath();
-  ctx.moveTo((bl + 0.1) * ps, at(8.5) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, at(9.3) * ps + off, (br - 0.1) * ps, at(8.5) * ps + off);
-  ctx.stroke();
-  // Hermelin-Tupfen
-  ctx.fillStyle = '#263238';
-  for (let i = 0; i < 5; i++) {
-    const x = bl + ((br - bl) * (i + 0.5)) / 5;
-    const y = at(8.55 + Math.sin(((i + 0.5) / 5) * Math.PI) * 0.55);
-    ctx.beginPath();
-    ctx.ellipse(x * ps, y * ps + off, ps * 0.13, ps * 0.3, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Goldkordel mit Rubin
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = ps * 0.2;
-  ctx.beginPath();
-  ctx.moveTo((cx - 1.1) * ps, at(0.2) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, at(0.7) * ps + off, (cx + 1.1) * ps, at(0.2) * ps + off);
-  ctx.stroke();
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.arc((cx - 1.15) * ps, at(0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc((cx + 1.15) * ps, at(0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#E53935';
-  ctx.beginPath();
-  ctx.arc(cx * ps, at(0.55) * ps + off, ps * 0.24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.beginPath();
-  ctx.arc((cx - 1.25) * ps, at(0.02) * ps + off, ps * 0.1, 0, Math.PI * 2);
-  ctx.fill();
-}
-
 export function drawLei(
   ctx: CanvasRenderingContext2D,
   ps: number,
@@ -1311,88 +1149,6 @@ export function drawLei(
     ctx.arc(x * ps, y * ps + off, ps * 0.17, 0, Math.PI * 2);
     ctx.fill();
   }
-}
-
-export function drawGalaxyCape(
-  ctx: CanvasRenderingContext2D,
-  ps: number,
-  off: number,
-  a: PetAnchors
-): void {
-  const cx = a.headCenterX;
-  const at = capeY(a);
-  const nhw = a.neckHalfWidth;
-  const bl = cx - nhw - 1.4;
-  const br = cx + nhw + 1.4;
-  // Weltraum-Umhang mit gewelltem Saum
-  ctx.fillStyle = '#12123E';
-  ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.4) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.8) * ps, at(4.6) * ps + off, bl * ps, at(8.8) * ps + off);
-  const w = (br - bl) / 3;
-  for (let i = 0; i < 3; i++) {
-    ctx.quadraticCurveTo(
-      (bl + w * (i + 0.5)) * ps,
-      at(9.6) * ps + off,
-      (bl + w * (i + 1)) * ps,
-      at(8.8) * ps + off
-    );
-  }
-  ctx.quadraticCurveTo(
-    (br + 0.8) * ps,
-    at(4.6) * ps + off,
-    (cx + nhw - 0.2) * ps,
-    at(0.4) * ps + off
-  );
-  ctx.closePath();
-  ctx.fill();
-  // Nebelschwaden
-  ctx.fillStyle = 'rgba(156,39,176,0.3)';
-  ctx.beginPath();
-  ctx.ellipse((cx - 1.6) * ps, at(3.6) * ps + off, ps * 1.7, ps * 1, 0.4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(33,150,243,0.28)';
-  ctx.beginPath();
-  ctx.ellipse((cx + 1.2) * ps, at(5.6) * ps + off, ps * 1.9, ps * 1.1, -0.3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(224,64,251,0.22)';
-  ctx.beginPath();
-  ctx.ellipse((cx - 0.6) * ps, at(7.2) * ps + off, ps * 1.4, ps * 0.9, 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  // Sterne
-  ctx.fillStyle = '#FFFFFF';
-  const stars: [number, number, number][] = [
-    [-2.1, 2, 0.13],
-    [1.6, 3, 0.11],
-    [-1, 5, 0.14],
-    [2.1, 6.2, 0.1],
-    [0.2, 7.4, 0.12],
-    [-2.6, 4.2, 0.1],
-    [2.6, 4.8, 0.12],
-  ];
-  for (const [dx, dy, r] of stars) {
-    ctx.beginPath();
-    ctx.arc((cx + dx) * ps, at(dy) * ps + off, ps * r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Funkelnder Stern
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-  ctx.lineWidth = ps * 0.08;
-  ctx.beginPath();
-  ctx.moveTo((cx - 1) * ps, at(4.6) * ps + off);
-  ctx.lineTo((cx - 1) * ps, at(5.4) * ps + off);
-  ctx.moveTo((cx - 1.4) * ps, at(5) * ps + off);
-  ctx.lineTo((cx - 0.6) * ps, at(5) * ps + off);
-  ctx.stroke();
-  // Sternen-Schliesse
-  ctx.fillStyle = '#FFF176';
-  ctx.beginPath();
-  ctx.moveTo(cx * ps, at(-0.4) * ps + off);
-  ctx.lineTo((cx + 0.3) * ps, at(0.15) * ps + off);
-  ctx.lineTo(cx * ps, at(0.7) * ps + off);
-  ctx.lineTo((cx - 0.3) * ps, at(0.15) * ps + off);
-  ctx.closePath();
-  ctx.fill();
 }
 
 export function drawLuckyClover(
@@ -2135,42 +1891,6 @@ export function drawWoolScarf(
   }
 }
 
-export function drawLeafCape(
-  ctx: CanvasRenderingContext2D,
-  ps: number,
-  off: number,
-  a: PetAnchors
-): void {
-  const cx = a.headCenterX;
-  const ny = a.neckY;
-  const nw = a.neckHalfWidth;
-  // Umhang aus überlappenden Blättern
-  const greens = ['#66BB6A', '#4CAF50', '#81C784'];
-  for (let row = 0; row < 2; row++) {
-    for (let i = -2; i <= 2; i++) {
-      ctx.fillStyle = greens[(i + row + 2) % 3];
-      ctx.beginPath();
-      ctx.ellipse(
-        (cx + i * (nw * 0.42)) * ps,
-        (ny + 0.5 + row * 1.1) * ps + off,
-        ps * 0.9,
-        ps * 1.2,
-        i * 0.15,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-    }
-  }
-  // Ranken-Kordel
-  ctx.strokeStyle = '#33691E';
-  ctx.lineWidth = ps * 0.25;
-  ctx.beginPath();
-  ctx.moveTo((cx - nw) * ps, (ny - 0.2) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ny + 0.4) * ps + off, (cx + nw) * ps, (ny - 0.2) * ps + off);
-  ctx.stroke();
-}
-
 export function drawSeaweedScarf(
   ctx: CanvasRenderingContext2D,
   ps: number,
@@ -2515,4 +2235,372 @@ export function drawKrakenCharm(
   ctx.beginPath();
   ctx.arc(cx * ps, by * ps + off, ps * 1.7, 0, Math.PI * 2);
   ctx.fill();
+}
+
+// ── Umhänge: Rückenteil hinter dem Körper, vorne Kragen mit Schließe ──
+
+export type CloakId = 'cape' | 'royalCape' | 'galaxyCape' | 'leafCape';
+
+export function isCloakId(id: string): id is CloakId {
+  return id === 'cape' || id === 'royalCape' || id === 'galaxyCape' || id === 'leafCape';
+}
+
+const CLOAK_FABRIC: Record<CloakId, string> = {
+  cape: '#8B0000',
+  royalCape: '#4B0082',
+  galaxyCape: '#12123E',
+  leafCape: '#2E7D32',
+};
+
+const LEAF_GREENS = ['#66BB6A', '#4CAF50', '#81C784'];
+
+function collarEnds(c: PetAnchors['cloak']): { xs: number; ys: number } {
+  const xs = c.collarHw;
+  return { xs, ys: c.claspY - Math.min(1.5, xs * 0.25) };
+}
+
+function cloakBackPath(
+  ctx: CanvasRenderingContext2D,
+  ps: number,
+  off: number,
+  cx: number,
+  c: PetAnchors['cloak'],
+  id: CloakId
+): { hemY: number; hw: number } {
+  const { xs, ys } = collarEnds(c);
+  const sideY = c.bodyCY + c.bodyRy * 0.2;
+  const hemY = c.bodyCY + c.bodyRy + 0.8;
+  const hw = c.bodyRx + 1.4;
+  ctx.beginPath();
+  ctx.moveTo((cx - xs + 0.3) * ps, ys * ps + off);
+  ctx.quadraticCurveTo((cx - hw - 0.2) * ps, sideY * ps + off, (cx - hw) * ps, hemY * ps + off);
+  if (id === 'royalCape') {
+    ctx.quadraticCurveTo(cx * ps, (hemY + 0.6) * ps + off, (cx + hw) * ps, hemY * ps + off);
+  } else {
+    const n = id === 'leafCape' ? 6 : 4;
+    const dip = id === 'leafCape' ? 1.2 : 0.9;
+    const w = (hw * 2) / n;
+    for (let i = 0; i < n; i++) {
+      ctx.quadraticCurveTo(
+        (cx - hw + w * (i + 0.5)) * ps,
+        (hemY + dip) * ps + off,
+        (cx - hw + w * (i + 1)) * ps,
+        hemY * ps + off
+      );
+    }
+  }
+  ctx.quadraticCurveTo((cx + hw + 0.2) * ps, sideY * ps + off, (cx + xs - 0.3) * ps, ys * ps + off);
+  ctx.closePath();
+  return { hemY, hw };
+}
+
+/** Rückenteil, wird vor dem Körper gezeichnet und schaut seitlich und unten hervor. */
+export function drawCloakBack(
+  ctx: CanvasRenderingContext2D,
+  ps: number,
+  off: number,
+  a: PetAnchors,
+  id: CloakId
+): void {
+  const c = a.cloak;
+  const cx = a.headCenterX;
+  const cy = c.bodyCY;
+  const rx = c.bodyRx;
+  const ry = c.bodyRy;
+  ctx.save();
+  ctx.fillStyle = CLOAK_FABRIC[id];
+  const { hemY, hw } = cloakBackPath(ctx, ps, off, cx, c, id);
+  ctx.fill();
+  ctx.clip();
+  if (id === 'galaxyCape') {
+    const nebulae: [number, number, number, number, number, string][] = [
+      [cx - hw + 1, cy + 3.4, 1.3, 2.6, 0.2, 'rgba(156,39,176,0.4)'],
+      [cx + hw - 1, cy + 4.2, 1.3, 2.6, -0.2, 'rgba(33,150,243,0.36)'],
+      [cx, hemY, 3.6, 1, 0, 'rgba(224,64,251,0.28)'],
+    ];
+    for (const [x, y, nrx, nry, rot, fill] of nebulae) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.ellipse(x * ps, y * ps + off, nrx * ps, nry * ps, rot, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#FFFFFF';
+    const stars: [number, number, number][] = [
+      [cx - hw + 0.8, cy + 2.4, 0.13],
+      [cx - hw + 1.2, cy + 4.8, 0.11],
+      [cx - hw + 1.5, hemY - 0.4, 0.12],
+      [cx + hw - 0.9, cy + 3, 0.12],
+      [cx + hw - 0.8, cy + 5.4, 0.1],
+      [cx + hw - 1.7, hemY - 0.2, 0.13],
+      [cx - 2.6, hemY + 0.3, 0.1],
+      [cx + 2.2, hemY + 0.35, 0.11],
+    ];
+    for (const [x, y, r] of stars) {
+      ctx.beginPath();
+      ctx.arc(x * ps, y * ps + off, ps * r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (id === 'leafCape') {
+    const top = collarEnds(c).ys;
+    ctx.lineWidth = ps * 0.12;
+    ctx.strokeStyle = 'rgba(27,94,32,0.7)';
+    for (let row = 0, y = top + 0.8; y < hemY + 1.2; row++, y += 1.7) {
+      for (let x = cx - hw + (row % 2) * 1.1; x <= cx + hw + 0.5; x += 2.2) {
+        const rot = (row + Math.round(x)) % 2 ? 0.7 : -0.7;
+        ctx.fillStyle = LEAF_GREENS[(row + Math.round(x)) % 3];
+        ctx.beginPath();
+        ctx.ellipse(x * ps, y * ps + off, ps * 1.15, ps * 0.6, rot, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo((x - Math.cos(rot) * 0.9) * ps, (y - Math.sin(rot) * 0.9) * ps + off);
+        ctx.lineTo((x + Math.cos(rot) * 0.9) * ps, (y + Math.sin(rot) * 0.9) * ps + off);
+        ctx.stroke();
+      }
+    }
+  }
+  // Schatten des Körpers auf dem Stoff
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  for (const grow of [1.4, 0.7]) {
+    ctx.beginPath();
+    ctx.ellipse(
+      cx * ps,
+      (cy + 0.5) * ps + off,
+      (rx + grow) * ps,
+      (ry + grow) * ps,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  }
+  // Falten
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  ctx.lineWidth = ps * 0.2;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo((cx + side * (rx + 0.3)) * ps, (cy + 1.2) * ps + off);
+    ctx.quadraticCurveTo(
+      (cx + side * (rx + 1)) * ps,
+      (cy + ry * 0.6) * ps + off,
+      (cx + side * (hw - 0.6)) * ps,
+      (hemY + 0.3) * ps + off
+    );
+    ctx.stroke();
+  }
+  // Lichtkante außen
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  ctx.lineWidth = ps * 0.25;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo((cx + side * (rx + 0.2)) * ps, cy * ps + off);
+    ctx.quadraticCurveTo(
+      (cx + side * (hw - 0.05)) * ps,
+      (cy + ry * 0.35) * ps + off,
+      (cx + side * (hw - 0.2)) * ps,
+      (hemY - 0.2) * ps + off
+    );
+    ctx.stroke();
+  }
+  ctx.restore();
+  if (id === 'royalCape') {
+    // Hermelin-Saum
+    ctx.strokeStyle = '#FAFAFA';
+    ctx.lineWidth = ps * 1.1;
+    ctx.beginPath();
+    ctx.moveTo((cx - hw + 0.1) * ps, (hemY - 0.1) * ps + off);
+    ctx.quadraticCurveTo(
+      cx * ps,
+      (hemY + 0.5) * ps + off,
+      (cx + hw - 0.1) * ps,
+      (hemY - 0.1) * ps + off
+    );
+    ctx.stroke();
+    ctx.fillStyle = '#263238';
+    for (let i = 0; i < 6; i++) {
+      const t = (i + 0.5) / 6;
+      const x = cx - hw + 0.1 + t * (hw * 2 - 0.2);
+      const y = hemY - 0.1 + 2 * t * (1 - t) * 0.6;
+      ctx.beginPath();
+      ctx.ellipse(x * ps, y * ps + off, ps * 0.13, ps * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+/** Vorderteil: Kragen über den Schultern, Schließe direkt unter Kinn bzw. Schnabel. */
+export function drawCloakFront(
+  ctx: CanvasRenderingContext2D,
+  ps: number,
+  off: number,
+  a: PetAnchors,
+  id: CloakId
+): void {
+  const cx = a.headCenterX;
+  const ky = a.cloak.claspY;
+  const { xs, ys } = collarEnds(a.cloak);
+  const topY = ys - 0.45;
+  const botY = ys + 0.85;
+  const midY = (topY + botY) / 2;
+  const topCtrl = 2 * (ky - 0.55) - topY;
+  const botCtrl = 2 * (ky + 0.85) - botY;
+  const collar = (dy: number) => {
+    ctx.beginPath();
+    ctx.moveTo((cx - xs) * ps, (topY + dy) * ps + off);
+    ctx.quadraticCurveTo(
+      cx * ps,
+      (topCtrl + dy) * ps + off,
+      (cx + xs) * ps,
+      (topY + dy) * ps + off
+    );
+    ctx.quadraticCurveTo(
+      (cx + xs + 0.6) * ps,
+      (midY + dy) * ps + off,
+      (cx + xs) * ps,
+      (botY + dy) * ps + off
+    );
+    ctx.quadraticCurveTo(
+      cx * ps,
+      (botCtrl + dy) * ps + off,
+      (cx - xs) * ps,
+      (botY + dy) * ps + off
+    );
+    ctx.quadraticCurveTo(
+      (cx - xs - 0.6) * ps,
+      (midY + dy) * ps + off,
+      (cx - xs) * ps,
+      (topY + dy) * ps + off
+    );
+    ctx.closePath();
+  };
+  const bend = (topCtrl - topY + botCtrl - botY) / 2;
+  const onCollar = (t: number): [number, number, number] => {
+    const k = 2 * t * (1 - t);
+    return [
+      cx - xs + 2 * xs * t,
+      (topY + botY) / 2 + k * bend,
+      Math.atan2((2 - 4 * t) * bend, 2 * xs),
+    ];
+  };
+  // Schatten auf dem Körper
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
+  collar(0.4);
+  ctx.fill();
+  ctx.fillStyle = id === 'royalCape' ? '#FAFAFA' : CLOAK_FABRIC[id];
+  collar(0);
+  ctx.fill();
+  if (id === 'leafCape') {
+    for (let i = 0; i <= 8; i++) {
+      const [x, y, rot] = onCollar(i / 8);
+      ctx.fillStyle = LEAF_GREENS[i % 3];
+      ctx.beginPath();
+      ctx.ellipse(
+        x * ps,
+        y * ps + off,
+        ps * 0.85,
+        ps * 0.55,
+        rot + (i % 2 ? 0.5 : -0.5),
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    }
+  }
+  // Lichtkante oben
+  if (id !== 'leafCape') {
+    ctx.strokeStyle = id === 'royalCape' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = ps * 0.2;
+    ctx.beginPath();
+    ctx.moveTo((cx - xs + 0.4) * ps, (topY + 0.2) * ps + off);
+    ctx.quadraticCurveTo(
+      cx * ps,
+      (topCtrl + 0.2) * ps + off,
+      (cx + xs - 0.4) * ps,
+      (topY + 0.2) * ps + off
+    );
+    ctx.stroke();
+  }
+
+  if (id === 'royalCape') {
+    ctx.fillStyle = '#263238';
+    for (const t of [0.12, 0.3, 0.7, 0.88]) {
+      const [x, y] = onCollar(t);
+      ctx.beginPath();
+      ctx.ellipse(x * ps, y * ps + off, ps * 0.12, ps * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = ps * 0.2;
+    ctx.beginPath();
+    ctx.moveTo((cx - 1.1) * ps, (ky - 0.1) * ps + off);
+    ctx.quadraticCurveTo(cx * ps, (ky + 0.4) * ps + off, (cx + 1.1) * ps, (ky - 0.1) * ps + off);
+    ctx.stroke();
+    ctx.fillStyle = '#FFD700';
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc((cx + side * 1.15) * ps, (ky - 0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#E53935';
+    ctx.beginPath();
+    ctx.arc(cx * ps, (ky + 0.25) * ps + off, ps * 0.26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath();
+    ctx.arc((cx - 1.25) * ps, (ky - 0.28) * ps + off, ps * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (id === 'galaxyCape') {
+    ctx.fillStyle = '#FFFFFF';
+    for (const t of [0.15, 0.32, 0.68, 0.86]) {
+      const [x, y] = onCollar(t);
+      ctx.beginPath();
+      ctx.arc(x * ps, y * ps + off, ps * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#FFF176';
+    ctx.beginPath();
+    ctx.moveTo(cx * ps, (ky - 0.55) * ps + off);
+    ctx.lineTo((cx + 0.35) * ps, ky * ps + off);
+    ctx.lineTo(cx * ps, (ky + 0.55) * ps + off);
+    ctx.lineTo((cx - 0.35) * ps, ky * ps + off);
+    ctx.closePath();
+    ctx.fill();
+  } else if (id === 'leafCape') {
+    // Ranken-Kordel mit Knospe
+    ctx.strokeStyle = '#33691E';
+    ctx.lineWidth = ps * 0.25;
+    ctx.beginPath();
+    ctx.moveTo((cx - xs) * ps, (topY + 0.3) * ps + off);
+    ctx.quadraticCurveTo(
+      cx * ps,
+      (topCtrl + 0.3) * ps + off,
+      (cx + xs) * ps,
+      (topY + 0.3) * ps + off
+    );
+    ctx.stroke();
+    ctx.fillStyle = '#F06292';
+    ctx.beginPath();
+    ctx.arc(cx * ps, ky * ps + off, ps * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF9C4';
+    ctx.beginPath();
+    ctx.arc(cx * ps, ky * ps + off, ps * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = '#FFD700';
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc((cx + side * 0.85) * ps, ky * ps + off, ps * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = '#DAA520';
+    ctx.lineWidth = ps * 0.18;
+    ctx.beginPath();
+    ctx.moveTo((cx - 0.5) * ps, ky * ps + off);
+    ctx.lineTo((cx + 0.5) * ps, ky * ps + off);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath();
+    ctx.arc((cx - 0.95) * ps, (ky - 0.12) * ps + off, ps * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
