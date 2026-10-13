@@ -20,6 +20,7 @@ import { syncAppBadgeAcrossDevices } from '../../services/notifications/badgeSyn
 import { t } from '../../services/i18n';
 import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
+import { withCoinEgg } from '../reading/coinEasterEgg';
 import { NAV_SLOT_ICONS } from './navSlotIcons';
 import './BottomNavigation.css';
 
@@ -187,7 +188,9 @@ export const BottomNavigation = () => {
       document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setPendingIndex(index);
-      navigate(item.id === 'manga' ? resolveReadingPath() : item.path);
+      const go = () => navigate(item.id === 'manga' ? resolveReadingPath() : item.path);
+      if (item.id === 'manga' || navItems[activeIndex]?.id === 'manga') withCoinEgg(user?.uid, go);
+      else go();
     }
   };
 

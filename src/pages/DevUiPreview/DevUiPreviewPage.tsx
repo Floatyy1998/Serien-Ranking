@@ -50,6 +50,7 @@ import {
   BooksEmptyPreview,
   BooksOverviewPreview,
   BookStatsPreview,
+  CoinEggPreview,
   FriendBooksInsightsPreview,
   ReadingHubPreview,
 } from './BooksPreviews';
@@ -251,6 +252,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   },
   { id: 'book-import', label: 'Bücher: Import', render: () => <BookImportPreview /> },
   { id: 'reading-hub', label: 'Lesen: Alle', render: () => <ReadingHubPreview /> },
+  { id: 'coin-egg', label: 'Lesen: Flos Münze', render: () => <CoinEggPreview /> },
   { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },
   { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },

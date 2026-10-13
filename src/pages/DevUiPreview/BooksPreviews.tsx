@@ -1,6 +1,7 @@
 import type firebase from 'firebase/compat/app';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { showCoinEgg } from '../../components/reading/coinEasterEgg';
 import { AuthContext } from '../../contexts/AuthContext';
 import { BooksListContext } from '../../contexts/BooksListContext';
 import { MovieListContext } from '../../contexts/MovieListContext';
@@ -370,3 +371,18 @@ export const ReadingHubPreview = () => (
     <ReadingHubPage />
   </BooksPreviewShell>
 );
+
+/** Flos Münze (Dock-Wechsel zu „Lesen"); Klick irgendwo spielt sie erneut ab. */
+export const CoinEggPreview = () => {
+  useEffect(() => {
+    const id = window.setTimeout(showCoinEgg, 400);
+    return () => window.clearTimeout(id);
+  }, []);
+  return (
+    <div onClick={() => showCoinEgg()}>
+      <BooksPreviewShell>
+        <BooksPage />
+      </BooksPreviewShell>
+    </div>
+  );
+};
