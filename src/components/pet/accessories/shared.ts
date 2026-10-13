@@ -11,6 +11,9 @@ export interface PetAnchors {
   eyeWidth: number;
   neckY: number;
   neckHalfWidth: number;
+  /** Umhänge: Oberkante und Saum, wenn sie nicht vom Hals bis Hals+8.6 reichen sollen. */
+  capeTopY?: number;
+  capeHemY?: number;
 }
 
 export function darken(hex: string, amount: number): string {

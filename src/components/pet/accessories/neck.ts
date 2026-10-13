@@ -1,6 +1,15 @@
 import type { PetAnchors } from './shared';
 import { darken, lighten } from './shared';
 
+const CAPE_DROP = 8.6;
+
+/** Höhe am Umhang, gemessen in Hals-Abständen eines Standard-Umhangs (Saum bei 8.6). */
+function capeY(a: PetAnchors): (d: number) => number {
+  const top = a.capeTopY ?? a.neckY;
+  const k = ((a.capeHemY ?? a.neckY + CAPE_DROP) - top) / CAPE_DROP;
+  return (d) => top + d * k;
+}
+
 export function drawCollar(
   ctx: CanvasRenderingContext2D,
   ps: number,
@@ -334,29 +343,29 @@ export function drawCape(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ny = a.neckY;
+  const at = capeY(a);
   const nhw = a.neckHalfWidth;
   const bl = cx - nhw - 1.3;
   const br = cx + nhw + 1.3;
   // Wehender Umhang mit gewelltem Saum
   ctx.fillStyle = '#8B0000';
   ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, (ny + 0.4) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.9) * ps, (ny + 4.5) * ps + off, bl * ps, (ny + 8.6) * ps + off);
+  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.4) * ps + off);
+  ctx.quadraticCurveTo((bl - 0.9) * ps, at(4.5) * ps + off, bl * ps, at(8.6) * ps + off);
   const w = (br - bl) / 3;
   for (let i = 0; i < 3; i++) {
     ctx.quadraticCurveTo(
       (bl + w * (i + 0.5)) * ps,
-      (ny + 9.5) * ps + off,
+      at(9.5) * ps + off,
       (bl + w * (i + 1)) * ps,
-      (ny + 8.6) * ps + off
+      at(8.6) * ps + off
     );
   }
   ctx.quadraticCurveTo(
     (br + 0.9) * ps,
-    (ny + 4.5) * ps + off,
+    at(4.5) * ps + off,
     (cx + nhw - 0.2) * ps,
-    (ny + 0.4) * ps + off
+    at(0.4) * ps + off
   );
   ctx.closePath();
   ctx.fill();
@@ -365,12 +374,12 @@ export function drawCape(
   ctx.lineWidth = ps * 0.2;
   for (let i = -1; i <= 1; i++) {
     ctx.beginPath();
-    ctx.moveTo((cx + i * nhw * 0.8) * ps, (ny + 1.2) * ps + off);
+    ctx.moveTo((cx + i * nhw * 0.8) * ps, at(1.2) * ps + off);
     ctx.quadraticCurveTo(
       (cx + i * (nhw + 0.9)) * ps,
-      (ny + 5) * ps + off,
+      at(5) * ps + off,
       (cx + i * (nhw + 0.5)) * ps,
-      (ny + 8.2) * ps + off
+      at(8.2) * ps + off
     );
     ctx.stroke();
   }
@@ -378,26 +387,26 @@ export function drawCape(
   ctx.strokeStyle = 'rgba(255,255,255,0.14)';
   ctx.lineWidth = ps * 0.25;
   ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.4) * ps, (ny + 0.8) * ps + off);
-  ctx.quadraticCurveTo((bl + 0.4) * ps, (ny + 4.4) * ps + off, (bl + 1) * ps, (ny + 8) * ps + off);
+  ctx.moveTo((cx - nhw + 0.4) * ps, at(0.8) * ps + off);
+  ctx.quadraticCurveTo((bl + 0.4) * ps, at(4.4) * ps + off, (bl + 1) * ps, at(8) * ps + off);
   ctx.stroke();
   // Goldene Schliesse
   ctx.fillStyle = '#FFD700';
   ctx.beginPath();
-  ctx.arc((cx - 0.9) * ps, (ny + 0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
+  ctx.arc((cx - 0.9) * ps, at(0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc((cx + 0.9) * ps, (ny + 0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
+  ctx.arc((cx + 0.9) * ps, at(0.2) * ps + off, ps * 0.4, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#DAA520';
   ctx.lineWidth = ps * 0.18;
   ctx.beginPath();
-  ctx.moveTo((cx - 0.55) * ps, (ny + 0.2) * ps + off);
-  ctx.lineTo((cx + 0.55) * ps, (ny + 0.2) * ps + off);
+  ctx.moveTo((cx - 0.55) * ps, at(0.2) * ps + off);
+  ctx.lineTo((cx + 0.55) * ps, at(0.2) * ps + off);
   ctx.stroke();
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.beginPath();
-  ctx.arc((cx - 1) * ps, (ny + 0.08) * ps + off, ps * 0.12, 0, Math.PI * 2);
+  ctx.arc((cx - 1) * ps, at(0.08) * ps + off, ps * 0.12, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1194,21 +1203,21 @@ export function drawRoyalCape(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ny = a.neckY;
+  const at = capeY(a);
   const nhw = a.neckHalfWidth;
   const bl = cx - nhw - 2;
   const br = cx + nhw + 2;
   // Koenigsmantel
   ctx.fillStyle = '#4B0082';
   ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, (ny + 0.3) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.8) * ps, (ny + 4.4) * ps + off, bl * ps, (ny + 8.6) * ps + off);
-  ctx.lineTo(br * ps, (ny + 8.6) * ps + off);
+  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.3) * ps + off);
+  ctx.quadraticCurveTo((bl - 0.8) * ps, at(4.4) * ps + off, bl * ps, at(8.6) * ps + off);
+  ctx.lineTo(br * ps, at(8.6) * ps + off);
   ctx.quadraticCurveTo(
     (br + 0.8) * ps,
-    (ny + 4.4) * ps + off,
+    at(4.4) * ps + off,
     (cx + nhw - 0.2) * ps,
-    (ny + 0.3) * ps + off
+    at(0.3) * ps + off
   );
   ctx.closePath();
   ctx.fill();
@@ -1217,12 +1226,12 @@ export function drawRoyalCape(
   ctx.lineWidth = ps * 0.2;
   for (let i = -1; i <= 1; i++) {
     ctx.beginPath();
-    ctx.moveTo((cx + i * nhw * 0.9) * ps, (ny + 1.4) * ps + off);
+    ctx.moveTo((cx + i * nhw * 0.9) * ps, at(1.4) * ps + off);
     ctx.quadraticCurveTo(
       (cx + i * (nhw + 1.1)) * ps,
-      (ny + 5) * ps + off,
+      at(5) * ps + off,
       (cx + i * (nhw + 0.7)) * ps,
-      (ny + 8) * ps + off
+      at(8) * ps + off
     );
     ctx.stroke();
   }
@@ -1230,14 +1239,14 @@ export function drawRoyalCape(
   ctx.strokeStyle = '#FAFAFA';
   ctx.lineWidth = ps * 1.1;
   ctx.beginPath();
-  ctx.moveTo((bl + 0.1) * ps, (ny + 8.5) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ny + 9.3) * ps + off, (br - 0.1) * ps, (ny + 8.5) * ps + off);
+  ctx.moveTo((bl + 0.1) * ps, at(8.5) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, at(9.3) * ps + off, (br - 0.1) * ps, at(8.5) * ps + off);
   ctx.stroke();
   // Hermelin-Tupfen
   ctx.fillStyle = '#263238';
   for (let i = 0; i < 5; i++) {
     const x = bl + ((br - bl) * (i + 0.5)) / 5;
-    const y = ny + 8.55 + Math.sin(((i + 0.5) / 5) * Math.PI) * 0.55;
+    const y = at(8.55 + Math.sin(((i + 0.5) / 5) * Math.PI) * 0.55);
     ctx.beginPath();
     ctx.ellipse(x * ps, y * ps + off, ps * 0.13, ps * 0.3, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -1246,23 +1255,23 @@ export function drawRoyalCape(
   ctx.strokeStyle = '#FFD700';
   ctx.lineWidth = ps * 0.2;
   ctx.beginPath();
-  ctx.moveTo((cx - 1.1) * ps, (ny + 0.2) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ny + 0.7) * ps + off, (cx + 1.1) * ps, (ny + 0.2) * ps + off);
+  ctx.moveTo((cx - 1.1) * ps, at(0.2) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, at(0.7) * ps + off, (cx + 1.1) * ps, at(0.2) * ps + off);
   ctx.stroke();
   ctx.fillStyle = '#FFD700';
   ctx.beginPath();
-  ctx.arc((cx - 1.15) * ps, (ny + 0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
+  ctx.arc((cx - 1.15) * ps, at(0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc((cx + 1.15) * ps, (ny + 0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
+  ctx.arc((cx + 1.15) * ps, at(0.15) * ps + off, ps * 0.34, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#E53935';
   ctx.beginPath();
-  ctx.arc(cx * ps, (ny + 0.55) * ps + off, ps * 0.24, 0, Math.PI * 2);
+  ctx.arc(cx * ps, at(0.55) * ps + off, ps * 0.24, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.beginPath();
-  ctx.arc((cx - 1.25) * ps, (ny + 0.02) * ps + off, ps * 0.1, 0, Math.PI * 2);
+  ctx.arc((cx - 1.25) * ps, at(0.02) * ps + off, ps * 0.1, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1311,44 +1320,44 @@ export function drawGalaxyCape(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ny = a.neckY;
+  const at = capeY(a);
   const nhw = a.neckHalfWidth;
   const bl = cx - nhw - 1.4;
   const br = cx + nhw + 1.4;
   // Weltraum-Umhang mit gewelltem Saum
   ctx.fillStyle = '#12123E';
   ctx.beginPath();
-  ctx.moveTo((cx - nhw + 0.2) * ps, (ny + 0.4) * ps + off);
-  ctx.quadraticCurveTo((bl - 0.8) * ps, (ny + 4.6) * ps + off, bl * ps, (ny + 8.8) * ps + off);
+  ctx.moveTo((cx - nhw + 0.2) * ps, at(0.4) * ps + off);
+  ctx.quadraticCurveTo((bl - 0.8) * ps, at(4.6) * ps + off, bl * ps, at(8.8) * ps + off);
   const w = (br - bl) / 3;
   for (let i = 0; i < 3; i++) {
     ctx.quadraticCurveTo(
       (bl + w * (i + 0.5)) * ps,
-      (ny + 9.6) * ps + off,
+      at(9.6) * ps + off,
       (bl + w * (i + 1)) * ps,
-      (ny + 8.8) * ps + off
+      at(8.8) * ps + off
     );
   }
   ctx.quadraticCurveTo(
     (br + 0.8) * ps,
-    (ny + 4.6) * ps + off,
+    at(4.6) * ps + off,
     (cx + nhw - 0.2) * ps,
-    (ny + 0.4) * ps + off
+    at(0.4) * ps + off
   );
   ctx.closePath();
   ctx.fill();
   // Nebelschwaden
   ctx.fillStyle = 'rgba(156,39,176,0.3)';
   ctx.beginPath();
-  ctx.ellipse((cx - 1.6) * ps, (ny + 3.6) * ps + off, ps * 1.7, ps * 1, 0.4, 0, Math.PI * 2);
+  ctx.ellipse((cx - 1.6) * ps, at(3.6) * ps + off, ps * 1.7, ps * 1, 0.4, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = 'rgba(33,150,243,0.28)';
   ctx.beginPath();
-  ctx.ellipse((cx + 1.2) * ps, (ny + 5.6) * ps + off, ps * 1.9, ps * 1.1, -0.3, 0, Math.PI * 2);
+  ctx.ellipse((cx + 1.2) * ps, at(5.6) * ps + off, ps * 1.9, ps * 1.1, -0.3, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = 'rgba(224,64,251,0.22)';
   ctx.beginPath();
-  ctx.ellipse((cx - 0.6) * ps, (ny + 7.2) * ps + off, ps * 1.4, ps * 0.9, 0.2, 0, Math.PI * 2);
+  ctx.ellipse((cx - 0.6) * ps, at(7.2) * ps + off, ps * 1.4, ps * 0.9, 0.2, 0, Math.PI * 2);
   ctx.fill();
   // Sterne
   ctx.fillStyle = '#FFFFFF';
@@ -1363,25 +1372,25 @@ export function drawGalaxyCape(
   ];
   for (const [dx, dy, r] of stars) {
     ctx.beginPath();
-    ctx.arc((cx + dx) * ps, (ny + dy) * ps + off, ps * r, 0, Math.PI * 2);
+    ctx.arc((cx + dx) * ps, at(dy) * ps + off, ps * r, 0, Math.PI * 2);
     ctx.fill();
   }
   // Funkelnder Stern
   ctx.strokeStyle = 'rgba(255,255,255,0.8)';
   ctx.lineWidth = ps * 0.08;
   ctx.beginPath();
-  ctx.moveTo((cx - 1) * ps, (ny + 4.6) * ps + off);
-  ctx.lineTo((cx - 1) * ps, (ny + 5.4) * ps + off);
-  ctx.moveTo((cx - 1.4) * ps, (ny + 5) * ps + off);
-  ctx.lineTo((cx - 0.6) * ps, (ny + 5) * ps + off);
+  ctx.moveTo((cx - 1) * ps, at(4.6) * ps + off);
+  ctx.lineTo((cx - 1) * ps, at(5.4) * ps + off);
+  ctx.moveTo((cx - 1.4) * ps, at(5) * ps + off);
+  ctx.lineTo((cx - 0.6) * ps, at(5) * ps + off);
   ctx.stroke();
   // Sternen-Schliesse
   ctx.fillStyle = '#FFF176';
   ctx.beginPath();
-  ctx.moveTo(cx * ps, (ny - 0.4) * ps + off);
-  ctx.lineTo((cx + 0.3) * ps, (ny + 0.15) * ps + off);
-  ctx.lineTo(cx * ps, (ny + 0.7) * ps + off);
-  ctx.lineTo((cx - 0.3) * ps, (ny + 0.15) * ps + off);
+  ctx.moveTo(cx * ps, at(-0.4) * ps + off);
+  ctx.lineTo((cx + 0.3) * ps, at(0.15) * ps + off);
+  ctx.lineTo(cx * ps, at(0.7) * ps + off);
+  ctx.lineTo((cx - 0.3) * ps, at(0.15) * ps + off);
   ctx.closePath();
   ctx.fill();
 }

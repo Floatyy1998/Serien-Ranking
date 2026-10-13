@@ -202,6 +202,8 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4 * s,
+        capeTopY: 17.5 - 6.2 * s * 0.35 + 2.9,
+        capeHemY: 17.5 + 6.2 * s - 0.7,
       };
     case 'rabbit':
       // Kopf r=6*s bei y13.5 (Ohren ragen darüber hinaus)
@@ -267,6 +269,7 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4.5 * s,
+        capeHemY: 17.5 + 7.4 * s - 1.5,
       };
     }
     case 'penguin': {
