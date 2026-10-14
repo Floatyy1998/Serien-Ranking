@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { logBookFinished } from '../../../features/badges/minimalActivityLogger';
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
+import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
 import { showToast, showUndoToast } from '../../../lib/interaction/toast';
@@ -29,10 +30,22 @@ const celebrateFinish = (book: Book, uid: string) => {
 export function useBookActions() {
   const { user } = useAuth() || {};
   const uid = user?.uid;
+  const ownedFor = useOwnedBooks();
+  const mangaFor = useMangaForBook();
 
   const add = useCallback(
     async (result: BookSearchResult, status: BookStatus, options?: AddBookOptions) => {
       if (!uid) return null;
+      const manga = mangaFor(result);
+      if (manga) {
+        showToast(t('„{title}" steht schon bei deinen Manga', { title: manga.title }), 2400);
+        return null;
+      }
+      const owned = ownedFor(result);
+      if (owned) {
+        showToast(t('Schon in deinen Büchern'));
+        return owned;
+      }
       try {
         const book = await addBook(uid, result, status, options);
         hapticSuccess();
@@ -47,7 +60,7 @@ export function useBookActions() {
         return null;
       }
     },
-    [uid]
+    [uid, ownedFor, mangaFor]
   );
 
   const saveProgress = useCallback(

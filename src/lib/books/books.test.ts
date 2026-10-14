@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Book } from '../../types/Book';
 import { eventPages, readingStreak, type CompactBookEvent } from './bookEvents';
-import { bookMatchKey, looksLikeIsbn, pickIsbn13, toIsbn13 } from './bookIdentity';
+import {
+  bookMatchKey,
+  bookTitleKey,
+  findMangaForBook,
+  looksLikeIsbn,
+  pickIsbn13,
+  toIsbn13,
+} from './bookIdentity';
 import { applyPageUpdate, applyStatusChange, progressPercent } from './bookProgress';
 import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
 import { findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
@@ -40,6 +47,37 @@ describe('bookIdentity', () => {
     expect(bookMatchKey('Der Schwarm: Roman', ['Frank Schätzing'])).toBe(
       bookMatchKey('Der Schwarm', ['F. Schätzing'])
     );
+  });
+
+  it('gleicht Bandangaben an, ohne verschiedene Bände zu verschmelzen', () => {
+    expect(bookTitleKey('One Piece, Band 105')).toBe('one piece 105');
+    expect(bookTitleKey('One Piece 105')).toBe('one piece 105');
+    expect(bookTitleKey('One Piece: Bd. 105')).toBe('one piece 105');
+    expect(bookTitleKey('Jujutsu Kaisen – Band 20')).toBe('jujutsu kaisen 20');
+    expect(bookTitleKey('One Piece: Band 104')).not.toBe(bookTitleKey('One Piece 105'));
+    expect(bookTitleKey('Der Schwarm: Roman')).toBe('der schwarm');
+  });
+});
+
+describe('findMangaForBook', () => {
+  const library = [
+    { title: 'One Piece', titleRomaji: 'ONE PIECE' },
+    { title: 'SPY x FAMILY', titleRomaji: 'SPY×FAMILY' },
+    { title: 'Kaiju No. 8', titleRomaji: 'Kaijuu 8-gou' },
+    { title: 'Solo Leveling', titleRomaji: 'Na Honjaman Level Up' },
+  ];
+
+  it('erkennt Manga-Bände der eigenen Reihen', () => {
+    expect(findMangaForBook({ title: 'One Piece 105' }, library)).toBe(library[0]);
+    expect(findMangaForBook({ title: 'One Piece', subtitle: 'Band 3' }, library)).toBe(library[0]);
+    expect(findMangaForBook({ title: 'Spy × Family, Vol. 12' }, library)).toBe(library[1]);
+    expect(findMangaForBook({ title: 'Kaiju No. 8 – Band 10' }, library)).toBe(library[2]);
+  });
+
+  it('lässt Romane, Spin-offs und fremde Reihen in Ruhe', () => {
+    expect(findMangaForBook({ title: 'Solo Leveling – Roman 1' }, library)).toBeUndefined();
+    expect(findMangaForBook({ title: 'One Piece Film Red' }, library)).toBeUndefined();
+    expect(findMangaForBook({ title: 'Der Schwarm' }, library)).toBeUndefined();
   });
 });
 

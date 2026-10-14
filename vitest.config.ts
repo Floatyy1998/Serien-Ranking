@@ -269,6 +269,8 @@ export default defineConfig({
         'src/lib/manga/overview.ts',
         'src/lib/manga/readHistory.ts',
         'src/lib/manga/chapterOperations.ts',
+        'src/lib/manga/mangaSource.ts',
+        'src/lib/manga/mangaUpdatesAdapter.ts',
         'src/lib/watch/movieWatchLog.ts',
         'src/lib/series/watchPosition.ts',
         'src/services/wrapped/manga.ts',

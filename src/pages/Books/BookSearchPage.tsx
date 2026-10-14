@@ -1,16 +1,18 @@
 import { Add, Check, History, UploadFile } from '@mui/icons-material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BackButton, SearchInput } from '../../components/ui';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBooksForYourShows } from '../../hooks/books/useBasedOnBooks';
 import { useBookSearch } from '../../hooks/books/useBookSearch';
-import { bookMatchKey, looksLikeIsbn } from '../../lib/books/bookIdentity';
+import { useMangaForBook, useOwnedBooks } from '../../hooks/books/useOwnedBooks';
+import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Book, BookSearchResult } from '../../types/Book';
+import type { Manga } from '../../types/Manga';
 import { AddBookSheet, type AddChoice } from './components/AddBookSheet';
 import { BookCover } from './components/BookCover';
 import './components/books.css';
@@ -34,9 +36,10 @@ const readRecent = (): string[] => {
 const ResultRow: React.FC<{
   result: BookSearchResult;
   owned?: Book;
+  manga?: Manga;
   onOpen: () => void;
   onAdd: () => void;
-}> = ({ result, owned, onOpen, onAdd }) => {
+}> = ({ result, owned, manga, onOpen, onAdd }) => {
   const { currentTheme } = useTheme();
   const meta = [
     result.authors.slice(0, 2).join(', '),
@@ -72,8 +75,20 @@ const ResultRow: React.FC<{
             {STATUS_LABELS[owned.status]()}
           </span>
         )}
+        {!owned && manga && (
+          <span
+            className="bk-badge"
+            style={{
+              background: `${currentTheme.status.success}22`,
+              color: currentTheme.status.success,
+            }}
+          >
+            <Check style={{ fontSize: 13 }} />
+            {t('Bei deinen Manga')}
+          </span>
+        )}
       </div>
-      {!owned && (
+      {!owned && !manga && (
         <button
           type="button"
           className="bk-add-btn"
@@ -133,23 +148,8 @@ const BookSearchView = () => {
     return () => clearTimeout(timer);
   }, [query, setParams]);
 
-  const ownedByKey = useMemo(() => {
-    const map = new Map<string, Book>();
-    for (const b of allBookList) {
-      map.set(b.id, b);
-      map.set(bookMatchKey(b.title, b.authors), b);
-      if (b.isbn13) map.set(b.isbn13, b);
-    }
-    return map;
-  }, [allBookList]);
-
-  const ownedFor = useCallback(
-    (r: BookSearchResult) =>
-      ownedByKey.get(r.id) ??
-      (r.isbn13 ? ownedByKey.get(r.isbn13) : undefined) ??
-      ownedByKey.get(bookMatchKey(r.title, r.authors)),
-    [ownedByKey]
-  );
+  const ownedFor = useOwnedBooks();
+  const mangaFor = useMangaForBook();
 
   const libraryMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -159,7 +159,7 @@ const BookSearchView = () => {
         (b) =>
           b.title.toLowerCase().includes(q) ||
           b.authors?.some((a) => a.toLowerCase().includes(q)) ||
-          (looksLikeIsbn(q) && b.isbn13 === q.replace(/\D/g, ''))
+          (looksLikeIsbn(q) && !!b.isbn13 && b.isbn13 === toIsbn13(q))
       )
       .slice(0, 6);
   }, [allBookList, query]);
@@ -182,6 +182,11 @@ const BookSearchView = () => {
   const openResult = (result: BookSearchResult) => {
     remember(query);
     const owned = ownedFor(result);
+    const manga = owned ? undefined : mangaFor(result);
+    if (manga) {
+      navigate(`/manga/${manga.anilistId}`);
+      return;
+    }
     navigate(bookPath(owned?.id ?? result.id), owned ? undefined : { state: { result } });
   };
 
@@ -290,6 +295,7 @@ const BookSearchView = () => {
               key={r.id}
               result={r}
               owned={owned}
+              manga={owned ? undefined : mangaFor(r)}
               onOpen={() => openResult(r)}
               onAdd={() => setPending(r)}
             />

@@ -1,3 +1,5 @@
+import type { Manga } from '../../types/Manga';
+
 /** ISBN-10/13 → ISBN-13 ohne Bindestriche, sonst undefined. */
 export function toIsbn13(raw: string | undefined | null): string | undefined {
   if (!raw) return undefined;
@@ -23,24 +25,61 @@ export function looksLikeIsbn(query: string): boolean {
   return /^(\d{9}[\dXx]|\d{13})$/.test(clean);
 }
 
-/** Vergleichsschlüssel für „dieses Buch hast du schon" über Quellen und Ausgaben hinweg. */
-export function bookMatchKey(title: string, authors: string[] | undefined): string {
-  const base = title
+const VOLUME_MARKER = /\b(?:band|bd|vol|volume|tome|tomo|teil|nr)\b\.?\s*(?=\d)/g;
+
+const normalizeBookText = (value: string): string =>
+  value
     .toLowerCase()
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/\(.*?\)|\[.*?\]/g, '')
-    .split(/[:–—]| - /)[0]
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/×/g, ' x ')
+    .replace(/\(.*?\)|\[.*?\]/g, '');
+
+const compactWords = (value: string): string =>
+  value
+    .replace(VOLUME_MARKER, '')
     .replace(/[^a-z0-9ß]+/g, ' ')
     .trim();
-  const author = (authors?.[0] ?? '')
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+
+/** Titel ohne Untertitel, aber mit Bandnummer („X, Band 5", „X: Bd. 5" und „X 5" sind gleich). */
+export function bookTitleKey(title: string): string {
+  const [head, ...rest] = normalizeBookText(title).split(/[:–—]| - /);
+  const volume = compactWords(rest.join(' ')).match(/^(\d{1,4})$/)?.[1];
+  const base = compactWords(head);
+  return volume ? `${base} ${volume}` : base;
+}
+
+/** Vergleichsschlüssel für „dieses Buch hast du schon" über Quellen und Ausgaben hinweg. */
+export function bookMatchKey(title: string, authors: string[] | undefined): string {
+  const author = normalizeBookText(authors?.[0] ?? '')
     .split(/\s+/)
     .filter(Boolean)
     .pop();
-  return `${base}|${author ?? ''}`;
+  return `${bookTitleKey(title)}|${author ?? ''}`;
+}
+
+type MangaTitles = Pick<Manga, 'title' | 'titleEnglish' | 'titleRomaji'>;
+
+/** Ein Manga-Band als Buchtreffer: Reihentitel plus höchstens eine Bandnummer, kein Roman. */
+export function findMangaForBook<T extends MangaTitles>(
+  item: { title: string; subtitle?: string },
+  mangas: T[]
+): T | undefined {
+  const full = compactWords(normalizeBookText(`${item.title} ${item.subtitle ?? ''}`));
+  if (!full || /\b(?:light ?novel|roman)\b/.test(full)) return undefined;
+  const title = compactWords(normalizeBookText(item.title));
+  return mangas.find((manga) =>
+    [manga.title, manga.titleEnglish, manga.titleRomaji].some((name) => {
+      const series = name ? compactWords(normalizeBookText(name)) : '';
+      if (!series) return false;
+      return [title, full].some(
+        (candidate) =>
+          candidate === series ||
+          (candidate.startsWith(`${series} `) &&
+            /^\d{1,4}$/.test(candidate.slice(series.length + 1)))
+      );
+    })
+  );
 }
 
 /** RTDB-tauglicher Schlüssel (keine . # $ [ ] /). */

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf } from '../../../hooks/books/useBookShelf';
-import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
+import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { sanitizeBookKey } from '../../../lib/books/bookIdentity';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
@@ -24,8 +24,14 @@ import './discover.css';
 export function useOpenResult() {
   const navigate = useNavigate();
   const ownedFor = useOwnedBooks();
+  const mangaFor = useMangaForBook();
   return (result: BookSearchResult) => {
     const owned = ownedFor(result);
+    const manga = owned ? undefined : mangaFor(result);
+    if (manga) {
+      navigate(`/manga/${manga.anilistId}`);
+      return;
+    }
     navigate(bookPath(owned?.id ?? result.id), owned ? undefined : { state: { result } });
   };
 }
@@ -62,8 +68,9 @@ export const DiscoverCard: React.FC<{
 }> = ({ result, rank, onAdd }) => {
   const { currentTheme } = useTheme();
   const ownedFor = useOwnedBooks();
+  const mangaFor = useMangaForBook();
   const open = useOpenResult();
-  const owned = ownedFor(result);
+  const owned = ownedFor(result) ?? mangaFor(result);
 
   return (
     <div
