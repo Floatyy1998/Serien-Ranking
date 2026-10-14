@@ -62,6 +62,7 @@ import { PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
+  MangaDetailVolumesPreview,
   MangaHistoryPreview,
   MangaLayoutPreview,
   MangaOverviewPreview,
@@ -238,6 +239,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'splash', label: 'Splash: normal', render: () => <SplashScreen previewSeason={null} /> },
   { id: 'manga', label: 'Manga: Übersicht', render: () => <MangaOverviewPreview /> },
   { id: 'manga-detail', label: 'Manga: Detail', render: () => <MangaDetailOwnedPreview /> },
+  {
+    id: 'manga-detail-volumes',
+    label: 'Manga: Detail in Bänden',
+    render: () => <MangaDetailVolumesPreview />,
+  },
   { id: 'manga-foreign', label: 'Manga: Vorschau', render: () => <MangaDetailForeignPreview /> },
   { id: 'manga-search', label: 'Manga: Suche', render: () => <MangaSearchPreview /> },
   { id: 'manga-layout', label: 'Manga: Layout', render: () => <MangaLayoutPreview /> },

@@ -439,6 +439,40 @@ const dict: Record<string, string> = {
   '{n} Kapitel gelesen': '{n} chapters read',
   'Verlauf wird geladen …': 'Loading history …',
   'Stand nachgetragen: Kap. {n}': 'Progress added: ch. {n}',
+
+  // ─── Manga: Zählweise Bände (Print) ───
+  'Bd. {a} / {b}': 'Vol. {a} / {b}',
+  'Bd. {n}': 'Vol. {n}',
+  '1 Band übrig': '1 volume left',
+  '{n} Bände übrig': '{n} volumes left',
+  '1 Band': '1 volume',
+  'Einen Band zurück': 'Previous volume',
+  'Einen Band weiter': 'Next volume',
+  'Aktueller Band': 'Current volume',
+  'Band {n} gelesen': 'Read volume {n}',
+  Zählweise: 'Count by',
+  'Band {n} gefunden': 'Found volume {n}',
+  'Du zählst hier Kapitel. Mit dem Abhaken zählst du ab jetzt in Bänden.':
+    'You’re counting chapters here. Checking it off switches to volumes from now on.',
+  'Schon gelesen? Dann hak alle Bände bis hierhin ab.':
+    'Already read it? Check off every volume up to this one.',
+  'Bis Band {n} gelesen': 'Read up to vol. {n}',
+  '{a} von {b} gelesen': '{a} of {b} read',
+  'Deine Bände': 'Your volumes',
+  'Band {n} als ungelesen markieren': 'Mark volume {n} as unread',
+  'Bis Band {n} als gelesen markieren': 'Mark as read up to volume {n}',
+  'Band {n} als ungelesen markieren?': 'Mark volume {n} as unread?',
+  'Ab Band {n} als ungelesen markieren?': 'Mark volume {n} and later as unread?',
+  'Alle {n} Bände zeigen': 'Show all {n} volumes',
+  'Von vorn beginnen? Alle Bände gelten dann wieder als ungelesen.':
+    'Start over? All volumes will count as unread again.',
+  '{n} Bd. offen': '{n} vol. left',
+  'Laufend · Wartet auf neue Bände': 'Ongoing · Waiting for new volumes',
+  'Stand nachgetragen: Bd. {n}': 'Progress added: vol. {n}',
+  'Stand: Bd. {n}': 'Progress: vol. {n}',
+  'Bd. {a}–{b}': 'Vol. {a}–{b}',
+  '+{n} Bd.': '+{n} vol.',
+  '{n} Bd.': '{n} vol.',
 };
 
 export default dict;

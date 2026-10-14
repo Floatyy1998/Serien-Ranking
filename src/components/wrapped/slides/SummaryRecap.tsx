@@ -52,8 +52,9 @@ export const SummaryRecap: React.FC<{ stats: WrappedStats }> = ({ stats }) => {
           {
             key: 'manga',
             icon: <AutoStories />,
-            value: number(stats.manga.totalChapters),
-            label: t('Manga-Kapitel'),
+            ...(stats.manga.totalChapters > 0
+              ? { value: number(stats.manga.totalChapters), label: t('Manga-Kapitel') }
+              : { value: number(stats.manga.totalVolumes ?? 0), label: t('Manga-Bände') }),
           },
         ]
       : []),
@@ -128,7 +129,10 @@ export const SummaryRecap: React.FC<{ stats: WrappedStats }> = ({ stats }) => {
             id: m.anilistId,
             title: m.title,
             poster: m.poster,
-            meta: t('{n} Kap.', { n: m.chapters }),
+            meta:
+              m.chapters > 0
+                ? t('{n} Kap.', { n: m.chapters })
+                : t('{n} Bd.', { n: m.volumes ?? 0 }),
           })),
         }
       : {

@@ -112,3 +112,47 @@ describe('buildReadHistory', () => {
     expect(history.days[0].entries[0].reread).toBe(true);
   });
 });
+
+describe('buildReadHistory mit Bänden', () => {
+  const vol = (s: number, v: number, ts: number, extra: Partial<MangaReadEvent> = {}) =>
+    ({ ts, t: 'vol', s, st: `Manga ${s}`, vol: v, ...extra }) as MangaReadEvent;
+
+  it('zählt gelesene Bände getrennt von Kapiteln', () => {
+    const history = buildReadHistory(
+      [vol(1, 2, at(0, 9)), vol(1, 4, at(0, 17), { v0: 3, n: 2 }), ch(2, 10, at(0, 12))],
+      [],
+      NOW,
+      7
+    );
+    expect(history.totalVolumes).toBe(3);
+    expect(history.totalChapters).toBe(1);
+    expect(history.days[0]).toMatchObject({ chapters: 1, volumes: 3 });
+    const entry = history.days[0].entries.find((e) => e.anilistId === 1);
+    expect(entry).toMatchObject({ fromVolume: 2, toVolume: 4, volumes: 3, chapters: 0 });
+  });
+
+  it('zeigt nachgetragene Bände nur als Stand', () => {
+    const history = buildReadHistory([vol(1, 12, at(0, 9), { v0: 1, n: 12 })], [], NOW, 7);
+    expect(history.totalVolumes).toBe(0);
+    expect(history.days[0].entries[0]).toMatchObject({
+      toVolume: 12,
+      volumes: null,
+      volumesImported: true,
+    });
+  });
+
+  it('nimmt Print-Leser ohne Ereignisse mit ihrem Bandstand auf', () => {
+    const lastReadAt = new Date(NOW - 3600_000).toISOString();
+    const history = buildReadHistory(
+      [],
+      [manga({ trackBy: 'volumes', currentVolume: 5, currentChapter: 0, lastReadAt })],
+      NOW,
+      7
+    );
+    expect(history.days[0].entries[0]).toMatchObject({
+      toVolume: 5,
+      volumes: null,
+      toChapter: null,
+    });
+  });
+});

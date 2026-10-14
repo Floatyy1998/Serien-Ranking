@@ -92,6 +92,13 @@ describe('addMangaToList', () => {
     }
   });
 
+  it('führt Manga aus einem gedruckten Band (ISBN) in Bänden', async () => {
+    await addMangaToList('u1', makeResult(), 7, { byVolume: true });
+    expect(lastWrite().value).toMatchObject({ trackBy: 'volumes', currentVolume: 0 });
+    await addMangaToList('u1', makeResult(), 8);
+    expect(lastWrite().value.trackBy).toBeUndefined();
+  });
+
   it('bevorzugt den englischen Titel, fällt sonst auf Romaji zurück', async () => {
     await addMangaToList(
       'u1',

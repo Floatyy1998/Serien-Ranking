@@ -62,11 +62,11 @@ export const MangaVolumePanel: React.FC<Props> = ({
           <div className="bk-muted" style={{ color: currentTheme.text.muted }}>
             {savedAsBook
               ? t(
-                  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.'
+                  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.'
                 )
               : link.owned
                 ? t('Steht schon bei deinen Manga')
-                : t('Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.')}
+                : t('Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.')}
           </div>
         </div>
       </div>

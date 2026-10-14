@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useMangaList } from '../../contexts/MangaListContext';
+import { hasReadProgress, mangaStand, type MangaStand } from '../../lib/manga/progress';
 import { getEffectiveChapterCount } from '../../pages/Manga/mangaUtils';
 import type { Manga } from '../../types/Manga';
 
@@ -10,6 +11,8 @@ export interface ContinueReadingItem {
   /** AniList-Bannerbild — Kino-Banner in den Weiterlesen-Zeilen. */
   bannerImage?: string;
   progress: number;
+  /** Stand in der Zählweise des Manga (Kapitel oder Bände). */
+  stand: MangaStand;
   currentChapter: number;
   totalChapters: number | null;
   currentVolume?: number;
@@ -23,17 +26,15 @@ export interface ContinueReadingItem {
 
 function mangaToContinueReading(manga: Manga): ContinueReadingItem {
   const effectiveTotal = getEffectiveChapterCount(manga);
-  const progress =
-    effectiveTotal && effectiveTotal > 0
-      ? Math.min((manga.currentChapter / effectiveTotal) * 100, 100)
-      : 0;
+  const stand = mangaStand(manga);
 
   return {
     anilistId: manga.anilistId,
     title: manga.title,
     poster: manga.poster,
     bannerImage: manga.bannerImage,
-    progress,
+    progress: stand.percent,
+    stand,
     currentChapter: manga.currentChapter,
     totalChapters: effectiveTotal,
     currentVolume: manga.currentVolume,
@@ -51,7 +52,7 @@ export function useContinueReading(): ContinueReadingItem[] {
 
   return useMemo(() => {
     return mangaList
-      .filter((m) => m.readStatus === 'reading' && m.currentChapter > 0)
+      .filter((m) => m.readStatus === 'reading' && hasReadProgress(m))
       .map(mangaToContinueReading)
       .sort((a, b) => {
         if (!a.lastReadAt && !b.lastReadAt) return 0;

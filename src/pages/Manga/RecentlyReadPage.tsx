@@ -1,4 +1,11 @@
-import { AutoStories, CalendarMonth, History, MenuBook, Replay } from '@mui/icons-material';
+import {
+  AutoStories,
+  CalendarMonth,
+  History,
+  LibraryBooks,
+  MenuBook,
+  Replay,
+} from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState, PageHeader, PageLayout } from '../../components/ui';
@@ -7,6 +14,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useMangaReadEvents } from '../../hooks/manga/useMangaReadEvents';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
+import { volumesLabel } from '../../lib/manga/progress';
 import { buildReadHistory, type ReadHistoryEntry } from '../../lib/manga/readHistory';
 import { dateLocale, t } from '../../services/i18n';
 import './RecentlyReadPage.css';
@@ -47,6 +55,22 @@ function chapterLabel(entry: ReadHistoryEntry): string {
   return entry.toChapter !== null ? t('Kap. {n}', { n: entry.toChapter }) : '';
 }
 
+function volumeLabel(entry: ReadHistoryEntry): string {
+  if (entry.toVolume === null) return '';
+  if (entry.volumes === null) {
+    return entry.volumesImported
+      ? t('Stand nachgetragen: Bd. {n}', { n: entry.toVolume })
+      : t('Stand: Bd. {n}', { n: entry.toVolume });
+  }
+  if (entry.fromVolume !== null && entry.toVolume > entry.fromVolume) {
+    return t('Bd. {a}–{b}', { a: entry.fromVolume, b: entry.toVolume });
+  }
+  return t('Bd. {n}', { n: entry.toVolume });
+}
+
+const progressLabel = (entry: ReadHistoryEntry): string =>
+  [chapterLabel(entry), volumeLabel(entry)].filter(Boolean).join(' · ');
+
 export const RecentlyReadPage = () => {
   const { currentTheme } = useTheme();
   const { mangaList, hiddenMangaList } = useMangaList();
@@ -67,6 +91,9 @@ export const RecentlyReadPage = () => {
   const summary = [
     ...(history.totalChapters > 0
       ? [{ key: 'chapters', icon: <MenuBook />, value: history.totalChapters, label: t('Kapitel') }]
+      : []),
+    ...(history.totalVolumes > 0
+      ? [{ key: 'volumes', icon: <LibraryBooks />, value: history.totalVolumes, label: t('Bände') }]
       : []),
     { key: 'days', icon: <CalendarMonth />, value: history.activeDays, label: t('Lesetage') },
     { key: 'manga', icon: <AutoStories />, value: history.mangaCount, label: 'Manga' },
@@ -131,9 +158,18 @@ export const RecentlyReadPage = () => {
               <section key={day.key} className="rr-day">
                 <header className="rr-day-head">
                   <h2 className="rr-day-title">{formatDay(day.date, now)}</h2>
-                  {day.chapters > 0 && (
+                  {(day.chapters > 0 || day.volumes > 0) && (
                     <span className="rr-day-count">
-                      {day.chapters === 1 ? t('1 Kapitel') : t('{n} Kapitel', { n: day.chapters })}
+                      {[
+                        day.chapters === 1
+                          ? t('1 Kapitel')
+                          : day.chapters > 1
+                            ? t('{n} Kapitel', { n: day.chapters })
+                            : '',
+                        day.volumes > 0 ? volumesLabel(day.volumes) : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </span>
                   )}
                 </header>
@@ -163,7 +199,9 @@ export const RecentlyReadPage = () => {
                       <div className="rr-entry-body">
                         <div className="rr-entry-title">{entry.title}</div>
                         <div className="rr-entry-meta">
-                          <span style={{ color: currentTheme.primary }}>{chapterLabel(entry)}</span>
+                          <span style={{ color: currentTheme.primary }}>
+                            {progressLabel(entry)}
+                          </span>
                           {entry.reread && (
                             <span className="rr-entry-reread">
                               <Replay style={{ fontSize: 12 }} />
@@ -178,9 +216,13 @@ export const RecentlyReadPage = () => {
                           })}
                         </div>
                       </div>
-                      {entry.chapters !== null && entry.chapters > 0 && (
+                      {entry.chapters !== null && entry.chapters > 0 ? (
                         <span className="rr-entry-count">+{entry.chapters}</span>
-                      )}
+                      ) : entry.volumes !== null && entry.volumes > 0 ? (
+                        <span className="rr-entry-count">
+                          {t('+{n} Bd.', { n: entry.volumes })}
+                        </span>
+                      ) : null}
                     </div>
                   ))}
                 </div>

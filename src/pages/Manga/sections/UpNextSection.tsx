@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { getUpNext, mangaTotalChapters } from '../../../lib/manga/overview';
+import { getUpNext } from '../../../lib/manga/overview';
+import { mangaStand, volumesLabel } from '../../../lib/manga/progress';
 import { t } from '../../../services/i18n';
 import { MangaPosterCard } from '../components/MangaPosterCard';
 import { MangaPosterRow } from '../components/MangaPosterRow';
@@ -25,7 +26,7 @@ export const UpNextSection: React.FC = React.memo(() => {
       onSeeAll={() => navigate('/manga/reading-list')}
     >
       {planned.map((manga) => {
-        const total = mangaTotalChapters(manga);
+        const { unit, total } = mangaStand(manga);
         return (
           <MangaPosterCard
             key={manga.anilistId}
@@ -34,7 +35,13 @@ export const UpNextSection: React.FC = React.memo(() => {
             format={manga.format}
             countryOfOrigin={manga.countryOfOrigin}
             score={manga.averageScore ? (manga.averageScore / 10).toFixed(1) : undefined}
-            meta={total > 0 ? t('{n} Kapitel', { n: total }) : manga.genres?.[0]}
+            meta={
+              total > 0
+                ? unit === 'volume'
+                  ? volumesLabel(total)
+                  : t('{n} Kapitel', { n: total })
+                : manga.genres?.[0]
+            }
             onClick={() => navigate(`/manga/${manga.anilistId}`)}
           />
         );

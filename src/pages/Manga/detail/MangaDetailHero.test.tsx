@@ -39,11 +39,13 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
 
 const owned = (over: Partial<MangaHeroProgress> = {}): MangaHeroProgress => ({
   manga: makeManga(),
-  editChapter: 100,
-  effectiveChapters: 327,
+  unit: 'chapter',
+  value: 100,
+  total: 327,
   progress: 30,
   userRating: 0,
-  onChapterChange: vi.fn(),
+  onValueChange: vi.fn(),
+  onUnitChange: vi.fn(),
   onRate: vi.fn(),
   ...over,
 });
@@ -70,21 +72,56 @@ describe('MangaDetailHero', () => {
   });
 
   it('zählt Kapitel über Stepper und Hauptknopf hoch und runter', () => {
-    const onChapterChange = vi.fn<(next: number) => void>();
+    const onValueChange = vi.fn<(next: number) => void>();
     render(
       <MangaDetailHero
         data={buildHeroData(123, makeManga(), null)}
         currentTheme={theme}
         isMobile
-        owned={owned({ onChapterChange })}
+        owned={owned({ onValueChange })}
       />
     );
     fireEvent.click(screen.getByLabelText('Ein Kapitel zurück'));
     fireEvent.click(screen.getByLabelText('Ein Kapitel weiter'));
     fireEvent.click(screen.getByText('Kapitel 101 gelesen'));
-    expect(onChapterChange).toHaveBeenCalledWith(99);
-    expect(onChapterChange).toHaveBeenNthCalledWith(2, 101);
-    expect(onChapterChange).toHaveBeenNthCalledWith(3, 101);
+    expect(onValueChange).toHaveBeenCalledWith(99);
+    expect(onValueChange).toHaveBeenNthCalledWith(2, 101);
+    expect(onValueChange).toHaveBeenNthCalledWith(3, 101);
+  });
+
+  it('zählt in Bänden, wenn der Manga gedruckt gelesen wird', () => {
+    const onValueChange = vi.fn<(next: number) => void>();
+    render(
+      <MangaDetailHero
+        data={buildHeroData(123, makeManga(), null)}
+        currentTheme={theme}
+        isMobile
+        owned={owned({ unit: 'volume', value: 2, total: 37, onValueChange })}
+      />
+    );
+    expect(screen.getByText('/ 37')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Band 3 gelesen'));
+    fireEvent.click(screen.getByLabelText('Einen Band zurück'));
+    expect(onValueChange).toHaveBeenNthCalledWith(1, 3);
+    expect(onValueChange).toHaveBeenNthCalledWith(2, 1);
+    expect(screen.queryByText(/Kapitel \d+ gelesen/)).not.toBeInTheDocument();
+  });
+
+  it('schaltet die Zählweise zwischen Kapiteln und Bänden um', () => {
+    const onUnitChange = vi.fn();
+    render(
+      <MangaDetailHero
+        data={buildHeroData(123, makeManga(), null)}
+        currentTheme={theme}
+        isMobile={false}
+        owned={owned({ onUnitChange })}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Kapitel' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Kapitel' }));
+    expect(onUnitChange).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Bände' }));
+    expect(onUnitChange).toHaveBeenCalledWith('volume');
   });
 
   it('meldet abgeschlossene Lektüre statt eines weiteren Kapitels', () => {
@@ -93,7 +130,7 @@ describe('MangaDetailHero', () => {
         data={buildHeroData(123, makeManga(), null)}
         currentTheme={theme}
         isMobile={false}
-        owned={owned({ editChapter: 327 })}
+        owned={owned({ value: 327 })}
       />
     );
     expect(screen.getByText('Alles gelesen')).toBeInTheDocument();

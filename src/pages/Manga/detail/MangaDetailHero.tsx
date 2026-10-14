@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BackButton } from '../../../components/ui';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { mangaSourceLink } from '../../../lib/manga/mangaSource';
+import type { MangaUnit } from '../../../lib/manga/progress';
 import { tapScale } from '../../../lib/motion';
 import { dateLocale, t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
@@ -13,12 +14,15 @@ import type { MangaHeroData } from './mangaDetailData';
 
 export interface MangaHeroProgress {
   manga: Manga;
-  editChapter: number;
-  effectiveChapters: number | null;
+  /** Zählweise des Stands: Kapitel oder Bände. */
+  unit: MangaUnit;
+  value: number;
+  total: number | null;
   progress: number;
   userRating: number;
   nextChapterDate?: string | null;
-  onChapterChange: (next: number) => void;
+  onValueChange: (next: number) => void;
+  onUnitChange: (unit: MangaUnit) => void;
   onRate: () => void;
 }
 
@@ -72,59 +76,102 @@ const ProgressRing = ({ percent }: { percent: number }) => {
   );
 };
 
-const ChapterStepper = ({
-  editChapter,
-  effectiveChapters,
-  onChapterChange,
-}: Pick<MangaHeroProgress, 'editChapter' | 'effectiveChapters' | 'onChapterChange'>) => (
-  <div className="mdh-stepper">
-    <button
-      type="button"
-      onClick={() => onChapterChange(editChapter - 1)}
-      className="mdh-step-btn"
-      aria-label={t('Ein Kapitel zurück')}
-      disabled={editChapter <= 0}
-    >
-      <Remove style={{ fontSize: 20 }} />
-    </button>
-    <div className="mdh-step-value">
-      <span className="mdh-step-caption">{t('Kapitel')}</span>
-      <input
-        type="text"
-        inputMode="numeric"
-        aria-label={t('Aktuelles Kapitel')}
-        defaultValue={editChapter}
-        key={editChapter}
-        onFocus={(e) => e.target.select()}
-        onBlur={(e) => {
-          const v = parseInt(e.target.value, 10);
-          if (!isNaN(v) && v >= 0) {
-            const clamped = effectiveChapters ? Math.min(v, effectiveChapters) : v;
-            if (clamped !== editChapter) onChapterChange(clamped);
-            e.target.value = String(clamped);
-          } else {
-            e.target.value = String(editChapter);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-        }}
-        className="mdh-step-input manga-hero-chapter-input"
-        style={{ width: `${Math.max(String(editChapter).length, 1) * 0.68 + 0.4}em` }}
-      />
-      {effectiveChapters ? <span className="mdh-step-total">/ {effectiveChapters}</span> : null}
-    </div>
-    <button
-      type="button"
-      onClick={() => onChapterChange(editChapter + 1)}
-      className="mdh-step-btn"
-      aria-label={t('Ein Kapitel weiter')}
-      disabled={!!effectiveChapters && editChapter >= effectiveChapters}
-    >
-      <Add style={{ fontSize: 20 }} />
-    </button>
+const unitText = (unit: MangaUnit) =>
+  unit === 'volume'
+    ? {
+        back: t('Einen Band zurück'),
+        forward: t('Einen Band weiter'),
+        current: t('Aktueller Band'),
+        next: (n: number) => t('Band {n} gelesen', { n }),
+      }
+    : {
+        back: t('Ein Kapitel zurück'),
+        forward: t('Ein Kapitel weiter'),
+        current: t('Aktuelles Kapitel'),
+        next: (n: number) => t('Kapitel {n} gelesen', { n }),
+      };
+
+const UnitSwitch = ({ unit, onUnitChange }: Pick<MangaHeroProgress, 'unit' | 'onUnitChange'>) => (
+  <div className="mdh-unit" role="group" aria-label={t('Zählweise')}>
+    {(
+      [
+        ['chapter', t('Kapitel')],
+        ['volume', t('Bände')],
+      ] as const
+    ).map(([value, label]) => (
+      <button
+        key={value}
+        type="button"
+        className={`mdh-unit-btn ${unit === value ? 'mdh-unit-btn--active' : ''}`}
+        aria-pressed={unit === value}
+        onClick={() => unit !== value && onUnitChange(value)}
+      >
+        {label}
+      </button>
+    ))}
   </div>
 );
+
+const Stepper = ({
+  unit,
+  value,
+  total,
+  onValueChange,
+  onUnitChange,
+}: Pick<MangaHeroProgress, 'unit' | 'value' | 'total' | 'onValueChange' | 'onUnitChange'>) => {
+  const text = unitText(unit);
+  return (
+    <div className="mdh-stepper">
+      <button
+        type="button"
+        onClick={() => onValueChange(value - 1)}
+        className="mdh-step-btn"
+        aria-label={text.back}
+        disabled={value <= 0}
+      >
+        <Remove style={{ fontSize: 20 }} />
+      </button>
+      <div className="mdh-step-value">
+        <UnitSwitch unit={unit} onUnitChange={onUnitChange} />
+        <div className="mdh-step-num">
+          <input
+            type="text"
+            inputMode="numeric"
+            aria-label={text.current}
+            defaultValue={value}
+            key={`${unit}-${value}`}
+            onFocus={(e) => e.target.select()}
+            onBlur={(e) => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && v >= 0) {
+                const clamped = total ? Math.min(v, total) : v;
+                if (clamped !== value) onValueChange(clamped);
+                e.target.value = String(clamped);
+              } else {
+                e.target.value = String(value);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+            }}
+            className="mdh-step-input manga-hero-chapter-input"
+            style={{ width: `${Math.max(String(value).length, 1) * 0.68 + 0.4}em` }}
+          />
+          {total ? <span className="mdh-step-total">/ {total}</span> : null}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onValueChange(value + 1)}
+        className="mdh-step-btn"
+        aria-label={text.forward}
+        disabled={!!total && value >= total}
+      >
+        <Add style={{ fontSize: 20 }} />
+      </button>
+    </div>
+  );
+};
 
 export const MangaDetailHero = ({
   data,
@@ -144,12 +191,12 @@ export const MangaDetailHero = ({
     data.authors.join(' & '),
   ].filter(Boolean);
 
-  const caughtUp = !!owned?.effectiveChapters && owned.editChapter >= owned.effectiveChapters;
-  const unread = owned?.effectiveChapters
-    ? Math.max(0, owned.effectiveChapters - owned.editChapter)
-    : null;
+  const caughtUp = !!owned?.total && owned.value >= owned.total;
+  const unread = owned?.total ? Math.max(0, owned.total - owned.value) : null;
   const nextLabel =
-    owned?.nextChapterDate && new Date(owned.nextChapterDate) > new Date()
+    owned?.unit === 'chapter' &&
+    owned.nextChapterDate &&
+    new Date(owned.nextChapterDate) > new Date()
       ? new Date(owned.nextChapterDate).toLocaleDateString(dateLocale(), {
           day: 'numeric',
           month: 'short',
@@ -162,7 +209,7 @@ export const MangaDetailHero = ({
       whileTap={tapScale}
       className="mdh-cta"
       disabled={caughtUp}
-      onClick={() => owned.onChapterChange(owned.editChapter + 1)}
+      onClick={() => owned.onValueChange(owned.value + 1)}
       style={{
         background: caughtUp
           ? 'var(--glass-medium)'
@@ -175,7 +222,7 @@ export const MangaDetailHero = ({
         ? isOngoingPublication(owned.manga.status)
           ? t('Auf dem neuesten Stand')
           : t('Alles gelesen')
-        : t('Kapitel {n} gelesen', { n: owned.editChapter + 1 })}
+        : unitText(owned.unit).next(owned.value + 1)}
     </motion.button>
   ) : (
     <motion.button
@@ -273,10 +320,12 @@ export const MangaDetailHero = ({
           {owned && (
             <div className="mdh-band liquid-glass">
               <ProgressRing percent={owned.progress} />
-              <ChapterStepper
-                editChapter={owned.editChapter}
-                effectiveChapters={owned.effectiveChapters}
-                onChapterChange={owned.onChapterChange}
+              <Stepper
+                unit={owned.unit}
+                value={owned.value}
+                total={owned.total}
+                onValueChange={owned.onValueChange}
+                onUnitChange={owned.onUnitChange}
               />
               <div className="mdh-pods">
                 {unread !== null && (

@@ -71,7 +71,7 @@ export function useBookActions() {
       const title = hit.manga.title.english || hit.manga.title.romaji;
       if (allMangaList.some((m) => m.anilistId === hit.manga.id)) {
         showToast(t('„{title}" steht schon bei deinen Manga', { title }), 2400);
-      } else if (await addManga(hit.manga)) {
+      } else if (await addManga(hit.manga, { byVolume: true })) {
         hapticSuccess();
         showToast(t('„{title}“ ist ein Manga – bei deinen Manga gespeichert', { title }), 2600);
       } else {

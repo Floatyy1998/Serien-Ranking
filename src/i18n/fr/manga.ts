@@ -407,6 +407,39 @@ const dict: Record<string, string> = {
   '{n} Kapitel gelesen': '{n} chapitres lus',
   'Verlauf wird geladen …': 'Chargement de l’historique …',
   'Stand nachgetragen: Kap. {n}': 'Progression ajoutée : ch. {n}',
+
+  // ─── Manga: Zählweise Bände (Print) ───
+  'Bd. {a} / {b}': 'T. {a} / {b}',
+  'Bd. {n}': 'T. {n}',
+  '1 Band übrig': '1 tome restant',
+  '{n} Bände übrig': '{n} tomes restants',
+  '1 Band': '1 tome',
+  'Einen Band zurück': 'Tome précédent',
+  'Einen Band weiter': 'Tome suivant',
+  'Aktueller Band': 'Tome actuel',
+  'Band {n} gelesen': 'Tome {n} lu',
+  Zählweise: 'Compter par',
+  'Band {n} gefunden': 'Tome {n} trouvé',
+  'Du zählst hier Kapitel. Mit dem Abhaken zählst du ab jetzt in Bänden.':
+    'Ici, tu comptes en chapitres. En le cochant, tu passes au comptage par tomes.',
+  'Schon gelesen? Dann hak alle Bände bis hierhin ab.': 'Déjà lu ? Coche tous les tomes jusqu’ici.',
+  'Bis Band {n} gelesen': 'Lu jusqu’au tome {n}',
+  '{a} von {b} gelesen': '{a} sur {b} lus',
+  'Deine Bände': 'Tes tomes',
+  'Band {n} als ungelesen markieren': 'Marquer le tome {n} comme non lu',
+  'Bis Band {n} als gelesen markieren': "Marquer comme lu jusqu'au tome {n}",
+  'Band {n} als ungelesen markieren?': 'Marquer le tome {n} comme non lu ?',
+  'Ab Band {n} als ungelesen markieren?': 'Marquer comme non lus les tomes à partir du {n} ?',
+  'Alle {n} Bände zeigen': 'Afficher les {n} tomes',
+  'Von vorn beginnen? Alle Bände gelten dann wieder als ungelesen.':
+    'Recommencer ? Tous les tomes redeviennent non lus.',
+  '{n} Bd. offen': '{n} t. restants',
+  'Laufend · Wartet auf neue Bände': 'En cours · En attente de nouveaux tomes',
+  'Stand nachgetragen: Bd. {n}': 'Progression ajoutée : t. {n}',
+  'Stand: Bd. {n}': 'Progression : t. {n}',
+  'Bd. {a}–{b}': 'T. {a}–{b}',
+  '+{n} Bd.': '+{n} t.',
+  '{n} Bd.': '{n} t.',
 };
 
 export default dict;

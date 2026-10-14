@@ -11,9 +11,9 @@ import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useContinueReading } from '../../../hooks/manga/useContinueReading';
-import { logChapterRead } from '../../../services/discussion/readActivityService';
-import { getDisplayFormat, getEffectiveChapterCount, shouldAutoComplete } from '../mangaUtils';
-import { dbRef, paths } from '../../../services/db/ref';
+import { mangaRemainingLabel, standLabel } from '../../../lib/manga/progress';
+import { getDisplayFormat } from '../mangaUtils';
+import { saveReadProgress } from '../saveReadProgress';
 import { t } from '../../../services/i18n';
 
 function formatLastRead(dateStr: string): string {
@@ -51,11 +51,11 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
         if (!user) return;
         const manga = mangaList.find((m) => m.anilistId === item.anilistId);
         if (!manga) return;
-        // Nie ueber das letzte erschienene Kapitel hinaus abhaken.
-        if (item.totalChapters && item.currentChapter >= item.totalChapters) return;
+        // Nie ueber das letzte erschienene Kapitel (bzw. den letzten Band) hinaus abhaken.
+        const { stand } = item;
+        if (stand.total && stand.current >= stand.total) return;
 
         const key = String(item.anilistId);
-        const newChapter = item.currentChapter + 1;
 
         // 1. Brief completing flash, then immediately update Firebase
         // Unlike series (where episode disappears), manga stays in list with updated chapter
@@ -70,22 +70,11 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
         }, 250);
 
         // 2. Firebase update - realtime listener will refresh the data instantly
-        const updates: Record<string, unknown> = {
-          currentChapter: newChapter,
-          lastReadAt: new Date().toISOString(),
-        };
-        if (manga.readStatus === 'planned') {
-          updates.readStatus = 'reading';
-          if (!manga.startedAt) updates.startedAt = new Date().toISOString();
-        }
-        const effectiveTotal = getEffectiveChapterCount(manga);
-        if (shouldAutoComplete(manga, effectiveTotal, manga.currentChapter, newChapter)) {
-          updates.readStatus = 'completed';
-          updates.completedAt = new Date().toISOString();
-        }
-
-        await dbRef(paths.mangaItem(user.uid, item.anilistId)).update(updates);
-        await logChapterRead(user.uid, manga, newChapter, item.currentChapter);
+        await saveReadProgress(user.uid, manga, {
+          next: stand.current + 1,
+          previous: stand.current,
+          total: stand.total || null,
+        });
       },
       [user, mangaList]
     );
@@ -115,8 +104,8 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
           <AnimatePresence mode="popLayout">
             {items.slice(0, 6).map((item) => {
               const key = String(item.anilistId);
-              const effectiveTotal = item.totalChapters;
-              const isCaughtUp = !!effectiveTotal && item.currentChapter >= effectiveTotal;
+              const { stand } = item;
+              const isCaughtUp = stand.total > 0 && stand.current >= stand.total;
               const format = getDisplayFormat(item.countryOfOrigin, item.format);
 
               return (
@@ -173,10 +162,9 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {t('Kap.')} {item.currentChapter}
-                        {effectiveTotal ? ` / ${effectiveTotal}` : ''}
-                        {effectiveTotal && item.currentChapter < effectiveTotal
-                          ? ` · ${t('{n} übrig', { n: effectiveTotal - item.currentChapter })}`
+                        {standLabel(stand)}
+                        {stand.remaining > 0
+                          ? ` · ${mangaRemainingLabel(stand)}`
                           : ` · ${isCaughtUp ? t('Aktuell') : format}`}
                       </p>
                       <p

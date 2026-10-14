@@ -10,17 +10,22 @@ export interface TopMangaEntry {
   anilistId: number;
   title: string;
   chapters: number;
+  /** Gelesene Bände (Zählweise Bände). */
+  volumes?: number;
   rating?: number;
   poster?: string;
 }
 
 export interface MangaWrappedStats {
   totalChapters: number;
+  /** Gelesene Bände der Print-Leser — zählen getrennt von Kapiteln. */
+  totalVolumes?: number;
   uniqueManga: number;
   topManga: TopMangaEntry[];
-  /** Monat 0–11 mit den meisten gelesenen Kapiteln. */
+  /** Monat 0–11 mit den meisten gelesenen Kapiteln (ohne Kapitel: Bänden). */
   mostReadMonth: number;
   mostReadMonthChapters: number;
+  mostReadMonthVolumes?: number;
 }
 
 export interface TopBookEntry {

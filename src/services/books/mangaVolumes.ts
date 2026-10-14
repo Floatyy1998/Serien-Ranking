@@ -162,5 +162,9 @@ export async function findMangaByIsbn(isbn: string): Promise<MangaSearchOutcome>
   const book = books[0];
   const hit = book ? hits[book.id] : undefined;
   if (!book || !hit) return { results: [], aliases: {} };
-  return { results: [hit.manga], aliases: { [hit.manga.id]: book.title } };
+  return {
+    results: [hit.manga],
+    aliases: { [hit.manga.id]: book.title },
+    volumes: { [hit.manga.id]: hit.volume ?? 0 },
+  };
 }

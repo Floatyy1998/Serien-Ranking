@@ -17,3 +17,7 @@ export const mangaSourceLink = (id: number): MangaSourceLink =>
         url: `https://www.mangaupdates.com/series/${toMangaUpdatesSeriesId(id).toString(36)}`,
       }
     : { label: 'AniList', url: `https://anilist.co/manga/${id}` };
+
+/** Manga-Seite; mit dem Band aus der ISBN-Suche bietet sie „Bis Band N gelesen" an. */
+export const mangaPath = (id: number, volume?: number): string =>
+  volume && volume > 0 ? `/manga/${id}?band=${volume}` : `/manga/${id}`;

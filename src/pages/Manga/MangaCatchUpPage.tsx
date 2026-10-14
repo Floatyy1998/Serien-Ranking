@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
+import { mangaUnit } from '../../lib/manga/progress';
 import { getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -32,7 +33,13 @@ export const MangaCatchUpPage = () => {
 
     for (const manga of mangaList) {
       const total = getEffectiveChapterCount(manga);
-      if (manga.readStatus === 'reading' && total && total > 0 && manga.currentChapter < total) {
+      if (
+        manga.readStatus === 'reading' &&
+        mangaUnit(manga) === 'chapter' &&
+        total &&
+        total > 0 &&
+        manga.currentChapter < total
+      ) {
         data.push({
           manga,
           remainingChapters: total - manga.currentChapter,

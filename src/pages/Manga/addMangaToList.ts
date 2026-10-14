@@ -11,10 +11,16 @@ import { logReadingActivity } from '../../features/badges/minimalActivityLogger'
  * Holt automatisch die aktuelle Kapitelzahl von MangaUpdates für laufende Manga.
  * WICHTIG: Keine undefined Werte - Firebase wirft sonst einen Error.
  */
+export interface AddMangaOptions {
+  /** Kommt von einem gedruckten Band (ISBN/Buchsuche) — Stand in Bänden führen. */
+  byVolume?: boolean;
+}
+
 export async function addMangaToList(
   userId: string,
   searchResult: AniListMangaSearchResult,
-  nextNmr: number
+  nextNmr: number,
+  options: AddMangaOptions = {}
 ): Promise<void> {
   const result = isMangaUpdatesId(searchResult.id)
     ? await getMangaDetails(searchResult.id).catch(() => searchResult)
@@ -51,6 +57,10 @@ export async function addMangaToList(
   if (result.title.english) manga.titleEnglish = result.title.english;
   if (result.bannerImage) manga.bannerImage = result.bannerImage;
   if (result.description) manga.description = result.description;
+  if (options.byVolume) {
+    manga.trackBy = 'volumes';
+    manga.currentVolume = 0;
+  }
 
   // Fuer laufende und Hiatus-Manga MangaUpdates abfragen — AniList's chapters-
   // Feld ist bei vielen ongoing/hiatus Serien veraltet (z.B. Vagabond meldet 2

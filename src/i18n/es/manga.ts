@@ -406,6 +406,40 @@ const dict: Record<string, string> = {
   '{n} Kapitel gelesen': '{n} capítulos leídos',
   'Verlauf wird geladen …': 'Cargando historial …',
   'Stand nachgetragen: Kap. {n}': 'Progreso añadido: cap. {n}',
+
+  // ─── Manga: Zählweise Bände (Print) ───
+  'Bd. {a} / {b}': 'T. {a} / {b}',
+  'Bd. {n}': 'T. {n}',
+  '1 Band übrig': 'Queda 1 tomo',
+  '{n} Bände übrig': 'Quedan {n} tomos',
+  '1 Band': '1 tomo',
+  'Einen Band zurück': 'Tomo anterior',
+  'Einen Band weiter': 'Tomo siguiente',
+  'Aktueller Band': 'Tomo actual',
+  'Band {n} gelesen': 'Tomo {n} leído',
+  Zählweise: 'Contar por',
+  'Band {n} gefunden': 'Tomo {n} encontrado',
+  'Du zählst hier Kapitel. Mit dem Abhaken zählst du ab jetzt in Bänden.':
+    'Aquí cuentas capítulos. Al marcarlo, pasas a contar por tomos.',
+  'Schon gelesen? Dann hak alle Bände bis hierhin ab.':
+    '¿Ya lo leíste? Marca todos los tomos hasta aquí.',
+  'Bis Band {n} gelesen': 'Leído hasta el tomo {n}',
+  '{a} von {b} gelesen': '{a} de {b} leídos',
+  'Deine Bände': 'Tus tomos',
+  'Band {n} als ungelesen markieren': 'Marcar el tomo {n} como no leído',
+  'Bis Band {n} als gelesen markieren': 'Marcar como leído hasta el tomo {n}',
+  'Band {n} als ungelesen markieren?': '¿Marcar el tomo {n} como no leído?',
+  'Ab Band {n} als ungelesen markieren?': '¿Marcar como no leídos los tomos desde el {n}?',
+  'Alle {n} Bände zeigen': 'Mostrar los {n} tomos',
+  'Von vorn beginnen? Alle Bände gelten dann wieder als ungelesen.':
+    '¿Empezar de nuevo? Todos los tomos volverán a contar como no leídos.',
+  '{n} Bd. offen': '{n} t. pendientes',
+  'Laufend · Wartet auf neue Bände': 'En publicación · Esperando nuevos tomos',
+  'Stand nachgetragen: Bd. {n}': 'Progreso añadido: t. {n}',
+  'Stand: Bd. {n}': 'Progreso: t. {n}',
+  'Bd. {a}–{b}': 'T. {a}–{b}',
+  '+{n} Bd.': '+{n} t.',
+  '{n} Bd.': '{n} t.',
 };
 
 export default dict;

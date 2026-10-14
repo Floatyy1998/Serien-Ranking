@@ -78,7 +78,7 @@ const navigate = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
 function makeItem(overrides: Partial<ContinueReadingItem> = {}): ContinueReadingItem {
-  return {
+  const item = {
     anilistId: 1,
     title: 'One Piece',
     poster: 'p.jpg',
@@ -89,6 +89,17 @@ function makeItem(overrides: Partial<ContinueReadingItem> = {}): ContinueReading
     format: 'MANGA',
     countryOfOrigin: 'JP',
     ...overrides,
+  };
+  const total = item.totalChapters ?? 0;
+  return {
+    stand: {
+      unit: 'chapter',
+      current: item.currentChapter,
+      total,
+      remaining: Math.max(0, total - item.currentChapter),
+      percent: item.progress,
+    },
+    ...item,
   };
 }
 
@@ -111,6 +122,21 @@ describe('ContinueReadingSection', () => {
     expect(screen.getByText('Weiterlesen')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'One Piece' })).toBeInTheDocument();
     expect(screen.getByText(/Kap\. 500/)).toBeInTheDocument();
+  });
+
+  it('zeigt Print-Leser mit Bandstand statt Kapiteln', () => {
+    crState.items = [
+      makeItem({
+        anilistId: 9,
+        title: 'Dead Mount Death Play',
+        currentChapter: 0,
+        stand: { unit: 'volume', current: 3, total: 16, remaining: 13, percent: 19 },
+      }),
+    ];
+    render(<ContinueReadingSection />);
+    expect(screen.getByText(/Bd\. 3 \/ 16/)).toBeInTheDocument();
+    expect(screen.getByText(/13 Bände übrig/)).toBeInTheDocument();
+    expect(screen.queryByText(/Kap\./)).not.toBeInTheDocument();
   });
 
   it('navigiert zur Detailseite beim Poster-Klick', () => {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { progressPercent } from '../../lib/books/bookProgress';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
-import { mangaTotalChapters } from '../../lib/manga/overview';
+import { mangaStand, mangaStandLabel } from '../../lib/manga/progress';
 import { t } from '../../services/i18n';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
@@ -46,17 +46,14 @@ export const FriendReadingSection = memo(function FriendReadingSection({
   const reading = useMemo(() => {
     const entries: ReadingEntry[] = [];
     for (const m of manga) {
-      if (m.readStatus !== 'reading' || (m.currentChapter || 0) <= 0) continue;
-      const total = mangaTotalChapters(m);
+      const stand = mangaStand(m);
+      if (m.readStatus !== 'reading' || stand.current <= 0) continue;
       entries.push({
         key: `m-${m.anilistId}`,
         title: m.title,
         poster: m.poster,
-        progressText:
-          total > 0
-            ? t('Kap. {a} / {b}', { a: m.currentChapter, b: total })
-            : t('Kap. {n}', { n: m.currentChapter }),
-        progress: total > 0 ? Math.min(100, (m.currentChapter / total) * 100) : 0,
+        progressText: mangaStandLabel(m),
+        progress: stand.percent,
         lastAt: m.lastReadAt || m.addedAt,
         open: () => navigate(`/manga/${m.anilistId}`),
         shared: ownIds.has(m.anilistId),

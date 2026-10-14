@@ -23,11 +23,8 @@ import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { progressPercent as bookProgressPercent, pagesReadOf } from '../../lib/books/bookProgress';
 import { addBookCopy } from '../../services/books/bookService';
 import { showToast } from '../../lib/interaction/toast';
-import {
-  mangaProgressPercent,
-  mangaTotalChapters,
-  userMangaRating,
-} from '../../lib/manga/overview';
+import { mangaProgressPercent, userMangaRating } from '../../lib/manga/overview';
+import { mangaStandLabel } from '../../lib/manga/progress';
 import { getMangaDetails } from '../../services/api/mangaDetails';
 import { addMangaToList } from '../Manga/addMangaToList';
 import { furthestWatchedPosition } from '../../lib/series/watchPosition';
@@ -891,18 +888,11 @@ export const FriendProfilePage = memo(() => {
                 >
                   {mangaItems.map((manga, index) => {
                     const progress = mangaProgressPercent(manga);
-                    const total = mangaTotalChapters(manga);
                     return (
                       <ProfileItemCard
                         key={manga.anilistId}
                         mediaType="none"
-                        statusText={
-                          manga.currentChapter > 0
-                            ? total > 0
-                              ? t('Kap. {a} / {b}', { a: manga.currentChapter, b: total })
-                              : t('Kap. {n}', { n: manga.currentChapter })
-                            : undefined
-                        }
+                        statusText={mangaStandLabel(manga) || undefined}
                         title={manga.title}
                         posterUrl={manga.poster}
                         isMovie={false}

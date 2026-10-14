@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { mangaPath } from '../../../lib/manga/mangaSource';
 import { discoverManga } from '../../../services/api/anilistService';
 import { searchMangaWithTitleFallback } from '../../../services/api/mangaSearch';
 import { t } from '../../../services/i18n';
@@ -20,6 +21,7 @@ function useMangaQuickSearch(query: string) {
     query: string;
     results: AniListMangaSearchResult[];
     aliases: Record<number, string>;
+    volumes?: Record<number, number>;
   }>({ query: '', results: [], aliases: {} });
   const reqId = useRef(0);
 
@@ -40,6 +42,7 @@ function useMangaQuickSearch(query: string) {
   return {
     results: q.length >= 2 && settled ? state.results : [],
     aliases: settled ? state.aliases : {},
+    volumes: (settled && state.volumes) || {},
     loading: q.length >= 2 && !settled,
   };
 }
@@ -55,17 +58,18 @@ function useMangaCards() {
     return map;
   }, [allMangaList]);
 
-  const render = (result: AniListMangaSearchResult, alias?: string) => (
+  /** volume: über einen gedruckten Band gefunden (0 = Bandnummer unbekannt). */
+  const render = (result: AniListMangaSearchResult, alias?: string, volume?: number) => (
     <MangaResultCard
       key={result.id}
       result={result}
       owned={ownedById.get(result.id)}
       alias={alias}
       adding={addingId === result.id}
-      onOpen={() => navigate(`/manga/${result.id}`)}
+      onOpen={() => navigate(mangaPath(result.id, volume))}
       onAdd={(e) => {
         e.stopPropagation();
-        void add(result);
+        void add(result, { byVolume: volume !== undefined });
       }}
     />
   );
@@ -90,7 +94,7 @@ export const MangaQuickResults = ({
   onSeeAll,
 }: MangaQuickResultsProps) => {
   const { currentTheme } = useTheme();
-  const { results, aliases, loading } = useMangaQuickSearch(query);
+  const { results, aliases, volumes, loading } = useMangaQuickSearch(query);
   const { ownedById, render } = useMangaCards();
 
   const sorted = useMemo(
@@ -144,7 +148,7 @@ export const MangaQuickResults = ({
         </div>
       ) : (
         <div className={`mqr-grid${variant === 'row' ? ' mqr-grid--row' : ''}`}>
-          {sorted.map((r) => render(r, aliases[r.id]))}
+          {sorted.map((r) => render(r, aliases[r.id], volumes[r.id]))}
         </div>
       )}
     </div>

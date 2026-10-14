@@ -21,6 +21,8 @@ export interface Manga {
   };
   currentChapter: number;
   currentVolume?: number;
+  /** Zählweise: 'volumes' = Lesestand in Bänden (Print), sonst Kapitel. */
+  trackBy?: 'volumes';
   readStatus: 'reading' | 'completed' | 'paused' | 'dropped' | 'planned';
   hidden?: boolean;
   addedAt?: string;
@@ -31,6 +33,8 @@ export interface Manga {
   startedAt?: string;
   completedAt?: string;
   latestChapterAvailable?: number;
+  /** Erschienene Bände laut MangaUpdates — AniList kennt die Bandzahl erst nach dem Ende. */
+  latestVolumeAvailable?: number;
   // ISO-Datum des juengsten validen Releases (nach Renumbering-Filter).
   // Wird fuer Hiatus-Inferenz genutzt: Wenn ein RELEASING-Manga > 180 Tage
   // kein neues Kapitel hatte, zeigen wir UI-seitig "Hiatus".

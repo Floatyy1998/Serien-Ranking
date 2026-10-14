@@ -10,6 +10,7 @@ import { useBooksForYourShows } from '../../hooks/books/useBasedOnBooks';
 import { useBookEvents } from '../../hooks/books/useBookEvents';
 import { sortByRecentActivity } from '../../lib/books/bookProgress';
 import { computeBookYearStats } from '../../lib/books/bookStats';
+import { mangaStandLabel } from '../../lib/manga/progress';
 import { tapScaleSmall } from '../../lib/motion';
 import { dateLocale, t } from '../../services/i18n';
 import type { Book } from '../../types/Book';
@@ -267,9 +268,7 @@ export const ReadingHubPage = () => {
                   {m.title}
                 </span>
                 <span className="bk-item-sub" style={{ color: currentTheme.text.muted }}>
-                  {m.chapters
-                    ? t('Kap. {n} / {m}', { n: m.currentChapter || 0, m: m.chapters })
-                    : t('Kap. {n}', { n: m.currentChapter || 0 })}
+                  {mangaStandLabel(m, true)}
                 </span>
               </button>
             ))}

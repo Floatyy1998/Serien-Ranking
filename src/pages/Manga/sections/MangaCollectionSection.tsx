@@ -9,11 +9,11 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import {
   filterCollection,
   mangaProgressPercent,
-  mangaTotalChapters,
   userMangaRating,
   type CollectionFilter,
   type CollectionSort,
 } from '../../../lib/manga/overview';
+import { mangaStand, mangaStandLabel } from '../../../lib/manga/progress';
 import { t } from '../../../services/i18n';
 import type { Manga } from '../../../types/Manga';
 import { getDisplayFormat, STATUS_COLORS, STATUS_LABELS } from '../mangaUtils';
@@ -237,9 +237,8 @@ const CollectionCard = ({
   rating: number;
   onClick: () => void;
 }) => {
-  const total = mangaTotalChapters(manga);
   const progress = mangaProgressPercent(manga);
-  const unread = total > 0 ? total - (manga.currentChapter || 0) : 0;
+  const stand = mangaStand(manga);
   const statusColor = STATUS_COLORS[manga.readStatus];
 
   return (
@@ -288,13 +287,13 @@ const CollectionCard = ({
           <div className="manga-collection-bottom">
             <div className="manga-collection-title">{manga.title}</div>
             <div className="manga-collection-meta">
-              {manga.currentChapter > 0
-                ? total > 0
-                  ? t('Kap. {a} / {b}', { a: manga.currentChapter, b: total })
-                  : t('Kap. {n}', { n: manga.currentChapter })
-                : getDisplayFormat(manga.countryOfOrigin, manga.format)}
-              {manga.readStatus === 'reading' && unread > 0 && (
-                <span className="manga-collection-unread">{t('{n} offen', { n: unread })}</span>
+              {mangaStandLabel(manga) || getDisplayFormat(manga.countryOfOrigin, manga.format)}
+              {manga.readStatus === 'reading' && stand.remaining > 0 && (
+                <span className="manga-collection-unread">
+                  {stand.unit === 'volume'
+                    ? t('{n} Bd. offen', { n: stand.remaining })
+                    : t('{n} offen', { n: stand.remaining })}
+                </span>
               )}
             </div>
             {progress > 0 && (

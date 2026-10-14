@@ -236,10 +236,10 @@ const dict: Record<string, string> = {
   'Steht schon bei deinen Manga': 'Déjà dans tes mangas',
   '„{title}“ ist ein Manga – bei deinen Manga gespeichert':
     '« {title} » est un manga – ajouté à tes mangas',
-  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
-    'Actuellement enregistré comme livre. Dans tes mangas, tu suis toute la série par chapitre.',
-  'Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
-    'Dans tes mangas, tu suis toute la série par chapitre.',
+  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.':
+    'Actuellement enregistré comme livre. Dans tes mangas, tu suis toute la série et coches tome après tome.',
+  'Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.':
+    'Dans tes mangas, tu suis toute la série et coches tome après tome.',
 };
 
 export default dict;

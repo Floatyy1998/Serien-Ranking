@@ -1,7 +1,8 @@
 import { Add, CheckCircle, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { mangaProgressPercent, mangaTotalChapters } from '../../../lib/manga/overview';
+import { mangaProgressPercent } from '../../../lib/manga/overview';
+import { mangaStandLabel } from '../../../lib/manga/progress';
 import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
@@ -37,7 +38,6 @@ export const MangaResultCard = ({
   const title = result.title.english || result.title.romaji;
   const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
   const addTextColor = getOptimalTextColor(currentTheme.primary);
-  const total = owned ? mangaTotalChapters(owned) : 0;
   const progress = owned ? mangaProgressPercent(owned) : 0;
 
   return (
@@ -116,11 +116,7 @@ export const MangaResultCard = ({
         )}
         <div className="mrc-meta" style={{ color: currentTheme.text.muted }}>
           {owned
-            ? owned.currentChapter > 0
-              ? total > 0
-                ? t('Kap. {a} / {b}', { a: owned.currentChapter, b: total })
-                : t('Kap. {n}', { n: owned.currentChapter })
-              : t('In deiner Sammlung')
+            ? mangaStandLabel(owned) || t('In deiner Sammlung')
             : [
                 result.startDate?.year || '',
                 result.chapters ? t('{n} Kap.', { n: result.chapters }) : '',

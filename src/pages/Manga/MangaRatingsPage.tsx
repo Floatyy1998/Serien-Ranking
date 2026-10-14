@@ -7,7 +7,8 @@ import { EmptyState, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Manga } from '../../types/Manga';
-import { getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
+import { getDisplayFormat } from './mangaUtils';
+import { mangaProgressPercent } from '../../lib/manga/overview';
 import './MangaPage.css';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -134,11 +135,8 @@ export const MangaRatingsPage = () => {
           return a.title.localeCompare(b.title);
         case 'name-desc':
           return b.title.localeCompare(a.title);
-        case 'progress-desc': {
-          const pA = a.chapters ? (a.currentChapter / a.chapters) * 100 : 0;
-          const pB = b.chapters ? (b.currentChapter / b.chapters) * 100 : 0;
-          return pB - pA;
-        }
+        case 'progress-desc':
+          return mangaProgressPercent(b) - mangaProgressPercent(a);
         default:
           return 0;
       }
@@ -241,10 +239,7 @@ export const MangaRatingsPage = () => {
         <div className="manga-collection-grid" style={{ paddingBottom: 'var(--page-bottom-gap)' }}>
           {items.map((manga) => {
             const rating = getRating(manga);
-            const totalChapters = getEffectiveChapterCount(manga);
-            const progress = totalChapters
-              ? Math.min((manga.currentChapter / totalChapters) * 100, 100)
-              : 0;
+            const progress = mangaProgressPercent(manga);
 
             return (
               <motion.div

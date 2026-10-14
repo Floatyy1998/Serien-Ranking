@@ -234,10 +234,10 @@ const dict: Record<string, string> = {
   'Steht schon bei deinen Manga': 'Already in your manga',
   '„{title}“ ist ein Manga – bei deinen Manga gespeichert':
     '“{title}” is a manga – saved to your manga',
-  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
-    'Currently saved as a book. In your manga you track the whole series by chapter.',
-  'Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
-    'In your manga you track the whole series by chapter.',
+  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.':
+    'Currently saved as a book. In your manga you track the whole series and check it off volume by volume.',
+  'Bei deinen Manga führst du die ganze Reihe und hakst Band für Band ab.':
+    'In your manga you track the whole series and check it off volume by volume.',
 };
 
 export default dict;

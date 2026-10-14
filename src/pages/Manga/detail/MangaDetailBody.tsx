@@ -13,10 +13,12 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { MangaDexChapterInfo } from '../../../services/api/mangaUpdatesService';
 import { dateLocale, t } from '../../../services/i18n';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
+import { mangaUnit } from '../../../lib/manga/progress';
 import { inferStatus, STATUS_COLORS } from '../mangaUtils';
 import type { MangaHeroData } from './mangaDetailData';
 import { MangaInfoSections } from './MangaInfoSections';
 import { Section, SectionTitle } from './Section';
+import { VolumeShelf } from './VolumeShelf';
 
 const STATUS_OPTIONS: { value: Manga['readStatus']; label: string }[] = [
   { value: 'reading', label: t('Lese ich') },
@@ -79,7 +81,10 @@ interface MangaDetailBodyProps {
   showDeleteConfirm: boolean;
   setShowDeleteConfirm: (v: boolean) => void;
   onStatusChange: (status: Manga['readStatus']) => void;
+  /** Zählweise Bände: bekannte Bandzahl (0 = unbekannt). */
+  volumeTotal?: number;
   onChapterChange: (chapter: number) => void;
+  onVolumeChange?: (volume: number) => void;
   onRating: (rating: number) => void;
   onPlatformSelect: (platform: string) => void;
   onNotesChange: (value: string) => void;
@@ -108,7 +113,9 @@ export const MangaDetailBody = ({
   showDeleteConfirm,
   setShowDeleteConfirm,
   onStatusChange,
+  volumeTotal = 0,
   onChapterChange,
+  onVolumeChange,
   onRating,
   onPlatformSelect,
   onNotesChange,
@@ -123,6 +130,7 @@ export const MangaDetailBody = ({
   const [confirmReread, setConfirmReread] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const currentChapter = manga.currentChapter ?? 0;
+  const byVolume = mangaUnit(manga) === 'volume';
   const effectiveStatus = inferStatus(manga);
   const shownRating = hoverRating || userRating;
 
@@ -146,6 +154,7 @@ export const MangaDetailBody = ({
     .map((step) => ({ label: step.label, value: formatDay(step.iso) }));
 
   const showReleases =
+    !byVolume &&
     !!chapterInfo &&
     chapterInfo.recentChapters.length > 0 &&
     (effectiveStatus === 'RELEASING' || effectiveStatus === 'HIATUS');
@@ -153,6 +162,15 @@ export const MangaDetailBody = ({
   return (
     <div className="manga-detail-content md-layout">
       <div className="md-main">
+        {byVolume && onVolumeChange && (
+          <VolumeShelf
+            current={manga.currentVolume || 0}
+            total={volumeTotal}
+            currentTheme={currentTheme}
+            onChange={onVolumeChange}
+          />
+        )}
+
         {showReleases && chapterInfo && (
           <Section delay={0.08} order={2}>
             <SectionTitle
@@ -279,7 +297,9 @@ export const MangaDetailBody = ({
               (confirmReread ? (
                 <div className="md-reread-confirm">
                   <span style={{ color: currentTheme.text.secondary }}>
-                    {t('Von vorn beginnen? Dein Fortschritt springt auf Kapitel 0.')}
+                    {byVolume
+                      ? t('Von vorn beginnen? Alle Bände gelten dann wieder als ungelesen.')
+                      : t('Von vorn beginnen? Dein Fortschritt springt auf Kapitel 0.')}
                   </span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button

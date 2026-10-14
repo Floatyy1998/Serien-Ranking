@@ -51,3 +51,30 @@ describe('calculateMangaStats', () => {
     expect(stats?.topManga[0]).toMatchObject({ title: 'One Piece', chapters: 1 });
   });
 });
+
+describe('calculateMangaStats mit Bänden', () => {
+  it('zählt Bände der Print-Leser und liefert auch ohne Kapitel eine Bilanz', () => {
+    const stats = calculateMangaStats(
+      [
+        { ts: ts(3), t: 'vol', s: 7, st: 'Dead Mount Death Play', vol: 1 },
+        { ts: ts(3, 5), t: 'vol', s: 7, vol: 3, v0: 2, n: 2 },
+        { ts: ts(4), t: 'vol', s: 8, st: 'Frieren', vol: 1 },
+      ],
+      2026
+    );
+    expect(stats).toMatchObject({
+      totalChapters: 0,
+      totalVolumes: 4,
+      uniqueManga: 2,
+      mostReadMonth: 3,
+      mostReadMonthVolumes: 3,
+    });
+    expect(stats?.topManga[0]).toMatchObject({ title: 'Dead Mount Death Play', volumes: 3 });
+  });
+
+  it('lässt nachgetragene Bandstände weg', () => {
+    expect(calculateMangaStats([{ ts: ts(3), t: 'vol', s: 7, vol: 20, v0: 1, n: 20 }], 2026)).toBe(
+      null
+    );
+  });
+});

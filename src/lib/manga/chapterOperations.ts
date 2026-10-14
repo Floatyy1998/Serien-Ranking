@@ -5,15 +5,19 @@
  */
 
 export const BULK_CHAPTER_THRESHOLD = 50;
+/** Rund 50 Kapitel — wer mehr Bände auf einmal abhakt, trägt seinen Stand nach. */
+export const BULK_VOLUME_THRESHOLD = 5;
 
 export interface RawChapterEvent {
   ts: number;
-  t: 'ch' | 'rg';
+  t: 'ch' | 'rg' | 'vol';
   s: number;
   st?: string;
   ch?: number;
   ch0?: number;
   n?: number;
+  vol?: number;
+  v0?: number;
   rw?: number;
 }
 
@@ -55,4 +59,36 @@ export function toChapterOperations(events: RawChapterEvent[]): ChapterOperation
   }
   for (const op of ops.values()) op.bulk = op.chapters > BULK_CHAPTER_THRESHOLD;
   return [...ops.values()];
+}
+
+export interface VolumeOperation {
+  s: number;
+  st?: string;
+  ts: number;
+  from: number;
+  to: number;
+  volumes: number;
+  reread: boolean;
+  bulk: boolean;
+}
+
+/** Band-Ereignisse (Zählweise Bände): ein Ereignis ist ein Vorgang, `n` fehlt bei einem Band. */
+export function toVolumeOperations(events: RawChapterEvent[]): VolumeOperation[] {
+  const ops: VolumeOperation[] = [];
+  for (const event of events) {
+    if (event?.t !== 'vol' || typeof event.ts !== 'number' || !event.s) continue;
+    if (typeof event.vol !== 'number') continue;
+    const volumes = Math.max(1, event.n ?? 1);
+    ops.push({
+      s: event.s,
+      st: event.st,
+      ts: event.ts,
+      from: typeof event.v0 === 'number' ? event.v0 : event.vol,
+      to: event.vol,
+      volumes,
+      reread: !!event.rw,
+      bulk: volumes > BULK_VOLUME_THRESHOLD,
+    });
+  }
+  return ops;
 }

@@ -145,7 +145,7 @@ describe('useBookActions.add', () => {
     );
     expect(added).toBeNull();
     expect(svc.addBook).not.toHaveBeenCalled();
-    expect(manga.addMangaToList).toHaveBeenCalledWith('u1', spyFamily, 30014);
+    expect(manga.addMangaToList).toHaveBeenCalledWith('u1', spyFamily, 30014, { byVolume: true });
     expect(svc.showToast.mock.calls[0][0]).toContain('SPY x FAMILY');
   });
 

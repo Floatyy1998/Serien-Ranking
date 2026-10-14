@@ -12,7 +12,6 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
-import { logChapterRead } from '../../services/discussion/readActivityService';
 import {
   BackButton,
   GradientText,
@@ -20,16 +19,12 @@ import {
   ScrollToTopButton,
   SwipeableEpisodeRow,
 } from '../../components/ui';
-import {
-  getDisplayFormat,
-  getEffectiveChapterCount,
-  inferStatus,
-  shouldAutoComplete,
-  STATUS_COLORS,
-} from './mangaUtils';
+import { getDisplayFormat, inferStatus, STATUS_COLORS } from './mangaUtils';
+import { saveReadProgress } from './saveReadProgress';
+import { mangaProgressPercent } from '../../lib/manga/overview';
+import { mangaRemainingLabel, mangaStand, mangaStandLabel } from '../../lib/manga/progress';
 import type { Manga } from '../../types/Manga';
 import { tapScale } from '../../lib/motion';
-import { dbRef, paths } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
@@ -104,16 +99,10 @@ export const MangaReadingListPage = () => {
           return a.title.localeCompare(b.title);
         case 'name-desc':
           return b.title.localeCompare(a.title);
-        case 'progress-desc': {
-          const pA = a.chapters ? (a.currentChapter / a.chapters) * 100 : 0;
-          const pB = b.chapters ? (b.currentChapter / b.chapters) * 100 : 0;
-          return pB - pA;
-        }
-        case 'progress-asc': {
-          const pA2 = a.chapters ? (a.currentChapter / a.chapters) * 100 : 0;
-          const pB2 = b.chapters ? (b.currentChapter / b.chapters) * 100 : 0;
-          return pA2 - pB2;
-        }
+        case 'progress-desc':
+          return mangaProgressPercent(b) - mangaProgressPercent(a);
+        case 'progress-asc':
+          return mangaProgressPercent(a) - mangaProgressPercent(b);
         case 'recent-desc': {
           const tA = a.lastReadAt ? new Date(a.lastReadAt).getTime() : 0;
           const tB = b.lastReadAt ? new Date(b.lastReadAt).getTime() : 0;
@@ -130,11 +119,10 @@ export const MangaReadingListPage = () => {
   const handleComplete = useCallback(
     async (manga: Manga, direction: 'left' | 'right' = 'right') => {
       if (!user) return;
-      const totalChapters = getEffectiveChapterCount(manga);
-      // Nie ueber das letzte erschienene Kapitel hinaus abhaken.
-      if (totalChapters && manga.currentChapter >= totalChapters) return;
+      const stand = mangaStand(manga);
+      // Nie ueber das letzte erschienene Kapitel (bzw. den letzten Band) hinaus abhaken.
+      if (stand.total && stand.current >= stand.total) return;
       const key = String(manga.anilistId);
-      const newChapter = manga.currentChapter + 1;
 
       setSwipeDirections((prev) => ({ ...prev, [key]: direction }));
       setCompletingEpisodes((prev) => new Set(prev).add(key));
@@ -146,21 +134,11 @@ export const MangaReadingListPage = () => {
         });
       }, 250);
 
-      const updates: Record<string, unknown> = {
-        currentChapter: newChapter,
-        lastReadAt: new Date().toISOString(),
-      };
-      if (manga.readStatus === 'planned') {
-        updates.readStatus = 'reading';
-        if (!manga.startedAt) updates.startedAt = new Date().toISOString();
-      }
-      if (shouldAutoComplete(manga, totalChapters, manga.currentChapter, newChapter)) {
-        updates.readStatus = 'completed';
-        updates.completedAt = new Date().toISOString();
-      }
-
-      await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
-      await logChapterRead(user.uid, manga, newChapter, manga.currentChapter);
+      await saveReadProgress(user.uid, manga, {
+        next: stand.current + 1,
+        previous: stand.current,
+        total: stand.total || null,
+      });
     },
     [user]
   );
@@ -389,14 +367,11 @@ export const MangaReadingListPage = () => {
               <AnimatePresence mode="popLayout">
                 {items.map((manga) => {
                   const key = String(manga.anilistId);
-                  const effectiveTotal = getEffectiveChapterCount(manga);
-                  const progress =
-                    effectiveTotal && effectiveTotal > 0
-                      ? Math.min((manga.currentChapter / effectiveTotal) * 100, 100)
-                      : 0;
+                  const stand = mangaStand(manga);
+                  const progress = stand.percent;
                   const format = getDisplayFormat(manga.countryOfOrigin, manga.format);
                   const isPlanned = manga.readStatus === 'planned';
-                  const isCaughtUp = !!effectiveTotal && manga.currentChapter >= effectiveTotal;
+                  const isCaughtUp = stand.total > 0 && stand.current >= stand.total;
 
                   return (
                     <SwipeableEpisodeRow
@@ -451,8 +426,7 @@ export const MangaReadingListPage = () => {
                               textOverflow: 'ellipsis',
                             }}
                           >
-                            {t('Kap.')} {manga.currentChapter}
-                            {effectiveTotal ? ` / ${effectiveTotal}` : ''}
+                            {mangaStandLabel(manga, true)}
                             {' · '}
                             {isCaughtUp ? t('Aktuell') : format}
                             {isPlanned && (
@@ -484,12 +458,14 @@ export const MangaReadingListPage = () => {
                               textOverflow: 'ellipsis',
                             }}
                           >
-                            {effectiveTotal && manga.currentChapter < effectiveTotal
-                              ? t('{n} Kapitel übrig', {
-                                  n: effectiveTotal - manga.currentChapter,
-                                })
+                            {stand.remaining > 0
+                              ? stand.unit === 'volume'
+                                ? mangaRemainingLabel(stand)
+                                : t('{n} Kapitel übrig', { n: stand.remaining })
                               : inferStatus(manga) === 'RELEASING'
-                                ? t('Laufend · Wartet auf neue Kapitel')
+                                ? stand.unit === 'volume'
+                                  ? t('Laufend · Wartet auf neue Bände')
+                                  : t('Laufend · Wartet auf neue Kapitel')
                                 : inferStatus(manga) === 'HIATUS'
                                   ? t('Hiatus · Keine neuen Kapitel')
                                   : t('Fortschritt unbekannt')}

@@ -14,6 +14,8 @@ export interface MangaSearchOutcome {
   results: AniListMangaSearchResult[];
   /** AniList-ID → Titel, über den der Eintrag gefunden wurde (z.B. deutscher Webtoon-Name). */
   aliases: Record<number, string>;
+  /** Über einen gedruckten Band gefunden (ISBN): AniList-ID → Bandnummer, 0 = unbekannt. */
+  volumes?: Record<number, number>;
 }
 
 const isMangaUpdatesOnlyHit = (hit: MangaUpdatesHit): hit is MangaUpdatesHit & { id: number } =>

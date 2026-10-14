@@ -191,7 +191,9 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
     { value: number(stats.totalMoviesWatched), label: t('Filme') },
     { value: number(stats.uniqueSeriesWatched), label: t('Serien') },
     stats.manga
-      ? { value: number(stats.manga.totalChapters), label: t('Manga-Kapitel') }
+      ? stats.manga.totalChapters > 0
+        ? { value: number(stats.manga.totalChapters), label: t('Manga-Kapitel') }
+        : { value: number(stats.manga.totalVolumes ?? 0), label: t('Manga-Bände') }
       : { value: number(stats.longestStreak), label: t('Tage Streak') },
   ];
 

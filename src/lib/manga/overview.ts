@@ -2,6 +2,7 @@
 
 import type { Manga } from '../../types/Manga';
 import { normalizeTitle } from '../text/searchRelevance';
+import { mangaStand, mangaUnit } from './progress';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -14,14 +15,13 @@ const time = (iso: string | undefined): number => {
 export const mangaTotalChapters = (manga: Manga): number =>
   Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
 
+/** Wer in Bänden liest, hat keine offenen Kapitel. */
 export const mangaUnreadChapters = (manga: Manga): number =>
-  Math.max(0, mangaTotalChapters(manga) - (manga.currentChapter || 0));
+  mangaUnit(manga) === 'volume'
+    ? 0
+    : Math.max(0, mangaTotalChapters(manga) - (manga.currentChapter || 0));
 
-export const mangaProgressPercent = (manga: Manga): number => {
-  const total = mangaTotalChapters(manga);
-  if (total <= 0) return 0;
-  return Math.min(100, Math.round(((manga.currentChapter || 0) / total) * 100));
-};
+export const mangaProgressPercent = (manga: Manga): number => mangaStand(manga).percent;
 
 export const userMangaRating = (manga: Manga, uid: string | undefined): number =>
   uid ? manga.rating?.[uid] || 0 : 0;
@@ -41,6 +41,7 @@ export function getNewChapterEntries(
   const entries: NewChapterEntry[] = [];
   for (const manga of list) {
     if (manga.readStatus !== 'reading' && manga.readStatus !== 'paused') continue;
+    if (mangaUnit(manga) === 'volume') continue;
     if ((manga.currentChapter || 0) <= 0 || !manga.lastReleaseDate) continue;
     const released = time(manga.lastReleaseDate);
     if (!released || now - released > windowDays * DAY_MS) continue;

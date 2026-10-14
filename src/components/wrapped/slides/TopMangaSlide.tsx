@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import type { MangaWrappedStats } from '../../../types/Wrapped';
+import type { MangaWrappedStats, TopMangaEntry } from '../../../types/Wrapped';
 import { dateLocale, t } from '../../../services/i18n';
 
 interface TopMangaSlideProps {
@@ -10,8 +10,18 @@ interface TopMangaSlideProps {
 const monthName = (month: number) =>
   new Date(2000, month, 1).toLocaleDateString(dateLocale(), { month: 'long' });
 
+const amountLabel = (entry: TopMangaEntry): string =>
+  [
+    entry.chapters > 0 ? t('{n} Kapitel', { n: entry.chapters }) : '',
+    entry.volumes ? (entry.volumes === 1 ? t('1 Band') : t('{n} Bände', { n: entry.volumes })) : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
 export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
   const [top, ...rest] = manga.topManga;
+  const volumes = manga.totalVolumes ?? 0;
+  const byChapters = manga.totalChapters > 0;
 
   return (
     <div
@@ -78,11 +88,18 @@ export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
             backgroundClip: 'text',
           }}
         >
-          {manga.totalChapters.toLocaleString()}
+          {(byChapters ? manga.totalChapters : volumes).toLocaleString()}
         </div>
         <div style={{ fontSize: '1.1rem', opacity: 0.85, marginTop: 6 }}>
-          {t('Kapitel aus {n} Manga gelesen', { n: manga.uniqueManga })}
+          {byChapters
+            ? t('Kapitel aus {n} Manga gelesen', { n: manga.uniqueManga })
+            : t('Bände aus {n} Manga gelesen', { n: manga.uniqueManga })}
         </div>
+        {byChapters && volumes > 0 && (
+          <div style={{ fontSize: '0.95rem', opacity: 0.7, marginTop: 4 }}>
+            {volumes === 1 ? t('und 1 Band') : t('und {n} Bände', { n: volumes })}
+          </div>
+        )}
       </motion.div>
 
       {top && (
@@ -118,9 +135,7 @@ export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
             >
               {top.title}
             </div>
-            <div style={{ color: '#f0abfc', fontWeight: 700 }}>
-              {t('{n} Kapitel', { n: top.chapters })}
-            </div>
+            <div style={{ color: '#f0abfc', fontWeight: 700 }}>{amountLabel(top)}</div>
           </div>
         </motion.div>
       )}
@@ -168,7 +183,7 @@ export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
                 {entry.title}
               </span>
               <span style={{ color: '#f0abfc', fontWeight: 700, fontSize: '0.9rem' }}>
-                {entry.chapters}
+                {entry.chapters > 0 ? entry.chapters : t('{n} Bd.', { n: entry.volumes ?? 0 })}
               </span>
             </li>
           ))}
@@ -181,10 +196,15 @@ export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
         transition={{ delay: 0.95 }}
         style={{ marginTop: 22, fontSize: '0.95rem', zIndex: 1 }}
       >
-        {t('Lesemonat: {month} mit {n} Kapiteln', {
-          month: monthName(manga.mostReadMonth),
-          n: manga.mostReadMonthChapters,
-        })}
+        {byChapters
+          ? t('Lesemonat: {month} mit {n} Kapiteln', {
+              month: monthName(manga.mostReadMonth),
+              n: manga.mostReadMonthChapters,
+            })
+          : t('Lesemonat: {month} mit {n} Bänden', {
+              month: monthName(manga.mostReadMonth),
+              n: manga.mostReadMonthVolumes ?? 0,
+            })}
       </motion.p>
     </div>
   );

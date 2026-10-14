@@ -6,26 +6,24 @@ import { EmptyState, LoadingSpinner, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
-import { logChapterRead, logMangaRating } from '../../services/discussion/readActivityService';
+import { logMangaRating } from '../../services/discussion/readActivityService';
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
+import { mangaStand, mangaUnit, type MangaUnit } from '../../lib/manga/progress';
 import type { Manga } from '../../types/Manga';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
 import { MangaDetailHero } from './detail/MangaDetailHero';
 import { MangaDetailPreview } from './detail/MangaDetailPreview';
+import { VolumeHint } from './detail/VolumeHint';
 import { buildHeroData } from './detail/mangaDetailData';
 import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
-import { getEffectiveChapterCount, shouldAutoComplete } from './mangaUtils';
+import { getEffectiveChapterCount } from './mangaUtils';
+import { saveReadProgress } from './saveReadProgress';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
-const logMangaActivity = (
-  uid: string,
-  manga: Manga,
-  type: 'manga_rated' | 'manga_finished',
-  rating?: number
-) =>
+const logMangaActivity = (uid: string, manga: Manga, type: 'manga_rated', rating?: number) =>
   void logReadingActivity(uid, {
     type,
     itemId: manga.anilistId,
@@ -52,8 +50,13 @@ export const MangaDetailPage = () => {
     [mangaList, hiddenMangaList]
   );
   const [adding, setAdding] = useState(false);
+  // Band aus der ISBN-Suche (?band=N) — bietet „Bis Band N gelesen" an.
+  const scannedVolume = Number(new URLSearchParams(location.search ?? '').get('band')) || 0;
+  const [hintDismissed, setHintDismissed] = useState(false);
 
-  const [editChapter, setEditChapter] = useState(manga?.currentChapter || 0);
+  const unit: MangaUnit = manga ? mangaUnit(manga) : 'chapter';
+  const storedValue = (unit === 'volume' ? manga?.currentVolume : manga?.currentChapter) || 0;
+  const [editValue, setEditValue] = useState(storedValue);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notesValue, setNotesValue] = useState(manga?.notes || '');
   const [notesStatus, setNotesStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -62,20 +65,19 @@ export const MangaDetailPage = () => {
   const [customPlatform, setCustomPlatform] = useState('');
   const [showCustomPlatform, setShowCustomPlatform] = useState(false);
 
-  const { anilistData, detailsFailed, mangadexInfo, chapterInfo } = useMangaLiveData({
+  const { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes } = useMangaLiveData({
     user,
     anilistId,
     manga,
   });
 
   // Sync local edit state when manga data changes from Firebase. Cannot be a
-  // pure useMemo since editChapter is also driven by local stepper clicks.
-  const mangaChapter = manga?.currentChapter;
+  // pure useMemo since editValue is also driven by local stepper clicks.
   const mangaNotes = manga?.notes;
 
   useEffect(() => {
-    if (mangaChapter !== undefined) setEditChapter(mangaChapter);
-  }, [mangaChapter]);
+    setEditValue(storedValue);
+  }, [storedValue, unit]);
   useEffect(() => {
     // Fremd-Updates (z.B. anderes Gerät) übernehmen — aber nicht, während der
     // Nutzer gerade tippt, sonst würde die Eingabe überschrieben (F13 Autosave).
@@ -90,50 +92,44 @@ export const MangaDetailPage = () => {
     [user, manga, anilistId]
   );
 
-  const handleChapterChange = useCallback(
-    async (newChapter: number) => {
+  // Live-Daten (mangadexInfo, chapterInfo, Bandzahl) einrechnen, bevor der
+  // Firebase-Write der Totals durch ist — sonst klemmt der Zähler auf dem alten Wert.
+  const latestFromReleases = chapterInfo?.recentChapters?.length
+    ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
+    : 0;
+  const total = manga
+    ? unit === 'volume'
+      ? mangaStand(manga, liveVolumes).total || null
+      : getEffectiveChapterCount(manga, mangadexInfo?.latestChapter, latestFromReleases)
+    : null;
+
+  const handleValueChange = useCallback(
+    async (next: number) => {
       if (!user || !manga) return;
-      // Live-Daten (mangadexInfo, chapterInfo) als Fallback einrechnen, bevor
-      // der Firebase-Write von latestChapterAvailable durch ist — sonst klemmt
-      // der Counter auf dem veralteten manga.chapters-Wert.
-      const latestFromReleases = chapterInfo?.recentChapters?.length
-        ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
-        : 0;
-      const effectiveMax = getEffectiveChapterCount(
-        manga,
-        mangadexInfo?.latestChapter,
-        latestFromReleases
-      );
-      const clamped = effectiveMax
-        ? Math.max(0, Math.min(newChapter, effectiveMax))
-        : Math.max(0, newChapter);
-      const previousChapter = editChapter;
-      setEditChapter(clamped);
-
-      const updates: Record<string, unknown> = {
-        currentChapter: clamped,
-        lastReadAt: new Date().toISOString(),
-      };
-
-      if (manga.readStatus === 'planned' && clamped > 0) {
-        updates.readStatus = 'reading';
-        if (!manga.startedAt) updates.startedAt = new Date().toISOString();
-      }
-
-      if (shouldAutoComplete(manga, effectiveMax, manga.currentChapter, clamped)) {
-        updates.readStatus = 'completed';
-        updates.completedAt = new Date().toISOString();
-      }
-
-      await dbRef(paths.mangaItem(user.uid, anilistId)).update(updates);
-      if (updates.readStatus === 'completed') logMangaActivity(user.uid, manga, 'manga_finished');
-
-      if (clamped > previousChapter) {
-        await logChapterRead(user.uid, manga, clamped, previousChapter);
-      }
+      const clamped = total ? Math.max(0, Math.min(next, total)) : Math.max(0, next);
+      const previous = editValue;
+      setEditValue(clamped);
+      await saveReadProgress(user.uid, manga, { next: clamped, previous, total });
     },
-    [user, manga, anilistId, editChapter, mangadexInfo, chapterInfo]
+    [user, manga, editValue, total]
   );
+
+  const handleUnitChange = useCallback(
+    (next: MangaUnit) => updateField('trackBy', next === 'volume' ? 'volumes' : null),
+    [updateField]
+  );
+
+  const handleMarkScannedVolume = useCallback(async () => {
+    if (!user || !manga || scannedVolume <= 0) return;
+    const asVolumes: Manga = { ...manga, trackBy: 'volumes' };
+    if (unit !== 'volume') await updateField('trackBy', 'volumes');
+    const volumeTotal = mangaStand(asVolumes, liveVolumes).total || null;
+    await saveReadProgress(user.uid, asVolumes, {
+      next: volumeTotal ? Math.min(scannedVolume, volumeTotal) : scannedVolume,
+      previous: manga.currentVolume || 0,
+      total: volumeTotal,
+    });
+  }, [user, manga, unit, scannedVolume, liveVolumes, updateField]);
 
   const handleStatusChange = useCallback(
     async (status: Manga['readStatus']) => {
@@ -147,7 +143,12 @@ export const MangaDetailPage = () => {
       }
       await dbRef(paths.mangaItem(user.uid, anilistId)).update(updates);
       if (status === 'completed' && manga.readStatus !== 'completed') {
-        logMangaActivity(user.uid, manga, 'manga_finished');
+        void logReadingActivity(user.uid, {
+          type: 'manga_finished',
+          itemId: manga.anilistId,
+          itemTitle: manga.title,
+          poster: manga.poster,
+        });
       }
     },
     [user, manga, anilistId]
@@ -159,6 +160,7 @@ export const MangaDetailPage = () => {
     await dbRef(paths.mangaItem(user.uid, anilistId)).update({
       readStatus: 'reading',
       currentChapter: 0,
+      currentVolume: 0,
       rereadCount: (manga.rereadCount || 0) + 1,
       startedAt: now,
       lastReadAt: now,
@@ -299,7 +301,9 @@ export const MangaDetailPage = () => {
           const all = [...mangaList, ...hiddenMangaList];
           const nextNmr = all.length > 0 ? Math.max(...all.map((m) => m.nmr)) + 1 : 1;
           try {
-            await addMangaToList(user.uid, anilistData, nextNmr);
+            await addMangaToList(user.uid, anilistData, nextNmr, {
+              byVolume: scannedVolume > 0,
+            });
           } finally {
             setAdding(false);
           }
@@ -309,22 +313,11 @@ export const MangaDetailPage = () => {
   }
 
   const userRating = user ? manga.rating?.[user.uid] || 0 : 0;
-
-  // Effective total chapters: MAX aus allen Quellen. AniList's chapters ist
-  // bei laufenden Serien oft veraltet (z.B. Vagabond meldet 2 statt 326),
-  // also MangaUpdates-Daten dazunehmen statt First-truthy-Wins.
-  const latestFromReleases = chapterInfo?.recentChapters?.length
-    ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
-    : 0;
-  const effectiveChapters = getEffectiveChapterCount(
-    manga,
-    mangadexInfo?.latestChapter,
-    latestFromReleases
-  );
-  const progress =
-    effectiveChapters && effectiveChapters > 0
-      ? Math.min((editChapter / effectiveChapters) * 100, 100)
-      : 0;
+  const progress = total && total > 0 ? Math.min((editValue / total) * 100, 100) : 0;
+  const showVolumeHint =
+    scannedVolume > 0 &&
+    !hintDismissed &&
+    (unit !== 'volume' || (manga.currentVolume || 0) < scannedVolume);
 
   return (
     <PageLayout>
@@ -334,15 +327,26 @@ export const MangaDetailPage = () => {
         isMobile={isMobile}
         owned={{
           manga,
-          editChapter,
-          effectiveChapters: effectiveChapters || null,
+          unit,
+          value: editValue,
+          total,
           progress,
           userRating,
           nextChapterDate: chapterInfo?.estimatedNextDate ?? null,
-          onChapterChange: handleChapterChange,
+          onValueChange: handleValueChange,
+          onUnitChange: handleUnitChange,
           onRate: scrollToRating,
         }}
       />
+
+      {showVolumeHint && (
+        <VolumeHint
+          volume={scannedVolume}
+          tracksChapters={unit !== 'volume'}
+          onMark={() => void handleMarkScannedVolume()}
+          onDismiss={() => setHintDismissed(true)}
+        />
+      )}
 
       <MangaDetailBody
         manga={manga}
@@ -362,7 +366,9 @@ export const MangaDetailPage = () => {
         showDeleteConfirm={showDeleteConfirm}
         setShowDeleteConfirm={setShowDeleteConfirm}
         onStatusChange={handleStatusChange}
-        onChapterChange={handleChapterChange}
+        volumeTotal={unit === 'volume' ? total || 0 : 0}
+        onChapterChange={handleValueChange}
+        onVolumeChange={handleValueChange}
         onRating={handleRating}
         onPlatformSelect={handlePlatformSelect}
         onNotesChange={handleNotesChange}

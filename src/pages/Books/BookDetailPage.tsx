@@ -25,6 +25,7 @@ import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf } from '../../lib/books/bookSeries';
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast } from '../../lib/interaction/toast';
+import { mangaPath } from '../../lib/manga/mangaSource';
 import { fetchMoreByAuthor } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
 import type { Book, BookFormat, BookSearchResult } from '../../types/Book';
@@ -255,20 +256,22 @@ export const BookDetailPage = () => {
   };
 
   const openManga = () => {
-    if (mangaLink) navigate(`/manga/${mangaLink.manga.id}`);
+    if (mangaLink) navigate(mangaPath(mangaLink.manga.id, mangaLink.volume));
   };
 
   const addAsManga = async () => {
-    if (mangaLink && (await addManga(mangaLink.manga))) openManga();
+    if (mangaLink && (await addManga(mangaLink.manga, { byVolume: true }))) openManga();
   };
 
   const moveToManga = async () => {
     if (!mangaLink || !owned) return;
-    if (!mangaLink.owned && !(await addManga(mangaLink.manga))) {
+    if (!mangaLink.owned && !(await addManga(mangaLink.manga, { byVolume: true }))) {
       showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
       return;
     }
-    actions.remove(owned, () => navigate(`/manga/${mangaLink.manga.id}`, { replace: true }));
+    actions.remove(owned, () =>
+      navigate(mangaPath(mangaLink.manga.id, mangaLink.volume), { replace: true })
+    );
   };
 
   const factStyle = { fontSize: 16, color: currentTheme.accent };

@@ -142,6 +142,7 @@ describe('findMangaByIsbn', () => {
     expect(await findMangaByIsbn('978-3-6955-0430-5')).toEqual({
       results: [spy],
       aliases: { 108556: 'Spy x Family – Band 16' },
+      volumes: { 108556: 16 },
     });
   });
 

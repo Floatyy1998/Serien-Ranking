@@ -406,6 +406,39 @@ const dict: Record<string, string> = {
   '{n} Kapitel gelesen': '{n} capítulos lidos',
   'Verlauf wird geladen …': 'Carregando histórico …',
   'Stand nachgetragen: Kap. {n}': 'Progresso adicionado: cap. {n}',
+
+  // ─── Manga: Zählweise Bände (Print) ───
+  'Bd. {a} / {b}': 'Vol. {a} / {b}',
+  'Bd. {n}': 'Vol. {n}',
+  '1 Band übrig': 'Falta 1 volume',
+  '{n} Bände übrig': 'Faltam {n} volumes',
+  '1 Band': '1 volume',
+  'Einen Band zurück': 'Um volume para trás',
+  'Einen Band weiter': 'Um volume para frente',
+  'Aktueller Band': 'Volume atual',
+  'Band {n} gelesen': 'Volume {n} lido',
+  Zählweise: 'Contar por',
+  'Band {n} gefunden': 'Volume {n} encontrado',
+  'Du zählst hier Kapitel. Mit dem Abhaken zählst du ab jetzt in Bänden.':
+    'Aqui você conta capítulos. Ao marcar, passa a contar por volumes.',
+  'Schon gelesen? Dann hak alle Bände bis hierhin ab.': 'Já leu? Marque todos os volumes até aqui.',
+  'Bis Band {n} gelesen': 'Lido até o volume {n}',
+  '{a} von {b} gelesen': '{a} de {b} lidos',
+  'Deine Bände': 'Seus volumes',
+  'Band {n} als ungelesen markieren': 'Marcar o volume {n} como não lido',
+  'Bis Band {n} als gelesen markieren': 'Marcar como lido até o volume {n}',
+  'Band {n} als ungelesen markieren?': 'Marcar o volume {n} como não lido?',
+  'Ab Band {n} als ungelesen markieren?': 'Marcar como não lidos os volumes a partir do {n}?',
+  'Alle {n} Bände zeigen': 'Mostrar os {n} volumes',
+  'Von vorn beginnen? Alle Bände gelten dann wieder als ungelesen.':
+    'Recomeçar? Todos os volumes voltam a contar como não lidos.',
+  '{n} Bd. offen': '{n} vol. pendentes',
+  'Laufend · Wartet auf neue Bände': 'Em publicação · Aguardando novos volumes',
+  'Stand nachgetragen: Bd. {n}': 'Progresso adicionado: vol. {n}',
+  'Stand: Bd. {n}': 'Progresso: vol. {n}',
+  'Bd. {a}–{b}': 'Vol. {a}–{b}',
+  '+{n} Bd.': '+{n} vol.',
+  '{n} Bd.': '{n} vol.',
 };
 
 export default dict;

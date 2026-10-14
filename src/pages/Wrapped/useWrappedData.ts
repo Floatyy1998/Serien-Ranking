@@ -119,7 +119,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
   // Aktivierte Slides basierend auf Konfiguration. Memoisiert, sonst wechselt die
   // Referenz bei jedem Render → goToSlide/next/prev bekommen neue Identität → die
   // Keyboard-/Wheel-Listener-Effekte hängen sich bei jedem Render neu ein/aus.
-  const hasManga = (stats?.manga?.totalChapters ?? 0) > 0;
+  const hasManga = (stats?.manga?.totalChapters ?? 0) + (stats?.manga?.totalVolumes ?? 0) > 0;
   const { allBookList } = useBooksList();
   const [bookEvents, setBookEvents] = useState<CompactBookEvent[]>([]);
   const [now] = useState(() => Date.now());
@@ -281,7 +281,12 @@ export const useWrappedData = (): UseWrappedDataResult => {
       '\n' +
       t('{n} Filme', { n: stats.totalMoviesWatched }) +
       '\n' +
-      (stats.manga ? t('{n} Manga-Kapitel', { n: stats.manga.totalChapters }) + '\n' : '') +
+      (stats.manga?.totalChapters
+        ? t('{n} Manga-Kapitel', { n: stats.manga.totalChapters }) + '\n'
+        : '') +
+      (stats.manga?.totalVolumes
+        ? t('{n} Manga-Bände', { n: stats.manga.totalVolumes }) + '\n'
+        : '') +
       t('{n} Stunden', { n: Math.round(stats.totalHoursWatched) });
 
     if (navigator.share) {

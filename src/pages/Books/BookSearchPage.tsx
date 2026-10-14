@@ -10,6 +10,7 @@ import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import { groupMangaVolumes, type MangaLink } from '../../lib/books/mangaVolume';
+import { mangaPath } from '../../lib/manga/mangaSource';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -354,11 +355,13 @@ const BookSearchView = () => {
                 adding={addingId === manga.id}
                 onOpen={() => {
                   remember(query);
-                  navigate(`/manga/${manga.id}`);
+                  navigate(
+                    mangaPath(manga.id, entry.volumes.length === 1 ? entry.link.volume : undefined)
+                  );
                 }}
                 onAdd={() => {
                   remember(query);
-                  void addManga(manga);
+                  void addManga(manga, { byVolume: true });
                 }}
               />
             );

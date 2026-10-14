@@ -6,11 +6,9 @@ import { EmptyState, HorizontalScrollContainer } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import {
-  filterCollection,
-  mangaProgressPercent,
-  mangaTotalChapters,
-} from '../../lib/manga/overview';
+import { mangaPath } from '../../lib/manga/mangaSource';
+import { filterCollection, mangaProgressPercent } from '../../lib/manga/overview';
+import { mangaStandLabel } from '../../lib/manga/progress';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
 import { t } from '../../services/i18n';
@@ -39,6 +37,7 @@ export const MangaSearchPage = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
   const [aliases, setAliases] = useState<Record<number, string>>({});
+  const [volumes, setVolumes] = useState<Record<number, number>>({});
   const [searching, setSearching] = useState(false);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [addingId, setAddingId] = useState<number | null>(null);
@@ -65,6 +64,7 @@ export const MangaSearchPage = () => {
     if (!query.trim()) {
       setResults([]);
       setAliases({});
+      setVolumes({});
       return;
     }
     let cancelled = false;
@@ -75,6 +75,7 @@ export const MangaSearchPage = () => {
         if (cancelled) return;
         setResults(outcome.results);
         setAliases(outcome.aliases);
+        setVolumes(outcome.volumes ?? {});
         const updated = [
           query.trim(),
           ...recentSearchesRef.current.filter((s) => s !== query.trim()),
@@ -136,12 +137,12 @@ export const MangaSearchPage = () => {
       setAddingId(result.id);
       const nextNmr = allOwned.length > 0 ? Math.max(...allOwned.map((m) => m.nmr)) + 1 : 1;
       try {
-        await addMangaToList(user.uid, result, nextNmr);
+        await addMangaToList(user.uid, result, nextNmr, { byVolume: result.id in volumes });
       } finally {
         setAddingId(null);
       }
     },
-    [user, allOwned]
+    [user, allOwned, volumes]
   );
 
   const clearRecent = () => {
@@ -314,7 +315,6 @@ export const MangaSearchPage = () => {
             </div>
             <HorizontalScrollContainer gap={14} style={{ padding: '0 20px' }}>
               {libraryMatches.map((manga) => {
-                const total = mangaTotalChapters(manga);
                 return (
                   <MangaPosterCard
                     key={manga.anilistId}
@@ -324,13 +324,7 @@ export const MangaSearchPage = () => {
                     countryOfOrigin={manga.countryOfOrigin}
                     owned
                     progress={mangaProgressPercent(manga)}
-                    meta={
-                      manga.currentChapter > 0
-                        ? total > 0
-                          ? t('Kap. {a} / {b}', { a: manga.currentChapter, b: total })
-                          : t('Kap. {n}', { n: manga.currentChapter })
-                        : STATUS_LABELS[manga.readStatus]
-                    }
+                    meta={mangaStandLabel(manga) || STATUS_LABELS[manga.readStatus]}
                     onClick={() => navigate(`/manga/${manga.anilistId}`)}
                   />
                 );
@@ -372,7 +366,7 @@ export const MangaSearchPage = () => {
                   owned={ownedById.get(result.id)}
                   alias={aliases[result.id]}
                   adding={addingId === result.id}
-                  onOpen={() => navigate(`/manga/${result.id}`)}
+                  onOpen={() => navigate(mangaPath(result.id, volumes[result.id]))}
                   onAdd={(e) => handleAdd(e, result)}
                 />
               ))}

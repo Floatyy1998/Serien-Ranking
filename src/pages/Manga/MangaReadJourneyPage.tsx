@@ -8,6 +8,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
 import { tapScale } from '../../lib/motion';
+import { mangaUnit, volumesLabel } from '../../lib/manga/progress';
 import { t } from '../../services/i18n';
 
 type TabType = 'activity' | 'genres' | 'insights';
@@ -343,7 +344,9 @@ export const MangaReadJourneyPage = () => {
                         <div
                           style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.6 }}
                         >
-                          {t('{n} Kapitel', { n: m.currentChapter })}
+                          {mangaUnit(m) === 'volume'
+                            ? volumesLabel(m.currentVolume || 0)
+                            : t('{n} Kapitel', { n: m.currentChapter })}
                         </div>
                       </div>
                     </div>

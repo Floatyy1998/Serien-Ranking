@@ -244,21 +244,58 @@
 
 .mdh-step-value {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: baseline;
-  column-gap: 4px;
+  flex-direction: column;
+  align-items: center;
   min-width: 84px;
 }
 
-.mdh-step-caption {
-  flex-basis: 100%;
-  text-align: center;
+.mdh-step-num {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.mdh-unit {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2px;
+}
+
+.mobile-app .mdh-unit-btn,
+.mdh-unit-btn {
+  min-width: 0;
+  min-height: 0;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.mobile-app .mdh-unit-btn--active,
+.mdh-unit-btn.mdh-unit-btn--active {
+  background: var(--theme-primary-15);
+  color: var(--theme-primary);
+  cursor: default;
+}
+
+.mdh-unit-btn:not(.mdh-unit-btn--active):hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.mdh-unit-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 1px;
 }
 
 .manga-hero-chapter-input.mdh-step-input {
@@ -1099,5 +1136,178 @@
 
   .md-main .md-poster-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* ISBN-Treffer: gefundenen Band abhaken */
+
+.md-volume-hint-wrap {
+  padding: 0 16px 12px;
+}
+
+.md-volume-hint {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px 48px 14px 16px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+}
+
+.md-volume-hint-icon {
+  flex-shrink: 0;
+  font-size: 22px;
+}
+
+.md-volume-hint-text {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.md-volume-hint-text strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.mobile-app .md-volume-hint-cta,
+.md-volume-hint-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-app .md-volume-hint-close,
+.md-volume-hint-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.md-volume-hint-cta:active,
+.md-volume-hint-close:active {
+  opacity: 0.7;
+}
+
+.md-volume-hint-cta:focus-visible,
+.md-volume-hint-close:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+/* Bände abhaken */
+
+.md-volumes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 8px;
+}
+
+.mobile-app .md-volume,
+.md-volume {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border-light);
+  background: rgba(255, 255, 255, 0.03);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.mobile-app .md-volume--read,
+.md-volume.md-volume--read {
+  border-color: var(--theme-primary-50);
+  background: var(--theme-primary-15);
+  color: var(--theme-primary);
+}
+
+.mobile-app .md-volume--next,
+.md-volume.md-volume--next {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.md-volume:active {
+  opacity: 0.7;
+}
+
+.md-volume:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.md-volumes-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.mobile-app .md-volumes-more,
+.md-volumes-more {
+  margin-top: 12px;
+  min-height: 0;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .md-volume-hint-wrap {
+    padding: 0 clamp(24px, 4vw, 72px) 16px;
+  }
+
+  .mobile-app .md-volume-hint-close,
+  .md-volume-hint-close {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .md-volumes {
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
   }
 }

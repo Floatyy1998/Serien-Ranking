@@ -4,9 +4,11 @@ import { getMangaDetails } from '../../../services/api/mangaDetails';
 import {
   getMangaDexChapterDates,
   getMangaDexInfo,
+  getMangaUpdatesSeries,
   type MangaDexChapterInfo,
   type MangaDexInfo,
 } from '../../../services/api/mangaUpdatesService';
+import { parseMangaUpdatesStatus } from '../../../lib/manga/mangaUpdatesAdapter';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { dbRef, paths } from '../../../services/db/ref';
 import { shouldReopenCompleted } from '../mangaUtils';
@@ -22,6 +24,8 @@ interface UseMangaLiveDataResult {
   detailsFailed: boolean;
   mangadexInfo: MangaDexInfo | null;
   chapterInfo: MangaDexChapterInfo | null;
+  /** Erschienene Bände laut MangaUpdates (nur wer in Bänden liest, 0 = unbekannt). */
+  liveVolumes: number;
 }
 
 /**
@@ -38,6 +42,7 @@ export const useMangaLiveData = ({
   const [failedId, setFailedId] = useState<number | null>(null);
   const [mangadexInfo, setMangadexInfo] = useState<MangaDexInfo | null>(null);
   const [chapterInfo, setChapterInfo] = useState<MangaDexChapterInfo | null>(null);
+  const [volumeInfo, setVolumeInfo] = useState<{ seriesId: string; volumes: number } | null>(null);
 
   useEffect(() => {
     if (!anilistId) return;
@@ -60,6 +65,8 @@ export const useMangaLiveData = ({
   const mangaCurrentChapter = manga?.currentChapter;
   const mangaCompletedAt = manga?.completedAt;
   const mangaLastReadAt = manga?.lastReadAt;
+  const mangaLatestVolumeAvailable = manga?.latestVolumeAvailable;
+  const tracksVolumes = manga?.trackBy === 'volumes';
   const shouldFetchLive = mangaStatus === 'RELEASING' || mangaStatus === 'HIATUS';
 
   useEffect(() => {
@@ -75,6 +82,24 @@ export const useMangaLiveData = ({
       .then(setChapterInfo)
       .catch(() => {}); // bewusst still: MangaDex-Livedaten sind optionale Anreicherung
   }, [mangaTitle, shouldFetchLive]);
+
+  // AniList kennt die Bandzahl laufender Reihen nicht, MangaUpdates schon („16 Volumes (Ongoing)").
+  const muSeriesId = mangadexInfo?.mangadexId;
+  useEffect(() => {
+    if (!tracksVolumes || !shouldFetchLive || !muSeriesId) return;
+    let alive = true;
+    getMangaUpdatesSeries(Number(muSeriesId))
+      .then((series) => {
+        const volumes = parseMangaUpdatesStatus(series.status).volumes || 0;
+        if (alive) setVolumeInfo({ seriesId: muSeriesId, volumes });
+      })
+      .catch(() => {}); // bewusst still: Bandzahl ist optionale Anreicherung
+    return () => {
+      alive = false;
+    };
+  }, [tracksVolumes, shouldFetchLive, muSeriesId]);
+  const liveVolumes =
+    tracksVolumes && volumeInfo && volumeInfo.seriesId === muSeriesId ? volumeInfo.volumes : 0;
 
   // latestChapterAvailable + lastReleaseDate in Firebase persistieren. Listen-
   // Ansichten kennen nur die Firebase-Felder, brauchen also die persistierten
@@ -94,6 +119,9 @@ export const useMangaLiveData = ({
     }
     if (newestRelease && newestRelease !== mangaLastReleaseDate) {
       updates.lastReleaseDate = newestRelease;
+    }
+    if (liveVolumes > (mangaLatestVolumeAvailable || 0)) {
+      updates.latestVolumeAvailable = liveVolumes;
     }
     // Neues Kapitel fuer einen aufgeholten "abgeschlossenen" Manga: zurueck
     // auf "Lese ich", sonst taucht er in keiner Lese-Ansicht mehr auf.
@@ -130,9 +158,11 @@ export const useMangaLiveData = ({
     mangaCurrentChapter,
     mangaCompletedAt,
     mangaLastReadAt,
+    liveVolumes,
+    mangaLatestVolumeAvailable,
     anilistId,
   ]);
 
   const detailsFailed = !anilistId || failedId === anilistId;
-  return { anilistData, detailsFailed, mangadexInfo, chapterInfo };
+  return { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes };
 };

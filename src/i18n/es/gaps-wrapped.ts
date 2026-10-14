@@ -52,6 +52,14 @@ const dict: Record<string, string> = {
   'Stunden · ≈ {n} Tage': 'horas · ≈ {n} días',
   'Tage Streak': 'días de racha',
   'Top Manga': 'Mangas top',
+
+  // ─── Wrapped: Manga-Bände ───
+  'Bände aus {n} Manga gelesen': 'tomos leídos de {n} mangas',
+  'und 1 Band': 'y 1 tomo',
+  'und {n} Bände': 'y {n} tomos',
+  'Lesemonat: {month} mit {n} Bänden': 'Mes de lectura: {month} con {n} tomos',
+  'Manga-Bände': 'Tomos de manga',
+  '{n} Manga-Bände': '{n} tomos de manga',
 };
 
 export default dict;

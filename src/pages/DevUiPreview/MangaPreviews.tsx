@@ -44,6 +44,15 @@ const toManga = (r: AniListMangaSearchResult, i: number, now: number): Manga => 
         ? 0
         : Math.max(1, Math.round(total * ((i * 37) % 90) * 0.01));
   const iso = (daysAgo: number) => new Date(now - daysAgo * DAY).toISOString();
+  // Jeder fünfte liest gedruckt — zählt Bände statt Kapitel.
+  const byVolume = i % 5 === 1;
+  const totalVolumes = r.volumes || 0;
+  const volume =
+    readStatus === 'completed'
+      ? totalVolumes || 12
+      : readStatus === 'planned'
+        ? 0
+        : Math.max(1, Math.round((totalVolumes || 14) * ((i * 37) % 90) * 0.01));
   return {
     nmr: i + 1,
     anilistId: r.id,
@@ -68,7 +77,14 @@ const toManga = (r: AniListMangaSearchResult, i: number, now: number): Manga => 
     completedAt: readStatus === 'completed' ? iso(i * 9 + 30) : undefined,
     latestChapterAvailable: r.status === 'RELEASING' ? total + (i % 3) + 1 : undefined,
     lastReleaseDate: r.status === 'RELEASING' ? iso((i % 4) + 0.5) : undefined,
-    readingPlatform: i % 3 === 0 ? 'Webtoon' : undefined,
+    readingPlatform: byVolume ? 'Print' : i % 3 === 0 ? 'Webtoon' : undefined,
+    ...(byVolume
+      ? {
+          trackBy: 'volumes' as const,
+          currentVolume: volume,
+          latestVolumeAvailable: totalVolumes ? undefined : 14 + i,
+        }
+      : {}),
   };
 };
 
@@ -128,8 +144,8 @@ export const MangaOverviewPreview = () => (
   <MangaPreviewShell>{() => <MangaPage />}</MangaPreviewShell>
 );
 
-const DetailRoute = ({ id }: { id: number }) => (
-  <Routes location={`/dev/ui-preview/manga/${id}`}>
+const DetailRoute = ({ id, search = '' }: { id: number; search?: string }) => (
+  <Routes location={`/dev/ui-preview/manga/${id}${search}`}>
     <Route path="manga/:id" element={<MangaDetailPage />} />
   </Routes>
 );
@@ -142,6 +158,19 @@ export const MangaDetailOwnedPreview = () => {
     </MangaPreviewShell>
   );
 };
+
+/** Print-Leser nach der ISBN-Suche: Bände-Zählweise + Hinweis „Bis Band N gelesen". */
+export const MangaDetailVolumesPreview = () => (
+  <MangaPreviewShell>
+    {(list) => {
+      const manga = list.find((m) => m.trackBy === 'volumes' && m.readStatus === 'reading');
+      if (!manga) return <p style={{ padding: 24 }}>Kein Print-Manga in den Beispieldaten</p>;
+      return (
+        <DetailRoute id={manga.anilistId} search={`?band=${(manga.currentVolume || 0) + 2}`} />
+      );
+    }}
+  </MangaPreviewShell>
+);
 
 export const MangaDetailForeignPreview = () => (
   <MangaPreviewShell>{() => <DetailRoute id={30002} />}</MangaPreviewShell>
