@@ -113,6 +113,18 @@ describe('pickRelevantAliasHits', () => {
     expect(pickRelevantAliasHits(sameTitle, 'Boyfriends')).toEqual(sameTitle.slice(0, 2));
   });
 
+  it('zieht exakte Titeltreffer vor die Begrenzung', () => {
+    const ranked = [
+      ...Array.from({ length: 6 }, (_, i) => ({
+        id: i + 1,
+        title: `Boyfriends Story ${i}`,
+        hitTitle: `Boyfriends Story ${i}`,
+      })),
+      { id: 99, title: 'Boyfriends.', hitTitle: 'Boyfriends.' },
+    ];
+    expect(pickRelevantAliasHits(ranked, 'boyfriends')[0].id).toBe(99);
+  });
+
   it('begrenzt die Anzahl', () => {
     const many = Array.from({ length: 8 }, (_, i) => ({
       title: `Biest ${i}`,

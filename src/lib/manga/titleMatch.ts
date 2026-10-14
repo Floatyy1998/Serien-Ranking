@@ -71,15 +71,18 @@ export const pickRelevantAliasHits = <T extends AliasHit & { id?: number | null 
   limit = 5
 ): T[] => {
   const seen = new Set<string>();
-  return hits
-    .filter((hit) => {
-      const key = hit.id ? String(hit.id) : normalizeTitle(hit.title);
-      if (!key || seen.has(key)) return false;
-      if (!matchesTitleText(hit.hitTitle, query) && !matchesTitleText(hit.title, query)) {
-        return false;
-      }
-      seen.add(key);
-      return true;
-    })
-    .slice(0, limit);
+  const normalizedQuery = normalizeTitle(query);
+  const isExact = (hit: T) =>
+    normalizeTitle(hit.hitTitle) === normalizedQuery ||
+    normalizeTitle(hit.title) === normalizedQuery;
+  const relevant = hits.filter((hit) => {
+    const key = hit.id ? String(hit.id) : normalizeTitle(hit.title);
+    if (!key || seen.has(key)) return false;
+    if (!matchesTitleText(hit.hitTitle, query) && !matchesTitleText(hit.title, query)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+  return [...relevant.filter(isExact), ...relevant.filter((hit) => !isExact(hit))].slice(0, limit);
 };
