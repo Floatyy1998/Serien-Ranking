@@ -20,6 +20,8 @@ export interface Book {
   pageCount?: number;
   publishedYear?: number;
   publisher?: string;
+  /** Auflage/Ausgabe, z. B. „3. Auflage 2021" — aus der DNB oder selbst eingetragen. */
+  edition?: string;
   language?: string;
   categories?: string[];
   isbn13?: string;
@@ -58,6 +60,7 @@ export interface BookSearchResult {
   pageCount?: number;
   publishedYear?: number;
   publisher?: string;
+  edition?: string;
   language?: string;
   categories?: string[];
   isbn13?: string;

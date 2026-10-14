@@ -34,6 +34,11 @@ import './components/books.css';
 import { useBookActions } from './hooks/useBookActions';
 import { GENRES } from './data/genres';
 import { DiscoverShelf, FeaturedHero, GenreTiles, MixedShelf } from './discover/DiscoverParts';
+import { GenrePickerSheet, GenrePrompt } from './discover/GenrePicker';
+import { forYouGenres, genreShelfOrder, pickedGenres } from '../../lib/books/genrePrefs';
+import { showToast } from '../../lib/interaction/toast';
+import { setFavoriteBookGenres } from '../../services/books/bookService';
+import type { ShelfId } from '../../services/api/bookDiscovery';
 import { ShelfDedupeContext, useShelfDedupeStore } from './discover/discoverDedupe';
 import { useAddFlow } from './discover/useAddFlow';
 import { useNextVolumes } from './hooks/useNextVolumes';
@@ -46,14 +51,15 @@ import { ForYourShowsSection } from './sections/ForYourShowsSection';
 import { NextVolumesSection } from './sections/NextVolumesSection';
 import { ReadingGoalSection } from './sections/ReadingGoalSection';
 
-const GENRE_SHELVES = ['fantasy', 'thriller', 'romance', 'scifi', 'ya', 'classics'] as const;
-const SHELF_ORDER = ['new', 'hero', 'for-you', ...GENRE_SHELVES];
+const GENRE_SHELVES: ShelfId[] = ['fantasy', 'thriller', 'romance', 'scifi', 'ya', 'classics'];
+const GENRE_IDS = GENRES.map((g) => g.id);
 
 export const BooksPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const { bookList } = useBooksList();
+  const { bookList, favoriteBookGenres } = useBooksList();
   const navigate = useNavigate();
+  const [genrePickerOpen, setGenrePickerOpen] = useState(false);
   const actions = useBookActions();
   const notifs = useUnifiedNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -116,19 +122,36 @@ export const BooksPage = () => {
   const { progress: nextVolumes } = useNextVolumes(bookList, now);
   const { suggestions, loading: showsLoading } = useBooksForYourShows();
   const { openAdd, sheet: addSheet } = useAddFlow();
-  const dedupe = useShelfDedupeStore(SHELF_ORDER);
   const taste = useReadingTaste(bookList);
+  const picked = useMemo(
+    () => pickedGenres(GENRE_IDS, favoriteBookGenres) as ShelfId[],
+    [favoriteBookGenres]
+  );
   const favoriteGenres = useMemo(
     () =>
-      tasteGenres(taste)
-        .slice(0, 2)
-        .map((g) => g.id),
-    [taste]
+      forYouGenres(
+        picked,
+        tasteGenres(taste).map((g) => g.id)
+      ) as ShelfId[],
+    [picked, taste]
   );
   const favoriteLabels = favoriteGenres
     .map((id) => GENRES.find((g) => g.id === id)?.label())
     .filter(Boolean)
     .join(' & ');
+  const genreShelves = useMemo(() => genreShelfOrder(GENRE_SHELVES, picked) as ShelfId[], [picked]);
+  const shelfOrder = useMemo(() => ['new', 'hero', 'for-you', ...genreShelves], [genreShelves]);
+  const dedupe = useShelfDedupeStore(shelfOrder);
+  const saveGenres = useCallback(
+    (ids: string[]) => {
+      setGenrePickerOpen(false);
+      if (!user) return;
+      void setFavoriteBookGenres(user.uid, ids).catch(() =>
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+      );
+    },
+    [user]
+  );
 
   const quickAdd = useCallback(
     (book: Book, pages: number) => void actions.saveProgress(book, (book.currentPage || 0) + pages),
@@ -275,28 +298,43 @@ export const BooksPage = () => {
           dedupeKey="new"
         />
 
-        {favoriteGenres.length > 0 && (
+        {favoriteGenres.length > 0 ? (
           <MixedShelf
+            key={favoriteGenres.join('+')}
             ids={favoriteGenres}
             onAdd={openAdd}
             title={t('Für dich')}
-            caption={t('Weil du gern {genres} liest', { genres: favoriteLabels })}
+            caption={
+              picked.length
+                ? t('Deine Lieblingsgenres: {genres}', { genres: favoriteLabels })
+                : t('Weil du gern {genres} liest', { genres: favoriteLabels })
+            }
             icon={<AutoAwesome />}
             iconColor={currentTheme.accent}
             dedupeKey="for-you"
+            action={{ label: t('Anpassen'), onClick: () => setGenrePickerOpen(true) }}
           />
+        ) : (
+          <GenrePrompt onPick={() => setGenrePickerOpen(true)} />
         )}
 
         <ForYourShowsSection suggestions={suggestions} loading={showsLoading} />
 
-        <GenreTiles />
+        <GenreTiles preferred={picked} onEditFavorites={() => setGenrePickerOpen(true)} />
 
-        {GENRE_SHELVES.map((id) => (
+        {genreShelves.map((id) => (
           <MixedShelf key={id} ids={[id]} onAdd={openAdd} dedupeKey={id} />
         ))}
       </ShelfDedupeContext.Provider>
 
       {addSheet}
+
+      <GenrePickerSheet
+        open={genrePickerOpen}
+        initial={picked}
+        onClose={() => setGenrePickerOpen(false)}
+        onSave={saveGenres}
+      />
 
       <HomeSearchOverlay
         open={searchOpen}

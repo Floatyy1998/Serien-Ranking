@@ -6,14 +6,15 @@ import {
   Edit,
   PauseCircle,
   Replay,
+  Star,
 } from '@mui/icons-material';
-import React from 'react';
+import React, { useState } from 'react';
+import { QuickRatingSheet } from '../../../components/ui/overlay/QuickRatingSheet';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { progressPercent, remainingHours } from '../../../lib/books/bookProgress';
 import { dateLocale, t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { Book, BookStatus } from '../../../types/Book';
-import { StarRating } from '../components/StarRating';
 import { formatHours, STATUS_LABELS } from '../helpers';
 
 interface Props {
@@ -49,6 +50,8 @@ export const BookStatePanel: React.FC<Props> = ({
   onRate,
 }) => {
   const { currentTheme } = useTheme();
+  const [rating, setRating] = useState(false);
+  const rated = (book.rating ?? 0) > 0;
   const percent = progressPercent(book);
   const hours = remainingHours(book);
   const statusColor: Record<BookStatus, string> = {
@@ -208,16 +211,55 @@ export const BookStatePanel: React.FC<Props> = ({
         }}
       >
         <span style={{ color: currentTheme.text.muted, fontWeight: 700, fontSize: 13.5 }}>
-          {book.rating
-            ? t('{n} von 5 Sternen', { n: (book.rating / 2).toLocaleString(dateLocale()) })
-            : t('Deine Bewertung')}
+          {t('Deine Bewertung')}
         </span>
-        <StarRating
-          value={book.rating ?? 0}
-          onChange={onRate}
-          color={currentTheme.status.warning}
-        />
+        <button
+          type="button"
+          className="bk-rate-btn"
+          onClick={() => setRating(true)}
+          aria-label={
+            rated ? t('{value} von 10', { value: (book.rating ?? 0).toFixed(1) }) : t('Bewerten')
+          }
+          style={
+            rated
+              ? {
+                  color: currentTheme.status.warning,
+                  borderColor: `${currentTheme.status.warning}40`,
+                  background: `${currentTheme.status.warning}12`,
+                }
+              : { color: currentTheme.text.secondary }
+          }
+        >
+          <Star style={{ fontSize: 18 }} />
+          {rated ? (
+            <>
+              <span className="bk-rate-value">{(book.rating ?? 0).toFixed(1)}</span>
+              <span className="bk-rate-max" style={{ color: currentTheme.text.muted }}>
+                / 10
+              </span>
+            </>
+          ) : (
+            t('Bewerten')
+          )}
+        </button>
       </div>
+
+      <QuickRatingSheet
+        isOpen={rating}
+        onClose={() => setRating(false)}
+        seriesTitle={book.title}
+        eyebrow={t('Deine Bewertung')}
+        initialRating={book.rating ?? 0}
+        genreStage={false}
+        onRate={(value) => {
+          onRate(Math.round(value * 10) / 10);
+          setRating(false);
+        }}
+        onClear={() => {
+          onRate(0);
+          setRating(false);
+        }}
+      />
     </div>
   );
 };

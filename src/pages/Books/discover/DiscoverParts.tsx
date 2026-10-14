@@ -12,7 +12,7 @@ import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { curateShelf, daySeed, mixShelves, resultKeys } from '../../../lib/books/discoverMix';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
 import { findBook } from '../../../services/api/booksApi';
-import { dateLocale, t } from '../../../services/i18n';
+import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { BookSearchResult } from '../../../types/Book';
 import { BookCover } from '../components/BookCover';
@@ -26,13 +26,9 @@ import { useHideOwned } from './useAddFlow';
 
 const MIN_RATINGS = 5;
 
+/** Open Library bewertet mit 1–5 Sternen; angezeigt wird wie überall auf 0–10. */
 const ratingLabel = (r: BookSearchResult) =>
-  r.avgRating && (r.ratingCount ?? 0) >= MIN_RATINGS
-    ? r.avgRating.toLocaleString(dateLocale(), {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      })
-    : null;
+  r.avgRating && (r.ratingCount ?? 0) >= MIN_RATINGS ? (r.avgRating * 2).toFixed(1) : null;
 
 /** Öffnet eigene Bücher direkt, fremde als Vorschau mit den Treffer-Daten. */
 export function useOpenResult() {
@@ -126,7 +122,7 @@ export const DiscoverCard: React.FC<{
         {rating && (
           <span
             className="dsc-rating"
-            aria-label={t('{rating} von 5 Sternen', { rating })}
+            aria-label={t('{value} von 10', { value: rating })}
             title={t('{n} Bewertungen bei Open Library', { n: result.ratingCount ?? 0 })}
           >
             <Star style={{ fontSize: 13, color: currentTheme.status.warning }} />

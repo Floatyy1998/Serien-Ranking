@@ -22,7 +22,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
-import { partPositionOf } from '../../lib/books/bookSeries';
+import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
+import { splitVolume } from '../../lib/books/mangaVolume';
+import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { removeBook, setBookHidden } from '../../services/books/bookService';
@@ -106,6 +108,13 @@ const MoreByAuthor: React.FC<{ author: string; title: string }> = ({ author, tit
     </div>
   );
 };
+
+interface DetailRow {
+  label: string;
+  value?: string | number;
+  /** Nur bei eigenen Büchern: Zeile lässt sich direkt überschreiben. */
+  edit?: Omit<EditableDetailRowProps, 'label' | 'value'>;
+}
 
 export const BookDetailPage = () => {
   const { currentTheme } = useTheme();
@@ -221,24 +230,74 @@ export const BookDetailPage = () => {
       : (details?.categories ?? view.categories ?? []).filter((c) => c.length <= 22);
   const pageCount = view.pageCount ?? details?.pageCount;
   const readingHours = pageCount ? Math.max(1, Math.round(pageCount / PAGES_PER_HOUR)) : null;
-  const seriesName = links?.series?.name || owned?.series?.name;
-  const seriesPosition = owned?.series?.position ?? links?.series?.position;
+  const { name: seriesName, position: seriesPosition } = seriesPlacement({
+    title: view.title,
+    own: owned?.series,
+    linked: links?.series,
+    manga: mangaLink && {
+      name: mangaLink.manga.title.english || mangaLink.manga.title.romaji,
+      volume: mangaLink.volume,
+    },
+  });
   const author = view.authors?.[0];
   const descriptionText =
     showOriginal && description.original ? description.original : description.text;
 
-  const rawRows: [string, string | number | undefined][] = [
-    [t('Seiten'), pageCount ? pageCount.toLocaleString(dateLocale()) : undefined],
-    [t('Erschienen'), details?.publishedDate ?? view.publishedYear],
-    [t('Verlag'), view.publisher ?? details?.publisher],
-    [t('Sprache'), languageName(view.language)],
-    ['ISBN', view.isbn13],
-    [
-      t('Hinzugefügt'),
-      owned ? new Date(owned.addedAt).toLocaleDateString(dateLocale()) : undefined,
-    ],
+  const seriesValue = seriesPosition
+    ? seriesName
+      ? `${seriesName} · ${t('Band {n}', { n: seriesPosition })}`
+      : t('Band {n}', { n: seriesPosition })
+    : seriesName;
+
+  const saveSeriesPosition = (value: string) => {
+    if (!owned) return;
+    const position = Number(value);
+    if (!position) {
+      void actions.updateFields(
+        owned,
+        owned.series?.wikidataId ? { 'series/position': null } : { series: null }
+      );
+      return;
+    }
+    void actions.updateFields(owned, {
+      'series/name': owned.series?.name || seriesName || splitVolume(owned.title).series,
+      'series/position': position,
+    });
+  };
+
+  const rawRows: DetailRow[] = [
+    {
+      label: t('Reihe'),
+      value: seriesValue,
+      edit: {
+        draft: seriesPosition ? String(seriesPosition) : '',
+        placeholder: t('Band-Nr.'),
+        numeric: true,
+        onSave: saveSeriesPosition,
+      },
+    },
+    { label: t('Seiten'), value: pageCount ? pageCount.toLocaleString(dateLocale()) : undefined },
+    { label: t('Erschienen'), value: details?.publishedDate ?? view.publishedYear },
+    { label: t('Verlag'), value: view.publisher ?? details?.publisher },
+    {
+      label: t('Auflage'),
+      value: view.edition,
+      edit: {
+        placeholder: t('z. B. 3. Auflage 2021'),
+        maxLength: 40,
+        onSave: (value) => owned && void actions.updateFields(owned, { edition: value || null }),
+      },
+    },
+    { label: t('Sprache'), value: languageName(view.language) },
+    { label: 'ISBN', value: view.isbn13 },
+    {
+      label: t('Hinzugefügt'),
+      value: owned ? new Date(owned.addedAt).toLocaleDateString(dateLocale()) : undefined,
+    },
   ];
-  const detailRows = rawRows.filter(([, value]) => value !== undefined && value !== '');
+  const detailRows = rawRows.filter(
+    (row) => (owned && row.edit) || (row.value !== undefined && row.value !== '')
+  );
 
   const externalLinks = [
     details?.infoLink &&
@@ -502,20 +561,29 @@ export const BookDetailPage = () => {
               <h2 className="bd-panel-title" style={{ color: currentTheme.text.secondary }}>
                 {t('Details')}
               </h2>
-              {detailRows.map(([label, value]) => (
-                <div key={label} className="bd-detail-row">
-                  <span style={{ color: currentTheme.text.muted }}>{label}</span>
-                  <span
-                    style={{
-                      color: currentTheme.text.secondary,
-                      fontWeight: 700,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {value}
-                  </span>
-                </div>
-              ))}
+              {detailRows.map(({ label, value, edit }) =>
+                owned && edit ? (
+                  <EditableDetailRow
+                    key={label}
+                    label={label}
+                    value={value === undefined ? undefined : String(value)}
+                    {...edit}
+                  />
+                ) : (
+                  <div key={label} className="bd-detail-row">
+                    <span style={{ color: currentTheme.text.muted }}>{label}</span>
+                    <span
+                      style={{
+                        color: currentTheme.text.secondary,
+                        fontWeight: 700,
+                        textAlign: 'right',
+                      }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                )
+              )}
               {owned && (
                 <div style={{ marginTop: 12 }}>
                   <div

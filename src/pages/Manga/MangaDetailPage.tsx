@@ -32,7 +32,8 @@ import { moveMangaToBooks, restoreMangaFromBooks } from './mangaBookSwitch';
 import { bookPath, searchPath } from '../Books/helpers';
 import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { findVolumeBook } from '../../services/books/volumeBook';
-import { bookAsSearchResult, firstSourceBook } from '../../lib/books/mangaBooks';
+import { firstSourceBook } from '../../lib/books/mangaBooks';
+import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
@@ -197,7 +198,7 @@ export const MangaDetailPage = () => {
     setOpeningBook(true);
     try {
       const own = firstSourceBook(manga);
-      const result = own ? bookAsSearchResult(own) : await findVolumeBook(manga, 1);
+      const result = own ? bookAsResult(own) : await findVolumeBook(manga, 1);
       if (!result) {
         navigate(searchPath(manga.title));
         return;

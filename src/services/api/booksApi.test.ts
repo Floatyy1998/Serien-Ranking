@@ -65,6 +65,21 @@ describe('findBook', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('fragt Google bei Hintergrund-Abgleichen nie, auch mit Schlüssel', async () => {
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', 'test-key');
+    const fetchMock = route({
+      google: () => respond([]),
+      ol: [doc('Der kleine Hobbit', 'J.R.R. Tolkien')],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect((await findBook('Der kleine Hobbit', 'J. R. R. Tolkien'))?.title).toBe(
+      'Der kleine Hobbit'
+    );
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('googleapis.com'))).toBe(
+      false
+    );
+  });
+
   it('merkt sich Fehlschläge nicht', async () => {
     let docs: unknown[] = [];
     vi.stubGlobal(

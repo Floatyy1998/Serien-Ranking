@@ -4,15 +4,10 @@ import {
   type ActivityBundle,
   type BundledTitle,
 } from '../../../lib/social/activityBundles';
-import { dateLocale, t } from '../../../services/i18n';
+import { t } from '../../../services/i18n';
 
-export const formatActivityRating = (title: BundledTitle): string | null => {
-  if (!title.rating) return null;
-  if (title.media === 'book') {
-    return t('{n} von 5 Sternen', { n: (title.rating / 2).toLocaleString(dateLocale()) });
-  }
-  return `${title.rating}/10`;
-};
+export const formatActivityRating = (title: BundledTitle): string | null =>
+  title.rating ? `${title.rating}/10` : null;
 
 export const titleSentence = (title: BundledTitle): string => {
   const name = title.title || t('Unbekannt');

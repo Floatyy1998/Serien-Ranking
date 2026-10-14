@@ -37,25 +37,6 @@ export function firstSourceBook(manga: Pick<Manga, 'fromBooks'>): Book | null {
   );
 }
 
-/** Gespeichertes Buch als Suchtreffer, damit die Buchseite es als Vorschau zeigt. */
-export const bookAsSearchResult = (book: Book): BookSearchResult =>
-  stripUndefined({
-    id: book.id,
-    title: book.title,
-    subtitle: book.subtitle,
-    authors: book.authors ?? [],
-    cover: book.cover,
-    pageCount: book.pageCount,
-    publishedYear: book.publishedYear,
-    publisher: book.publisher,
-    language: book.language,
-    categories: book.categories,
-    isbn13: book.isbn13,
-    googleId: book.googleId,
-    olWorkId: book.olWorkId,
-    source: book.source ?? 'google',
-  });
-
 /**
  * Bücher, die beim „Als Buch führen" zurückkommen. Bände, die im Manga schon
  * abgehakt waren, gelten als gelesen — ohne Datum, wie „Früher gelesen".

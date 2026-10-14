@@ -7,6 +7,8 @@ export interface BooksListContextType {
   hiddenBookList: Book[];
   /** AniList-IDs der Manga-Reihen, deren Bände als Bücher geführt werden. */
   seriesAsBooks: Set<number>;
+  /** Selbst gewählte Lieblingsgenres (Genre-IDs der Bücher-Regale), leer = keine Wahl. */
+  favoriteBookGenres: string[];
   loading: boolean;
   refetchBooks: () => void;
   isOffline: boolean;
@@ -18,6 +20,7 @@ export const BooksListContext = createContext<BooksListContextType>({
   allBookList: [],
   hiddenBookList: [],
   seriesAsBooks: new Set(),
+  favoriteBookGenres: [],
   loading: true,
   refetchBooks: () => {},
   isOffline: false,

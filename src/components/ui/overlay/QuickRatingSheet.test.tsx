@@ -77,6 +77,43 @@ describe('QuickRatingSheet', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Später' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+  it('drops the genre stage and offers removing an existing rating (books)', () => {
+    const onRate = vi.fn<(rating: number, genreRatings?: Record<string, number>) => void>();
+    const onClear = vi.fn();
+    render(
+      <QuickRatingSheet
+        isOpen
+        onClose={() => {}}
+        seriesTitle="Momo"
+        initialRating={7.5}
+        genreStage={false}
+        onRate={onRate}
+        onClear={onClear}
+      />
+    );
+    expect(screen.queryByRole('button', { name: 'Alle Genres' })).not.toBeInTheDocument();
+    expect(screen.getByText('7.5')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '9' }));
+    fireEvent.click(screen.getByRole('button', { name: /Speichern/ }));
+    expect(onRate).toHaveBeenCalledWith(9, undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'Bewertung entfernen' }));
+    expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides "Bewertung entfernen" while nothing is rated yet', () => {
+    render(
+      <QuickRatingSheet
+        isOpen
+        onClose={() => {}}
+        seriesTitle="Momo"
+        genreStage={false}
+        onRate={() => {}}
+        onClear={() => {}}
+      />
+    );
+    expect(screen.queryByRole('button', { name: 'Bewertung entfernen' })).not.toBeInTheDocument();
+  });
+
   it('offers the genre stage even for a title without own genres', () => {
     render(<QuickRatingSheet isOpen onClose={() => {}} seriesTitle="Dexter" onRate={() => {}} />);
     expect(screen.getByRole('button', { name: 'Alle Genres' })).toBeInTheDocument();

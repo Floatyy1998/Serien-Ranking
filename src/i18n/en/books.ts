@@ -82,7 +82,6 @@ const dict: Record<string, string> = {
   'Seiten gelesen': 'Pages read',
   'Seiten pro Tag': 'Pages per day',
   'Tage Lese-Serie': 'Day reading streak',
-  'Ø Sterne': 'Avg. stars',
   'Bücher insgesamt': 'Books in total',
   'Seiten insgesamt': 'Pages in total',
   'Seiten pro Monat': 'Pages per month',
@@ -128,7 +127,6 @@ const dict: Record<string, string> = {
   'Seit {date}': 'Since {date}',
   'Seite eingeben': 'Enter page',
   'Gelesen am {date}': 'Read on {date}',
-  '{n} von 5 Sternen': '{n} out of 5 stars',
   'Stöbern nach Genre': 'Browse by genre',
   'Zu meinen Büchern': 'Add to my books',
   'Die beliebtesten Bücher in deiner Sprache': 'The most popular books in your language',
@@ -280,7 +278,6 @@ const dict: Record<string, string> = {
   'Am besten bewertet bei Open Library': 'Top rated on Open Library',
   'Stark bewertet, aber abseits der Bestseller': 'Highly rated, away from the bestseller lists',
   'Viel gelesen aus den letzten Jahren': 'Widely read from recent years',
-  '{rating} von 5 Sternen': '{rating} out of 5 stars',
   '{n} Bewertungen bei Open Library': '{n} ratings on Open Library',
   'Hier ist gerade nichts Neues für dich dabei. Probier eine andere Sortierung oder ein anderes Thema.':
     'Nothing new for you here right now. Try a different sort or theme.',

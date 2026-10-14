@@ -10,6 +10,7 @@ import {
   type GoogleVolume,
   type OpenLibraryDoc,
 } from '../../lib/books/bookSearchMapping';
+import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
 
@@ -92,10 +93,14 @@ async function searchGoogle(query: string, signal?: AbortSignal): Promise<BookSe
   }
 }
 
-async function searchOpenLibrary(query: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+async function searchOpenLibrary(
+  query: string,
+  signal?: AbortSignal,
+  solrQuery?: string
+): Promise<BookSearchResult[]> {
   const params = new URLSearchParams({ limit: '24', fields: OL_FIELDS });
   if (looksLikeIsbn(query)) params.set('isbn', toIsbn13(query) ?? query.replace(/\D/g, ''));
-  else params.set('q', query);
+  else params.set('q', solrQuery ?? query);
   params.set('lang', appLocale);
   const data = await fetchJson<{ docs?: OpenLibraryDoc[] }>(
     `${OPEN_LIBRARY}/search.json?${params.toString()}`,
@@ -146,14 +151,25 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
   ];
 }
 
-/** Treffer mit Cover und Seitenzahl nach oben, Dubletten (gleicher Titel + Autor) raus. */
+/**
+ * Treffer mit Cover und Seitenzahl nach oben, Dubletten (gleicher Titel + Autor) raus.
+ * Treffer, in denen die Suchwörter weder im Titel noch beim Autor stehen, fallen weg —
+ * außer es bliebe dann gar nichts übrig (Tippfehler, fremde Schreibweise).
+ */
 export function rankResults(results: BookSearchResult[], query: string): BookSearchResult[] {
+  const matched = results.map((r) => ({ r, match: searchMatch(r, query) }));
+  const relevant = matched.filter(({ match }) => match.matches);
+  const pool = relevant.length ? relevant : matched;
+  const titleHit = new Set(
+    pool.filter(({ match }) => match.inTitle || match.byAuthor).map(({ r }) => r)
+  );
+  const candidates = pool.map(({ r }) => r);
   const q = query.toLowerCase().trim();
   const richness = (r: BookSearchResult) =>
     (r.description ? 3 : 0) + (r.pageCount ? 2 : 0) + (r.cover ? 1 : 0) + (r.isbn13 ? 1 : 0);
   const byKey = new Map<string, number>();
   const unique: BookSearchResult[] = [];
-  for (const r of results) {
+  for (const r of candidates) {
     const key = bookMatchKey(r.title, r.authors);
     const at = byKey.get(key);
     if (at === undefined) {
@@ -165,6 +181,7 @@ export function rankResults(results: BookSearchResult[], query: string): BookSea
   }
   const score = (r: BookSearchResult) =>
     (r.title.toLowerCase() === q ? 6 : r.title.toLowerCase().startsWith(q) ? 3 : 0) +
+    (titleHit.has(r) ? 3 : 0) +
     (r.cover ? 2 : 0) +
     (r.pageCount ? 1 : 0) +
     (r.authors.length ? 1 : 0) +
@@ -188,7 +205,7 @@ export async function searchBooks(
     key,
     6 * HOUR,
     async () => {
-      const found = await runSearch(trimmed);
+      const found = await runSearch(trimmed, undefined, { typing: true });
       if (!found.length) throw NO_HITS;
       return found;
     },
@@ -201,11 +218,16 @@ export async function searchBooks(
   return results.map((r) => (r.authors ? r : { ...r, authors: [] }));
 }
 
-async function runSearch(trimmed: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+/** typing: Suche beim Tippen — Open Library fragt zusätzlich den Titel mit angefangenem letzten Wort ab. */
+async function runSearch(
+  trimmed: string,
+  signal?: AbortSignal,
+  options: { typing?: boolean; google?: boolean } = {}
+): Promise<BookSearchResult[]> {
   if (looksLikeIsbn(trimmed)) {
     return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
   }
-  if (hasGoogleBooks()) {
+  if (options.google !== false && hasGoogleBooks()) {
     try {
       const google = await searchGoogle(trimmed, signal);
       if (google.length) return rankResults(google, trimmed);
@@ -213,7 +235,15 @@ async function runSearch(trimmed: string, signal?: AbortSignal): Promise<BookSea
       if ((err as Error).name === 'AbortError') throw err;
     }
   }
-  return rankResults(await searchOpenLibrary(trimmed, signal), trimmed);
+  const titleQuery = options.typing ? titlePrefixQuery(trimmed) : null;
+  const [general, byTitle] = await Promise.all([
+    searchOpenLibrary(trimmed, signal),
+    titleQuery
+      ? searchOpenLibrary(trimmed, signal, titleQuery).catch(() => [] as BookSearchResult[])
+      : Promise.resolve([] as BookSearchResult[]),
+  ]);
+  const generalFits = general.some((r) => searchMatch(r, trimmed).matches);
+  return rankResults(generalFits ? general : [...byTitle, ...general], trimmed);
 }
 
 async function loadDetails(ref: {
@@ -274,7 +304,10 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
     last ? list.find((r) => r.authors.some((a) => a.toLowerCase().includes(last))) : list[0];
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
-    const results = await runSearch(query).catch(() => [] as BookSearchResult[]);
+    // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.
+    const results = await runSearch(query, undefined, { google: false }).catch(
+      () => [] as BookSearchResult[]
+    );
     const hit = byAuthor(results) ?? (index === 0 ? results[0] : undefined);
     if (hit) return hit;
   }

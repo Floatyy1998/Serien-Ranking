@@ -156,12 +156,8 @@ export const BookStatsPage = () => {
           <StatTile value={stats.activeDays} label={t('Lesetage')} />
           {isCurrent && <StatTile value={stats.streak} label={t('Tage Lese-Serie')} />}
           <StatTile
-            value={
-              stats.avgRating !== null
-                ? (stats.avgRating / 2).toLocaleString(dateLocale(), { maximumFractionDigits: 1 })
-                : '–'
-            }
-            label={t('Ø Sterne')}
+            value={stats.avgRating !== null ? stats.avgRating.toFixed(1) : '–'}
+            label={t('Ø Bewertung')}
           />
           <StatTile value={allTime.booksRead} label={t('Bücher insgesamt')} />
           <StatTile

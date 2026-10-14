@@ -269,6 +269,8 @@ const BooksPreviewShell = ({
       allBookList: books,
       hiddenBookList: [],
       seriesAsBooks: new Set<number>(),
+      favoriteBookGenres:
+        new URLSearchParams(window.location.search).get('genres')?.split(',').filter(Boolean) ?? [],
       loading: false,
       refetchBooks: () => {},
       isOffline: false,

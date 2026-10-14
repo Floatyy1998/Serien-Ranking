@@ -33,6 +33,10 @@ interface QuickRatingSheetProps {
   itemId?: number | string;
   /** Durchgereicht an das BottomSheet (z. B. über dem Such-Overlay). */
   zIndex?: number | string;
+  /** Aus: nur der Gesamtregler (Bücher haben keine Serien-/Film-Genres). */
+  genreStage?: boolean;
+  /** Gesetzt und schon bewertet: Link „Bewertung entfernen" unter dem Regler. */
+  onClear?: () => void;
 }
 
 export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
@@ -47,6 +51,8 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   initialGenreRatings,
   itemId,
   zIndex,
+  genreStage = true,
+  onClear,
 }) => {
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
@@ -62,7 +68,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   const stage = useGenreRatingStage({
     active: isOpen,
     initialRating,
-    genres,
+    genres: genreStage ? genres : undefined,
     mediaType,
     initialGenreRatings,
   });
@@ -90,7 +96,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
       onClose={handleClose}
       ariaLabel={t('Schnellbewertung')}
       zIndex={zIndex}
-      expandable={tab === 'rate'}
+      expandable={genreStage && tab === 'rate'}
       expanded={tab === 'rate' && stage.expanded}
       onExpandedChange={handleExpandedChange}
       expandLabel={t('Alle Genres')}
@@ -144,7 +150,33 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
         )}
 
         {tab === 'rate' ? (
-          <GenreRatingStage stage={stage} />
+          <>
+            <GenreRatingStage stage={stage} />
+            {onClear && initialRating > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  stage.reset();
+                  onClear();
+                }}
+                style={{
+                  display: 'block',
+                  margin: '0 auto',
+                  minHeight: 0,
+                  padding: '6px 10px',
+                  background: 'none',
+                  border: 'none',
+                  color: currentTheme.text.muted,
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('Bewertung entfernen')}
+              </button>
+            )}
+          </>
         ) : (
           <FriendRatingsPanel itemId={itemId} mediaType={mediaType} active />
         )}

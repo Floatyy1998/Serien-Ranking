@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
-import {
-  bookAsSearchResult,
-  booksFromManga,
-  firstSourceBook,
-  volumeSnapshot,
-  withSourceBook,
-} from './mangaBooks';
+import { booksFromManga, firstSourceBook, volumeSnapshot, withSourceBook } from './mangaBooks';
 
 const book = (id: string, title: string, over: Partial<Book> = {}): Book => ({
   id,
@@ -85,15 +79,6 @@ describe('Buch zum Anschauen', () => {
     });
     expect(firstSourceBook(m)?.id).toBe('b2');
     expect(firstSourceBook(manga())).toBeNull();
-  });
-
-  it('macht aus dem gespeicherten Buch einen Suchtreffer ohne Lesestand', () => {
-    const result = bookAsSearchResult(
-      book('b2', 'Dead Mount Death Play, Band 2', { status: 'reading', currentPage: 40 })
-    );
-    expect(result).toMatchObject({ id: 'b2', source: 'google', pageCount: 192 });
-    expect(result).not.toHaveProperty('status');
-    expect(Object.values(result)).not.toContain(undefined);
   });
 });
 

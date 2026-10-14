@@ -82,7 +82,6 @@ const dict: Record<string, string> = {
   'Seiten gelesen': 'Páginas lidas',
   'Seiten pro Tag': 'Páginas por dia',
   'Tage Lese-Serie': 'Dias de sequência de leitura',
-  'Ø Sterne': 'Média de estrelas',
   'Bücher insgesamt': 'Livros no total',
   'Seiten insgesamt': 'Páginas no total',
   'Seiten pro Monat': 'Páginas por mês',
@@ -128,7 +127,6 @@ const dict: Record<string, string> = {
   'Seit {date}': 'Desde {date}',
   'Seite eingeben': 'Digitar página',
   'Gelesen am {date}': 'Lido em {date}',
-  '{n} von 5 Sternen': '{n} de 5 estrelas',
   'Stöbern nach Genre': 'Explorar por gênero',
   'Zu meinen Büchern': 'Adicionar aos meus livros',
   'Die beliebtesten Bücher in deiner Sprache': 'Os livros mais populares no seu idioma',
@@ -282,7 +280,6 @@ const dict: Record<string, string> = {
   'Stark bewertet, aber abseits der Bestseller':
     'Muito bem avaliados, longe das listas de best-sellers',
   'Viel gelesen aus den letzten Jahren': 'Muito lidos nos últimos anos',
-  '{rating} von 5 Sternen': '{rating} de 5 estrelas',
   '{n} Bewertungen bei Open Library': '{n} avaliações no Open Library',
   'Hier ist gerade nichts Neues für dich dabei. Probier eine andere Sortierung oder ein anderes Thema.':
     'Nada de novo para você aqui agora. Tente outra ordenação ou outro tema.',

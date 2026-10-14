@@ -1,4 +1,5 @@
-import type { Book, BookSeriesPart } from '../../types/Book';
+import type { Book, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
+import { splitVolume } from './mangaVolume';
 
 export interface RawSeriesPart {
   wikidataId: string;
@@ -162,4 +163,34 @@ export function seriesProgress(
     });
   }
   return out.sort((a, b) => (a.next.daysUntil ?? -1) - (b.next.daysUntil ?? -1));
+}
+
+const EXPLICIT_VOLUME = /\b(?:band|bd|vol|volume|tome|tomo|teil|nr|book|buch)\.?\s*\d{1,4}\s*$/i;
+
+export interface SeriesPlacement {
+  name?: string;
+  position?: number;
+}
+
+/**
+ * Reihe und Band für die Anzeige: eigene Angabe vor Wikidata vor Manga-Abgleich.
+ * Eine Zahl am Titelende zählt nur bei Manga-Bänden oder mit „Band/Vol./Teil" („1984" ist kein Band).
+ */
+export function seriesPlacement(input: {
+  title: string;
+  own?: BookSeriesInfo;
+  linked?: SeriesPlacement;
+  manga?: { name: string; volume?: number };
+}): SeriesPlacement {
+  const titled = splitVolume(input.title);
+  const trusted =
+    titled.volume !== undefined && (!!input.manga || EXPLICIT_VOLUME.test(input.title))
+      ? titled
+      : undefined;
+  return {
+    name:
+      input.own?.name || input.linked?.name || trusted?.series || input.manga?.name || undefined,
+    position:
+      input.own?.position ?? input.linked?.position ?? input.manga?.volume ?? trusted?.volume,
+  };
 }
