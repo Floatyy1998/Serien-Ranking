@@ -59,6 +59,8 @@ import {
   ReadingHubPreview,
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
+import { ProfileStatsPreview } from './ProfilePreviews';
+import { RatingsBooksPreview } from './RatingsPreviews';
 import { NotificationHubPreview } from './NotificationPreviews';
 import { BookOverlaySearchPreview, PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
 import {
@@ -171,6 +173,8 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
+  { id: 'ratings-books', label: 'Bewertungen: Bücher', render: () => <RatingsBooksPreview /> },
   { id: 'pet-poses', label: 'Pet: Posen', render: () => <PetPoseGalleryPreview levels={[1]} /> },
   {
     id: 'pet-poses-50',

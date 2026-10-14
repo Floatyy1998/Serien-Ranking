@@ -18,6 +18,8 @@ interface TabSwitcherProps {
   style?: React.CSSProperties;
   /** Zusätzliche Klassen, z. B. "ui-tabs--center" (Desktop zentriert). */
   className?: string;
+  /** Für viele Reiter: mobil ohne Symbole, Zahl klein unter dem Namen. */
+  stackCounts?: boolean;
 }
 
 /**
@@ -30,8 +32,10 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   onTabChange,
   style,
   className,
+  stackCounts = false,
 }) => {
   const { currentTheme } = useTheme();
+  const classes = ['ui-tabs', stackCounts && 'ui-tabs--stacked', className].filter(Boolean);
 
   // Eindeutige layoutId PRO Instanz — sonst teilen sich mehrere TabSwitcher
   // auf derselben Seite (z. B. Quartal + Modus im Serien-Kalender) eine
@@ -51,7 +55,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   return (
     <div
       role="tablist"
-      className={className ? `ui-tabs ${className}` : 'ui-tabs'}
+      className={classes.join(' ')}
       onKeyDown={handleTabKeyDown}
       style={{
         background: `${currentTheme.text.muted}08`,
@@ -98,9 +102,14 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             )}
 
             {Icon && <Icon style={{ fontSize: '18px' }} />}
-            <span>
+            <span className={stackCounts ? 'ui-tabs__label' : undefined}>
               {tab.label}
-              {tab.count !== undefined && ` (${tab.count})`}
+              {tab.count !== undefined &&
+                (stackCounts ? (
+                  <span className="ui-tabs__count">{tab.count}</span>
+                ) : (
+                  ` (${tab.count})`
+                ))}
             </span>
           </motion.button>
         );

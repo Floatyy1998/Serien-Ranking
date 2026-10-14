@@ -4,7 +4,7 @@
  * CSS classes for layout, inline styles ONLY for theme colors.
  */
 
-import { ListAlt, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import { ListAlt, LocalLibrary, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { GradientText, NavEscapeButtons, SearchInput, TabSwitcher } from '../../components/ui';
@@ -18,6 +18,8 @@ interface RatingsHeaderProps {
   activeTab: RatingsTab;
   seriesCount: number;
   moviesCount: number;
+  /** 0 blendet den Bücher-Reiter aus. */
+  booksCount?: number;
   folderCount: number;
   searchValue: string;
   onSearchChange: (value: string) => void;
@@ -31,6 +33,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
     activeTab,
     seriesCount,
     moviesCount,
+    booksCount = 0,
     folderCount,
     searchValue,
     onSearchChange,
@@ -115,7 +118,11 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
                 setLocalSearch(v);
                 onSearchChange(v);
               }}
-              placeholder={t('Serien & Filme durchsuchen...')}
+              placeholder={
+                activeTab === 'books'
+                  ? t('Bücher durchsuchen...')
+                  : t('Serien & Filme durchsuchen...')
+              }
             />
           </div>
         </div>
@@ -124,11 +131,15 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           tabs={[
             { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
+            ...(booksCount > 0
+              ? [{ id: 'books', label: t('Bücher'), icon: LocalLibrary, count: booksCount }]
+              : []),
             { id: 'folders', label: t('Listen'), icon: ListAlt, count: folderCount },
           ]}
           activeTab={activeTab}
           onTabChange={onTabChange}
           className="ui-tabs--equal"
+          stackCounts={booksCount > 0}
           style={{ margin: '0 20px 16px 20px' }}
         />
       </div>

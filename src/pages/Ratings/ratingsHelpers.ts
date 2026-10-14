@@ -23,7 +23,7 @@ export interface PreparedItem {
   providers: { name: string; logo: string }[];
 }
 
-export type RatingsTab = 'series' | 'movies' | 'folders';
+export type RatingsTab = 'series' | 'movies' | 'books' | 'folders';
 
 export interface FolderPreview {
   /** Titel, die noch in der Bibliothek sind */
@@ -84,7 +84,7 @@ export interface UseRatingsDataResult {
 
 // Helpers (pure functions, created once)
 export const parseTab = (value: string | null): RatingsTab =>
-  value === 'movies' || value === 'folders' ? value : 'series';
+  value === 'movies' || value === 'books' || value === 'folders' ? value : 'series';
 
 export const posterOf = (item: Series | Movie): string => getImageUrl(item.poster, 'w342');
 

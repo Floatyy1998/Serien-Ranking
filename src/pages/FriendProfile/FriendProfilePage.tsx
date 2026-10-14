@@ -69,6 +69,7 @@ import { useFriendComparison } from './useFriendComparison';
 import { useFriendFolders } from './useFriendFolders';
 import { useFriendManga } from './useFriendManga';
 import { useFriendBooks } from './useFriendBooks';
+import { rankBooksByRating } from '../../lib/books/bookRanking';
 import { FriendReadingSection } from './FriendReadingSection';
 import { FriendBooksInsights } from './FriendBooksInsights';
 import { useOpenResult } from '../Books/discover/DiscoverParts';
@@ -278,22 +279,10 @@ export const FriendProfilePage = memo(() => {
       setAddingBookId(null);
     }
   };
-  const bookItems = useMemo(() => {
-    const query = (filters.search || '').trim().toLowerCase();
-    return friendBooks.list
-      .filter(
-        (b) =>
-          !query ||
-          b.title.toLowerCase().includes(query) ||
-          b.authors.some((a) => a.toLowerCase().includes(query))
-      )
-      .sort(
-        (a, b) =>
-          (b.rating ?? 0) - (a.rating ?? 0) ||
-          new Date(b.completedAt || b.lastReadAt || b.addedAt || 0).getTime() -
-            new Date(a.completedAt || a.lastReadAt || a.addedAt || 0).getTime()
-      );
-  }, [friendBooks.list, filters.search]);
+  const bookItems = useMemo(
+    () => rankBooksByRating(friendBooks.list, filters.search),
+    [friendBooks.list, filters.search]
+  );
   const mangaChapters = useMemo(
     () => ({
       own: ownManga.reduce((sum, m) => sum + (m.currentChapter || 0), 0),

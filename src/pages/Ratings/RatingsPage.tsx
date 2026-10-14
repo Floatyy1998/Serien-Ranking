@@ -16,11 +16,14 @@
 
 import { GridView, ViewList } from '@mui/icons-material';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/data/usePersistedState';
+import { bookRatingStats, rankBooksByRating } from '../../lib/books/bookRanking';
 import { t } from '../../services/i18n';
 import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';
+import { RatingBooksGrid } from './RatingBooksGrid';
 import { RatingCompactRow } from './RatingCompactRow';
 import { RatingFolderActionsSheet, RatingFolderBar, RatingFolderGrid } from './RatingFolderGrid';
 import { RatingFolderSheet, type RatingFolderSheetState } from './RatingFolderSheet';
@@ -54,6 +57,20 @@ export const RatingsPage: React.FC = () => {
     folderPreviews,
     handleFolderChange,
   } = useRatingsData();
+
+  const { bookList, loading: booksLoading } = useBooksList();
+  const onBooks = activeTab === 'books';
+  const shownBooks = useMemo(
+    () => (onBooks ? rankBooksByRating(bookList, filters.search) : []),
+    [onBooks, bookList, filters.search]
+  );
+  const headerStats = useMemo(
+    () => (onBooks ? bookRatingStats(shownBooks) : stats),
+    [onBooks, shownBooks, stats]
+  );
+  useEffect(() => {
+    if (onBooks && !booksLoading && bookList.length === 0) handleTabChange('series');
+  }, [onBooks, booksLoading, bookList.length, handleTabChange]);
 
   const folderOverview = activeTab === 'folders' && !activeFolder;
   const folderSearch = (filters.search || '').trim().toLowerCase();
@@ -152,10 +169,11 @@ export const RatingsPage: React.FC = () => {
       {/* Sticky Header */}
       <RatingsHeader
         theme={currentTheme}
-        stats={stats}
+        stats={headerStats}
         activeTab={activeTab}
         seriesCount={seriesCount}
         moviesCount={moviesCount}
+        booksCount={bookList.length}
         folderCount={folders.length}
         searchValue={filters.search || ''}
         onSearchChange={(v) => handleQuickFilterChange({ search: v })}
@@ -219,7 +237,17 @@ export const RatingsPage: React.FC = () => {
           </div>
         )}
 
-        {itemsToRender.length > 0 ? (
+        {onBooks ? (
+          shownBooks.length > 0 ? (
+            <RatingBooksGrid books={shownBooks} theme={currentTheme} />
+          ) : (
+            bookList.length > 0 && (
+              <div className="rf-empty" style={{ color: currentTheme.text.muted }}>
+                {t('Keine Bücher gefunden')}
+              </div>
+            )
+          )
+        ) : itemsToRender.length > 0 ? (
           density === 'compact' ? (
             <div className="ratings-list" onClick={handleGridClick}>
               {itemsToRender.map((item, idx) => (
@@ -270,7 +298,7 @@ export const RatingsPage: React.FC = () => {
       </div>
 
       {/* QuickFilter FAB */}
-      {!folderOverview && (
+      {!folderOverview && !onBooks && (
         <QuickFilter
           onFilterChange={handleQuickFilterChange}
           isMovieMode={activeTab === 'movies'}

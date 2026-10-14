@@ -428,6 +428,19 @@
   border-radius: var(--radius-lg);
 }
 
+/* Buch-Cover füllt die Karte wie ein Poster */
+.ratings-card .ratings-book-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ratings-card .ratings-book-cover .bk-cover-face {
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
 /* Overlay */
 
 .ratings-card-overlay {
