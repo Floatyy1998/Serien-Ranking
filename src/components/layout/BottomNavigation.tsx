@@ -189,7 +189,8 @@ export const BottomNavigation = () => {
     } else {
       setPendingIndex(index);
       const go = () => navigate(item.id === 'manga' ? resolveReadingPath() : item.path);
-      if (item.id === 'manga' || navItems[activeIndex]?.id === 'manga') withCoinEgg(user?.uid, go);
+      if (item.id === 'manga' || navItems[activeIndex]?.id === 'manga')
+        withCoinEgg(user?.uid, go, user?.photoURL);
       else go();
     }
   };

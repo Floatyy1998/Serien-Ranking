@@ -18,12 +18,26 @@
 }
 
 .coin-egg__float {
+  position: relative;
   animation: coin-egg-bob 0.7s ease-in-out infinite alternate;
+}
+
+.coin-egg__halo {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 42%, transparent),
+    color-mix(in srgb, var(--theme-accent, #f2a648) 14%, transparent) 60%,
+    transparent
+  );
+  animation: coin-egg-halo 0.7s ease-in-out infinite alternate;
 }
 
 .coin-egg__coin {
   position: relative;
-  width: min(168px, 44vw);
+  width: min(240px, 62vw);
   aspect-ratio: 1;
   transform-style: preserve-3d;
   animation: coin-egg-spin 2.8s cubic-bezier(0.4, 0.1, 0.3, 1) forwards;
@@ -33,7 +47,10 @@
   position: absolute;
   inset: 3%;
   border-radius: 50%;
-  background: repeating-conic-gradient(#3f7482 0deg 5deg, #2b545f 5deg 10deg);
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 80%, #000) 0deg 4deg,
+    #0e0a15 4deg 10deg
+  );
 }
 
 .coin-egg__face {
@@ -50,20 +67,58 @@
 }
 
 .coin-egg__face--front {
-  transform: translateZ(7px);
+  transform: translateZ(10px);
 }
 
 .coin-egg__face--back {
-  transform: rotateY(180deg) translateZ(7px);
+  transform: rotateY(180deg) translateZ(10px);
+}
+
+.coin-egg .coin-neon-a {
+  stroke: var(--theme-primary, #ef6f8a);
+}
+
+.coin-egg .coin-neon-b {
+  stroke: var(--theme-accent, #f2a648);
+}
+
+.coin-egg .coin-neon-dim {
+  opacity: 0.6;
+}
+
+.coin-egg__photo {
+  position: absolute;
+  left: 17%;
+  top: 17%;
+  width: 66%;
+  height: 66%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 2px var(--theme-accent, #f2a648),
+    0 0 14px color-mix(in srgb, var(--theme-accent, #f2a648) 70%, transparent);
 }
 
 .coin-egg__shadow {
-  width: min(110px, 29vw);
+  width: min(160px, 42vw);
   height: 16px;
   margin-top: 22px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 50%, transparent),
+    transparent
+  );
   animation: coin-egg-shadow 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes coin-egg-halo {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes coin-egg-life {
@@ -129,6 +184,7 @@
     animation-duration: 2.8s !important;
   }
   .coin-egg__float,
+  .coin-egg__halo,
   .coin-egg__shadow {
     animation-duration: 0.7s !important;
     animation-iteration-count: infinite !important;

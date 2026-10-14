@@ -253,6 +253,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'book-import', label: 'Bücher: Import', render: () => <BookImportPreview /> },
   { id: 'reading-hub', label: 'Lesen: Alle', render: () => <ReadingHubPreview /> },
   { id: 'coin-egg', label: 'Lesen: Flos Münze', render: () => <CoinEggPreview /> },
+  {
+    id: 'coin-egg-photo',
+    label: 'Lesen: Flos Münze (Profilbild)',
+    render: () => <CoinEggPreview photo />,
+  },
   { id: 'incomingrequest', label: 'Eingehende Anfrage', render: () => <IncomingRequestPreview /> },
   { id: 'friendinsights', label: 'Freund: Insights', render: () => <FriendInsightsPreview /> },
   { id: 'crop', label: 'Bild zuschneiden', render: () => <CropSheetPreview /> },

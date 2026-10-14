@@ -1,12 +1,13 @@
 import type firebase from 'firebase/compat/app';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { showCoinEgg } from '../../components/reading/coinEasterEgg';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext, useAuth } from '../../contexts/AuthContext';
 import { BooksListContext } from '../../contexts/BooksListContext';
 import { MovieListContext } from '../../contexts/MovieListContext';
 import { SeriesListContext } from '../../contexts/SeriesListContext';
 import { tmdbFetch } from '../../services/api/tmdbClient';
+import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 import type { Book, BookStatus } from '../../types/Book';
 import { BookDetailPage } from '../Books/BookDetailPage';
 import { BookImportPage } from '../Books/BookImportPage';
@@ -372,14 +373,32 @@ export const ReadingHubPreview = () => (
   </BooksPreviewShell>
 );
 
-/** Flos Münze (Dock-Wechsel zu „Lesen"); Klick irgendwo spielt sie erneut ab. */
-export const CoinEggPreview = () => {
+const PREVIEW_AVATAR = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8def"/><stop offset="1" stop-color="#9b5de5"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)"/><circle cx="50" cy="40" r="17" fill="#f1d3b8"/><path d="M18 100c4-22 18-32 32-32s28 10 32 32Z" fill="#f1d3b8"/></svg>'
+)}`;
+
+/** Flos Münze; Klick spielt sie erneut. Bild-Variante: eigenes Profilbild wie im Dock. */
+export const CoinEggPreview = ({ photo = false }: { photo?: boolean }) => {
+  const { user } = useAuth() || {};
+  const ownPhoto = useOwnPhotoURL(user?.photoURL) || PREVIEW_AVATAR;
+  const play = useCallback(
+    () => showCoinEgg(photo ? { photoURL: ownPhoto, photoChance: 1 } : {}),
+    [photo, ownPhoto]
+  );
   useEffect(() => {
-    const id = window.setTimeout(showCoinEgg, 400);
-    return () => window.clearTimeout(id);
-  }, []);
+    let id = 0;
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      id = window.setTimeout(play, 300);
+    };
+    img.src = ownPhoto;
+    return () => {
+      img.onload = img.onerror = null;
+      window.clearTimeout(id);
+    };
+  }, [play, ownPhoto]);
   return (
-    <div onClick={() => showCoinEgg()}>
+    <div onClick={play}>
       <BooksPreviewShell>
         <BooksPage />
       </BooksPreviewShell>
