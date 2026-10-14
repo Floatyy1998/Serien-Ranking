@@ -14,6 +14,7 @@ import {
   EmojiEmotions,
   Equalizer,
   EuroSymbol,
+  ExpandMore,
   EventRepeat,
   FilterAlt,
   Forum,
@@ -62,6 +63,7 @@ import {
   WarningAmber,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -81,6 +83,15 @@ interface PatchRelease {
   date: string;
   features: Feature[];
 }
+
+const RECENT_DAYS = 14;
+
+/** Der Monat im Versionsnamen steht schon im Datum daneben. */
+const releaseName = (version: string): string =>
+  version.match(/^.+?\s+[–—]\s+(.+)$/)?.[1] ?? version;
+
+const featureCount = (n: number): string =>
+  n === 1 ? t('Eine Neuerung') : t('{n} Neuerungen', { n });
 
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr + 'T00:00:00');
@@ -1144,6 +1155,21 @@ export const PatchNotesPage = () => {
     },
   ];
 
+  const [latest, ...earlier] = releases;
+  const recentCutoff = new Date(latest.date).getTime() - RECENT_DAYS * 86_400_000;
+  const [expanded, setExpanded] = useState<Set<string>>(
+    () =>
+      new Set(earlier.filter((r) => new Date(r.date).getTime() >= recentCutoff).map((r) => r.date))
+  );
+  const toggle = (date: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+  const open = (path: string) => navigate(path);
+
   return (
     <div className="patch-notes-page">
       <PageHeader
@@ -1152,76 +1178,116 @@ export const PatchNotesPage = () => {
         icon={<NewReleases style={{ fontSize: 22, color: currentTheme.accent }} />}
       />
 
-      <div className="pn-releases">
-        {releases.map((release, releaseIdx) => (
-          <motion.div
-            key={release.version}
-            className="pn-release"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: releaseIdx * 0.15 }}
-          >
-            <div className="pn-release-header">
-              <div
-                className="pn-version-badge"
-                style={{
-                  background: `${currentTheme.primary}20`,
-                  color: currentTheme.primary,
-                }}
-              >
-                {release.version}
-              </div>
-              <span className="pn-release-date" style={{ color: currentTheme.text.muted }}>
-                {formatDate(release.date)}
-              </span>
-            </div>
+      <motion.section
+        className="pn-latest"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <p className="pn-eyebrow">
+          <span className="pn-new">{t('Neu')}</span>
+          <span>{formatDate(latest.date)}</span>
+          <span aria-hidden>·</span>
+          <span>{featureCount(latest.features.length)}</span>
+        </p>
+        <h2 className="pn-latest-title">{releaseName(latest.version)}</h2>
+        <div className="pn-grid">
+          {latest.features.map((feature, i) => (
+            <FeatureCard key={feature.title} feature={feature} lead={i === 0} onOpen={open} />
+          ))}
+        </div>
+      </motion.section>
 
-            <div className="pn-features">
-              {release.features.map((feature, featureIdx) => (
-                <motion.div
-                  key={featureIdx}
-                  className="pn-feature"
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: releaseIdx * 0.15 + featureIdx * 0.06 }}
-                  onClick={
-                    feature.link
-                      ? () => {
-                          navigate(feature.link?.path ?? '/');
-                        }
-                      : undefined
-                  }
-                  style={{ cursor: feature.link ? 'pointer' : 'default' }}
-                >
-                  <div
-                    className="pn-feature-icon"
-                    style={{
-                      background: `${feature.color}18`,
-                      color: feature.color,
-                    }}
+      {earlier.length > 0 && (
+        <section className="pn-earlier">
+          <h2 className="pn-earlier-heading">{t('Frühere Updates')}</h2>
+          <ol className="pn-timeline">
+            {earlier.map((release) => {
+              const isOpen = expanded.has(release.date);
+              return (
+                <li key={release.date + release.version} className="pn-entry">
+                  <button
+                    type="button"
+                    className="pn-entry-head"
+                    aria-expanded={isOpen}
+                    onClick={() => toggle(release.date)}
                   >
-                    {feature.icon}
-                  </div>
-                  <div className="pn-feature-content">
-                    <div className="pn-feature-title" style={{ color: currentTheme.text.primary }}>
-                      {feature.title}
-                    </div>
-                    <div className="pn-feature-desc" style={{ color: currentTheme.text.secondary }}>
-                      {feature.description}
-                    </div>
-                  </div>
-                  {feature.link && (
-                    <ArrowForward
-                      className="pn-feature-arrow"
-                      style={{ color: currentTheme.text.muted }}
-                    />
+                    <span className="pn-entry-date">{formatDate(release.date)}</span>
+                    <span className="pn-entry-dot" aria-hidden />
+                    <span className="pn-entry-main">
+                      <span className="pn-entry-title">{releaseName(release.version)}</span>
+                      <span className="pn-entry-meta">
+                        <span className="pn-entry-icons" aria-hidden>
+                          {release.features.map((f) => (
+                            <span
+                              key={f.title}
+                              style={{ '--pn-accent': f.color } as React.CSSProperties}
+                            >
+                              {f.icon}
+                            </span>
+                          ))}
+                        </span>
+                        <span>{featureCount(release.features.length)}</span>
+                      </span>
+                    </span>
+                    <ExpandMore className="pn-entry-chevron" />
+                  </button>
+                  {isOpen && (
+                    <motion.div
+                      className="pn-grid pn-grid--entry"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {release.features.map((feature) => (
+                        <FeatureCard key={feature.title} feature={feature} onOpen={open} />
+                      ))}
+                    </motion.div>
                   )}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
     </div>
+  );
+};
+
+const FeatureCard = ({
+  feature,
+  lead = false,
+  onOpen,
+}: {
+  feature: Feature;
+  lead?: boolean;
+  onOpen: (path: string) => void;
+}) => {
+  const link = feature.link;
+  return (
+    <article
+      className={`pn-card${lead ? ' pn-card--lead' : ''}${link ? ' pn-card--link' : ''}`}
+      style={{ '--pn-accent': feature.color } as React.CSSProperties}
+      onClick={link ? () => onOpen(link.path) : undefined}
+    >
+      <div className="pn-card-icon" aria-hidden>
+        {feature.icon}
+      </div>
+      <h3 className="pn-card-title">{feature.title}</h3>
+      <p className="pn-card-desc">{feature.description}</p>
+      {link && (
+        <button
+          type="button"
+          className="pn-card-link"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen(link.path);
+          }}
+        >
+          {link.label}
+          <ArrowForward />
+        </button>
+      )}
+    </article>
   );
 };

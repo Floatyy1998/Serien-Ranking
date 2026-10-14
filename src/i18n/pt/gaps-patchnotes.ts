@@ -378,6 +378,10 @@ const dict: Record<string, string> = {
   'Nach Erscheinungsjahr filtern': 'Filtre por ano de lançamento',
   'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.':
     'Nas suas notas e nos perfis, agora você pode filtrar por década ou por um período de anos à sua escolha e ordenar por lançamento, do mais novo ao mais antigo ou ao contrário.',
+  // Patch-Notes-Seite
+  'Frühere Updates': 'Atualizações anteriores',
+  'Eine Neuerung': 'Uma novidade',
+  '{n} Neuerungen': '{n} novidades',
 };
 
 export default dict;

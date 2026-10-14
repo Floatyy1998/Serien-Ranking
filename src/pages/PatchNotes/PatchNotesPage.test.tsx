@@ -45,6 +45,7 @@ vi.mock('@mui/icons-material', () => {
     'EmojiEmotions',
     'Equalizer',
     'EuroSymbol',
+    'ExpandMore',
     'FilterAlt',
     'GroupAdd',
     'Language',
@@ -108,15 +109,28 @@ beforeEach(() => navigateMock.mockReset());
 afterEach(() => cleanup());
 
 describe('PatchNotesPage', () => {
-  it('renders the page header and a release version', () => {
+  it('zeigt das neueste Update offen und ältere als Zeitleiste', () => {
     render(<PatchNotesPage />);
     expect(screen.getByText('Patch Notes')).toBeInTheDocument();
-    expect(screen.getByText('Juli 2026 – Anime-Season-Kalender')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Bücher, Pets auf dem Dock und Antworten im Chat' })
+    ).toBeInTheDocument();
+    const older = screen.getByRole('button', { name: /Anime-Season-Kalender/ });
+    expect(older).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Neue Seite: Anime-Season-Kalender')).toBeNull();
   });
 
-  it('navigates when a feature with a link is clicked', () => {
+  it('klappt ein älteres Update auf und navigiert über dessen Karte', () => {
     render(<PatchNotesPage />);
+    fireEvent.click(screen.getByRole('button', { name: /Anime-Season-Kalender/ }));
     fireEvent.click(screen.getByText('Neue Seite: Anime-Season-Kalender'));
     expect(navigateMock).toHaveBeenCalledWith('/anime-season');
+  });
+
+  it('navigiert über den Link-Knopf einer Karte', () => {
+    render(<PatchNotesPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Zu den Büchern' }));
+    expect(navigateMock).toHaveBeenCalledWith('/books');
+    expect(navigateMock).toHaveBeenCalledTimes(1);
   });
 });

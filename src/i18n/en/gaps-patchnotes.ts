@@ -394,6 +394,10 @@ const dict: Record<string, string> = {
   'Nach Erscheinungsjahr filtern': 'Filter by release year',
   'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.':
     'In your ratings and on profiles, you can now filter by decade or a custom year range and sort by release date — newest first or the other way round.',
+  // Patch-Notes-Seite
+  'Frühere Updates': 'Earlier updates',
+  'Eine Neuerung': 'One new feature',
+  '{n} Neuerungen': '{n} new features',
 };
 
 export default dict;

@@ -379,6 +379,10 @@ const dict: Record<string, string> = {
   'Nach Erscheinungsjahr filtern': 'Filtrer par année de sortie',
   'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.':
     'Dans tes notes et sur les profils, tu peux maintenant filtrer par décennie ou par période de ton choix, et trier par date de sortie, de la plus récente à la plus ancienne ou l’inverse.',
+  // Patch-Notes-Seite
+  'Frühere Updates': 'Mises à jour précédentes',
+  'Eine Neuerung': 'Une nouveauté',
+  '{n} Neuerungen': '{n} nouveautés',
 };
 
 export default dict;
