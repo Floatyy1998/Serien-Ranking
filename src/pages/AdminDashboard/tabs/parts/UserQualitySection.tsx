@@ -122,7 +122,10 @@ export const UserQualitySection = React.memo<UserQualitySectionProps>(({ data, t
           <b>{q.echt}</b> von {q.gesamt} Konten sind echte Nutzer ({anteil} %) — Onboarding
           abgeschlossen, mindestens {q.regeln.minInhalte} Einträge angelegt und nach mehr als einem
           Tag wiedergekommen. Konten unter {q.regeln.karenzTage} Tagen zählen noch nicht mit, die
-          Kurve unten holt sie nach. Stand {stand(q.ts)}.
+          Kurve unten holt sie nach.{' '}
+          {q.ruhend > 0 &&
+            `Die Kurve zählt auch die ${q.ruhend} ruhenden Konten mit: Sie waren echte Nutzer, sind aber seit über ${q.regeln.ruhendTage} Tagen nicht mehr da. `}
+          Stand {stand(q.ts)}.
         </p>
         <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={260}>
           <LineChart data={data.qualityChartData}>
@@ -149,7 +152,7 @@ export const UserQualitySection = React.memo<UserQualitySectionProps>(({ data, t
             <Line
               type="monotone"
               dataKey="echt"
-              name="Echte Nutzer"
+              name="Echte Nutzer inkl. ruhende"
               stroke={COLORS.echt}
               strokeWidth={2}
               dot={false}
