@@ -47,6 +47,7 @@ import {
   BookDetailPreview,
   BookImportPreview,
   BookSearchPreview,
+  IsbnScannerPreview,
   BookShelfPreview,
   BookDetailMangaPreview,
   BookDetailBareMangaPreview,
@@ -59,7 +60,7 @@ import {
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
 import { NotificationHubPreview } from './NotificationPreviews';
-import { PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
+import { BookOverlaySearchPreview, PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
@@ -263,6 +264,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <BookDetailBareMangaPreview />,
   },
   { id: 'book-search', label: 'Bücher: Suche', render: () => <BookSearchPreview /> },
+  { id: 'isbn-scanner', label: 'Bücher: ISBN-Scanner', render: () => <IsbnScannerPreview /> },
+  {
+    id: 'book-overlay-search',
+    label: 'Bücher: Such-Overlay',
+    render: () => <BookOverlaySearchPreview />,
+  },
   { id: 'person', label: 'Personen: Seite', render: () => <PersonPagePreview /> },
   { id: 'people-search', label: 'Suche: Personen + Manga', render: () => <PeopleSearchPreview /> },
   { id: 'book-shelf', label: 'Bücher: Regal', render: () => <BookShelfPreview /> },

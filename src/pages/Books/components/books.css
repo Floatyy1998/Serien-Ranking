@@ -820,6 +820,21 @@
   opacity: 0.7;
 }
 
+.mobile-app button.bk-scan-btn,
+.bk-scan-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
 /* ─── Sheets ────────────────────────────────────────────── */
 
 .bk-sheet {

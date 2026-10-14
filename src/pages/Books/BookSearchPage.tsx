@@ -1,6 +1,7 @@
 import { Add, AutoStories, Check, History, UploadFile } from '@mui/icons-material';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { IsbnScanButton } from '../../components/scanner/IsbnScanButton';
 import { BackButton, SearchInput } from '../../components/ui';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -184,6 +185,7 @@ const BookSearchView = () => {
   const [recent, setRecent] = useState<string[]>(readRecent);
   const [pending, setPending] = useState<BookSearchResult | null>(null);
   const [busy, setBusy] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { allBookList } = useBooksList();
   const { results, loading: searching, error } = useBookSearch(query);
   const { suggestions } = useBooksForYourShows(query.trim().length < 2);
@@ -286,8 +288,17 @@ const BookSearchView = () => {
             <SearchInput
               value={query}
               onChange={setQuery}
-              placeholder={t('Titel, Autor oder ISBN suchen...')}
+              placeholder={t('Titel, Autor oder ISBN')}
               autoFocus={!params.get('q')}
+              inputRef={inputRef}
+              trailing={
+                <IsbnScanButton
+                  className="bk-scan-btn"
+                  style={{ color: currentTheme.primary }}
+                  onIsbn={setQuery}
+                  onManual={() => inputRef.current?.focus()}
+                />
+              }
             />
           </div>
         </div>

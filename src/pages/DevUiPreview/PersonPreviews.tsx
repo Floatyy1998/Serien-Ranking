@@ -80,3 +80,9 @@ export const PeopleSearchPreview = () => (
     <HomeSearchOverlay open onClose={() => {}} homePath="/dev/ui-preview" />
   </PersonPreviewShell>
 );
+
+export const BookOverlaySearchPreview = () => (
+  <PersonPreviewShell>
+    <HomeSearchOverlay open onClose={() => {}} homePath="/dev/ui-preview" initialFilter="books" />
+  </PersonPreviewShell>
+);

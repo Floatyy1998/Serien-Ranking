@@ -10,6 +10,7 @@ interface CapacitorAppPlugin {
     ((event: 'appUrlOpen', handler: (data: { url: string }) => void) => Promise<unknown>);
   minimizeApp?: () => Promise<void>;
   getLaunchUrl?: () => Promise<{ url: string } | undefined>;
+  getInfo?: () => Promise<{ build: string; version: string }>;
 }
 
 interface CapacitorBadgePlugin {
@@ -50,6 +51,18 @@ const getCapacitor = (): CapacitorGlobal | null => {
 
 /** True, wenn die App gerade in der nativen iOS/Android-Hülle läuft. */
 export const isNativeApp = (): boolean => getCapacitor() !== null;
+
+/** Plattform + Build-Nummer der Hülle (iOS: CI-Laufnummer, Android: versionCode); null im Browser. */
+export const nativeAppBuild = async (): Promise<{ platform: string; build: number } | null> => {
+  const cap = getCapacitor();
+  if (!cap) return null;
+  try {
+    const info = await cap.Plugins?.App?.getInfo?.();
+    return { platform: cap.getPlatform?.() ?? '', build: Number(info?.build) || 0 };
+  } catch {
+    return { platform: cap.getPlatform?.() ?? '', build: 0 };
+  }
+};
 
 /** App-Icon-Badge setzen — nativ via Badge-Plugin, im Browser via Badging API (installierte PWA). */
 export const setAppBadge = (count: number): void => {

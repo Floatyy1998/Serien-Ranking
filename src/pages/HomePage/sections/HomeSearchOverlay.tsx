@@ -33,6 +33,7 @@ import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
 import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQuickResults';
 import { MangaOverlayIdle, MangaQuickResults } from '../../Manga/components/MangaQuickResults';
+import { IsbnScanButton } from '../../../components/scanner/IsbnScanButton';
 import './HomeSearchOverlay.css';
 
 type Filter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
@@ -96,8 +97,19 @@ export const HomeSearchOverlay = memo(
       removeRecent,
     } = useHomeQuickSearch(open);
     const [filter, setFilter] = useState<Filter>(initialFilter ?? 'all');
+    const filtersRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-      if (open && initialFilter) setFilter(initialFilter);
+      if (!open || !initialFilter) return;
+      setFilter(initialFilter);
+      const frame = requestAnimationFrame(() => {
+        const row = filtersRef.current;
+        const chip = row?.querySelector('[aria-pressed="true"]');
+        if (!row || !chip) return;
+        const rowBox = row.getBoundingClientRect();
+        const chipBox = chip.getBoundingClientRect();
+        row.scrollLeft += chipBox.left - rowBox.left - (rowBox.width - chipBox.width) / 2;
+      });
+      return () => cancelAnimationFrame(frame);
     }, [open, initialFilter]);
     const popularPeople = usePopularPeople(open && filter === 'people');
     const onPrimary = getOptimalTextColor(currentTheme.primary);
@@ -132,6 +144,7 @@ export const HomeSearchOverlay = memo(
     // display:none verwirft scrollTop.
     const contentRef = useRef<HTMLDivElement>(null);
     const contentScroll = useRef(0);
+    const inputRef = useRef<HTMLInputElement>(null);
     useLayoutEffect(() => {
       if (visible && contentRef.current) contentRef.current.scrollTop = contentScroll.current;
     }, [visible]);
@@ -478,13 +491,20 @@ export const HomeSearchOverlay = memo(
                       style={{ fontSize: '22px', color: currentTheme.primary, flexShrink: 0 }}
                     />
                     <input
+                      ref={inputRef}
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') onEnter();
                       }}
-                      placeholder={t('Titel oder Schauspieler')}
+                      placeholder={
+                        filter === 'books'
+                          ? t('Titel, Autor oder ISBN')
+                          : filter === 'manga'
+                            ? t('Titel oder ISBN')
+                            : t('Titel oder Schauspieler')
+                      }
                       aria-label={t('Serien, Filme und Personen suchen')}
                       autoFocus
                       className="hso__input"
@@ -504,6 +524,13 @@ export const HomeSearchOverlay = memo(
                         <Close style={{ fontSize: '15px' }} />
                       </button>
                     )}
+                    <IsbnScanButton
+                      hidden={!!query || (filter !== 'books' && filter !== 'manga')}
+                      className="hso__scan"
+                      style={{ color: currentTheme.primary }}
+                      onIsbn={setQuery}
+                      onManual={() => inputRef.current?.focus()}
+                    />
                   </div>
                   <button
                     type="button"
@@ -517,7 +544,7 @@ export const HomeSearchOverlay = memo(
                 </div>
 
                 {/* Segment-Filter */}
-                <div className="hso__filters">
+                <div className="hso__filters" ref={filtersRef}>
                   {FILTERS.map((f) => {
                     const active = filter === f.key;
                     return (

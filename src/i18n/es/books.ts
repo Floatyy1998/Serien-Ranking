@@ -291,6 +291,33 @@ const dict: Record<string, string> = {
   'Weil du gern {genres} liest': 'Porque te encanta leer {genres}',
   'Nur wenige Treffer. Mit einer anderen Sortierung oder „Alle“ findest du mehr.':
     'Solo unos pocos resultados. Prueba otro orden o «Todo» para ver más.',
+  'ISBN scannen': 'Escanear ISBN',
+  'Scanner schließen': 'Cerrar escáner',
+  'Licht aus': 'Apagar linterna',
+  'Licht an': 'Encender linterna',
+  'ISBN {isbn}': 'ISBN {isbn}',
+  'Das ist kein Buch-Strichcode': 'Ese no es el código de barras de un libro',
+  'Kamera startet …': 'Iniciando la cámara …',
+  'Halte den Strichcode von der Buchrückseite in den Rahmen':
+    'Coloca el código de barras de la contraportada dentro del marco',
+  'ISBN eintippen': 'Escribir ISBN',
+  'Kein Zugriff auf die Kamera': 'Sin acceso a la cámara',
+  'Erlaube TV-Rank die Kamera in den Einstellungen deines Geräts.':
+    'Permite que TV-Rank use la cámara en los ajustes de tu dispositivo.',
+  'Erlaube die Kamera für tv-rank.de in den Einstellungen deines Browsers.':
+    'Permite el acceso a la cámara para tv-rank.de en los ajustes de tu navegador.',
+  'Keine Kamera gefunden': 'No se encontró ninguna cámara',
+  'Tipp die ISBN einfach ein. Sie steht direkt über dem Strichcode.':
+    'Escribe el ISBN. Está justo encima del código de barras.',
+  'Die Kamera ist belegt': 'La cámara está ocupada',
+  'Eine andere App nutzt gerade die Kamera. Schließ sie und versuch es nochmal.':
+    'Otra app está usando la cámara. Ciérrala e inténtalo de nuevo.',
+  'Der Scanner ließ sich nicht laden': 'No se pudo cargar el escáner',
+  'Prüf deine Verbindung und versuch es nochmal.': 'Revisa tu conexión e inténtalo de nuevo.',
+  'Die Kamera ließ sich nicht starten': 'No se pudo iniciar la cámara',
+  'Versuch es gleich nochmal.': 'Inténtalo de nuevo en un momento.',
+  'Titel, Autor oder ISBN': 'Título, autor o ISBN',
+  'Titel oder ISBN': 'Título o ISBN',
 };
 
 export default dict;

@@ -8,6 +8,8 @@
 	<string>en</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>TV-Rank uses the camera to scan the ISBN barcode on books.</string>
 	<key>CFBundleDisplayName</key>
         <string>TV-Rank</string>
 	<key>CFBundleExecutable</key>

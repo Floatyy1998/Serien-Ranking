@@ -138,6 +138,29 @@
   cursor: pointer;
 }
 
+.hso .hso__scan {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  flex-shrink: 0;
+  margin: -8px -6px -8px 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hso .hso__scan::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+}
+
 .hso .hso__done {
   flex-shrink: 0;
   min-height: 44px;
@@ -554,6 +577,7 @@
 .hso__recent:focus-visible,
 .hso__recent-remove:focus-visible,
 .hso__clear:focus-visible,
+.hso__scan:focus-visible,
 .hso__done:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;

@@ -10,6 +10,9 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  /** Steht rechts im leeren Feld, wo sonst der Leeren-Knopf sitzt. */
+  trailing?: React.ReactNode;
+  inputRef?: React.Ref<HTMLInputElement>;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({
@@ -17,6 +20,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   onChange,
   placeholder,
   autoFocus = false,
+  trailing,
+  inputRef,
 }) => {
   const resolvedPlaceholder = placeholder ?? t('Suchen...');
   const { currentTheme } = useTheme();
@@ -35,6 +40,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         }}
       />
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -47,7 +53,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           // 100px hoch und fraß den halben Kopfbereich.
           minHeight: 'var(--control-lg)',
           padding: '0 16px 0 48px',
-          paddingRight: value ? '52px' : '16px',
+          paddingRight: value || trailing ? '52px' : '16px',
           background: currentTheme.background.surface,
           border: `2px solid ${currentTheme.border.default}`,
           borderRadius: 'var(--radius-lg)',
@@ -108,6 +114,20 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           </div>
         )}
       </AnimatePresence>
+      {trailing && (
+        <div
+          style={{
+            position: 'absolute',
+            right: '6px',
+            top: 0,
+            bottom: 0,
+            display: value ? 'none' : 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {trailing}
+        </div>
+      )}
     </div>
   );
 };

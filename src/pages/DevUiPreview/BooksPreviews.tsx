@@ -2,6 +2,7 @@ import type firebase from 'firebase/compat/app';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { showCoinEgg } from '../../components/reading/coinEasterEgg';
+import { IsbnScanner } from '../../components/scanner/IsbnScanner';
 import { AuthContext, useAuth } from '../../contexts/AuthContext';
 import { BooksListContext } from '../../contexts/BooksListContext';
 import { MovieListContext } from '../../contexts/MovieListContext';
@@ -463,6 +464,27 @@ export const CoinEggPreview = ({ photo = false }: { photo?: boolean }) => {
       <BooksPreviewShell>
         <BooksPage />
       </BooksPreviewShell>
+    </div>
+  );
+};
+
+export const IsbnScannerPreview = () => {
+  const [open, setOpen] = useState(true);
+  const [found, setFound] = useState('');
+  return (
+    <div style={{ padding: 24 }}>
+      <p id="isbn-found">{found ? `Erkannt: ${found}` : 'Kein Treffer'}</p>
+      <button type="button" onClick={() => setOpen(true)}>
+        Scanner öffnen
+      </button>
+      <IsbnScanner
+        open={open}
+        onClose={() => setOpen(false)}
+        onDetected={(isbn) => {
+          setOpen(false);
+          setFound(isbn);
+        }}
+      />
     </div>
   );
 };

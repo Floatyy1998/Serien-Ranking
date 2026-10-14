@@ -289,6 +289,33 @@ const dict: Record<string, string> = {
   'Weil du gern {genres} liest': 'Because you love reading {genres}',
   'Nur wenige Treffer. Mit einer anderen Sortierung oder „Alle“ findest du mehr.':
     'Only a few matches. Try another sort or “All” for more.',
+  'ISBN scannen': 'Scan ISBN',
+  'Scanner schließen': 'Close scanner',
+  'Licht aus': 'Flashlight off',
+  'Licht an': 'Flashlight on',
+  'ISBN {isbn}': 'ISBN {isbn}',
+  'Das ist kein Buch-Strichcode': "That's not a book barcode",
+  'Kamera startet …': 'Starting camera …',
+  'Halte den Strichcode von der Buchrückseite in den Rahmen':
+    'Hold the barcode on the back of the book inside the frame',
+  'ISBN eintippen': 'Type ISBN',
+  'Kein Zugriff auf die Kamera': 'No camera access',
+  'Erlaube TV-Rank die Kamera in den Einstellungen deines Geräts.':
+    'Allow TV-Rank to use the camera in your device settings.',
+  'Erlaube die Kamera für tv-rank.de in den Einstellungen deines Browsers.':
+    'Allow camera access for tv-rank.de in your browser settings.',
+  'Keine Kamera gefunden': 'No camera found',
+  'Tipp die ISBN einfach ein. Sie steht direkt über dem Strichcode.':
+    "Just type in the ISBN. It's printed right above the barcode.",
+  'Die Kamera ist belegt': 'Camera in use',
+  'Eine andere App nutzt gerade die Kamera. Schließ sie und versuch es nochmal.':
+    'Another app is using the camera. Close it and try again.',
+  'Der Scanner ließ sich nicht laden': "The scanner couldn't load",
+  'Prüf deine Verbindung und versuch es nochmal.': 'Check your connection and try again.',
+  'Die Kamera ließ sich nicht starten': "The camera couldn't start",
+  'Versuch es gleich nochmal.': 'Try again in a moment.',
+  'Titel, Autor oder ISBN': 'Title, author or ISBN',
+  'Titel oder ISBN': 'Title or ISBN',
 };
 
 export default dict;

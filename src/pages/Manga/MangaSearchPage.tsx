@@ -2,6 +2,7 @@ import { AutoStories, Close, History, Search, SearchOff } from '@mui/icons-mater
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IsbnScanButton } from '../../components/scanner/IsbnScanButton';
 import { EmptyState, HorizontalScrollContainer } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
@@ -248,6 +249,13 @@ export const MangaSearchPage = () => {
                   <Close style={{ fontSize: 16 }} />
                 </button>
               )}
+              <IsbnScanButton
+                hidden={!!query}
+                className="manga-scan-btn"
+                style={{ color: currentTheme.primary }}
+                onIsbn={setQuery}
+                onManual={() => inputRef.current?.focus()}
+              />
             </div>
           </div>
 

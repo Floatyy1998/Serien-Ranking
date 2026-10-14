@@ -274,6 +274,8 @@ export default defineConfig({
         'src/lib/manga/progress.ts',
         'src/lib/books/mangaBooks.ts',
         'src/lib/books/discoverMix.ts',
+        'src/lib/books/isbnScan.ts',
+        'src/components/scanner/IsbnScanner.tsx',
         'src/lib/watch/movieWatchLog.ts',
         'src/lib/series/watchPosition.ts',
         'src/services/wrapped/manga.ts',
