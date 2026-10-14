@@ -26,6 +26,8 @@ interface UseMangaLiveDataResult {
   chapterInfo: MangaDexChapterInfo | null;
   /** Erschienene Bände laut MangaUpdates (laufende Reihen, 0 = unbekannt). */
   liveVolumes: number;
+  /** liveVolumes ist endgültig: keine laufende Reihe oder MangaUpdates hat geantwortet. */
+  volumesChecked: boolean;
 }
 
 /**
@@ -97,7 +99,9 @@ export const useMangaLiveData = ({
       alive = false;
     };
   }, [shouldFetchLive, muSeriesId]);
-  const liveVolumes = volumeInfo && volumeInfo.seriesId === muSeriesId ? volumeInfo.volumes : 0;
+  const volumesFetched = !!volumeInfo && volumeInfo.seriesId === muSeriesId;
+  const liveVolumes = volumesFetched ? volumeInfo.volumes : 0;
+  const volumesChecked = !!manga && (!shouldFetchLive || volumesFetched);
 
   // latestChapterAvailable + lastReleaseDate in Firebase persistieren. Listen-
   // Ansichten kennen nur die Firebase-Felder, brauchen also die persistierten
@@ -162,5 +166,5 @@ export const useMangaLiveData = ({
   ]);
 
   const detailsFailed = !anilistId || failedId === anilistId;
-  return { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes };
+  return { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes, volumesChecked };
 };

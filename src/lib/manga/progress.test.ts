@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Manga } from '../../types/Manga';
 import {
   hasReadProgress,
+  isStaleVolumeMode,
+  mangaHasVolumes,
   mangaRemainingLabel,
   mangaStand,
   mangaStandLabel,
@@ -72,5 +74,23 @@ describe('Lesestand je Zählweise', () => {
     );
     expect(volumesLabel(1)).toBe('1 Band');
     expect(volumesLabel(7)).toBe('7 Bände');
+  });
+});
+
+describe('Reihen mit Bänden', () => {
+  it('kennt Bände aus AniList, MangaUpdates oder umgezogenen Büchern', () => {
+    expect(mangaHasVolumes(manga({ volumes: 12 }))).toBe(true);
+    expect(mangaHasVolumes(manga({ latestVolumeAvailable: 16 }))).toBe(true);
+    expect(mangaHasVolumes(manga(), 16)).toBe(true);
+    expect(mangaHasVolumes(manga({ fromBooks: {} }))).toBe(true);
+    expect(mangaHasVolumes(manga({ volumes: null }))).toBe(false);
+  });
+
+  it('stellt Bände-Zählweise ohne Bände und ohne Stand zurück, sonst nicht', () => {
+    const webtoon = manga({ title: 'The Perfect Hybrid', trackBy: 'volumes', volumes: null });
+    expect(isStaleVolumeMode(webtoon)).toBe(true);
+    expect(isStaleVolumeMode({ ...webtoon, currentVolume: 2 })).toBe(false);
+    expect(isStaleVolumeMode(webtoon, 16)).toBe(false);
+    expect(isStaleVolumeMode({ ...webtoon, trackBy: undefined })).toBe(false);
   });
 });

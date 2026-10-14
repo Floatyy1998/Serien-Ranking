@@ -1026,26 +1026,59 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.manga-detail-delete-confirm {
+.md-confirm {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--md-confirm-tone) 35%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--md-confirm-tone) 8%, var(--glass-light));
 }
 
-.manga-detail-delete-confirm-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius-full);
-  font: inherit;
-  font-size: 13px;
+.md-confirm-text {
+  padding: 0 4px;
+  color: var(--theme-text-secondary);
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.md-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mobile-app .md-confirm .md-confirm-btn,
+.md-confirm .md-confirm-btn {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--glass-border-light);
+  border-radius: 10px;
+  background: var(--glass-light);
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.manga-detail-delete-confirm-btn:active {
-  opacity: 0.7;
+.mobile-app .md-confirm .md-confirm-btn--go,
+.md-confirm .md-confirm-btn--go {
+  border-color: color-mix(in srgb, var(--md-confirm-tone) 50%, transparent);
+  background: color-mix(in srgb, var(--md-confirm-tone) 22%, transparent);
+  color: var(--md-confirm-tone);
+}
+
+.md-confirm .md-confirm-btn:active {
+  filter: brightness(0.8);
+}
+
+.md-confirm .md-confirm-btn:focus-visible {
+  outline: 2px solid var(--md-confirm-tone);
+  outline-offset: 2px;
 }
 
 /* Kapitel-Eingabe im Hero */
@@ -1099,11 +1132,6 @@
   border: 1px solid var(--glass-border-light);
   background: var(--glass-light);
   font-weight: 700;
-}
-
-.md-manage .manga-detail-delete-confirm {
-  grid-column: 2;
-  gap: 6px;
 }
 
 .md-manage .md-manage-wide {

@@ -9,7 +9,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { MangaDexChapterInfo } from '../../../services/api/mangaUpdatesService';
 import { dateLocale, t } from '../../../services/i18n';
@@ -64,6 +64,36 @@ const formatDay = (iso?: string) =>
       })
     : '';
 
+/** Rückfrage in der Verwaltung: eine volle Zeile mit Frage links, Antworten rechts. */
+const ManageConfirm = ({
+  question,
+  tone,
+  onConfirm,
+  onCancel,
+}: {
+  question: string;
+  tone: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => (
+  <div
+    className="md-confirm md-manage-wide"
+    role="group"
+    aria-label={question}
+    style={{ '--md-confirm-tone': tone } as CSSProperties}
+  >
+    <span className="md-confirm-text">{question}</span>
+    <div className="md-confirm-actions">
+      <button type="button" className="md-confirm-btn" onClick={onCancel}>
+        {t('Nein')}
+      </button>
+      <button type="button" className="md-confirm-btn md-confirm-btn--go" onClick={onConfirm}>
+        {t('Ja')}
+      </button>
+    </div>
+  </div>
+);
+
 interface MangaDetailBodyProps {
   manga: Manga;
   heroData: MangaHeroData;
@@ -94,7 +124,7 @@ interface MangaDetailBodyProps {
   onReread: () => void;
   onToggleHide: () => void;
   onDelete: () => void;
-  /** Nur für Manga aus gedruckten Bänden: zurück zu den Büchern. */
+  /** Nur für Reihen mit Bänden: zurück zu den Büchern. */
   onMoveToBooks?: () => void;
 }
 
@@ -549,32 +579,17 @@ export const MangaDetailBody = ({
           <div className="md-manage">
             {onMoveToBooks &&
               (confirmToBooks ? (
-                <div className="manga-detail-delete-confirm md-manage-wide">
-                  <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
-                    {t(
-                      'Zurück zu den Büchern? Der Manga verschwindet mit Lesestand und Bewertung.'
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    className="manga-detail-delete-confirm-btn"
-                    onClick={() => {
-                      setConfirmToBooks(false);
-                      onMoveToBooks();
-                    }}
-                    style={{ background: 'var(--theme-primary-15)', color: currentTheme.primary }}
-                  >
-                    {t('Ja')}
-                  </button>
-                  <button
-                    type="button"
-                    className="manga-detail-delete-confirm-btn"
-                    onClick={() => setConfirmToBooks(false)}
-                    style={{ background: 'var(--glass-light)', color: currentTheme.text.secondary }}
-                  >
-                    {t('Nein')}
-                  </button>
-                </div>
+                <ManageConfirm
+                  question={t(
+                    'Zurück zu den Büchern? Der Manga verschwindet mit Lesestand und Bewertung.'
+                  )}
+                  tone={currentTheme.primary}
+                  onConfirm={() => {
+                    setConfirmToBooks(false);
+                    onMoveToBooks();
+                  }}
+                  onCancel={() => setConfirmToBooks(false)}
+                />
               ) : (
                 <button
                   type="button"
@@ -587,55 +602,38 @@ export const MangaDetailBody = ({
                 </button>
               ))}
 
-            <button
-              type="button"
-              className="manga-detail-action-btn"
-              onClick={onToggleHide}
-              style={{ color: currentTheme.text.secondary }}
-            >
-              {manga.hidden ? (
-                <Visibility style={{ fontSize: 18 }} />
-              ) : (
-                <VisibilityOff style={{ fontSize: 18 }} />
-              )}
-              {manga.hidden ? t('Einblenden') : t('Verstecken')}
-            </button>
-
-            {!showDeleteConfirm ? (
-              <button
-                type="button"
-                className="manga-detail-action-btn"
-                onClick={() => setShowDeleteConfirm(true)}
-                style={{ color: currentTheme.status?.error || '#ef4444' }}
-              >
-                <Delete style={{ fontSize: 18 }} />
-                {t('Entfernen')}
-              </button>
+            {showDeleteConfirm ? (
+              <ManageConfirm
+                question={t('Wirklich entfernen?')}
+                tone={currentTheme.status?.error || '#ef4444'}
+                onConfirm={onDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+              />
             ) : (
-              <div className="manga-detail-delete-confirm">
-                <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
-                  {t('Wirklich entfernen?')}
-                </span>
+              <>
                 <button
                   type="button"
-                  className="manga-detail-delete-confirm-btn"
-                  onClick={onDelete}
-                  style={{
-                    background: 'rgba(239,68,68,0.14)',
-                    color: currentTheme.status?.error || '#ef4444',
-                  }}
+                  className="manga-detail-action-btn"
+                  onClick={onToggleHide}
+                  style={{ color: currentTheme.text.secondary }}
                 >
-                  {t('Ja')}
+                  {manga.hidden ? (
+                    <Visibility style={{ fontSize: 18 }} />
+                  ) : (
+                    <VisibilityOff style={{ fontSize: 18 }} />
+                  )}
+                  {manga.hidden ? t('Einblenden') : t('Verstecken')}
                 </button>
                 <button
                   type="button"
-                  className="manga-detail-delete-confirm-btn"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  style={{ background: 'var(--glass-light)', color: currentTheme.text.secondary }}
+                  className="manga-detail-action-btn"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{ color: currentTheme.status?.error || '#ef4444' }}
                 >
-                  {t('Nein')}
+                  <Delete style={{ fontSize: 18 }} />
+                  {t('Entfernen')}
                 </button>
-              </div>
+              </>
             )}
           </div>
         </Section>

@@ -23,6 +23,24 @@ export const mangaTotalVolumes = (
   manga: Pick<Manga, 'volumes' | 'latestVolumeAvailable'>
 ): number => Math.max(manga.volumes || 0, manga.latestVolumeAvailable || 0);
 
+/** Reihe mit gedruckten Bänden — nur dann gibt es Bände-Zählweise und „Als Buch führen". */
+export const mangaHasVolumes = (
+  manga: Pick<Manga, 'volumes' | 'latestVolumeAvailable' | 'fromBooks'>,
+  liveVolumes = 0
+): boolean => mangaTotalVolumes(manga) > 0 || liveVolumes > 0 || !!manga.fromBooks;
+
+/** Bände-Zählweise ohne bekannte Bände und ohne gelesenen Band — gehört zurück auf Kapitel. */
+export const isStaleVolumeMode = (
+  manga: Pick<
+    Manga,
+    'trackBy' | 'currentVolume' | 'volumes' | 'latestVolumeAvailable' | 'fromBooks'
+  >,
+  liveVolumes = 0
+): boolean =>
+  manga.trackBy === 'volumes' &&
+  !((manga.currentVolume || 0) > 0) &&
+  !mangaHasVolumes(manga, liveVolumes);
+
 export interface MangaStand {
   unit: MangaUnit;
   current: number;

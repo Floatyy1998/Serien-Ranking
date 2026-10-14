@@ -10,7 +10,13 @@ import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { logMangaRating } from '../../services/discussion/readActivityService';
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
 import { showToast } from '../../lib/interaction/toast';
-import { mangaStand, mangaTotalVolumes, mangaUnit, type MangaUnit } from '../../lib/manga/progress';
+import {
+  isStaleVolumeMode,
+  mangaHasVolumes,
+  mangaStand,
+  mangaUnit,
+  type MangaUnit,
+} from '../../lib/manga/progress';
 import type { Manga } from '../../types/Manga';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
@@ -70,11 +76,8 @@ export const MangaDetailPage = () => {
   const [customPlatform, setCustomPlatform] = useState('');
   const [showCustomPlatform, setShowCustomPlatform] = useState(false);
 
-  const { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes } = useMangaLiveData({
-    user,
-    anilistId,
-    manga,
-  });
+  const { anilistData, detailsFailed, mangadexInfo, chapterInfo, liveVolumes, volumesChecked } =
+    useMangaLiveData({ user, anilistId, manga });
 
   // Sync local edit state when manga data changes from Firebase. Cannot be a
   // pure useMemo since editValue is also driven by local stepper clicks.
@@ -111,7 +114,8 @@ export const MangaDetailPage = () => {
   const handleValueChange = useCallback(
     async (next: number) => {
       if (!user || !manga) return;
-      const clamped = total ? Math.max(0, Math.min(next, total)) : Math.max(0, next);
+      const cap = total ? Math.max(total, editValue) : null;
+      const clamped = Math.max(0, cap ? Math.min(next, cap) : next);
       const previous = editValue;
       setEditValue(clamped);
       await saveReadProgress(user.uid, manga, { next: clamped, previous, total });
@@ -123,6 +127,12 @@ export const MangaDetailPage = () => {
     (next: MangaUnit) => updateField('trackBy', next === 'volume' ? 'volumes' : null),
     [updateField]
   );
+
+  const staleVolumeMode =
+    !!manga && volumesChecked && scannedVolume === 0 && isStaleVolumeMode(manga, liveVolumes);
+  useEffect(() => {
+    if (staleVolumeMode) void updateField('trackBy', null).catch(() => {});
+  }, [staleVolumeMode, updateField]);
 
   const handleMarkScannedVolume = useCallback(async () => {
     if (!user || !manga || scannedVolume <= 0) return;
@@ -337,6 +347,7 @@ export const MangaDetailPage = () => {
   }
 
   const userRating = user ? manga.rating?.[user.uid] || 0 : 0;
+  const hasVolumes = unit === 'volume' || mangaHasVolumes(manga, liveVolumes);
   const progress = total && total > 0 ? Math.min((editValue / total) * 100, 100) : 0;
   const showVolumeHint =
     scannedVolume > 0 &&
@@ -357,11 +368,7 @@ export const MangaDetailPage = () => {
           progress,
           userRating,
           nextChapterDate: chapterInfo?.estimatedNextDate ?? null,
-          canCountVolumes:
-            unit === 'volume' ||
-            mangaTotalVolumes(manga) > 0 ||
-            liveVolumes > 0 ||
-            !!manga.fromBooks,
+          canCountVolumes: hasVolumes,
           onValueChange: handleValueChange,
           onUnitChange: handleUnitChange,
           onRate: scrollToRating,
@@ -406,9 +413,7 @@ export const MangaDetailPage = () => {
         onReread={handleReread}
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
         onDelete={handleDelete}
-        onMoveToBooks={
-          manga.fromBooks || unit === 'volume' ? () => void handleMoveToBooks() : undefined
-        }
+        onMoveToBooks={hasVolumes ? () => void handleMoveToBooks() : undefined}
       />
     </PageLayout>
   );
