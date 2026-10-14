@@ -15,6 +15,7 @@ import { mangaPath } from '../../lib/manga/mangaSource';
 import { volumeSnapshot } from '../../lib/books/mangaBooks';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
+import { addRecentSearch, useRecentSearches } from '../../services/settings/recentSearches';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Book, BookSearchResult } from '../../types/Book';
 import { useAddManga } from '../Manga/useAddManga';
@@ -26,17 +27,6 @@ import { useBookActions } from './hooks/useBookActions';
 import { ForYourShowsSection } from './sections/ForYourShowsSection';
 import { isShelfId } from './data/genres';
 import { GenreView } from './discover/GenreView';
-
-const RECENT_KEY = 'bookRecentSearches';
-
-const readRecent = (): string[] => {
-  try {
-    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-    return Array.isArray(list) ? list.filter((q) => typeof q === 'string').slice(0, 8) : [];
-  } catch {
-    return [];
-  }
-};
 
 const ResultRow: React.FC<{
   result: BookSearchResult;
@@ -182,7 +172,7 @@ const BookSearchView = () => {
   useEffect(() => {
     setQuery((current) => (current.trim() === qParam ? current : qParam));
   }, [qParam]);
-  const [recent, setRecent] = useState<string[]>(readRecent);
+  const recent = useRecentSearches('books');
   const [pending, setPending] = useState<BookSearchResult | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -229,20 +219,7 @@ const BookSearchView = () => {
       .slice(0, 6);
   }, [allBookList, query]);
 
-  const remember = (q: string) => {
-    const trimmed = q.trim();
-    if (trimmed.length < 2) return;
-    const next = [
-      trimmed,
-      ...recent.filter((r) => r.toLowerCase() !== trimmed.toLowerCase()),
-    ].slice(0, 8);
-    setRecent(next);
-    try {
-      localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-    } catch {
-      /* egal */
-    }
-  };
+  const remember = (q: string) => addRecentSearch('books', q);
 
   const openResult = (result: BookSearchResult) => {
     remember(query);

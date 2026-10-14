@@ -13,7 +13,7 @@ export function useHideOwned() {
 }
 
 /** Hinzufügen-Sheet für beliebige Treffer: openAdd(result) öffnet, sheet wird einmal gerendert. */
-export function useAddFlow(zIndex?: number) {
+export function useAddFlow(zIndex?: number, onAdded?: () => void) {
   const actions = useBookActions();
   const [pending, setPending] = useState<BookSearchResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -23,11 +23,12 @@ export function useAddFlow(zIndex?: number) {
       if (!pending) return;
       setBusy(true);
       addedHere.add(pending.id);
+      onAdded?.();
       await actions.add(pending, choice.status, { finishedEarlier: choice.finishedEarlier });
       setBusy(false);
       setPending(null);
     },
-    [pending, actions]
+    [pending, actions, onAdded]
   );
 
   const sheet = (

@@ -120,11 +120,17 @@ vi.mock('../../../components/ui', () => ({
 }));
 vi.mock('../../../services/i18n', () => ({ t: (s: string) => s }));
 vi.mock('../../Books/components/BookQuickResults', () => ({
-  BookQuickResults: () => null,
-  BookOverlayIdle: () => null,
+  BookQuickResults: (p: { variant: string; onAdded?: (found: 'books' | 'manga') => void }) => (
+    <button type="button" onClick={() => p.onAdded?.('books')}>{`book-add-${p.variant}`}</button>
+  ),
+  BookOverlayIdle: () => <div data-testid="books-idle" />,
 }));
 vi.mock('../../Manga/components/MangaQuickResults', () => ({
-  MangaQuickResults: (p: { variant: string }) => <div data-testid={`manga-${p.variant}`} />,
+  MangaQuickResults: (p: { variant: string; onAdded?: () => void }) => (
+    <button type="button" data-testid={`manga-${p.variant}`} onClick={() => p.onAdded?.()}>
+      {`manga-add-${p.variant}`}
+    </button>
+  ),
   MangaOverlayIdle: () => <div data-testid="manga-idle" />,
 }));
 vi.mock('../../../hooks/person/usePeopleSearch', () => ({
@@ -133,23 +139,21 @@ vi.mock('../../../hooks/person/usePeopleSearch', () => ({
 const search = vi.hoisted(() => ({
   people: [] as Array<{ id: number; name: string; profilePath?: string; popularity: number }>,
   peopleFirst: false,
+  query: 'breaking',
 }));
 vi.mock('./useHomeQuickSearch', () => ({
   useHomeQuickSearch: () => ({
     people: search.people,
     peopleFirst: search.peopleFirst,
-    query: 'breaking',
+    query: search.query,
     setQuery: vi.fn(),
     results: [
       { id: 1, type: 'series', title: 'Breaking Bad', year: '2008', poster_path: '/p.jpg' },
       { id: 2, type: 'movie', title: 'Heat', year: '1995', poster_path: '/h.jpg' },
     ],
     loading: false,
-    recent: [],
     popular: [],
     popularItems: [],
-    saveRecent: vi.fn(),
-    removeRecent: vi.fn(),
   }),
 }));
 
@@ -188,6 +192,8 @@ afterEach(() => {
   quick.saveQuickRating.mockClear();
   search.people = [];
   search.peopleFirst = false;
+  search.query = 'breaking';
+  localStorage.clear();
   cleanup();
 });
 
@@ -394,5 +400,78 @@ describe('HomeSearchOverlay Personen und Manga', () => {
     render(<HomeSearchOverlay open onClose={onClose} />);
     act(() => locationStore.set('/manga/30013', 'manga-1'));
     expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+const stored = (key: string): unknown => JSON.parse(localStorage.getItem(key) || 'null');
+
+describe('HomeSearchOverlay Suchverlauf', () => {
+  it('zeigt im Bücher-Filter den Bücher-Verlauf statt der Serien-Begriffe', () => {
+    search.query = '';
+    localStorage.setItem('recentSearches', JSON.stringify(['Breaking Bad']));
+    localStorage.setItem('bookRecentSearches', JSON.stringify(['Stephen King', 'Der Hobbit']));
+    render(<HomeSearchOverlay open onClose={vi.fn()} initialFilter="books" />);
+    expect(screen.getByText('Zuletzt gesucht')).toBeTruthy();
+    expect(screen.getByText('Stephen King')).toBeTruthy();
+    expect(screen.getByText('Der Hobbit')).toBeTruthy();
+    expect(screen.queryByText('Breaking Bad')).toBeNull();
+    expect(screen.getByTestId('books-idle')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Alle' }));
+    expect(screen.getByText('Breaking Bad')).toBeTruthy();
+    expect(screen.queryByText('Stephen King')).toBeNull();
+  });
+
+  it('entfernt per x nur aus dem Bücher-Verlauf', () => {
+    search.query = '';
+    localStorage.setItem('recentSearches', JSON.stringify(['Dune']));
+    localStorage.setItem('bookRecentSearches', JSON.stringify(['Dune', 'Tolkien']));
+    render(<HomeSearchOverlay open onClose={vi.fn()} initialFilter="books" />);
+    const row = screen.getByText('Dune').closest('.hso__recent-row') as HTMLElement;
+    fireEvent.click(row.querySelector('.hso__recent-remove') as HTMLElement);
+    expect(screen.queryByText('Dune')).toBeNull();
+    expect(stored('bookRecentSearches')).toEqual(['Tolkien']);
+    expect(stored('recentSearches')).toEqual(['Dune']);
+  });
+
+  it('merkt sich die Buchsuche beim Öffnen eines Buchs im Bücher-Verlauf', () => {
+    search.query = 'stephen king';
+    render(<HomeSearchOverlay open onClose={vi.fn()} homePath="/books" initialFilter="books" />);
+    act(() => locationStore.set('/books', 'books-1'));
+    act(() => locationStore.set('/books/OL123W', 'book-1'));
+    expect(stored('bookRecentSearches')).toEqual(['stephen king']);
+    expect(stored('recentSearches')).toBeNull();
+  });
+
+  it('merkt sich die Buchsuche auch beim direkten Hinzufügen', () => {
+    search.query = 'tolkien';
+    render(<HomeSearchOverlay open onClose={vi.fn()} initialFilter="books" />);
+    fireEvent.click(screen.getByRole('button', { name: 'book-add-grid' }));
+    expect(stored('bookRecentSearches')).toEqual(['tolkien']);
+    expect(stored('recentSearches')).toBeNull();
+  });
+
+  it('trägt Bücher-Funde aus „Alle“ zusätzlich in den Bücher-Verlauf ein', () => {
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    act(() => locationStore.set('/books/OL123W', 'book-1'));
+    expect(stored('recentSearches')).toEqual(['breaking']);
+    expect(stored('bookRecentSearches')).toEqual(['breaking']);
+  });
+
+  it('lässt Serien-Treffer im allgemeinen Verlauf', () => {
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    fireEvent.click(cardOf('Breaking Bad'));
+    act(() => locationStore.set('/series/1', 'detail-1'));
+    expect(stored('recentSearches')).toEqual(['breaking']);
+    expect(stored('bookRecentSearches')).toBeNull();
+  });
+
+  it('merkt sich Manga-Suchen im Manga-Verlauf', () => {
+    search.query = 'one piece';
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Manga' }));
+    fireEvent.click(screen.getByRole('button', { name: 'manga-add-grid' }));
+    expect(stored('mangaRecentSearches')).toEqual(['one piece']);
+    expect(stored('recentSearches')).toBeNull();
   });
 });

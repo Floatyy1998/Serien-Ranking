@@ -1,11 +1,11 @@
 /**
  * useHomeQuickSearch — schlanke Such-Logik für den Inline-Dropdown auf dem
  * Homescreen (Spotlight-Style). Bewusst NICHT useSearchPage: das würde `?q=` in
- * die Home-URL schreiben (History-Spam). Hier nur lokaler Query-State, ein
- * debounced TMDB-Multi-Search (Serien, Filme und Personen parallel) und ein
- * localStorage-Verlauf.
+ * die Home-URL schreiben (History-Spam). Hier nur lokaler Query-State und ein
+ * debounced TMDB-Multi-Search (Serien, Filme und Personen parallel); den Verlauf
+ * führt services/settings/recentSearches.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { peopleLeadResults, type PersonHit } from '../../../lib/person/personSearch';
 import { rankSearchResults } from '../../../lib/text/searchRelevance';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
@@ -37,8 +37,6 @@ interface TmdbListResponse {
   }>;
 }
 
-const RECENT_KEY = 'recentSearches';
-const MAX_RECENT = 6;
 // 12 Titel, damit die „Beliebt"-Reihe auch auf 2K-Screens die Breite füllt.
 const POPULAR_SEARCHES = [
   'Breaking Bad',
@@ -66,12 +64,9 @@ export interface UseHomeQuickSearchResult {
   people: PersonHit[];
   peopleFirst: boolean;
   loading: boolean;
-  recent: string[];
   popular: string[];
   /** „Beliebt" als konkrete Titel mit Postern (leer, bis TMDB aufgelöst hat). */
   popularItems: QuickResult[];
-  saveRecent: (q: string) => void;
-  removeRecent: (term: string) => void;
 }
 
 /**
@@ -86,14 +81,6 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     first: false,
   });
   const [loading, setLoading] = useState(false);
-  const [recent, setRecent] = useState<string[]>(() => {
-    try {
-      const raw = localStorage.getItem(RECENT_KEY);
-      return raw ? (JSON.parse(raw) as string[]) : [];
-    } catch {
-      return [];
-    }
-  });
   const [popularItems, setPopularItems] = useState<QuickResult[]>(() => popularCache ?? []);
   // Monoton steigende Request-ID: verwirft veraltete Antworten (Race bei schnellem Tippen).
   const reqId = useRef(0);
@@ -138,35 +125,6 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
       alive = false;
     };
   }, [active]);
-
-  const saveRecent = useCallback((q: string) => {
-    const term = q.trim();
-    if (term.length < 2) return;
-    setRecent((prev) => {
-      const updated = [term, ...prev.filter((s) => s.toLowerCase() !== term.toLowerCase())].slice(
-        0,
-        MAX_RECENT
-      );
-      try {
-        localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-      } catch {
-        /* Quota — ignorieren */
-      }
-      return updated;
-    });
-  }, []);
-
-  const removeRecent = useCallback((term: string) => {
-    setRecent((prev) => {
-      const updated = prev.filter((s) => s !== term);
-      try {
-        localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-      } catch {
-        /* ignore */
-      }
-      return updated;
-    });
-  }, []);
 
   useEffect(() => {
     const q = query.trim();
@@ -230,10 +188,7 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     people: people.hits,
     peopleFirst: people.first,
     loading,
-    recent,
     popular: POPULAR_SEARCHES,
     popularItems,
-    saveRecent,
-    removeRecent,
   };
 }

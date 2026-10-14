@@ -31,6 +31,12 @@ import type { PersonHit } from '../../../lib/person/personSearch';
 import { formatRatingShort } from '../../../lib/rating/rating';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
+import {
+  addRecentSearch,
+  removeRecentSearch,
+  useRecentSearches,
+  type RecentSearchScope,
+} from '../../../services/settings/recentSearches';
 import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQuickResults';
 import { MangaOverlayIdle, MangaQuickResults } from '../../Manga/components/MangaQuickResults';
 import { IsbnScanButton } from '../../../components/scanner/IsbnScanButton';
@@ -49,6 +55,9 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'manga', label: t('Manga') },
   { key: 'books', label: t('Bücher') },
 ];
+
+const foundAt = (path: string): RecentSearchScope =>
+  path.startsWith('/books/') ? 'books' : path.startsWith('/manga/') ? 'manga' : 'media';
 
 interface HomeSearchOverlayProps {
   open: boolean;
@@ -83,20 +92,29 @@ export const HomeSearchOverlay = memo(
     }, [open, pathname, key, homePath]);
     const { currentTheme } = useTheme();
     const communityMap = useCommunityRatingsMap();
-    const {
-      query,
-      setQuery,
-      results,
-      people,
-      peopleFirst,
-      loading,
-      recent,
-      popular,
-      popularItems,
-      saveRecent,
-      removeRecent,
-    } = useHomeQuickSearch(open);
+    const { query, setQuery, results, people, peopleFirst, loading, popular, popularItems } =
+      useHomeQuickSearch(open);
     const [filter, setFilter] = useState<Filter>(initialFilter ?? 'all');
+
+    // Bücher und Manga haben eigene Verläufe; Funde aus „Alle" landen zusätzlich dort.
+    const recentScope: RecentSearchScope =
+      filter === 'books' || filter === 'manga' ? filter : 'media';
+    const recent = useRecentSearches(recentScope);
+    const remember = useCallback(
+      (found: RecentSearchScope) => {
+        addRecentSearch(recentScope, query);
+        if (recentScope === 'media' && found !== 'media') addRecentSearch(found, query);
+      },
+      [recentScope, query]
+    );
+
+    // Wer aus den Treffern auf eine Detailseite springt, hat gefunden, was er suchte —
+    // gilt auch für Bücher und Manga, deren Karten selbst navigieren.
+    const wasParked = useRef(false);
+    useEffect(() => {
+      if (open && parked && !wasParked.current) remember(foundAt(pathname));
+      wasParked.current = parked;
+    }, [open, parked, pathname, remember]);
     const filtersRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
       if (!open || !initialFilter) return;
@@ -234,7 +252,7 @@ export const HomeSearchOverlay = memo(
     );
 
     const goTo = (item: QuickResult) => {
-      if (query.trim()) saveRecent(query);
+      remember('media');
       // Nur navigieren, nicht schliessen: das Overlay parkt sich selbst (siehe
       // `parked`) und ist beim Zurueck mit Query, Treffern und Scrollstand da.
       navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
@@ -242,10 +260,10 @@ export const HomeSearchOverlay = memo(
 
     const goToPerson = useCallback(
       (person: PersonHit) => {
-        if (query.trim()) saveRecent(query);
+        remember('media');
         navigate(`/person/${person.id}`);
       },
-      [query, saveRecent, navigate]
+      [remember, navigate]
     );
 
     const onEnter = () => {
@@ -595,11 +613,20 @@ export const HomeSearchOverlay = memo(
                 „Keine Treffer"-Meldung fest. Einblenden reicht. */}
                 {hasQuery && filter === 'books' ? (
                   <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <BookQuickResults query={query} variant="grid" sheetZIndex={OVERLAY_SHEET_Z} />
+                    <BookQuickResults
+                      query={query}
+                      variant="grid"
+                      sheetZIndex={OVERLAY_SHEET_Z}
+                      onAdded={remember}
+                    />
                   </motion.div>
                 ) : hasQuery && filter === 'manga' ? (
                   <motion.div key="manga" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <MangaQuickResults query={query} variant="grid" />
+                    <MangaQuickResults
+                      query={query}
+                      variant="grid"
+                      onAdded={() => remember('manga')}
+                    />
                   </motion.div>
                 ) : hasQuery && filter === 'people' ? (
                   loading && people.length === 0 ? (
@@ -676,6 +703,7 @@ export const HomeSearchOverlay = memo(
                     onCount={onMangaCount}
                     onIds={setMangaRowIds}
                     onSeeAll={() => setFilter('manga')}
+                    onAdded={() => remember('manga')}
                   />
                 )}
                 {hasQuery && filter === 'all' && (
@@ -686,6 +714,7 @@ export const HomeSearchOverlay = memo(
                     hideMangaIds={mangaRowIds}
                     onCount={onBookCount}
                     onSeeAll={() => setFilter('books')}
+                    onAdded={remember}
                   />
                 )}
                 {hasQuery ? null : (
@@ -720,7 +749,7 @@ export const HomeSearchOverlay = memo(
                               type="button"
                               className="hso__recent-remove"
                               aria-label={t('„{term}" entfernen', { term })}
-                              onClick={() => removeRecent(term)}
+                              onClick={() => removeRecentSearch(recentScope, term)}
                               style={{ color: currentTheme.text.muted }}
                             >
                               <Close style={{ fontSize: '15px' }} />

@@ -47,7 +47,7 @@ function useMangaQuickSearch(query: string) {
   };
 }
 
-function useMangaCards() {
+function useMangaCards(onAdded?: () => void) {
   const navigate = useNavigate();
   const { allMangaList } = useMangaList();
   const { add, addingId } = useAddManga();
@@ -69,6 +69,7 @@ function useMangaCards() {
       onOpen={() => navigate(mangaPath(result.id, volume))}
       onAdd={(e) => {
         e.stopPropagation();
+        onAdded?.();
         void add(result, { byVolume: volume !== undefined });
       }}
     />
@@ -84,6 +85,7 @@ interface MangaQuickResultsProps {
   /** Gezeigte AniList-IDs — die Bücher-Reihe blendet deren Bände dann aus. */
   onIds?: (ids: number[]) => void;
   onSeeAll?: () => void;
+  onAdded?: () => void;
 }
 
 export const MangaQuickResults = ({
@@ -92,10 +94,11 @@ export const MangaQuickResults = ({
   onCount,
   onIds,
   onSeeAll,
+  onAdded,
 }: MangaQuickResultsProps) => {
   const { currentTheme } = useTheme();
   const { results, aliases, volumes, loading } = useMangaQuickSearch(query);
-  const { ownedById, render } = useMangaCards();
+  const { ownedById, render } = useMangaCards(onAdded);
 
   const sorted = useMemo(
     () =>

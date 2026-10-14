@@ -27,6 +27,8 @@ interface Props {
   hideMangaIds?: number[];
   onCount?: (count: number, loading: boolean) => void;
   onSeeAll?: () => void;
+  /** Treffer direkt hinzugefügt — Bücher landen im Regal, Manga-Bände bei den Manga. */
+  onAdded?: (found: 'books' | 'manga') => void;
 }
 
 /** Buch-Treffer im Such-Overlay — gleiche Poster-Karten wie beim Stöbern. */
@@ -37,11 +39,12 @@ export const BookQuickResults: React.FC<Props> = ({
   hideMangaIds,
   onCount,
   onSeeAll,
+  onAdded,
 }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const { results, loading: searching } = useBookSearch(query);
-  const { openAdd, sheet } = useAddFlow(sheetZIndex);
+  const { openAdd, sheet } = useAddFlow(sheetZIndex, () => onAdded?.('books'));
   const ownedFor = useOwnedBooks();
   const { links, pending, isPending } = useMangaVolumes(results, { query, deep: true });
   const { add: addManga, addingId } = useAddManga();
@@ -110,6 +113,7 @@ export const BookQuickResults: React.FC<Props> = ({
                     }
                     onAdd={(e) => {
                       e.stopPropagation();
+                      onAdded?.('manga');
                       void addManga(entry.link.manga, {
                         byVolume: true,
                         fromBooks:
