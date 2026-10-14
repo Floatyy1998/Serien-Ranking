@@ -160,13 +160,14 @@ export const SHELF_THEMES: Partial<Record<ShelfId, Record<string, string>>> = {
   },
 };
 
-const memory = new Map<string, Promise<BookSearchResult[]>>();
+const memory = new Map<string, Promise<unknown>>();
 
-async function olSearch(
+async function olSearchPage(
   q: string,
   limit: number,
-  sort = 'readinglog'
-): Promise<BookSearchResult[]> {
+  sort = 'readinglog',
+  offset = 0
+): Promise<{ items: BookSearchResult[]; raw: number }> {
   const params = new URLSearchParams({
     q,
     sort,
@@ -174,21 +175,27 @@ async function olSearch(
     lang: appLocale,
     fields: FIELDS,
   });
+  if (offset) params.set('offset', String(offset));
   const res = await fetch(`${OPEN_LIBRARY}/search.json?${params.toString()}`);
   if (!res.ok) throw new Error(`Open Library ${res.status}`);
   const data = (await res.json()) as { docs?: OpenLibraryDoc[] };
   const seen = new Set<string>();
-  return (data.docs ?? []).map(mapOpenLibraryDoc).filter((r): r is BookSearchResult => {
+  const docs = data.docs ?? [];
+  const items = docs.map(mapOpenLibraryDoc).filter((r): r is BookSearchResult => {
     if (!r?.cover) return false;
     const key = bookMatchKey(r.title, r.authors);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  return { items, raw: docs.length };
 }
 
-function cachedSearch(key: string, load: () => Promise<BookSearchResult[]>) {
-  let pending = memory.get(key);
+const olSearch = async (q: string, limit: number, sort?: string) =>
+  (await olSearchPage(q, limit, sort)).items;
+
+function cachedSearch<T>(key: string, load: () => Promise<T>): Promise<T> {
+  let pending = memory.get(key) as Promise<T> | undefined;
   if (!pending) {
     pending = load().catch((err) => {
       memory.delete(key);
@@ -228,13 +235,17 @@ const compactResult = (r: BookSearchResult): BookSearchResult => ({
   ratingCount: r.ratingCount,
 });
 
+function shelfQuery(id: ShelfId, { sort = 'popular', theme }: ShelfOptions) {
+  const themeQuery = theme ? SHELF_THEMES[id]?.[theme] : undefined;
+  const year = new Date().getFullYear();
+  return `${themeQuery ?? SHELF_QUERY[id](year)}${SORT_QUERY[sort].filter(year)}${languageFilter()}`;
+}
+
 /** Regal fürs Stöbern in der App-Sprache — vorberechnet vom Backend, sonst live bei Open Library. */
 export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<BookSearchResult[]> {
   const { sort = 'popular', limit = 24 } = options;
   const theme = knownTheme(id, options.theme);
-  const themeQuery = theme ? SHELF_THEMES[id]?.[theme] : undefined;
-  const year = new Date().getFullYear();
-  const query = `${themeQuery ?? SHELF_QUERY[id](year)}${SORT_QUERY[sort].filter(year)}${languageFilter()}`;
+  const query = shelfQuery(id, { sort, theme });
   const key = shelfKey(id, options);
   return cachedSearch(key, async () => {
     const stored = cacheGet<BookSearchResult[]>(SHELF_CACHE, key, SHELF_TTL);
@@ -248,6 +259,28 @@ export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<Boo
         : await olSearch(query, limit, SORT_QUERY[sort].sort);
     cacheSet(SHELF_CACHE, key, list.map(compactResult), SHELF_CACHE_ENTRIES);
     return list;
+  });
+}
+
+export const SHELF_PAGE_SIZE = 60;
+
+/** Folgeseite (ab 1) eines Regals, immer live — der Tagesexport deckt nur den Anfang ab. */
+export function fetchShelfPage(
+  id: ShelfId,
+  options: ShelfOptions,
+  page: number
+): Promise<{ items: BookSearchResult[]; done: boolean }> {
+  const { sort = 'popular' } = options;
+  const theme = knownTheme(id, options.theme);
+  const key = `page:${shelfKey(id, { sort, theme, limit: SHELF_PAGE_SIZE })}:${page}`;
+  return cachedSearch(key, async () => {
+    const { items, raw } = await olSearchPage(
+      shelfQuery(id, { sort, theme }),
+      SHELF_PAGE_SIZE,
+      SORT_QUERY[sort].sort,
+      page * SHELF_PAGE_SIZE
+    );
+    return { items, done: raw < SHELF_PAGE_SIZE };
   });
 }
 

@@ -70,6 +70,17 @@ describe('fetchShelf', () => {
     );
   });
 
+  it('holt Folgeseiten live mit Versatz und meldet das Ende', async () => {
+    const { fetchShelfPage, SHELF_PAGE_SIZE } = await import('./bookDiscovery');
+    const { items, done } = await fetchShelfPage('fantasy', { sort: 'gems' }, 2);
+    expect(staticShelf).not.toHaveBeenCalled();
+    expect(query().get('offset')).toBe(String(2 * SHELF_PAGE_SIZE));
+    expect(query().get('limit')).toBe(String(SHELF_PAGE_SIZE));
+    expect(query().get('sort')).toBe('rating');
+    expect(items).toHaveLength(1);
+    expect(done).toBe(true);
+  });
+
   it('ignoriert unbekannte Untergenres', async () => {
     staticShelf.mockResolvedValue(null);
     const { fetchShelf } = await import('./bookDiscovery');

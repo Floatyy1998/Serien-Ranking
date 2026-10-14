@@ -7,7 +7,7 @@ import {
   TabSwitcher,
 } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useBookShelf } from '../../../hooks/books/useBookShelf';
+import { useBookShelf, useShelfMore } from '../../../hooks/books/useBookShelf';
 import { curateShelf } from '../../../lib/books/discoverMix';
 import { SHELF_SORTS, type ShelfId } from '../../../services/api/bookDiscovery';
 import { t } from '../../../services/i18n';
@@ -30,10 +30,18 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
   const themes = genre?.themes ?? [];
   const theme = themes.find((th) => th.id === params.get('theme'))?.id;
   const { items, loading, error } = useBookShelf(id, { eager: true, limit: 80, sort, theme });
+  const canLoadMore = !loading && !error && items.length > 0;
+  const {
+    sentinelRef,
+    items: moreItems,
+    loadingMore,
+    exhausted,
+  } = useShelfMore(id, { sort, theme }, canLoadMore);
+  const finished = !canLoadMore || exhausted;
   const hideOwned = useHideOwned();
   const { items: shown, hidden } = useMemo(
-    () => curateShelf(items, { isOwned: hideOwned, perAuthor: 1 }),
-    [items, hideOwned]
+    () => curateShelf([...items, ...moreItems], { isOwned: hideOwned, perAuthor: 1 }),
+    [items, moreItems, hideOwned]
   );
   const { openAdd, sheet } = useAddFlow();
   const colors = genre?.colors ?? [currentTheme.primary, currentTheme.accent];
@@ -134,7 +142,7 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
         )}
       </div>
 
-      {!loading && shown.length === 0 ? (
+      {!loading && !loadingMore && finished && shown.length === 0 ? (
         <div className="bk-card dsc-empty" style={{ color: currentTheme.text.muted }}>
           {error
             ? t('Die Buchsuche ist gerade nicht erreichbar.')
@@ -149,9 +157,11 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
           ) : (
             shown.map((r) => <DiscoverCard key={r.id} result={r} onAdd={openAdd} />)
           )}
+          {loadingMore && <SkeletonCards count={6} />}
         </div>
       )}
-      {!loading && shown.length > 0 && shown.length < FEW_RESULTS && (
+      <div ref={sentinelRef} aria-hidden style={{ height: 1 }} />
+      {finished && shown.length > 0 && shown.length < FEW_RESULTS && (
         <p className="dsc-hidden-note" style={{ color: currentTheme.text.muted }}>
           {t('Nur wenige Treffer. Mit einer anderen Sortierung oder „Alle“ findest du mehr.')}
         </p>
