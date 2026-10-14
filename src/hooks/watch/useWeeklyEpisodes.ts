@@ -31,6 +31,8 @@ export interface WeeklyEpisode {
   episodeName: string;
   airDate: string;
   airstamp?: string;
+  /** Sendezeit in ms (TVMaze-Mitternacht korrigiert); nur bei vorhandenem airstamp. */
+  airTime?: number;
   watched: boolean;
   seasonIndex: number;
   episodeIndex: number;
@@ -207,6 +209,7 @@ export const useWeeklyEpisodes = (
             episodeName: ep.name || `Episode ${eIdx + 1}`,
             airDate: airDateStr,
             airstamp: ep.airstamp || undefined,
+            airTime: ep.airstamp ? airDate.getTime() : undefined,
             watched: !!ep.watched,
             seasonIndex: sIdx,
             episodeIndex: eIdx,
@@ -275,11 +278,11 @@ export const useWeeklyEpisodes = (
     // Sort episodes within each day by air time, then series title
     for (const [, episodes] of schedule) {
       episodes.sort((a, b) => {
-        const aTime = a.airstamp || '';
-        const bTime = b.airstamp || '';
-        if (aTime && bTime) return aTime.localeCompare(bTime);
-        if (aTime) return -1;
-        if (bTime) return 1;
+        const aTime = a.airTime;
+        const bTime = b.airTime;
+        if (aTime !== undefined && bTime !== undefined) return aTime - bTime;
+        if (aTime !== undefined) return -1;
+        if (bTime !== undefined) return 1;
         return a.seriesTitle.localeCompare(b.seriesTitle);
       });
     }

@@ -100,6 +100,43 @@ describe('useWeeklyEpisodes', () => {
     expect(call([seriesWithTodayEpisode({ id: 9 })], 1).totalEpisodes).toBe(0);
   });
 
+  it('sortiert TVMaze-Mitternacht (Stempel am Folgetag 00:00) vor spätere Folgen des Tages', () => {
+    const tagsueber = makeSeries({
+      id: 10,
+      title: 'Nachmittag',
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [
+            ep({
+              id: 1,
+              air_date: '2026-06-03',
+              airstamp: new Date(2026, 5, 3, 16, 0).toISOString(),
+            }),
+          ],
+        },
+      ],
+    });
+    const mitternacht = makeSeries({
+      id: 11,
+      title: 'Mitternacht',
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [
+            ep({
+              id: 1,
+              air_date: '2026-06-03',
+              airstamp: new Date(2026, 5, 4, 0, 0).toISOString(),
+            }),
+          ],
+        },
+      ],
+    });
+    const { schedule } = call([tagsueber, mitternacht]);
+    expect(schedule.get('2026-06-03')?.map((e) => e.seriesId)).toEqual([11, 10]);
+  });
+
   it('getWeekNumber liefert eine ISO-Wochennummer im gültigen Bereich', () => {
     const wk = getWeekNumber(new Date('2026-06-03T12:00:00Z'));
     expect(wk).toBeGreaterThanOrEqual(1);
