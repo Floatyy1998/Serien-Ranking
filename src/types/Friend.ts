@@ -54,13 +54,29 @@ export interface FriendActivity {
     | 'series_added_to_watchlist'
     | 'series_removed_from_watchlist'
     | 'movie_added_to_watchlist'
-    | 'movie_removed_from_watchlist';
+    | 'movie_removed_from_watchlist'
+    | 'manga_added'
+    | 'manga_rated'
+    | 'manga_finished'
+    | 'book_added'
+    | 'book_rated'
+    | 'book_finished';
   itemTitle: string;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
   itemId?: number | string; // Fallback-ID wenn tmdbId fehlt
-  itemType?: 'series' | 'movie'; // Typ des Items
+  itemType?: 'series' | 'movie' | 'manga' | 'book';
   posterPath?: string; // Poster-Pfad aus Activity-Daten
   poster?: string; // Alternativer Poster-Pfad
   rating?: number;
+  /** Bücher: Autor + Quell-IDs, damit Freunde ein fremdes Buch öffnen können. */
+  author?: string;
+  bookRef?: BookActivityRef;
   timestamp: number;
+}
+
+export interface BookActivityRef {
+  source?: string;
+  googleId?: string;
+  olWorkId?: string;
+  isbn13?: string;
 }

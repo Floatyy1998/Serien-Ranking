@@ -1,16 +1,33 @@
 import { DoneAll, Group, Notifications } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useActivityPosters } from '../../../hooks/social/useActivityPosters';
+import { effectiveWidth, getDisplayScale } from '../../../services/settings/displayScale';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
+import { ActivityBundleItem } from '../notifications/ActivityBundleItem';
+import '../notifications/NotificationHub.css';
 import { NotificationItem } from '../notifications/NotificationItem';
 import { RecommendationCard } from '../notifications/RecommendationCard';
 import type { UnifiedNotification } from '../hooks/useUnifiedNotifications';
 import { tapScaleTight } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
+
+const COLUMN_MIN_WIDTH = 1000;
+const isNarrow = () => effectiveWidth(window.innerWidth, getDisplayScale()) < COLUMN_MIN_WIDTH;
+
+/** Unter 1000px nutzbarer Breite Reiter statt Spalten — sonst scrollt man durch alle Bereiche. */
+function useNarrowSheet(): boolean {
+  const [narrow, setNarrow] = useState(isNarrow);
+  useEffect(() => {
+    const onResize = () => setNarrow(isNarrow());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return narrow;
+}
 
 interface NotificationSheetProps {
   isOpen: boolean;
@@ -41,28 +58,64 @@ export const NotificationSheet = React.memo(function NotificationSheet({
 }: NotificationSheetProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { isDesktop } = useDeviceType();
+  const posterFor = useActivityPosters(isOpen);
 
-  // Desktop: nach Themen zoniert statt chronologischem Spalten-Chaos.
-  const groups = useMemo(() => {
-    const friends: UnifiedNotification[] = [];
-    const news: UnifiedNotification[] = [];
+  const columns = useMemo(() => {
     const personal: UnifiedNotification[] = [];
+    const chats: UnifiedNotification[] = [];
+    const news: UnifiedNotification[] = [];
+    const friends: UnifiedNotification[] = [];
     for (const n of notifications) {
-      if (n.kind === 'activity' || n.kind === 'request' || n.kind === 'recommendation') {
-        friends.push(n);
-      } else if (n.kind === 'announcement') {
-        news.push(n);
-      } else {
-        personal.push(n);
-      }
+      if (n.kind === 'activity') friends.push(n);
+      else if (n.kind === 'chat') chats.push(n);
+      else if (n.kind === 'announcement' || n.sourceType === 'admin_message') news.push(n);
+      else personal.push(n);
     }
+    const section = (key: string, label: string, items: UnifiedNotification[], wide = false) =>
+      items.length ? [{ key, label, items, wide }] : [];
     return [
-      { label: t('Freunde'), items: friends },
-      { label: t('Neues in TV-Rank'), items: news },
-      { label: t('Für dich'), items: personal },
-    ].filter((g) => g.items.length > 0);
+      {
+        key: 'me',
+        label: t('Für dich'),
+        weight: '1fr',
+        sections: [
+          ...section('me', t('Für dich'), personal),
+          ...section('news', t('Neues in TV-Rank'), news),
+        ],
+      },
+      {
+        key: 'chats',
+        label: t('Chats'),
+        weight: '0.85fr',
+        sections: section('chats', t('Chats'), chats),
+      },
+      {
+        key: 'friends',
+        label: t('Freunde'),
+        weight: '1.5fr',
+        sections: section('friends', t('Freunde'), friends, true),
+      },
+    ]
+      .filter((c) => c.sections.length > 0)
+      .map((c) => ({
+        ...c,
+        unread: c.sections.reduce((n, s) => n + s.items.filter((i) => !i.read).length, 0),
+      }));
   }, [notifications]);
+
+  const narrow = useNarrowSheet();
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isOpen) setActiveTab(null);
+  }, [isOpen]);
+  const currentTab =
+    columns.find((c) => c.key === activeTab) ?? columns.find((c) => c.unread > 0) ?? columns[0];
+  const visibleColumns = narrow && currentTab ? [currentTab] : columns;
+
+  const openPath = (path: string, state?: unknown) => {
+    onClose();
+    navigate(path, state ? { state } : undefined);
+  };
 
   const handleItemClick = (item: UnifiedNotification) => {
     if (item.kind === 'request') return;
@@ -78,16 +131,18 @@ export const NotificationSheet = React.memo(function NotificationSheet({
     if (item.kind === 'announcement') {
       onDismissAnnouncement(item.id);
     }
-    if (item.navigateTo) {
-      onClose();
-      navigate(item.navigateTo);
-    }
+    if (item.navigateTo) openPath(item.navigateTo, item.navigateState);
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const hasUnread = unreadCount > 0;
 
   const renderItem = (item: UnifiedNotification, isLast: boolean) => {
+    if (item.kind === 'activity' && item.bundle) {
+      return (
+        <ActivityBundleItem key={item.id} item={item} posterFor={posterFor} onOpen={openPath} />
+      );
+    }
     if (item.kind === 'recommendation' && item.recommendationData) {
       return (
         <RecommendationCard
@@ -193,6 +248,24 @@ export const NotificationSheet = React.memo(function NotificationSheet({
           </div>
         </div>
 
+        {narrow && columns.length > 1 && (
+          <div className="nh-tabs" role="tablist" aria-label={t('Benachrichtigungen')}>
+            {columns.map((column) => (
+              <button
+                key={column.key}
+                type="button"
+                role="tab"
+                className="nh-tab"
+                aria-selected={column.key === currentTab?.key}
+                onClick={() => setActiveTab(column.key)}
+              >
+                {column.label}
+                {column.unread > 0 && <span className="nh-tab-count">{column.unread}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* List — hide-scrollbar: Scrollbars sind hier tabu */}
         <div
           className="hide-scrollbar"
@@ -229,35 +302,34 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                 {t('Keine neuen Benachrichtigungen')}
               </p>
             </div>
-          ) : isDesktop ? (
-            /* Desktop: thematische Zonen mit Überschrift, je eine Spalte */
-            <div className="sheet-grid">
-              {groups.map((group) => (
-                <div key={group.label} className="sheet-group">
-                  <h3 className="sheet-group__title" style={{ color: currentTheme.text.muted }}>
-                    {group.label}
-                    <span
-                      className="sheet-group__count"
-                      style={{
-                        background: `${currentTheme.primary}1a`,
-                        color: currentTheme.primary,
-                      }}
-                    >
-                      {group.items.length}
-                    </span>
-                  </h3>
-                  {group.items.map((item, index) =>
-                    renderItem(item, index === group.items.length - 1)
-                  )}
+          ) : (
+            <div
+              className={`nh-columns${narrow ? '' : ' nh-columns--grid'}`}
+              style={
+                {
+                  '--nh-cols': visibleColumns.map((c) => `minmax(0, ${c.weight})`).join(' '),
+                } as React.CSSProperties
+              }
+            >
+              {visibleColumns.map((column) => (
+                <div key={column.key} className="nh-column">
+                  {column.sections.map((section) => (
+                    <section key={section.key}>
+                      {(!narrow || column.sections.length > 1) && (
+                        <h3 className="nh-section-title">
+                          {section.label}
+                          <span className="nh-section-count">{section.items.length}</span>
+                        </h3>
+                      )}
+                      <div className={section.wide ? 'nh-list--wide' : undefined}>
+                        {section.items.map((item, index) =>
+                          renderItem(item, index === section.items.length - 1)
+                        )}
+                      </div>
+                    </section>
+                  ))}
                 </div>
               ))}
-            </div>
-          ) : (
-            /* Mobile: chronologische Liste */
-            <div style={{ padding: '0 12px' }}>
-              {notifications.map((item, index) =>
-                renderItem(item, index === notifications.length - 1)
-              )}
             </div>
           )}
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { formatNotificationTime, type UnifiedNotification } from '../hooks/useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
+import { NotifAvatar } from './NotifAvatar';
 import { tapScaleTight } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { t } from '../../../services/i18n';
@@ -75,20 +76,24 @@ export const NotificationItem = React.memo(function NotificationItem({
         />
       )}
 
-      <div
-        style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '14px',
-          background: getNotificationIconBg(item.icon, theme),
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {getNotificationIcon(item.icon, theme)}
-      </div>
+      {item.kind === 'chat' ? (
+        <NotifAvatar name={item.title} photoURL={item.photoURL} />
+      ) : (
+        <div
+          style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '14px',
+            background: getNotificationIconBg(item.icon, theme),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {getNotificationIcon(item.icon, theme)}
+        </div>
+      )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div

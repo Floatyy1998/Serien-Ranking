@@ -328,6 +328,20 @@ const dict: Record<string, string> = {
   'Füge Freunde hinzu, um Folgen zu teilen.': 'Añade amigos para compartir episodios.',
   'Chat öffnen': 'Abrir chat',
   'Sendet…': 'Enviando…',
+  // Gebündelte Freundes-Aktivität
+  'hat "{title}" fertig gelesen': 'ha terminado de leer "{title}"',
+  'hat {n} Titel hinzugefügt': 'ha añadido {n} títulos',
+  'hat {n} Titel bewertet': 'ha valorado {n} títulos',
+  'hat {n} Titel auf die Watchlist gesetzt': 'ha añadido {n} títulos a su lista',
+  'hat {n} Titel fertig gelesen': 'ha terminado de leer {n} títulos',
+  '{n} hinzugefügt': '{n} añadidos',
+  '{n} auf der Watchlist': '{n} en su lista',
+  '{n} fertig gelesen': '{n} terminados',
+  ausgelesen: 'terminado',
+  Buch: 'Libro',
+  'hat {title} fertig gelesen': 'ha terminado de leer {title}',
+  '{title} fertig gelesen': 'Ha terminado de leer {title}',
+  '{who} hat „{title}" fertig gelesen': '{who} ha terminado de leer «{title}»',
 };
 
 export default dict;

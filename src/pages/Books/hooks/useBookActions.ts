@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { logBookFinished } from '../../../features/badges/minimalActivityLogger';
+import {
+  logBookFinished,
+  logReadingActivity,
+  type ReadingActivity,
+} from '../../../features/badges/minimalActivityLogger';
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
@@ -20,8 +24,25 @@ import {
 import { t } from '../../../services/i18n';
 import type { Book, BookSearchResult, BookStatus } from '../../../types/Book';
 
+const logBook = (uid: string, book: Book, type: ReadingActivity['type'], rating?: number) =>
+  void logReadingActivity(uid, {
+    type,
+    itemId: book.id,
+    itemTitle: book.title,
+    poster: book.cover,
+    author: book.authors?.[0],
+    rating,
+    bookRef: {
+      source: book.source,
+      googleId: book.googleId,
+      olWorkId: book.olWorkId,
+      isbn13: book.isbn13,
+    },
+  });
+
 const celebrateFinish = (book: Book, uid: string) => {
   void logBookFinished(uid);
+  logBook(uid, book, 'book_finished');
   hapticCelebrate();
   showToast(t('„{title}" ausgelesen', { title: book.title }), 2400);
   triggerPetReaction({ tone: 'milestone', emoji: '', message: t('Buch ausgelesen!') });
@@ -48,6 +69,7 @@ export function useBookActions() {
       }
       try {
         const book = await addBook(uid, result, status, options);
+        logBook(uid, book, 'book_added');
         hapticSuccess();
         showToast(t('Zu deinen Büchern hinzugefügt'));
         if (status === 'completed') {
@@ -107,9 +129,12 @@ export function useBookActions() {
   const rate = useCallback(
     async (book: Book, rating: number) => {
       if (!uid) return;
-      await setBookRating(uid, book, rating).catch(() =>
-        showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
-      );
+      try {
+        await setBookRating(uid, book, rating);
+        if (rating > 0) logBook(uid, book, 'book_rated', rating);
+      } catch {
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+      }
     },
     [uid]
   );

@@ -4,17 +4,20 @@
  * media poster. The whole row opens the item; the avatar opens the friend.
  */
 
-import MovieRounded from '@mui/icons-material/MovieRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
-import TvRounded from '@mui/icons-material/TvRounded';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { NameBadges } from '../../components/ui/display/NameBadges';
 import type { FriendActivity } from '../../types/Friend';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
-import { activityMediaTargetProps, getActivityMeta, type ActivityTheme } from './activityMeta';
+import {
+  activityMediaChip,
+  activityMediaTargetProps,
+  getActivityMeta,
+  type ActivityTheme,
+} from './activityMeta';
 
 interface ActivityEntryCardProps {
   activity: FriendActivity;
@@ -49,6 +52,7 @@ export const ActivityEntryCard = React.memo(
     onAvatarClick,
   }: ActivityEntryCardProps) => {
     const meta = getActivityMeta(activity);
+    const chip = activityMediaChip(activity);
     const accent = meta.color(theme);
     const rating = activity.rating;
     const hasRating = meta.isRating && typeof rating === 'number' && rating > 0;
@@ -225,12 +229,8 @@ export const ActivityEntryCard = React.memo(
                 lineHeight: 1,
               }}
             >
-              {meta.isMovie ? (
-                <MovieRounded style={{ fontSize: '13px' }} />
-              ) : (
-                <TvRounded style={{ fontSize: '13px' }} />
-              )}
-              {meta.isMovie ? t('Film') : t('Serie')}
+              <chip.Icon style={{ fontSize: '13px' }} />
+              {t(chip.label)}
             </span>
 
             {hasRating && (

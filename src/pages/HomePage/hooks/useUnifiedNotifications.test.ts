@@ -258,12 +258,30 @@ describe('useUnifiedNotifications', () => {
   });
 
   it('addiert die Unread-Counts der Quellen in totalUnreadBadge', async () => {
-    friends.value = { ...defaultFriends(), unreadActivitiesCount: 2 };
+    const activity = (id: string, userId: string, timestamp: number) => ({
+      id,
+      userId,
+      userName: userId,
+      type: 'series_added' as const,
+      itemTitle: id,
+      tmdbId: Number(id.slice(1)),
+      timestamp,
+    });
+    const t0 = Date.now();
+    friends.value = {
+      ...defaultFriends(),
+      // drei Aktivitäten, aber nur zwei Sitzungen (Bündel)
+      friendActivities: [
+        activity('a1', 'anna', t0),
+        activity('a2', 'anna', t0 - 60_000),
+        activity('a3', 'ben', t0),
+      ],
+    };
     notif.unreadCount = 3;
     recs.pendingCount = 1;
     const { result } = renderHook(() => useUnifiedNotifications());
     await flush();
-    // announcements gelesen (0) + 2 + 3 + 1 = 6
+    // announcements gelesen (0) + 2 Bündel + 3 + 1 = 6
     expect(result.current.totalUnreadBadge).toBe(6);
   });
 

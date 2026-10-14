@@ -4,6 +4,7 @@ import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
 import { dbRef, paths } from '../../services/db/ref';
+import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
 
 /**
  * Zentrale Funktion zum Hinzufügen eines Manga zur Liste.
@@ -67,4 +68,10 @@ export async function addMangaToList(
   }
 
   await dbRef(paths.mangaItem(userId, result.id)).set(manga);
+  void logReadingActivity(userId, {
+    type: 'manga_added',
+    itemId: result.id,
+    itemTitle: manga.title as string,
+    poster: result.coverImage.large,
+  });
 }

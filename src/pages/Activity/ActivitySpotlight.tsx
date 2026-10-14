@@ -4,14 +4,17 @@
  * ambient, blurred backdrop; a glass card carries the story on top.
  */
 
-import MovieRounded from '@mui/icons-material/MovieRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
-import TvRounded from '@mui/icons-material/TvRounded';
 import { motion } from 'framer-motion';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
-import { activityMediaTargetProps, getActivityMeta, type ActivityTheme } from './activityMeta';
+import {
+  activityMediaChip,
+  activityMediaTargetProps,
+  getActivityMeta,
+  type ActivityTheme,
+} from './activityMeta';
 import type { FriendActivity } from '../../types/Friend';
 
 interface ActivitySpotlightProps {
@@ -43,6 +46,7 @@ export const ActivitySpotlight = ({
   onAvatarClick,
 }: ActivitySpotlightProps) => {
   const meta = getActivityMeta(activity);
+  const chip = activityMediaChip(activity);
   const accent = meta.color(theme);
   const hasPoster = posterUrl && !isPlaceholderUrl(posterUrl);
   const rating = activity.rating;
@@ -127,12 +131,8 @@ export const ActivitySpotlight = ({
               className="activity-spotlight__chip"
               style={{ background: `${accent}22`, color: accent }}
             >
-              {meta.isMovie ? (
-                <MovieRounded style={{ fontSize: 15 }} />
-              ) : (
-                <TvRounded style={{ fontSize: 15 }} />
-              )}
-              <span>{meta.isMovie ? t('Film') : t('Serie')}</span>
+              <chip.Icon style={{ fontSize: 15 }} />
+              <span>{t(chip.label)}</span>
             </span>
             {hasRating && (
               <span

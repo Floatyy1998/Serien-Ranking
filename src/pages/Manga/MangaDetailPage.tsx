@@ -7,6 +7,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { logChapterRead, logMangaRating } from '../../services/discussion/readActivityService';
+import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
 import type { Manga } from '../../types/Manga';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
@@ -19,6 +20,19 @@ import { getEffectiveChapterCount, shouldAutoComplete } from './mangaUtils';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
+const logMangaActivity = (
+  uid: string,
+  manga: Manga,
+  type: 'manga_rated' | 'manga_finished',
+  rating?: number
+) =>
+  void logReadingActivity(uid, {
+    type,
+    itemId: manga.anilistId,
+    itemTitle: manga.title,
+    poster: manga.poster,
+    rating,
+  });
 export const MangaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { currentTheme } = useTheme();
@@ -112,6 +126,7 @@ export const MangaDetailPage = () => {
       }
 
       await dbRef(paths.mangaItem(user.uid, anilistId)).update(updates);
+      if (updates.readStatus === 'completed') logMangaActivity(user.uid, manga, 'manga_finished');
 
       if (clamped > previousChapter) {
         await logChapterRead(user.uid, manga, clamped, previousChapter);
@@ -131,6 +146,9 @@ export const MangaDetailPage = () => {
         updates.completedAt = new Date().toISOString();
       }
       await dbRef(paths.mangaItem(user.uid, anilistId)).update(updates);
+      if (status === 'completed' && manga.readStatus !== 'completed') {
+        logMangaActivity(user.uid, manga, 'manga_finished');
+      }
     },
     [user, manga, anilistId]
   );
@@ -171,6 +189,7 @@ export const MangaDetailPage = () => {
       } else {
         await updateField(`rating/${user.uid}`, rating);
         await logMangaRating(user.uid, manga, rating);
+        logMangaActivity(user.uid, manga, 'manga_rated', rating);
       }
     },
     [user, manga, anilistId, updateField]

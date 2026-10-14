@@ -35,7 +35,10 @@ vi.mock('../../../lib/interaction/haptics', () => ({
   hapticCelebrate: vi.fn(),
   hapticSuccess: vi.fn(),
 }));
-vi.mock('../../../features/badges/minimalActivityLogger', () => ({ logBookFinished: vi.fn() }));
+vi.mock('../../../features/badges/minimalActivityLogger', () => ({
+  logBookFinished: vi.fn(),
+  logReadingActivity: vi.fn(),
+}));
 vi.mock('../../../hooks/books/useBookEvents', () => ({ notifyBookEventsChanged: vi.fn() }));
 vi.mock('../../../hooks/pet/usePetReactions', () => ({ triggerPetReaction: vi.fn() }));
 

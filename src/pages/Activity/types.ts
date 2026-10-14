@@ -6,4 +6,4 @@ export interface FirebaseUserProfile {
   email?: string;
 }
 
-export type ActivityFilterType = 'all' | 'movies' | 'series';
+export type ActivityFilterType = 'all' | 'movies' | 'series' | 'reading';

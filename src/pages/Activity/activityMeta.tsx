@@ -7,12 +7,17 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import BookmarkAddRounded from '@mui/icons-material/BookmarkAddRounded';
 import BookmarkRemoveRounded from '@mui/icons-material/BookmarkRemoveRounded';
+import AutoStoriesRounded from '@mui/icons-material/AutoStoriesRounded';
+import MenuBookRounded from '@mui/icons-material/MenuBookRounded';
+import MovieRounded from '@mui/icons-material/MovieRounded';
+import TvRounded from '@mui/icons-material/TvRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
 import type { SvgIconComponent } from '@mui/icons-material';
 import type { FriendActivity } from '../../types/Friend';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import { describeActivity, type ActivityMedia } from '../../lib/social/activityBundles';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 
 export interface ActivityTheme {
@@ -53,17 +58,42 @@ const MOVIE_TYPES = new Set([
 export const isMovieActivity = (activity: FriendActivity): boolean =>
   MOVIE_TYPES.has(activity.type) || activity.itemType === 'movie';
 
+export const activityMedia = (activity: FriendActivity): ActivityMedia =>
+  describeActivity(activity)?.media ??
+  (activity.itemType === 'manga' || activity.itemType === 'book'
+    ? activity.itemType
+    : isMovieActivity(activity)
+      ? 'movie'
+      : 'series');
+
+const MEDIA_CHIP: Record<ActivityMedia, { Icon: SvgIconComponent; label: string }> = {
+  series: { Icon: TvRounded, label: 'Serie' },
+  movie: { Icon: MovieRounded, label: 'Film' },
+  manga: { Icon: AutoStoriesRounded, label: 'Manga' },
+  book: { Icon: MenuBookRounded, label: 'Buch' },
+};
+
+/** Icon + (deutscher) Label-Schlüssel für den Medium-Chip. */
+export const activityMediaChip = (activity: FriendActivity) => MEDIA_CHIP[activityMedia(activity)];
+
+export const isReadingActivity = (activity: FriendActivity): boolean => {
+  const media = activityMedia(activity);
+  return media === 'manga' || media === 'book';
+};
+
 export const activityMediaTargetProps = (
   activity: FriendActivity,
   title: string,
   posterUrl?: string
 ): Record<string, string> =>
-  mediaTargetProps({
-    type: isMovieActivity(activity) ? 'movie' : 'series',
-    id: activity.tmdbId || activity.itemId,
-    title,
-    poster: posterUrl && !isPlaceholderUrl(posterUrl) ? posterUrl : undefined,
-  });
+  isReadingActivity(activity)
+    ? {}
+    : mediaTargetProps({
+        type: isMovieActivity(activity) ? 'movie' : 'series',
+        id: activity.tmdbId || activity.itemId,
+        title,
+        poster: posterUrl && !isPlaceholderUrl(posterUrl) ? posterUrl : undefined,
+      });
 
 export const getActivityMeta = (activity: FriendActivity): ActivityMeta => {
   const isMovie = isMovieActivity(activity);
@@ -73,12 +103,25 @@ export const getActivityMeta = (activity: FriendActivity): ActivityMeta => {
     case 'movie_rated':
     case 'rating_updated':
     case 'rating_updated_movie':
+    case 'manga_rated':
+    case 'book_rated':
       return {
         verb: 'bewertet',
         Icon: StarRounded,
         color: (t) => t.status.warning ?? t.accent,
         isMovie,
         isRating: true,
+        subtle: false,
+      };
+
+    case 'manga_finished':
+    case 'book_finished':
+      return {
+        verb: 'fertig gelesen',
+        Icon: AutoStoriesRounded,
+        color: (t) => t.status.success,
+        isMovie,
+        isRating: false,
         subtle: false,
       };
 

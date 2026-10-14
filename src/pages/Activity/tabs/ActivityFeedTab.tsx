@@ -17,7 +17,8 @@ import { ActiveFriendsRow } from '../ActiveFriendsRow';
 import { ActivityEntryCard } from '../ActivityEntryCard';
 import { ActivitySpotlight } from '../ActivitySpotlight';
 import { CountUp } from '../CountUp';
-import { getDateGroup, isMovieActivity } from '../activityMeta';
+import { activityMedia, getDateGroup } from '../activityMeta';
+import { activityPath, bookPreviewFromActivity } from '../../../lib/social/activityBundles';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';
 import type { Friend, FriendActivity } from '../../../types/Friend';
@@ -33,6 +34,7 @@ const FILTERS: { key: ActivityFilterType; label: string }[] = [
   { key: 'all', label: t('Alle') },
   { key: 'series', label: t('Serien') },
   { key: 'movies', label: t('Filme') },
+  { key: 'reading', label: t('Lesen') },
 ];
 
 const DATE_ORDER = ['Heute', 'Gestern', 'Diese Woche', 'Älter'];
@@ -86,10 +88,11 @@ export const ActivityFeedTab = ({
 
   const openItem = useCallback(
     (activity: FriendActivity) => {
-      const tmdbId = activity.tmdbId || activity.itemId;
-      if (!tmdbId) return;
+      const path = activityPath(activityMedia(activity), activity.tmdbId || activity.itemId);
+      if (!path) return;
       saveScrollPosition();
-      navigate(isMovieActivity(activity) ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
+      const preview = bookPreviewFromActivity(activity);
+      navigate(path, preview ? { state: { result: preview } } : undefined);
     },
     [navigate, saveScrollPosition]
   );

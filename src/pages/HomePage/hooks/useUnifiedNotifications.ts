@@ -10,6 +10,13 @@ import type { RecommendationMediaType } from '../../../types/Recommendation';
 import { ADMIN_UID } from '../../../config/admin';
 import { pickLocalized, t } from '../../../services/i18n';
 import { onValue } from '../../../services/db/subscribeValue';
+import {
+  activityPath,
+  bookPreviewFromActivity,
+  bundleActivities,
+  type ActivityBundle,
+} from '../../../lib/social/activityBundles';
+import { bundleSentence } from '../notifications/activityText';
 
 export interface RecommendationCardData {
   recId: string;
@@ -58,6 +65,12 @@ export interface UnifiedNotification {
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
+  /** Freundes-Aktivitäten einer Sitzung, zusammengefasst. */
+  bundle?: ActivityBundle;
+  photoURL?: string;
+  navigateState?: unknown;
+  /** Typ des users/$uid/notifications-Eintrags (z. B. admin_message). */
+  sourceType?: string;
   action?: 'case_opening';
   dropData?: { dropId: string; accessoryId: string; rarity: string };
   recommendationData?: RecommendationCardData;
@@ -236,7 +249,6 @@ export interface UseUnifiedNotificationsReturn {
 export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     friends,
-    unreadActivitiesCount,
     lastReadActivitiesTime,
     friendActivities,
     friendRequests,
@@ -332,6 +344,11 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     [user]
   );
 
+  const activityBundles = useMemo(() => bundleActivities(friendActivities), [friendActivities]);
+  const unreadActivityBundles = activityBundles.filter(
+    (b) => !(lastReadActivitiesTime > 0 && b.latest <= lastReadActivitiesTime)
+  ).length;
+
   const unifiedNotifications = useMemo(() => {
     const items: UnifiedNotification[] = [];
 
@@ -348,40 +365,22 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
-    for (const act of friendActivities) {
-      // „Gesehen"-Aktivitäten gehören in den Feed, NICHT in den Bell-Hub.
-      if (act.type === 'episode_watched' || act.type === 'episodes_watched') continue;
-      const isMovie =
-        act.type === 'movie_added' ||
-        act.type === 'movie_rated' ||
-        act.type === 'rating_updated_movie' ||
-        act.itemType === 'movie';
-      const tmdbId = act.tmdbId || act.itemId;
-      const isRating =
-        act.type === 'rating_updated' ||
-        act.type === 'rating_updated_movie' ||
-        act.type === 'movie_rated' ||
-        act.type === 'series_rated';
-      const isWatchlist =
-        act.type === 'series_added_to_watchlist' || act.type === 'movie_added_to_watchlist';
-
-      const itemTitle = act.itemTitle || t('Unbekannt');
-      const baseMessage = isRating
-        ? t('hat "{title}" bewertet', { title: itemTitle })
-        : isWatchlist
-          ? t('hat "{title}" auf die Watchlist gesetzt', { title: itemTitle })
-          : t('hat "{title}" hinzugef\u00fcgt', { title: itemTitle });
+    for (const bundle of activityBundles) {
+      const friend = friends.find((f) => f.uid === bundle.userId);
+      const single = bundle.titles.length === 1 ? bundle.titles[0] : null;
+      const preview = single ? bookPreviewFromActivity(single.activity) : null;
       items.push({
-        id: `act_${act.id}`,
+        id: bundle.id,
         kind: 'activity',
-        title: act.userName || t('Freund'),
-        message: `${baseMessage}${isRating && act.rating ? ` (${act.rating}/10)` : ''}`,
-        timestamp: act.timestamp,
-        // Pro-Eintrag-Read-State statt „alle-oder-keiner": ein Eintrag gilt als
-        // gelesen, wenn er älter ist als der letzte Lese-Zeitpunkt.
-        read: lastReadActivitiesTime > 0 && act.timestamp <= lastReadActivitiesTime,
-        navigateTo: tmdbId ? (isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`) : undefined,
-        icon: isRating ? 'star' : isWatchlist ? 'watchlist' : isMovie ? 'movie' : 'tv',
+        title: friend?.displayName || friend?.username || bundle.userName || t('Freund'),
+        message: bundleSentence(bundle),
+        timestamp: bundle.latest,
+        read: lastReadActivitiesTime > 0 && bundle.latest <= lastReadActivitiesTime,
+        navigateTo: single ? (activityPath(single.media, single.id) ?? undefined) : undefined,
+        ...(preview && { navigateState: { result: preview } }),
+        icon: single?.actions[0] === 'rated' ? 'star' : single?.media === 'movie' ? 'movie' : 'tv',
+        bundle,
+        photoURL: friend?.photoURL,
       });
     }
 
@@ -396,6 +395,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         read: false,
         navigateTo: `/chat/${chat.otherUid}`,
         icon: 'chat',
+        photoURL: friend?.photoURL,
       });
     }
 
@@ -480,7 +480,10 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
                       ? 'flag'
                       : n.type === 'discussion_like' || n.type === 'welcome'
                         ? 'heart'
-                        : 'chat',
+                        : n.type === 'admin_message'
+                          ? 'announcement'
+                          : 'chat',
+        sourceType: typeof n.type === 'string' ? n.type : undefined,
       };
 
       if (isPendingDrop && n.data) {
@@ -525,7 +528,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     items.sort((a, b) => b.timestamp - a.timestamp);
     return items.slice(0, 30);
   }, [
-    friendActivities,
+    activityBundles,
     friendRequests,
     friends,
     unreadChats,
@@ -538,7 +541,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   ]);
 
   const totalUnreadBadge =
-    unreadActivitiesCount +
+    unreadActivityBundles +
     notificationUnreadCount +
     pendingRecommendationsCount +
     unreadChats.length +

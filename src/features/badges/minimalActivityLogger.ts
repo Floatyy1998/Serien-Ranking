@@ -12,17 +12,25 @@
  */
 
 import { dbRef, serverTimestamp, userPath } from '../../services/db/ref';
+import type { BookActivityRef } from '../../types/Friend';
 import { badgeCounterService } from './badgeCounterService';
 import type { EarnedBadge } from './badgeDefinitions';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';
 interface FriendActivityData {
   type: string;
   itemTitle: string;
-  tmdbId: number;
-  itemType: 'series' | 'movie';
+  tmdbId?: number;
+  itemId?: number | string;
+  itemType: 'series' | 'movie' | 'manga' | 'book';
   posterPath?: string;
+  poster?: string;
   rating?: number;
+  author?: string;
+  bookRef?: BookActivityRef;
 }
+
+const withoutUndefined = <T extends object>(obj: T): T =>
+  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 
 interface BatchEpisodeEntry {
   isRewatch?: boolean;
@@ -55,7 +63,8 @@ const logFriendActivity = async (
 
     const newActivityRef = activitiesRef.push();
     await newActivityRef.set({
-      ...activityData,
+      ...withoutUndefined(activityData),
+      ...(activityData.bookRef && { bookRef: withoutUndefined(activityData.bookRef) }),
       timestamp: serverTimestamp(),
     });
 
@@ -386,6 +395,30 @@ export const logEpisodeWatchedActivity = async (
     /* ignore — non-critical Feed-Write */
   }
 };
+
+export interface ReadingActivity {
+  type:
+    | 'manga_added'
+    | 'manga_rated'
+    | 'manga_finished'
+    | 'book_added'
+    | 'book_rated'
+    | 'book_finished';
+  itemId: number | string;
+  itemTitle: string;
+  poster?: string;
+  rating?: number;
+  author?: string;
+  bookRef?: BookActivityRef;
+}
+
+/** Manga und Bücher im Freunde-Feed — Importe loggen bewusst nichts. */
+export const logReadingActivity = (userId: string, activity: ReadingActivity): Promise<void> =>
+  logFriendActivity(userId, {
+    ...activity,
+    itemType: activity.type.startsWith('manga') ? 'manga' : 'book',
+    poster: activity.poster?.startsWith('http') ? activity.poster : undefined,
+  });
 
 /**
  * Bewertung abgegeben

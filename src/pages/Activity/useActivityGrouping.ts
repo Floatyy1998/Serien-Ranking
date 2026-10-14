@@ -34,6 +34,10 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
   const getItemDetails = (activity: FriendActivity) => {
     const tmdbId = activity.tmdbId || activity.itemId;
 
+    if (activity.itemType === 'manga' || activity.itemType === 'book') {
+      return { id: tmdbId, title: activity.itemTitle, poster: activity.poster };
+    }
+
     if (
       activity.type === 'series_added' ||
       activity.type === 'series_rated' ||
@@ -85,7 +89,9 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
   const filteredActivities = useMemo(() => {
     let filtered = [...friendActivities];
 
-    if (filterType === 'movies') {
+    if (filterType === 'reading') {
+      filtered = filtered.filter((a) => a.itemType === 'manga' || a.itemType === 'book');
+    } else if (filterType === 'movies') {
       filtered = filtered.filter(
         (activity) =>
           activity.type === 'movie_added' ||
@@ -155,7 +161,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
         const tmdbId = activity.tmdbId || activity.itemId;
         const itemType = activity.itemType;
 
-        if (!tmdbId) continue;
+        if (!tmdbId || itemType === 'manga' || itemType === 'book') continue;
 
         const cacheKey = `${itemType}_${tmdbId}`;
         if (tmdbPostersRef.current[cacheKey]) continue;

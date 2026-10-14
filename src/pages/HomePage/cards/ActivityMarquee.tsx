@@ -33,7 +33,12 @@ function formatActivity(a: FriendActivity): string | null {
   const who = a.userName || t('Jemand');
   switch (a.type) {
     case 'series_added':
+    case 'manga_added':
+    case 'book_added':
       return t('{who} hat „{title}" hinzugefügt', { who, title: a.itemTitle });
+    case 'manga_finished':
+    case 'book_finished':
+      return t('{who} hat „{title}" fertig gelesen', { who, title: a.itemTitle });
     case 'movie_added':
       return t('{who} hat „{title}" hinzugefügt', { who, title: a.itemTitle });
     case 'series_added_to_watchlist':
@@ -47,6 +52,8 @@ function formatActivity(a: FriendActivity): string | null {
     case 'movie_rated':
     case 'rating_updated':
     case 'rating_updated_movie':
+    case 'manga_rated':
+    case 'book_rated':
       return typeof a.rating === 'number'
         ? t('{who} hat „{title}" mit {rating} bewertet', {
             who,
