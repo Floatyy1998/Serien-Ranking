@@ -42,6 +42,8 @@ vi.mock('../../../features/badges/minimalActivityLogger', () => ({
 vi.mock('../../../hooks/books/useBookEvents', () => ({ notifyBookEventsChanged: vi.fn() }));
 vi.mock('../../../hooks/pet/usePetReactions', () => ({ triggerPetReaction: vi.fn() }));
 
+const asBooks = vi.hoisted(() => ({ ids: new Set<number>() }));
+
 const manga = vi.hoisted(() => ({
   resolveMangaVolumes: vi.fn(async (): Promise<Record<string, unknown>> => ({})),
   addMangaToList: vi.fn(async () => {}),
@@ -80,7 +82,13 @@ const hit = (over: Partial<BookSearchResult>): BookSearchResult => ({
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <BooksListContext.Provider
-    value={{ allBookList: [ownedBook], bookList: [ownedBook] } as BooksListContextType}
+    value={
+      {
+        allBookList: [ownedBook],
+        bookList: [ownedBook],
+        seriesAsBooks: asBooks.ids,
+      } as BooksListContextType
+    }
   >
     <MangaListContext.Provider value={{ allMangaList: [ownedManga] } as MangaListContextType}>
       {children}
@@ -145,8 +153,26 @@ describe('useBookActions.add', () => {
     );
     expect(added).toBeNull();
     expect(svc.addBook).not.toHaveBeenCalled();
-    expect(manga.addMangaToList).toHaveBeenCalledWith('u1', spyFamily, 30014, { byVolume: true });
+    expect(manga.addMangaToList).toHaveBeenCalledWith('u1', spyFamily, 30014, {
+      byVolume: true,
+      fromBooks: [expect.objectContaining({ id: 'gb-spy3', status: 'planned' })],
+    });
     expect(svc.showToast.mock.calls[0][0]).toContain('SPY x FAMILY');
+  });
+
+  it('legt Bände als Buch an, wenn die Reihe als Bücher geführt wird', async () => {
+    asBooks.ids.add(108556);
+    manga.resolveMangaVolumes.mockResolvedValueOnce({
+      'gb-spy3': { manga: { id: 108556, title: { romaji: 'SPY×FAMILY', english: null } } },
+    });
+    const { result } = renderHook(() => useBookActions(), { wrapper });
+    await result.current.add(
+      hit({ id: 'gb-spy3', title: 'Spy x Family – Band 3', categories: ['Comics'] }),
+      'planned'
+    );
+    asBooks.ids.clear();
+    expect(manga.addMangaToList).not.toHaveBeenCalled();
+    expect(svc.addBook).toHaveBeenCalledOnce();
   });
 
   it('fragt AniList bei Romanen ohne Comic-Merkmal gar nicht erst', async () => {

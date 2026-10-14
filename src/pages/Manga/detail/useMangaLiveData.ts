@@ -24,7 +24,7 @@ interface UseMangaLiveDataResult {
   detailsFailed: boolean;
   mangadexInfo: MangaDexInfo | null;
   chapterInfo: MangaDexChapterInfo | null;
-  /** Erschienene Bände laut MangaUpdates (nur wer in Bänden liest, 0 = unbekannt). */
+  /** Erschienene Bände laut MangaUpdates (laufende Reihen, 0 = unbekannt). */
   liveVolumes: number;
 }
 
@@ -66,7 +66,6 @@ export const useMangaLiveData = ({
   const mangaCompletedAt = manga?.completedAt;
   const mangaLastReadAt = manga?.lastReadAt;
   const mangaLatestVolumeAvailable = manga?.latestVolumeAvailable;
-  const tracksVolumes = manga?.trackBy === 'volumes';
   const shouldFetchLive = mangaStatus === 'RELEASING' || mangaStatus === 'HIATUS';
 
   useEffect(() => {
@@ -86,7 +85,7 @@ export const useMangaLiveData = ({
   // AniList kennt die Bandzahl laufender Reihen nicht, MangaUpdates schon („16 Volumes (Ongoing)").
   const muSeriesId = mangadexInfo?.mangadexId;
   useEffect(() => {
-    if (!tracksVolumes || !shouldFetchLive || !muSeriesId) return;
+    if (!shouldFetchLive || !muSeriesId) return;
     let alive = true;
     getMangaUpdatesSeries(Number(muSeriesId))
       .then((series) => {
@@ -97,9 +96,8 @@ export const useMangaLiveData = ({
     return () => {
       alive = false;
     };
-  }, [tracksVolumes, shouldFetchLive, muSeriesId]);
-  const liveVolumes =
-    tracksVolumes && volumeInfo && volumeInfo.seriesId === muSeriesId ? volumeInfo.volumes : 0;
+  }, [shouldFetchLive, muSeriesId]);
+  const liveVolumes = volumeInfo && volumeInfo.seriesId === muSeriesId ? volumeInfo.volumes : 0;
 
   // latestChapterAvailable + lastReleaseDate in Firebase persistieren. Listen-
   // Ansichten kennen nur die Firebase-Felder, brauchen also die persistierten

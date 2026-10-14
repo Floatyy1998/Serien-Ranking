@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { EmptyState, LoadingSpinner, PageLayout } from '../../components/ui';
+import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { logMangaRating } from '../../services/discussion/readActivityService';
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
-import { mangaStand, mangaUnit, type MangaUnit } from '../../lib/manga/progress';
+import { showToast } from '../../lib/interaction/toast';
+import { mangaStand, mangaTotalVolumes, mangaUnit, type MangaUnit } from '../../lib/manga/progress';
 import type { Manga } from '../../types/Manga';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
@@ -20,6 +22,8 @@ import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { saveReadProgress } from './saveReadProgress';
+import { moveMangaToBooks } from './mangaBookSwitch';
+import { searchPath } from '../Books/helpers';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
@@ -37,6 +41,7 @@ export const MangaDetailPage = () => {
   const { user } = useAuth() || {};
   const { isMobile } = useDeviceType();
   const { mangaList, hiddenMangaList, toggleHideManga } = useMangaList();
+  const { allBookList } = useBooksList();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -130,6 +135,25 @@ export const MangaDetailPage = () => {
       total: volumeTotal,
     });
   }, [user, manga, unit, scannedVolume, liveVolumes, updateField]);
+
+  const handleMoveToBooks = useCallback(async () => {
+    if (!user || !manga) return;
+    try {
+      const books = await moveMangaToBooks(user.uid, manga, new Set(allBookList.map((b) => b.id)));
+      if (books.length === 1) {
+        showToast(t('„{title}" steht wieder bei deinen Büchern', { title: books[0].title }), 2600);
+        navigate(`/books/${encodeURIComponent(books[0].id)}`, { replace: true });
+      } else if (books.length > 1) {
+        showToast(t('{n} Bände stehen wieder bei deinen Büchern', { n: books.length }), 2600);
+        navigate('/books', { replace: true });
+      } else {
+        showToast(t('Such dir die Bände aus, die du als Buch führen willst'), 3200);
+        navigate(searchPath(manga.title), { replace: true });
+      }
+    } catch {
+      showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+    }
+  }, [user, manga, allBookList, navigate]);
 
   const handleStatusChange = useCallback(
     async (status: Manga['readStatus']) => {
@@ -333,6 +357,11 @@ export const MangaDetailPage = () => {
           progress,
           userRating,
           nextChapterDate: chapterInfo?.estimatedNextDate ?? null,
+          canCountVolumes:
+            unit === 'volume' ||
+            mangaTotalVolumes(manga) > 0 ||
+            liveVolumes > 0 ||
+            !!manga.fromBooks,
           onValueChange: handleValueChange,
           onUnitChange: handleUnitChange,
           onRate: scrollToRating,
@@ -377,6 +406,9 @@ export const MangaDetailPage = () => {
         onReread={handleReread}
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
         onDelete={handleDelete}
+        onMoveToBooks={
+          manga.fromBooks || unit === 'volume' ? () => void handleMoveToBooks() : undefined
+        }
       />
     </PageLayout>
   );

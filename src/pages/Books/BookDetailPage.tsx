@@ -25,6 +25,9 @@ import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf } from '../../lib/books/bookSeries';
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast } from '../../lib/interaction/toast';
+import { volumeSnapshot } from '../../lib/books/mangaBooks';
+import { useAuth } from '../../contexts/AuthContext';
+import { rememberSourceBooks } from '../Manga/mangaBookSwitch';
 import { mangaPath } from '../../lib/manga/mangaSource';
 import { fetchMoreByAuthor } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
@@ -137,6 +140,9 @@ export const BookDetailPage = () => {
   const mangaItems = useMemo(() => (view ? [view] : []), [view]);
   const { links: mangaLinks } = useMangaVolumes(mangaItems, { deep: true });
   const mangaLink = view ? mangaLinks.get(view.id) : undefined;
+  // Reihe soll als Bücher laufen: fremde Bände zeigen wieder „In deine Bücher".
+  const mangaOffer = mangaLink && !mangaLink.asBooks ? mangaLink : undefined;
+  const uid = useAuth()?.user?.uid;
   const { add: addManga, addingId } = useAddManga();
 
   useEffect(() => {
@@ -260,12 +266,20 @@ export const BookDetailPage = () => {
   };
 
   const addAsManga = async () => {
-    if (mangaLink && (await addManga(mangaLink.manga, { byVolume: true }))) openManga();
+    if (!mangaLink || !preview) return;
+    const fromBooks = [volumeSnapshot(preview, new Date().toISOString())];
+    if (await addManga(mangaLink.manga, { byVolume: true, fromBooks })) openManga();
   };
 
   const moveToManga = async () => {
-    if (!mangaLink || !owned) return;
-    if (!mangaLink.owned && !(await addManga(mangaLink.manga, { byVolume: true }))) {
+    if (!mangaLink || !owned || !uid) return;
+    const saved = mangaLink.owned
+      ? await rememberSourceBooks(uid, mangaLink.manga.id, [owned]).then(
+          () => true,
+          () => false
+        )
+      : await addManga(mangaLink.manga, { byVolume: true, fromBooks: [owned] });
+    if (!saved) {
       showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
       return;
     }
@@ -376,7 +390,7 @@ export const BookDetailPage = () => {
 
       <div className="bd-layout">
         <aside className="bd-side">
-          {mangaLink && (owned || preview) && (
+          {mangaLink && (owned || (preview && mangaOffer)) && (
             <MangaVolumePanel
               link={mangaLink}
               savedAsBook={!!owned}
@@ -396,7 +410,7 @@ export const BookDetailPage = () => {
               onOpenProgress={() => setProgressOpen(true)}
               onRate={(rating) => void actions.rate(owned, rating)}
             />
-          ) : preview && !mangaLink ? (
+          ) : preview && !mangaOffer ? (
             <div
               className="bd-panel"
               style={{
@@ -410,7 +424,7 @@ export const BookDetailPage = () => {
               <AddOptions busy={busy} onPick={(c) => void pickAdd(c)} />
             </div>
           ) : null}
-          {(owned || (preview && !mangaLink)) && (
+          {(owned || (preview && !mangaOffer)) && (
             <WishToggle wished={!!owned?.wishedAt} busy={busy} onToggle={() => void toggleWish()} />
           )}
 
@@ -586,7 +600,7 @@ export const BookDetailPage = () => {
 
           <BookAdaptationsPanel items={adaptations} />
 
-          {author && !mangaLink && <MoreByAuthor author={author} title={view.title} />}
+          {author && !mangaOffer && <MoreByAuthor author={author} title={view.title} />}
 
           {owned && (
             <div className="bd-panel">

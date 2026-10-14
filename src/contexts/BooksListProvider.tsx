@@ -17,6 +17,20 @@ export const BooksListProvider = ({ children }: { children: React.ReactNode }) =
     syncOnReconnect: true,
   });
 
+  const { data: asBooksData } = useEnhancedFirebaseCache<Record<string, boolean>>(
+    user ? paths.mangaAsBooks(user.uid) : '',
+    { ttl: 24 * 60 * 60 * 1000, useRealtimeListener: true, enableOfflineSupport: true }
+  );
+  const seriesAsBooks = useMemo(
+    () =>
+      new Set(
+        Object.entries(asBooksData ?? {})
+          .filter(([, on]) => on)
+          .map(([id]) => Number(id))
+      ),
+    [asBooksData]
+  );
+
   const allBookList = useMemo(
     () =>
       data
@@ -39,12 +53,13 @@ export const BooksListProvider = ({ children }: { children: React.ReactNode }) =
       bookList,
       allBookList,
       hiddenBookList,
+      seriesAsBooks,
       loading,
       refetchBooks: refetch,
       isOffline,
       isStale,
     }),
-    [bookList, allBookList, hiddenBookList, loading, refetch, isOffline, isStale]
+    [bookList, allBookList, hiddenBookList, seriesAsBooks, loading, refetch, isOffline, isStale]
   );
 
   return <BooksListContext.Provider value={value}>{children}</BooksListContext.Provider>;

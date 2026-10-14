@@ -23,6 +23,8 @@ export interface MangaLink {
   manga: AniListMangaSearchResult;
   owned?: Manga;
   volume?: number;
+  /** Reihe wird auf Wunsch als Bücher geführt — Bände bleiben Bücher. */
+  asBooks?: boolean;
 }
 
 const COMIC_HINT =

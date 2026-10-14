@@ -8,6 +8,7 @@ import { useMangaVolumes } from '../../../hooks/books/useMangaVolumes';
 import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { groupMangaVolumes } from '../../../lib/books/mangaVolume';
 import { mangaPath } from '../../../lib/manga/mangaSource';
+import { volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { t } from '../../../services/i18n';
 import { MangaResultCard } from '../../Manga/components/MangaResultCard';
 import { useAddManga } from '../../Manga/useAddManga';
@@ -48,7 +49,7 @@ export const BookQuickResults: React.FC<Props> = ({
 
   const entries = groupMangaVolumes(
     results.filter((r) => !isPending(r)),
-    (r) => (ownedFor(r) ? undefined : links.get(r.id))
+    (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
   ).filter((e) => e.kind === 'book' || !hideMangaIds?.includes(e.link.manga.id));
 
   useEffect(() => {
@@ -109,7 +110,13 @@ export const BookQuickResults: React.FC<Props> = ({
                     }
                     onAdd={(e) => {
                       e.stopPropagation();
-                      void addManga(entry.link.manga, { byVolume: true });
+                      void addManga(entry.link.manga, {
+                        byVolume: true,
+                        fromBooks:
+                          entry.volumes.length === 1
+                            ? [volumeSnapshot(entry.volumes[0], new Date().toISOString())]
+                            : undefined,
+                      });
                     }}
                   />
                 </div>

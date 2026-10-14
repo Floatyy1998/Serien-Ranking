@@ -5,6 +5,8 @@ export interface BooksListContextType {
   bookList: Book[];
   allBookList: Book[];
   hiddenBookList: Book[];
+  /** AniList-IDs der Manga-Reihen, deren Bände als Bücher geführt werden. */
+  seriesAsBooks: Set<number>;
   loading: boolean;
   refetchBooks: () => void;
   isOffline: boolean;
@@ -15,6 +17,7 @@ export const BooksListContext = createContext<BooksListContextType>({
   bookList: [],
   allBookList: [],
   hiddenBookList: [],
+  seriesAsBooks: new Set(),
   loading: true,
   refetchBooks: () => {},
   isOffline: false,

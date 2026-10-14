@@ -2,6 +2,7 @@ import {
   Check,
   CheckCircle,
   Delete,
+  LibraryBooks,
   EventAvailable,
   Replay,
   Star,
@@ -93,6 +94,8 @@ interface MangaDetailBodyProps {
   onReread: () => void;
   onToggleHide: () => void;
   onDelete: () => void;
+  /** Nur für Manga aus gedruckten Bänden: zurück zu den Büchern. */
+  onMoveToBooks?: () => void;
 }
 
 export const MangaDetailBody = ({
@@ -124,10 +127,12 @@ export const MangaDetailBody = ({
   onReread,
   onToggleHide,
   onDelete,
+  onMoveToBooks,
 }: MangaDetailBodyProps) => {
   // Kapitel, dessen *Rückschritt* noch bestätigt werden muss.
   const [confirmChapter, setConfirmChapter] = useState<number | null>(null);
   const [confirmReread, setConfirmReread] = useState(false);
+  const [confirmToBooks, setConfirmToBooks] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const currentChapter = manga.currentChapter ?? 0;
   const byVolume = mangaUnit(manga) === 'volume';
@@ -542,6 +547,46 @@ export const MangaDetailBody = ({
         <Section delay={0.3} order={10}>
           <SectionTitle>{t('Verwaltung')}</SectionTitle>
           <div className="md-manage">
+            {onMoveToBooks &&
+              (confirmToBooks ? (
+                <div className="manga-detail-delete-confirm md-manage-wide">
+                  <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
+                    {t(
+                      'Zurück zu den Büchern? Der Manga verschwindet mit Lesestand und Bewertung.'
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    className="manga-detail-delete-confirm-btn"
+                    onClick={() => {
+                      setConfirmToBooks(false);
+                      onMoveToBooks();
+                    }}
+                    style={{ background: 'var(--theme-primary-15)', color: currentTheme.primary }}
+                  >
+                    {t('Ja')}
+                  </button>
+                  <button
+                    type="button"
+                    className="manga-detail-delete-confirm-btn"
+                    onClick={() => setConfirmToBooks(false)}
+                    style={{ background: 'var(--glass-light)', color: currentTheme.text.secondary }}
+                  >
+                    {t('Nein')}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="manga-detail-action-btn md-manage-wide"
+                  onClick={() => setConfirmToBooks(true)}
+                  style={{ color: currentTheme.text.secondary }}
+                >
+                  <LibraryBooks style={{ fontSize: 18 }} />
+                  {t('Als Buch führen')}
+                </button>
+              ))}
+
             <button
               type="button"
               className="manga-detail-action-btn"

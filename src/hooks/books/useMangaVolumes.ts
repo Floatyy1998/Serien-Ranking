@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { findMangaForBook } from '../../lib/books/bookIdentity';
 import {
@@ -24,6 +25,7 @@ export function useMangaVolumes(
   options: { deep?: boolean; query?: string } = {}
 ) {
   const { allMangaList } = useMangaList();
+  const { seriesAsBooks } = useBooksList();
   const deep = !!options.deep;
   const query = options.query?.trim() || undefined;
   const key = items.map((item) => item.id).join('|');
@@ -58,7 +60,12 @@ export function useMangaVolumes(
     for (const item of items) {
       const hit = hits[item.id];
       if (hit) {
-        map.set(item.id, { manga: hit.manga, owned: owned.get(hit.manga.id), volume: hit.volume });
+        map.set(item.id, {
+          manga: hit.manga,
+          owned: owned.get(hit.manga.id),
+          volume: hit.volume,
+          asBooks: seriesAsBooks.has(hit.manga.id) || undefined,
+        });
         continue;
       }
       const { volume } = splitVolume(item.title);
@@ -67,7 +74,7 @@ export function useMangaVolumes(
       if (own) map.set(item.id, { manga: mangaAsSearchResult(own), owned: own, volume });
     }
     return map;
-  }, [items, hits, allMangaList]);
+  }, [items, hits, allMangaList, seriesAsBooks]);
 
   const isPending = (item: MangaVolumeInput) =>
     pending && !links.has(item.id) && isMangaVolumeCandidate(item, query);

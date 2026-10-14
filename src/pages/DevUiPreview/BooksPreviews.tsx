@@ -267,6 +267,7 @@ const BooksPreviewShell = ({
       bookList: books,
       allBookList: books,
       hiddenBookList: [],
+      seriesAsBooks: new Set<number>(),
       loading: false,
       refetchBooks: () => {},
       isOffline: false,

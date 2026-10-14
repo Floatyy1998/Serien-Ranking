@@ -11,6 +11,7 @@ import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import { groupMangaVolumes, type MangaLink } from '../../lib/books/mangaVolume';
 import { mangaPath } from '../../lib/manga/mangaSource';
+import { volumeSnapshot } from '../../lib/books/mangaBooks';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -210,7 +211,7 @@ const BookSearchView = () => {
   const loading = searching || resolving;
   const entries = groupMangaVolumes(
     results.filter((r) => !isPending(r)),
-    (r) => (ownedFor(r) ? undefined : links.get(r.id))
+    (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
   );
 
   const libraryMatches = useMemo(() => {
@@ -361,7 +362,13 @@ const BookSearchView = () => {
                 }}
                 onAdd={() => {
                   remember(query);
-                  void addManga(manga, { byVolume: true });
+                  void addManga(manga, {
+                    byVolume: true,
+                    fromBooks:
+                      entry.volumes.length === 1
+                        ? [volumeSnapshot(entry.volumes[0], new Date().toISOString())]
+                        : undefined,
+                  });
                 }}
               />
             );

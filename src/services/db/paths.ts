@@ -41,6 +41,8 @@ export const paths = {
   bookItem: (uid: string, bookId: string) => `${user(uid)}/books/${bookId}`,
   bookGoal: (uid: string, year: number) => `${user(uid)}/bookGoals/${year}`,
   bookEvents: (uid: string, year: number) => `${user(uid)}/wrapped/${year}/bookEvents`,
+  /** Manga-Reihen (AniList-ID), deren Bände bewusst als Bücher geführt werden. */
+  mangaAsBooks: (uid: string) => `${user(uid)}/mangaAsBooks`,
 
   // Freunde
   friends: (uid: string) => `${user(uid)}/friends`,

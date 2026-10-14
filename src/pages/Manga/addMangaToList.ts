@@ -1,3 +1,4 @@
+import type { Book } from '../../types/Book';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { isMangaUpdatesId } from '../../lib/manga/mangaSource';
 import { getMangaDetails } from '../../services/api/mangaDetails';
@@ -14,6 +15,8 @@ import { logReadingActivity } from '../../features/badges/minimalActivityLogger'
 export interface AddMangaOptions {
   /** Kommt von einem gedruckten Band (ISBN/Buchsuche) — Stand in Bänden führen. */
   byVolume?: boolean;
+  /** Bücher, aus denen der Manga wird — „Als Buch führen" holt sie zurück. */
+  fromBooks?: Book[];
 }
 
 export async function addMangaToList(
@@ -61,6 +64,9 @@ export async function addMangaToList(
     manga.trackBy = 'volumes';
     manga.currentVolume = 0;
   }
+  if (options.fromBooks?.length) {
+    manga.fromBooks = Object.fromEntries(options.fromBooks.map((book) => [book.id, book]));
+  }
 
   // Fuer laufende und Hiatus-Manga MangaUpdates abfragen — AniList's chapters-
   // Feld ist bei vielen ongoing/hiatus Serien veraltet (z.B. Vagabond meldet 2
@@ -78,6 +84,10 @@ export async function addMangaToList(
   }
 
   await dbRef(paths.mangaItem(userId, result.id)).set(manga);
+  // Wer die Reihe wieder als Manga führt, hebt „als Bücher führen" auf.
+  void dbRef(`${paths.mangaAsBooks(userId)}/${result.id}`)
+    .remove()
+    .catch(() => {});
   void logReadingActivity(userId, {
     type: 'manga_added',
     itemId: result.id,

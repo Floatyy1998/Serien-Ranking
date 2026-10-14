@@ -1,3 +1,5 @@
+import type { Book } from './Book';
+
 export interface Manga {
   nmr: number;
   anilistId: number;
@@ -23,6 +25,8 @@ export interface Manga {
   currentVolume?: number;
   /** Zählweise: 'volumes' = Lesestand in Bänden (Print), sonst Kapitel. */
   trackBy?: 'volumes';
+  /** Bücher, aus denen der Manga wurde — „Als Buch führen" holt sie zurück. */
+  fromBooks?: Record<string, Book>;
   readStatus: 'reading' | 'completed' | 'paused' | 'dropped' | 'planned';
   hidden?: boolean;
   addedAt?: string;

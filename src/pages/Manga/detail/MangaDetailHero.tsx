@@ -21,6 +21,8 @@ export interface MangaHeroProgress {
   progress: number;
   userRating: number;
   nextChapterDate?: string | null;
+  /** Reihe hat Bände (gedruckte Ausgabe) — nur dann gibt es den Bände-Schalter. */
+  canCountVolumes: boolean;
   onValueChange: (next: number) => void;
   onUnitChange: (unit: MangaUnit) => void;
   onRate: () => void;
@@ -116,9 +118,13 @@ const Stepper = ({
   unit,
   value,
   total,
+  canCountVolumes,
   onValueChange,
   onUnitChange,
-}: Pick<MangaHeroProgress, 'unit' | 'value' | 'total' | 'onValueChange' | 'onUnitChange'>) => {
+}: Pick<
+  MangaHeroProgress,
+  'unit' | 'value' | 'total' | 'canCountVolumes' | 'onValueChange' | 'onUnitChange'
+>) => {
   const text = unitText(unit);
   return (
     <div className="mdh-stepper">
@@ -132,7 +138,11 @@ const Stepper = ({
         <Remove style={{ fontSize: 20 }} />
       </button>
       <div className="mdh-step-value">
-        <UnitSwitch unit={unit} onUnitChange={onUnitChange} />
+        {canCountVolumes ? (
+          <UnitSwitch unit={unit} onUnitChange={onUnitChange} />
+        ) : (
+          <span className="mdh-step-caption">{t('Kapitel')}</span>
+        )}
         <div className="mdh-step-num">
           <input
             type="text"
@@ -324,6 +334,7 @@ export const MangaDetailHero = ({
                 unit={owned.unit}
                 value={owned.value}
                 total={owned.total}
+                canCountVolumes={owned.canCountVolumes}
                 onValueChange={owned.onValueChange}
                 onUnitChange={owned.onUnitChange}
               />

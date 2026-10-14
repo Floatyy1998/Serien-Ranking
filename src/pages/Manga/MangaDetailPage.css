@@ -255,6 +255,15 @@
   gap: 4px;
 }
 
+.mdh-step-caption {
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .mdh-unit {
   display: flex;
   gap: 2px;
@@ -1095,6 +1104,10 @@
 .md-manage .manga-detail-delete-confirm {
   grid-column: 2;
   gap: 6px;
+}
+
+.md-manage .md-manage-wide {
+  grid-column: 1 / -1;
 }
 
 @media (min-width: 768px) {

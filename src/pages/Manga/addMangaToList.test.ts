@@ -7,6 +7,7 @@ const fb = vi.hoisted(() => {
   const calls: { path: string; value: Record<string, unknown> }[] = [];
   return {
     calls,
+    removed: [] as string[],
     setMock: vi.fn(async (path: string, value: Record<string, unknown>) => {
       calls.push({ path, value });
     }),
@@ -18,6 +19,9 @@ vi.mock('firebase/compat/app', () => ({
     database: () => ({
       ref: (path: string) => ({
         set: (value: Record<string, unknown>) => fb.setMock(path, value),
+        remove: async () => {
+          fb.removed.push(path);
+        },
       }),
     }),
   },
@@ -64,6 +68,7 @@ function lastWrite() {
 
 beforeEach(() => {
   fb.calls.length = 0;
+  fb.removed.length = 0;
   fb.setMock.mockClear();
   mockedGetInfo.mockReset();
   mockedGetInfo.mockResolvedValue({ latestChapter: null } as MangaDexInfo);
@@ -90,6 +95,20 @@ describe('addMangaToList', () => {
     for (const value of Object.values(manga)) {
       expect(value).not.toBeUndefined();
     }
+  });
+
+  it('merkt sich Ursprungsbücher und hebt „Reihe als Bücher" auf', async () => {
+    const book = {
+      id: 'dnb-1',
+      title: 'Vagabond 1',
+      authors: [],
+      status: 'planned' as const,
+      currentPage: 0,
+      addedAt: 'x',
+    };
+    await addMangaToList('u1', makeResult(), 7, { byVolume: true, fromBooks: [book] });
+    expect(lastWrite().value.fromBooks).toEqual({ 'dnb-1': book });
+    expect(fb.removed).toContain('users/u1/mangaAsBooks/111');
   });
 
   it('führt Manga aus einem gedruckten Band (ISBN) in Bänden', async () => {

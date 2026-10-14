@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import {
   logBookFinished,
@@ -9,6 +10,7 @@ import {
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
+import { volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { mangaVolumeGuess } from '../../../lib/books/mangaVolume';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
 import { showToast, showUndoToast } from '../../../lib/interaction/toast';
@@ -58,6 +60,7 @@ export function useBookActions() {
   const ownedFor = useOwnedBooks();
   const mangaFor = useMangaForBook();
   const { allMangaList } = useMangaList();
+  const { seriesAsBooks } = useBooksList();
   const { add: addManga } = useAddManga();
 
   /** Ein erkannter Manga-Band landet als Manga-Reihe statt als Buch. */
@@ -67,11 +70,16 @@ export function useBookActions() {
       const hit = await resolveMangaVolumes([result])
         .then((hits) => hits[result.id])
         .catch(() => undefined);
-      if (!hit) return false;
+      if (!hit || seriesAsBooks.has(hit.manga.id)) return false;
       const title = hit.manga.title.english || hit.manga.title.romaji;
       if (allMangaList.some((m) => m.anilistId === hit.manga.id)) {
         showToast(t('„{title}" steht schon bei deinen Manga', { title }), 2400);
-      } else if (await addManga(hit.manga, { byVolume: true })) {
+      } else if (
+        await addManga(hit.manga, {
+          byVolume: true,
+          fromBooks: [volumeSnapshot(result, new Date().toISOString())],
+        })
+      ) {
         hapticSuccess();
         showToast(t('„{title}“ ist ein Manga – bei deinen Manga gespeichert', { title }), 2600);
       } else {
@@ -79,7 +87,7 @@ export function useBookActions() {
       }
       return true;
     },
-    [allMangaList, addManga]
+    [allMangaList, seriesAsBooks, addManga]
   );
 
   const add = useCallback(

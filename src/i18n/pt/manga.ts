@@ -439,6 +439,15 @@ const dict: Record<string, string> = {
   'Bd. {a}–{b}': 'Vol. {a}–{b}',
   '+{n} Bd.': '+{n} vol.',
   '{n} Bd.': '{n} vol.',
+
+  // ─── Manga: zurück zu den Büchern ───
+  'Als Buch führen': 'Acompanhar como livro',
+  'Zurück zu den Büchern? Der Manga verschwindet mit Lesestand und Bewertung.':
+    'Voltar para seus livros? O mangá some junto com o progresso e a avaliação.',
+  '„{title}" steht wieder bei deinen Büchern': '"{title}" voltou para seus livros',
+  '{n} Bände stehen wieder bei deinen Büchern': '{n} volumes voltaram para seus livros',
+  'Such dir die Bände aus, die du als Buch führen willst':
+    'Escolha os volumes que quer acompanhar como livros',
 };
 
 export default dict;

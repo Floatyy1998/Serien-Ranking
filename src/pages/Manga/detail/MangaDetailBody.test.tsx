@@ -108,6 +108,21 @@ describe('MangaDetailBody', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
+  it('führt Print-Manga nach Rückfrage zurück zu den Büchern', () => {
+    const onMoveToBooks = vi.fn();
+    render(<MangaDetailBody {...baseProps({ onMoveToBooks })} />);
+    fireEvent.click(screen.getByText('Als Buch führen'));
+    expect(onMoveToBooks).not.toHaveBeenCalled();
+    expect(screen.getByText(/Zurück zu den Büchern\?/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Ja'));
+    expect(onMoveToBooks).toHaveBeenCalledTimes(1);
+  });
+
+  it('bietet „Als Buch führen" nur an, wenn es Bücher dazu gibt', () => {
+    render(<MangaDetailBody {...baseProps()} />);
+    expect(screen.queryByText('Als Buch führen')).not.toBeInTheDocument();
+  });
+
   const chapterInfo = {
     mangadexId: null,
     estimatedNextDate: null,

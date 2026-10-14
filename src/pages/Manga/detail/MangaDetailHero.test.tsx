@@ -42,6 +42,7 @@ const owned = (over: Partial<MangaHeroProgress> = {}): MangaHeroProgress => ({
   unit: 'chapter',
   value: 100,
   total: 327,
+  canCountVolumes: true,
   progress: 30,
   userRating: 0,
   onValueChange: vi.fn(),
@@ -122,6 +123,19 @@ describe('MangaDetailHero', () => {
     expect(onUnitChange).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Bände' }));
     expect(onUnitChange).toHaveBeenCalledWith('volume');
+  });
+
+  it('zeigt den Bände-Schalter nur bei Reihen mit Bänden', () => {
+    render(
+      <MangaDetailHero
+        data={buildHeroData(123, makeManga(), null)}
+        currentTheme={theme}
+        isMobile={false}
+        owned={owned({ canCountVolumes: false })}
+      />
+    );
+    expect(screen.getByText('Kapitel')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Bände' })).not.toBeInTheDocument();
   });
 
   it('meldet abgeschlossene Lektüre statt eines weiteren Kapitels', () => {
