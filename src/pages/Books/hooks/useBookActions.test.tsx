@@ -42,6 +42,15 @@ vi.mock('../../../features/badges/minimalActivityLogger', () => ({
 vi.mock('../../../hooks/books/useBookEvents', () => ({ notifyBookEventsChanged: vi.fn() }));
 vi.mock('../../../hooks/pet/usePetReactions', () => ({ triggerPetReaction: vi.fn() }));
 
+const manga = vi.hoisted(() => ({
+  resolveMangaVolumes: vi.fn(async (): Promise<Record<string, unknown>> => ({})),
+  addMangaToList: vi.fn(async () => {}),
+}));
+vi.mock('../../../services/books/mangaVolumes', () => ({
+  resolveMangaVolumes: manga.resolveMangaVolumes,
+}));
+vi.mock('../../Manga/addMangaToList', () => ({ addMangaToList: manga.addMangaToList }));
+
 import { useBookActions } from './useBookActions';
 
 const ownedBook = {
@@ -54,7 +63,12 @@ const ownedBook = {
   addedAt: '2026-01-01T00:00:00.000Z',
 } as Book;
 
-const ownedManga = { anilistId: 30013, title: 'One Piece', titleRomaji: 'ONE PIECE' } as Manga;
+const ownedManga = {
+  nmr: 30013,
+  anilistId: 30013,
+  title: 'One Piece',
+  titleRomaji: 'ONE PIECE',
+} as Manga;
 
 const hit = (over: Partial<BookSearchResult>): BookSearchResult => ({
   id: 'ol-x',
@@ -77,6 +91,8 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 beforeEach(() => {
   svc.addBook.mockClear();
   svc.showToast.mockClear();
+  manga.resolveMangaVolumes.mockClear();
+  manga.addMangaToList.mockClear();
 });
 
 afterEach(() => {
@@ -108,6 +124,36 @@ describe('useBookActions.add', () => {
     expect(byIsbn).toBe(ownedBook);
     expect(byTitle).toBe(ownedBook);
     expect(svc.addBook).not.toHaveBeenCalled();
+  });
+
+  it('legt erkannte Manga-Bände fremder Reihen als Manga an', async () => {
+    const spyFamily = {
+      id: 108556,
+      title: { romaji: 'SPY×FAMILY', english: 'SPY x FAMILY', native: null },
+    };
+    manga.resolveMangaVolumes.mockResolvedValueOnce({
+      'gb-spy3': { manga: spyFamily, volume: 3 },
+    });
+    const { result } = renderHook(() => useBookActions(), { wrapper });
+    const added = await result.current.add(
+      hit({
+        id: 'gb-spy3',
+        title: 'Spy x Family – Band 3',
+        categories: ['Comics & Graphic Novels'],
+      }),
+      'reading'
+    );
+    expect(added).toBeNull();
+    expect(svc.addBook).not.toHaveBeenCalled();
+    expect(manga.addMangaToList).toHaveBeenCalledWith('u1', spyFamily, 30014);
+    expect(svc.showToast.mock.calls[0][0]).toContain('SPY x FAMILY');
+  });
+
+  it('fragt AniList bei Romanen ohne Comic-Merkmal gar nicht erst', async () => {
+    const { result } = renderHook(() => useBookActions(), { wrapper });
+    await result.current.add(hit({ title: 'Der Herr der Ringe 1' }), 'planned');
+    expect(manga.resolveMangaVolumes).not.toHaveBeenCalled();
+    expect(svc.addBook).toHaveBeenCalledOnce();
   });
 
   it('fügt neue Bücher normal hinzu', async () => {

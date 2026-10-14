@@ -227,6 +227,19 @@ const dict: Record<string, string> = {
   'Aus Wunschliste, offenen Reihen und Lieblingsgenre':
     'De su lista de deseos, sagas pendientes y género favorito',
   '{name} liest am liebsten': 'Lo que más lee {name}',
+  'Manga · Band {n}': 'Manga · Tomo {n}',
+  'Manga · {n} Bände gefunden': 'Manga · {n} tomos encontrados',
+  'Wird als Manga geführt': 'Se registra como manga',
+  'Zu deinen Manga hinzufügen': 'Añadir a tus mangas',
+  'Als Manga führen': 'Llevar como manga',
+  'Das ist ein Manga': 'Esto es un manga',
+  'Steht schon bei deinen Manga': 'Ya está en tus mangas',
+  '„{title}“ ist ein Manga – bei deinen Manga gespeichert':
+    '“{title}” es un manga: guardado en tus mangas',
+  'Gerade als Buch gespeichert. Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
+    'Ahora está guardado como libro. En tus mangas llevas toda la serie por capítulos.',
+  'Bei deinen Manga führst du die ganze Reihe mit Kapitelstand.':
+    'En tus mangas llevas toda la serie por capítulos.',
 };
 
 export default dict;

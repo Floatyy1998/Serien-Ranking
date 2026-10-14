@@ -208,6 +208,11 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const authors = writers.length ? writers : names((tag) => tag === '100');
   const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
   const lang = first(['041'], 'a');
+  const comic = fields.some(
+    (f) =>
+      ['082', '083'].includes(f.getAttribute('tag') ?? '') &&
+      subfields(f, 'a').some((ddc) => ddc.startsWith('741.5'))
+  );
 
   return stripResult({
     id: sanitizeBookKey(`dnb-${isbn13}`),
@@ -220,6 +225,7 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
     publishedYear: parseYear(first(['264', '260'], 'c')),
     publisher: trimMarc(first(['264', '260'], 'b')),
     language: lang ? (LANG_3_TO_2[lang] ?? lang) : undefined,
+    categories: comic ? ['Comics'] : undefined,
     isbn13,
     source: 'dnb' as const,
   });

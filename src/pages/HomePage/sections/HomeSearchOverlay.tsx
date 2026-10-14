@@ -191,6 +191,7 @@ export const HomeSearchOverlay = memo(
       (count: number, isLoading: boolean) => setMangaHits({ count, loading: isLoading }),
       []
     );
+    const [mangaRowIds, setMangaRowIds] = useState<number[]>([]);
     const otherHits = bookHits.count + mangaHits.count;
     const otherLoading = bookHits.loading || mangaHits.loading;
 
@@ -646,6 +647,7 @@ export const HomeSearchOverlay = memo(
                     query={query}
                     variant="row"
                     onCount={onMangaCount}
+                    onIds={setMangaRowIds}
                     onSeeAll={() => setFilter('manga')}
                   />
                 )}
@@ -654,6 +656,7 @@ export const HomeSearchOverlay = memo(
                     query={query}
                     variant="row"
                     sheetZIndex={OVERLAY_SHEET_Z}
+                    hideMangaIds={mangaRowIds}
                     onCount={onBookCount}
                     onSeeAll={() => setFilter('books')}
                   />

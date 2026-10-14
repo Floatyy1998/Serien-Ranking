@@ -1,14 +1,13 @@
 import { AutoStories, ChevronRight } from '@mui/icons-material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { discoverManga } from '../../../services/api/anilistService';
 import { searchMangaWithTitleFallback } from '../../../services/api/mangaSearch';
 import { t } from '../../../services/i18n';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
-import { addMangaToList } from '../addMangaToList';
+import { useAddManga } from '../useAddManga';
 import { MangaResultCard } from './MangaResultCard';
 import './MangaCards.css';
 import './MangaQuickResults.css';
@@ -47,33 +46,14 @@ function useMangaQuickSearch(query: string) {
 
 function useMangaCards() {
   const navigate = useNavigate();
-  const { user } = useAuth() || {};
-  const { mangaList, hiddenMangaList } = useMangaList();
-  const [addingId, setAddingId] = useState<number | null>(null);
+  const { allMangaList } = useMangaList();
+  const { add, addingId } = useAddManga();
 
-  const allOwned = useMemo(() => [...mangaList, ...hiddenMangaList], [mangaList, hiddenMangaList]);
   const ownedById = useMemo(() => {
     const map = new Map<number, Manga>();
-    for (const m of allOwned) map.set(m.anilistId, m);
+    for (const m of allMangaList) map.set(m.anilistId, m);
     return map;
-  }, [allOwned]);
-
-  const add = useCallback(
-    async (e: React.MouseEvent, result: AniListMangaSearchResult) => {
-      e.stopPropagation();
-      if (!user) return;
-      setAddingId(result.id);
-      const nextNmr = allOwned.length > 0 ? Math.max(...allOwned.map((m) => m.nmr)) + 1 : 1;
-      try {
-        await addMangaToList(user.uid, result, nextNmr);
-      } catch (err) {
-        console.error('Manga quick add failed:', err);
-      } finally {
-        setAddingId(null);
-      }
-    },
-    [user, allOwned]
-  );
+  }, [allMangaList]);
 
   const render = (result: AniListMangaSearchResult, alias?: string) => (
     <MangaResultCard
@@ -83,7 +63,10 @@ function useMangaCards() {
       alias={alias}
       adding={addingId === result.id}
       onOpen={() => navigate(`/manga/${result.id}`)}
-      onAdd={(e) => add(e, result)}
+      onAdd={(e) => {
+        e.stopPropagation();
+        void add(result);
+      }}
     />
   );
 
@@ -94,6 +77,8 @@ interface MangaQuickResultsProps {
   query: string;
   variant: 'row' | 'grid';
   onCount?: (count: number, loading: boolean) => void;
+  /** Gezeigte AniList-IDs — die Bücher-Reihe blendet deren Bände dann aus. */
+  onIds?: (ids: number[]) => void;
   onSeeAll?: () => void;
 }
 
@@ -101,6 +86,7 @@ export const MangaQuickResults = ({
   query,
   variant,
   onCount,
+  onIds,
   onSeeAll,
 }: MangaQuickResultsProps) => {
   const { currentTheme } = useTheme();
@@ -119,6 +105,11 @@ export const MangaQuickResults = ({
   useEffect(() => {
     onCount?.(sorted.length, loading);
   }, [sorted.length, loading, onCount]);
+
+  const shownIds = sorted.map((r) => r.id).join(',');
+  useEffect(() => {
+    onIds?.(shownIds ? shownIds.split(',').map(Number) : []);
+  }, [shownIds, onIds]);
 
   if (query.trim().length < 2) return null;
   if (variant === 'row' && !loading && sorted.length === 0) return null;

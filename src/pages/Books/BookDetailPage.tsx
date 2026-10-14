@@ -20,12 +20,15 @@ import { useBooksList } from '../../contexts/BooksListContext';
 import { BackButton, HorizontalScrollContainer } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
+import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf } from '../../lib/books/bookSeries';
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
+import { showToast } from '../../lib/interaction/toast';
 import { fetchMoreByAuthor } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
 import type { Book, BookFormat, BookSearchResult } from '../../types/Book';
+import { useAddManga } from '../Manga/useAddManga';
 import './BookDetailPage.css';
 import { AddOptions, type AddChoice } from './components/AddBookSheet';
 import { BookCover } from './components/BookCover';
@@ -33,6 +36,7 @@ import './components/books.css';
 import { ProgressSheet } from './components/ProgressSheet';
 import { BookAdaptationsPanel, BookSeriesPanel } from './detail/BookLinksPanels';
 import { BookStatePanel } from './detail/BookStatePanel';
+import { MangaVolumePanel } from './detail/MangaVolumePanel';
 import { WishToggle } from './detail/WishToggle';
 import { DiscoverCard, SkeletonCards } from './discover/DiscoverParts';
 import { useAddFlow } from './discover/useAddFlow';
@@ -129,6 +133,10 @@ export const BookDetailPage = () => {
     links,
     linksLoading
   );
+  const mangaItems = useMemo(() => (view ? [view] : []), [view]);
+  const { links: mangaLinks } = useMangaVolumes(mangaItems, { deep: true });
+  const mangaLink = view ? mangaLinks.get(view.id) : undefined;
+  const { add: addManga, addingId } = useAddManga();
 
   useEffect(() => {
     if (!owned || !links) return;
@@ -246,6 +254,23 @@ export const BookDetailPage = () => {
     }
   };
 
+  const openManga = () => {
+    if (mangaLink) navigate(`/manga/${mangaLink.manga.id}`);
+  };
+
+  const addAsManga = async () => {
+    if (mangaLink && (await addManga(mangaLink.manga))) openManga();
+  };
+
+  const moveToManga = async () => {
+    if (!mangaLink || !owned) return;
+    if (!mangaLink.owned && !(await addManga(mangaLink.manga))) {
+      showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+      return;
+    }
+    actions.remove(owned, () => navigate(`/manga/${mangaLink.manga.id}`, { replace: true }));
+  };
+
   const factStyle = { fontSize: 16, color: currentTheme.accent };
   const facts: { key: string; icon: React.ReactNode; label: string }[] = [];
   if (view.publishedYear) {
@@ -348,6 +373,16 @@ export const BookDetailPage = () => {
 
       <div className="bd-layout">
         <aside className="bd-side">
+          {mangaLink && (owned || preview) && (
+            <MangaVolumePanel
+              link={mangaLink}
+              savedAsBook={!!owned}
+              busy={addingId === mangaLink.manga.id}
+              onOpen={openManga}
+              onAdd={() => void addAsManga()}
+              onMove={() => void moveToManga()}
+            />
+          )}
           {owned ? (
             <BookStatePanel
               book={owned}
@@ -358,7 +393,7 @@ export const BookDetailPage = () => {
               onOpenProgress={() => setProgressOpen(true)}
               onRate={(rating) => void actions.rate(owned, rating)}
             />
-          ) : preview ? (
+          ) : preview && !mangaLink ? (
             <div
               className="bd-panel"
               style={{
@@ -372,7 +407,7 @@ export const BookDetailPage = () => {
               <AddOptions busy={busy} onPick={(c) => void pickAdd(c)} />
             </div>
           ) : null}
-          {(owned || preview) && (
+          {(owned || (preview && !mangaLink)) && (
             <WishToggle wished={!!owned?.wishedAt} busy={busy} onToggle={() => void toggleWish()} />
           )}
 
@@ -548,7 +583,7 @@ export const BookDetailPage = () => {
 
           <BookAdaptationsPanel items={adaptations} />
 
-          {author && <MoreByAuthor author={author} title={view.title} />}
+          {author && !mangaLink && <MoreByAuthor author={author} title={view.title} />}
 
           {owned && (
             <div className="bd-panel">

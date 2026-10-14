@@ -9,6 +9,9 @@ vi.mock('./anilistService', () => ({ searchManga, searchMangaByTitles }));
 const searchMangaUpdatesTitles = vi.hoisted(() => vi.fn());
 vi.mock('./mangaUpdatesService', () => ({ searchMangaUpdatesTitles }));
 
+const findMangaByIsbn = vi.hoisted(() => vi.fn());
+vi.mock('../books/mangaVolumes', () => ({ findMangaByIsbn }));
+
 function manga(id: number, english: string, romaji = english): AniListMangaSearchResult {
   return {
     id,
@@ -140,5 +143,15 @@ describe('searchMangaWithTitleFallback', () => {
     const outcome = await searchMangaWithTitleFallback('Dramacon');
 
     expect(outcome.results).toEqual([listed]);
+  });
+});
+
+describe('searchMangaWithTitleFallback mit ISBN', () => {
+  it('geht über die Buchquellen statt über die AniList-Titelsuche', async () => {
+    const outcome = { results: [werewolves], aliases: { 180320: 'Werewolves 2' } };
+    findMangaByIsbn.mockResolvedValueOnce(outcome);
+    await expect(searchMangaWithTitleFallback('978-3-551-75610-2')).resolves.toBe(outcome);
+    expect(findMangaByIsbn).toHaveBeenCalledWith('978-3-551-75610-2');
+    expect(searchManga).not.toHaveBeenCalled();
   });
 });

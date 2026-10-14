@@ -225,8 +225,16 @@ const SHOWS: { id: number; kind: 'tv' | 'movie'; title: string }[] = [
   { id: 550, kind: 'movie', title: 'Fight Club' },
 ];
 
-const BooksPreviewShell = ({ children, empty }: { children: React.ReactNode; empty?: boolean }) => {
-  const books = useMemo(() => (empty ? [] : buildBooks()), [empty]);
+const BooksPreviewShell = ({
+  children,
+  empty,
+  extra,
+}: {
+  children: React.ReactNode;
+  empty?: boolean;
+  extra?: Book[];
+}) => {
+  const books = useMemo(() => (empty ? [] : [...(extra ?? []), ...buildBooks()]), [empty, extra]);
   const [posters, setPosters] = useState<Record<number, string>>({});
 
   useEffect(() => {
@@ -331,6 +339,33 @@ export const BookDetailPreview = () => {
     </BooksPreviewShell>
   );
 };
+
+const MANGA_VOLUME: Book = {
+  id: 'gb-onepiece-18',
+  title: 'One Piece 18',
+  subtitle: 'Piraten, Abenteuer und der größte Schatz der Welt!',
+  authors: ['Eiichiro Oda'],
+  publisher: 'Carlsen Manga',
+  categories: ['Comics & Graphic Novels'],
+  isbn13: '9783646704389',
+  pageCount: 224,
+  publishedYear: 2015,
+  source: 'google',
+  status: 'completed',
+  currentPage: 224,
+  addedAt: '2026-10-10T12:00:00.000Z',
+};
+
+const MANGA_VOLUME_LIST = [MANGA_VOLUME];
+
+/** Ein Manga-Band, der schon als Buch gespeichert ist — Detailseite bietet den Wechsel zum Manga an. */
+export const BookDetailMangaPreview = () => (
+  <BooksPreviewShell extra={MANGA_VOLUME_LIST}>
+    <Routes location={`/dev/ui-preview/books/${MANGA_VOLUME.id}`}>
+      <Route path="books/:bookId" element={<BookDetailPage />} />
+    </Routes>
+  </BooksPreviewShell>
+);
 
 export const BookSearchPreview = () => (
   <BooksPreviewShell>

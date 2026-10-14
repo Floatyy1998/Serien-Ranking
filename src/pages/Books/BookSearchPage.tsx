@@ -1,4 +1,4 @@
-import { Add, Check, History, UploadFile } from '@mui/icons-material';
+import { Add, AutoStories, Check, History, UploadFile } from '@mui/icons-material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BackButton, SearchInput } from '../../components/ui';
@@ -6,13 +6,15 @@ import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBooksForYourShows } from '../../hooks/books/useBasedOnBooks';
 import { useBookSearch } from '../../hooks/books/useBookSearch';
-import { useMangaForBook, useOwnedBooks } from '../../hooks/books/useOwnedBooks';
+import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
+import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
+import { groupMangaVolumes, type MangaLink } from '../../lib/books/mangaVolume';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Book, BookSearchResult } from '../../types/Book';
-import type { Manga } from '../../types/Manga';
+import { useAddManga } from '../Manga/useAddManga';
 import { AddBookSheet, type AddChoice } from './components/AddBookSheet';
 import { BookCover } from './components/BookCover';
 import './components/books.css';
@@ -36,10 +38,9 @@ const readRecent = (): string[] => {
 const ResultRow: React.FC<{
   result: BookSearchResult;
   owned?: Book;
-  manga?: Manga;
   onOpen: () => void;
   onAdd: () => void;
-}> = ({ result, owned, manga, onOpen, onAdd }) => {
+}> = ({ result, owned, onOpen, onAdd }) => {
   const { currentTheme } = useTheme();
   const meta = [
     result.authors.slice(0, 2).join(', '),
@@ -75,20 +76,8 @@ const ResultRow: React.FC<{
             {STATUS_LABELS[owned.status]()}
           </span>
         )}
-        {!owned && manga && (
-          <span
-            className="bk-badge"
-            style={{
-              background: `${currentTheme.status.success}22`,
-              color: currentTheme.status.success,
-            }}
-          >
-            <Check style={{ fontSize: 13 }} />
-            {t('Bei deinen Manga')}
-          </span>
-        )}
       </div>
-      {!owned && !manga && (
+      {!owned && (
         <button
           type="button"
           className="bk-add-btn"
@@ -100,6 +89,72 @@ const ResultRow: React.FC<{
           style={{
             background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             color: getOptimalTextColor(currentTheme.primary),
+          }}
+        >
+          <Add />
+        </button>
+      )}
+    </div>
+  );
+};
+
+/** Manga-Bände aus der Buchsuche: eine Zeile pro Reihe, die zum Manga führt. */
+const MangaVolumeRow: React.FC<{
+  link: MangaLink;
+  volumes: BookSearchResult[];
+  adding: boolean;
+  onOpen: () => void;
+  onAdd: () => void;
+}> = ({ link, volumes, adding, onOpen, onAdd }) => {
+  const { currentTheme } = useTheme();
+  const title = link.manga.title.english || link.manga.title.romaji;
+  const meta =
+    volumes.length > 1
+      ? t('Manga · {n} Bände gefunden', { n: volumes.length })
+      : link.volume
+        ? t('Manga · Band {n}', { n: link.volume })
+        : 'Manga';
+  const badgeColor = link.owned ? currentTheme.status.success : currentTheme.primary;
+  return (
+    <div className="bk-result" onClick={onOpen} role="button" tabIndex={0}>
+      <BookCover
+        book={{ id: `manga-${link.manga.id}`, title, cover: link.manga.coverImage.large }}
+      />
+      <div className="bk-result-main">
+        <span className="bk-result-title" style={{ color: currentTheme.text.secondary }}>
+          {title}
+        </span>
+        {volumes.length === 1 && !link.volume && volumes[0].title !== title && (
+          <span className="bk-result-meta" style={{ color: currentTheme.text.muted }}>
+            {t('Gefunden als „{title}“', { title: volumes[0].title })}
+          </span>
+        )}
+        <span className="bk-result-meta" style={{ color: currentTheme.text.muted }}>
+          {meta}
+        </span>
+        <span className="bk-badge" style={{ background: `${badgeColor}22`, color: badgeColor }}>
+          {link.owned ? (
+            <Check style={{ fontSize: 13 }} />
+          ) : (
+            <AutoStories style={{ fontSize: 13 }} />
+          )}
+          {link.owned ? t('Bei deinen Manga') : t('Wird als Manga geführt')}
+        </span>
+      </div>
+      {!link.owned && (
+        <button
+          type="button"
+          className="bk-add-btn"
+          aria-label={t('Zu deinen Manga hinzufügen')}
+          disabled={adding}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdd();
+          }}
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            color: getOptimalTextColor(currentTheme.primary),
+            opacity: adding ? 0.6 : 1,
           }}
         >
           <Add />
@@ -128,7 +183,7 @@ const BookSearchView = () => {
   const [pending, setPending] = useState<BookSearchResult | null>(null);
   const [busy, setBusy] = useState(false);
   const { allBookList } = useBooksList();
-  const { results, loading, error } = useBookSearch(query);
+  const { results, loading: searching, error } = useBookSearch(query);
   const { suggestions } = useBooksForYourShows(query.trim().length < 2);
   const actions = useBookActions();
 
@@ -149,7 +204,13 @@ const BookSearchView = () => {
   }, [query, setParams]);
 
   const ownedFor = useOwnedBooks();
-  const mangaFor = useMangaForBook();
+  const { links, pending: resolving, isPending } = useMangaVolumes(results, { query, deep: true });
+  const { add: addManga, addingId } = useAddManga();
+  const loading = searching || resolving;
+  const entries = groupMangaVolumes(
+    results.filter((r) => !isPending(r)),
+    (r) => (ownedFor(r) ? undefined : links.get(r.id))
+  );
 
   const libraryMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -182,11 +243,6 @@ const BookSearchView = () => {
   const openResult = (result: BookSearchResult) => {
     remember(query);
     const owned = ownedFor(result);
-    const manga = owned ? undefined : mangaFor(result);
-    if (manga) {
-      navigate(`/manga/${manga.anilistId}`);
-      return;
-    }
     navigate(bookPath(owned?.id ?? result.id), owned ? undefined : { state: { result } });
   };
 
@@ -275,11 +331,11 @@ const BookSearchView = () => {
             className="bk-source-kicker"
             style={{ color: currentTheme.text.muted, marginTop: 6 }}
           >
-            {loading ? t('Suche läuft…') : t('{n} Treffer', { n: results.length })}
+            {loading ? t('Suche läuft…') : t('{n} Treffer', { n: entries.length })}
           </div>
         )}
 
-        {!showIdle && !loading && results.length === 0 && (
+        {!showIdle && !loading && entries.length === 0 && (
           <div className="bk-card" style={{ textAlign: 'center', color: currentTheme.text.muted }}>
             {error
               ? t('Die Buchsuche ist gerade nicht erreichbar.')
@@ -287,7 +343,27 @@ const BookSearchView = () => {
           </div>
         )}
 
-        {results.map((r) => {
+        {entries.map((entry) => {
+          if (entry.kind === 'manga') {
+            const { manga } = entry.link;
+            return (
+              <MangaVolumeRow
+                key={`manga-${manga.id}`}
+                link={entry.link}
+                volumes={entry.volumes}
+                adding={addingId === manga.id}
+                onOpen={() => {
+                  remember(query);
+                  navigate(`/manga/${manga.id}`);
+                }}
+                onAdd={() => {
+                  remember(query);
+                  void addManga(manga);
+                }}
+              />
+            );
+          }
+          const r = entry.result;
           const owned = ownedFor(r);
           if (owned && libraryMatches.some((b) => b.id === owned.id)) return null;
           return (
@@ -295,7 +371,6 @@ const BookSearchView = () => {
               key={r.id}
               result={r}
               owned={owned}
-              manga={owned ? undefined : mangaFor(r)}
               onOpen={() => openResult(r)}
               onAdd={() => setPending(r)}
             />

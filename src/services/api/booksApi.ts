@@ -140,6 +140,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
       pageCount: primary.pageCount ?? national.pageCount,
       publisher: primary.publisher ?? national.publisher,
       publishedYear: primary.publishedYear ?? national.publishedYear,
+      categories: primary.categories ?? national.categories,
       isbn13: primary.isbn13 ?? isbn13,
     }),
   ];

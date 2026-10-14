@@ -553,3 +553,46 @@
   font-size: 12.5px;
   line-height: 1.35;
 }
+
+/* ─── Manga-Band ────────────────────────────────────────── */
+
+.bd-manga-link {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.bd-manga-link img {
+  width: 52px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.bd-manga-link-title {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.bd-manga-link-volume {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 2px 0 4px;
+}
+
+.bd-manga-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mobile-app .bd-manga-link-actions .bk-cta,
+.bd-manga-link-actions .bk-cta {
+  flex: 1 1 auto;
+  padding: 0 16px;
+  white-space: nowrap;
+}

@@ -4,7 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookSearch } from '../../../hooks/books/useBookSearch';
 import { useBookShelf } from '../../../hooks/books/useBookShelf';
+import { useMangaVolumes } from '../../../hooks/books/useMangaVolumes';
+import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
+import { groupMangaVolumes } from '../../../lib/books/mangaVolume';
 import { t } from '../../../services/i18n';
+import { MangaResultCard } from '../../Manga/components/MangaResultCard';
+import { useAddManga } from '../../Manga/useAddManga';
 import { GENRES } from '../data/genres';
 import { DiscoverCard, SkeletonCards } from '../discover/DiscoverParts';
 import '../discover/discover.css';
@@ -16,6 +21,8 @@ interface Props {
   /** Reihe unter den Serien/Film-Treffern oder volles Poster-Raster beim Bücher-Filter. */
   variant: 'row' | 'grid';
   sheetZIndex?: number;
+  /** Manga, die die Manga-Reihe darüber schon zeigt — ihre Bände fallen hier weg. */
+  hideMangaIds?: number[];
   onCount?: (count: number, loading: boolean) => void;
   onSeeAll?: () => void;
 }
@@ -25,21 +32,32 @@ export const BookQuickResults: React.FC<Props> = ({
   query,
   variant,
   sheetZIndex,
+  hideMangaIds,
   onCount,
   onSeeAll,
 }) => {
   const { currentTheme } = useTheme();
-  const { results, loading } = useBookSearch(query);
+  const navigate = useNavigate();
+  const { results, loading: searching } = useBookSearch(query);
   const { openAdd, sheet } = useAddFlow(sheetZIndex);
+  const ownedFor = useOwnedBooks();
+  const { links, pending, isPending } = useMangaVolumes(results, { query, deep: true });
+  const { add: addManga, addingId } = useAddManga();
+  const loading = searching || pending;
+
+  const entries = groupMangaVolumes(
+    results.filter((r) => !isPending(r)),
+    (r) => (ownedFor(r) ? undefined : links.get(r.id))
+  ).filter((e) => e.kind === 'book' || !hideMangaIds?.includes(e.link.manga.id));
 
   useEffect(() => {
-    onCount?.(results.length, loading);
-  }, [results.length, loading, onCount]);
+    onCount?.(entries.length, loading);
+  }, [entries.length, loading, onCount]);
 
   if (query.trim().length < 2) return null;
-  if (variant === 'row' && !loading && results.length === 0) return null;
+  if (variant === 'row' && !loading && entries.length === 0) return null;
 
-  const list = results.slice(0, variant === 'row' ? 12 : 30);
+  const list = entries.slice(0, variant === 'row' ? 12 : 30);
 
   return (
     <div style={{ marginTop: variant === 'row' ? 22 : 4 }}>
@@ -70,7 +88,25 @@ export const BookQuickResults: React.FC<Props> = ({
           {loading && list.length === 0 ? (
             <SkeletonCards count={variant === 'row' ? 5 : 10} />
           ) : (
-            list.map((r) => <DiscoverCard key={r.id} result={r} onAdd={openAdd} />)
+            list.map((entry) =>
+              entry.kind === 'book' ? (
+                <DiscoverCard key={entry.result.id} result={entry.result} onAdd={openAdd} />
+              ) : (
+                <div key={`manga-${entry.link.manga.id}`} className="dsc-card">
+                  <MangaResultCard
+                    result={entry.link.manga}
+                    owned={entry.link.owned}
+                    alias={entry.volumes.length === 1 ? entry.volumes[0].title : undefined}
+                    adding={addingId === entry.link.manga.id}
+                    onOpen={() => navigate(`/manga/${entry.link.manga.id}`)}
+                    onAdd={(e) => {
+                      e.stopPropagation();
+                      void addManga(entry.link.manga);
+                    }}
+                  />
+                </div>
+              )
+            )
           )}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useMangaList } from '../../../contexts/MangaListContext';
 import {
   logBookFinished,
   logReadingActivity,
@@ -8,6 +9,7 @@ import {
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
+import { mangaVolumeGuess } from '../../../lib/books/mangaVolume';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
 import { showToast, showUndoToast } from '../../../lib/interaction/toast';
 import {
@@ -21,8 +23,10 @@ import {
   updateBookProgress,
   type AddBookOptions,
 } from '../../../services/books/bookService';
+import { resolveMangaVolumes } from '../../../services/books/mangaVolumes';
 import { t } from '../../../services/i18n';
 import type { Book, BookSearchResult, BookStatus } from '../../../types/Book';
+import { useAddManga } from '../../Manga/useAddManga';
 
 const logBook = (uid: string, book: Book, type: ReadingActivity['type'], rating?: number) =>
   void logReadingActivity(uid, {
@@ -53,6 +57,30 @@ export function useBookActions() {
   const uid = user?.uid;
   const ownedFor = useOwnedBooks();
   const mangaFor = useMangaForBook();
+  const { allMangaList } = useMangaList();
+  const { add: addManga } = useAddManga();
+
+  /** Ein erkannter Manga-Band landet als Manga-Reihe statt als Buch. */
+  const addVolumeAsManga = useCallback(
+    async (result: BookSearchResult): Promise<boolean> => {
+      if (!mangaVolumeGuess(result)) return false;
+      const hit = await resolveMangaVolumes([result])
+        .then((hits) => hits[result.id])
+        .catch(() => undefined);
+      if (!hit) return false;
+      const title = hit.manga.title.english || hit.manga.title.romaji;
+      if (allMangaList.some((m) => m.anilistId === hit.manga.id)) {
+        showToast(t('„{title}" steht schon bei deinen Manga', { title }), 2400);
+      } else if (await addManga(hit.manga)) {
+        hapticSuccess();
+        showToast(t('„{title}“ ist ein Manga – bei deinen Manga gespeichert', { title }), 2600);
+      } else {
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+      }
+      return true;
+    },
+    [allMangaList, addManga]
+  );
 
   const add = useCallback(
     async (result: BookSearchResult, status: BookStatus, options?: AddBookOptions) => {
@@ -67,6 +95,7 @@ export function useBookActions() {
         showToast(t('Schon in deinen Büchern'));
         return owned;
       }
+      if (await addVolumeAsManga(result)) return null;
       try {
         const book = await addBook(uid, result, status, options);
         logBook(uid, book, 'book_added');
@@ -82,7 +111,7 @@ export function useBookActions() {
         return null;
       }
     },
-    [uid, ownedFor, mangaFor]
+    [uid, ownedFor, mangaFor, addVolumeAsManga]
   );
 
   const saveProgress = useCallback(
