@@ -14,6 +14,17 @@ export function progressPercent(book: Pick<Book, 'status' | 'currentPage' | 'pag
   return Math.min(100, Math.round((book.currentPage / book.pageCount) * 100));
 }
 
+/** Insgesamt gelesene Seiten eines Buchs, abgeschlossene Re-Reads eingerechnet. */
+export function pagesReadOf(
+  book: Pick<Book, 'status' | 'currentPage' | 'pageCount' | 'rereadCount'>
+): number {
+  const current =
+    book.status === 'completed'
+      ? Math.max(book.pageCount ?? 0, book.currentPage || 0)
+      : book.currentPage || 0;
+  return current + (book.rereadCount ?? 0) * (book.pageCount ?? 0);
+}
+
 export function remainingPages(book: Pick<Book, 'currentPage' | 'pageCount'>): number | null {
   if (!book.pageCount) return null;
   return Math.max(0, book.pageCount - book.currentPage);

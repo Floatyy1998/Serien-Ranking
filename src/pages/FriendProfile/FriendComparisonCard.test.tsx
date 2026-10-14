@@ -93,6 +93,26 @@ describe('FriendComparisonCard', () => {
     expect(navigateMock).toHaveBeenCalledWith('/leaderboard');
   });
 
+  it('vergleicht Buchseiten nur, wenn jemand Bücher hat', () => {
+    const { rerender } = render(
+      <FriendComparisonCard friendName="VIC" own={own} friend={friend} loading={false} />
+    );
+    expect(screen.queryByText('Buchseiten')).not.toBeInTheDocument();
+
+    rerender(
+      <FriendComparisonCard
+        friendName="VIC"
+        own={own}
+        friend={friend}
+        loading={false}
+        bookPages={{ own: 4312, friend: 980 }}
+      />
+    );
+    expect(screen.getByText('Buchseiten')).toBeInTheDocument();
+    expect(screen.getByText((4312).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText('980')).toBeInTheDocument();
+  });
+
   it('kommt mit einem Gleichstand bei null klar', () => {
     const empty: ComparisonTotals = {
       watchtimeMinutes: 0,

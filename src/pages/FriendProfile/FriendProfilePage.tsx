@@ -20,7 +20,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { bookMatchKey } from '../../lib/books/bookIdentity';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
-import { progressPercent as bookProgressPercent } from '../../lib/books/bookProgress';
+import { progressPercent as bookProgressPercent, pagesReadOf } from '../../lib/books/bookProgress';
 import { addBookCopy } from '../../services/books/bookService';
 import { showToast } from '../../lib/interaction/toast';
 import {
@@ -256,7 +256,7 @@ export const FriendProfilePage = memo(() => {
       );
   }, [friendManga.list, filters.search, friendId]);
   const friendBooks = useFriendBooks(restricted || !darfSehen ? undefined : friendId);
-  const { allBookList: ownBooks } = useBooksList();
+  const { allBookList: ownBooks, bookList: ownVisibleBooks } = useBooksList();
   const ownBookKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const b of ownBooks) {
@@ -303,6 +303,13 @@ export const FriendProfilePage = memo(() => {
       friend: friendManga.list.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
     }),
     [ownManga, friendManga.list]
+  );
+  const bookPages = useMemo(
+    () => ({
+      own: ownVisibleBooks.reduce((sum, b) => sum + pagesReadOf(b), 0),
+      friend: friendBooks.list.reduce((sum, b) => sum + pagesReadOf(b), 0),
+    }),
+    [ownVisibleBooks, friendBooks.list]
   );
   const openFolder =
     activeTab === 'lists' ? (folders.find((f) => f.id === openFolderId) ?? null) : null;
@@ -665,6 +672,11 @@ export const FriendProfilePage = memo(() => {
                         mangaChapters={
                           friendManga.list.length > 0 || mangaChapters.own > 0
                             ? mangaChapters
+                            : undefined
+                        }
+                        bookPages={
+                          friendBooks.list.length > 0 || ownVisibleBooks.length > 0
+                            ? bookPages
                             : undefined
                         }
                       />

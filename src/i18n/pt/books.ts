@@ -149,6 +149,7 @@ const dict: Record<string, string> = {
   'Gerade am Lesen': 'Lendo agora',
   'Beendet {year}': 'Terminados em {year}',
   'Buchseiten {year}': 'Páginas de livros em {year}',
+  Buchseiten: 'Páginas de livros',
   'Manga-Kapitel gesamt': 'Capítulos de mangá no total',
   'Bücher weiterlesen': 'Continuar lendo livros',
   'Manga weiterlesen': 'Continuar lendo mangás',

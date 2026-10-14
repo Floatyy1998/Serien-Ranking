@@ -9,7 +9,7 @@ import {
   pickIsbn13,
   toIsbn13,
 } from './bookIdentity';
-import { applyPageUpdate, applyStatusChange, progressPercent } from './bookProgress';
+import { applyPageUpdate, applyStatusChange, pagesReadOf, progressPercent } from './bookProgress';
 import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
 import { findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
 import { computeBookYearStats, goalPace } from './bookStats';
@@ -78,6 +78,15 @@ describe('findMangaForBook', () => {
     expect(findMangaForBook({ title: 'Solo Leveling – Roman 1' }, library)).toBeUndefined();
     expect(findMangaForBook({ title: 'One Piece Film Red' }, library)).toBeUndefined();
     expect(findMangaForBook({ title: 'Der Schwarm' }, library)).toBeUndefined();
+  });
+});
+
+describe('pagesReadOf', () => {
+  it('zählt den Stand, beendete Bücher voll und abgeschlossene Re-Reads mit', () => {
+    expect(pagesReadOf(book({ status: 'reading', currentPage: 120 }))).toBe(120);
+    expect(pagesReadOf(book({ status: 'completed', currentPage: 0 }))).toBe(300);
+    expect(pagesReadOf(book({ status: 'reading', currentPage: 50, rereadCount: 2 }))).toBe(650);
+    expect(pagesReadOf(book({ status: 'planned', currentPage: 0, pageCount: undefined }))).toBe(0);
   });
 });
 

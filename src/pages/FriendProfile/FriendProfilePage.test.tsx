@@ -107,7 +107,9 @@ vi.mock('./FriendBooksInsights', () => ({ FriendBooksInsights: () => null }));
 vi.mock('../Books/discover/DiscoverParts', () => ({ useOpenResult: () => vi.fn() }));
 vi.mock('./useFriendBooks', () => ({ useFriendBooks: () => ({ list: [], loading: false }) }));
 vi.mock('../../services/books/bookService', () => ({ addBookCopy: vi.fn() }));
-vi.mock('../../contexts/BooksListContext', () => ({ useBooksList: () => ({ allBookList: [] }) }));
+vi.mock('../../contexts/BooksListContext', () => ({
+  useBooksList: () => ({ allBookList: [], bookList: [] }),
+}));
 vi.mock('../../contexts/MangaListContext', () => ({
   useMangaList: () => ({ mangaList: [], hiddenMangaList: [] }),
 }));

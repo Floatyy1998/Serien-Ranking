@@ -1149,7 +1149,14 @@ export const FriendInsightsPreview = () => {
                 } as Pet
               }
             />
-            <FriendComparisonCard friendName="Flo" own={own} friend={friend} loading={false} />
+            <FriendComparisonCard
+              friendName="Flo"
+              own={own}
+              friend={friend}
+              loading={false}
+              mangaChapters={{ own: 1194, friend: 1669 }}
+              bookPages={{ own: 4312, friend: 980 }}
+            />
           </div>
           <FriendAnticipationSection
             friendName="Flo"
