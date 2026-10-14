@@ -1,6 +1,9 @@
 import {
+  AutoStories,
   CalendarToday,
   ChevronRight,
+  ImportContacts,
+  LocalLibrary,
   Logout,
   Movie,
   Person,
@@ -12,9 +15,13 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import type { useTheme } from '../../contexts/ThemeContext';
-import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
+import type {
+  ProfileMenuItem,
+  ProfileReadingStats,
+  ProfileStats as ProfileStatsType,
+} from './useProfileData';
 import { tapScaleSmall } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
@@ -140,10 +147,11 @@ interface StatItemConfig {
 
 interface ProfileStatsProps {
   stats: ProfileStatsType;
+  reading?: ProfileReadingStats | null;
   currentTheme: Theme;
 }
 
-export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) => {
+export const ProfileStats = memo(({ stats, reading, currentTheme }: ProfileStatsProps) => {
   const statItems: StatItemConfig[] = [
     {
       icon: CalendarToday,
@@ -163,6 +171,28 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
       label: t('Episoden'),
       color: currentTheme.status.success,
     },
+    ...(reading
+      ? [
+          {
+            icon: LocalLibrary,
+            value: reading.booksRead,
+            label: t('Bücher'),
+            color: currentTheme.accent,
+          },
+          {
+            icon: ImportContacts,
+            value: reading.pagesRead,
+            label: t('Seiten'),
+            color: currentTheme.status.warning,
+          },
+          {
+            icon: AutoStories,
+            value: reading.mangaChapters,
+            label: t('Manga-Kapitel'),
+            color: currentTheme.secondary,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -204,7 +234,7 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
           >
             <item.icon className="profile-stat-icon" style={{ color: item.color }} />
             <div className="profile-stat-value" style={{ color: currentTheme.text.primary }}>
-              {item.value}
+              {item.value.toLocaleString(dateLocale())}
             </div>
             <div className="profile-stat-label" style={{ color: currentTheme.text.muted }}>
               {t(item.label)}

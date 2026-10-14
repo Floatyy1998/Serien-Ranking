@@ -21,6 +21,7 @@ export const ProfilePage = memo(() => {
     userData,
     currentTheme,
     stats,
+    reading,
     menuItems,
     secondaryMenuItems,
     mangaMenuItems,
@@ -80,7 +81,7 @@ export const ProfilePage = memo(() => {
             photoUploading={avatar.uploading}
           />
 
-          <ProfileStats stats={stats} currentTheme={currentTheme} />
+          <ProfileStats stats={stats} reading={reading} currentTheme={currentTheme} />
         </div>
       </div>
 

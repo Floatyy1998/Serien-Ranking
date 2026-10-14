@@ -12,6 +12,7 @@ const state = vi.hoisted(() => ({
   allSeriesList: [] as unknown[],
   movieList: [] as unknown[],
   mangaList: [] as unknown[],
+  bookList: [] as unknown[],
   unreadActivitiesCount: 0,
   unreadRequestsCount: 0,
   unreadBadgesCount: 0,
@@ -43,6 +44,9 @@ vi.mock('../../contexts/MovieListContext', () => ({
 vi.mock('../../contexts/MangaListContext', () => ({
   useMangaList: () => ({ mangaList: state.mangaList }),
 }));
+vi.mock('../../contexts/BooksListContext', () => ({
+  useBooksList: () => ({ bookList: state.bookList }),
+}));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({
     unreadActivitiesCount: state.unreadActivitiesCount,
@@ -64,6 +68,7 @@ beforeEach(() => {
   state.allSeriesList = [];
   state.movieList = [];
   state.mangaList = [];
+  state.bookList = [];
   state.unreadActivitiesCount = 0;
   state.unreadRequestsCount = 0;
   state.unreadBadgesCount = 0;
@@ -109,6 +114,29 @@ describe('useProfileData - computeStats', () => {
     const { result } = renderHook(() => useProfileData());
     expect(result.current.stats.totalMinutes).toBe(0);
     expect(result.current.stats.timeString).toBe('0Min');
+  });
+});
+
+describe('useProfileData - Lese-Kacheln', () => {
+  it('bleibt leer ohne Bücher und Manga', () => {
+    const { result } = renderHook(() => useProfileData());
+    expect(result.current.reading).toBeNull();
+  });
+
+  it('zählt gelesene Bücher, Seiten und Manga-Kapitel', () => {
+    state.bookList = [
+      { id: 'a', status: 'completed', currentPage: 0, pageCount: 320 },
+      { id: 'b', status: 'reading', currentPage: 80, pageCount: 400 },
+    ];
+    state.mangaList = [{ currentChapter: 120 }, { currentChapter: 0 }];
+    const { result } = renderHook(() => useProfileData());
+    expect(result.current.reading).toEqual({ booksRead: 1, pagesRead: 400, mangaChapters: 120 });
+  });
+
+  it('zeigt die Kacheln auch nur mit Manga', () => {
+    state.mangaList = [{ currentChapter: 15 }];
+    const { result } = renderHook(() => useProfileData());
+    expect(result.current.reading).toEqual({ booksRead: 0, pagesRead: 0, mangaChapters: 15 });
   });
 });
 

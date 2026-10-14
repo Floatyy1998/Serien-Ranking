@@ -5,7 +5,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBookEvents } from '../../hooks/books/useBookEvents';
-import { computeBookYearStats, type RankedName } from '../../lib/books/bookStats';
+import { bookTotals, computeBookYearStats, type RankedName } from '../../lib/books/bookStats';
 import { dateLocale, t } from '../../services/i18n';
 import { BookCover } from './components/BookCover';
 import { Bookshelf } from './components/Bookshelf';
@@ -85,13 +85,7 @@ export const BookStatsPage = () => {
   );
   const isCurrent = year === currentYear;
 
-  const allTime = useMemo(() => {
-    const done = bookList.filter((b) => b.status === 'completed');
-    return {
-      books: done.length,
-      pages: done.reduce((sum, b) => sum + (b.pageCount ?? 0), 0),
-    };
-  }, [bookList]);
+  const allTime = useMemo(() => bookTotals(bookList), [bookList]);
 
   return (
     <PageLayout>
@@ -169,9 +163,9 @@ export const BookStatsPage = () => {
             }
             label={t('Ø Sterne')}
           />
-          <StatTile value={allTime.books} label={t('Bücher insgesamt')} />
+          <StatTile value={allTime.booksRead} label={t('Bücher insgesamt')} />
           <StatTile
-            value={allTime.pages.toLocaleString(dateLocale())}
+            value={allTime.pagesRead.toLocaleString(dateLocale())}
             label={t('Seiten insgesamt')}
           />
         </div>

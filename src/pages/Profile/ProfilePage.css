@@ -358,10 +358,9 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: minmax(0, 1fr) auto auto;
     /* .mobile-content.with-nav reserviert 90px fürs Dock und erzwingt
-       min-height:100% — beides ausgleichen, sonst scrollt die Seite um 90px */
-    height: calc(var(--vh, 100vh) - 90px);
+       min-height:100% — beides ausgleichen, sonst scrollt die Seite um 90px.
+       Nur min-height: auf niedrigen Fenstern scrollt die Seite statt den Hero abzuschneiden. */
     min-height: calc(var(--vh, 100vh) - 90px);
-    overflow: hidden;
     padding: 0;
   }
 
@@ -374,7 +373,7 @@
     min-height: 0;
     display: flex;
     align-items: flex-end;
-    padding: 96px 36px 30px;
+    padding: 64px 36px 28px;
   }
 
   .profile-hero-collage {
@@ -476,7 +475,7 @@
   .profile-stats-grid {
     min-width: 0;
     grid-template-columns: repeat(3, minmax(140px, 220px));
-    gap: 12px;
+    gap: 10px;
   }
 
   /* Stat-Pod: neutrales Glas, Farbe kommt nur vom Icon */
@@ -484,10 +483,10 @@
     display: grid;
     grid-template-columns: max-content 1fr;
     grid-template-rows: auto auto;
-    column-gap: 14px;
+    column-gap: 12px;
     align-items: center;
     text-align: left;
-    padding: 10px 16px;
+    padding: 8px 14px;
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.09) !important;
   }
@@ -496,6 +495,14 @@
     grid-row: 1 / 3;
     font-size: 26px;
     margin-bottom: 0;
+  }
+
+  .profile-stat-value {
+    line-height: 1.2;
+  }
+
+  .profile-stat-label {
+    line-height: 1.3;
   }
 
   /* Navigation: vier editoriale Link-Spalten (Reihe 2) */

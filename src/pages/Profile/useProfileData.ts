@@ -32,6 +32,7 @@ import 'firebase/compat/auth';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -39,8 +40,11 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBadges } from '../../features/badges/BadgeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
+import { bookTotals } from '../../lib/books/bookStats';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { t } from '../../services/i18n';
+import type { Book } from '../../types/Book';
+import type { Manga } from '../../types/Manga';
 import type { Movie as MovieType } from '../../types/Movie';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -59,6 +63,12 @@ export interface ProfileStats {
   timeString: string;
 }
 
+export interface ProfileReadingStats {
+  booksRead: number;
+  pagesRead: number;
+  mangaChapters: number;
+}
+
 export interface ProfileMenuItem {
   label: string;
   icon: SvgIconComponent;
@@ -73,6 +83,8 @@ export interface UseProfileDataResult {
   userData: UserProfileData | null | undefined;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   stats: ProfileStats;
+  /** null, solange weder Bücher noch Manga in der Sammlung sind. */
+  reading: ProfileReadingStats | null;
   menuItems: ProfileMenuItem[];
   secondaryMenuItems: ProfileMenuItem[];
   mangaMenuItems: ProfileMenuItem[];
@@ -156,6 +168,14 @@ function computeStats(
   };
 }
 
+export function computeReadingStats(books: Book[], manga: Manga[]): ProfileReadingStats | null {
+  if (books.length === 0 && manga.length === 0) return null;
+  return {
+    ...bookTotals(books),
+    mangaChapters: manga.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
+  };
+}
+
 export const useProfileData = (): UseProfileDataResult => {
   const navigate = useNavigate();
   const { user = null } = useAuth() || {};
@@ -175,8 +195,10 @@ export const useProfileData = (): UseProfileDataResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { mangaList } = useMangaList();
+  const { bookList } = useBooksList();
 
   const stats = useMemo(() => computeStats(seriesList, movieList), [seriesList, movieList]);
+  const reading = useMemo(() => computeReadingStats(bookList, mangaList), [bookList, mangaList]);
 
   // Kino-Hero: Backdrops der bestbewerteten Serien (Desktop-Collage)
   const heroBackdrops = useMemo(
@@ -364,6 +386,7 @@ export const useProfileData = (): UseProfileDataResult => {
     userData,
     currentTheme,
     stats,
+    reading,
     menuItems,
     secondaryMenuItems,
     mangaMenuItems,

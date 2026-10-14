@@ -12,7 +12,7 @@ import {
 import { applyPageUpdate, applyStatusChange, pagesReadOf, progressPercent } from './bookProgress';
 import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
 import { findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
-import { computeBookYearStats, goalPace } from './bookStats';
+import { bookTotals, computeBookYearStats, goalPace } from './bookStats';
 import { guessLanguage, htmlToPlainText } from './bookText';
 import {
   computeReadingTaste,
@@ -158,6 +158,17 @@ describe('bookEvents und bookStats', () => {
     expect(stats.pagesRead).toBe(620);
     expect(stats.longestBook?.id).toBe('b');
     expect(stats.avgRating).toBe(8);
+  });
+
+  it('summiert gelesene Bücher und Seiten über alle Jahre', () => {
+    const totals = bookTotals([
+      book({ id: 'a', status: 'completed', currentPage: 0, pageCount: 300 }),
+      book({ id: 'b', status: 'reading', currentPage: 40, pageCount: 200, rereadCount: 1 }),
+      book({ id: 'c', status: 'reading', currentPage: 120 }),
+      book({ id: 'd', status: 'planned', currentPage: 0 }),
+    ]);
+    expect(totals.booksRead).toBe(2);
+    expect(totals.pagesRead).toBe(300 + 240 + 120);
   });
 
   it('rechnet das Jahresziel gegen den Kalender', () => {

@@ -1,6 +1,6 @@
 import type { Book } from '../../types/Book';
 import { eventPages, pagesByDay, readingStreak, type CompactBookEvent } from './bookEvents';
-import { isFinishedInYear } from './bookProgress';
+import { isFinishedInYear, pagesReadOf } from './bookProgress';
 
 export interface RankedName {
   name: string;
@@ -103,6 +103,17 @@ export function computeBookYearStats(
     ratedCount,
     finishedBooks,
   };
+}
+
+/** Summen über alle Jahre: gelesene Bücher (auch gerade erneut gelesene) und alle gelesenen Seiten. */
+export function bookTotals(books: Book[]): { booksRead: number; pagesRead: number } {
+  let booksRead = 0;
+  let pagesRead = 0;
+  for (const b of books) {
+    if (b.status === 'completed' || (b.rereadCount ?? 0) > 0) booksRead += 1;
+    pagesRead += pagesReadOf(b);
+  }
+  return { booksRead, pagesRead };
 }
 
 /** Wie viele Bücher bis heute gelesen sein müssten, um das Jahresziel zu schaffen. */

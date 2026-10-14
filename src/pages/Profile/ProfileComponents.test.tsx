@@ -21,8 +21,11 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => {
   const Stub = () => <span />;
   return {
+    AutoStories: Stub,
     CalendarToday: Stub,
     ChevronRight: Stub,
+    ImportContacts: Stub,
+    LocalLibrary: Stub,
     Logout: Stub,
     Movie: Stub,
     Person: Stub,
@@ -84,6 +87,29 @@ describe('ProfileComponents', () => {
     expect(screen.getByText('Serien')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('3 Tage')).toBeInTheDocument();
+    expect(screen.queryByText('Seiten')).not.toBeInTheDocument();
+  });
+
+  it('ProfileStats zeigt die Lese-Kacheln, sobald gelesen wird', () => {
+    const stats = {
+      totalSeries: 12,
+      totalMovies: 5,
+      watchedEpisodes: 340,
+      timeString: '3 Tage',
+    } as unknown as ComponentProps<typeof ProfileStats>['stats'];
+    render(
+      <ProfileStats
+        stats={stats}
+        reading={{ booksRead: 7, pagesRead: 2480, mangaChapters: 96 }}
+        currentTheme={makeTheme<ComponentProps<typeof ProfileStats>['currentTheme']>()}
+      />
+    );
+    expect(screen.getByText('Bücher')).toBeInTheDocument();
+    expect(screen.getByText('7')).toBeInTheDocument();
+    expect(screen.getByText('Seiten')).toBeInTheDocument();
+    expect(screen.getByText((2480).toLocaleString('de-DE'))).toBeInTheDocument();
+    expect(screen.getByText('Manga-Kapitel')).toBeInTheDocument();
+    expect(screen.getByText('96')).toBeInTheDocument();
   });
 
   it('ProfileFeaturedNav renders items and navigates on click', () => {
