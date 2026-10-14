@@ -1130,13 +1130,19 @@
   margin-top: 14px;
 }
 
+.md-book-switch-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .mobile-app .md-book-switch-cta,
 .md-book-switch-cta {
   display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
   min-height: 46px;
   padding: 0 20px;
   border: 1px solid transparent;
@@ -1147,6 +1153,12 @@
   white-space: nowrap;
   cursor: pointer;
   transition: opacity 0.15s ease;
+}
+
+.mobile-app .md-book-switch-cta--ghost,
+.md-book-switch-cta--ghost {
+  border-color: var(--glass-border-light);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .md-book-switch-cta:active {
@@ -1161,7 +1173,7 @@
 @media (min-width: 768px) {
   .md-book-switch-main {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 340px;
     align-items: center;
     gap: 24px;
   }

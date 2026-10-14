@@ -137,6 +137,23 @@ describe('MangaDetailBody', () => {
     expect(onMoveToBooks).toHaveBeenCalledTimes(1);
   });
 
+  it('öffnet aus der Karte das Buch zum Anschauen, ohne zu wechseln', () => {
+    const onMoveToBooks = vi.fn();
+    const onOpenBook = vi.fn();
+    render(
+      <MangaDetailBody
+        {...baseProps({
+          manga: makeManga({ trackBy: 'volumes', currentVolume: 2 }),
+          onMoveToBooks,
+          onOpenBook,
+        })}
+      />
+    );
+    fireEvent.click(screen.getByText('Zum Buch'));
+    expect(onOpenBook).toHaveBeenCalledTimes(1);
+    expect(onMoveToBooks).not.toHaveBeenCalled();
+  });
+
   it('bietet „Als Buch führen" nur an, wenn es Bücher dazu gibt', () => {
     render(<MangaDetailBody {...baseProps()} />);
     expect(screen.queryByText('Als Buch führen')).not.toBeInTheDocument();

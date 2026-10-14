@@ -487,6 +487,8 @@ const dict: Record<string, string> = {
   '{n} Bände aus deinen Büchern': '{n} volumes from your books',
   'Bei deinen Büchern führst du jeden Band einzeln, mit Seiten und Lesedatum.':
     'In your books, every volume is tracked on its own, with pages and reading date.',
+  'Zum Buch': 'View book',
+  '„{title}" wird jetzt als Buch geführt': '"{title}" is now kept as books',
 };
 
 export default dict;

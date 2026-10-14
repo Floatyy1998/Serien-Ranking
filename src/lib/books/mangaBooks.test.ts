@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
-import { booksFromManga, volumeSnapshot } from './mangaBooks';
+import {
+  bookAsSearchResult,
+  booksFromManga,
+  firstSourceBook,
+  volumeSnapshot,
+  withSourceBook,
+} from './mangaBooks';
 
 const book = (id: string, title: string, over: Partial<Book> = {}): Book => ({
   id,
@@ -65,5 +71,46 @@ describe('volumeSnapshot', () => {
     );
     expect(snap).toMatchObject({ id: 'dnb-2', status: 'planned', currentPage: 0 });
     expect(Object.values(snap)).not.toContain(undefined);
+  });
+});
+
+describe('Buch zum Anschauen', () => {
+  it('nimmt den niedrigsten mitgenommenen Band, Bücher ohne Bandnummer zuletzt', () => {
+    const m = manga({
+      fromBooks: {
+        b3: book('b3', 'Dead Mount Death Play, Band 3'),
+        x: book('x', 'Dead Mount Death Play Artbook'),
+        b2: book('b2', 'Dead Mount Death Play, Band 2'),
+      },
+    });
+    expect(firstSourceBook(m)?.id).toBe('b2');
+    expect(firstSourceBook(manga())).toBeNull();
+  });
+
+  it('macht aus dem gespeicherten Buch einen Suchtreffer ohne Lesestand', () => {
+    const result = bookAsSearchResult(
+      book('b2', 'Dead Mount Death Play, Band 2', { status: 'reading', currentPage: 40 })
+    );
+    expect(result).toMatchObject({ id: 'b2', source: 'google', pageCount: 192 });
+    expect(result).not.toHaveProperty('status');
+    expect(Object.values(result)).not.toContain(undefined);
+  });
+});
+
+describe('angesehener Band zieht mit um', () => {
+  it('nimmt den Band dazu und hakt ihn ab, wenn er im Manga schon gelesen war', () => {
+    const m = manga({ trackBy: 'volumes', currentVolume: 2 });
+    const moved = booksFromManga(
+      withSourceBook(m, book('gb-1', 'Dead Mount Death Play 01')),
+      new Set()
+    );
+    expect(moved).toHaveLength(1);
+    expect(moved[0]).toMatchObject({ id: 'gb-1', status: 'completed' });
+  });
+
+  it('legt dieselbe Ausgabe nicht doppelt an', () => {
+    const own = book('dnb-1', 'Dead Mount Death Play, Band 1', { isbn13: '978' });
+    const m = manga({ fromBooks: { 'dnb-1': own } });
+    expect(withSourceBook(m, book('gb-1', 'Dead Mount Death Play 01', { isbn13: '978' }))).toBe(m);
   });
 });

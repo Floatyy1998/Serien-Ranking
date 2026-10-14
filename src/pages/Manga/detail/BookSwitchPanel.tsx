@@ -12,7 +12,10 @@ interface BookSwitchPanelProps {
   manga: Manga;
   currentTheme: ThemeContextType['currentTheme'];
   busy: boolean;
+  /** Buchseite wird gesucht (Band 1). */
+  opening: boolean;
   onMoveToBooks: () => void;
+  onOpenBook: () => void;
 }
 
 /** Gegenstück zu „Das ist ein Manga" auf der Buchseite: Print-Manga zurück zu den Büchern. */
@@ -20,7 +23,9 @@ export const BookSwitchPanel = ({
   manga,
   currentTheme,
   busy,
+  opening,
   onMoveToBooks,
+  onOpenBook,
 }: BookSwitchPanelProps) => {
   const [confirming, setConfirming] = useState(false);
   const bookCount = Object.keys(manga.fromBooks ?? {}).length;
@@ -76,20 +81,31 @@ export const BookSwitchPanel = ({
               onCancel={() => setConfirming(false)}
             />
           ) : (
-            <button
-              type="button"
-              className="md-book-switch-cta"
-              disabled={busy}
-              onClick={() => setConfirming(true)}
-              style={{
-                color: getOptimalTextColor(currentTheme.primary),
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                opacity: busy ? 0.6 : 1,
-              }}
-            >
-              <SwapHoriz style={{ fontSize: 18 }} />
-              {t('Als Buch führen')}
-            </button>
+            <div className="md-book-switch-buttons">
+              <button
+                type="button"
+                className="md-book-switch-cta"
+                disabled={busy}
+                onClick={() => setConfirming(true)}
+                style={{
+                  color: getOptimalTextColor(currentTheme.primary),
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  opacity: busy ? 0.6 : 1,
+                }}
+              >
+                <SwapHoriz style={{ fontSize: 18 }} />
+                {t('Als Buch führen')}
+              </button>
+              <button
+                type="button"
+                className="md-book-switch-cta md-book-switch-cta--ghost"
+                disabled={opening}
+                onClick={onOpenBook}
+                style={{ color: currentTheme.text.secondary, opacity: opening ? 0.6 : 1 }}
+              >
+                {t('Zum Buch')}
+              </button>
+            </div>
           )}
         </div>
       </div>

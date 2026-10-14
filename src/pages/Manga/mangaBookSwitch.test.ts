@@ -18,7 +18,12 @@ vi.mock('../../services/db/ref', async () => {
   };
 });
 
-import { moveMangaToBooks, rememberSourceBooks } from './mangaBookSwitch';
+import {
+  moveMangaToBooks,
+  rememberSourceBooks,
+  restoreBookFromManga,
+  restoreMangaFromBooks,
+} from './mangaBookSwitch';
 
 const book = {
   id: 'dnb-1',
@@ -55,6 +60,30 @@ describe('mangaBookSwitch', () => {
       'users/u1/manga/42': null,
       'users/u1/mangaAsBooks/42': true,
       'users/u1/books/dnb-1': book,
+    });
+  });
+
+  it('macht „Als Buch führen" in einem Schreibvorgang rückgängig', async () => {
+    const manga = { anilistId: 42, title: 'X', currentVolume: 3, notes: undefined } as Manga;
+    await restoreMangaFromBooks('u1', manga, [book]);
+    expect(fb.update).toHaveBeenCalledWith({
+      'users/u1/manga/42': { anilistId: 42, title: 'X', currentVolume: 3 },
+      'users/u1/mangaAsBooks/42': null,
+      'users/u1/books/dnb-1': null,
+    });
+  });
+
+  it('nimmt beim Rückgängig von „Als Manga führen" nur den eigenen Anteil zurück', async () => {
+    await restoreBookFromManga('u1', book, 42, { mangaWasNew: false, seriesAsBooks: false });
+    expect(fb.update).toHaveBeenLastCalledWith({
+      'users/u1/books/dnb-1/hidden': null,
+      'users/u1/manga/42/fromBooks/dnb-1': null,
+    });
+    await restoreBookFromManga('u1', book, 42, { mangaWasNew: true, seriesAsBooks: true });
+    expect(fb.update).toHaveBeenLastCalledWith({
+      'users/u1/books/dnb-1/hidden': null,
+      'users/u1/manga/42': null,
+      'users/u1/mangaAsBooks/42': true,
     });
   });
 });

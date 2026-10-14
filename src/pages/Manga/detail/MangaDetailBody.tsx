@@ -100,6 +100,9 @@ interface MangaDetailBodyProps {
   onMoveToBooks?: () => void;
   /** Umzug zu den Büchern läuft (Band 1 wird gesucht). */
   movingToBooks?: boolean;
+  /** Buchseite zum Anschauen öffnen, ohne zu wechseln. */
+  onOpenBook?: () => void;
+  openingBook?: boolean;
 }
 
 export const MangaDetailBody = ({
@@ -133,6 +136,8 @@ export const MangaDetailBody = ({
   onDelete,
   onMoveToBooks,
   movingToBooks = false,
+  onOpenBook,
+  openingBook = false,
 }: MangaDetailBodyProps) => {
   // Kapitel, dessen *Rückschritt* noch bestätigt werden muss.
   const [confirmChapter, setConfirmChapter] = useState<number | null>(null);
@@ -188,7 +193,9 @@ export const MangaDetailBody = ({
             manga={manga}
             currentTheme={currentTheme}
             busy={movingToBooks}
+            opening={openingBook}
             onMoveToBooks={onMoveToBooks}
+            onOpenBook={() => onOpenBook?.()}
           />
         )}
 

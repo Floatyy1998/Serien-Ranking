@@ -1,5 +1,5 @@
 import { Add, AutoStories, ChevronRight, SwapHoriz } from '@mui/icons-material';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { MangaLink } from '../../../lib/books/mangaVolume';
 import { t } from '../../../services/i18n';
@@ -13,6 +13,8 @@ interface Props {
   onOpen: () => void;
   onAdd: () => void;
   onMove: () => void;
+  /** Reihe steht bei den Manga: ganz zu den Büchern wechseln, dieser Band kommt mit. */
+  onMoveToBooks?: () => void;
 }
 
 /** Ersetzt „In deine Bücher", wenn das Buch ein Manga-Band ist — führt zur Reihe bei den Manga. */
@@ -23,18 +25,26 @@ export const MangaVolumePanel: React.FC<Props> = ({
   onOpen,
   onAdd,
   onMove,
+  onMoveToBooks,
 }) => {
   const { currentTheme } = useTheme();
+  const [confirming, setConfirming] = useState(false);
   const title = link.manga.title.english || link.manga.title.romaji;
   const primary = savedAsBook
     ? { label: t('Als Manga führen'), icon: <SwapHoriz style={{ fontSize: 18 }} />, run: onMove }
-    : link.owned
-      ? { label: t('Zum Manga'), icon: <ChevronRight style={{ fontSize: 18 }} />, run: onOpen }
-      : {
-          label: t('Zu deinen Manga hinzufügen'),
-          icon: <Add style={{ fontSize: 18 }} />,
-          run: onAdd,
-        };
+    : link.owned && onMoveToBooks
+      ? {
+          label: t('Als Buch führen'),
+          icon: <SwapHoriz style={{ fontSize: 18 }} />,
+          run: () => setConfirming(true),
+        }
+      : link.owned
+        ? { label: t('Zum Manga'), icon: <ChevronRight style={{ fontSize: 18 }} />, run: onOpen }
+        : {
+            label: t('Zu deinen Manga hinzufügen'),
+            icon: <Add style={{ fontSize: 18 }} />,
+            run: onAdd,
+          };
 
   return (
     <div
@@ -70,32 +80,65 @@ export const MangaVolumePanel: React.FC<Props> = ({
           </div>
         </div>
       </div>
-      <div className="bd-manga-link-actions">
-        <button
-          type="button"
-          className="bk-cta"
-          disabled={busy}
-          onClick={primary.run}
-          style={{
-            color: getOptimalTextColor(currentTheme.primary),
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-            opacity: busy ? 0.6 : 1,
-          }}
-        >
-          {primary.icon}
-          {primary.label}
-        </button>
-        {primary.run !== onOpen && (
+      {confirming && onMoveToBooks ? (
+        <div className="bd-manga-link-confirm">
+          <div className="bk-muted" style={{ color: currentTheme.text.secondary, fontWeight: 700 }}>
+            {t('Zurück zu den Büchern? Der Manga verschwindet mit Lesestand und Bewertung.')}
+          </div>
+          <div className="bd-manga-link-actions">
+            <button
+              type="button"
+              className="bk-cta bk-cta--ghost"
+              onClick={() => setConfirming(false)}
+              style={{ color: currentTheme.text.secondary }}
+            >
+              {t('Nein')}
+            </button>
+            <button
+              type="button"
+              className="bk-cta"
+              disabled={busy}
+              onClick={() => {
+                setConfirming(false);
+                onMoveToBooks();
+              }}
+              style={{
+                color: getOptimalTextColor(currentTheme.primary),
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              }}
+            >
+              {t('Ja')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bd-manga-link-actions">
           <button
             type="button"
-            className="bk-cta bk-cta--ghost"
-            onClick={onOpen}
-            style={{ color: currentTheme.text.secondary }}
+            className="bk-cta"
+            disabled={busy}
+            onClick={primary.run}
+            style={{
+              color: getOptimalTextColor(currentTheme.primary),
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              opacity: busy ? 0.6 : 1,
+            }}
           >
-            {t('Zum Manga')}
+            {primary.icon}
+            {primary.label}
           </button>
-        )}
-      </div>
+          {primary.run !== onOpen && (
+            <button
+              type="button"
+              className="bk-cta bk-cta--ghost"
+              onClick={onOpen}
+              style={{ color: currentTheme.text.secondary }}
+            >
+              {t('Zum Manga')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

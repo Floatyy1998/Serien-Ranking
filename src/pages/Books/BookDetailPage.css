@@ -590,6 +590,16 @@
   margin-top: 14px;
 }
 
+.bd-manga-link-confirm {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border-light);
+}
+
+.bd-manga-link-confirm .bd-manga-link-actions {
+  margin-top: 10px;
+}
+
 .mobile-app .bd-manga-link-actions .bk-cta,
 .bd-manga-link-actions .bk-cta {
   flex: 1 1 auto;
