@@ -335,6 +335,65 @@ const dict: Record<string, string> = {
   'Kleinere Korrekturen': 'Smaller fixes',
   'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.':
     'In the calendar, the rating shown next to a show could differ slightly from the one in the rating dialog — both now calculate it the same way. And a movie rated from the home screen reliably shows up in your statistics again.',
+
+  // Oktober 2026
+  'Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat':
+    'October 2026 – Books, Pets on the Dock and Chat Replies',
+  'Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile':
+    'October 2026 – Custom Lists, Long Press and Public Profiles',
+  'Zu den Manga': 'Go to Manga',
+  'Zum Design': 'Go to Appearance',
+  'Zu deinen Listen': 'Go to your lists',
+  'Bücher im Bereich „Lesen“': 'Books in the Reading section',
+  'Neben Manga trackst du jetzt auch Bücher. Such nach Titel, Autor oder ISBN, trag ein, auf welcher Seite du bist, und behalte im Regal den Überblick über alles, was du liest, gelesen hast oder noch lesen willst. Dazu gibt es eine eigene Statistik mit Lesechallenge, und deine Bibliothek aus Goodreads oder StoryGraph holst du per Import rein.':
+    "Alongside manga, you can now track books too. Search by title, author or ISBN, log which page you're on, and keep track of everything you're reading, have read or still want to read on your shelf. There's also a dedicated stats page with a reading challenge, and you can bring in your library from Goodreads or StoryGraph via import.",
+  'Wunschliste und Geschenkideen': 'Wishlist and gift ideas',
+  'Bücher, die du gern hättest, landen mit einem Tipp auf deiner Wunschliste. Auf den Profilen deiner Freunde findest du passend dazu Geschenkideen: ihre Wünsche, den nächsten fehlenden Band einer Reihe und Vorschläge aus ihren Lieblingsgenres.':
+    "Add books you'd love to own to your wishlist with a single tap. On your friends' profiles, you'll find matching gift ideas: their wishes, the next missing volume in a series and picks from their favorite genres.",
+  'Der Manga-Bereich, neu gebaut': 'The manga section, rebuilt',
+  'Die Manga-Übersicht stellst du dir jetzt selbst zusammen: welche Abschnitte erscheinen und in welcher Reihenfolge. Die Suche zeigt auch Manga, die schon in deiner Sammlung sind, und findet Titel unter ihrem deutschen Namen. Dazu kommt eine neue Detailseite, und auf den Profilen deiner Freunde siehst du, was sie gerade lesen.':
+    "You now put together your own manga overview: which sections appear and in what order. Search also shows manga already in your collection and finds titles by their alternative names. There's a new detail page too, and on your friends' profiles you can see what they're currently reading.",
+  'Deine Pets laufen über das Dock': 'Your pets roam the dock',
+  'Dein Pet sitzt nicht mehr nur still: Es läuft über die Leiste unten, schläft, springt, spielt Ball und bringt dir Briefe. Bis zu drei Pets können gleichzeitig unterwegs sein — dann begrüßen sie sich, tanzen, machen Wettrennen oder spielen zusammen Fußball. Wer mitläuft, wählst du auf der Pet-Seite.':
+    'Your pet no longer just sits still: it walks along the bar at the bottom, sleeps, jumps, plays ball and brings you letters. Up to three pets can be out at once — then they greet each other, dance, race or play soccer together. You choose who comes along on the pet page.',
+  'Garderobe, Spielplatz und mehr Tiefe': 'Wardrobe, playground and more depth',
+  'Die Pet-Seite ist neu geordnet: oben dein Pet mit Füttern und Spielen, darunter Tricks, Garderobe und Dock. In der Garderobe trägt dein Pet je ein Teil an Kopf, Gesicht und Körper — ab Level 10 zwei gleichzeitig, ab Level 30 das volle Outfit. Umhänge sind jetzt echte Umhänge, und alle Pets haben Licht und Volumen bekommen.':
+    'The pet page has been reorganized: your pet with feeding and playing at the top, tricks, wardrobe and dock below. In the wardrobe, your pet wears one item each on its head, face and body — two at once from level 10, the full outfit from level 30. Capes are now real capes, and every pet has gained light and volume.',
+  'Spieltreff bei Freunden': 'Play dates with friends',
+  'Auf dem Profil eines Freundes können sich eure Pets zum Spielen treffen. Einmal am Tag pro Freund hebt das die Laune deines Pets.':
+    "On a friend's profile, your pets can meet up to play. Once a day per friend, it lifts your pet's mood.",
+  'Im Chat auf Nachrichten antworten': 'Reply to messages in chat',
+  'Wisch eine Nachricht nach rechts, um direkt darauf zu antworten — am Rechner reicht der Pfeil, der beim Darüberfahren erscheint. Das Zitat steht dann über deiner Antwort, und ein Tipp darauf springt zur ursprünglichen Nachricht. Links in Nachrichten sind jetzt klickbar; bevor eine fremde Seite aufgeht, siehst du, wohin der Link führt.':
+    "Swipe a message to the right to reply to it directly — on a computer, just use the arrow that appears when you hover over it. The quote then sits above your reply, and tapping it jumps to the original message. Links in messages are now clickable; before an external site opens, you'll see where the link leads.",
+  'Folgen mit Freunden teilen': 'Share episodes with friends',
+  'Auf jeder Folgenseite sitzt oben rechts ein Papierflieger. Damit schickst du die Folge in den Chat, auf Wunsch mit einem Kommentar, den du auch als Spoiler verdecken kannst. Den Folgentitel sieht dein Freund erst, wenn er die Folge selbst geschaut hat.':
+    "Every episode page now has a paper plane in the top right. Use it to send the episode to a chat, optionally with a comment you can hide as a spoiler. Your friend only sees the episode title once they've watched it themselves.",
+  'Halloween, Weihnachten und mehr': 'Halloween, Christmas and more',
+  'Im Oktober trägt TV-Rank Spinnennetze und Fledermäuse, im Dezember folgen Weihnachten und Silvester, im Februar der Valentinstag — jeweils mit eigenem Startbildschirm. Die Designs schalten sich von selbst ein; wer lieber bei seinem eigenen Look bleibt, schaltet sie unter Design ab.':
+    "In October, TV-Rank dresses up with cobwebs and bats, December brings Christmas and New Year's, and February Valentine's Day — each with its own splash screen. The themes switch on automatically; if you'd rather keep your own look, turn them off under Appearance.",
+  'Der Kalender sortiert Folgen jetzt nach ihrer echten Sendezeit. Die Suche sagt dir, wenn ein Titel schon in deiner Liste ist oder das Hinzufügen nicht klappt. Und die App stürzt nicht mehr ab, wenn der Browser die Seite übersetzt.':
+    "The calendar now sorts episodes by their actual air time. Search tells you when a title is already on your list or adding it didn't work. And the app no longer crashes when your browser translates the page.",
+  'Eigene Listen': 'Custom lists',
+  'Unter Bewertungen gibt es den Reiter „Listen“: Stell Serien und Filme zu eigenen Sammlungen zusammen, etwa „Mit Anna schauen“ oder „Für schlechte Tage“. In „Weiter“ filterst du mit einer Liste genau die Serien heraus, auf die du gerade Lust hast.':
+    "Ratings now has a “Lists” tab: group shows and movies into your own collections, like “Watching with Anna” or “For bad days”. In “Next”, a list filters out exactly the shows you're in the mood for.",
+  'Listen teilen': 'Share lists',
+  'Jede Liste lässt sich per Link verschicken, mit einem Vorschaubild aus ihren Postern. Wer den Link öffnet, sieht die Liste auch ohne Konto und kann mit genau diesen Titeln bei TV-Rank einsteigen.':
+    'Every list can be shared via link, with a preview image made from its posters. Anyone who opens the link can see the list even without an account — and get started on TV-Rank with those very titles.',
+  'Gedrückt halten für schnelle Aktionen': 'Press and hold for quick actions',
+  'Halt eine Serie oder einen Film irgendwo in der App gedrückt — am Rechner per Rechtsklick —, um ihn zu bewerten, einer Liste hinzuzufügen, in deine Sammlung aufzunehmen oder einen Film als gesehen zu markieren. Auf den Detailseiten gibt es dafür außerdem den Knopf „Zu Liste hinzufügen“.':
+    'Press and hold a show or movie anywhere in the app — or right-click on a computer — to rate it, add it to a list, add it to your collection or mark a movie as watched. Detail pages also have an “Add to list” button for this.',
+  'Öffentliche Profile entdecken': 'Discover public profiles',
+  'Im Freunde-Reiter stöberst du jetzt auch durch öffentliche Profile und findest so neue Leute mit ähnlichem Geschmack. Wer nicht in der Rangliste auftauchen möchte, blendet sich in den Einstellungen aus.':
+    "In the Friends tab, you can now browse public profiles and find new people with similar taste. If you'd rather not appear on the leaderboard, you can hide yourself in Settings.",
+  'Freundesprofile überarbeitet': 'Friend profiles reworked',
+  'Die Einblicke auf Freundesprofilen sind neu gestaltet, euer Vergleich passt jetzt in eine kompakte Karte, und die Listen deiner Freunde haben einen eigenen Reiter. Freundschaftsanfragen nimmst du direkt auf dem Profil an. Als Freund siehst du Serien, Bewertungen und Verlauf ohne extra Freigabe — die braucht es nur noch für den Kalender.':
+    "Insights on friend profiles have been redesigned, your comparison now fits into one compact card, and your friends' lists have their own tab. You can accept friend requests right on the profile. As a friend, you can see shows, ratings and history without extra permission — that's now only needed for the calendar.",
+  'Serientermine im Plan': 'Recurring show sessions in your plan',
+  'Im Plan legst du jetzt wiederkehrende Termine für eine Serie an: an festen Wochentagen oder alle paar Tage, mit bis zu fünf Folgen pro Termin, bis zum Staffel- oder Serienende. Einzelne Termine lässt du ausfallen oder änderst ihre Folge — die übrigen nummerieren sich von selbst neu. Auch Rewatches lassen sich so planen.':
+    'In your plan, you can now set up recurring sessions for a show: on fixed weekdays or every few days, with up to five episodes per session, until the end of the season or show. Skip individual sessions or change their episode — the rest renumber automatically. Rewatches can be planned this way too.',
+  'Nach Erscheinungsjahr filtern': 'Filter by release year',
+  'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.':
+    'In your ratings and on profiles, you can now filter by decade or a custom year range and sort by release date — newest first or the other way round.',
 };
 
 export default dict;

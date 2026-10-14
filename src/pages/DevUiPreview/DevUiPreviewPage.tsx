@@ -8,6 +8,7 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
+import { PatchNotesPage } from '../PatchNotes/PatchNotesPage';
 import { LitComparePreview, OutfitClashPreview, PetsPagePreview } from './PetsPagePreview';
 import {
   PetPlaygroundPreview,
@@ -246,6 +247,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'book-stats', label: 'Bücher: Statistik', render: () => <BookStatsPreview /> },
   { id: 'episode-share', label: 'Chat: Folge teilen', render: () => <EpisodeSharePreview /> },
   { id: 'chat-reply', label: 'Chat: Antworten + Links', render: () => <ChatReplyPreview /> },
+  { id: 'patch-notes', label: 'Patch Notes', render: () => <PatchNotesPage /> },
   {
     id: 'friend-books',
     label: 'Freund: Geschenkideen',

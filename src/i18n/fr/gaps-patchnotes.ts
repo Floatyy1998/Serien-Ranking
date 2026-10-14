@@ -320,6 +320,65 @@ const dict: Record<string, string> = {
   'Kleinere Korrekturen': 'Corrections mineures',
   'Im Kalender konnte die Bewertung neben einer Serie leicht von der im Bewertungsfenster abweichen — beide rechnen jetzt gleich. Und ein über die Startseite bewerteter Film landet wieder zuverlässig in deinen Statistiken.':
     'Dans le calendrier, la note affichée à côté d’une série pouvait légèrement différer de celle de la fenêtre de notation : les deux se calculent désormais de la même façon. Et un film noté depuis l’écran d’accueil réapparaît bien dans tes statistiques.',
+
+  // Oktober 2026
+  'Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat':
+    'Octobre 2026 – Livres, compagnons sur le dock et réponses dans le chat',
+  'Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile':
+    'Octobre 2026 – Listes perso, appui long et profils publics',
+  'Zu den Manga': 'Voir les mangas',
+  'Zum Design': 'Voir le design',
+  'Zu deinen Listen': 'Voir tes listes',
+  'Bücher im Bereich „Lesen“': 'Les livres dans la section Lecture',
+  'Neben Manga trackst du jetzt auch Bücher. Such nach Titel, Autor oder ISBN, trag ein, auf welcher Seite du bist, und behalte im Regal den Überblick über alles, was du liest, gelesen hast oder noch lesen willst. Dazu gibt es eine eigene Statistik mit Lesechallenge, und deine Bibliothek aus Goodreads oder StoryGraph holst du per Import rein.':
+    "En plus des mangas, tu peux maintenant suivre tes livres. Cherche par titre, auteur ou ISBN, note la page où tu en es et garde dans ton étagère une vue d'ensemble de ce que tu lis, as lu ou veux encore lire. Des statistiques dédiées avec un défi lecture complètent le tout, et tu peux importer ta bibliothèque depuis Goodreads ou StoryGraph.",
+  'Wunschliste und Geschenkideen': "Liste d'envies et idées cadeaux",
+  'Bücher, die du gern hättest, landen mit einem Tipp auf deiner Wunschliste. Auf den Profilen deiner Freunde findest du passend dazu Geschenkideen: ihre Wünsche, den nächsten fehlenden Band einer Reihe und Vorschläge aus ihren Lieblingsgenres.':
+    "Les livres qui te font envie rejoignent ta liste d'envies en un geste. Sur les profils de tes amis, tu trouves des idées cadeaux assorties : leurs envies, le prochain tome qui leur manque dans une série et des suggestions dans leurs genres préférés.",
+  'Der Manga-Bereich, neu gebaut': 'La section manga, entièrement refaite',
+  'Die Manga-Übersicht stellst du dir jetzt selbst zusammen: welche Abschnitte erscheinen und in welcher Reihenfolge. Die Suche zeigt auch Manga, die schon in deiner Sammlung sind, und findet Titel unter ihrem deutschen Namen. Dazu kommt eine neue Detailseite, und auf den Profilen deiner Freunde siehst du, was sie gerade lesen.':
+    "Tu composes désormais toi-même ton aperçu manga : quelles rubriques apparaissent et dans quel ordre. La recherche affiche aussi les mangas déjà dans ta collection et trouve les titres sous leurs noms alternatifs. S'y ajoute une nouvelle page de détail, et sur les profils de tes amis tu vois ce qu'ils lisent en ce moment.",
+  'Deine Pets laufen über das Dock': 'Tes compagnons se baladent sur le dock',
+  'Dein Pet sitzt nicht mehr nur still: Es läuft über die Leiste unten, schläft, springt, spielt Ball und bringt dir Briefe. Bis zu drei Pets können gleichzeitig unterwegs sein — dann begrüßen sie sich, tanzen, machen Wettrennen oder spielen zusammen Fußball. Wer mitläuft, wählst du auf der Pet-Seite.':
+    "Ton compagnon ne reste plus sagement assis : il se promène sur la barre du bas, dort, saute, joue au ballon et t'apporte des lettres. Jusqu'à trois compagnons peuvent sortir en même temps : ils se saluent, dansent, font la course ou jouent au foot ensemble. Tu choisis lesquels sortent sur la page des compagnons.",
+  'Garderobe, Spielplatz und mehr Tiefe': 'Garde-robe, aire de jeu et plus de relief',
+  'Die Pet-Seite ist neu geordnet: oben dein Pet mit Füttern und Spielen, darunter Tricks, Garderobe und Dock. In der Garderobe trägt dein Pet je ein Teil an Kopf, Gesicht und Körper — ab Level 10 zwei gleichzeitig, ab Level 30 das volle Outfit. Umhänge sind jetzt echte Umhänge, und alle Pets haben Licht und Volumen bekommen.':
+    'La page des compagnons est réorganisée : en haut ton compagnon avec nourrir et jouer, en dessous les tours, la garde-robe et le dock. Dans la garde-robe, ton compagnon porte un accessoire sur la tête, le visage et le corps : deux à la fois dès le niveau 10, la tenue complète dès le niveau 30. Les capes sont désormais de vraies capes, et tous les compagnons ont gagné en lumière et en volume.',
+  'Spieltreff bei Freunden': 'Rencontres chez tes amis',
+  'Auf dem Profil eines Freundes können sich eure Pets zum Spielen treffen. Einmal am Tag pro Freund hebt das die Laune deines Pets.':
+    "Sur le profil d'un ami, vos compagnons peuvent se retrouver pour jouer. Une fois par jour et par ami, cela remonte le moral de ton compagnon.",
+  'Im Chat auf Nachrichten antworten': 'Répondre aux messages dans le chat',
+  'Wisch eine Nachricht nach rechts, um direkt darauf zu antworten — am Rechner reicht der Pfeil, der beim Darüberfahren erscheint. Das Zitat steht dann über deiner Antwort, und ein Tipp darauf springt zur ursprünglichen Nachricht. Links in Nachrichten sind jetzt klickbar; bevor eine fremde Seite aufgeht, siehst du, wohin der Link führt.':
+    "Fais glisser un message vers la droite pour y répondre directement ; sur ordinateur, la flèche qui apparaît au survol suffit. La citation s'affiche au-dessus de ta réponse, et un appui dessus te ramène au message d'origine. Les liens dans les messages sont désormais cliquables ; avant d'ouvrir un site externe, tu vois où mène le lien.",
+  'Folgen mit Freunden teilen': 'Partager des épisodes avec tes amis',
+  'Auf jeder Folgenseite sitzt oben rechts ein Papierflieger. Damit schickst du die Folge in den Chat, auf Wunsch mit einem Kommentar, den du auch als Spoiler verdecken kannst. Den Folgentitel sieht dein Freund erst, wenn er die Folge selbst geschaut hat.':
+    "Chaque page d'épisode a maintenant un avion en papier en haut à droite. Il envoie l'épisode dans un chat, avec un commentaire si tu veux, que tu peux aussi masquer comme spoiler. Ton ami ne voit le titre de l'épisode qu'une fois qu'il l'a regardé lui-même.",
+  'Halloween, Weihnachten und mehr': 'Halloween, Noël et plus encore',
+  'Im Oktober trägt TV-Rank Spinnennetze und Fledermäuse, im Dezember folgen Weihnachten und Silvester, im Februar der Valentinstag — jeweils mit eigenem Startbildschirm. Die Designs schalten sich von selbst ein; wer lieber bei seinem eigenen Look bleibt, schaltet sie unter Design ab.':
+    "En octobre, TV-Rank se pare de toiles d'araignée et de chauves-souris, décembre amène Noël et le Nouvel An, février la Saint-Valentin, chacun avec son propre écran de démarrage. Les thèmes s'activent tout seuls ; si tu préfères garder ton propre look, désactive-les dans Design.",
+  'Der Kalender sortiert Folgen jetzt nach ihrer echten Sendezeit. Die Suche sagt dir, wenn ein Titel schon in deiner Liste ist oder das Hinzufügen nicht klappt. Und die App stürzt nicht mehr ab, wenn der Browser die Seite übersetzt.':
+    "Le calendrier trie désormais les épisodes selon leur véritable heure de diffusion. La recherche te prévient quand un titre est déjà dans ta liste ou que l'ajout a échoué. Et l'appli ne plante plus quand ton navigateur traduit la page.",
+  'Eigene Listen': 'Tes propres listes',
+  'Unter Bewertungen gibt es den Reiter „Listen“: Stell Serien und Filme zu eigenen Sammlungen zusammen, etwa „Mit Anna schauen“ oder „Für schlechte Tage“. In „Weiter“ filterst du mit einer Liste genau die Serien heraus, auf die du gerade Lust hast.':
+    'Dans Notes, un nouvel onglet « Listes » te permet de regrouper séries et films dans tes propres collections, par exemple « À regarder avec Anna » ou « Pour les jours sans ». Dans « Suivant », une liste filtre exactement les séries dont tu as envie.',
+  'Listen teilen': 'Partager des listes',
+  'Jede Liste lässt sich per Link verschicken, mit einem Vorschaubild aus ihren Postern. Wer den Link öffnet, sieht die Liste auch ohne Konto und kann mit genau diesen Titeln bei TV-Rank einsteigen.':
+    "Chaque liste peut être partagée par lien, avec une image d'aperçu composée de ses affiches. Qui ouvre le lien voit la liste même sans compte et peut démarrer sur TV-Rank avec ces mêmes titres.",
+  'Gedrückt halten für schnelle Aktionen': 'Appui long pour des actions rapides',
+  'Halt eine Serie oder einen Film irgendwo in der App gedrückt — am Rechner per Rechtsklick —, um ihn zu bewerten, einer Liste hinzuzufügen, in deine Sammlung aufzunehmen oder einen Film als gesehen zu markieren. Auf den Detailseiten gibt es dafür außerdem den Knopf „Zu Liste hinzufügen“.':
+    "Maintiens le doigt sur une série ou un film n'importe où dans l'appli (ou fais un clic droit sur ordinateur) pour le noter, l'ajouter à une liste, l'ajouter à ta collection ou marquer un film comme vu. Les pages de détail ont aussi un bouton « Ajouter à une liste ».",
+  'Öffentliche Profile entdecken': 'Découvrir des profils publics',
+  'Im Freunde-Reiter stöberst du jetzt auch durch öffentliche Profile und findest so neue Leute mit ähnlichem Geschmack. Wer nicht in der Rangliste auftauchen möchte, blendet sich in den Einstellungen aus.':
+    "Dans l'onglet Amis, tu peux maintenant parcourir les profils publics et trouver de nouvelles personnes aux goûts proches. Si tu préfères ne pas apparaître dans le classement, tu peux te masquer dans les Paramètres.",
+  'Freundesprofile überarbeitet': "Profils d'amis repensés",
+  'Die Einblicke auf Freundesprofilen sind neu gestaltet, euer Vergleich passt jetzt in eine kompakte Karte, und die Listen deiner Freunde haben einen eigenen Reiter. Freundschaftsanfragen nimmst du direkt auf dem Profil an. Als Freund siehst du Serien, Bewertungen und Verlauf ohne extra Freigabe — die braucht es nur noch für den Kalender.':
+    "Les aperçus sur les profils d'amis ont un nouveau design, votre comparaison tient désormais dans une carte compacte et les listes de tes amis ont leur propre onglet. Tu acceptes les demandes d'ami directement sur le profil. En tant qu'ami, tu vois séries, notes et historique sans autorisation supplémentaire : elle n'est plus nécessaire que pour le calendrier.",
+  'Serientermine im Plan': 'Séances de séries dans ton planning',
+  'Im Plan legst du jetzt wiederkehrende Termine für eine Serie an: an festen Wochentagen oder alle paar Tage, mit bis zu fünf Folgen pro Termin, bis zum Staffel- oder Serienende. Einzelne Termine lässt du ausfallen oder änderst ihre Folge — die übrigen nummerieren sich von selbst neu. Auch Rewatches lassen sich so planen.':
+    "Dans ton planning, tu peux maintenant créer des séances récurrentes pour une série : certains jours de la semaine ou à quelques jours d'intervalle, avec jusqu'à cinq épisodes par séance, jusqu'à la fin de la saison ou de la série. Tu peux sauter une séance ou changer son épisode, les suivantes se renumérotent toutes seules. Ça marche aussi pour les revisionnages.",
+  'Nach Erscheinungsjahr filtern': 'Filtrer par année de sortie',
+  'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.':
+    'Dans tes notes et sur les profils, tu peux maintenant filtrer par décennie ou par période de ton choix, et trier par date de sortie, de la plus récente à la plus ancienne ou l’inverse.',
 };
 
 export default dict;

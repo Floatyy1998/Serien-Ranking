@@ -3,22 +3,31 @@ import {
   ArrowForward,
   AutoAwesome,
   AutoFixHigh,
+  AutoStories,
   CalendarMonth,
   CalendarToday,
+  CardGiftcard,
+  Celebration,
+  Checkroom,
+  Diversity3,
   EditCalendar,
   EmojiEmotions,
   Equalizer,
   EuroSymbol,
+  EventRepeat,
   FilterAlt,
-  GroupAdd,
   Forum,
+  GroupAdd,
   History,
   HourglassEmpty,
+  Insights,
+  IosShare,
+  Language,
   LibraryAddCheck,
   LocalFireDepartment,
   LocalMovies,
   Lock,
-  Language,
+  MenuBook,
   Navigation,
   NewReleases,
   NotificationsActive,
@@ -26,12 +35,16 @@ import {
   PauseCircle,
   PeopleAlt,
   Pets,
-  PlaylistAddCheck,
   PhoneIphone,
+  PlaylistAdd,
+  PlaylistAddCheck,
+  Public,
   Recommend,
   Replay,
+  Reply,
   RocketLaunch,
   Search,
+  Send,
   SmartDisplay,
   Sort,
   Speed,
@@ -39,8 +52,9 @@ import {
   SwapHoriz,
   SystemUpdateAlt,
   Today,
-  Translate,
+  TouchApp,
   TransferWithinAStation,
+  Translate,
   TrendingUp,
   Tune,
   ViewQuilt,
@@ -82,6 +96,162 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: t('Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat'),
+      date: '2026-10-14',
+      features: [
+        {
+          icon: <MenuBook />,
+          color: currentTheme.primary,
+          title: t('Bücher im Bereich „Lesen“'),
+          description: t(
+            'Neben Manga trackst du jetzt auch Bücher. Such nach Titel, Autor oder ISBN, trag ein, auf welcher Seite du bist, und behalte im Regal den Überblick über alles, was du liest, gelesen hast oder noch lesen willst. Dazu gibt es eine eigene Statistik mit Lesechallenge, und deine Bibliothek aus Goodreads oder StoryGraph holst du per Import rein.'
+          ),
+          link: { label: t('Zu den Büchern'), path: '/books' },
+        },
+        {
+          icon: <CardGiftcard />,
+          color: currentTheme.secondary,
+          title: t('Wunschliste und Geschenkideen'),
+          description: t(
+            'Bücher, die du gern hättest, landen mit einem Tipp auf deiner Wunschliste. Auf den Profilen deiner Freunde findest du passend dazu Geschenkideen: ihre Wünsche, den nächsten fehlenden Band einer Reihe und Vorschläge aus ihren Lieblingsgenres.'
+          ),
+        },
+        {
+          icon: <AutoStories />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Der Manga-Bereich, neu gebaut'),
+          description: t(
+            'Die Manga-Übersicht stellst du dir jetzt selbst zusammen: welche Abschnitte erscheinen und in welcher Reihenfolge. Die Suche zeigt auch Manga, die schon in deiner Sammlung sind, und findet Titel unter ihrem deutschen Namen. Dazu kommt eine neue Detailseite, und auf den Profilen deiner Freunde siehst du, was sie gerade lesen.'
+          ),
+          link: { label: t('Zu den Manga'), path: '/manga' },
+        },
+        {
+          icon: <Pets />,
+          color: currentTheme.primary,
+          title: t('Deine Pets laufen über das Dock'),
+          description: t(
+            'Dein Pet sitzt nicht mehr nur still: Es läuft über die Leiste unten, schläft, springt, spielt Ball und bringt dir Briefe. Bis zu drei Pets können gleichzeitig unterwegs sein — dann begrüßen sie sich, tanzen, machen Wettrennen oder spielen zusammen Fußball. Wer mitläuft, wählst du auf der Pet-Seite.'
+          ),
+          link: { label: t('Zu deinen Pets'), path: '/pets' },
+        },
+        {
+          icon: <Checkroom />,
+          color: currentTheme.secondary,
+          title: t('Garderobe, Spielplatz und mehr Tiefe'),
+          description: t(
+            'Die Pet-Seite ist neu geordnet: oben dein Pet mit Füttern und Spielen, darunter Tricks, Garderobe und Dock. In der Garderobe trägt dein Pet je ein Teil an Kopf, Gesicht und Körper — ab Level 10 zwei gleichzeitig, ab Level 30 das volle Outfit. Umhänge sind jetzt echte Umhänge, und alle Pets haben Licht und Volumen bekommen.'
+          ),
+        },
+        {
+          icon: <Diversity3 />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Spieltreff bei Freunden'),
+          description: t(
+            'Auf dem Profil eines Freundes können sich eure Pets zum Spielen treffen. Einmal am Tag pro Freund hebt das die Laune deines Pets.'
+          ),
+        },
+        {
+          icon: <Reply />,
+          color: currentTheme.primary,
+          title: t('Im Chat auf Nachrichten antworten'),
+          description: t(
+            'Wisch eine Nachricht nach rechts, um direkt darauf zu antworten — am Rechner reicht der Pfeil, der beim Darüberfahren erscheint. Das Zitat steht dann über deiner Antwort, und ein Tipp darauf springt zur ursprünglichen Nachricht. Links in Nachrichten sind jetzt klickbar; bevor eine fremde Seite aufgeht, siehst du, wohin der Link führt.'
+          ),
+          link: { label: t('Chats öffnen'), path: '/chats' },
+        },
+        {
+          icon: <Send />,
+          color: currentTheme.secondary,
+          title: t('Folgen mit Freunden teilen'),
+          description: t(
+            'Auf jeder Folgenseite sitzt oben rechts ein Papierflieger. Damit schickst du die Folge in den Chat, auf Wunsch mit einem Kommentar, den du auch als Spoiler verdecken kannst. Den Folgentitel sieht dein Freund erst, wenn er die Folge selbst geschaut hat.'
+          ),
+        },
+        {
+          icon: <Celebration />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Halloween, Weihnachten und mehr'),
+          description: t(
+            'Im Oktober trägt TV-Rank Spinnennetze und Fledermäuse, im Dezember folgen Weihnachten und Silvester, im Februar der Valentinstag — jeweils mit eigenem Startbildschirm. Die Designs schalten sich von selbst ein; wer lieber bei seinem eigenen Look bleibt, schaltet sie unter Design ab.'
+          ),
+          link: { label: t('Zum Design'), path: '/theme' },
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.primary,
+          title: t('Kleinere Korrekturen'),
+          description: t(
+            'Der Kalender sortiert Folgen jetzt nach ihrer echten Sendezeit. Die Suche sagt dir, wenn ein Titel schon in deiner Liste ist oder das Hinzufügen nicht klappt. Und die App stürzt nicht mehr ab, wenn der Browser die Seite übersetzt.'
+          ),
+        },
+      ],
+    },
+    {
+      version: t('Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile'),
+      date: '2026-10-06',
+      features: [
+        {
+          icon: <PlaylistAdd />,
+          color: currentTheme.primary,
+          title: t('Eigene Listen'),
+          description: t(
+            'Unter Bewertungen gibt es den Reiter „Listen“: Stell Serien und Filme zu eigenen Sammlungen zusammen, etwa „Mit Anna schauen“ oder „Für schlechte Tage“. In „Weiter“ filterst du mit einer Liste genau die Serien heraus, auf die du gerade Lust hast.'
+          ),
+          link: { label: t('Zu deinen Listen'), path: '/ratings?tab=folders' },
+        },
+        {
+          icon: <IosShare />,
+          color: currentTheme.secondary,
+          title: t('Listen teilen'),
+          description: t(
+            'Jede Liste lässt sich per Link verschicken, mit einem Vorschaubild aus ihren Postern. Wer den Link öffnet, sieht die Liste auch ohne Konto und kann mit genau diesen Titeln bei TV-Rank einsteigen.'
+          ),
+        },
+        {
+          icon: <TouchApp />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Gedrückt halten für schnelle Aktionen'),
+          description: t(
+            'Halt eine Serie oder einen Film irgendwo in der App gedrückt — am Rechner per Rechtsklick —, um ihn zu bewerten, einer Liste hinzuzufügen, in deine Sammlung aufzunehmen oder einen Film als gesehen zu markieren. Auf den Detailseiten gibt es dafür außerdem den Knopf „Zu Liste hinzufügen“.'
+          ),
+        },
+        {
+          icon: <Public />,
+          color: currentTheme.primary,
+          title: t('Öffentliche Profile entdecken'),
+          description: t(
+            'Im Freunde-Reiter stöberst du jetzt auch durch öffentliche Profile und findest so neue Leute mit ähnlichem Geschmack. Wer nicht in der Rangliste auftauchen möchte, blendet sich in den Einstellungen aus.'
+          ),
+          link: { label: t('Freunde öffnen'), path: '/activity?tab=friends' },
+        },
+        {
+          icon: <Insights />,
+          color: currentTheme.secondary,
+          title: t('Freundesprofile überarbeitet'),
+          description: t(
+            'Die Einblicke auf Freundesprofilen sind neu gestaltet, euer Vergleich passt jetzt in eine kompakte Karte, und die Listen deiner Freunde haben einen eigenen Reiter. Freundschaftsanfragen nimmst du direkt auf dem Profil an. Als Freund siehst du Serien, Bewertungen und Verlauf ohne extra Freigabe — die braucht es nur noch für den Kalender.'
+          ),
+        },
+        {
+          icon: <EventRepeat />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Serientermine im Plan'),
+          description: t(
+            'Im Plan legst du jetzt wiederkehrende Termine für eine Serie an: an festen Wochentagen oder alle paar Tage, mit bis zu fünf Folgen pro Termin, bis zum Staffel- oder Serienende. Einzelne Termine lässt du ausfallen oder änderst ihre Folge — die übrigen nummerieren sich von selbst neu. Auch Rewatches lassen sich so planen.'
+          ),
+          link: { label: t('Zum Planer'), path: '/calendar?mode=plan' },
+        },
+        {
+          icon: <Sort />,
+          color: currentTheme.primary,
+          title: t('Nach Erscheinungsjahr filtern'),
+          description: t(
+            'In deinen Bewertungen und auf Profilen filterst du jetzt nach Jahrzehnt oder einem eigenen Jahresbereich und sortierst nach Erscheinung — vom neuesten zum ältesten oder umgekehrt.'
+          ),
+        },
+      ],
+    },
     {
       version: t('September 2026 – Dein eigener Schau-Plan'),
       date: '2026-09-25',
