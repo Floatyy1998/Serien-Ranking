@@ -181,7 +181,7 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const subfields = (field: Element, code: string) =>
     [...field.getElementsByTagNameNS('*', 'subfield')]
       .filter((s) => s.getAttribute('code') === code)
-      .map((s) => s.textContent?.trim() ?? '')
+      .map((s) => s.textContent?.replace(/[\u0098\u009c]/g, '').trim() ?? '')
       .filter(Boolean);
   const first = (tags: string[], code: string) => {
     for (const field of fields) {
@@ -196,21 +196,20 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const mainTitle = trimMarc(first(['245'], 'a'));
   if (!mainTitle) return null;
   const partNumber = trimMarc(first(['245'], 'n'));
-  const authors = fields
-    .filter((f) => {
-      const tag = f.getAttribute('tag');
-      const roles = subfields(f, '4');
-      return tag === '100'
-        ? !roles.length || roles.includes('aut')
-        : tag === '700' && roles.includes('aut');
-    })
-    .map((f) => subfields(f, 'a')[0])
-    .filter((name): name is string => !!name)
-    .map((name) => name.split(/,\s*/).reverse().join(' ').trim());
+  const names = (pick: (tag: string | null, roles: string[]) => boolean) =>
+    fields
+      .filter((f) => pick(f.getAttribute('tag'), subfields(f, '4')))
+      .map((f) => subfields(f, 'a')[0])
+      .filter((name): name is string => !!name)
+      .map((name) => name.split(/,\s*/).reverse().join(' ').trim());
+  const writers = names((tag, roles) =>
+    tag === '100' ? !roles.length || roles.includes('aut') : tag === '700' && roles.includes('aut')
+  );
+  const authors = writers.length ? writers : names((tag) => tag === '100');
   const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
   const lang = first(['041'], 'a');
 
-  return stripUndefined({
+  return stripResult({
     id: sanitizeBookKey(`dnb-${isbn13}`),
     title: partNumber ? `${mainTitle} ${partNumber}` : mainTitle,
     subtitle: trimMarc(first(['245'], 'b')) ?? trimMarc(first(['245'], 'p')),
@@ -260,7 +259,7 @@ export function searchResultToBook(
 
 /** Fremdes Buch (Freundesprofil) als Vorschau-Treffer — ohne Stand, Bewertung und Notizen. */
 export function bookAsResult(book: Book): BookSearchResult {
-  return stripUndefined({
+  return stripResult({
     id: book.id,
     title: book.title,
     subtitle: book.subtitle,
@@ -286,6 +285,11 @@ export function stripUndefined<T extends object>(obj: T): T {
     out[key] = value;
   }
   return out as T;
+}
+
+/** stripUndefined für Treffer: authors bleibt auch leer ein Array, die Karten lesen authors[0]. */
+export function stripResult(result: BookSearchResult): BookSearchResult {
+  return { ...stripUndefined(result), authors: result.authors ?? [] };
 }
 
 const COVER_MIRROR = `${import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de'}/bookcover/id`;

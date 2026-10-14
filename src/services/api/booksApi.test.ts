@@ -17,6 +17,15 @@ const DNB_RECORD = `<?xml version="1.0" encoding="UTF-8"?>
   <datafield tag="700" ind1="1" ind2=" "><subfield code="a">Feldmann, Claudia</subfield><subfield code="4">trl</subfield></datafield>
 </record></recordData></record></records></searchRetrieveResponse>`;
 
+const MANHWA_RECORD = `<?xml version="1.0" encoding="UTF-8"?>
+<searchRetrieveResponse xmlns="http://www.loc.gov/zing/srw/"><numberOfRecords>1</numberOfRecords><records><record><recordData>
+<record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">
+  <datafield tag="100" ind1="1" ind2=" "><subfield code="a">Ug, Jag ga</subfield><subfield code="e">Künstler</subfield><subfield code="4">art</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">&#152;A&#156; returner's magic should be special</subfield><subfield code="n">1 / aus dem Koreanischen von Anna Herr</subfield><subfield code="c">Artwork: Wookjakga ; Original Story: Usonan</subfield></datafield>
+  <datafield tag="264" ind1="3" ind2="1"><subfield code="a">Hamburg</subfield><subfield code="b">Altraverse GmbH</subfield><subfield code="c">2021</subfield></datafield>
+  <datafield tag="300" ind1=" " ind2=" "><subfield code="a">282 Seiten</subfield></datafield>
+</record></recordData></record></records></searchRetrieveResponse>`;
+
 const route = (handlers: { google?: () => Response; ol?: unknown[]; dnb?: string }) =>
   vi.fn(async (url: string) => {
     if (url.includes('googleapis.com')) return handlers.google?.() ?? respond([]);
@@ -118,5 +127,45 @@ describe('searchBooks per ISBN', () => {
     expect(await searchBooks('9783328600930')).toEqual([]);
     vi.stubGlobal('fetch', route({ dnb: DNB_RECORD }));
     expect((await searchBooks('9783328600930'))[0]?.title).toBe('Artemis Fowl - die Rache');
+  });
+
+  it('nimmt ohne Autor-Rolle den Haupteintrag und entfernt MARC-Sortierzeichen', async () => {
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', 'test-key');
+    vi.stubGlobal(
+      'fetch',
+      route({ google: () => new Response('', { status: 503 }), dnb: MANHWA_RECORD })
+    );
+    const [hit] = await searchBooks('978-3-96358-885-3');
+    expect(hit).toMatchObject({
+      title: "A returner's magic should be special 1",
+      authors: ['Jag ga Ug'],
+      source: 'dnb',
+    });
+  });
+
+  it('behält authors als leeres Array, wenn die DNB gar keine Person kennt', async () => {
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
+    vi.stubGlobal(
+      'fetch',
+      route({ dnb: MANHWA_RECORD.replace(/<datafield tag="100"[\s\S]*?<\/datafield>/, '') })
+    );
+    const [hit] = await searchBooks('9783963588853');
+    expect(hit.authors).toEqual([]);
+  });
+
+  it('repariert gecachte Treffer ohne authors', async () => {
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
+    const fetchMock = route({});
+    vi.stubGlobal('fetch', fetchMock);
+    localStorage.setItem(
+      'bk:search:de:o:9783963588850',
+      JSON.stringify({
+        at: Date.now(),
+        value: [{ id: 'dnb-9783963588850', title: 'Ohne Autor', source: 'dnb' }],
+      })
+    );
+    const [hit] = await searchBooks('9783963588850');
+    expect(hit.authors).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

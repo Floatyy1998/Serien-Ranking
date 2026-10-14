@@ -6,7 +6,7 @@ import {
   mapGoogleDetails,
   mapGoogleVolume,
   mapOpenLibraryDoc,
-  stripUndefined,
+  stripResult,
   type GoogleVolume,
   type OpenLibraryDoc,
 } from '../../lib/books/bookSearchMapping';
@@ -132,7 +132,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
   if (!primary || !national || primary === national) return primary ? [primary] : [];
   const weakCover = !primary.cover || /\/b\/isbn\//.test(primary.cover);
   return [
-    stripUndefined({
+    stripResult({
       ...primary,
       cover: weakCover ? national.cover : primary.cover,
       coverFallback: weakCover ? primary.cover : (primary.coverFallback ?? national.cover),
@@ -197,7 +197,7 @@ export async function searchBooks(
     throw err;
   });
   if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
-  return results;
+  return results.map((r) => (r.authors ? r : { ...r, authors: [] }));
 }
 
 async function runSearch(trimmed: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
