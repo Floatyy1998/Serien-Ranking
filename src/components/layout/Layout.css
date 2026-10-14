@@ -20,7 +20,7 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   /* Prevent overscroll bounce on iOS */
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
   overscroll-behavior-x: none;
   /* Prevent pull-to-refresh */
   touch-action: pan-y;

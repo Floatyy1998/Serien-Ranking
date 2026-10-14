@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import { useSwipeAxisLock } from '../../hooks/ui/useSwipeAxisLock';
 import { hapticTap } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 import type { WeeklyEpisode } from '../../hooks/watch/useWeeklyEpisodes';
@@ -184,6 +185,8 @@ export const CalendarGrid = memo(
     const [dir, setDir] = useState(0);
     // Beim Wochenwechsel per Swipe: auf Mo (vorwärts) bzw. So (rückwärts) landen.
     const pendingEdge = useRef<null | 'start' | 'end'>(null);
+    const swipeAreaRef = useRef<HTMLDivElement>(null);
+    useSwipeAxisLock(swipeAreaRef, !isDesktop);
 
     useEffect(() => {
       if (pendingEdge.current === 'end') setDayIdx(0);
@@ -244,7 +247,7 @@ export const CalendarGrid = memo(
     const currentGroups = current?.[1] ?? [];
 
     return (
-      <div className="cal-mobile-view">
+      <div className="cal-mobile-view" ref={swipeAreaRef}>
         {/* Tages-Selector */}
         <div className="cal-day-selector" role="tablist" aria-label={t('Tag wählen')}>
           {entries.map(([k, g], i) => {
@@ -300,6 +303,7 @@ export const CalendarGrid = memo(
             dragElastic={0.18}
             dragSnapToOrigin
             onDragEnd={(_, info) => {
+              if (Math.abs(info.offset.x) < Math.abs(info.offset.y)) return;
               if (info.offset.x < -70) goToDay(clampedIdx + 1);
               else if (info.offset.x > 70) goToDay(clampedIdx - 1);
             }}

@@ -5,9 +5,10 @@ import List from '@mui/icons-material/List';
 import Repeat from '@mui/icons-material/Repeat';
 import { Tooltip } from '@mui/material';
 import { motion, type PanInfo } from 'framer-motion';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { useNavigate } from 'react-router-dom';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
 import {
   getImplicitRewatchRound,
   hasActiveRewatch,
@@ -111,6 +112,7 @@ export function SeasonsSection({
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const threshold = 50;
       if (Math.abs(info.offset.x) < threshold || Math.abs(info.velocity.x) < 100) return;
+      if (Math.abs(info.offset.x) < Math.abs(info.offset.y)) return;
 
       if (info.offset.x < 0 && selectedSeasonIndex < series.seasons.length - 1) {
         setSelectedSeasonIndex(selectedSeasonIndex + 1);
@@ -120,6 +122,8 @@ export function SeasonsSection({
     },
     [selectedSeasonIndex, series.seasons.length, setSelectedSeasonIndex]
   );
+  const swipeAreaRef = useRef<HTMLDivElement>(null);
+  useSwipeAxisLock(swipeAreaRef, !!selectedSeason);
 
   if (!selectedSeason) return null;
 
@@ -249,6 +253,7 @@ export function SeasonsSection({
 
       {/* Selected Season Content */}
       <div
+        ref={swipeAreaRef}
         style={{
           background: currentTheme.background.paper,
           border: '1px solid rgba(255,255,255,0.08)',

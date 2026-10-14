@@ -6,6 +6,7 @@ import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf } from '../../../hooks/books/useBookShelf';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
+import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
 import { sanitizeBookKey } from '../../../lib/books/bookIdentity';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
@@ -267,6 +268,8 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
   const slide = featured[index % Math.max(1, featured.length)];
   const current = slide?.result;
   const canSwipe = featured.length > 1;
+  const heroRef = useRef<HTMLElement>(null);
+  useSwipeAxisLock(heroRef, canSwipe);
 
   const step = (delta: 1 | -1) => {
     setDir(delta);
@@ -289,6 +292,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
 
   return (
     <section
+      ref={heroRef}
       className="dsc-hero"
       onPointerEnter={() => setPaused(true)}
       onPointerLeave={() => setPaused(false)}
