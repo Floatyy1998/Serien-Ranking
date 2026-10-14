@@ -368,6 +368,31 @@ export const BookDetailMangaPreview = () => (
   </BooksPreviewShell>
 );
 
+/** Leerer Google-Eintrag eines Manga-Bands: Verlag kommt erst aus den Details, kein Cover, kein Text. */
+const BARE_MANGA_VOLUME: Book = {
+  id: 'gb-BcvY0AEACAAJ',
+  title: 'Bride of the Death God',
+  subtitle: 'vom Glück noch 7 Tage leben zu dürfen',
+  authors: ['Hako Ichiiro'],
+  googleId: 'BcvY0AEACAAJ',
+  language: 'de',
+  publishedYear: 2024,
+  source: 'google',
+  status: 'reading',
+  currentPage: 0,
+  addedAt: '2026-10-14T12:00:00.000Z',
+};
+
+const BARE_MANGA_VOLUME_LIST = [BARE_MANGA_VOLUME];
+
+export const BookDetailBareMangaPreview = () => (
+  <BooksPreviewShell extra={BARE_MANGA_VOLUME_LIST}>
+    <Routes location={`/dev/ui-preview/books/${BARE_MANGA_VOLUME.id}`}>
+      <Route path="books/:bookId" element={<BookDetailPage />} />
+    </Routes>
+  </BooksPreviewShell>
+);
+
 export const BookSearchPreview = () => (
   <BooksPreviewShell>
     <BookSearchPage />

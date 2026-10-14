@@ -130,16 +130,35 @@ export const BookDetailPage = () => {
   );
   const { links, parts, loading: linksLoading } = useBookLinks(view?.title, view?.authors?.[0]);
   const adaptations = useAdaptationMeta(links?.adaptations ?? []);
+  const mangaItems = useMemo(
+    () =>
+      view
+        ? [
+            {
+              ...view,
+              publisher: view.publisher ?? details?.publisher,
+              categories: view.categories?.length ? view.categories : details?.categories,
+            },
+          ]
+        : [],
+    [view, details]
+  );
+  const { links: mangaLinks } = useMangaVolumes(mangaItems, { deep: true });
+  const mangaLink = view ? mangaLinks.get(view.id) : undefined;
+  const coverFallback =
+    (view && 'coverFallback' in view ? view.coverFallback : undefined) ??
+    mangaLink?.manga.coverImage.large ??
+    undefined;
+  const ownDescription = details?.description ?? preview?.description;
+  const seriesDescription =
+    !ownDescription && !detailsLoading ? (mangaLink?.manga.description ?? undefined) : undefined;
   const description = useBookDescription(
-    view?.id,
-    details?.description ?? preview?.description,
+    seriesDescription ? `manga:${mangaLink?.manga.id}` : view?.id,
+    ownDescription ?? seriesDescription,
     detailsLoading,
     links,
     linksLoading
   );
-  const mangaItems = useMemo(() => (view ? [view] : []), [view]);
-  const { links: mangaLinks } = useMangaVolumes(mangaItems, { deep: true });
-  const mangaLink = view ? mangaLinks.get(view.id) : undefined;
   // Reihe soll als Bücher laufen: fremde Bände zeigen wieder „In deine Bücher".
   const mangaOffer = mangaLink && !mangaLink.asBooks ? mangaLink : undefined;
   const uid = useAuth()?.user?.uid;
@@ -317,10 +336,10 @@ export const BookDetailPage = () => {
   return (
     <div className="bd-page" style={{ background: currentTheme.background.default }}>
       <div className="bd-backdrop" aria-hidden>
-        {view.cover && (
+        {(view.cover || coverFallback) && (
           <div
             className="bd-backdrop-img"
-            style={{ backgroundImage: `url(${coverAtSize(view.cover, 'M')})` }}
+            style={{ backgroundImage: `url(${coverAtSize(view.cover || coverFallback, 'M')})` }}
           />
         )}
         <div
@@ -337,12 +356,7 @@ export const BookDetailPage = () => {
 
       <header className="bd-hero">
         <div className="bd-hero-cover">
-          <BookCover
-            book={view}
-            fallbackSrc={'coverFallback' in view ? view.coverFallback : undefined}
-            depth
-            eager
-          />
+          <BookCover book={view} fallbackSrc={coverFallback} depth eager />
         </div>
         <div className="bd-hero-info">
           {seriesName && (
@@ -579,6 +593,11 @@ export const BookDetailPage = () => {
                   {description.source === 'wikipedia' && (
                     <div className="bd-source-note" style={{ color: currentTheme.text.muted }}>
                       {t('Quelle: Wikipedia')}
+                    </div>
+                  )}
+                  {seriesDescription && (
+                    <div className="bd-source-note" style={{ color: currentTheme.text.muted }}>
+                      {t('Quelle: AniList, über die ganze Reihe')}
                     </div>
                   )}
                 </>

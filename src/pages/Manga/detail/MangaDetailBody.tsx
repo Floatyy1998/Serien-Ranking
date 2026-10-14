@@ -9,7 +9,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { MangaDexChapterInfo } from '../../../services/api/mangaUpdatesService';
 import { dateLocale, t } from '../../../services/i18n';
@@ -20,6 +20,8 @@ import type { MangaHeroData } from './mangaDetailData';
 import { MangaInfoSections } from './MangaInfoSections';
 import { Section, SectionTitle } from './Section';
 import { VolumeShelf } from './VolumeShelf';
+import { BookSwitchPanel } from './BookSwitchPanel';
+import { ManageConfirm } from './ManageConfirm';
 
 const STATUS_OPTIONS: { value: Manga['readStatus']; label: string }[] = [
   { value: 'reading', label: t('Lese ich') },
@@ -64,36 +66,6 @@ const formatDay = (iso?: string) =>
       })
     : '';
 
-/** Rückfrage in der Verwaltung: eine volle Zeile mit Frage links, Antworten rechts. */
-const ManageConfirm = ({
-  question,
-  tone,
-  onConfirm,
-  onCancel,
-}: {
-  question: string;
-  tone: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) => (
-  <div
-    className="md-confirm md-manage-wide"
-    role="group"
-    aria-label={question}
-    style={{ '--md-confirm-tone': tone } as CSSProperties}
-  >
-    <span className="md-confirm-text">{question}</span>
-    <div className="md-confirm-actions">
-      <button type="button" className="md-confirm-btn" onClick={onCancel}>
-        {t('Nein')}
-      </button>
-      <button type="button" className="md-confirm-btn md-confirm-btn--go" onClick={onConfirm}>
-        {t('Ja')}
-      </button>
-    </div>
-  </div>
-);
-
 interface MangaDetailBodyProps {
   manga: Manga;
   heroData: MangaHeroData;
@@ -126,6 +98,8 @@ interface MangaDetailBodyProps {
   onDelete: () => void;
   /** Nur für Reihen mit Bänden: zurück zu den Büchern. */
   onMoveToBooks?: () => void;
+  /** Umzug zu den Büchern läuft (Band 1 wird gesucht). */
+  movingToBooks?: boolean;
 }
 
 export const MangaDetailBody = ({
@@ -158,6 +132,7 @@ export const MangaDetailBody = ({
   onToggleHide,
   onDelete,
   onMoveToBooks,
+  movingToBooks = false,
 }: MangaDetailBodyProps) => {
   // Kapitel, dessen *Rückschritt* noch bestätigt werden muss.
   const [confirmChapter, setConfirmChapter] = useState<number | null>(null);
@@ -188,6 +163,8 @@ export const MangaDetailBody = ({
     .sort((a, b) => new Date(a.iso || 0).getTime() - new Date(b.iso || 0).getTime())
     .map((step) => ({ label: step.label, value: formatDay(step.iso) }));
 
+  const showBookSwitch = !!onMoveToBooks && (byVolume || !!manga.fromBooks);
+
   const showReleases =
     !byVolume &&
     !!chapterInfo &&
@@ -203,6 +180,15 @@ export const MangaDetailBody = ({
             total={volumeTotal}
             currentTheme={currentTheme}
             onChange={onVolumeChange}
+          />
+        )}
+
+        {showBookSwitch && onMoveToBooks && (
+          <BookSwitchPanel
+            manga={manga}
+            currentTheme={currentTheme}
+            busy={movingToBooks}
+            onMoveToBooks={onMoveToBooks}
           />
         )}
 
@@ -578,6 +564,7 @@ export const MangaDetailBody = ({
           <SectionTitle>{t('Verwaltung')}</SectionTitle>
           <div className="md-manage">
             {onMoveToBooks &&
+              !showBookSwitch &&
               (confirmToBooks ? (
                 <ManageConfirm
                   question={t(

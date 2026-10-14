@@ -19,6 +19,7 @@ const dict: Record<string, string> = {
   'Wird übersetzt …': 'Translating …',
   'Mehr anzeigen': 'Show more',
   'Quelle: Wikipedia': 'Source: Wikipedia',
+  'Quelle: AniList, über die ganze Reihe': 'Source: AniList, about the whole series',
   'Lieblingszitate, Gedanken, wer es empfohlen hat …':
     'Favorite quotes, thoughts, who recommended it …',
   'Das sieht nicht nach einem Goodreads- oder StoryGraph-Export aus.':

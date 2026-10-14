@@ -8,12 +8,13 @@ interface SectionProps {
   id?: string;
   /** Reihenfolge im einspaltigen Mobil-Layout (Spalten-Wrapper sind dort display: contents). */
   order?: number;
+  style?: React.CSSProperties;
 }
 
-export const Section = ({ children, delay = 0, className, id, order }: SectionProps) => (
+export const Section = ({ children, delay = 0, className, id, order, style }: SectionProps) => (
   <motion.section
     id={id}
-    style={order !== undefined ? { order } : undefined}
+    style={order !== undefined ? { ...style, order } : style}
     className={className ? `manga-detail-section ${className}` : 'manga-detail-section'}
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}

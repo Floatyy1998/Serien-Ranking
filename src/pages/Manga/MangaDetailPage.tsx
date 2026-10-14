@@ -29,7 +29,9 @@ import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { saveReadProgress } from './saveReadProgress';
 import { moveMangaToBooks } from './mangaBookSwitch';
-import { searchPath } from '../Books/helpers';
+import { bookPath, searchPath } from '../Books/helpers';
+import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
+import { findVolumeBook } from '../../services/books/volumeBook';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 
@@ -61,6 +63,8 @@ export const MangaDetailPage = () => {
     [mangaList, hiddenMangaList]
   );
   const [adding, setAdding] = useState(false);
+  const [movingToBooks, setMovingToBooks] = useState(false);
+  const ownedFor = useOwnedBooks();
   // Band aus der ISBN-Suche (?band=N) — bietet „Bis Band N gelesen" an.
   const scannedVolume = Number(new URLSearchParams(location.search ?? '').get('band')) || 0;
   const [hintDismissed, setHintDismissed] = useState(false);
@@ -147,10 +151,18 @@ export const MangaDetailPage = () => {
   }, [user, manga, unit, scannedVolume, liveVolumes, updateField]);
 
   const handleMoveToBooks = useCallback(async () => {
-    if (!user || !manga) return;
+    if (!user || !manga || movingToBooks) return;
+    setMovingToBooks(true);
     try {
+      const firstVolume = manga.fromBooks ? null : await findVolumeBook(manga, 1);
       const books = await moveMangaToBooks(user.uid, manga, new Set(allBookList.map((b) => b.id)));
-      if (books.length === 1) {
+      if (books.length === 0 && firstVolume) {
+        const owned = ownedFor(firstVolume);
+        navigate(bookPath(owned?.id ?? firstVolume.id), {
+          replace: true,
+          state: owned ? undefined : { result: firstVolume },
+        });
+      } else if (books.length === 1) {
         showToast(t('„{title}" steht wieder bei deinen Büchern', { title: books[0].title }), 2600);
         navigate(`/books/${encodeURIComponent(books[0].id)}`, { replace: true });
       } else if (books.length > 1) {
@@ -162,8 +174,10 @@ export const MangaDetailPage = () => {
       }
     } catch {
       showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+    } finally {
+      setMovingToBooks(false);
     }
-  }, [user, manga, allBookList, navigate]);
+  }, [user, manga, movingToBooks, allBookList, ownedFor, navigate]);
 
   const handleStatusChange = useCallback(
     async (status: Manga['readStatus']) => {
@@ -414,6 +428,7 @@ export const MangaDetailPage = () => {
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
         onDelete={handleDelete}
         onMoveToBooks={hasVolumes ? () => void handleMoveToBooks() : undefined}
+        movingToBooks={movingToBooks}
       />
     </PageLayout>
   );

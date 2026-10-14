@@ -1081,6 +1081,96 @@
   outline-offset: 2px;
 }
 
+/* Zurück zu den Büchern (Gegenstück zur Manga-Karte auf der Buchseite) */
+
+.mobile-app .md-book-switch-title,
+.md-book-switch-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.md-book-switch-body {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.md-book-switch-body img {
+  width: 52px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.md-book-switch-name {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.md-book-switch-sub {
+  margin: 2px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.md-book-switch-text {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.md-book-switch-actions {
+  margin-top: 14px;
+}
+
+.mobile-app .md-book-switch-cta,
+.md-book-switch-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.md-book-switch-cta:active {
+  opacity: 0.75;
+}
+
+.md-book-switch-cta:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .md-book-switch-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .md-book-switch-actions {
+    margin-top: 0;
+  }
+}
+
 /* Kapitel-Eingabe im Hero */
 
 .manga-hero-chapter-input {

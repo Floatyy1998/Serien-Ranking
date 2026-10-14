@@ -449,6 +449,11 @@ const dict: Record<string, string> = {
   '{n} Bände stehen wieder bei deinen Büchern': '{n} tomos vuelven a estar en tus libros',
   'Such dir die Bände aus, die du als Buch führen willst':
     'Elige los tomos que quieres llevar como libros',
+  'Gedruckte Bände': 'Tomos impresos',
+  '1 Band aus deinen Büchern': '1 tomo de tus libros',
+  '{n} Bände aus deinen Büchern': '{n} tomos de tus libros',
+  'Bei deinen Büchern führst du jeden Band einzeln, mit Seiten und Lesedatum.':
+    'En tus libros llevas cada tomo por separado, con páginas y fecha de lectura.',
 };
 
 export default dict;

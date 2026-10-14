@@ -118,6 +118,25 @@ describe('MangaDetailBody', () => {
     expect(onMoveToBooks).toHaveBeenCalledTimes(1);
   });
 
+  it('zeigt Manga aus den Büchern oben die Karte „Gedruckte Bände" statt des Knopfs in der Verwaltung', () => {
+    const onMoveToBooks = vi.fn();
+    const book = { id: 'b1', title: 'Bride of the Death God 3' } as NonNullable<
+      Manga['fromBooks']
+    >[string];
+    render(
+      <MangaDetailBody
+        {...baseProps({ manga: makeManga({ fromBooks: { b1: book } }), onMoveToBooks })}
+      />
+    );
+    expect(screen.getByText('Gedruckte Bände')).toBeInTheDocument();
+    expect(screen.getByText('1 Band aus deinen Büchern')).toBeInTheDocument();
+    expect(screen.getAllByText('Als Buch führen')).toHaveLength(1);
+    fireEvent.click(screen.getByText('Als Buch führen'));
+    expect(onMoveToBooks).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Ja'));
+    expect(onMoveToBooks).toHaveBeenCalledTimes(1);
+  });
+
   it('bietet „Als Buch führen" nur an, wenn es Bücher dazu gibt', () => {
     render(<MangaDetailBody {...baseProps()} />);
     expect(screen.queryByText('Als Buch führen')).not.toBeInTheDocument();
