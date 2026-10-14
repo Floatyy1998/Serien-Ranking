@@ -26,6 +26,7 @@ import {
   type AddBookOptions,
 } from '../../../services/books/bookService';
 import { resolveMangaVolumes } from '../../../services/books/mangaVolumes';
+import { trackBookAdded, trackBookDeleted } from '../../../services/firebase/analytics';
 import { t } from '../../../services/i18n';
 import type { Book, BookSearchResult, BookStatus } from '../../../types/Book';
 import { useAddManga } from '../../Manga/useAddManga';
@@ -106,6 +107,7 @@ export function useBookActions() {
       if (await addVolumeAsManga(result)) return null;
       try {
         const book = await addBook(uid, result, status, options);
+        trackBookAdded(book.id, book.title, status);
         logBook(uid, book, 'book_added');
         hapticSuccess();
         showToast(t('Zu deinen Büchern hinzugefügt'));
@@ -204,7 +206,10 @@ export function useBookActions() {
       onRemoved?.();
       showUndoToast(t('„{title}" entfernt', { title: book.title }), {
         onUndo: () => void setBookHidden(uid, book.id, book.hidden ?? false),
-        onCommit: () => void removeBook(uid, book.id),
+        onCommit: () => {
+          void removeBook(uid, book.id);
+          trackBookDeleted(book.id, book.title);
+        },
       });
     },
     [uid]

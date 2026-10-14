@@ -35,6 +35,7 @@ import { findVolumeBook } from '../../services/books/volumeBook';
 import { firstSourceBook } from '../../lib/books/mangaBooks';
 import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { dbRef, paths, userPath } from '../../services/db/ref';
+import { trackMangaDeleted } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
 
 const logMangaActivity = (uid: string, manga: Manga, type: 'manga_rated', rating?: number) =>
@@ -337,11 +338,13 @@ export const MangaDetailPage = () => {
     };
   }, []);
 
+  const mangaTitle = manga?.title ?? '';
   const handleDelete = useCallback(async () => {
     if (!user) return;
     await dbRef(paths.mangaItem(user.uid, anilistId)).remove();
+    trackMangaDeleted(String(anilistId), mangaTitle);
     navigate('/manga');
-  }, [user, anilistId, navigate]);
+  }, [user, anilistId, mangaTitle, navigate]);
 
   const heroData = useMemo(
     () => buildHeroData(anilistId, manga, anilistData),

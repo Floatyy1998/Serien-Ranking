@@ -5,6 +5,7 @@
  * - page_view (wann wer auf der Seite war)
  * - login / logout / sign_up
  * - series_added / series_deleted / movie_added / movie_deleted
+ * - manga_added / manga_deleted / book_added / book_deleted
  * - episode_watched / episode_unwatched
  * - rating_saved / rating_deleted
  */
@@ -23,6 +24,10 @@ type AllowedAnalyticsEvent =
   | 'series_deleted'
   | 'movie_added'
   | 'movie_deleted'
+  | 'manga_added'
+  | 'manga_deleted'
+  | 'book_added'
+  | 'book_deleted'
   | 'episode_watched'
   | 'episode_unwatched'
   | 'rating_saved'
@@ -45,6 +50,10 @@ const ALLOWED_EVENTS = new Set<AllowedAnalyticsEvent>([
   'series_deleted',
   'movie_added',
   'movie_deleted',
+  'manga_added',
+  'manga_deleted',
+  'book_added',
+  'book_deleted',
   'episode_watched',
   'episode_unwatched',
   'rating_saved',

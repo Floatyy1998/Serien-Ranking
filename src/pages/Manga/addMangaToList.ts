@@ -6,6 +6,7 @@ import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
 import { dbRef, paths } from '../../services/db/ref';
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
+import { trackMangaAdded } from '../../services/firebase/analytics';
 
 /**
  * Zentrale Funktion zum Hinzufügen eines Manga zur Liste.
@@ -84,6 +85,11 @@ export async function addMangaToList(
   }
 
   await dbRef(paths.mangaItem(userId, result.id)).set(manga);
+  trackMangaAdded(
+    String(result.id),
+    String(manga.title),
+    options.fromBooks?.length ? 'books' : options.byVolume ? 'isbn' : 'app'
+  );
   // Wer die Reihe wieder als Manga führt, hebt „als Bücher führen" auf.
   void dbRef(`${paths.mangaAsBooks(userId)}/${result.id}`)
     .remove()

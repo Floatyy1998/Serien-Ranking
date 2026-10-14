@@ -13,6 +13,14 @@ import {
 } from './parts/ActivityEventConfig';
 import { ActivityFeed } from './parts/ActivityFeedItem';
 
+const LIBRARY_ADDED = new Set(['series_added', 'movie_added', 'manga_added', 'book_added']);
+const LIBRARY_DELETED = new Set([
+  'series_deleted',
+  'movie_deleted',
+  'manga_deleted',
+  'book_deleted',
+]);
+
 interface ActivityTabProps {
   data: ReturnType<typeof useAdminDashboardData>;
   theme: ReturnType<typeof useTheme>['currentTheme'];
@@ -109,16 +117,16 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
   const stats = useMemo(() => {
     const appEpisodes = rawEvents.filter((e) => e.e === 'episode_watched').length;
     const extEpisodes = rawEvents.filter((e) => e.e === 'ext_episode_marked').length;
-    const seriesAdded = rawEvents.filter((e) => e.e === 'series_added').length;
-    const seriesDeleted = rawEvents.filter((e) => e.e === 'series_deleted').length;
+    const libraryAdded = rawEvents.filter((e) => LIBRARY_ADDED.has(e.e)).length;
+    const libraryDeleted = rawEvents.filter((e) => LIBRARY_DELETED.has(e.e)).length;
     const ratingsGiven = rawEvents.filter((e) => e.e === 'rating_saved').length;
     const uniqueUsers = new Set(rawEvents.map((e) => e.uid)).size;
     const extSessions = rawEvents.filter((e) => e.e === 'ext_watch_session_started').length;
     return {
       appEpisodes,
       extEpisodes,
-      seriesAdded,
-      seriesDeleted,
+      libraryAdded,
+      libraryDeleted,
       ratingsGiven,
       uniqueUsers,
       extSessions,
@@ -238,8 +246,8 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
           { label: 'App Episoden', value: stats.appEpisodes, color: '#0984e3' },
           { label: 'Ext Episoden', value: stats.extEpisodes, color: '#e17055' },
           { label: 'Ext Sessions', value: stats.extSessions, color: '#00b894' },
-          { label: 'Hinzugefuegt', value: stats.seriesAdded, color: '#00b894' },
-          { label: 'Geloescht', value: stats.seriesDeleted, color: '#ff6b6b' },
+          { label: 'Hinzugefuegt', value: stats.libraryAdded, color: '#00b894' },
+          { label: 'Geloescht', value: stats.libraryDeleted, color: '#ff6b6b' },
           { label: 'Ratings', value: stats.ratingsGiven, color: '#fdcb6e' },
           { label: 'User aktiv', value: stats.uniqueUsers, color: '#7c6ef0' },
         ].map((s, i) => (

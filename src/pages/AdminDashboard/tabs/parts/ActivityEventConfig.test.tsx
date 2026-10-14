@@ -20,6 +20,17 @@ describe('ActivityEventConfig', () => {
     );
   });
 
+  it('zeigt hinzugefügte und gelöschte Manga und Bücher in der Bibliothek', () => {
+    expect(EVENT_CONFIG['manga_added'].getDetail({ manga_name: 'Frieren' })).toBe('Frieren');
+    expect(EVENT_CONFIG['book_deleted'].getDetail({ book_title: 'Der Schwarm' })).toBe(
+      'Der Schwarm'
+    );
+    const library = FILTERS.find((f) => f.id === 'library')?.events ?? [];
+    expect(library).toEqual(
+      expect.arrayContaining(['manga_added', 'manga_deleted', 'book_added', 'book_deleted'])
+    );
+  });
+
   it('getSourceBadge distinguishes extension, app and untagged events', () => {
     const ext: RawEvent = { e: 'ext_episode_marked', p: { platform: 'netflix' }, t: 0, uid: 'x' };
     expect(getSourceBadge(ext)).toEqual({ label: 'Extension · netflix', color: '#e17055' });

@@ -50,6 +50,16 @@ export const trackMovieAdded = (id: string, name: string, source: string) =>
 export const trackMovieDeleted = (id: string, name: string) =>
   analyticsService.track('movie_deleted', { movie_id: id, movie_name: name });
 
+// Manga & Bücher
+export const trackMangaAdded = (id: string, name: string, source: string) =>
+  analyticsService.track('manga_added', { manga_id: id, manga_name: name, source });
+export const trackMangaDeleted = (id: string, name: string) =>
+  analyticsService.track('manga_deleted', { manga_id: id, manga_name: name });
+export const trackBookAdded = (id: string, title: string, source: string) =>
+  analyticsService.track('book_added', { book_id: id, book_title: title, source });
+export const trackBookDeleted = (id: string, title: string) =>
+  analyticsService.track('book_deleted', { book_id: id, book_title: title });
+
 // Episodes
 export const trackEpisodeWatched = (
   seriesName: string,
