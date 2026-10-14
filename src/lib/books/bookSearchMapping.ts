@@ -46,6 +46,8 @@ export interface OpenLibraryDoc {
   subject?: string[];
   publisher?: string[];
   readinglog_count?: number;
+  ratings_average?: number;
+  ratings_count?: number;
   edition_count?: number;
   editions?: { docs?: OpenLibraryEdition[] };
 }
@@ -162,6 +164,8 @@ export function mapOpenLibraryDoc(doc: OpenLibraryDoc): BookSearchResult | null 
     olWorkId: workId,
     source: 'openlibrary',
     popularity: (doc.readinglog_count ?? 0) + (doc.edition_count ?? 0) * 5,
+    avgRating: doc.ratings_average ? Math.round(doc.ratings_average * 10) / 10 : undefined,
+    ratingCount: doc.ratings_count || undefined,
   };
 }
 

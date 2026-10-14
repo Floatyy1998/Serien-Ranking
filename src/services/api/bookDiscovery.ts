@@ -1,7 +1,7 @@
 import { bookMatchKey } from '../../lib/books/bookIdentity';
 import { mapOpenLibraryDoc, type OpenLibraryDoc } from '../../lib/books/bookSearchMapping';
 import type { BookSearchResult } from '../../types/Book';
-import { cached } from '../books/bookCache';
+import { cached, cacheGet, cacheSet } from '../books/bookCache';
 import { loadStaticShelf } from './bookStatic';
 import { appLocale } from '../i18n';
 
@@ -18,6 +18,8 @@ const FIELDS = [
   'language',
   'publisher',
   'readinglog_count',
+  'ratings_average',
+  'ratings_count',
   'edition_count',
   'editions',
   'editions.key',
@@ -49,24 +51,125 @@ export type ShelfId =
   | 'horror'
   | 'nonfiction';
 
+/** popular = meistgelesen, top = bestbewertet, gems = stark bewertet abseits der Bestseller, recent = letzte Jahre. */
+export type ShelfSort = 'popular' | 'top' | 'gems' | 'recent';
+
+export interface ShelfOptions {
+  sort?: ShelfSort;
+  theme?: string;
+  limit?: number;
+}
+
 const SHELF_QUERY: Record<ShelfId, (year: number) => string> = {
   new: (year) => `first_publish_year:[${year - 3} TO ${year}]`,
   fantasy: () => 'subject:fantasy',
   thriller: () => 'subject:thriller',
   romance: () => 'subject:romance',
-  scifi: () => 'subject:science_fiction',
+  scifi: () => 'subject:"science fiction"',
   classics: () => 'subject:classics',
   ya: () => 'subject:young_adult_fiction',
-  horror: () => 'subject:horror',
-  nonfiction: () => 'subject:nonfiction',
+  horror: () =>
+    '(subject:"horror fiction" OR subject:"fiction, horror" OR subject:"horror tales" OR subject:"horror stories")',
+  nonfiction: () => 'subject:nonfiction -subject:fiction',
+};
+
+const SORT_QUERY: Record<ShelfSort, { filter: (year: number) => string; sort: string }> = {
+  popular: { filter: () => '', sort: 'readinglog' },
+  top: { filter: () => ' ratings_count:[15 TO *]', sort: 'rating' },
+  gems: { filter: () => ' readinglog_count:[15 TO 800] ratings_count:[4 TO *]', sort: 'rating' },
+  recent: { filter: (year) => ` first_publish_year:[${year - 6} TO ${year}]`, sort: 'readinglog' },
+};
+
+/** Sortierungen je Regal — bei „Neu" sind Bewertungen noch zu dünn für „top". */
+export const SHELF_SORTS: Record<ShelfId, ShelfSort[]> = {
+  new: ['popular', 'gems'],
+  fantasy: ['top', 'gems', 'recent', 'popular'],
+  thriller: ['top', 'gems', 'recent', 'popular'],
+  romance: ['top', 'gems', 'recent', 'popular'],
+  scifi: ['top', 'gems', 'recent', 'popular'],
+  classics: ['top', 'gems', 'popular'],
+  ya: ['top', 'gems', 'recent', 'popular'],
+  horror: ['top', 'gems', 'recent', 'popular'],
+  nonfiction: ['top', 'gems', 'recent', 'popular'],
+};
+
+/** Untergenres als Open-Library-Schlagworte — ersetzen die Genre-Abfrage. */
+export const SHELF_THEMES: Partial<Record<ShelfId, Record<string, string>>> = {
+  fantasy: {
+    epic: 'subject:"fantasy, epic"',
+    romantasy: 'subject:fantasy subject:romance',
+    dragons: 'subject:fantasy subject:dragons',
+    urban: '(subject:"fantasy, urban" OR subject:"urban fantasy")',
+    historical: 'subject:"fantasy, historical"',
+  },
+  thriller: {
+    psycho:
+      '(subject:"thrillers, psychological" OR subject:"psychological thriller" OR (subject:suspense subject:"psychological fiction"))',
+    police: 'subject:"police procedural"',
+    whodunit: 'subject:"detective and mystery stories" subject:"private investigators"',
+    serial: 'subject:"serial murderers"',
+    spy: 'subject:"spy stories"',
+    legal: 'subject:"legal stories"',
+  },
+  romance: {
+    contemporary: 'subject:"romance, contemporary"',
+    historical: 'subject:"romance, historical"',
+    romantasy: 'subject:romance subject:fantasy',
+    paranormal: 'subject:"romance, paranormal"',
+    suspense: 'subject:"romance, suspense"',
+    queer: 'subject:romance (subject:lgbtq OR subject:"gay men" OR subject:lesbians)',
+  },
+  scifi: {
+    space: '(subject:"space opera" OR subject:"science fiction, space opera")',
+    dystopia: '(subject:dystopias OR subject:dystopian)',
+    aliens: 'subject:"life on other planets"',
+    time: 'subject:"time travel"',
+    ai: 'subject:"science fiction" subject:"artificial intelligence"',
+    apocalypse:
+      'subject:"science fiction" (subject:"end of the world" OR subject:"science fiction, apocalyptic")',
+    hard: 'subject:"science fiction, hard science fiction"',
+  },
+  ya: {
+    fantasy: 'subject:young_adult_fiction subject:fantasy',
+    romance: 'subject:young_adult_fiction subject:romance',
+    mystery: 'subject:young_adult_fiction subject:mystery',
+    coming: 'subject:young_adult_fiction subject:"coming of age"',
+  },
+  classics: {
+    german: 'subject:classics subject:"german literature"',
+    english: 'subject:classics subject:"english literature"',
+    american: 'subject:classics subject:"american literature"',
+    french: 'subject:classics subject:"french literature"',
+    russian: 'subject:classics subject:"russian literature"',
+  },
+  horror: {
+    ghosts: 'subject:horror subject:ghosts',
+    vampires: 'subject:horror subject:vampires',
+    gothic: '(subject:"gothic fiction" OR (subject:horror subject:gothic))',
+    occult: 'subject:horror (subject:demonology OR subject:occult OR subject:witchcraft)',
+    short: 'subject:horror subject:"short stories"',
+  },
+  nonfiction: {
+    biography: 'subject:nonfiction subject:biography -subject:fiction',
+    history: 'subject:nonfiction subject:history -subject:fiction',
+    science:
+      '(subject:"popular science" OR subject:"science, popular works" OR (subject:nonfiction subject:physics) OR (subject:nonfiction subject:biology))',
+    psychology: 'subject:nonfiction subject:psychology -subject:fiction',
+    philosophy: 'subject:nonfiction subject:philosophy -subject:fiction',
+    selfhelp: 'subject:"self-help" -subject:fiction',
+  },
 };
 
 const memory = new Map<string, Promise<BookSearchResult[]>>();
 
-async function olSearch(q: string, limit: number): Promise<BookSearchResult[]> {
+async function olSearch(
+  q: string,
+  limit: number,
+  sort = 'readinglog'
+): Promise<BookSearchResult[]> {
   const params = new URLSearchParams({
     q,
-    sort: 'readinglog',
+    sort,
     limit: String(limit),
     lang: appLocale,
     fields: FIELDS,
@@ -98,73 +201,67 @@ function cachedSearch(key: string, load: () => Promise<BookSearchResult[]>) {
 
 const languageFilter = () => (OL_LANGUAGE[appLocale] ? ` language:${OL_LANGUAGE[appLocale]}` : '');
 
-/** Regal fürs Stöbern: beliebteste Ausgaben in der App-Sprache. */
-export function fetchShelf(id: ShelfId, limit = 24): Promise<BookSearchResult[]> {
+const SHELF_CACHE = 'shelf';
+const SHELF_TTL = 86_400_000;
+const SHELF_CACHE_ENTRIES = 40;
+
+const knownTheme = (id: ShelfId, theme: string | undefined) =>
+  theme && SHELF_THEMES[id]?.[theme] ? theme : undefined;
+
+const shelfKey = (id: ShelfId, { sort = 'popular', theme, limit = 24 }: ShelfOptions) =>
+  `${appLocale}:${id}:${sort}:${knownTheme(id, theme) ?? ''}:${limit}`;
+
+/** Nur Kartenfelder, damit viele Regale zusammen nur ein paar Dutzend KB belegen. */
+const compactResult = (r: BookSearchResult): BookSearchResult => ({
+  id: r.id,
+  title: r.title,
+  authors: r.authors.slice(0, 1),
+  cover: r.cover,
+  pageCount: r.pageCount,
+  publishedYear: r.publishedYear,
+  isbn13: r.isbn13,
+  olWorkId: r.olWorkId,
+  language: r.language,
+  source: r.source,
+  popularity: r.popularity,
+  avgRating: r.avgRating,
+  ratingCount: r.ratingCount,
+});
+
+/** Regal fürs Stöbern in der App-Sprache — vorberechnet vom Backend, sonst live bei Open Library. */
+export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<BookSearchResult[]> {
+  const { sort = 'popular', limit = 24 } = options;
+  const theme = knownTheme(id, options.theme);
+  const themeQuery = theme ? SHELF_THEMES[id]?.[theme] : undefined;
   const year = new Date().getFullYear();
-  const query = `${SHELF_QUERY[id](year)}${languageFilter()}`;
-  const key = `shelf:${appLocale}:${id}:${limit}`;
+  const query = `${themeQuery ?? SHELF_QUERY[id](year)}${SORT_QUERY[sort].filter(year)}${languageFilter()}`;
+  const key = shelfKey(id, options);
   return cachedSearch(key, async () => {
-    const stored = readShelfCache(key);
+    const stored = cacheGet<BookSearchResult[]>(SHELF_CACHE, key, SHELF_TTL);
     if (stored) return stored;
-    const prebuilt = await loadStaticShelf(id).catch(() => null);
-    if (prebuilt && prebuilt.length >= 8) {
-      const list = prebuilt.slice(0, limit);
-      memoryShelves.set(key, list);
-      return list;
-    }
-    const list = await olSearch(query, limit);
-    writeShelfCache(key, list);
+    const prebuilt = theme
+      ? null
+      : await loadStaticShelf(sort === 'popular' ? id : `${id}:${sort}`).catch(() => null);
+    const list =
+      prebuilt && prebuilt.length >= 8
+        ? prebuilt.slice(0, limit)
+        : await olSearch(query, limit, SORT_QUERY[sort].sort);
+    cacheSet(SHELF_CACHE, key, list.map(compactResult), SHELF_CACHE_ENTRIES);
     return list;
   });
 }
 
-/** Sofort verfügbares Regal aus Speicher oder Tages-Cache — ohne Netzanfrage. */
-export function peekShelf(id: ShelfId, limit = 24): BookSearchResult[] | null {
-  return readShelfCache(`shelf:${appLocale}:${id}:${limit}`);
+/** Sofort verfügbares Regal aus dem Tages-Cache — ohne Netzanfrage. */
+export function peekShelf(id: ShelfId, options: ShelfOptions = {}): BookSearchResult[] | null {
+  return cacheGet<BookSearchResult[]>(SHELF_CACHE, shelfKey(id, options), SHELF_TTL) ?? null;
 }
 
-const SHELF_CACHE_PREFIX = 'bookShelf:';
-const SHELF_TTL = 86_400_000;
-const memoryShelves = new Map<string, BookSearchResult[]>();
-
-/** Kompakt (nur Kartenfelder), damit neun Regale zusammen nur ein paar Dutzend KB belegen. */
-function writeShelfCache(key: string, list: BookSearchResult[]) {
-  memoryShelves.set(key, list);
-  const compact = list.map((r) => ({
-    id: r.id,
-    title: r.title,
-    authors: r.authors.slice(0, 1),
-    cover: r.cover,
-    pageCount: r.pageCount,
-    publishedYear: r.publishedYear,
-    isbn13: r.isbn13,
-    olWorkId: r.olWorkId,
-    language: r.language,
-    source: r.source,
-  }));
-  try {
-    localStorage.setItem(
-      SHELF_CACHE_PREFIX + key,
-      JSON.stringify({ at: Date.now(), list: compact })
-    );
-  } catch {
-    /* Cache ist optional */
+try {
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith('bookShelf:')) localStorage.removeItem(key);
   }
-}
-
-function readShelfCache(key: string): BookSearchResult[] | null {
-  const mem = memoryShelves.get(key);
-  if (mem) return mem;
-  try {
-    const raw = localStorage.getItem(SHELF_CACHE_PREFIX + key);
-    if (!raw) return null;
-    const entry = JSON.parse(raw) as { at: number; list: BookSearchResult[] };
-    if (Date.now() - entry.at > SHELF_TTL || !Array.isArray(entry.list)) return null;
-    memoryShelves.set(key, entry.list);
-    return entry.list;
-  } catch {
-    return null;
-  }
+} catch {
+  /* Alt-Cache der ersten Version */
 }
 
 /** Weitere Bücher derselben Person, ohne das gerade gezeigte. */

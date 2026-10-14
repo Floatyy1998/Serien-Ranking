@@ -273,6 +273,7 @@ export default defineConfig({
         'src/lib/manga/mangaUpdatesAdapter.ts',
         'src/lib/manga/progress.ts',
         'src/lib/books/mangaBooks.ts',
+        'src/lib/books/discoverMix.ts',
         'src/lib/watch/movieWatchLog.ts',
         'src/lib/series/watchPosition.ts',
         'src/services/wrapped/manga.ts',

@@ -19,6 +19,8 @@ interface StaticShelfItem {
   i?: string;
   l?: string;
   r?: number;
+  s?: number;
+  n?: number;
 }
 
 interface StaticSource {
@@ -58,6 +60,8 @@ const toResult = (item: StaticShelfItem): BookSearchResult => ({
   language: item.l,
   source: 'openlibrary',
   popularity: item.r,
+  avgRating: item.s,
+  ratingCount: item.n,
 });
 
 /** Vorberechnetes Regal (Backend-Cron) — null, wenn die Datei fehlt oder das Regal leer ist. */

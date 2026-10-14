@@ -67,6 +67,9 @@ export interface BookSearchResult {
   source: BookSource;
   /** Open Library: Leseliste + Ausgaben — trennt echte Bücher von Dubletten-Einträgen. */
   popularity?: number;
+  /** Open Library: Ø Sterne (1–5) und Anzahl der Bewertungen. */
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 /** Live nachgeladene Details für die Detailseite — wird nicht gespeichert. */

@@ -50,3 +50,13 @@ export function useMangaForBook() {
     [allMangaList]
   );
 }
+
+/** Treffer, der schon in den eigenen Büchern oder als Band bei den eigenen Manga steht. */
+export function useOwnsResult() {
+  const ownedFor = useOwnedBooks();
+  const mangaFor = useMangaForBook();
+  return useCallback(
+    (item: OwnedLookup & { subtitle?: string }) => !!ownedFor(item) || !!mangaFor(item),
+    [ownedFor, mangaFor]
+  );
+}

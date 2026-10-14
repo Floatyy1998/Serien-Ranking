@@ -1,4 +1,5 @@
 import {
+  AutoAwesome,
   Bookmarks,
   LocalLibrary,
   PauseCircle,
@@ -19,6 +20,7 @@ import { useReadingGoal } from '../../hooks/books/useReadingGoal';
 import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
 import { isFinishedInYear, sortByRecentActivity } from '../../lib/books/bookProgress';
 import { computeBookYearStats } from '../../lib/books/bookStats';
+import { tasteGenres } from '../../lib/books/readingTaste';
 import { t } from '../../services/i18n';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -30,9 +32,12 @@ import { Bookshelf } from './components/Bookshelf';
 import { ProgressSheet } from './components/ProgressSheet';
 import './components/books.css';
 import { useBookActions } from './hooks/useBookActions';
-import { DiscoverShelf, FeaturedHero, GenreTiles } from './discover/DiscoverParts';
+import { GENRES } from './data/genres';
+import { DiscoverShelf, FeaturedHero, GenreTiles, MixedShelf } from './discover/DiscoverParts';
+import { ShelfDedupeContext, useShelfDedupeStore } from './discover/discoverDedupe';
 import { useAddFlow } from './discover/useAddFlow';
 import { useNextVolumes } from './hooks/useNextVolumes';
+import { useReadingTaste } from './hooks/useReadingTaste';
 import { BookCarouselSection } from './sections/BookCarouselSection';
 import { BooksDeck } from './sections/BooksDeck';
 import { BookStatsSection } from './sections/BookStatsSection';
@@ -40,6 +45,9 @@ import { CurrentlyReadingSection } from './sections/CurrentlyReadingSection';
 import { ForYourShowsSection } from './sections/ForYourShowsSection';
 import { NextVolumesSection } from './sections/NextVolumesSection';
 import { ReadingGoalSection } from './sections/ReadingGoalSection';
+
+const GENRE_SHELVES = ['fantasy', 'thriller', 'romance', 'scifi', 'ya', 'classics'] as const;
+const SHELF_ORDER = ['new', 'hero', 'for-you', ...GENRE_SHELVES];
 
 export const BooksPage = () => {
   const { currentTheme } = useTheme();
@@ -108,6 +116,19 @@ export const BooksPage = () => {
   const { progress: nextVolumes } = useNextVolumes(bookList, now);
   const { suggestions, loading: showsLoading } = useBooksForYourShows();
   const { openAdd, sheet: addSheet } = useAddFlow();
+  const dedupe = useShelfDedupeStore(SHELF_ORDER);
+  const taste = useReadingTaste(bookList);
+  const favoriteGenres = useMemo(
+    () =>
+      tasteGenres(taste)
+        .slice(0, 2)
+        .map((g) => g.id),
+    [taste]
+  );
+  const favoriteLabels = favoriteGenres
+    .map((id) => GENRES.find((g) => g.id === id)?.label())
+    .filter(Boolean)
+    .join(' & ');
 
   const quickAdd = useCallback(
     (book: Book, pages: number) => void actions.saveProgress(book, (book.currentPage || 0) + pages),
@@ -243,17 +264,37 @@ export const BooksPage = () => {
         </div>
       )}
 
-      <FeaturedHero onAdd={openAdd} />
+      <ShelfDedupeContext.Provider value={dedupe}>
+        <FeaturedHero onAdd={openAdd} />
 
-      <DiscoverShelf id="new" ranked onAdd={openAdd} iconColor={currentTheme.status.warning} />
+        <DiscoverShelf
+          id="new"
+          ranked
+          onAdd={openAdd}
+          iconColor={currentTheme.status.warning}
+          dedupeKey="new"
+        />
 
-      <ForYourShowsSection suggestions={suggestions} loading={showsLoading} />
+        {favoriteGenres.length > 0 && (
+          <MixedShelf
+            ids={favoriteGenres}
+            onAdd={openAdd}
+            title={t('Für dich')}
+            caption={t('Weil du gern {genres} liest', { genres: favoriteLabels })}
+            icon={<AutoAwesome />}
+            iconColor={currentTheme.accent}
+            dedupeKey="for-you"
+          />
+        )}
 
-      <GenreTiles />
+        <ForYourShowsSection suggestions={suggestions} loading={showsLoading} />
 
-      {(['fantasy', 'thriller', 'romance', 'scifi', 'ya', 'classics'] as const).map((id) => (
-        <DiscoverShelf key={id} id={id} onAdd={openAdd} />
-      ))}
+        <GenreTiles />
+
+        {GENRE_SHELVES.map((id) => (
+          <MixedShelf key={id} ids={[id]} onAdd={openAdd} dedupeKey={id} />
+        ))}
+      </ShelfDedupeContext.Provider>
 
       {addSheet}
 

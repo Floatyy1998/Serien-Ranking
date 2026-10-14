@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { bookMatchKey } from '../../lib/books/bookIdentity';
 import { bookAsResult } from '../../lib/books/bookSearchMapping';
+import { capPerAuthor } from '../../lib/books/discoverMix';
 import { hasReadingTaste, tasteGenres } from '../../lib/books/readingTaste';
 import { fetchShelf } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
@@ -56,9 +57,9 @@ export const FriendBooksInsights = memo(function FriendBooksInsights({
   useEffect(() => {
     if (!topGenre) return;
     let alive = true;
-    fetchShelf(topGenre)
+    fetchShelf(topGenre, { sort: 'top' })
       .then((list) => {
-        if (alive) setGenrePicks(list);
+        if (alive) setGenrePicks(capPerAuthor(list, 1));
       })
       .catch(() => {});
     return () => {

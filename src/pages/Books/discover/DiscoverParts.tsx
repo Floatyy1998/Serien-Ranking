@@ -1,17 +1,18 @@
-import { Add, Check, ChevronRight, Whatshot } from '@mui/icons-material';
+import { Add, Check, ChevronRight, Star, Whatshot } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo, type Variants } from 'framer-motion';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useBookShelf } from '../../../hooks/books/useBookShelf';
+import { useBookShelf, useBookShelves } from '../../../hooks/books/useBookShelf';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
 import { sanitizeBookKey } from '../../../lib/books/bookIdentity';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
+import { curateShelf, daySeed, mixShelves, resultKeys } from '../../../lib/books/discoverMix';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
 import { findBook } from '../../../services/api/booksApi';
-import { t } from '../../../services/i18n';
+import { dateLocale, t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { BookSearchResult } from '../../../types/Book';
 import { BookCover } from '../components/BookCover';
@@ -20,6 +21,18 @@ import '../components/books.css';
 import { GENRES, SHELF_TITLES } from '../data/genres';
 import { bookPath } from '../helpers';
 import './discover.css';
+import { useShelfClaim, useShelfTaken } from './discoverDedupe';
+import { useHideOwned } from './useAddFlow';
+
+const MIN_RATINGS = 5;
+
+const ratingLabel = (r: BookSearchResult) =>
+  r.avgRating && (r.ratingCount ?? 0) >= MIN_RATINGS
+    ? r.avgRating.toLocaleString(dateLocale(), {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })
+    : null;
 
 /** Öffnet eigene Bücher direkt, fremde als Vorschau mit den Treffer-Daten. */
 export function useOpenResult() {
@@ -72,6 +85,7 @@ export const DiscoverCard: React.FC<{
   const mangaFor = useMangaForBook();
   const open = useOpenResult();
   const owned = ownedFor(result) ?? mangaFor(result);
+  const rating = ratingLabel(result);
 
   return (
     <div
@@ -107,8 +121,18 @@ export const DiscoverCard: React.FC<{
       <span className="bk-item-title" style={{ color: currentTheme.text.secondary }}>
         {result.title}
       </span>
-      <span className="bk-item-sub" style={{ color: currentTheme.text.muted }}>
-        {result.authors[0] ?? ''}
+      <span className="dsc-card-meta" style={{ color: currentTheme.text.muted }}>
+        <span className="bk-item-sub">{result.authors[0] ?? ''}</span>
+        {rating && (
+          <span
+            className="dsc-rating"
+            aria-label={t('{rating} von 5 Sternen', { rating })}
+            title={t('{n} Bewertungen bei Open Library', { n: result.ratingCount ?? 0 })}
+          >
+            <Star style={{ fontSize: 13, color: currentTheme.status.warning }} />
+            {rating}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -137,43 +161,137 @@ export const SkeletonCards: React.FC<{ count?: number; ranked?: boolean }> = ({
   </>
 );
 
-export const DiscoverShelf: React.FC<{
-  id: ShelfId;
-  onAdd: (result: BookSearchResult) => void;
+const ShelfRow: React.FC<{
+  sectionRef: React.Ref<HTMLElement>;
+  title: string;
+  caption?: string;
+  icon: React.ReactNode;
+  iconColor: string;
+  onSeeAll?: () => void;
+  items: BookSearchResult[];
+  loading: boolean;
   ranked?: boolean;
-  icon?: React.ReactNode;
-  iconColor?: string;
-  exclude?: Set<string>;
-}> = ({ id, onAdd, ranked, icon, iconColor, exclude }) => {
+  onAdd: (result: BookSearchResult) => void;
+}> = ({ sectionRef, title, caption, icon, iconColor, onSeeAll, items, loading, ranked, onAdd }) => {
   const { currentTheme } = useTheme();
-  const navigate = useNavigate();
-  const { ref, items, loading, error } = useBookShelf(id);
-  const shown = (exclude ? items.filter((r) => !exclude.has(r.id)) : items).slice(
-    0,
-    ranked ? 10 : 20
-  );
-  if (error || (!loading && shown.length === 0)) return null;
-  const genre = GENRES.find((g) => g.id === id);
-
   return (
-    <section ref={ref} className="bk-section">
+    <section ref={sectionRef} className="bk-section">
       <SectionHeader
-        icon={icon ?? <Whatshot />}
-        iconColor={iconColor ?? genre?.colors[1] ?? currentTheme.primary}
-        title={SHELF_TITLES[id]()}
-        onSeeAll={() => navigate(`/books/search?genre=${id}`)}
+        icon={icon}
+        iconColor={iconColor}
+        title={title}
+        onSeeAll={onSeeAll}
         seeAllLabel={t('Alle')}
+        style={caption ? { marginBottom: 4 } : undefined}
       />
+      {caption && (
+        <p className="dsc-caption" style={{ color: currentTheme.text.muted }}>
+          {caption}
+        </p>
+      )}
       <HorizontalScrollContainer scrollerClassName="dsc-row">
-        {loading && shown.length === 0 ? (
+        {loading && items.length === 0 ? (
           <SkeletonCards ranked={ranked} />
         ) : (
-          shown.map((r, i) => (
+          items.map((r, i) => (
             <DiscoverCard key={r.id} result={r} rank={ranked ? i + 1 : undefined} onAdd={onAdd} />
           ))
         )}
       </HorizontalScrollContainer>
     </section>
+  );
+};
+
+const NEW_SHELF_LIMIT = 40;
+
+/** Rangliste eines Regals: ohne eigene Bücher, ein Buch je Autor. */
+export const DiscoverShelf: React.FC<{
+  id: ShelfId;
+  onAdd: (result: BookSearchResult) => void;
+  ranked?: boolean;
+  iconColor?: string;
+  dedupeKey?: string;
+}> = ({ id, onAdd, ranked, iconColor, dedupeKey }) => {
+  const { currentTheme } = useTheme();
+  const navigate = useNavigate();
+  const hideOwned = useHideOwned();
+  const taken = useShelfTaken(dedupeKey);
+  const { ref, items, loading, error } = useBookShelf(id, { limit: NEW_SHELF_LIMIT });
+  const shown = useMemo(
+    () =>
+      curateShelf(items, {
+        isOwned: (r) => hideOwned(r) || resultKeys(r).some((k) => taken.has(k)),
+        perAuthor: 1,
+      }).items.slice(0, ranked ? 10 : 20),
+    [items, hideOwned, taken, ranked]
+  );
+  useShelfClaim(dedupeKey, shown);
+  if (error || (!loading && shown.length === 0)) return null;
+
+  return (
+    <ShelfRow
+      sectionRef={ref}
+      title={SHELF_TITLES[id]()}
+      icon={<Whatshot />}
+      iconColor={iconColor ?? currentTheme.primary}
+      onSeeAll={() => navigate(`/books/search?genre=${id}`)}
+      items={shown}
+      loading={loading}
+      ranked={ranked}
+      onAdd={onAdd}
+    />
+  );
+};
+
+/** Bestbewertete und Geheimtipps aus einem oder mehreren Genres, jeden Tag neu gemischt. */
+export const MixedShelf: React.FC<{
+  ids: ShelfId[];
+  onAdd: (result: BookSearchResult) => void;
+  title?: string;
+  caption?: string;
+  icon?: React.ReactNode;
+  iconColor?: string;
+  dedupeKey?: string;
+}> = ({ ids, onAdd, title, caption, icon, iconColor, dedupeKey }) => {
+  const { currentTheme } = useTheme();
+  const navigate = useNavigate();
+  const hideOwned = useHideOwned();
+  const taken = useShelfTaken(dedupeKey);
+  const { ref, lists, loading, error } = useBookShelves(
+    ids.flatMap((id) => [
+      { id, sort: 'gems' as const },
+      { id, sort: 'top' as const },
+    ])
+  );
+  const seedKey = ids.join('+');
+  const [seed] = useState(() => `${daySeed()}:${seedKey}`);
+  const items = useMemo(
+    () =>
+      mixShelves(lists, {
+        seed,
+        size: 20,
+        isOwned: (r) => hideOwned(r) || resultKeys(r).some((k) => taken.has(k)),
+        perAuthor: 1,
+      }),
+    [lists, seed, hideOwned, taken]
+  );
+  useShelfClaim(dedupeKey, items);
+  if (error || (!loading && items.length === 0)) return null;
+  const genre = ids.length === 1 ? GENRES.find((g) => g.id === ids[0]) : undefined;
+  const GenreIcon = genre?.icon;
+
+  return (
+    <ShelfRow
+      sectionRef={ref}
+      title={title ?? SHELF_TITLES[ids[0]]()}
+      caption={caption}
+      icon={icon ?? (GenreIcon ? <GenreIcon /> : <Whatshot />)}
+      iconColor={iconColor ?? genre?.colors[1] ?? currentTheme.primary}
+      onSeeAll={genre ? () => navigate(`/books/search?genre=${genre.id}`) : undefined}
+      items={items}
+      loading={loading}
+      onAdd={onAdd}
+    />
   );
 };
 
@@ -230,18 +348,23 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
   const { currentTheme } = useTheme();
   const open = useOpenResult();
   const ownedFor = useOwnedBooks();
+  const hideOwned = useHideOwned();
   const [featured, setFeatured] = useState<{ result: BookSearchResult; genre: ShelfId }[]>([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const draggedRef = useRef(false);
+  useShelfClaim(
+    'hero',
+    featured.map((f) => f.result)
+  );
 
   useEffect(() => {
     let alive = true;
-    fetchShelf('new')
+    fetchShelf('new', { limit: NEW_SHELF_LIMIT })
       .then((list) => {
         if (!alive) return;
-        const fresh = list.filter((r) => !ownedFor(r));
+        const fresh = curateShelf(list, { isOwned: hideOwned, perAuthor: 1 }).items;
         const picks = (fresh.length > 14 ? fresh.slice(10, 16) : fresh.slice(0, 6)).map(
           (result) => ({ result, genre: 'new' as ShelfId })
         );
