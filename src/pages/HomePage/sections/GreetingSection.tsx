@@ -353,7 +353,7 @@ export const GreetingSection = React.memo(function GreetingSection({
                   textOverflow: 'ellipsis',
                 }}
               >
-                {t('Suche nach Serien oder Filmen')}
+                {t('Titel oder Schauspieler')}
               </span>
             </motion.button>
 

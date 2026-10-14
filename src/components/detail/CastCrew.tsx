@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type {
   AnimeCharacterData,
   CastCrewProps,
   CastMember,
-  CreditItem,
-  PersonDetailsData,
   VoiceActorDetailsData,
   VoiceActorRef,
 } from './CastCrew.types';
 import { CastCrewListView } from './CastCrewListView';
-import { PersonDetailsView } from './PersonDetailsView';
 import { VoiceActorDetailsView } from './VoiceActorDetailsView';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
@@ -22,12 +20,11 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   seriesData,
 }) => {
   const { currentTheme } = useTheme();
+  const navigate = useNavigate();
   const [cast, setCast] = useState<CastMember[]>([]);
   const [crew, setCrew] = useState<CastMember[]>([]);
   const [animeCharacters, setAnimeCharacters] = useState<AnimeCharacterData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [personDetails, setPersonDetails] = useState<PersonDetailsData | null>(null);
-  const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
   const [selectedVoiceActor, setSelectedVoiceActor] = useState<number | null>(null);
   const [voiceActorDetails, setVoiceActorDetails] = useState<VoiceActorDetailsData | null>(null);
   const [voiceActorLoading, setVoiceActorLoading] = useState(false);
@@ -201,35 +198,11 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     fetchCredits();
   }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
 
-  const fetchPersonDetails = async (personId: number) => {
-    try {
-      const [personData, creditsData] = await Promise.all([
-        tmdbFetch<PersonDetailsData>(`person/${personId}`),
-        tmdbFetch<{ cast: CreditItem[]; crew: CreditItem[] }>(
-          `person/${personId}/combined_credits`
-        ),
-      ]);
-
-      // Sort credits by popularity
-      const sortedCredits = ([...creditsData.cast, ...creditsData.crew] as CreditItem[])
-        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
-        .slice(0, 20);
-
-      setPersonDetails({
-        ...personData,
-        credits: sortedCredits,
-      });
-      setSelectedPersonId(personId);
-    } catch (error) {
-      console.error('Failed to fetch person details from TMDB:', error);
-    }
-  };
-
   const handlePersonClick = (personId: number) => {
     if (onPersonClick) {
       onPersonClick(personId);
     } else {
-      fetchPersonDetails(personId);
+      navigate(`/person/${personId}`);
     }
   };
 
@@ -332,19 +305,6 @@ export const CastCrew: React.FC<CastCrewProps> = ({
         onBack={() => {
           setSelectedVoiceActor(null);
           setVoiceActorDetails(null);
-        }}
-      />
-    );
-  }
-
-  // Person Details View
-  if (selectedPersonId && personDetails) {
-    return (
-      <PersonDetailsView
-        personDetails={personDetails}
-        onBack={() => {
-          setSelectedPersonId(null);
-          setPersonDetails(null);
         }}
       />
     );

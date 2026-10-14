@@ -7,15 +7,12 @@
  * Nutzt den schlanken useHomeQuickSearch (kein ?q= in der Home-URL). Per Portal
  * an document.body, damit kein transformierter Vorfahre das fixe Overlay schiebt.
  */
-import { Add, Close, Search, Star, Visibility } from '@mui/icons-material';
+import { Add, Close, Person, Search, Star, Visibility } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useAndroidBack } from '../../../hooks/ui/useAndroidBack';
-import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
 import {
@@ -25,24 +22,21 @@ import {
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { tapScale } from '../../../lib/motion';
 import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
-import { backendFetch } from '../../../services/api/backendApi';
-import { trackMovieAdded, trackSeriesAdded } from '../../../services/firebase/analytics';
-import { logMovieAdded, logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { Snackbar } from '../../../components/ui';
+import { PersonGridSkeleton, PersonSection } from '../../../components/person/PersonSection';
 import { QuickRatingSheet } from '../../../components/ui/overlay/QuickRatingSheet';
-import { useQuickRatingSheet } from '../../../hooks/rating/useQuickRatingSheet';
-import { formatRatingShort, isMovieWatched, overallRatingValue } from '../../../lib/rating/rating';
-import { markMovieWatched } from '../../../services/rating/quickRating';
-import type { Movie } from '../../../types/Movie';
-import type { Series } from '../../../types/Series';
+import { usePopularPeople } from '../../../hooks/person/usePeopleSearch';
+import { quickMediaKey, useQuickMediaActions } from '../../../hooks/rating/useQuickMediaActions';
+import type { PersonHit } from '../../../lib/person/personSearch';
+import { formatRatingShort } from '../../../lib/rating/rating';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
 import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQuickResults';
+import { MangaOverlayIdle, MangaQuickResults } from '../../Manga/components/MangaQuickResults';
 import './HomeSearchOverlay.css';
 
-type Filter = 'all' | 'series' | 'movies' | 'books';
+type Filter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
 
-const keyOf = (item: QuickResult) => `${item.type}-${item.id}`;
 // Das Bewertungs-Sheet muss über dem Overlay liegen (.hso: z-index 1400).
 const OVERLAY_SHEET_Z = 1450;
 
@@ -50,6 +44,8 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: t('Alle') },
   { key: 'series', label: t('Serien') },
   { key: 'movies', label: t('Filme') },
+  { key: 'people', label: t('Personen') },
+  { key: 'manga', label: t('Manga') },
   { key: 'books', label: t('Bücher') },
 ];
 
@@ -68,7 +64,7 @@ export const HomeSearchOverlay = memo(
     // Home bleibt beim Sprung auf eine Detailseite gemountet (MainTabs-Keep-Alive),
     // also wird das Overlay dort nur geparkt statt geschlossen — Zurück landet
     // wieder in den Suchergebnissen. Jede andere Route schließt es.
-    const parked = /^\/(series|movie|books)\//.test(pathname);
+    const parked = /^\/(series|movie|books|person|manga)\//.test(pathname);
     // Zurueck stellt per POP denselben History-Eintrag wieder her; der Home-Button
     // der Detailseite pusht dagegen einen neuen. Nur der Eintrag, auf dem die Suche
     // geoeffnet wurde, bekommt sie zurueck — sonst landet man ueber Home wieder
@@ -90,6 +86,8 @@ export const HomeSearchOverlay = memo(
       query,
       setQuery,
       results,
+      people,
+      peopleFirst,
       loading,
       recent,
       popular,
@@ -101,15 +99,9 @@ export const HomeSearchOverlay = memo(
     useEffect(() => {
       if (open && initialFilter) setFilter(initialFilter);
     }, [open, initialFilter]);
+    const popularPeople = usePopularPeople(open && filter === 'people');
     const onPrimary = getOptimalTextColor(currentTheme.primary);
     const onSuccess = getOptimalTextColor(currentTheme.status.success);
-    const { user } = useAuth() || {};
-    const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
-    const { movieList } = useMovieList();
-    // Optimistisch: hinzugefügt / gesehen, bis Katalog und Listen nachgezogen haben.
-    const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
-    const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
-    const [pending, setPending] = useState<{ key: string; action: 'add' | 'watched' } | null>(null);
     const [snack, setSnack] = useState<{ open: boolean; message: string }>({
       open: false,
       message: '',
@@ -120,111 +112,15 @@ export const HomeSearchOverlay = memo(
       setTimeout(() => setSnack({ open: false, message: '' }), 2500);
     }, []);
 
-    const { quickRating, openQuickRating, closeQuickRating, saveQuickRating } = useQuickRatingSheet(
-      {
-        onSaved: showSnack,
-        onError: showSnack,
-      }
-    );
-
-    const ownedOf = useCallback(
-      (item: QuickResult): Series | Movie | undefined =>
-        item.type === 'series'
-          ? seriesList.find((s: Series) => s.id === item.id)
-          : movieList.find((m: Movie) => m.id === item.id),
-      [seriesList, movieList]
-    );
-
-    const requestAdd = useCallback(
-      async (item: QuickResult, uid: string): Promise<'added' | 'exists' | 'failed'> => {
-        const res = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user: import.meta.env.VITE_USER, id: item.id, uuid: uid }),
-        });
-        if (!res.ok) {
-          const data = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
-          const message = typeof data?.error === 'string' ? data.error : '';
-          return message.includes('bereits vorhanden') ? 'exists' : 'failed';
-        }
-        setAddedKeys((prev) => new Set(prev).add(keyOf(item)));
-        if (item.type === 'series') {
-          void refetchAfterAdd(item.id);
-          trackSeriesAdded(String(item.id), item.title, 'search');
-          await logSeriesAdded(uid, item.title, item.id, item.poster_path);
-        } else {
-          trackMovieAdded(String(item.id), item.title, 'search');
-          await logMovieAdded(uid, item.title, item.id, item.poster_path);
-        }
-        return 'added';
-      },
-      [refetchAfterAdd]
-    );
-
-    const addToList = useCallback(
-      async (item: QuickResult, e: React.MouseEvent) => {
-        e.stopPropagation(); // nicht zur Detailseite navigieren
-        if (!user) return;
-        const key = keyOf(item);
-        setPending({ key, action: 'add' });
-        const isSeries = item.type === 'series';
-        const failedText = isSeries
-          ? t('Fehler beim Hinzufügen der Serie.')
-          : t('Fehler beim Hinzufügen des Films.');
-        try {
-          const result = await requestAdd(item, user.uid);
-          if (result === 'added') {
-            showSnack(t('„{title}" hinzugefügt', { title: item.title }));
-          } else if (result === 'exists') {
-            showSnack(
-              isSeries
-                ? t('Serie ist bereits in deiner Liste!')
-                : t('Film ist bereits in deiner Liste!')
-            );
-          } else {
-            showSnack(failedText);
-          }
-        } catch (err) {
-          console.error('Add from search failed:', err);
-          showSnack(failedText);
-        } finally {
-          setPending(null);
-        }
-      },
-      [user, requestAdd, showSnack]
-    );
-
-    // Film: bei Bedarf hinzufügen, als gesehen markieren, dann Schnellbewertung anbieten.
-    const markWatched = useCallback(
-      async (item: QuickResult, inList: boolean, e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!user || item.type !== 'movie') return;
-        const key = keyOf(item);
-        setPending({ key, action: 'watched' });
-        try {
-          if (!inList && (await requestAdd(item, user.uid)) === 'failed') {
-            throw new Error('add failed');
-          }
-          await markMovieWatched(user.uid, item.id);
-          setWatchedKeys((prev) => new Set(prev).add(key));
-          openQuickRating({ id: item.id, type: item.type, title: item.title }, true);
-        } catch (err) {
-          console.error('Mark watched from search failed:', err);
-          showSnack(t('Der Gesehen-Status konnte nicht gespeichert werden.'));
-        } finally {
-          setPending(null);
-        }
-      },
-      [user, requestAdd, openQuickRating, showSnack]
-    );
-
-    const rateFromCard = useCallback(
-      (item: QuickResult, userRating: number, e: React.MouseEvent) => {
-        e.stopPropagation();
-        openQuickRating({ id: item.id, type: item.type, title: item.title, userRating });
-      },
-      [openQuickRating]
-    );
+    const {
+      statusOf,
+      add: addToList,
+      markWatched,
+      rate: rateFromCard,
+      quickRating,
+      closeQuickRating,
+      saveQuickRating,
+    } = useQuickMediaActions({ source: 'search', notify: showSnack });
 
     useEffect(() => {
       if (open && !visible && !parked) onClose();
@@ -277,18 +173,26 @@ export const HomeSearchOverlay = memo(
       () =>
         filter === 'all'
           ? results
-          : filter === 'books'
-            ? []
-            : results.filter((r) =>
+          : filter === 'series' || filter === 'movies'
+            ? results.filter((r) =>
                 filter === 'series' ? r.type === 'series' : r.type === 'movie'
-              ),
+              )
+            : [],
       [results, filter]
     );
+    const shownPeople = filter === 'all' || filter === 'people' ? people : [];
     const [bookHits, setBookHits] = useState({ count: 0, loading: false });
     const onBookCount = useCallback(
       (count: number, isLoading: boolean) => setBookHits({ count, loading: isLoading }),
       []
     );
+    const [mangaHits, setMangaHits] = useState({ count: 0, loading: false });
+    const onMangaCount = useCallback(
+      (count: number, isLoading: boolean) => setMangaHits({ count, loading: isLoading }),
+      []
+    );
+    const otherHits = bookHits.count + mangaHits.count;
+    const otherLoading = bookHits.loading || mangaHits.loading;
 
     // Der Segment-Filter gilt für ALLES Sichtbare — auch für „Beliebt".
     const shownPopular = useMemo(
@@ -322,18 +226,36 @@ export const HomeSearchOverlay = memo(
       navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
     };
 
+    const goToPerson = useCallback(
+      (person: PersonHit) => {
+        if (query.trim()) saveRecent(query);
+        navigate(`/person/${person.id}`);
+      },
+      [query, saveRecent, navigate]
+    );
+
+    const onEnter = () => {
+      const personLeads = filter === 'people' || (filter === 'all' && peopleFirst);
+      if (personLeads && shownPeople.length > 0) goToPerson(shownPeople[0]);
+      else if (shown.length > 0) goTo(shown[0]);
+      else if (shownPeople.length > 0) goToPerson(shownPeople[0]);
+    };
+
+    const renderPeople = (list: PersonHit[], asRow: boolean) => (
+      <PersonSection
+        className="hso__people"
+        people={list}
+        onSelect={goToPerson}
+        onSeeAll={asRow ? () => setFilter('people') : undefined}
+      />
+    );
+
     // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
     // Rating-Badge und Zur-Liste-Button), damit beide Grids gleich mächtig sind.
     const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
-      const owned = ownedOf(item);
-      const added = addedKeys.has(keyOf(item)) || owned !== undefined;
-      const ownRating = owned ? overallRatingValue(owned) : 0;
-      const showWatched =
-        item.type === 'movie' &&
-        !watchedKeys.has(keyOf(item)) &&
-        !(owned !== undefined && isMovieWatched(owned as Movie));
-      const busy = pending?.key === keyOf(item);
-      const busyAction = busy ? pending?.action : null;
+      const { added, ownRating, watched, busyAction } = statusOf(item);
+      const showWatched = item.type === 'movie' && !watched;
+      const busy = busyAction !== null;
       // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
       const displayRating = pickDisplayRating(
         communityMap,
@@ -343,7 +265,7 @@ export const HomeSearchOverlay = memo(
       );
       return (
         <motion.div
-          key={keyOf(item)}
+          key={quickMediaKey(item)}
           {...mediaTargetProps({
             type: item.type,
             id: item.id,
@@ -559,10 +481,10 @@ export const HomeSearchOverlay = memo(
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && shown.length > 0) goTo(shown[0]);
+                        if (e.key === 'Enter') onEnter();
                       }}
-                      placeholder={t('Serien & Filme suchen…')}
-                      aria-label={t('Serien und Filme suchen')}
+                      placeholder={t('Titel oder Schauspieler')}
+                      aria-label={t('Serien, Filme und Personen suchen')}
                       autoFocus
                       className="hso__input"
                       style={{ color: currentTheme.text.primary, outline: 'none' }}
@@ -602,7 +524,14 @@ export const HomeSearchOverlay = memo(
                         key={f.key}
                         type="button"
                         className="hso__filter"
-                        onClick={() => setFilter(f.key)}
+                        onClick={(e) => {
+                          setFilter(f.key);
+                          e.currentTarget.scrollIntoView?.({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'nearest',
+                          });
+                        }}
                         aria-pressed={active}
                         style={{
                           background: active
@@ -640,8 +569,36 @@ export const HomeSearchOverlay = memo(
                   <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <BookQuickResults query={query} variant="grid" sheetZIndex={OVERLAY_SHEET_Z} />
                   </motion.div>
+                ) : hasQuery && filter === 'manga' ? (
+                  <motion.div key="manga" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <MangaQuickResults query={query} variant="grid" />
+                  </motion.div>
+                ) : hasQuery && filter === 'people' ? (
+                  loading && people.length === 0 ? (
+                    <motion.div
+                      key="people-loading"
+                      className="hso__people"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <PersonGridSkeleton />
+                    </motion.div>
+                  ) : people.length === 0 ? (
+                    <motion.div
+                      key="people-empty"
+                      className="hso__msg"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      style={{ color: currentTheme.text.muted }}
+                    >
+                      <Person style={{ fontSize: '40px', opacity: 0.5 }} />
+                      <p>{t('Keine Personen für „{query}“', { query })}</p>
+                    </motion.div>
+                  ) : (
+                    renderPeople(people, false)
+                  )
                 ) : hasQuery ? (
-                  loading && shown.length === 0 && bookHits.count === 0 ? (
+                  loading && shown.length === 0 && shownPeople.length === 0 && otherHits === 0 ? (
                     <motion.div
                       key="loading"
                       className="hso__grid"
@@ -656,7 +613,10 @@ export const HomeSearchOverlay = memo(
                         />
                       ))}
                     </motion.div>
-                  ) : shown.length === 0 && bookHits.count === 0 && !bookHits.loading ? (
+                  ) : shown.length === 0 &&
+                    shownPeople.length === 0 &&
+                    otherHits === 0 &&
+                    !otherLoading ? (
                     <motion.div
                       key="empty"
                       className="hso__msg"
@@ -668,16 +628,27 @@ export const HomeSearchOverlay = memo(
                       <p>{t('Keine Treffer für „{query}“', { query })}</p>
                     </motion.div>
                   ) : (
-                    <motion.div
-                      key="results"
-                      className="hso__grid"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    >
-                      {shown.map((item, idx) => renderCard(item, idx, 0.03))}
+                    <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      {peopleFirst &&
+                        shownPeople.length > 0 &&
+                        renderPeople(shownPeople, shown.length > 0)}
+                      {shown.length > 0 && (
+                        <div className="hso__grid">
+                          {shown.map((item, idx) => renderCard(item, idx, 0.03))}
+                        </div>
+                      )}
+                      {!peopleFirst && shownPeople.length > 0 && renderPeople(shownPeople, true)}
                     </motion.div>
                   )
                 ) : null}
+                {hasQuery && filter === 'all' && (
+                  <MangaQuickResults
+                    query={query}
+                    variant="row"
+                    onCount={onMangaCount}
+                    onSeeAll={() => setFilter('manga')}
+                  />
+                )}
                 {hasQuery && filter === 'all' && (
                   <BookQuickResults
                     query={query}
@@ -729,7 +700,23 @@ export const HomeSearchOverlay = memo(
                       </div>
                     )}
                     {filter === 'books' && <BookOverlayIdle sheetZIndex={OVERLAY_SHEET_Z} />}
-                    {filter !== 'books' && (
+                    {filter === 'manga' && <MangaOverlayIdle />}
+                    {filter === 'people' && (
+                      <div className="hso__group">
+                        <div
+                          className="hso__group-title"
+                          style={{ color: currentTheme.text.muted }}
+                        >
+                          {t('Gerade gefragt')}
+                        </div>
+                        {popularPeople === null ? (
+                          <PersonGridSkeleton />
+                        ) : (
+                          renderPeople(popularPeople, false)
+                        )}
+                      </div>
+                    )}
+                    {(filter === 'all' || filter === 'series' || filter === 'movies') && (
                       <div className="hso__group">
                         <div
                           className="hso__group-title"

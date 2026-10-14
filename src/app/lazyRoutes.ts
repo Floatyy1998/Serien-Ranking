@@ -13,6 +13,11 @@ export const MovieDetailPage = lazyWithRetry(() =>
     default: m.MovieDetailPage,
   }))
 );
+export const PersonPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "person" */ '../pages/Person').then((m) => ({
+    default: m.PersonPage,
+  }))
+);
 export const DiscoverPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "discover" */ '../pages/Discover').then((m) => ({
     default: m.DiscoverPage,
@@ -332,6 +337,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/CatchUp'),
     () => import('../pages/Subscriptions'),
     () => import('../pages/RatingEditor'),
+    () => import('../pages/Person'),
     () => import('../pages/Manga/MangaDetailPage'),
     () => import('../pages/Manga/MangaSearchPage'),
     () => import('../pages/Manga/MangaRatingsPage'),

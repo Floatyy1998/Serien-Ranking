@@ -17,8 +17,6 @@ const dict: Record<string, string> = {
   'Bitte einloggen um Inhalte hinzuzufügen!': 'Entre para adicionar conteúdo!',
   '"{title}" wurde erfolgreich hinzugefügt!': '"{title}" foi adicionado!',
   Suche: 'Buscar',
-  'Suche nach Serien & Filmen...': 'Buscar séries e filmes...',
-  'Suche nach Serien und Filmen': 'Buscar séries e filmes',
   'Suche löschen': 'Limpar busca',
   'Filter: {label}': 'Filtro: {label}',
   'Ergebnisse für "{query}"': 'resultados para "{query}"',

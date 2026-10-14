@@ -104,7 +104,7 @@ describe('GreetingSection', () => {
   it('öffnet das Such-Overlay beim Klick auf den Suchbalken (kein Sprung zu /search)', () => {
     renderT();
     expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('Suche nach Serien oder Filmen'));
+    fireEvent.click(screen.getByText('Titel oder Schauspieler'));
     expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
   });

@@ -2,12 +2,14 @@
  * useHomeQuickSearch — schlanke Such-Logik für den Inline-Dropdown auf dem
  * Homescreen (Spotlight-Style). Bewusst NICHT useSearchPage: das würde `?q=` in
  * die Home-URL schreiben (History-Spam). Hier nur lokaler Query-State, ein
- * debounced TMDB-Multi-Search (Serien + Filme parallel) und ein
+ * debounced TMDB-Multi-Search (Serien, Filme und Personen parallel) und ein
  * localStorage-Verlauf.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { peopleLeadResults, type PersonHit } from '../../../lib/person/personSearch';
 import { rankSearchResults } from '../../../lib/text/searchRelevance';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
+import { searchPeople } from '../../../services/api/tmdbPeople';
 
 export interface QuickResult {
   id: number;
@@ -61,6 +63,8 @@ export interface UseHomeQuickSearchResult {
   query: string;
   setQuery: (q: string) => void;
   results: QuickResult[];
+  people: PersonHit[];
+  peopleFirst: boolean;
   loading: boolean;
   recent: string[];
   popular: string[];
@@ -77,6 +81,10 @@ export interface UseHomeQuickSearchResult {
 export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<QuickResult[]>([]);
+  const [people, setPeople] = useState<{ hits: PersonHit[]; first: boolean }>({
+    hits: [],
+    first: false,
+  });
   const [loading, setLoading] = useState(false);
   const [recent, setRecent] = useState<string[]>(() => {
     try {
@@ -164,6 +172,7 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
+      setPeople({ hits: [], first: false });
       setLoading(false);
       return;
     }
@@ -171,9 +180,10 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     const id = ++reqId.current;
     const timer = setTimeout(async () => {
       try {
-        const [tv, mv] = await Promise.all([
+        const [tv, mv, hits] = await Promise.all([
           tmdbFetch<TmdbListResponse>('search/tv', { query: q, page: 1 }),
           tmdbFetch<TmdbListResponse>('search/movie', { query: q, page: 1 }),
+          searchPeople(q).catch(() => [] as PersonHit[]),
         ]);
         if (id !== reqId.current) return; // veraltete Antwort verwerfen
 
@@ -196,8 +206,15 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
           .filter((r) => r.title)
           .slice(0, 18);
         setResults(merged);
+        setPeople({
+          hits,
+          first: peopleLeadResults(hits, [...(tv.results || []), ...(mv.results || [])], q),
+        });
       } catch {
-        if (id === reqId.current) setResults([]);
+        if (id === reqId.current) {
+          setResults([]);
+          setPeople({ hits: [], first: false });
+        }
       } finally {
         if (id === reqId.current) setLoading(false);
       }
@@ -210,6 +227,8 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     query,
     setQuery,
     results,
+    people: people.hits,
+    peopleFirst: people.first,
     loading,
     recent,
     popular: POPULAR_SEARCHES,

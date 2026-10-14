@@ -37,28 +37,6 @@ export interface VoiceActorRef {
   language: string;
 }
 
-export interface PersonDetailsData {
-  name: string;
-  profile_path?: string;
-  known_for_department?: string;
-  birthday?: string;
-  credits: CreditItem[];
-}
-
-export interface CreditItem {
-  id: number;
-  title?: string;
-  name?: string;
-  character?: string;
-  job?: string;
-  poster_path?: string;
-  media_type?: string;
-  vote_average?: number;
-  popularity?: number;
-  release_date?: string;
-  first_air_date?: string;
-}
-
 export interface VoiceActorDetailsData {
   name: { full: string; native?: string };
   image?: { large?: string };

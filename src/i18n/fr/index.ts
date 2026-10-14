@@ -36,6 +36,7 @@ import sharedLists from './shared-lists';
 import tour from './tour';
 import social from './social';
 import watchplan from './watchplan';
+import people from './people';
 
 const fr: Record<string, string> = {
   ...analytics,
@@ -67,6 +68,7 @@ const fr: Record<string, string> = {
   ...tour,
   ...social,
   ...watchplan,
+  ...people,
 };
 
 export default fr;

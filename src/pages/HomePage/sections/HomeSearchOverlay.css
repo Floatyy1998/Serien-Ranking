@@ -155,12 +155,26 @@
 .hso__filters {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  margin: 14px -16px 0;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hso__filters::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 699px) {
+  .hso__filters {
+    padding-right: 32px;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+  }
 }
 
 .hso .hso__filter {
+  flex-shrink: 0;
   min-height: 38px;
-  padding: 0 18px;
+  padding: 0 16px;
   border-radius: var(--radius-full, 999px);
   font-size: 14px;
   font-weight: 600;
@@ -354,6 +368,17 @@
   aspect-ratio: 2 / 3;
   border-radius: 14px;
   animation: hso-pulse 1.4s ease-in-out infinite;
+}
+
+.hso__people {
+  padding-top: 8px;
+  margin-bottom: 22px;
+}
+.hso__people:last-child {
+  margin-bottom: 0;
+}
+.hso__grid + .hso__people {
+  margin-top: 26px;
 }
 @keyframes hso-pulse {
   0%,

@@ -56,6 +56,8 @@ import {
   ReadingHubPreview,
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
+import { NotificationHubPreview } from './NotificationPreviews';
+import { PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
@@ -243,10 +245,18 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'books-empty', label: 'Bücher: leer', render: () => <BooksEmptyPreview /> },
   { id: 'book-detail', label: 'Bücher: Detail', render: () => <BookDetailPreview /> },
   { id: 'book-search', label: 'Bücher: Suche', render: () => <BookSearchPreview /> },
+  { id: 'person', label: 'Personen: Seite', render: () => <PersonPagePreview /> },
+  { id: 'people-search', label: 'Suche: Personen + Manga', render: () => <PeopleSearchPreview /> },
   { id: 'book-shelf', label: 'Bücher: Regal', render: () => <BookShelfPreview /> },
   { id: 'book-stats', label: 'Bücher: Statistik', render: () => <BookStatsPreview /> },
   { id: 'episode-share', label: 'Chat: Folge teilen', render: () => <EpisodeSharePreview /> },
   { id: 'chat-reply', label: 'Chat: Antworten + Links', render: () => <ChatReplyPreview /> },
+  { id: 'notifications', label: 'Benachrichtigungen', render: () => <NotificationHubPreview /> },
+  {
+    id: 'notifications-friends',
+    label: 'Benachrichtigungen: nur Freunde',
+    render: () => <NotificationHubPreview friendsOnly />,
+  },
   { id: 'patch-notes', label: 'Patch Notes', render: () => <PatchNotesPage /> },
   {
     id: 'friend-books',

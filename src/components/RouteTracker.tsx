@@ -38,6 +38,7 @@ function getPageName(pathname: string): string {
   if (ROUTE_NAMES[pathname]) return ROUTE_NAMES[pathname];
   if (pathname.startsWith('/series/')) return 'series_detail';
   if (pathname.startsWith('/movie/')) return 'movie_detail';
+  if (pathname.startsWith('/person/')) return 'person_detail';
   if (pathname.startsWith('/episodes/')) return 'episode_management';
   if (pathname.startsWith('/episode/')) return 'episode_discussion';
   if (pathname.startsWith('/rating/')) return 'rating';

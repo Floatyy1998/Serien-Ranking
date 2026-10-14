@@ -1,10 +1,14 @@
 /** Kompositions-Komponente — Logik in useSearchPage, UI in Subkomponenten. */
 
-import { CalendarToday, Close, Movie, Search, Subscriptions } from '@mui/icons-material';
+import { CalendarToday, Close, Movie, Person, Search, Subscriptions } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PersonGridSkeleton, PersonSection } from '../../components/person/PersonSection';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePeopleSearch, usePopularPeople } from '../../hooks/person/usePeopleSearch';
 import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
+import { peopleLeadResults, type PersonHit } from '../../lib/person/personSearch';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
@@ -58,6 +62,27 @@ export const SearchPage = memo(() => {
   } = useSearchPage(activeProviders);
 
   const providerFilterActive = onlyMyProviders && canFilterByProviders;
+  const navigate = useNavigate();
+  const peopleOnly = searchType === 'people';
+  const { people, loading: peopleLoading } = usePeopleSearch(
+    searchQuery,
+    searchType === 'all' || peopleOnly
+  );
+  const popularPeople = usePopularPeople(peopleOnly && !searchQuery.trim());
+  const peopleFirst = peopleLeadResults(people, searchResults, searchQuery);
+  const hasQuery = searchQuery.trim().length >= 2;
+  const openPerson = useCallback(
+    (person: PersonHit) => navigate(`/person/${person.id}`),
+    [navigate]
+  );
+  const peopleSection = (asRow: boolean) => (
+    <PersonSection
+      className="search-people"
+      people={people}
+      onSelect={openPerson}
+      onSeeAll={asRow ? () => setSearchType('people') : undefined}
+    />
+  );
 
   const filterTabs: {
     key: SearchTypeFilter;
@@ -81,6 +106,12 @@ export const SearchPage = memo(() => {
       key: 'movies',
       label: t('Filme'),
       icon: Movie,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+    },
+    {
+      key: 'people',
+      label: t('Personen'),
+      icon: Person,
       gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
   ];
@@ -128,8 +159,8 @@ export const SearchPage = memo(() => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('Suche nach Serien & Filmen...')}
-              aria-label={t('Suche nach Serien und Filmen')}
+              placeholder={t('Titel oder Schauspieler')}
+              aria-label={t('Serien, Filme und Personen suchen')}
               autoFocus
               className="search-input"
               style={{ color: currentTheme.text.primary, outline: 'none' }}
@@ -220,7 +251,37 @@ export const SearchPage = memo(() => {
       {/* Content */}
       <div className="search-content">
         <AnimatePresence mode="wait">
-          {loading ? (
+          {peopleOnly && !hasQuery ? (
+            <motion.div key="people-popular" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <p className="search-results-count" style={{ color: currentTheme.text.muted }}>
+                {t('Gerade gefragt')}
+              </p>
+              {popularPeople === null ? (
+                <PersonGridSkeleton />
+              ) : (
+                <PersonSection people={popularPeople} onSelect={openPerson} />
+              )}
+            </motion.div>
+          ) : peopleOnly ? (
+            peopleLoading ? (
+              <motion.div key="people-loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <PersonGridSkeleton />
+              </motion.div>
+            ) : people.length > 0 ? (
+              <motion.div key="people" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {peopleSection(false)}
+              </motion.div>
+            ) : (
+              <motion.div key="people-empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <EmptyState
+                  icon={<Person style={{ fontSize: '48px' }} />}
+                  title={t('Keine Personen gefunden')}
+                  description={t('Keine Personen für „{query}“', { query: searchQuery })}
+                  action={{ label: t('Suche löschen'), onClick: () => setSearchQuery('') }}
+                />
+              </motion.div>
+            )
+          ) : loading ? (
             <motion.div
               key="loading"
               initial={{ opacity: 0 }}
@@ -230,18 +291,21 @@ export const SearchPage = memo(() => {
             >
               <SkeletonRatingsGrid count={8} />
             </motion.div>
-          ) : searchQuery && searchResults.length > 0 ? (
+          ) : searchQuery && (searchResults.length > 0 || people.length > 0) ? (
             <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {/* Results Count */}
-              <p className="search-results-count" style={{ color: currentTheme.text.muted }}>
-                <span
-                  className="search-results-count-number"
-                  style={{ color: currentTheme.primary }}
-                >
-                  {searchResults.length}
-                </span>{' '}
-                {t('Ergebnisse für "{query}"', { query: searchQuery })}
-              </p>
+              {searchResults.length > 0 && (
+                <p className="search-results-count" style={{ color: currentTheme.text.muted }}>
+                  <span
+                    className="search-results-count-number"
+                    style={{ color: currentTheme.primary }}
+                  >
+                    {searchResults.length}
+                  </span>{' '}
+                  {t('Ergebnisse für "{query}"', { query: searchQuery })}
+                </p>
+              )}
+
+              {peopleFirst && people.length > 0 && peopleSection(searchResults.length > 0)}
 
               {/* Results Grid */}
               <div
@@ -262,6 +326,8 @@ export const SearchPage = memo(() => {
                   />
                 ))}
               </div>
+
+              {!peopleFirst && people.length > 0 && peopleSection(true)}
             </motion.div>
           ) : searchQuery && error && !loading ? (
             <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

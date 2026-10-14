@@ -34,6 +34,7 @@ import sharedLists from './shared-lists';
 import tour from './tour';
 import social from './social';
 import watchplan from './watchplan';
+import people from './people';
 
 const pt: Record<string, string> = {
   ...analytics,
@@ -65,6 +66,7 @@ const pt: Record<string, string> = {
   ...tour,
   ...social,
   ...watchplan,
+  ...people,
 };
 
 export default pt;

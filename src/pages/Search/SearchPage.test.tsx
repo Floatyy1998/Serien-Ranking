@@ -89,6 +89,16 @@ vi.mock('./useSearchPage', () => ({
   }),
 }));
 
+const people = vi.hoisted(() => ({
+  hits: [] as Array<{ id: number; name: string; profilePath?: string; popularity: number }>,
+  navigate: vi.fn(),
+}));
+vi.mock('react-router-dom', () => ({ useNavigate: () => people.navigate }));
+vi.mock('../../hooks/person/usePeopleSearch', () => ({
+  usePeopleSearch: () => ({ people: people.hits, loading: false }),
+  usePopularPeople: () => [],
+}));
+
 const subs = vi.hoisted(() => ({ activeProviders: new Set<string>() }));
 vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({
@@ -156,6 +166,7 @@ afterEach(() => {
   data.onlyMyProviders = false;
   data.quickRating = { open: false, title: '', afterWatched: false, initialRating: 0 };
   subs.activeProviders = new Set();
+  people.hits = [];
   vi.clearAllMocks();
 });
 
@@ -184,7 +195,7 @@ describe('SearchPage', () => {
 
   it('propagates typed input to setSearchQuery', () => {
     render(<SearchPage />);
-    fireEvent.change(screen.getByPlaceholderText('Suche nach Serien & Filmen...'), {
+    fireEvent.change(screen.getByPlaceholderText('Titel oder Schauspieler'), {
       target: { value: 'dune' },
     });
     expect(data.setSearchQuery).toHaveBeenCalledWith('dune');
@@ -201,6 +212,26 @@ describe('SearchPage', () => {
     data.searchResults = [result(1), result(2)];
     render(<SearchPage />);
     expect(screen.getAllByTestId('result')).toHaveLength(2);
+  });
+
+  it('zeigt passende Personen vor den Titeln und öffnet ihre Seite', () => {
+    data.searchQuery = 'pedro pascal';
+    data.searchResults = [result(1)];
+    people.hits = [{ id: 1253360, name: 'Pedro Pascal', profilePath: '/p.jpg', popularity: 10 }];
+    render(<SearchPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pedro Pascal' }));
+    expect(people.navigate).toHaveBeenCalledWith('/person/1253360');
+    const heads = screen.getAllByText('Personen');
+    fireEvent.click(heads[heads.length - 1]);
+    expect(data.setSearchType).toHaveBeenCalledWith('people');
+  });
+
+  it('zeigt Personen-Treffer auch ohne Titel-Treffer statt „Keine Ergebnisse“', () => {
+    data.searchQuery = 'pedro pascal';
+    people.hits = [{ id: 1253360, name: 'Pedro Pascal', profilePath: '/p.jpg', popularity: 10 }];
+    render(<SearchPage />);
+    expect(screen.getByRole('button', { name: 'Pedro Pascal' })).toBeInTheDocument();
+    expect(screen.queryByText('Keine Ergebnisse')).not.toBeInTheDocument();
   });
 
   it('disables the abo filter toggle without active subscriptions', () => {

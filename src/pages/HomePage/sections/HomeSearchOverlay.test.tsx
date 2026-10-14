@@ -38,7 +38,9 @@ vi.mock('react-router-dom', async () => {
 vi.mock('@mui/icons-material', () => ({
   Add: () => null,
   Check: () => null,
+  ChevronRight: () => null,
   Close: () => null,
+  Person: () => null,
   Search: () => null,
   Star: () => null,
   Visibility: () => null,
@@ -121,8 +123,21 @@ vi.mock('../../Books/components/BookQuickResults', () => ({
   BookQuickResults: () => null,
   BookOverlayIdle: () => null,
 }));
+vi.mock('../../Manga/components/MangaQuickResults', () => ({
+  MangaQuickResults: (p: { variant: string }) => <div data-testid={`manga-${p.variant}`} />,
+  MangaOverlayIdle: () => <div data-testid="manga-idle" />,
+}));
+vi.mock('../../../hooks/person/usePeopleSearch', () => ({
+  usePopularPeople: () => [],
+}));
+const search = vi.hoisted(() => ({
+  people: [] as Array<{ id: number; name: string; profilePath?: string; popularity: number }>,
+  peopleFirst: false,
+}));
 vi.mock('./useHomeQuickSearch', () => ({
   useHomeQuickSearch: () => ({
+    people: search.people,
+    peopleFirst: search.peopleFirst,
     query: 'breaking',
     setQuery: vi.fn(),
     results: [
@@ -171,6 +186,8 @@ afterEach(() => {
   api.backendFetch.mockReset();
   quick.markMovieWatched.mockClear();
   quick.saveQuickRating.mockClear();
+  search.people = [];
+  search.peopleFirst = false;
   cleanup();
 });
 
@@ -321,5 +338,61 @@ describe('HomeSearchOverlay Poster-Aktionen', () => {
       undefined
     );
     expect(screen.queryByTestId('quick-rating')).toBeNull();
+  });
+});
+
+describe('HomeSearchOverlay Personen und Manga', () => {
+  const pedro = { id: 1253360, name: 'Pedro Pascal', profilePath: '/p.jpg', popularity: 10 };
+
+  it('stellt passende Personen vor die Titel und öffnet ihre Seite, ohne zu schließen', () => {
+    search.people = [pedro];
+    search.peopleFirst = true;
+    const onClose = vi.fn();
+    render(<HomeSearchOverlay open onClose={onClose} />);
+    const person = screen.getByRole('button', { name: 'Pedro Pascal' });
+    const firstCard = cardOf('Breaking Bad');
+    expect(
+      person.compareDocumentPosition(firstCard) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    fireEvent.click(person);
+    expect(navigateMock).toHaveBeenCalledWith('/person/1253360');
+
+    act(() => locationStore.set('/person/1253360', 'person-1'));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(overlay()?.style.display).toBe('none');
+  });
+
+  it('setzt weniger passende Personen hinter die Titel', () => {
+    search.people = [pedro];
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    const person = screen.getByRole('button', { name: 'Pedro Pascal' });
+    expect(
+      cardOf('Heat').compareDocumentPosition(person) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('blendet Personen im Serien-Filter aus und zeigt sie im Personen-Filter allein', () => {
+    search.people = [pedro];
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Serien' }));
+    expect(screen.queryByRole('button', { name: 'Pedro Pascal' })).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Personen' })[0]);
+    expect(screen.getByRole('button', { name: 'Pedro Pascal' })).toBeTruthy();
+    expect(screen.queryByText('Breaking Bad')).toBeNull();
+  });
+
+  it('zeigt Manga als Reihe in „Alle“ und als Raster im Manga-Filter', () => {
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    expect(screen.getByTestId('manga-row')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Manga' }));
+    expect(screen.getByTestId('manga-grid')).toBeTruthy();
+    expect(screen.queryByText('Breaking Bad')).toBeNull();
+  });
+
+  it('parkt auch auf einer Manga-Detailseite', () => {
+    const onClose = vi.fn();
+    render(<HomeSearchOverlay open onClose={onClose} />);
+    act(() => locationStore.set('/manga/30013', 'manga-1'));
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

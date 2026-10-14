@@ -16,8 +16,6 @@ const dict: Record<string, string> = {
   'Bitte einloggen um Inhalte hinzuzufügen!': 'Connecte-toi pour ajouter des titres !',
   '"{title}" wurde erfolgreich hinzugefügt!': '« {title} » a bien été ajouté !',
   Suche: 'Recherche',
-  'Suche nach Serien & Filmen...': 'Rechercher des séries et films...',
-  'Suche nach Serien und Filmen': 'Rechercher des séries et des films',
   'Suche löschen': 'Effacer la recherche',
   'Filter: {label}': 'Filtre : {label}',
   Abos: 'Abonnements',

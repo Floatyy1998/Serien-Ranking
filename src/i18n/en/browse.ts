@@ -16,8 +16,6 @@ const dict: Record<string, string> = {
 
   // Suche
   Suche: 'Search',
-  'Suche nach Serien & Filmen...': 'Search shows & movies...',
-  'Suche nach Serien und Filmen': 'Search shows and movies',
   'Suche löschen': 'Clear search',
   'Filter: {label}': 'Filter: {label}',
   Abos: 'Subscriptions',

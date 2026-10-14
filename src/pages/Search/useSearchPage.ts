@@ -46,7 +46,7 @@ export interface SearchResult {
   watched?: boolean;
 }
 
-export type SearchTypeFilter = 'all' | 'series' | 'movies';
+export type SearchTypeFilter = 'all' | 'series' | 'movies' | 'people';
 
 type AddOutcome = 'added' | 'exists' | 'failed';
 

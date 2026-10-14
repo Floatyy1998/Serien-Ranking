@@ -1,0 +1,89 @@
+.mqr {
+  margin-top: 22px;
+}
+
+.mqr:first-child {
+  margin-top: 0;
+}
+
+.mobile-app .mqr-head,
+.mqr-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 32px;
+  min-width: 0;
+  margin: 0 0 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mqr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 14px;
+  padding-top: 4px;
+}
+
+.mqr-grid--row {
+  grid-template-rows: auto;
+  grid-auto-rows: 0;
+  row-gap: 0;
+  overflow: hidden;
+}
+
+.mqr-skeleton {
+  aspect-ratio: 2 / 3;
+  border-radius: 14px;
+  animation: mqr-pulse 1.4s ease-in-out infinite;
+}
+
+.mqr-empty {
+  padding: 32px 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+@keyframes mqr-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 560px) {
+  .mqr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (min-width: 700px) {
+  .mqr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .mqr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .mqr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 24px;
+  }
+}

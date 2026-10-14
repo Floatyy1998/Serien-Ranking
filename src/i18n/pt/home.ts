@@ -259,8 +259,6 @@ const dict: Record<string, string> = {
   '„{title}" hinzugefügt': '"{title}" adicionado',
   'In deiner Liste': 'Na sua lista',
   '„{title}" zur Liste hinzufügen': 'Adicionar "{title}" à lista',
-  'Serien & Filme suchen…': 'Buscar séries e filmes…',
-  'Serien und Filme suchen': 'Buscar séries e filmes',
   'Suche leeren': 'Limpar busca',
   'Suche schließen': 'Fechar busca',
   'Keine Treffer für „{query}“': 'Nenhum resultado para "{query}"',

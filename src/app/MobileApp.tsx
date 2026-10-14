@@ -28,6 +28,7 @@ import '../styles/App.css';
 import {
   SeriesDetailPage,
   MovieDetailPage,
+  PersonPage,
   ThemePage,
   HomeLayoutPage,
   WrappedPage,
@@ -356,6 +357,14 @@ export const MobileApp = () => {
                 element={
                   <Layout hideNav>
                     <MovieDetailPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/person/:id"
+                element={
+                  <Layout hideNav>
+                    <PersonPage />
                   </Layout>
                 }
               />

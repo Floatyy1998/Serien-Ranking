@@ -316,8 +316,6 @@ const dict: Record<string, string> = {
   '„{title}" hinzugefügt': '"{title}" added',
   'In deiner Liste': 'In your list',
   '„{title}" zur Liste hinzufügen': 'Add "{title}" to your list',
-  'Serien & Filme suchen…': 'Search series & movies…',
-  'Serien und Filme suchen': 'Search series and movies',
   'Suche leeren': 'Clear search',
   'Suche schließen': 'Close search',
   'Keine Treffer für „{query}“': 'No matches for “{query}”',
