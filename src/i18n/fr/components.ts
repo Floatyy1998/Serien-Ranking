@@ -159,7 +159,7 @@ const dict: Record<string, string> = {
   Authentifizierung: 'Authentification',
   'Synchronisiere Daten': 'Synchronisation des données',
   Finalisiere: 'Finalisation',
-  'Serien, Filme & Manga im Blick': "Séries, films et mangas en un coup d'œil",
+  'Serien, Filme, Manga & Bücher im Blick': "Séries, films, mangas et livres en un coup d'œil",
   'Aktuell am Schauen': 'En cours de visionnage',
   'Benachrichtigungen öffnen, {anzahl} ungelesen': 'Ouvrir les notifications, {anzahl} non lues',
   'Benachrichtigungen öffnen': 'Ouvrir les notifications',

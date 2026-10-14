@@ -168,7 +168,7 @@ const dict: Record<string, string> = {
   Authentifizierung: 'Authenticating',
   'Synchronisiere Daten': 'Syncing data',
   Finalisiere: 'Finalizing',
-  'Serien, Filme & Manga im Blick': 'Shows, movies & manga at a glance',
+  'Serien, Filme, Manga & Bücher im Blick': 'Shows, movies, manga & books at a glance',
 
   // NowPlaying / HeaderActions / SectionHeader / Scroll
   'Aktuell am Schauen': 'Currently watching',

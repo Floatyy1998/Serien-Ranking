@@ -111,7 +111,7 @@ describe('HeroSection', () => {
   it('renders the brand name and tagline', () => {
     render(<HeroSection />);
     expect(screen.getByText('TV-RANK')).toBeInTheDocument();
-    expect(screen.getByText('Serien, Film & Manga Tracker')).toBeInTheDocument();
+    expect(screen.getByText('Serien, Filme, Manga & Bücher')).toBeInTheDocument();
   });
 
   it('renders the register and login CTAs with correct links', () => {

@@ -142,7 +142,7 @@ const dict: Record<string, string> = {
   'Suchen...': 'Buscar...',
   Suchen: 'Buscar',
   'Lade Inhalte': 'Carregando conteúdo',
-  'Serien, Filme & Manga im Blick': 'Séries, filmes e mangás sob controle',
+  'Serien, Filme, Manga & Bücher im Blick': 'Séries, filmes, mangás e livros sob controle',
   'Lade Bewertungen': 'Carregando avaliações',
   'Daten werden geladen': 'Carregando dados',
   'Erneut versuchen': 'Tentar de novo',

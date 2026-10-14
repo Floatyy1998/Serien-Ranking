@@ -9,8 +9,8 @@ const dict: Record<string, string> = {
   'Ungültige E-Mail-Adresse.': 'Invalid email address.',
   'Unbekannter Fehler': 'Unknown error',
   'Dein Kino. Dein Ranking.': 'Your movies. Your ranking.',
-  'Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.':
-    'Track shows, movies & manga — with friends, stats and all the bells and whistles.',
+  'Tracke Serien, Filme, Manga & Bücher — mit Freunden, Stats und allem Drum und Dran.':
+    'Track shows, movies, manga & books — with friends, stats and all the bells and whistles.',
 
   // --- Login ---
   'Willkommen zurück': 'Welcome back',
@@ -179,10 +179,11 @@ const dict: Record<string, string> = {
   "los geht's": "let's go",
 
   // --- Start-Landing ---
-  'Serien, Film & Manga Tracker': 'Series, movie & manga tracker',
-  'Dein ultimativer Serien, Film & Manga Tracker': 'Your ultimate series, movie & manga tracker',
-  'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
-    'Discover new series, movies and manga, manage your watchlist, track your progress, and share your favorites with friends.',
+  'Serien, Filme, Manga & Bücher': 'Series, movies, manga & books',
+  'Dein ultimativer Tracker für Serien, Filme, Manga & Bücher':
+    'Your ultimate tracker for series, movies, manga & books',
+  'Entdecke neue Serien, Filme, Manga und Bücher, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
+    'Discover new series, movies, manga and books, manage your watchlist, track your progress, and share your favorites with friends.',
   'Kostenlos starten': 'Start for free',
   'Desktop App herunterladen': 'Download desktop app',
   'Alles was du brauchst': 'Everything you need',

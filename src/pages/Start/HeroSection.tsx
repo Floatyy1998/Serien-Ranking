@@ -31,7 +31,7 @@ export const HeroSection = () => (
       {/* Links: Marke + Claim + CTAs */}
       <div className="start-hero-copy">
         <div className="start-hero-subtitle" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-          {t('Serien, Film & Manga Tracker')}
+          {t('Serien, Filme, Manga & Bücher')}
         </div>
 
         <GradientText as="h1" style={{ marginBottom: '24px' }}>
@@ -40,13 +40,13 @@ export const HeroSection = () => (
 
         <div className="start-hero-description" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
           <span style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontWeight: 300 }}>
-            {t('Dein ultimativer Serien, Film & Manga Tracker')}
+            {t('Dein ultimativer Tracker für Serien, Filme, Manga & Bücher')}
           </span>
         </div>
         <div className="start-hero-body" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
           <span style={{ fontSize: 'clamp(0.95rem, 1.5vw, 1.05rem)' }}>
             {t(
-              'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.'
+              'Entdecke neue Serien, Filme, Manga und Bücher, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.'
             )}
           </span>
         </div>

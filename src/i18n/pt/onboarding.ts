@@ -1,8 +1,8 @@
 /** Pre-Auth-Bereich (Start-Landing, Login/Registrierung, Onboarding) — Deutsch → Portugiesisch. */
 
 const dict: Record<string, string> = {
-  'Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.':
-    'Acompanhe séries, filmes e mangás: com amigos, estatísticas e tudo mais.',
+  'Tracke Serien, Filme, Manga & Bücher — mit Freunden, Stats und allem Drum und Dran.':
+    'Acompanhe séries, filmes, mangás e livros: com amigos, estatísticas e tudo mais.',
   'Bitte gib zuerst deine E-Mail-Adresse ein.': 'Digite primeiro o seu e-mail.',
   'E-Mail': 'E-mail',
   Passwort: 'Senha',
@@ -159,11 +159,11 @@ const dict: Record<string, string> = {
   fortgesetzt: 'retomada',
   'Deine Auswahl': 'Sua seleção',
   "los geht's": 'vamos lá!',
-  'Serien, Film & Manga Tracker': 'Tracker de séries, filmes e mangás',
-  'Dein ultimativer Serien, Film & Manga Tracker':
-    'Seu tracker definitivo de séries, filmes e mangás',
-  'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
-    'Descubra novas séries, filmes e mangás, gerencie sua lista, acompanhe seu progresso e compartilhe seus favoritos com amigos.',
+  'Serien, Filme, Manga & Bücher': 'Séries, filmes, mangás e livros',
+  'Dein ultimativer Tracker für Serien, Filme, Manga & Bücher':
+    'Seu tracker definitivo de séries, filmes, mangás e livros',
+  'Entdecke neue Serien, Filme, Manga und Bücher, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
+    'Descubra novas séries, filmes, mangás e livros, gerencie sua lista, acompanhe seu progresso e compartilhe seus favoritos com amigos.',
   'Kostenlos starten': 'Começar de graça',
   'Desktop App herunterladen': 'Baixar o app para desktop',
   'Alles was du brauchst': 'Tudo o que você precisa',

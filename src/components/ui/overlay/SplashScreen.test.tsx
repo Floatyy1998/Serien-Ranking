@@ -30,7 +30,7 @@ describe('SplashScreen', () => {
   it('renders the brand and initial loading state (smoke)', () => {
     render(<SplashScreen />);
     expect(screen.getByText('TV-RANK')).toBeInTheDocument();
-    expect(screen.getByText('Serien, Filme & Manga im Blick')).toBeInTheDocument();
+    expect(screen.getByText('Serien, Filme, Manga & Bücher im Blick')).toBeInTheDocument();
     expect(screen.getByText('Initialisiere System')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
   });

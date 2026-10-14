@@ -134,7 +134,9 @@ export const LoginPage = () => {
             {t('Dein Kino. Dein Ranking.')}
           </GradientText>
           <Typography sx={{ mt: 1.5, color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.05rem' }}>
-            {t('Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.')}
+            {t(
+              'Tracke Serien, Filme, Manga & Bücher — mit Freunden, Stats und allem Drum und Dran.'
+            )}
           </Typography>
         </Box>
       </Box>

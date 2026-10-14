@@ -22,27 +22,27 @@ TV-Rank: Serien Tracker
 
 **App-Store-Untertitel**
 ```
-Serien, Filme & Manga
+Serien, Filme, Manga & Bücher
 ```
 
 **Kurzbeschreibung (Play)**
 ```
-Serien Tracker für Serien, Filme & Manga: Kalender, Statistiken, keine Werbung.
+Serien Tracker für Serien, Filme, Manga & Bücher: Kalender, Stats, werbefrei.
 ```
 
 **Werbetext (App Store)**
 ```
-Neu: Jede Seite erklärt beim ersten Besuch, was du dort tun kannst.
+Neu: Bücher! Seitenfortschritt, Jahres-Leseziel, der nächste Band deiner Reihen und Geschenkideen aus der Wunschliste deiner Freunde.
 ```
 
 **Keywords (App Store)**
 ```
-serientracker,episoden,watchlist,streaming,anime,manga,kalender,statistik,binge,rewatch
+serientracker,episoden,watchlist,streaming,anime,kalender,statistik,binge,lesen,leseliste,rewatch
 ```
 
 **Beschreibung**
 ```
-TV-Rank ist ein Serien Tracker für alles, was du schaust und liest: Serien, Filme und Manga an einem Ort. Kostenlos, ohne Werbung und ohne Tracking durch Dritte.
+TV-Rank ist ein Serien Tracker für alles, was du schaust und liest: Serien, Filme, Manga und Bücher an einem Ort. Kostenlos, ohne Werbung und ohne Tracking durch Dritte.
 
 DEIN TRACKER
 • Folgen mit einem Fingertipp abhaken, ganze Staffeln auf einmal
@@ -94,6 +94,13 @@ MANGA
 • Aufholen zeigt, wo du am weitesten zurückliegst
 • Eigene Notizen zu jedem Titel
 
+BÜCHER
+• Bücher per Titel, Autor oder ISBN finden und die Seite festhalten, auf der du bist
+• Jahres-Leseziel, Lese-Serie und Statistiken zu Seiten und Lesetempo
+• Reihen im Blick: der nächste Band samt Erscheinungstermin
+• Die Buchvorlagen zu deinen Serien und Filmen
+• Wunschliste, aus der deine Freunde Geschenkideen bekommen
+
 ANPASSEN
 • Farben frei wählbar, die ganze App übernimmt sie
 • Anzeigegröße für die komplette Oberfläche
@@ -104,12 +111,12 @@ ANPASSEN
 
 DEINE DATEN
 • Export als JSON zum Sichern oder als CSV für andere Apps
-• Import aus Trakt
-• Nutzungsstatistiken sind freiwillig und lassen sich abschalten
+• Import aus Trakt, Bücher aus Goodreads und StoryGraph
+• Nutzungsstatistiken sind freiwillig und lassen sich abschalten
 
 Verfügbar auf Deutsch, Englisch, Spanisch, Französisch und Portugiesisch. Auch im Browser unter tv-rank.de.
 
-Serien- und Filmdaten von TMDB, Episodendaten von TVmaze, Streaming-Verfügbarkeit von JustWatch, Manga-Daten von AniList. TV-Rank steht in keiner Verbindung zu diesen Anbietern.
+Serien- und Filmdaten von TMDB, Episodendaten von TVmaze, Streaming-Verfügbarkeit von JustWatch, Manga-Daten von AniList, Buchdaten von Google Books, Open Library und Wikidata. TV-Rank steht in keiner Verbindung zu diesen Anbietern.
 ```
 
 ---
@@ -123,27 +130,27 @@ TV-Rank: TV Show Tracker
 
 **App Store subtitle**
 ```
-Series, movies & manga
+Series, movies, manga & books
 ```
 
 **Short description (Play)**
 ```
-TV show tracker for series, movies & manga: calendar, stats, no ads.
+TV show tracker for series, movies, manga & books: calendar, stats, no ads.
 ```
 
 **Promotional text (App Store)**
 ```
-New: every page now explains what you can do there the first time you open it.
+New: books! Page progress, a yearly reading goal, the next volume in your series and gift ideas from your friends' wishlists.
 ```
 
 **Keywords (App Store)**
 ```
-showtracker,episodes,watchlist,streaming,anime,manga,calendar,stats,binge,rewatch
+showtracker,episodes,watchlist,streaming,anime,calendar,stats,binge,reading,readinglist,rewatch
 ```
 
 **Description**
 ```
-TV-Rank is a TV show tracker for everything you watch and read: series, movies and manga in one place. Free, without ads and without third-party tracking.
+TV-Rank is a TV show tracker for everything you watch and read: series, movies, manga and books in one place. Free, without ads and without third-party tracking.
 
 YOUR TRACKER
 • Check off episodes with one tap, or set a whole season at once
@@ -195,6 +202,13 @@ MANGA
 • Catch-up shows where you have fallen behind the most
 • Your own notes on every title
 
+BOOKS
+• Find books by title, author or ISBN and keep track of the page you are on
+• A yearly reading goal, reading streaks and stats on pages and reading pace
+• Keep up with series: the next volume and its release date
+• The books behind your shows and movies
+• A wishlist your friends can pick gift ideas from
+
 MAKE IT YOURS
 • Pick your colours and the whole app takes them on
 • Display size for the entire interface
@@ -205,12 +219,12 @@ MAKE IT YOURS
 
 YOUR DATA
 • Export as JSON for a backup, or as CSV for other apps
-• Import from Trakt
-• Usage statistics are optional and can be switched off
+• Import from Trakt, and books from Goodreads and StoryGraph
+• Usage statistics are optional and can be switched off
 
 Available in German, English, Spanish, French and Portuguese. Also in your browser at tv-rank.de.
 
-Series and movie data from TMDB, episode data from TVmaze, streaming availability from JustWatch, manga data from AniList. TV-Rank is not affiliated with any of them.
+Series and movie data from TMDB, episode data from TVmaze, streaming availability from JustWatch, manga data from AniList, book data from Google Books, Open Library and Wikidata. TV-Rank is not affiliated with any of them.
 ```
 
 ---
@@ -224,27 +238,27 @@ TV-Rank: Rastreador series
 
 **Subtítulo (App Store)**
 ```
-Series, películas y manga
+Series, cine, manga y libros
 ```
 
 **Descripción breve (Play)**
 ```
-Rastreador de series, películas y manga: calendario, estadísticas, sin anuncios.
+Rastreador de series, películas, manga y libros: calendario, sin anuncios.
 ```
 
 **Texto promocional (App Store)**
 ```
-Nuevo: cada página te explica lo que puedes hacer allí la primera vez que la abres.
+Nuevo: ¡libros! Progreso por páginas, meta de lectura anual, el próximo tomo de tus sagas e ideas de regalo en las listas de deseos de tus amigos.
 ```
 
 **Keywords (App Store)**
 ```
-seriestracker,episodios,pendientes,streaming,anime,manga,calendario,estadisticas,maraton
+seriestracker,episodios,pendientes,streaming,anime,calendario,estadisticas,maraton,lectura,leer
 ```
 
 **Descripción**
 ```
-TV-Rank es un rastreador de series para todo lo que ves y lees: series, películas y manga en un solo sitio. Gratis, sin anuncios y sin rastreo de terceros.
+TV-Rank es un rastreador de series para todo lo que ves y lees: series, películas, manga y libros en un solo sitio. Gratis, sin anuncios y sin rastreo de terceros.
 
 TU RASTREADOR
 • Marca episodios con un toque, o una temporada entera de una vez
@@ -296,6 +310,13 @@ MANGA
 • Ponerse al día muestra dónde vas más atrasado
 • Tus propias notas en cada título
 
+LIBROS
+• Busca libros por título, autor o ISBN y apunta la página por la que vas
+• Meta de lectura anual, rachas de lectura y estadísticas de páginas y ritmo
+• Sagas al día: el próximo tomo con su fecha de salida
+• Los libros en los que se basan tus series y películas
+• Una lista de deseos de la que tus amigos sacan ideas de regalo
+
 A TU GUSTO
 • Elige tus colores y toda la app los adopta
 • Tamaño de visualización para toda la interfaz
@@ -306,12 +327,12 @@ A TU GUSTO
 
 TUS DATOS
 • Exporta en JSON como copia de seguridad, o en CSV para otras apps
-• Importa desde Trakt
-• Las estadísticas de uso son opcionales y se pueden desactivar
+• Importa desde Trakt, y libros desde Goodreads y StoryGraph
+• Las estadísticas de uso son opcionales y se pueden desactivar
 
 Disponible en alemán, inglés, español, francés y portugués. También en el navegador, en tv-rank.de.
 
-Datos de series y películas de TMDB, episodios de TVmaze, disponibilidad de JustWatch, manga de AniList. TV-Rank no está afiliada a ninguno de ellos.
+Datos de series y películas de TMDB, episodios de TVmaze, disponibilidad de JustWatch, manga de AniList, libros de Google Books, Open Library y Wikidata. TV-Rank no está afiliada a ninguno de ellos.
 ```
 
 ---
@@ -325,27 +346,27 @@ TV-Rank : suivi de séries
 
 **Sous-titre (App Store)**
 ```
-Séries, films et mangas
+Séries, films, mangas, livres
 ```
 
 **Description courte (Play)**
 ```
-Suivi de séries, films et mangas : calendrier, statistiques, sans publicité.
+Suivi de séries, films, mangas et livres : calendrier, stats, sans publicité.
 ```
 
 **Texte promotionnel (App Store)**
 ```
-Nouveau : chaque page explique ce que tu peux y faire la première fois que tu l'ouvres.
+Nouveau : les livres ! Suivi des pages, objectif de lecture annuel, le prochain tome de tes séries et des idées cadeaux dans les envies de tes amis.
 ```
 
 **Keywords (App Store)**
 ```
-suiviseries,episodes,alister,streaming,anime,manga,calendrier,statistiques,binge
+suiviseries,episodes,alister,streaming,anime,calendrier,statistiques,binge,lecture,lire
 ```
 
 **Description**
 ```
-TV-Rank est une application de suivi de séries pour tout ce que tu regardes et lis : séries, films et mangas au même endroit. Gratuit, sans publicité et sans pistage tiers.
+TV-Rank est une application de suivi de séries pour tout ce que tu regardes et lis : séries, films, mangas et livres au même endroit. Gratuit, sans publicité et sans pistage tiers.
 
 TON SUIVI
 • Coche des épisodes d'une pression, ou une saison entière d'un coup
@@ -397,6 +418,13 @@ MANGAS
 • Le rattrapage montre où tu as le plus de retard
 • Tes propres notes sur chaque titre
 
+LIVRES
+• Trouve des livres par titre, auteur ou ISBN et note la page où tu en es
+• Objectif de lecture annuel, séries de lecture et statistiques de pages et de rythme
+• Les sagas sous contrôle : le prochain tome et sa date de sortie
+• Les livres à l'origine de tes séries et de tes films
+• Une liste d'envies où tes amis trouvent des idées cadeaux
+
 À TON GOÛT
 • Choisis tes couleurs, toute l'app les adopte
 • Taille d'affichage pour l'interface entière
@@ -407,12 +435,12 @@ MANGAS
 
 TES DONNÉES
 • Export en JSON pour une sauvegarde, ou en CSV pour d'autres applis
-• Import depuis Trakt
-• Les statistiques d'usage sont facultatives et désactivables
+• Import depuis Trakt, et des livres depuis Goodreads et StoryGraph
+• Les statistiques d'usage sont facultatives et désactivables
 
 Disponible en allemand, anglais, espagnol, français et portugais. Aussi dans ton navigateur sur tv-rank.de.
 
-Données séries et films de TMDB, épisodes de TVmaze, disponibilité de JustWatch, mangas d'AniList. TV-Rank n'est affiliée à aucun d'entre eux.
+Données séries et films de TMDB, épisodes de TVmaze, disponibilité de JustWatch, mangas d'AniList, livres de Google Books, Open Library et Wikidata. TV-Rank n'est affiliée à aucun d'entre eux.
 ```
 
 ---
@@ -426,27 +454,27 @@ TV-Rank: rastreador séries
 
 **Subtítulo (App Store)**
 ```
-Séries, filmes e mangás
+Séries, filmes, mangás, livros
 ```
 
 **Descrição breve (Play)**
 ```
-Rastreador de séries, filmes e mangás: calendário, estatísticas, sem anúncios.
+Rastreador de séries, filmes, mangás e livros: calendário, sem anúncios.
 ```
 
 **Texto promocional (App Store)**
 ```
-Novidade: cada página explica o que dá para fazer nela na primeira vez que você abre.
+Novidade: livros! Progresso por página, meta de leitura do ano, o próximo volume das suas sagas e ideias de presente na lista de desejos dos amigos.
 ```
 
 **Keywords (App Store)**
 ```
-rastreadorseries,episodios,assistir,streaming,anime,manga,calendario,estatisticas,maratona
+rastreadorseries,episodios,assistir,streaming,anime,calendario,estatisticas,maratona,leitura,ler
 ```
 
 **Descrição**
 ```
-O TV-Rank é um rastreador de séries para tudo o que você assiste e lê: séries, filmes e mangás em um só lugar. De graça, sem anúncios e sem rastreamento de terceiros.
+O TV-Rank é um rastreador de séries para tudo o que você assiste e lê: séries, filmes, mangás e livros em um só lugar. De graça, sem anúncios e sem rastreamento de terceiros.
 
 SEU RASTREADOR
 • Marque episódios com um toque, ou uma temporada inteira de uma vez
@@ -498,6 +526,13 @@ MANGÁS
 • Colocar em dia mostra onde você está mais atrasado
 • Suas próprias anotações em cada título
 
+LIVROS
+• Encontre livros por título, autor ou ISBN e marque a página em que você está
+• Meta de leitura do ano, sequências de leitura e estatísticas de páginas e ritmo
+• Sagas em dia: o próximo volume com a data de lançamento
+• Os livros que deram origem às suas séries e filmes
+• Uma lista de desejos de onde seus amigos tiram ideias de presente
+
 DO SEU JEITO
 • Escolha suas cores e o app inteiro assume
 • Tamanho de exibição para toda a interface
@@ -508,10 +543,10 @@ DO SEU JEITO
 
 SEUS DADOS
 • Exporte em JSON como backup, ou em CSV para outros apps
-• Importe do Trakt
-• As estatísticas de uso são opcionais e podem ser desligadas
+• Importe do Trakt, e livros do Goodreads e do StoryGraph
+• As estatísticas de uso são opcionais e podem ser desligadas
 
 Disponível em alemão, inglês, espanhol, francês e português. Também no navegador, em tv-rank.de.
 
-Dados de séries e filmes do TMDB, episódios do TVmaze, disponibilidade do JustWatch, mangás do AniList. O TV-Rank não tem vínculo com nenhum deles.
+Dados de séries e filmes do TMDB, episódios do TVmaze, disponibilidade do JustWatch, mangás do AniList, livros do Google Books, Open Library e Wikidata. O TV-Rank não tem vínculo com nenhum deles.
 ```

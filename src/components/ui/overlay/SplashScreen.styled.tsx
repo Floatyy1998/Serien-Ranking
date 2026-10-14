@@ -286,11 +286,22 @@ export const Subtitle = styled('p')`
   color: color-mix(in srgb, var(--theme-text-secondary, #ffffff) 55%, transparent);
   text-transform: uppercase;
   letter-spacing: 8px;
-  margin: 0 0 80px 0;
+  line-height: 1.7;
+  text-align: center;
+  text-wrap: balance;
+  box-sizing: border-box;
+  max-width: 100%;
+  /* Links um den Zeichenabstand mehr: jede Zeile endet mit Abstand und säße sonst zu weit links */
+  padding: 0 24px 0 32px;
   font-family: var(--font-display), 'Inter', sans-serif;
   font-weight: 300;
   animation: ${fadeIn} 1s ease-out 0.6s backwards;
   position: relative;
+
+  /* Doppelte Klasse schlägt die globale Regel .mobile-app p { margin: 0 } */
+  && {
+    margin: 0 0 80px 0;
+  }
 
   &::after {
     content: '';
@@ -311,6 +322,7 @@ export const Subtitle = styled('p')`
   @media (max-width: 768px) {
     font-size: 0.85rem;
     letter-spacing: 5px;
+    padding: 0 20px 0 25px;
   }
 `;
 

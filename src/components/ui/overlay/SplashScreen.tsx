@@ -173,7 +173,7 @@ export const SplashScreen = ({
       {/* Title and subtitle */}
       <SeasonalSplashEyebrow season={season} />
       <Title>TV-RANK</Title>
-      <Subtitle>{t('Serien, Filme & Manga im Blick')}</Subtitle>
+      <Subtitle>{t('Serien, Filme, Manga & Bücher im Blick')}</Subtitle>
 
       {/* Progress section with glass effect */}
       <ProgressWrapper>

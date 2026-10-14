@@ -11,8 +11,8 @@ const dict: Record<string, string> = {
   'Ungültige E-Mail-Adresse.': 'Adresse e-mail invalide.',
   'Unbekannter Fehler': 'Erreur inconnue',
   'Dein Kino. Dein Ranking.': 'Ton cinéma. Ton classement.',
-  'Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.':
-    'Suis tes séries, films et mangas — avec tes amis, des stats et tout le reste.',
+  'Tracke Serien, Filme, Manga & Bücher — mit Freunden, Stats und allem Drum und Dran.':
+    'Suis tes séries, films, mangas et livres — avec tes amis, des stats et tout le reste.',
   'Bitte gib zuerst deine E-Mail-Adresse ein.': "Saisis d'abord ton adresse e-mail.",
   'Wir haben dir eine E-Mail zum Zurücksetzen deines Passworts geschickt.':
     "Nous t'avons envoyé un e-mail pour réinitialiser ton mot de passe.",
@@ -160,10 +160,11 @@ const dict: Record<string, string> = {
   fortgesetzt: 'reprise',
   'Deine Auswahl': 'Ta sélection',
   "los geht's": "c'est parti",
-  'Serien, Film & Manga Tracker': 'Tracker de séries, films et mangas',
-  'Dein ultimativer Serien, Film & Manga Tracker': 'Ton tracker ultime de séries, films et mangas',
-  'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
-    'Découvre de nouvelles séries, films et mangas, gère ta liste, suis ta progression et partage tes favoris avec tes amis.',
+  'Serien, Filme, Manga & Bücher': 'Séries, films, mangas et livres',
+  'Dein ultimativer Tracker für Serien, Filme, Manga & Bücher':
+    'Ton tracker ultime de séries, films, mangas et livres',
+  'Entdecke neue Serien, Filme, Manga und Bücher, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.':
+    'Découvre de nouvelles séries, films, mangas et livres, gère ta liste, suis ta progression et partage tes favoris avec tes amis.',
   'Kostenlos starten': 'Commencer gratuitement',
   'Desktop App herunterladen': "Télécharger l'app desktop",
   'Alles was du brauchst': "Tout ce qu'il te faut",
