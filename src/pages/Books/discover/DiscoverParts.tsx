@@ -1,6 +1,6 @@
 import { Add, Check, ChevronRight, Whatshot } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion, type PanInfo, type Variants } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -214,6 +214,14 @@ const GenreTile: React.FC<{ id: ShelfId; onOpen: () => void }> = ({ id, onOpen }
   );
 };
 
+const HERO_SWIPE_MIN_PX = 50;
+
+const heroSlide: Variants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir * 48 }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -48 }),
+};
+
 /** Großes Feature-Karussell aus den beliebten Neuerscheinungen (hinter den Top 10), nichts aus deiner Sammlung. */
 export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void }> = ({
   onAdd,
@@ -224,6 +232,8 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
   const [featured, setFeatured] = useState<{ result: BookSearchResult; genre: ShelfId }[]>([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
+  const [dir, setDir] = useState(1);
+  const draggedRef = useRef(false);
 
   useEffect(() => {
     let alive = true;
@@ -247,12 +257,33 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
 
   useEffect(() => {
     if (featured.length < 2 || paused) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % featured.length), 7000);
+    const timer = setInterval(() => {
+      setDir(1);
+      setIndex((i) => (i + 1) % featured.length);
+    }, 7000);
     return () => clearInterval(timer);
   }, [featured.length, paused]);
 
   const slide = featured[index % Math.max(1, featured.length)];
   const current = slide?.result;
+  const canSwipe = featured.length > 1;
+
+  const step = (delta: 1 | -1) => {
+    setDir(delta);
+    setIndex((i) => (i + delta + featured.length) % featured.length);
+  };
+
+  const jumpTo = (i: number) => {
+    if (i === index) return;
+    setDir(i > index ? 1 : -1);
+    setIndex(i);
+  };
+
+  const handleSwipe = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const { x, y } = info.offset;
+    if (Math.abs(x) < HERO_SWIPE_MIN_PX || Math.abs(x) < Math.abs(y)) return;
+    step(x < 0 ? 1 : -1);
+  };
 
   if (!loading && !current) return null;
 
@@ -275,14 +306,34 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
         }}
       />
       {current ? (
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={dir}>
           <motion.div
             key={current.id}
             className="dsc-hero-inner"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.45 }}
+            custom={dir}
+            variants={heroSlide}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            drag={canSwipe ? 'x' : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.25}
+            dragMomentum={false}
+            dragSnapToOrigin
+            onPointerDownCapture={() => {
+              draggedRef.current = false;
+            }}
+            onDragStart={() => {
+              draggedRef.current = true;
+            }}
+            onDragEnd={handleSwipe}
+            onClickCapture={(e) => {
+              if (!draggedRef.current) return;
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            style={canSwipe ? { touchAction: 'pan-y' } : undefined}
           >
             <div className="dsc-hero-copy">
               <span className="dsc-kicker" style={{ color: '#fff' }}>
@@ -293,43 +344,43 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
               <span className="dsc-hero-author">
                 {[current.authors[0], current.publishedYear].filter(Boolean).join(' · ')}
               </span>
-              <div className="dsc-hero-actions">
-                {ownedFor(current) ? (
-                  <button
-                    type="button"
-                    className="bk-cta"
-                    onClick={() => open(current)}
-                    style={{
-                      color: getOptimalTextColor(currentTheme.status.success),
-                      background: currentTheme.status.success,
-                    }}
-                  >
-                    <Check style={{ fontSize: 18 }} />
-                    {t('In deinen Büchern')}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="bk-cta"
-                    onClick={() => onAdd(current)}
-                    style={{
-                      color: getOptimalTextColor(currentTheme.primary),
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                    }}
-                  >
-                    <Add style={{ fontSize: 18 }} />
-                    {t('Zu meinen Büchern')}
-                  </button>
-                )}
+            </div>
+            <div className="dsc-hero-actions">
+              {ownedFor(current) ? (
                 <button
                   type="button"
-                  className="bk-cta bk-cta--ghost"
+                  className="bk-cta"
                   onClick={() => open(current)}
-                  style={{ color: '#fff', background: 'rgba(0,0,0,0.3)' }}
+                  style={{
+                    color: getOptimalTextColor(currentTheme.status.success),
+                    background: currentTheme.status.success,
+                  }}
                 >
-                  {t('Ansehen')}
+                  <Check style={{ fontSize: 18 }} />
+                  {t('In deinen Büchern')}
                 </button>
-              </div>
+              ) : (
+                <button
+                  type="button"
+                  className="bk-cta"
+                  onClick={() => onAdd(current)}
+                  style={{
+                    color: getOptimalTextColor(currentTheme.primary),
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  }}
+                >
+                  <Add style={{ fontSize: 18 }} />
+                  {t('Zu meinen Büchern')}
+                </button>
+              )}
+              <button
+                type="button"
+                className="bk-cta bk-cta--ghost"
+                onClick={() => open(current)}
+                style={{ color: '#fff', background: 'rgba(0,0,0,0.3)' }}
+              >
+                {t('Ansehen')}
+              </button>
             </div>
             <div
               className="dsc-hero-cover"
@@ -357,7 +408,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
               key={f.result.id}
               type="button"
               className={`dsc-hero-thumb${i === index ? ' dsc-hero-thumb--on' : ''}`}
-              onClick={() => setIndex(i)}
+              onClick={() => jumpTo(i)}
               aria-label={f.result.title}
               style={i === index ? { outlineColor: currentTheme.primary } : undefined}
             >
@@ -375,7 +426,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
               type="button"
               aria-label={SHELF_TITLES[f.genre]()}
               className={`dsc-hero-dot${i === index ? ' dsc-hero-dot--on' : ''}`}
-              onClick={() => setIndex(i)}
+              onClick={() => jumpTo(i)}
             />
           ))}
         </div>
