@@ -157,6 +157,11 @@ export const SkeletonCards: React.FC<{ count?: number; ranked?: boolean }> = ({
   </>
 );
 
+interface ShelfAction {
+  label: string;
+  onClick: () => void;
+}
+
 const ShelfRow: React.FC<{
   sectionRef: React.Ref<HTMLElement>;
   title: string;
@@ -164,11 +169,25 @@ const ShelfRow: React.FC<{
   icon: React.ReactNode;
   iconColor: string;
   onSeeAll?: () => void;
+  /** Eigene Aktion rechts im Kopf statt „Alle". */
+  action?: ShelfAction;
   items: BookSearchResult[];
   loading: boolean;
   ranked?: boolean;
   onAdd: (result: BookSearchResult) => void;
-}> = ({ sectionRef, title, caption, icon, iconColor, onSeeAll, items, loading, ranked, onAdd }) => {
+}> = ({
+  sectionRef,
+  title,
+  caption,
+  icon,
+  iconColor,
+  onSeeAll,
+  action,
+  items,
+  loading,
+  ranked,
+  onAdd,
+}) => {
   const { currentTheme } = useTheme();
   return (
     <section ref={sectionRef} className="bk-section">
@@ -176,8 +195,8 @@ const ShelfRow: React.FC<{
         icon={icon}
         iconColor={iconColor}
         title={title}
-        onSeeAll={onSeeAll}
-        seeAllLabel={t('Alle')}
+        onSeeAll={action?.onClick ?? onSeeAll}
+        seeAllLabel={action?.label ?? t('Alle')}
         style={caption ? { marginBottom: 4 } : undefined}
       />
       {caption && (
@@ -248,7 +267,8 @@ export const MixedShelf: React.FC<{
   icon?: React.ReactNode;
   iconColor?: string;
   dedupeKey?: string;
-}> = ({ ids, onAdd, title, caption, icon, iconColor, dedupeKey }) => {
+  action?: ShelfAction;
+}> = ({ ids, onAdd, title, caption, icon, iconColor, dedupeKey, action }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const hideOwned = useHideOwned();
@@ -284,6 +304,7 @@ export const MixedShelf: React.FC<{
       icon={icon ?? (GenreIcon ? <GenreIcon /> : <Whatshot />)}
       iconColor={iconColor ?? genre?.colors[1] ?? currentTheme.primary}
       onSeeAll={genre ? () => navigate(`/books/search?genre=${genre.id}`) : undefined}
+      action={action}
       items={items}
       loading={loading}
       onAdd={onAdd}
@@ -291,18 +312,32 @@ export const MixedShelf: React.FC<{
   );
 };
 
-export const GenreTiles: React.FC<{ title?: string }> = ({ title }) => {
+export const GenreTiles: React.FC<{
+  title?: string;
+  /** Lieblingsgenres zuerst. */
+  preferred?: string[];
+  onEditFavorites?: () => void;
+}> = ({ title, preferred = [], onEditFavorites }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
+  const ordered = useMemo(
+    () => [
+      ...GENRES.filter((g) => preferred.includes(g.id)),
+      ...GENRES.filter((g) => !preferred.includes(g.id)),
+    ],
+    [preferred]
+  );
   return (
     <section className="bk-section">
       <SectionHeader
         icon={<ChevronRight />}
         iconColor={currentTheme.accent}
         title={title ?? t('Stöbern nach Genre')}
+        onSeeAll={onEditFavorites}
+        seeAllLabel={t('Lieblingsgenres')}
       />
       <div className="dsc-genres">
-        {GENRES.map((g) => (
+        {ordered.map((g) => (
           <GenreTile key={g.id} id={g.id} onOpen={() => navigate(`/books/search?genre=${g.id}`)} />
         ))}
       </div>

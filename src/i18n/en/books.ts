@@ -313,6 +313,20 @@ const dict: Record<string, string> = {
   'Versuch es gleich nochmal.': 'Try again in a moment.',
   'Titel, Autor oder ISBN': 'Title, author or ISBN',
   'Titel oder ISBN': 'Title or ISBN',
+  Auflage: 'Edition',
+  Eintragen: 'Add',
+  '{label} bearbeiten': 'Edit {label}',
+  'Band-Nr.': 'Book no.',
+  'z. B. 3. Auflage 2021': 'e.g. 3rd printing 2021',
+  'Welche Genres liest du gern?': 'Which genres do you like to read?',
+  'Danach richten sich „Für dich" und die Reihenfolge der Regale.':
+    'This shapes “For you” and the order of the shelves.',
+  'Deine Lieblingsgenres: {genres}': 'Your favorite genres: {genres}',
+  Anpassen: 'Customize',
+  'Was liest du gern?': 'What do you like to read?',
+  'Wähl deine Lieblingsgenres, dann passen die Vorschläge zu dir.':
+    'Pick your favorite genres and the suggestions will fit you.',
+  'Genres wählen': 'Pick genres',
 };
 
 export default dict;

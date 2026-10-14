@@ -315,6 +315,20 @@ const dict: Record<string, string> = {
   'Versuch es gleich nochmal.': 'Réessaie dans un instant.',
   'Titel, Autor oder ISBN': 'Titre, auteur ou ISBN',
   'Titel oder ISBN': 'Titre ou ISBN',
+  Auflage: 'Édition',
+  Eintragen: 'Ajouter',
+  '{label} bearbeiten': 'Modifier {label}',
+  'Band-Nr.': 'N° du tome',
+  'z. B. 3. Auflage 2021': 'p. ex. 3e édition 2021',
+  'Welche Genres liest du gern?': 'Quels genres aimes-tu lire ?',
+  'Danach richten sich „Für dich" und die Reihenfolge der Regale.':
+    'Cela oriente « Pour toi » et l’ordre des étagères.',
+  'Deine Lieblingsgenres: {genres}': 'Tes genres préférés : {genres}',
+  Anpassen: 'Personnaliser',
+  'Was liest du gern?': 'Qu’aimes-tu lire ?',
+  'Wähl deine Lieblingsgenres, dann passen die Vorschläge zu dir.':
+    'Choisis tes genres préférés et les suggestions te correspondront.',
+  'Genres wählen': 'Choisir des genres',
 };
 
 export default dict;
