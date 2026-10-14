@@ -5,7 +5,7 @@
  *   chats/$pairId/participants/{uidA,uidB}   — einmalig beim Anlegen (Rules: create-once, nur Freunde)
  *   chats/$pairId/summary                    — lastMessage/lastMessageAt/lastSender/createdAt
  *   chats/$pairId/blocked/{uid}              — Blocker trägt sich selbst ein; solange gesetzt: kein Senden
- *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms } (+ st | img | ep)
+ *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms } (+ st | img | ep, re = Zitat)
  *   chatIndex/$uid/$pairId = lastMessageAt   — pro Nutzer die Chat-Liste (beide Seiten werden beim Senden gepflegt)
  *   users/$uid/chatState/$pairId/lastReadAt  — eigener Lese-Stand (Unread-Badges)
  *
@@ -33,7 +33,29 @@ export interface ChatMessage {
   /** Als Spoiler markiert — Empfänger sieht den Text erst nach Tap. */
   isSpoiler?: boolean;
   episode?: SharedEpisode;
+  replyTo?: ChatReply;
 }
+
+export type ReplyKind = 'img' | 'st' | 'ep' | 'sp';
+
+/** Zitierte Nachricht — der Auszug wird beim Senden eingefroren, Spoiler nie im Klartext. */
+export interface ChatReply {
+  id: string;
+  senderId: string;
+  text?: string;
+  kind?: ReplyKind;
+  stickerId?: string;
+}
+
+interface CompactReply {
+  id: string;
+  s: string;
+  t?: string;
+  k?: ReplyKind;
+  st?: string;
+}
+
+export const REPLY_SNIPPET_MAX = 200;
 
 /** Geteilte Folge — Staffel und Folge 1-basiert wie in der Folgen-URL. */
 export interface SharedEpisode {
@@ -54,10 +76,11 @@ interface CompactEpisode {
   p?: string;
 }
 
-export type OutgoingMessage =
+export type OutgoingMessage = (
   | { kind: 'text'; text: string; spoiler?: boolean }
   | { kind: 'sticker'; stickerId: string }
-  | { kind: 'episode'; episode: SharedEpisode; text?: string; spoiler?: boolean };
+  | { kind: 'episode'; episode: SharedEpisode; text?: string; spoiler?: boolean }
+) & { replyTo?: ChatReply };
 
 const compactEpisode = (ep: SharedEpisode): CompactEpisode => ({
   id: ep.seriesId,
@@ -83,6 +106,38 @@ const expandEpisode = (ep: CompactEpisode | undefined): SharedEpisode | undefine
 /** Vorschau für Chat-Liste und Push — ohne Folgentitel (könnte spoilern). */
 export const episodePreview = (ep: SharedEpisode) =>
   `${ep.seriesTitle} S${ep.season}·E${ep.episode}`;
+
+const clip = (text: string, max: number): string => {
+  const cut = text.slice(0, max);
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
+};
+
+export function replyFromMessage(m: ChatMessage): ChatReply {
+  const base = { id: m.id, senderId: m.senderId };
+  if (m.episode) {
+    const note = m.text && !m.isSpoiler ? ` – ${m.text}` : '';
+    return { ...base, kind: 'ep', text: clip(episodePreview(m.episode) + note, REPLY_SNIPPET_MAX) };
+  }
+  if (m.imageUrl) {
+    return { ...base, kind: 'img', ...(m.text && { text: clip(m.text, REPLY_SNIPPET_MAX) }) };
+  }
+  if (m.stickerId) return { ...base, kind: 'st', stickerId: m.stickerId };
+  if (m.isSpoiler) return { ...base, kind: 'sp' };
+  return { ...base, text: clip(m.text, REPLY_SNIPPET_MAX) };
+}
+
+const compactReply = (r: ChatReply): CompactReply => ({
+  id: r.id,
+  s: r.senderId,
+  ...(r.text && { t: clip(r.text, REPLY_SNIPPET_MAX) }),
+  ...(r.kind && { k: r.kind }),
+  ...(r.stickerId && { st: r.stickerId.slice(0, 64) }),
+});
+
+const expandReply = (r: CompactReply | undefined): ChatReply | undefined =>
+  r && typeof r.id === 'string' && typeof r.s === 'string'
+    ? { id: r.id, senderId: r.s, text: r.t, kind: r.k, stickerId: r.st }
+    : undefined;
 
 export interface ChatSummary {
   lastMessage?: string;
@@ -165,6 +220,8 @@ export async function sendMessage(
   const msgId = dbRef(`chats/${pairId}/messages`).push().key;
   if (!msgId) return;
 
+  if (message.replyTo) payload.re = compactReply(message.replyTo);
+
   await dbUpdate({
     [`chats/${pairId}/messages/${msgId}`]: { s: myUid, ts, ...payload },
     [`chats/${pairId}/summary/lastMessage`]: preview,
@@ -192,7 +249,8 @@ export async function sendImageMessage(
   friendUid: string,
   file: File,
   myName: string,
-  caption = ''
+  caption = '',
+  replyTo?: ChatReply
 ): Promise<void> {
   const prepared = await prepareImageForUpload(file);
   const pairId = await ensureChat(myUid, friendUid);
@@ -214,6 +272,7 @@ export async function sendImageMessage(
       w: prepared.width,
       h: prepared.height,
       ...(text && { t: text }),
+      ...(replyTo && { re: compactReply(replyTo) }),
     },
     [`chats/${pairId}/summary/lastMessage`]: preview,
     [`chats/${pairId}/summary/lastMessageAt`]: ts,
@@ -266,6 +325,7 @@ export function subscribeMessages(
         h?: number;
         sp?: boolean;
         ep?: CompactEpisode;
+        re?: CompactReply;
         ts: number;
       }
     >;
@@ -281,6 +341,7 @@ export function subscribeMessages(
         imageHeight: m.h,
         isSpoiler: m.sp === true,
         episode: expandEpisode(m.ep),
+        replyTo: expandReply(m.re),
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     cb(list);
@@ -429,7 +490,8 @@ export async function reportChat(
         : m.stickerId
           ? `[Sticker ${m.stickerId}]`
           : m.text;
-      return `${who}: ${content}`;
+      const quote = m.replyTo ? `[↪ ${m.replyTo.text ?? m.replyTo.kind ?? ''}] ` : '';
+      return `${who}: ${quote}${content}`;
     })
     .join('\n')
     .slice(0, 5500);

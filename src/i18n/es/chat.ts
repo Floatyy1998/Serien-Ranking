@@ -90,6 +90,15 @@ const dict: Record<string, string> = {
   'Spoiler — tippen zum Lesen': 'Spoiler: toca para leer',
   'Als Spoiler gesendet': 'Enviado como spoiler',
   'Spoiler an {name} — wird verdeckt zugestellt': 'Spoiler para {name} — se envía oculto',
+
+  // Antworten + Links im Chat
+  'Pet-Sticker': 'Sticker de mascota',
+  'Antwort abbrechen': 'Cancelar respuesta',
+  'Die Nachricht liegt zu weit zurück.': 'Ese mensaje es demasiado antiguo.',
+  'Du verlässt TV-Rank': 'Vas a salir de TV-Rank',
+  'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
+    'El enlace abre {host} en una pestaña nueva. Abre solo enlaces de gente de confianza.',
+  'Link öffnen': 'Abrir enlace',
 };
 
 export default dict;

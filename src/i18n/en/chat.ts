@@ -91,6 +91,15 @@ const dict: Record<string, string> = {
   'Spoiler — tippen zum Lesen': 'Spoiler — tap to read',
   'Als Spoiler gesendet': 'Sent as spoiler',
   'Spoiler an {name} — wird verdeckt zugestellt': 'Spoiler for {name} — hidden until tapped',
+
+  // Antworten + Links im Chat
+  'Pet-Sticker': 'Pet sticker',
+  'Antwort abbrechen': 'Cancel reply',
+  'Die Nachricht liegt zu weit zurück.': 'That message is too far back.',
+  'Du verlässt TV-Rank': "You're leaving TV-Rank",
+  'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
+    'This link opens {host} in a new tab. Only open links from people you trust.',
+  'Link öffnen': 'Open link',
 };
 
 export default dict;

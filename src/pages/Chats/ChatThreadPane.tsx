@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAndroidBack } from '../../hooks/ui/useAndroidBack';
 import { hapticTap } from '../../lib/interaction/haptics';
 import { showToast } from '../../lib/interaction/toast';
+import { internalPath, linkHost } from '../../lib/text/linkify';
 import { t } from '../../services/i18n';
 import {
   chatPairId,
@@ -23,6 +24,7 @@ import {
   ensureChat,
   markChatRead,
   MAX_MESSAGE_LENGTH,
+  replyFromMessage,
   reportChat,
   sendImageMessage,
   sendMessage,
@@ -34,6 +36,7 @@ import {
   subscribeReactions,
   subscribeTyping,
   type ChatMessage,
+  type ChatReply,
 } from '../../services/chat/chatService';
 import {
   saveBubbleStyle,
@@ -46,13 +49,12 @@ import { queueDismiss } from '../../services/notifications/dismissQueue';
 import { clearDeliveredChatPushes } from '../../services/notifications/pushNotifications';
 import { MAX_IMAGE_BYTES } from '../../lib/image/imageCompress';
 import { extractClipboardImage, resolveClipboardImage } from '../../services/media/clipboardImage';
-import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
+import { resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
 import { ChatDesignSheet } from './ChatDesignSheet';
-import { EpisodeShareCard } from './EpisodeShareCard';
-import { StickerCanvas } from './StickerCanvas';
-import { isValidStickerId } from './stickers';
+import { ChatMessageItem } from './ChatMessageItem';
+import { ChatReplyDraft } from './ChatReply';
 import { useChatPartner } from './useChatPartner';
 
 function dayLabel(ts: number): string {
@@ -66,6 +68,8 @@ function dayLabel(ts: number): string {
 }
 
 const TYPING_VISIBLE_MS = 6000;
+const OWN_HOSTS = ['tv-rank.de', 'www.tv-rank.de'];
+const NO_REACTIONS: string[] = [];
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 /** Bis hierher gilt der Verlauf als „unten" und wird weiter nachgeführt. */
 const BOTTOM_SLACK_PX = 80;
@@ -117,6 +121,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     isGif: boolean;
   } | null>(null);
   const [caption, setCaption] = useState('');
+  const [replyTo, setReplyTo] = useState<ChatReply | null>(null);
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const [pendingLink, setPendingLink] = useState('');
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const listContentRef = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
@@ -162,6 +170,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     if (!pairId || !myUid || !chatReady) return;
     setMessages([]);
     setDraft('');
+    setReplyTo(null);
     setEmojiOpen(false);
     const offMessages = subscribeMessages(pairId, setMessages);
     const offReactions = subscribeReactions(pairId, setReactions);
@@ -256,6 +265,8 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       if (el) el.scrollTop = el.scrollHeight;
     });
     observer.observe(content);
+    // Antwort-Leiste oder Tastatur verkleinern den Scroller selbst
+    if (listRef.current) observer.observe(listRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -289,9 +300,15 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     if (!text) return;
     setSending(true);
     try {
-      await sendMessage(myUid, friendId, { kind: 'text', text, spoiler: spoilerMode }, myName);
+      await sendMessage(
+        myUid,
+        friendId,
+        { kind: 'text', text, spoiler: spoilerMode, replyTo: replyTo ?? undefined },
+        myName
+      );
       setDraft('');
       setSpoilerMode(false);
+      setReplyTo(null);
       if (inputRef.current) inputRef.current.style.height = 'auto';
       void setTyping(myUid, chatPairId(myUid, friendId), false);
       inputRef.current?.focus();
@@ -300,7 +317,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     } finally {
       setSending(false);
     }
-  }, [myUid, friendId, draft, myName, sending, spoilerMode]);
+  }, [myUid, friendId, draft, myName, sending, spoilerMode, replyTo]);
 
   // WhatsApp-Flow: erst Vorschau mit optionaler Bildunterschrift, dann senden.
   const openImagePreview = useCallback((file: File) => {
@@ -335,8 +352,16 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     if (!myUid || !pendingImage || uploadingImage) return;
     setUploadingImage(true);
     try {
-      await sendImageMessage(myUid, friendId, pendingImage.file, myName, caption);
+      await sendImageMessage(
+        myUid,
+        friendId,
+        pendingImage.file,
+        myName,
+        caption,
+        replyTo ?? undefined
+      );
       closeImagePreview();
+      setReplyTo(null);
     } catch (err) {
       const code = err instanceof Error ? err.message : '';
       showToast(
@@ -349,19 +374,25 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     } finally {
       setUploadingImage(false);
     }
-  }, [myUid, friendId, myName, pendingImage, caption, uploadingImage, closeImagePreview]);
+  }, [myUid, friendId, myName, pendingImage, caption, uploadingImage, closeImagePreview, replyTo]);
 
   const sendSticker = useCallback(
     async (stickerId: string) => {
       if (!myUid) return;
       setEmojiOpen(false);
       try {
-        await sendMessage(myUid, friendId, { kind: 'sticker', stickerId }, myName);
+        await sendMessage(
+          myUid,
+          friendId,
+          { kind: 'sticker', stickerId, replyTo: replyTo ?? undefined },
+          myName
+        );
+        setReplyTo(null);
       } catch {
         showToast(t('Nachricht konnte nicht gesendet werden.'), 4000, 'error');
       }
     },
-    [myUid, friendId, myName]
+    [myUid, friendId, myName, replyTo]
   );
 
   const handleReport = useCallback(async () => {
@@ -414,6 +445,49 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     },
     [myUid, pairId, reactions]
   );
+
+  const revealSpoiler = useCallback(
+    (id: string) => setRevealedSpoilers((prev) => new Set(prev).add(id)),
+    []
+  );
+
+  const startReply = useCallback((m: ChatMessage) => {
+    setReplyTo(replyFromMessage(m));
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
+  const jumpToMessage = useCallback((id: string) => {
+    const target = listRef.current?.querySelector<HTMLElement>(`[data-msg-id="${CSS.escape(id)}"]`);
+    if (!target) {
+      showToast(t('Die Nachricht liegt zu weit zurück.'), 3000);
+      return;
+    }
+    atBottom.current = false;
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setFlashId(null);
+    requestAnimationFrame(() => setFlashId(id));
+  }, []);
+
+  useEffect(() => {
+    if (!flashId) return;
+    const id = window.setTimeout(() => setFlashId(null), 1600);
+    return () => window.clearTimeout(id);
+  }, [flashId]);
+
+  const openLink = useCallback(
+    (href: string) => {
+      const path = internalPath(href, [...OWN_HOSTS, window.location.hostname]);
+      if (path) {
+        navigate(path);
+        return;
+      }
+      setPendingLink(href);
+      setLinkDialogOpen(true);
+    },
+    [navigate]
+  );
+
+  const messagesById = useMemo(() => new Map(messages.map((m) => [m.id, m])), [messages]);
 
   const insertEmoji = useCallback(
     (emoji: string) => {
@@ -588,119 +662,25 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               <span className="ch-day" style={{ color: currentTheme.text.muted }}>
                 {group.day}
               </span>
-              {group.items.map((m) => {
-                const own = m.senderId === myUid;
-                const msgReactions = Object.values(reactions[m.id] || {});
-                return (
-                  <div key={m.id} className={`ch-bubble-wrap${own ? ' ch-bubble-wrap--own' : ''}`}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.15 }}
-                      className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId || m.imageUrl ? ' ch-bubble--media' : ''}`}
-                      onDoubleClick={() => toggleHeart(m.id)}
-                      style={(() => {
-                        if (m.stickerId || m.imageUrl) return undefined;
-                        const s = own ? myStyle : null;
-                        if (s) {
-                          return {
-                            background: `linear-gradient(135deg, ${s.c1}, ${s.c2})`,
-                            color: bubbleTextColor(s.c1, s.c2),
-                            '--bub-r': `${RADIUS_PX[s.r]}px`,
-                          } as React.CSSProperties;
-                        }
-                        return own
-                          ? {
-                              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                            }
-                          : { color: currentTheme.text.primary };
-                      })()}
-                    >
-                      {m.episode ? (
-                        <>
-                          <EpisodeShareCard episode={m.episode} own={own} />
-                          {m.text &&
-                            (m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
-                              <button
-                                className="ch-spoiler-cover ch-episode-note"
-                                onClick={() =>
-                                  setRevealedSpoilers((prev) => new Set(prev).add(m.id))
-                                }
-                              >
-                                <VisibilityOffOutlined style={{ fontSize: 16 }} />
-                                {t('Spoiler — tippen zum Lesen')}
-                              </button>
-                            ) : (
-                              <div className="ch-episode-note">{m.text}</div>
-                            ))}
-                        </>
-                      ) : m.imageUrl ? (
-                        <>
-                          <img
-                            className="ch-image"
-                            src={m.imageUrl}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            style={
-                              m.imageWidth && m.imageHeight
-                                ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
-                                : undefined
-                            }
-                            onClick={() => setLightboxUrl(m.imageUrl || null)}
-                          />
-                          {m.text && (
-                            <div
-                              className="ch-image-caption"
-                              style={{ color: currentTheme.text.primary }}
-                            >
-                              {m.text}
-                            </div>
-                          )}
-                        </>
-                      ) : m.stickerId && isValidStickerId(m.stickerId) ? (
-                        <StickerCanvas stickerId={m.stickerId} size={150} />
-                      ) : m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
-                        <button
-                          className="ch-spoiler-cover"
-                          onClick={() => setRevealedSpoilers((prev) => new Set(prev).add(m.id))}
-                        >
-                          <VisibilityOffOutlined style={{ fontSize: 16 }} />
-                          {t('Spoiler — tippen zum Lesen')}
-                        </button>
-                      ) : m.isSpoiler ? (
-                        <>
-                          <span className="ch-spoiler-own">
-                            <VisibilityOffOutlined style={{ fontSize: 12 }} />
-                            {t('Als Spoiler gesendet')}
-                          </span>
-                          {m.text}
-                        </>
-                      ) : (
-                        m.text
-                      )}
-                      <span className="ch-bubble-time">
-                        {new Date(m.timestamp).toLocaleTimeString('de-DE', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </motion.div>
-                    {msgReactions.length > 0 && (
-                      <motion.button
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="ch-reactions"
-                        onClick={() => toggleHeart(m.id)}
-                        aria-label={t('Reaktion')}
-                      >
-                        {[...new Set(msgReactions)].join('')}
-                        {msgReactions.length > 1 ? ` ${msgReactions.length}` : ''}
-                      </motion.button>
-                    )}
-                  </div>
-                );
-              })}
+              {group.items.map((m) => (
+                <ChatMessageItem
+                  key={m.id}
+                  message={m}
+                  myUid={myUid}
+                  partnerName={partner.name}
+                  myStyle={myStyle}
+                  reactions={reactions[m.id] ? Object.values(reactions[m.id]) : NO_REACTIONS}
+                  spoilerRevealed={revealedSpoilers.has(m.id)}
+                  flash={flashId === m.id}
+                  quotedOriginal={m.replyTo ? messagesById.get(m.replyTo.id) : undefined}
+                  onRevealSpoiler={revealSpoiler}
+                  onToggleHeart={toggleHeart}
+                  onReply={startReply}
+                  onJump={jumpToMessage}
+                  onLink={openLink}
+                  onOpenImage={setLightboxUrl}
+                />
+              ))}
             </div>
           ))}
           {otherTyping && (
@@ -733,6 +713,19 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
         <div className="ch-input-bar" onMouseDown={keepFieldFocus}>
           <AnimatePresence>
             {emojiOpen && <ChatComposerPicker onEmoji={insertEmoji} onSticker={sendSticker} />}
+          </AnimatePresence>
+          <AnimatePresence>
+            {replyTo && (
+              <ChatReplyDraft
+                reply={replyTo}
+                author={replyTo.senderId === myUid ? t('Du') : partner.name}
+                mine={replyTo.senderId === myUid}
+                original={messagesById.get(replyTo.id)}
+                color={currentTheme.text.primary}
+                mutedColor={currentTheme.text.muted}
+                onCancel={() => setReplyTo(null)}
+              />
+            )}
           </AnimatePresence>
           <button
             className="ch-icon-btn"
@@ -797,6 +790,9 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               if (e.key === 'Enter' && !e.shiftKey && hasFinePointer()) {
                 e.preventDefault();
                 void handleSend();
+              } else if (e.key === 'Escape' && replyTo) {
+                e.preventDefault();
+                setReplyTo(null);
               }
             }}
             style={{ color: currentTheme.text.primary }}
@@ -937,6 +933,24 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
         actions={[
           { label: t('Abbrechen'), onClick: () => setConfirm(null), variant: 'secondary' },
           { label: t('Melden'), onClick: () => void handleReport(), variant: 'primary' },
+        ]}
+      />
+      <Dialog
+        open={linkDialogOpen}
+        onClose={() => setLinkDialogOpen(false)}
+        title={t('Du verlässt TV-Rank')}
+        message={t(
+          'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.',
+          { host: linkHost(pendingLink) }
+        )}
+        type="warning"
+        actions={[
+          { label: t('Abbrechen'), onClick: () => {}, variant: 'secondary' },
+          {
+            label: t('Link öffnen'),
+            onClick: () => window.open(pendingLink, '_blank', 'noopener,noreferrer'),
+            variant: 'primary',
+          },
         ]}
       />
       <Dialog
