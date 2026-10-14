@@ -10,6 +10,7 @@ export type AppTheme = ReturnType<typeof useTheme>['currentTheme'];
  * JP = Manga, KR = Manhwa, CN = Manhua
  */
 export function getDisplayFormat(countryOfOrigin?: string, format?: string): string {
+  if (format === 'COMIC') return t('Comic');
   if (countryOfOrigin === 'KR') return 'Manhwa';
   if (countryOfOrigin === 'CN') return 'Manhua';
   if (format === 'ONE_SHOT') return 'One Shot';
@@ -18,6 +19,7 @@ export function getDisplayFormat(countryOfOrigin?: string, format?: string): str
 }
 
 export function getDisplayFormatKey(countryOfOrigin?: string, format?: string): string {
+  if (format === 'COMIC') return 'COMIC';
   if (countryOfOrigin === 'KR') return 'MANHWA';
   if (countryOfOrigin === 'CN') return 'MANHUA';
   if (format === 'ONE_SHOT') return 'ONE_SHOT';
@@ -31,6 +33,7 @@ export const FORMAT_COLORS: Record<string, string> = {
   MANHUA: '#fb923c',
   ONE_SHOT: '#a78bfa',
   NOVEL: '#34d399',
+  COMIC: '#f87171',
 };
 
 export const STATUS_LABELS: Record<string, string> = {

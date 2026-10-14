@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   findExactTitleMatch,
   hasDirectTitleMatch,
+  hasLeadingTitleMatch,
   matchesMangaTitle,
   pickRelevantAliasHits,
+  sortExactTitleFirst,
 } from './titleMatch';
 
 const werewolves = {
@@ -52,6 +54,27 @@ describe('hasDirectTitleMatch', () => {
   });
 });
 
+describe('hasLeadingTitleMatch', () => {
+  const notYet = {
+    title: { romaji: 'Sagwineun Geon Anya', english: 'Not Boyfriends Yet', native: null },
+  };
+
+  it('zählt nur Titel, die mit der Eingabe beginnen', () => {
+    expect(hasLeadingTitleMatch([werewolves], 'Werewolves Going')).toBe(true);
+    expect(hasLeadingTitleMatch([notYet], 'Boyfriends')).toBe(false);
+    expect(hasLeadingTitleMatch([notYet], ' ')).toBe(false);
+  });
+});
+
+describe('sortExactTitleFirst', () => {
+  it('zieht exakte Titeltreffer stabil nach vorn', () => {
+    const a = { title: { romaji: 'A', english: 'Not Boyfriends Yet', native: null } };
+    const b = { title: { romaji: 'B', english: 'Boyfriends.', native: null } };
+    const c = { title: { romaji: 'C', english: 'Alpha Boyfriends', native: null } };
+    expect(sortExactTitleFirst([a, b, c], 'boyfriends')).toEqual([b, a, c]);
+  });
+});
+
 describe('findExactTitleMatch', () => {
   it('liefert nur exakte Titeltreffer', () => {
     expect(findExactTitleMatch([werewolves, beau], 'The Beau and the Beast')).toBe(beau);
@@ -79,6 +102,15 @@ describe('pickRelevantAliasHits', () => {
 
   it('akzeptiert Teiltreffer und entfernt doppelte Haupttitel', () => {
     expect(pickRelevantAliasHits(hits, 'werwolfe')).toEqual([hits[0]]);
+  });
+
+  it('behält verschiedene Serien gleichen Titels, wenn ihre IDs bekannt sind', () => {
+    const sameTitle = [
+      { id: 1, title: 'Boyfriends.', hitTitle: 'Boyfriends.' },
+      { id: 2, title: 'Boyfriends', hitTitle: 'Boyfriends' },
+      { id: 1, title: 'Boyfriends.', hitTitle: 'Boyfriends.' },
+    ];
+    expect(pickRelevantAliasHits(sameTitle, 'Boyfriends')).toEqual(sameTitle.slice(0, 2));
   });
 
   it('begrenzt die Anzahl', () => {

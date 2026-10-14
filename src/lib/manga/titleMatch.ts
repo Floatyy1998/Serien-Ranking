@@ -30,6 +30,27 @@ export const matchesMangaTitle = (manga: TitledManga, query: string): boolean =>
 export const hasDirectTitleMatch = (results: TitledManga[], query: string): boolean =>
   results.some((manga) => matchesMangaTitle(manga, query));
 
+export const hasLeadingTitleMatch = (results: TitledManga[], query: string): boolean => {
+  const normalizedQuery = normalizeTitle(query);
+  if (!normalizedQuery) return false;
+  return results.some((manga) =>
+    titleVariants(manga).some((value) => normalizeTitle(value).startsWith(normalizedQuery))
+  );
+};
+
+const isExactTitle = (manga: TitledManga, query: string): boolean => {
+  const normalizedQuery = normalizeTitle(query);
+  return (
+    !!normalizedQuery &&
+    titleVariants(manga).some((value) => normalizeTitle(value) === normalizedQuery)
+  );
+};
+
+export const sortExactTitleFirst = <T extends TitledManga>(results: T[], query: string): T[] => [
+  ...results.filter((manga) => isExactTitle(manga, query)),
+  ...results.filter((manga) => !isExactTitle(manga, query)),
+];
+
 export const findExactTitleMatch = <T extends TitledManga>(
   results: T[],
   title: string
@@ -44,11 +65,15 @@ export const findExactTitleMatch = <T extends TitledManga>(
 };
 
 /** MangaUpdates liefert auch lose Treffer; nur die behalten, deren Titel zur Eingabe passt. */
-export const pickRelevantAliasHits = (hits: AliasHit[], query: string, limit = 5): AliasHit[] => {
+export const pickRelevantAliasHits = <T extends AliasHit & { id?: number | null }>(
+  hits: T[],
+  query: string,
+  limit = 5
+): T[] => {
   const seen = new Set<string>();
   return hits
     .filter((hit) => {
-      const key = normalizeTitle(hit.title);
+      const key = hit.id ? String(hit.id) : normalizeTitle(hit.title);
       if (!key || seen.has(key)) return false;
       if (!matchesTitleText(hit.hitTitle, query) && !matchesTitleText(hit.title, query)) {
         return false;

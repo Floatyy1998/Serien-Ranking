@@ -93,4 +93,52 @@ describe('searchMangaWithTitleFallback', () => {
 
     expect(searchMangaUpdatesTitles).not.toHaveBeenCalled();
   });
+
+  it('zeigt Titel, die nur MangaUpdates kennt, und stellt exakte Treffer nach vorn', async () => {
+    const notYet = manga(101007, 'Not Boyfriends Yet');
+    searchManga.mockResolvedValue({ results: [notYet] });
+    searchMangaUpdatesTitles.mockResolvedValue([
+      {
+        id: 48132338279,
+        title: 'Boyfriends.',
+        hitTitle: 'Boyfriends.',
+        type: 'OEL',
+        image: 'cover.jpg',
+        year: '2023',
+        genres: ['Romance'],
+      },
+      { id: 9, title: 'Alpha Boyfriends', hitTitle: 'Alpha Boyfriends', type: 'Manhwa' },
+      {
+        id: 10,
+        title: 'Lewd Boyfriends',
+        hitTitle: 'Lewd Boyfriends',
+        type: 'OEL',
+        genres: ['Adult'],
+      },
+    ]);
+    searchMangaByTitles.mockResolvedValue([[], [], []]);
+
+    const outcome = await searchMangaWithTitleFallback('Boyfriends');
+
+    expect(outcome.results.map((r) => r.id)).toEqual([-48132338279, 101007]);
+    expect(outcome.results[0]).toMatchObject({
+      title: { english: 'Boyfriends.' },
+      format: 'COMIC',
+      coverImage: { large: 'cover.jpg' },
+    });
+    expect(outcome.aliases).toEqual({});
+  });
+
+  it('nimmt den AniList-Eintrag, wenn AniList einen westlichen Titel doch führt', async () => {
+    const listed = manga(77, 'Dramacon');
+    searchManga.mockResolvedValue({ results: [] });
+    searchMangaUpdatesTitles.mockResolvedValue([
+      { id: 5, title: 'Dramacon', hitTitle: 'Dramacon', type: 'OEL' },
+    ]);
+    searchMangaByTitles.mockResolvedValue([[listed]]);
+
+    const outcome = await searchMangaWithTitleFallback('Dramacon');
+
+    expect(outcome.results).toEqual([listed]);
+  });
 });

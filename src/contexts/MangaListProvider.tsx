@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
-import { getMangaById } from '../services/api/anilistService';
+import { getMangaDetails } from '../services/api/mangaDetails';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/api/mangaUpdatesService';
-import { shouldReopenCompleted } from '../pages/Manga/mangaUtils';
+import { getDisplayFormatKey, shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 import { dbRef, paths, updateIfExists, userPath } from '../services/db/ref';
 import { MangaListContext } from './MangaListContext';
@@ -140,7 +140,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
       // 1s Delay zwischen Anfragen — AniList rate-limit ist ~90/min
       setTimeout(async () => {
         try {
-          const data = await getMangaById(manga.anilistId);
+          const data = await getMangaDetails(manga.anilistId);
           if (!data) return;
 
           const updates: Record<string, unknown> = {};
@@ -163,7 +163,8 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           if (data.averageScore && data.averageScore !== manga.averageScore) {
             updates.averageScore = data.averageScore;
           }
-          if (data.format && data.format !== manga.format) updates.format = data.format;
+          const formatKey = getDisplayFormatKey(data.countryOfOrigin, data.format);
+          if (data.format && formatKey !== manga.format) updates.format = formatKey;
           if (data.countryOfOrigin && data.countryOfOrigin !== manga.countryOfOrigin) {
             updates.countryOfOrigin = data.countryOfOrigin;
           }

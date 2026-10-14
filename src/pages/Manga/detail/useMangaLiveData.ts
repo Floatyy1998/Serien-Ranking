@@ -1,6 +1,6 @@
 import type firebase from 'firebase/compat/app';
 import { useEffect, useState } from 'react';
-import { getMangaById } from '../../../services/api/anilistService';
+import { getMangaDetails } from '../../../services/api/mangaDetails';
 import {
   getMangaDexChapterDates,
   getMangaDexInfo,
@@ -19,6 +19,7 @@ interface UseMangaLiveDataArgs {
 
 interface UseMangaLiveDataResult {
   anilistData: AniListMangaSearchResult | null;
+  detailsFailed: boolean;
   mangadexInfo: MangaDexInfo | null;
   chapterInfo: MangaDexChapterInfo | null;
 }
@@ -34,14 +35,18 @@ export const useMangaLiveData = ({
   manga,
 }: UseMangaLiveDataArgs): UseMangaLiveDataResult => {
   const [anilistData, setAnilistData] = useState<AniListMangaSearchResult | null>(null);
+  const [failedId, setFailedId] = useState<number | null>(null);
   const [mangadexInfo, setMangadexInfo] = useState<MangaDexInfo | null>(null);
   const [chapterInfo, setChapterInfo] = useState<MangaDexChapterInfo | null>(null);
 
   useEffect(() => {
     if (!anilistId) return;
-    getMangaById(anilistId)
+    getMangaDetails(anilistId)
       .then(setAnilistData)
-      .catch((error) => console.error('AniList-Daten konnten nicht geladen werden:', error));
+      .catch((error) => {
+        console.error('Manga-Daten konnten nicht geladen werden:', error);
+        setFailedId(anilistId);
+      });
   }, [anilistId]);
 
   // RELEASING und HIATUS — letztere koennen trotzdem neue Chapter bekommen
@@ -128,5 +133,6 @@ export const useMangaLiveData = ({
     anilistId,
   ]);
 
-  return { anilistData, mangadexInfo, chapterInfo };
+  const detailsFailed = !anilistId || failedId === anilistId;
+  return { anilistData, detailsFailed, mangadexInfo, chapterInfo };
 };

@@ -189,15 +189,41 @@ describe('searchMangaUpdatesTitles', () => {
     backendFetchMock.mockResolvedValueOnce(
       res({
         hits: [
-          { title: 'Don&#039;t Look for Me', hitTitle: 'Suche nicht nach Mir', type: 'Manhwa' },
+          {
+            id: 7,
+            title: 'Don&#039;t Look for Me',
+            hitTitle: 'Suche nicht nach Mir',
+            type: 'Manhwa',
+            image: 'cover.jpg',
+            year: '2021',
+            genres: ['Drama'],
+          },
           { title: 42, hitTitle: 'kaputt' },
+          { title: 'Ohne Extras', hitTitle: 'Ohne Extras' },
         ],
       })
     );
     const { searchMangaUpdatesTitles } = await load();
 
     expect(await searchMangaUpdatesTitles('Suche nicht nach mir')).toEqual([
-      { title: "Don't Look for Me", hitTitle: 'Suche nicht nach Mir' },
+      {
+        id: 7,
+        title: "Don't Look for Me",
+        hitTitle: 'Suche nicht nach Mir',
+        type: 'Manhwa',
+        image: 'cover.jpg',
+        year: '2021',
+        genres: ['Drama'],
+      },
+      {
+        id: null,
+        title: 'Ohne Extras',
+        hitTitle: 'Ohne Extras',
+        type: null,
+        image: null,
+        year: null,
+        genres: [],
+      },
     ]);
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/titles',
@@ -217,5 +243,32 @@ describe('searchMangaUpdatesTitles', () => {
     backendFetchMock.mockRejectedValueOnce(new Error('down'));
     const { searchMangaUpdatesTitles } = await load();
     expect(await searchMangaUpdatesTitles('X')).toEqual([]);
+  });
+});
+
+describe('getMangaUpdatesSeries', () => {
+  it('holt die Serie per ID und cached sie', async () => {
+    backendFetchMock.mockResolvedValue(res({ id: 48132338279, title: 'Boyfriends.' }));
+    const { getMangaUpdatesSeries } = await load();
+
+    expect(await getMangaUpdatesSeries(48132338279)).toEqual({
+      id: 48132338279,
+      title: 'Boyfriends.',
+    });
+    await getMangaUpdatesSeries(48132338279);
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+    expect(backendFetchMock).toHaveBeenCalledWith(
+      '/mangaupdates/series',
+      expect.objectContaining({ body: JSON.stringify({ id: 48132338279 }) })
+    );
+  });
+
+  it('wirft bei Fehlerstatus oder leerer Antwort', async () => {
+    backendFetchMock.mockResolvedValueOnce(res({ error: 'not found' }, false));
+    backendFetchMock.mockResolvedValueOnce(res({}));
+    const { getMangaUpdatesSeries } = await load();
+
+    await expect(getMangaUpdatesSeries(1)).rejects.toThrow();
+    await expect(getMangaUpdatesSeries(2)).rejects.toThrow();
   });
 });

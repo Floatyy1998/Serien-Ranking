@@ -35,8 +35,13 @@ vi.mock('firebase/compat/app', () => ({
   },
 }));
 
-vi.mock('../services/api/anilistService', () => ({
-  getMangaById: vi.fn(async () => null),
+const getMangaDetails = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+vi.mock('../services/api/mangaDetails', () => ({ getMangaDetails }));
+
+const updateIfExists = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock('../services/db/ref', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  updateIfExists,
 }));
 vi.mock('../services/api/mangaUpdatesService', () => ({
   getMangaDexInfo: vi.fn(async () => ({ latestChapter: 0 })),
@@ -53,6 +58,8 @@ const Consumer = () => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
+  cacheResult.data = {};
 });
 
 describe('MangaListProvider', () => {
@@ -63,5 +70,42 @@ describe('MangaListProvider', () => {
       </MangaListProvider>
     );
     expect(screen.getByTestId('manga').textContent).toBe('0|false');
+  });
+
+  it('speichert beim täglichen Refresh den Anzeige-Formatschlüssel statt AniLists MANGA', async () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    cacheResult.data = {
+      1: {
+        nmr: 1,
+        anilistId: 1,
+        title: 'Solo',
+        poster: 'p.jpg',
+        format: 'MANGA',
+        countryOfOrigin: 'KR',
+        status: 'FINISHED',
+        chapters: 10,
+        rating: {},
+        currentChapter: 0,
+        readStatus: 'planned',
+      },
+    };
+    getMangaDetails.mockResolvedValue({
+      format: 'MANGA',
+      countryOfOrigin: 'KR',
+      status: 'FINISHED',
+      chapters: 10,
+      genres: [],
+    });
+
+    render(
+      <MangaListProvider>
+        <Consumer />
+      </MangaListProvider>
+    );
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(getMangaDetails).toHaveBeenCalledWith(1);
+    expect(updateIfExists).toHaveBeenCalledWith('users/u1/manga/1', { format: 'MANHWA' });
   });
 });

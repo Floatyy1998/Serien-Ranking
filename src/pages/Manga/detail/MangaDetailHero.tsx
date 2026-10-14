@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { BackButton } from '../../../components/ui';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
+import { mangaSourceLink } from '../../../lib/manga/mangaSource';
 import { tapScale } from '../../../lib/motion';
 import { dateLocale, t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
@@ -308,12 +309,12 @@ export const MangaDetailHero = ({
           <div className="mdh-actions">
             {primaryCta}
             <a
-              href={`https://anilist.co/manga/${data.anilistId}`}
+              href={mangaSourceLink(data.anilistId).url}
               target="_blank"
               rel="noopener noreferrer"
               className="mdh-ghost-btn"
             >
-              AniList
+              {mangaSourceLink(data.anilistId).label}
               <OpenInNew style={{ fontSize: 15, opacity: 0.6 }} />
             </a>
           </div>

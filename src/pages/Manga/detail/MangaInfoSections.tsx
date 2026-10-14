@@ -1,5 +1,6 @@
 import { CheckCircle, Link as LinkIcon, OpenInNew } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { isMangaUpdatesId, mangaSourceLink } from '../../../lib/manga/mangaSource';
 import { t } from '../../../services/i18n';
 import type { AniListMangaSearchResult } from '../../../types/Manga';
 import { getDisplayFormat } from '../mangaUtils';
@@ -99,11 +100,15 @@ export const MangaInfoSections = ({
     [t('Erschienen ab'), data.startLabel],
     [t('Kapitel'), data.chapters ? String(data.chapters) : ''],
     [t('Bände'), data.volumes ? String(data.volumes) : ''],
-    [t('AniList-Wertung'), data.score ? `${data.score}%` : ''],
+    [
+      isMangaUpdatesId(data.anilistId) ? t('MangaUpdates-Wertung') : t('AniList-Wertung'),
+      data.score ? `${data.score}%` : '',
+    ],
     [t('Autor & Zeichner'), data.authors.join(', ')],
   ].filter(([, value]) => !!value) as [string, string][];
 
   const externalLinks = (anilist?.externalLinks || []).slice(0, 8);
+  const sourceLink = mangaSourceLink(data.anilistId);
 
   if (part === 'side') {
     return (
@@ -126,12 +131,12 @@ export const MangaInfoSections = ({
           <SectionTitle>{t('Lesen & Links')}</SectionTitle>
           <div className="md-links">
             <a
-              href={`https://anilist.co/manga/${data.anilistId}`}
+              href={sourceLink.url}
               target="_blank"
               rel="noopener noreferrer"
               className="manga-detail-link-btn md-link--primary"
             >
-              <LinkIcon style={{ fontSize: 15 }} /> AniList
+              <LinkIcon style={{ fontSize: 15 }} /> {sourceLink.label}
               <OpenInNew style={{ fontSize: 12, opacity: 0.5 }} />
             </a>
             {externalLinks.map((link) => (

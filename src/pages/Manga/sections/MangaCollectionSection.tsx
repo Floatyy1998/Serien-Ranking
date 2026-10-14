@@ -33,6 +33,7 @@ const FORMAT_FILTERS = [
   { key: 'MANGA', label: 'Manga' },
   { key: 'MANHWA', label: 'Manhwa' },
   { key: 'MANHUA', label: 'Manhua' },
+  { key: 'COMIC', label: t('Comic') },
 ];
 
 const readPrefs = (): Omit<CollectionFilter, 'query'> => {

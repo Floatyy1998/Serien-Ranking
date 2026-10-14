@@ -28,7 +28,7 @@ import {
   mangaTotalChapters,
   userMangaRating,
 } from '../../lib/manga/overview';
-import { getMangaById } from '../../services/api/anilistService';
+import { getMangaDetails } from '../../services/api/mangaDetails';
 import { addMangaToList } from '../Manga/addMangaToList';
 import { furthestWatchedPosition } from '../../lib/series/watchPosition';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -230,7 +230,7 @@ export const FriendProfilePage = memo(() => {
     if (!user || addingMangaId !== null) return;
     setAddingMangaId(anilistId);
     try {
-      const data = await getMangaById(anilistId);
+      const data = await getMangaDetails(anilistId);
       const all = [...ownManga, ...ownHiddenManga];
       const nextNmr = all.length > 0 ? Math.max(...all.map((m) => m.nmr)) + 1 : 1;
       await addMangaToList(user.uid, data, nextNmr);

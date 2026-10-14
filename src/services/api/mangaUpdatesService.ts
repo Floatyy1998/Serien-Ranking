@@ -5,13 +5,18 @@
  * No API key needed. Requests go through backend proxy to avoid CORS.
  */
 
-import type { AliasHit } from '../../lib/manga/titleMatch';
+import {
+  decodeMangaUpdatesText,
+  type MangaUpdatesHit,
+  type MangaUpdatesSeries,
+} from '../../lib/manga/mangaUpdatesAdapter';
 import { backendFetch } from './backendApi';
 
 // Simple in-memory cache
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
 const chapterCache = new Map<string, { data: MangaDexChapterInfo; timestamp: number }>();
-const titleCache = new Map<string, { hits: AliasHit[]; timestamp: number }>();
+const titleCache = new Map<string, { hits: MangaUpdatesHit[]; timestamp: number }>();
+const seriesCache = new Map<number, { data: MangaUpdatesSeries; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export interface MangaDexInfo {
@@ -70,17 +75,11 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
   }
 }
 
-const decodeEntities = (value: string): string =>
-  value
-    .replace(/&#0?39;|&apos;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&');
-
 /**
  * MangaUpdates-Treffer mit Haupttitel und dem Titel, über den sie gefunden
  * wurden. MangaUpdates kennt Alternativtitel wie die deutschen Webtoon-Namen.
  */
-export async function searchMangaUpdatesTitles(query: string): Promise<AliasHit[]> {
+export async function searchMangaUpdatesTitles(query: string): Promise<MangaUpdatesHit[]> {
   const cacheKey = query.toLowerCase().trim();
   const cached = titleCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -96,20 +95,43 @@ export async function searchMangaUpdatesTitles(query: string): Promise<AliasHit[
     if (!res.ok) return [];
 
     const data = await res.json();
-    const hits: AliasHit[] = (Array.isArray(data.hits) ? data.hits : [])
+    const hits: MangaUpdatesHit[] = (Array.isArray(data.hits) ? data.hits : [])
       .filter(
         (hit: { title?: unknown; hitTitle?: unknown }) =>
           typeof hit.title === 'string' && typeof hit.hitTitle === 'string'
       )
-      .map((hit: AliasHit) => ({
-        title: decodeEntities(hit.title),
-        hitTitle: decodeEntities(hit.hitTitle),
+      .map((hit: MangaUpdatesHit) => ({
+        id: typeof hit.id === 'number' ? hit.id : null,
+        title: decodeMangaUpdatesText(hit.title),
+        hitTitle: decodeMangaUpdatesText(hit.hitTitle),
+        type: typeof hit.type === 'string' ? hit.type : null,
+        image: typeof hit.image === 'string' ? hit.image : null,
+        year: hit.year ?? null,
+        genres: Array.isArray(hit.genres) ? hit.genres : [],
       }));
     titleCache.set(cacheKey, { hits, timestamp: Date.now() });
     return hits;
   } catch {
     return [];
   }
+}
+
+export async function getMangaUpdatesSeries(seriesId: number): Promise<MangaUpdatesSeries> {
+  const cached = seriesCache.get(seriesId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
+  const res = await backendFetch('/mangaupdates/series', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: seriesId }),
+  });
+  if (!res.ok) throw new Error(`MangaUpdates-Serie ${seriesId}: ${res.status}`);
+  const data: MangaUpdatesSeries = await res.json();
+  if (!data?.id || !data.title) throw new Error(`MangaUpdates-Serie ${seriesId} ohne Daten`);
+  seriesCache.set(seriesId, { data, timestamp: Date.now() });
+  return data;
 }
 
 /**

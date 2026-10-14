@@ -1,4 +1,6 @@
 import type { AniListMangaSearchResult } from '../../types/Manga';
+import { isMangaUpdatesId } from '../../lib/manga/mangaSource';
+import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
 import { dbRef, paths } from '../../services/db/ref';
@@ -10,9 +12,12 @@ import { dbRef, paths } from '../../services/db/ref';
  */
 export async function addMangaToList(
   userId: string,
-  result: AniListMangaSearchResult,
+  searchResult: AniListMangaSearchResult,
   nextNmr: number
 ): Promise<void> {
+  const result = isMangaUpdatesId(searchResult.id)
+    ? await getMangaDetails(searchResult.id).catch(() => searchResult)
+    : searchResult;
   const sd = result.startDate;
   const startDateStr =
     sd?.year && sd?.month && sd?.day

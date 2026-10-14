@@ -1,7 +1,8 @@
+import { SearchOff } from '@mui/icons-material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LoadingSpinner, PageLayout } from '../../components/ui';
+import { EmptyState, LoadingSpinner, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
@@ -47,7 +48,11 @@ export const MangaDetailPage = () => {
   const [customPlatform, setCustomPlatform] = useState('');
   const [showCustomPlatform, setShowCustomPlatform] = useState(false);
 
-  const { anilistData, mangadexInfo, chapterInfo } = useMangaLiveData({ user, anilistId, manga });
+  const { anilistData, detailsFailed, mangadexInfo, chapterInfo } = useMangaLiveData({
+    user,
+    anilistId,
+    manga,
+  });
 
   // Sync local edit state when manga data changes from Firebase. Cannot be a
   // pure useMemo since editChapter is also driven by local stepper clicks.
@@ -248,7 +253,15 @@ export const MangaDetailPage = () => {
     if (!anilistData) {
       return (
         <PageLayout>
-          <LoadingSpinner text={t('Laden...')} />
+          {detailsFailed ? (
+            <EmptyState
+              icon={<SearchOff style={{ fontSize: 44 }} />}
+              title={t('Manga nicht gefunden')}
+              action={{ label: t('Zur Manga-Übersicht'), onClick: () => navigate('/manga') }}
+            />
+          ) : (
+            <LoadingSpinner text={t('Laden...')} />
+          )}
         </PageLayout>
       );
     }

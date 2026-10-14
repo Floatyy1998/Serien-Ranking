@@ -27,10 +27,16 @@ vi.mock('../../services/api/mangaUpdatesService', () => ({
   getMangaDexInfo: vi.fn<() => Promise<MangaDexInfo>>(),
 }));
 
+vi.mock('../../services/api/mangaDetails', () => ({
+  getMangaDetails: vi.fn<() => Promise<AniListMangaSearchResult>>(),
+}));
+
+import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { addMangaToList } from './addMangaToList';
 
 const mockedGetInfo = vi.mocked(getMangaDexInfo);
+const mockedGetDetails = vi.mocked(getMangaDetails);
 
 function makeResult(overrides: Partial<AniListMangaSearchResult> = {}): AniListMangaSearchResult {
   return {
@@ -61,6 +67,7 @@ beforeEach(() => {
   fb.setMock.mockClear();
   mockedGetInfo.mockReset();
   mockedGetInfo.mockResolvedValue({ latestChapter: null } as MangaDexInfo);
+  mockedGetDetails.mockReset();
 });
 
 describe('addMangaToList', () => {
@@ -181,5 +188,28 @@ describe('addMangaToList', () => {
     await addMangaToList('u1', makeResult({ status: 'RELEASING' }), 1);
     expect(fb.setMock).toHaveBeenCalledOnce();
     expect(lastWrite().value).not.toHaveProperty('latestChapterAvailable');
+  });
+
+  it('lädt MangaUpdates-Titel vor dem Speichern vollständig nach', async () => {
+    const searchHit = makeResult({ id: -48132338279, status: '', format: 'COMIC' });
+    mockedGetDetails.mockResolvedValue(
+      makeResult({ id: -48132338279, status: 'FINISHED', format: 'COMIC', description: 'voll' })
+    );
+    await addMangaToList('u1', searchHit, 1);
+    expect(mockedGetDetails).toHaveBeenCalledWith(-48132338279);
+    expect(lastWrite().path).toBe('users/u1/manga/-48132338279');
+    expect(lastWrite().value.description).toBe('voll');
+    expect(lastWrite().value.format).toBe('COMIC');
+  });
+
+  it('speichert den Suchtreffer, wenn MangaUpdates nicht antwortet', async () => {
+    mockedGetDetails.mockRejectedValue(new Error('down'));
+    await addMangaToList('u1', makeResult({ id: -5, status: '' }), 1);
+    expect(lastWrite().path).toBe('users/u1/manga/-5');
+  });
+
+  it('fragt AniList-Titel nicht erneut ab', async () => {
+    await addMangaToList('u1', makeResult(), 1);
+    expect(mockedGetDetails).not.toHaveBeenCalled();
   });
 });
