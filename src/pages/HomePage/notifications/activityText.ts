@@ -2,9 +2,10 @@ import {
   countByAction,
   type ActivityAction,
   type ActivityBundle,
+  type ActivityMedia,
   type BundledTitle,
 } from '../../../lib/social/activityBundles';
-import { t } from '../../../services/i18n';
+import { dateLocale, t } from '../../../services/i18n';
 
 export const formatActivityRating = (title: BundledTitle): string | null =>
   title.rating ? `${title.rating}/10` : null;
@@ -59,6 +60,56 @@ export const actionLabel = (
     default:
       return t('Watchlist');
   }
+};
+
+const MEDIA_ORDER: ActivityMedia[] = ['series', 'movie', 'manga', 'book'];
+
+const MEDIA_COUNT: Record<ActivityMedia, (n: number) => string> = {
+  series: (n) => (n === 1 ? t('1 Serie') : t('{n} Serien', { n })),
+  movie: (n) => (n === 1 ? t('1 Film') : t('{n} Filme', { n })),
+  manga: (n) => (n === 1 ? t('1 Manga') : t('{n} Manga', { n })),
+  book: (n) => (n === 1 ? t('1 Buch') : t('{n} Bücher', { n })),
+};
+
+/** „6 Serien", „3 Filme" … je Medium eines Bündels. */
+export const mediaBreakdown = (bundle: ActivityBundle): { media: ActivityMedia; label: string }[] =>
+  MEDIA_ORDER.flatMap((media) => {
+    const n = bundle.titles.filter((title) => title.media === media).length;
+    return n ? [{ media, label: MEDIA_COUNT[media](n) }] : [];
+  });
+
+/** Ab dieser Spanne zeigt die Karte Anfang und Ende statt nur „vor 50 Min". */
+export const BUNDLE_SPAN_MIN_MS = 15 * 60_000;
+
+/** „13:20–14:12" bzw. „Mo., 22:10 – Di., 01:05" — null, wenn alles in einem Rutsch kam. */
+export const bundleTimeRange = (bundle: ActivityBundle): string | null => {
+  if (bundle.latest - bundle.earliest < BUNDLE_SPAN_MIN_MS) return null;
+  const start = new Date(bundle.earliest);
+  const end = new Date(bundle.latest);
+  const sameDay = start.toDateString() === end.toDateString();
+  const format = new Intl.DateTimeFormat(dateLocale(), {
+    ...(sameDay ? {} : { weekday: 'short' as const }),
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return sameDay
+    ? `${format.format(start)}–${format.format(end)}`
+    : `${format.format(start)} – ${format.format(end)}`;
+};
+
+/** Wann ein einzelner Titel dazukam: „14:05", „Gestern 14:05" oder „Mo., 14:05". */
+export const titleTime = (timestamp: number, now: number = Date.now()): string => {
+  const at = new Date(timestamp);
+  const clock = new Intl.DateTimeFormat(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  const today = new Date(now);
+  if (at.toDateString() === today.toDateString()) return clock.format(at);
+  today.setDate(today.getDate() - 1);
+  if (at.toDateString() === today.toDateString()) return `${t('Gestern')} ${clock.format(at)}`;
+  return new Intl.DateTimeFormat(dateLocale(), {
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(at);
 };
 
 export const mediaLabel = (title: BundledTitle): string =>

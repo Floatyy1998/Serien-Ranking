@@ -33,7 +33,6 @@ describe('NotificationItem', () => {
     render(
       <NotificationItem
         item={makeNotif()}
-        isLast={false}
         theme={defaultDynamicTheme}
         onItemClick={noop}
         onAcceptRequest={noop}
@@ -50,7 +49,6 @@ describe('NotificationItem', () => {
     render(
       <NotificationItem
         item={makeNotif()}
-        isLast
         theme={defaultDynamicTheme}
         onItemClick={onItemClick}
         onAcceptRequest={noop}
@@ -71,7 +69,6 @@ describe('NotificationItem', () => {
           title: 'Freundschaftsanfrage',
           requestId: 'req-9',
         })}
-        isLast
         theme={defaultDynamicTheme}
         onItemClick={noop}
         onAcceptRequest={onAcceptRequest}

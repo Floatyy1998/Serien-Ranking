@@ -71,6 +71,8 @@ export interface UnifiedNotification {
   navigateState?: unknown;
   /** Typ des users/$uid/notifications-Eintrags (z. B. admin_message). */
   sourceType?: string;
+  /** Meldungen mit gleichem Schlüssel (Ticket, Diskussion) fasst das Sheet zusammen. */
+  groupKey?: string;
   action?: 'case_opening';
   dropData?: { dropId: string; accessoryId: string; rarity: string };
   recommendationData?: RecommendationCardData;
@@ -438,6 +440,18 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       const isPet = n.type === 'accessory_drop';
       const isPendingDrop = n.type === 'pending_accessory_drop';
       const isModeration = n.type === 'moderation_flag';
+      const thread =
+        n.data?.discussionPath ??
+        n.data?.discussionId ??
+        (n.data?.itemType && n.data?.itemId ? `${n.data.itemType}/${n.data.itemId}` : undefined);
+      const groupKey =
+        isBugTicket && n.data?.ticketId
+          ? `ticket:${String(n.data.ticketId)}`
+          : (n.type === 'discussion_reply' || n.type === 'discussion_like') && thread
+            ? `${n.type}:${String(thread)}`
+            : isModeration
+              ? 'moderation'
+              : undefined;
 
       const item: UnifiedNotification = {
         id: `notif_${n.id}`,
@@ -484,6 +498,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
                           ? 'announcement'
                           : 'chat',
         sourceType: typeof n.type === 'string' ? n.type : undefined,
+        groupKey,
       };
 
       if (isPendingDrop && n.data) {
@@ -525,8 +540,9 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
+    // Gekappt wird je Spalte im Sheet — sonst verdrängen Tickets die Freunde.
     items.sort((a, b) => b.timestamp - a.timestamp);
-    return items.slice(0, 30);
+    return items.slice(0, 150);
   }, [
     activityBundles,
     friendRequests,

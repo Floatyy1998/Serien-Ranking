@@ -22,24 +22,24 @@ const act = (
 });
 
 const ACTIVITIES: FriendActivity[] = [
-  act(10, { type: 'series_added', itemTitle: 'Beautiful Bones', tmdbId: 61701 }),
-  act(13, { type: 'movie_added', itemTitle: 'Wie verhext', tmdbId: 9822, itemType: 'movie' }),
-  act(14, { type: 'movie_added', itemTitle: 'Street Fighter', tmdbId: 11667, itemType: 'movie' }),
-  act(14, { type: 'series_added', itemTitle: 'Emily in Paris', tmdbId: 100757 }),
-  act(15, { type: 'series_added', itemTitle: 'Pride and Prejudice', tmdbId: 164 }),
-  act(15, { type: 'series_added', itemTitle: 'Percy Jackson: Die Serie', tmdbId: 106541 }),
-  act(15, { type: 'series_added', itemTitle: 'The Body', tmdbId: 2690 }),
+  act(10, { type: 'series_added', itemTitle: 'Bones - Die Knochenjägerin', tmdbId: 1911 }),
+  act(13, { type: 'movie_added', itemTitle: 'Wie verhext', tmdbId: 1538497, itemType: 'movie' }),
+  act(14, { type: 'movie_added', itemTitle: 'Street Fighter', tmdbId: 1153576, itemType: 'movie' }),
+  act(14, { type: 'series_added', itemTitle: 'Emily in Paris', tmdbId: 82596 }),
+  act(15, { type: 'series_added', itemTitle: 'Bridgerton', tmdbId: 91239 }),
+  act(15, { type: 'series_added', itemTitle: 'Percy Jackson: Die Serie', tmdbId: 103540 }),
+  act(15, { type: 'series_added', itemTitle: 'The Body', tmdbId: 291507 }),
   act(15, { type: 'series_added', itemTitle: 'The Gilded Age', tmdbId: 81723 }),
-  act(16, { type: 'series_added', itemTitle: 'Balaraw', tmdbId: 250000 }),
-  act(16, { type: 'series_added', itemTitle: 'Nature', tmdbId: 3046 }),
+  act(16, { type: 'series_added', itemTitle: 'Arcane', tmdbId: 94605 }),
+  act(16, { type: 'series_added', itemTitle: 'Nature', tmdbId: 14951 }),
   act(16, { type: 'series_added', itemTitle: "Grey's Anatomy", tmdbId: 1416 }),
-  act(28, { type: 'rating_updated', itemTitle: 'Heirate meinen Mann', tmdbId: 247718, rating: 8 }),
+  act(28, { type: 'rating_updated', itemTitle: 'Heirate meinen Mann', tmdbId: 221851, rating: 8 }),
   act(28, {
     type: 'series_added_to_watchlist',
     itemTitle: 'Heirate meinen Mann',
-    tmdbId: 247718,
+    tmdbId: 221851,
   }),
-  act(29, { type: 'series_added', itemTitle: 'Heirate meinen Mann', tmdbId: 247718 }),
+  act(29, { type: 'series_added', itemTitle: 'Heirate meinen Mann', tmdbId: 221851 }),
   act(52, {
     type: 'manga_rated',
     itemTitle: 'Frieren',
@@ -73,6 +73,36 @@ const ACTIVITIES: FriendActivity[] = [
     userId: 'jonas',
     userName: 'Jonas',
   }),
+  act(26 * 60, {
+    type: 'movie_added',
+    itemTitle: 'The Hunger Games: Catching Fire',
+    tmdbId: 101299,
+    itemType: 'movie',
+    userId: 'saskia',
+    userName: 'saskiasteitz',
+  }),
+  act(3 * 24 * 60, {
+    type: 'series_added_to_watchlist',
+    itemTitle: 'Severance',
+    tmdbId: 95396,
+    userId: 'flo',
+    userName: 'Florian',
+  }),
+  act(3 * 24 * 60 + 5, {
+    type: 'series_added',
+    itemTitle: 'The Bear',
+    tmdbId: 136315,
+    userId: 'flo',
+    userName: 'Florian',
+  }),
+  act(3 * 24 * 60 + 6, {
+    type: 'rating_updated',
+    itemTitle: 'Shōgun',
+    tmdbId: 126308,
+    rating: 9,
+    userId: 'flo',
+    userName: 'Florian',
+  }),
   act(303, {
     type: 'rating_updated_movie',
     itemTitle: 'Barbie',
@@ -84,7 +114,64 @@ const ACTIVITIES: FriendActivity[] = [
   }),
 ];
 
+const ticket = (
+  id: string,
+  minutesAgo: number,
+  title: string,
+  message: string,
+  read = true
+): UnifiedNotification => ({
+  id: `notif_${id}`,
+  kind: 'bug_ticket',
+  title,
+  message,
+  timestamp: now - minutesAgo * MIN,
+  read,
+  navigateTo: '/admin?tab=tickets',
+  icon: 'feature',
+  groupKey: `ticket:${message.match(/"(.+)"/)?.[1] ?? id}`,
+});
+
+const TICKETS: UnifiedNotification[] = [
+  ticket(
+    't1',
+    8,
+    'Neuer Kommentar',
+    'Bärbel hat auf "ISBN gesuchte Mangas werden doppelt angezeigt" geantwortet',
+    false
+  ),
+  ticket(
+    't2',
+    16 * 60,
+    'Neuer Kommentar',
+    'Bärbel hat auf "ISBN gesuchte Mangas werden doppelt angezeigt" geantwortet'
+  ),
+  ticket(
+    't3',
+    17 * 60,
+    'Neuer Kommentar',
+    'Bärbel hat auf "ISBN gesuchte Mangas werden doppelt angezeigt" geantwortet'
+  ),
+  ticket(
+    't4',
+    16 * 60,
+    'Neuer Kommentar',
+    'Flo hat auf "Profilanzeige auf Bücher erweitern" geantwortet'
+  ),
+  ticket(
+    't5',
+    16 * 60 + 2,
+    'Neuer Kommentar',
+    'Flo hat auf "Profilanzeige auf Bücher erweitern" geantwortet'
+  ),
+  ticket('t6', 16 * 60 + 5, 'Neuer Feature-Wunsch', 'Flo: "Profilanzeige auf Bücher erweitern"'),
+  ticket('t7', 16 * 60 + 9, 'Neuer Feature-Wunsch', 'Flo: "Bewertungslasche für Bücher"'),
+  ticket('t8', 17 * 60, 'Neuer Feature-Wunsch', 'orksorgie: "Büchersuche"'),
+  ticket('t9', 30 * 60, 'Neuer Feature-Wunsch', 'orksorgie: "Bücher Infos"'),
+];
+
 const OTHERS: UnifiedNotification[] = [
+  ...TICKETS,
   {
     id: 'req_1',
     kind: 'request',

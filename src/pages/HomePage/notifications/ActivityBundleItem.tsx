@@ -1,7 +1,11 @@
 import AutoStories from '@mui/icons-material/AutoStories';
-import ExpandMore from '@mui/icons-material/ExpandMore';
+import Bookmark from '@mui/icons-material/Bookmark';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import ExpandLess from '@mui/icons-material/ExpandLess';
 import LocalMovies from '@mui/icons-material/LocalMovies';
 import MenuBook from '@mui/icons-material/MenuBook';
+import Schedule from '@mui/icons-material/Schedule';
+import Star from '@mui/icons-material/Star';
 import Tv from '@mui/icons-material/Tv';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -13,11 +17,17 @@ import {
 import { t } from '../../../services/i18n';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../hooks/useUnifiedNotifications';
-import { actionLabel, mediaLabel } from './activityText';
+import {
+  actionLabel,
+  bundleTimeRange,
+  mediaBreakdown,
+  mediaLabel,
+  titleTime,
+} from './activityText';
 import { NotifAvatar } from './NotifAvatar';
 
-const SLOT_PX = 46;
-const CHEVRON_PX = 30;
+const TILE_GAP = 10;
+const tileMin = (width: number) => (width < 520 ? 72 : 88);
 
 const MEDIA_ICON: Record<ActivityMedia, typeof Tv> = {
   series: Tv,
@@ -26,28 +36,52 @@ const MEDIA_ICON: Record<ActivityMedia, typeof Tv> = {
   book: MenuBook,
 };
 
-const Poster = ({
-  title,
-  src,
-  size,
-}: {
-  title: BundledTitle;
-  src: string | undefined;
-  size: 'strip' | 'row' | 'single';
-}) => {
+const PosterImage = ({ title, src }: { title: BundledTitle; src: string | undefined }) => {
   const [failed, setFailed] = useState(false);
   const Icon = MEDIA_ICON[title.media];
-  const url = src && !failed ? getImageUrl(src, 'w154', '') : '';
-  return (
-    <span className={`nh-poster nh-poster--${size}`} aria-hidden>
-      {url ? (
-        <img src={url} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
-      ) : (
-        <Icon />
-      )}
-    </span>
+  const url = src && !failed ? getImageUrl(src, 'w185', '') : '';
+  return url ? (
+    <img src={url} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+  ) : (
+    <Icon className="nh-poster-fallback" />
   );
 };
+
+/** Wichtigste Aktion als Marker auf dem Poster — „hinzugefügt" braucht keinen. */
+const ActionBadge = ({ title }: { title: BundledTitle }) => {
+  const action = title.actions[0];
+  if (action === 'rated') {
+    return (
+      <span className="nh-badge nh-badge--rating">
+        <Star />
+        {title.rating ?? ''}
+      </span>
+    );
+  }
+  if (action === 'watchlist') {
+    return (
+      <span className="nh-badge nh-badge--watchlist" aria-label={t('Watchlist')}>
+        <Bookmark />
+      </span>
+    );
+  }
+  if (action === 'finished') {
+    return (
+      <span className="nh-badge nh-badge--finished" aria-label={t('ausgelesen')}>
+        <CheckCircle />
+      </span>
+    );
+  }
+  return null;
+};
+
+const titleMeta = (title: BundledTitle): string =>
+  [
+    mediaLabel(title),
+    ...(title.actions.length === 1 && title.actions[0] === 'added'
+      ? [t('hinzugefügt')]
+      : title.actions.filter((a) => a !== 'added').map((a) => actionLabel(a, title))),
+  ].join(' · ');
 
 interface Props {
   item: UnifiedNotification;
@@ -61,25 +95,24 @@ export const ActivityBundleItem = React.memo(function ActivityBundleItem({
   onOpen,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [slots, setSlots] = useState(7);
-  const stripRef = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(5);
+  const gridRef = useRef<HTMLDivElement>(null);
   const bundle = item.bundle;
   const single = bundle?.titles.length === 1 ? bundle.titles[0] : null;
+  const isNew = !item.read;
 
   useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip || typeof ResizeObserver === 'undefined') return;
+    const grid = gridRef.current;
+    if (!grid || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(([entry]) => {
-      const room = entry.contentRect.width - CHEVRON_PX + 6;
-      setSlots(Math.max(2, Math.floor(room / SLOT_PX)));
+      const width = entry.contentRect.width;
+      setCols(Math.max(3, Math.floor((width + TILE_GAP) / (tileMin(width) + TILE_GAP))));
     });
-    observer.observe(strip);
+    observer.observe(grid);
     return () => observer.disconnect();
   }, [single]);
 
   if (!bundle) return null;
-  const shown = bundle.titles.length <= slots ? bundle.titles.length : slots - 1;
-  const rest = bundle.titles.length - shown;
 
   const openTitle = (title: BundledTitle) => {
     const path = activityPath(title.media, title.id);
@@ -88,68 +121,121 @@ export const ActivityBundleItem = React.memo(function ActivityBundleItem({
     onOpen(path, preview ? { result: preview } : undefined);
   };
 
-  const activate = () => (single ? openTitle(single) : setOpen((v) => !v));
+  const breakdown = mediaBreakdown(bundle);
+  const timeRange = bundleTimeRange(bundle);
+  const limit = cols * (isNew ? 2 : 1);
+  const collapsed = !open && bundle.titles.length > limit;
+  const visible = collapsed ? bundle.titles.slice(0, limit - 1) : bundle.titles;
+  const rest = bundle.titles.length - visible.length;
+
+  const tile = (title: BundledTitle) => {
+    const MediaIcon = MEDIA_ICON[title.media];
+    return (
+      <button
+        key={title.key}
+        type="button"
+        className="nh-tile"
+        onClick={() => openTitle(title)}
+        aria-label={`${title.title} · ${titleMeta(title)} · ${titleTime(title.latest)}`}
+      >
+        <span className="nh-tile-poster">
+          <PosterImage title={title} src={posterFor(title)} />
+          <span className={`nh-tile-media nh-tile-media--${title.media}`} aria-hidden>
+            <MediaIcon />
+            {mediaLabel(title)}
+          </span>
+          <ActionBadge title={title} />
+        </span>
+        <span className="nh-tile-title">{title.title}</span>
+        <span className="nh-tile-when">{titleTime(title.latest)}</span>
+      </button>
+    );
+  };
 
   return (
-    <div className={`nh-bundle${item.read ? '' : ' is-unread'}${open ? ' is-open' : ''}`}>
-      <div
-        className="nh-row"
-        role="button"
-        tabIndex={0}
-        aria-expanded={single ? undefined : open}
-        onClick={activate}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            activate();
-          }
-        }}
-      >
-        <NotifAvatar name={item.title} photoURL={item.photoURL} />
-        <div className="nh-body">
-          <div className="nh-head">
-            <span className="nh-name">{item.title}</span>
-            <span className="nh-time">
-              {formatNotificationTime(item.timestamp)}
-              {!item.read && <span className="nh-dot" />}
-            </span>
-          </div>
-          <div className="nh-text">{item.message}</div>
-          {!single && (
-            <div className="nh-strip" ref={stripRef}>
-              {bundle.titles.slice(0, shown).map((title) => (
-                <Poster key={title.key} title={title} src={posterFor(title)} size="strip" />
-              ))}
-              {rest > 0 && <span className="nh-strip-more">+{rest}</span>}
-              <ExpandMore className="nh-chevron" aria-label={open ? t('Weniger') : t('Alle')} />
-            </div>
-          )}
-        </div>
-        {single && <Poster title={single} src={posterFor(single)} size="single" />}
+    <article className={`nh-friend${isNew ? ' is-new' : ''}`}>
+      <div className="nh-friend-head">
+        <button
+          type="button"
+          className="nh-friend-who"
+          onClick={() => onOpen(`/friend/${bundle.userId}`)}
+        >
+          <NotifAvatar name={item.title} photoURL={item.photoURL} size={40} />
+          <span className="nh-friend-names">
+            <span className="nh-friend-name">{item.title}</span>
+            {!single && <span className="nh-friend-what">{item.message}</span>}
+          </span>
+        </button>
+        <span className="nh-time">
+          {formatNotificationTime(item.timestamp)}
+          {isNew && <span className="nh-new-pill">{t('NEU')}</span>}
+        </span>
       </div>
 
-      {open && !single && (
-        <ul className="nh-titles">
-          {bundle.titles.map((title) => (
-            <li key={title.key}>
-              <button type="button" className="nh-title" onClick={() => openTitle(title)}>
-                <Poster title={title} src={posterFor(title)} size="row" />
-                <span className="nh-title-main">
-                  <span className="nh-title-name">{title.title}</span>
-                  <span className="nh-title-meta">
-                    {[
-                      mediaLabel(title),
-                      ...title.actions
-                        .filter((a) => a !== 'added')
-                        .map((a) => actionLabel(a, title)),
-                    ].join(' · ')}
-                  </span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+      {!single && (
+        <div className="nh-friend-meta">
+          {breakdown.map(({ media, label }) => {
+            const Icon = MEDIA_ICON[media];
+            return (
+              <span key={media} className={`nh-media-chip nh-media-chip--${media}`}>
+                <Icon />
+                {label}
+              </span>
+            );
+          })}
+          {timeRange && (
+            <span className="nh-span">
+              <Schedule />
+              {timeRange}
+            </span>
+          )}
+        </div>
       )}
-    </div>
+
+      {single ? (
+        <button type="button" className="nh-feature" onClick={() => openTitle(single)}>
+          <span className="nh-tile-poster nh-feature-poster">
+            <PosterImage title={single} src={posterFor(single)} />
+            <ActionBadge title={single} />
+          </span>
+          <span className="nh-feature-main">
+            <span className="nh-feature-title">{single.title}</span>
+            <span className="nh-feature-meta">{titleMeta(single)}</span>
+          </span>
+        </button>
+      ) : (
+        <div
+          ref={gridRef}
+          className="nh-tiles"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
+          {visible.map(tile)}
+          {collapsed && (
+            <button
+              type="button"
+              className="nh-tile nh-tile--more"
+              onClick={() => setOpen(true)}
+              aria-label={t('Alle {n} anzeigen', { n: bundle.titles.length })}
+            >
+              <span className="nh-tile-poster">
+                <span className="nh-more-count">+{rest}</span>
+              </span>
+            </button>
+          )}
+          {open && bundle.titles.length > limit && (
+            <button
+              type="button"
+              className="nh-tile nh-tile--more"
+              onClick={() => setOpen(false)}
+              aria-label={t('Weniger')}
+            >
+              <span className="nh-tile-poster">
+                <ExpandLess />
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+    </article>
   );
 });

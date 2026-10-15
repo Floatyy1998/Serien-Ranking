@@ -9,8 +9,9 @@ import { bundleSentence } from './activityText';
 
 afterEach(cleanup);
 
+let seq = 0;
 const act = (overrides: Partial<FriendActivity>): FriendActivity => ({
-  id: String(Math.random()),
+  id: `a${seq++}`,
   userId: 'baerbel',
   userName: 'Bärbel',
   type: 'series_added',
@@ -19,7 +20,7 @@ const act = (overrides: Partial<FriendActivity>): FriendActivity => ({
   ...overrides,
 });
 
-const itemFor = (activities: FriendActivity[]): UnifiedNotification => {
+const itemFor = (activities: FriendActivity[], read = false): UnifiedNotification => {
   const [bundle] = bundleActivities(activities);
   return {
     id: bundle.id,
@@ -27,14 +28,14 @@ const itemFor = (activities: FriendActivity[]): UnifiedNotification => {
     title: 'Bärbel',
     message: bundleSentence(bundle),
     timestamp: bundle.latest,
-    read: false,
+    read,
     icon: 'tv',
     bundle,
   };
 };
 
 describe('ActivityBundleItem', () => {
-  it('klappt eine Sitzung auf und öffnet den gewählten Titel', () => {
+  it('zeigt jeden Titel mit Medium und öffnet den gewählten', () => {
     const onOpen = vi.fn();
     render(
       <ActivityBundleItem
@@ -47,11 +48,36 @@ describe('ActivityBundleItem', () => {
       />
     );
     expect(screen.getByText('hat 2 Titel hinzugefügt')).toBeTruthy();
-    expect(screen.queryByText('Barbie')).toBeNull();
+    expect(screen.getByText('1 Serie')).toBeTruthy();
+    expect(screen.getByText('1 Film')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { expanded: false }));
-    fireEvent.click(screen.getByText('Barbie'));
+    fireEvent.click(screen.getByRole('button', { name: /^Barbie/ }));
     expect(onOpen).toHaveBeenCalledWith('/movie/346698', undefined);
+  });
+
+  it('klappt lange Sitzungen hinter +N zusammen', () => {
+    const titles = Array.from({ length: 12 }, (_, i) =>
+      act({ tmdbId: 100 + i, itemTitle: `Serie ${i}`, timestamp: 1_000_000 - i * 60_000 })
+    );
+    render(
+      <ActivityBundleItem item={itemFor(titles)} posterFor={() => undefined} onOpen={vi.fn()} />
+    );
+    expect(screen.queryByText('Serie 11')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Alle 12 anzeigen' }));
+    expect(screen.getByText('Serie 11')).toBeTruthy();
+  });
+
+  it('öffnet über den Namen das Profil', () => {
+    const onOpen = vi.fn();
+    render(
+      <ActivityBundleItem
+        item={itemFor([act({ tmdbId: 1, itemTitle: 'Dark' })], true)}
+        posterFor={() => undefined}
+        onOpen={onOpen}
+      />
+    );
+    fireEvent.click(screen.getByText('Bärbel'));
+    expect(onOpen).toHaveBeenCalledWith('/friend/baerbel');
   });
 
   it('öffnet einen einzelnen Buch-Eintrag direkt mit Vorschau', () => {
@@ -71,7 +97,8 @@ describe('ActivityBundleItem', () => {
         onOpen={onOpen}
       />
     );
-    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByText('Buch · ausgelesen')).toBeTruthy();
+    fireEvent.click(screen.getByText('Der Report der Magd'));
     expect(onOpen).toHaveBeenCalledWith(
       '/books/ol-OL1W',
       expect.objectContaining({ result: expect.objectContaining({ olWorkId: 'OL1W' }) })

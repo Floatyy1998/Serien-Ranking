@@ -1,17 +1,16 @@
 import { Cancel, Check } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { formatNotificationTime, type UnifiedNotification } from '../hooks/useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 import { NotifAvatar } from './NotifAvatar';
-import { tapScaleTight } from '../../../lib/motion';
-import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { t } from '../../../services/i18n';
 
 interface NotificationItemProps {
   item: UnifiedNotification;
-  isLast: boolean;
+  /** Meldungen im selben Thread — ab 2 als Zähler am Titel. */
+  count?: number;
+  unread?: boolean;
   theme: ThemeContextType['currentTheme'];
   onItemClick: (item: UnifiedNotification) => void;
   onAcceptRequest: (id: string) => void;
@@ -20,199 +19,99 @@ interface NotificationItemProps {
 
 export const NotificationItem = React.memo(function NotificationItem({
   item,
-  isLast,
+  count = 1,
+  unread = !item.read,
   theme,
   onItemClick,
   onAcceptRequest,
   onDeclineRequest,
 }: NotificationItemProps) {
-  const clickable = item.kind !== 'request' && !!item.navigateTo;
+  const isRequest = item.kind === 'request';
   // Ohne Navigationsziel (z. B. Admin-Nachricht): Tippen klappt den vollen Text auf
-  const expandable = item.kind !== 'request' && !item.navigateTo;
+  const expandable = !isRequest && !item.navigateTo;
   const [expanded, setExpanded] = useState(false);
+  const isNews = item.kind === 'announcement' || item.sourceType === 'admin_message';
+
+  const activate = () => {
+    if (expandable) setExpanded((v) => !v);
+    onItemClick(item);
+  };
+
+  const className = [
+    'nh-item',
+    unread && 'is-new',
+    unread && isNews && 'is-news',
+    expanded && 'is-expanded',
+    isRequest && 'is-static',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <motion.div
-      whileTap={item.kind !== 'request' ? { opacity: 0.7 } : undefined}
-      onClick={() => {
-        if (expandable) setExpanded((v) => !v);
-        onItemClick(item);
-      }}
-      role={clickable ? 'button' : undefined}
-      tabIndex={clickable ? 0 : undefined}
+    <div
+      className={className}
+      role={isRequest ? undefined : 'button'}
+      tabIndex={isRequest ? undefined : 0}
+      onClick={isRequest ? undefined : activate}
       onKeyDown={
-        clickable
-          ? (e) => {
+        isRequest
+          ? undefined
+          : (e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onItemClick(item);
+                activate();
               }
             }
-          : undefined
       }
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '14px',
-        padding: '14px 8px',
-        cursor: item.kind !== 'request' && item.navigateTo ? 'pointer' : 'default',
-        borderBottom: !isLast ? `1px solid ${theme.border.default}40` : 'none',
-        position: 'relative',
-        background: !item.read ? 'var(--theme-primary-08)' : 'transparent',
-        borderRadius: '12px',
-        marginBottom: !isLast ? '2px' : 0,
-      }}
     >
-      {!item.read && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '14px',
-            bottom: '14px',
-            width: '3px',
-            borderRadius: '2px',
-            background: `linear-gradient(180deg, ${theme.primary}, ${theme.accent})`,
-          }}
-        />
-      )}
-
       {item.kind === 'chat' ? (
-        <NotifAvatar name={item.title} photoURL={item.photoURL} />
+        <NotifAvatar name={item.title} photoURL={item.photoURL} size={40} />
       ) : (
-        <div
-          style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '14px',
-            background: getNotificationIconBg(item.icon, theme),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
+        <span
+          className="nh-icon"
+          style={{ background: getNotificationIconBg(item.icon, theme) }}
+          aria-hidden
         >
           {getNotificationIcon(item.icon, theme)}
-        </div>
+        </span>
       )}
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: '8px',
-            marginBottom: '3px',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '15px',
-              fontWeight: !item.read ? 700 : 600,
-              color: theme.text.primary,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              flex: 1,
-            }}
-          >
-            {item.title}
-          </span>
-          <span
-            style={{
-              fontSize: '12px',
-              color: !item.read ? theme.primary : theme.text.muted,
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-            }}
-          >
+      <div className="nh-body">
+        <div className="nh-head">
+          <span className="nh-title">{item.title}</span>
+          {count > 1 && (
+            <span className="nh-count" aria-label={t('{n} Meldungen', { n: count })}>
+              {count}
+            </span>
+          )}
+          <span className="nh-time">
             {formatNotificationTime(item.timestamp)}
-            {!item.read && (
-              <span
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            {unread && <span className="nh-dot" />}
           </span>
         </div>
-        <div
-          style={{
-            fontSize: '14px',
-            color: !item.read ? theme.text.secondary : theme.text.muted,
-            lineHeight: 1.4,
-            overflowWrap: 'anywhere',
-            ...(expanded
-              ? {}
-              : {
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }),
-          }}
-        >
-          {item.message}
-        </div>
+        <div className="nh-text">{item.message}</div>
 
-        {item.kind === 'request' && item.requestId && (
-          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-            <motion.button
-              whileTap={tapScaleTight}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAcceptRequest(item.requestId ?? '');
-              }}
-              style={{
-                padding: '8px 16px',
-                background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
-                border: 'none',
-                borderRadius: '12px',
-                color: getOptimalTextColor(theme.primary),
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-              }}
+        {isRequest && item.requestId && (
+          <div className="nh-actions">
+            <button
+              type="button"
+              className="nh-btn nh-btn--primary"
+              onClick={() => onAcceptRequest(item.requestId ?? '')}
             >
-              <Check style={{ fontSize: '16px' }} />
+              <Check />
               {t('Annehmen')}
-            </motion.button>
-            <motion.button
-              whileTap={tapScaleTight}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeclineRequest(item.requestId ?? '');
-              }}
-              style={{
-                padding: '8px 16px',
-                background: theme.background.default,
-                border: `1px solid ${theme.border.default}`,
-                borderRadius: '12px',
-                color: theme.text.secondary,
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
+            </button>
+            <button
+              type="button"
+              className="nh-btn nh-btn--ghost"
+              onClick={() => onDeclineRequest(item.requestId ?? '')}
             >
-              <Cancel style={{ fontSize: '16px' }} />
+              <Cancel />
               {t('Ablehnen')}
-            </motion.button>
+            </button>
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 });

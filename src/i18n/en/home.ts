@@ -118,6 +118,16 @@ const dict: Record<string, string> = {
   'Alles ruhig hier': 'All quiet',
   'Keine neuen Benachrichtigungen': 'No new notifications',
   'Alle Aktivitäten anzeigen': 'See all activity',
+  'Alle gelesen': 'Mark all read',
+  '{n} neu': '{n} new',
+  '{n} Meldungen': '{n} notifications',
+  'Alle {n} anzeigen': 'Show all {n}',
+  hinzugefügt: 'added',
+  '{n} Serien': '{n} shows',
+  '{n} Filme': '{n} movies',
+  '{n} Bücher': '{n} books',
+  '{n} Manga': '{n} manga',
+  '1 Manga': '1 manga',
 
   // useUnifiedNotifications
   Unbekannt: 'Unknown',
