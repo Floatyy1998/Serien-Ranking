@@ -23,8 +23,15 @@ function parseEntry(raw: unknown): PublicDirectoryEntry | null {
     photoURL: text(r.photoURL),
     series: count(r.series),
     movies: count(r.movies),
+    manga: count(r.manga),
+    books: count(r.books),
     watchtimeMinutes: count(r.watchtimeMinutes),
   };
+}
+
+/** Nur für /dev/ui-preview: Verzeichnis ohne Datenbank füllen. */
+export function primePublicDirectory(entries: PublicDirectoryEntry[]): void {
+  cache = { ts: Date.now(), entries };
 }
 
 /** Liest den vom Backend alle 15 Min geschriebenen Snapshot, ein kleiner Read. */

@@ -8,7 +8,7 @@
  */
 
 import type { LibraryTotals } from '../../lib/stats/libraryTotals';
-import type { LeaderboardTotals } from '../../types/Leaderboard';
+import type { LeaderboardTotals, ReadingCounts } from '../../types/Leaderboard';
 import { dbGet, dbRef, userPath } from '../db/ref';
 
 export const TOTALS_SCHEMA_VERSION = 1;
@@ -132,6 +132,56 @@ export async function publishLibraryTotals(userId: string, totals: LibraryTotals
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.warn(`[Totals] Schnappschuss nicht geschrieben: ${message}`);
   }
+}
+
+const READING_PREFIX = 'tvrank:readingPublish:';
+
+function loadReadingKey(uid: string): string | null {
+  try {
+    return localStorage.getItem(`${READING_PREFIX}${uid}`);
+  } catch {
+    return null;
+  }
+}
+
+function saveReadingKey(uid: string, key: string): void {
+  try {
+    localStorage.setItem(`${READING_PREFIX}${uid}`, key);
+  } catch {
+    // Dann wird beim nächsten Start eben noch einmal geschrieben.
+  }
+}
+
+/** Schreibt die Zahl der Manga und Bücher, sobald sie sich ändert. */
+export async function publishReadingCounts(userId: string, counts: ReadingCounts): Promise<void> {
+  if (!userId) return;
+  const manga = Math.max(0, Math.round(counts.manga));
+  const books = Math.max(0, Math.round(counts.books));
+  const key = `${manga}:${books}`;
+  const previous = loadReadingKey(userId);
+  if (previous === key) return;
+  // Wer nie gelesen hat, bekommt keinen Knoten — eine Null zählt nur nach echten Einträgen.
+  if (previous === null && manga === 0 && books === 0) return;
+  try {
+    await dbRef(userPath(userId, 'leaderboard', 'reading')).set({
+      manga,
+      books,
+      updatedAt: Date.now(),
+    });
+    saveReadingKey(userId, key);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.warn(`[Totals] Lese-Zahlen nicht geschrieben: ${message}`);
+  }
+}
+
+const readingCount = (value: unknown): number =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+
+export function parseReadingCounts(value: unknown): ReadingCounts | null {
+  if (!value || typeof value !== 'object') return null;
+  const raw = value as Record<string, unknown>;
+  return { manga: readingCount(raw.manga), books: readingCount(raw.books) };
 }
 
 /** Nur fuer Tests: haengende Nachzuegler-Timer verwerfen. */

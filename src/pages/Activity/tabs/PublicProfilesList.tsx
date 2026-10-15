@@ -15,17 +15,9 @@ import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 import { fetchPublicDirectory } from '../../../services/social/publicDirectoryService';
 import type { PublicDirectoryEntry } from '../../../types/PublicDirectory';
+import { libraryCountLabel } from '../libraryCountLabel';
 
 type Relation = 'friend' | 'sent' | 'received' | 'none';
-
-const countLabel = (series: number, movies: number): string => {
-  const parts: string[] = [];
-  if (series > 0)
-    parts.push(series === 1 ? t('{n} Serie', { n: 1 }) : t('{n} Serien', { n: series }));
-  if (movies > 0)
-    parts.push(movies === 1 ? t('{n} Film', { n: 1 }) : t('{n} Filme', { n: movies }));
-  return parts.join(' · ');
-};
 
 interface PublicProfilesListProps {
   saveScrollPosition: () => void;
@@ -174,7 +166,7 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
         >
           {visible.map((entry, index) => {
             const relation = relationOf(entry.uid);
-            const meta = countLabel(entry.series, entry.movies);
+            const meta = libraryCountLabel(entry);
             return (
               <motion.div
                 key={entry.uid}

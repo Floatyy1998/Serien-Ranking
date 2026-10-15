@@ -24,6 +24,13 @@ export interface LeaderboardTotals {
   v: number;
 }
 
+/** Größe der Lese-Sammlung unter `users/$uid/leaderboard/reading` — für Nutzerkarten
+ *  und das Profilverzeichnis, ohne die (nur für Freunde lesbaren) Listen selbst. */
+export interface ReadingCounts {
+  manga: number;
+  books: number;
+}
+
 export type TotalsCategory =
   'watchtimeMinutes' | 'seriesStarted' | 'movies' | 'episodes' | 'streakAllTime';
 

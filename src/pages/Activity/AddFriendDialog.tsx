@@ -13,9 +13,11 @@ import {
   GradientText,
   LoadingSpinner,
 } from '../../components/ui';
-import { db, dbRef } from '../../services/db/ref';
+import { db, dbGet, dbRef } from '../../services/db/ref';
+import { parseReadingCounts } from '../../services/social/userTotalsService';
 import { t } from '../../services/i18n';
 import { tapScaleSmall } from '../../lib/motion';
+import { libraryCountLabel } from './libraryCountLabel';
 
 interface UserSearchResult {
   uid: string;
@@ -25,8 +27,7 @@ interface UserSearchResult {
   isAlreadyFriend: boolean;
   hasPendingRequest: boolean;
   bio?: string;
-  seriesCount?: number;
-  moviesCount?: number;
+  counts: string;
 }
 
 interface AddFriendDialogProps {
@@ -118,6 +119,10 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             // Shallow REST-Reads fuer counts (nur Keys, kein Inhalt)
             let seriesCount = 0;
             let moviesCount = 0;
+            // Manga/Bücher sind nur für Freunde lesbar — die veröffentlichte Zahl schon für alle.
+            const readingPromise = dbGet<unknown>(`users/${uid}/leaderboard/reading`)
+              .then(parseReadingCounts)
+              .catch(() => null);
             try {
               const dbUrl = (db().app.options as { databaseURL?: string }).databaseURL;
               const token = await user?.getIdToken();
@@ -136,6 +141,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             } catch {
               // Counts sind optional
             }
+            const reading = await readingPromise;
 
             return {
               uid,
@@ -144,8 +150,12 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 (userData.displayName as string) || (userData.username as string) || 'Unknown',
               photoURL: userData.photoURL as string | undefined,
               bio: userData.bio as string | undefined,
-              seriesCount,
-              moviesCount,
+              counts: libraryCountLabel({
+                series: seriesCount,
+                movies: moviesCount,
+                manga: reading?.manga ?? 0,
+                books: reading?.books ?? 0,
+              }),
               isAlreadyFriend: friends.some((f) => f.uid === uid),
               hasPendingRequest:
                 sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
@@ -401,17 +411,14 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                       {result.displayName}
                       <NameBadges uid={result.uid} />
                     </div>
-                    {(result.seriesCount !== undefined || result.moviesCount !== undefined) && (
+                    {result.counts && (
                       <div
                         style={{
                           fontSize: '13px',
                           color: currentTheme.text.muted,
                         }}
                       >
-                        {t('{s} Serien • {m} Filme', {
-                          s: result.seriesCount || 0,
-                          m: result.moviesCount || 0,
-                        })}
+                        {result.counts}
                       </div>
                     )}
                   </div>

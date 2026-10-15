@@ -7,5 +7,7 @@ export interface PublicDirectoryEntry {
   photoURL: string | null;
   series: number;
   movies: number;
+  manga: number;
+  books: number;
   watchtimeMinutes: number;
 }

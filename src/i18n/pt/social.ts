@@ -70,7 +70,6 @@ const dict: Record<string, string> = {
   'Versuche einen anderen Benutzernamen': 'Tente outro nome de usuário',
   '{n} Person gefunden': '{n} pessoa encontrada',
   '{n} Personen gefunden': '{n} pessoas encontradas',
-  '{s} Serien • {m} Filme': '{s} séries • {m} filmes',
   Angefragt: 'Solicitado',
   'Noch keine Freunde': 'Você ainda não tem amigos',
   'Füge Freunde hinzu, um ihre Aktivitäten, Bewertungen und Watchlists zu verfolgen.':

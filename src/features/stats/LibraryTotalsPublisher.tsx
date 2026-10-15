@@ -9,10 +9,15 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBooksList } from '../../contexts/BooksListContext';
+import { useMangaList } from '../../contexts/MangaListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { computeLibraryTotals } from '../../lib/stats/libraryTotals';
-import { publishLibraryTotals } from '../../services/social/userTotalsService';
+import {
+  publishLibraryTotals,
+  publishReadingCounts,
+} from '../../services/social/userTotalsService';
 
 const DEBOUNCE_MS = 20_000;
 
@@ -20,6 +25,8 @@ export function LibraryTotalsPublisher() {
   const { user } = useAuth() || {};
   const { allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { allMangaList, loading: mangaLoading } = useMangaList();
+  const { bookList, loading: booksLoading } = useBooksList();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const uid = user?.uid;
@@ -39,6 +46,17 @@ export function LibraryTotalsPublisher() {
       timerRef.current = null;
     };
   }, [uid, allSeriesList, movieList]);
+
+  const mangaCount = allMangaList.length;
+  const bookCount = bookList.length;
+  useEffect(() => {
+    if (!uid || mangaLoading || booksLoading) return;
+    const timer = setTimeout(
+      () => void publishReadingCounts(uid, { manga: mangaCount, books: bookCount }),
+      DEBOUNCE_MS
+    );
+    return () => clearTimeout(timer);
+  }, [uid, mangaLoading, booksLoading, mangaCount, bookCount]);
 
   return null;
 }

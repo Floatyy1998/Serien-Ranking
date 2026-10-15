@@ -25,6 +25,7 @@ describe('fetchPublicDirectory', () => {
           photoURL: '',
           series: 12.4,
           movies: -3,
+          manga: 4,
           watchtimeMinutes: 900,
         },
         { uid: 'u2' },
@@ -42,6 +43,8 @@ describe('fetchPublicDirectory', () => {
         photoURL: null,
         series: 12,
         movies: 0,
+        manga: 4,
+        books: 0,
         watchtimeMinutes: 900,
       },
     ]);

@@ -28,7 +28,9 @@ import {
   clearPendingTotalsPublishes,
   decidePublish,
   fetchLibraryTotals,
+  parseReadingCounts,
   publishLibraryTotals,
+  publishReadingCounts,
   toTotalsPayload,
   totalsFingerprint,
 } from './userTotalsService';
@@ -187,5 +189,27 @@ describe('totalsFingerprint', () => {
     const a = toTotalsPayload(totals());
     const b = toTotalsPayload(totals({ movies: 213 }));
     expect(totalsFingerprint(a)).not.toBe(totalsFingerprint(b));
+  });
+});
+
+describe('publishReadingCounts', () => {
+  it('schreibt Manga und Bücher unter den Leaderboard-Knoten, nur bei Änderung', async () => {
+    await publishReadingCounts('r1', { manga: 3, books: 12 });
+    await publishReadingCounts('r1', { manga: 3, books: 12 });
+    expect(db.sets.filter((s) => s.path === 'users/r1/leaderboard/reading')).toHaveLength(1);
+    expect(db.sets[db.sets.length - 1]?.value).toMatchObject({ manga: 3, books: 12 });
+
+    await publishReadingCounts('r1', { manga: 0, books: 0 });
+    expect(db.sets[db.sets.length - 1]?.value).toMatchObject({ manga: 0, books: 0 });
+  });
+
+  it('legt für Nichtleser keinen Knoten an', async () => {
+    await publishReadingCounts('r2', { manga: 0, books: 0 });
+    expect(db.sets.some((s) => s.path === 'users/r2/leaderboard/reading')).toBe(false);
+  });
+
+  it('liest nur gültige Zahlen', () => {
+    expect(parseReadingCounts({ manga: 4.2, books: -1 })).toEqual({ manga: 4, books: 0 });
+    expect(parseReadingCounts(null)).toBeNull();
   });
 });

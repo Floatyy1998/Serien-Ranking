@@ -17,6 +17,7 @@ import {
   SignatureStripPreview,
 } from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
+import { PublicProfilesPreview } from './SocialPreviews';
 import {
   CatchUpPreview,
   RatingsYearFilterPreview,
@@ -174,6 +175,7 @@ const LightboxPreview = () => {
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
   { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
+  { id: 'public-profiles', label: 'Öffentliche Profile', render: () => <PublicProfilesPreview /> },
   { id: 'ratings-books', label: 'Bewertungen: Bücher', render: () => <RatingsBooksPreview /> },
   { id: 'pet-poses', label: 'Pet: Posen', render: () => <PetPoseGalleryPreview levels={[1]} /> },
   {

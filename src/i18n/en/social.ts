@@ -75,7 +75,6 @@ const dict: Record<string, string> = {
   'Versuche einen anderen Benutzernamen': 'Try a different username',
   '{n} Person gefunden': '{n} person found',
   '{n} Personen gefunden': '{n} people found',
-  '{s} Serien • {m} Filme': '{s} shows • {m} movies',
   Angefragt: 'Requested',
   '✓ Freundschaftsanfrage gesendet!': '✓ Friend request sent!',
 
