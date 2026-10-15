@@ -19,3 +19,18 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor: Plugins werden per Reflection über Annotationen gefunden.
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod,SourceFile,LineNumberTable
+-keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
+-keep class * extends com.getcapacitor.Plugin { *; }
+-keepclassmembers class * {
+    @com.getcapacitor.PluginMethod public *;
+    @com.getcapacitor.annotation.PermissionCallback *;
+    @com.getcapacitor.annotation.ActivityCallback *;
+    @android.webkit.JavascriptInterface <methods>;
+}
+-renamesourcefileattribute SourceFile
+
+# Optionaler Facebook-Login des Firebase-Auth-Plugins, nicht eingebunden.
+-dontwarn com.facebook.**
