@@ -28,11 +28,16 @@ import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { saveReadProgress } from './saveReadProgress';
-import { moveMangaToBooks, restoreMangaFromBooks } from './mangaBookSwitch';
+import { moveMangaToBooks, rememberSourceBooks, restoreMangaFromBooks } from './mangaBookSwitch';
 import { bookPath, searchPath } from '../Books/helpers';
 import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { findVolumeBook } from '../../services/books/volumeBook';
-import { firstSourceBook } from '../../lib/books/mangaBooks';
+import {
+  firstSourceBook,
+  sameEdition,
+  volumeBookFrom,
+  volumeSnapshot,
+} from '../../lib/books/mangaBooks';
 import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { trackMangaDeleted } from '../../services/firebase/analytics';
@@ -71,6 +76,8 @@ export const MangaDetailPage = () => {
   const ownedFor = useOwnedBooks();
   // Band aus der ISBN-Suche (?band=N) — bietet „Bis Band N gelesen" an.
   const scannedVolume = Number(new URLSearchParams(location.search ?? '').get('band')) || 0;
+  // Der Band selbst (ISBN-Treffer, Buchseite) — „Zum Buch" braucht dann keine Titelsuche.
+  const scannedBook = volumeBookFrom(location.state);
   const [hintDismissed, setHintDismissed] = useState(false);
 
   const unit: MangaUnit = manga ? mangaUnit(manga) : 'chapter';
@@ -146,19 +153,25 @@ export const MangaDetailPage = () => {
     if (!user || !manga || scannedVolume <= 0) return;
     const asVolumes: Manga = { ...manga, trackBy: 'volumes' };
     if (unit !== 'volume') await updateField('trackBy', 'volumes');
+    const snapshot = scannedBook && volumeSnapshot(scannedBook, new Date().toISOString());
+    if (snapshot && !Object.values(manga.fromBooks ?? {}).some((b) => sameEdition(b, snapshot))) {
+      void rememberSourceBooks(user.uid, manga.anilistId, [snapshot]).catch(() => {});
+    }
     const volumeTotal = mangaStand(asVolumes, liveVolumes).total || null;
     await saveReadProgress(user.uid, asVolumes, {
       next: volumeTotal ? Math.min(scannedVolume, volumeTotal) : scannedVolume,
       previous: manga.currentVolume || 0,
       total: volumeTotal,
     });
-  }, [user, manga, unit, scannedVolume, liveVolumes, updateField]);
+  }, [user, manga, unit, scannedVolume, scannedBook, liveVolumes, updateField]);
 
   const handleMoveToBooks = useCallback(async () => {
     if (!user || !manga || movingToBooks) return;
     setMovingToBooks(true);
     try {
-      const firstVolume = manga.fromBooks ? null : await findVolumeBook(manga, 1);
+      const firstVolume = manga.fromBooks
+        ? null
+        : (scannedBook ?? (await findVolumeBook(manga, 1)));
       const books = await moveMangaToBooks(user.uid, manga, new Set(allBookList.map((b) => b.id)));
       const uid = user.uid;
       const undo = (message: string) =>
@@ -192,14 +205,14 @@ export const MangaDetailPage = () => {
     } finally {
       setMovingToBooks(false);
     }
-  }, [user, manga, movingToBooks, allBookList, ownedFor, navigate]);
+  }, [user, manga, movingToBooks, scannedBook, allBookList, ownedFor, navigate]);
 
   const handleOpenBook = useCallback(async () => {
     if (!manga || openingBook) return;
     setOpeningBook(true);
     try {
       const own = firstSourceBook(manga);
-      const result = own ? bookAsResult(own) : await findVolumeBook(manga, 1);
+      const result = scannedBook ?? (own ? bookAsResult(own) : await findVolumeBook(manga, 1));
       if (!result) {
         navigate(searchPath(manga.title));
         return;
@@ -209,7 +222,7 @@ export const MangaDetailPage = () => {
     } finally {
       setOpeningBook(false);
     }
-  }, [manga, openingBook, ownedFor, navigate]);
+  }, [manga, openingBook, scannedBook, ownedFor, navigate]);
 
   const handleStatusChange = useCallback(
     async (status: Manga['readStatus']) => {
@@ -385,6 +398,9 @@ export const MangaDetailPage = () => {
           try {
             await addMangaToList(user.uid, anilistData, nextNmr, {
               byVolume: scannedVolume > 0,
+              fromBooks: scannedBook
+                ? [volumeSnapshot(scannedBook, new Date().toISOString())]
+                : undefined,
             });
           } finally {
             setAdding(false);

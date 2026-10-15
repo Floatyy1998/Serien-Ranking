@@ -135,14 +135,14 @@ describe('resolveMangaVolumes', () => {
 describe('findMangaByIsbn', () => {
   it('findet die Reihe zum Band und merkt sich den Bandtitel', async () => {
     const spy = anilist(108556, 'SPY x FAMILY');
-    searchBooks.mockResolvedValue([
-      book('dnb-9783695504305', 'Spy x Family – Band 16', { categories: undefined }),
-    ]);
+    const volume = book('dnb-9783695504305', 'Spy x Family – Band 16', { categories: undefined });
+    searchBooks.mockResolvedValue([volume]);
     searchMangaByTitles.mockResolvedValueOnce([[spy]]);
     expect(await findMangaByIsbn('978-3-6955-0430-5')).toEqual({
       results: [spy],
       aliases: { 108556: 'Spy x Family – Band 16' },
       volumes: { 108556: 16 },
+      books: { 108556: volume },
     });
   });
 

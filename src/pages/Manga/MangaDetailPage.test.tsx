@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import type { ReactNode } from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { BookSearchResult } from '../../types/Book';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
+import { addMangaToList } from './addMangaToList';
 import { MangaDetailPage } from './MangaDetailPage';
 
 const listState = vi.hoisted(() => ({ list: [] as Manga[], hidden: [] as Manga[] }));
@@ -42,6 +44,9 @@ vi.mock('./detail/useMangaLiveData', () => ({ useMangaLiveData: () => liveState.
 
 vi.mock('./addMangaToList', () => ({ addMangaToList: vi.fn() }));
 
+const findVolumeBook = vi.hoisted(() => vi.fn());
+vi.mock('../../services/books/volumeBook', () => ({ findVolumeBook }));
+
 vi.mock('../../services/discussion/readActivityService', () => ({
   logChapterRead: vi.fn(),
   logMangaRating: vi.fn(),
@@ -60,10 +65,11 @@ vi.mock('firebase/compat/database', () => ({}));
 
 const navigate = vi.hoisted(() => vi.fn());
 const params = vi.hoisted(() => ({ id: '123' }));
+const routerState = vi.hoisted(() => ({ location: { hash: '' } as Record<string, unknown> }));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
   useParams: () => params,
-  useLocation: () => ({ hash: '' }),
+  useLocation: () => routerState.location,
 }));
 
 vi.mock('../../components/ui', () => ({
@@ -75,12 +81,30 @@ vi.mock('../../components/ui', () => ({
 vi.mock('./detail/MangaDetailHero', () => ({
   MangaDetailHero: () => <div data-testid="hero" />,
 }));
+const childProps = vi.hoisted(() => ({
+  body: {} as { onOpenBook?: () => void },
+  preview: {} as { onAdd?: () => Promise<void> },
+}));
 vi.mock('./detail/MangaDetailBody', () => ({
-  MangaDetailBody: () => <div data-testid="body" />,
+  MangaDetailBody: (props: { onOpenBook?: () => void }) => {
+    childProps.body = props;
+    return <div data-testid="body" />;
+  },
 }));
 vi.mock('./detail/MangaDetailPreview', () => ({
-  MangaDetailPreview: () => <div data-testid="preview" />,
+  MangaDetailPreview: (props: { onAdd?: () => Promise<void> }) => {
+    childProps.preview = props;
+    return <div data-testid="preview" />;
+  },
 }));
+
+const scannedBook: BookSearchResult = {
+  id: 'dnb-9783551000000',
+  title: 'Detail Manga – Band 3',
+  authors: ['Autorin'],
+  source: 'dnb',
+  isbn13: '9783551000000',
+};
 
 function makeManga(overrides: Partial<Manga> = {}): Manga {
   return {
@@ -120,7 +144,10 @@ afterEach(() => {
   listState.list = [];
   listState.hidden = [];
   liveState.data = { anilistData: null, mangadexInfo: null, chapterInfo: null };
+  routerState.location = { hash: '' };
   navigate.mockReset();
+  findVolumeBook.mockReset();
+  vi.mocked(addMangaToList).mockReset();
 });
 
 describe('MangaDetailPage', () => {
@@ -148,5 +175,35 @@ describe('MangaDetailPage', () => {
     render(<MangaDetailPage />);
     expect(screen.getByTestId('hero')).toBeInTheDocument();
     expect(screen.queryByTestId('preview')).not.toBeInTheDocument();
+  });
+
+  it('„Zum Buch" öffnet den Band aus der ISBN-Suche statt per Titel zu suchen', async () => {
+    listState.list = [makeManga({ trackBy: 'volumes', volumes: 10 })];
+    routerState.location = { hash: '', search: '?band=3', state: { volumeBook: scannedBook } };
+    render(<MangaDetailPage />);
+    await act(async () => childProps.body.onOpenBook?.());
+    expect(findVolumeBook).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(`/books/${encodeURIComponent(scannedBook.id)}`, {
+      state: { result: scannedBook },
+    });
+  });
+
+  it('„Zum Buch" sucht ohne bekannten Band weiter per Titel', async () => {
+    listState.list = [makeManga({ trackBy: 'volumes', volumes: 10 })];
+    findVolumeBook.mockResolvedValue(null);
+    render(<MangaDetailPage />);
+    await act(async () => childProps.body.onOpenBook?.());
+    expect(findVolumeBook).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith('/books/search?q=Detail%20Manga');
+  });
+
+  it('merkt sich beim Hinzufügen aus der ISBN-Suche den Band', async () => {
+    liveState.data = { anilistData: makeAniList(), mangadexInfo: null, chapterInfo: null };
+    routerState.location = { hash: '', search: '?band=3', state: { volumeBook: scannedBook } };
+    render(<MangaDetailPage />);
+    await act(async () => childProps.preview.onAdd?.());
+    const options = vi.mocked(addMangaToList).mock.calls[0][3];
+    expect(options?.byVolume).toBe(true);
+    expect(options?.fromBooks?.map((book) => book.isbn13)).toEqual([scannedBook.isbn13]);
   });
 });

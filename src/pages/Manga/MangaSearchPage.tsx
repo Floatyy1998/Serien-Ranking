@@ -7,12 +7,14 @@ import { EmptyState, HorizontalScrollContainer } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { volumeBookState, volumeSnapshot } from '../../lib/books/mangaBooks';
 import { mangaPath } from '../../lib/manga/mangaSource';
 import { filterCollection, mangaProgressPercent } from '../../lib/manga/overview';
 import { mangaStandLabel } from '../../lib/manga/progress';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
 import { t } from '../../services/i18n';
+import type { BookSearchResult } from '../../types/Book';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { MangaPosterCard } from './components/MangaPosterCard';
@@ -39,6 +41,7 @@ export const MangaSearchPage = () => {
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
   const [aliases, setAliases] = useState<Record<number, string>>({});
   const [volumes, setVolumes] = useState<Record<number, number>>({});
+  const [volumeBooks, setVolumeBooks] = useState<Record<number, BookSearchResult>>({});
   const [searching, setSearching] = useState(false);
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [addingId, setAddingId] = useState<number | null>(null);
@@ -66,6 +69,7 @@ export const MangaSearchPage = () => {
       setResults([]);
       setAliases({});
       setVolumes({});
+      setVolumeBooks({});
       return;
     }
     let cancelled = false;
@@ -77,6 +81,7 @@ export const MangaSearchPage = () => {
         setResults(outcome.results);
         setAliases(outcome.aliases);
         setVolumes(outcome.volumes ?? {});
+        setVolumeBooks(outcome.books ?? {});
         const updated = [
           query.trim(),
           ...recentSearchesRef.current.filter((s) => s !== query.trim()),
@@ -138,12 +143,16 @@ export const MangaSearchPage = () => {
       setAddingId(result.id);
       const nextNmr = allOwned.length > 0 ? Math.max(...allOwned.map((m) => m.nmr)) + 1 : 1;
       try {
-        await addMangaToList(user.uid, result, nextNmr, { byVolume: result.id in volumes });
+        const scanned = volumeBooks[result.id];
+        await addMangaToList(user.uid, result, nextNmr, {
+          byVolume: result.id in volumes,
+          fromBooks: scanned ? [volumeSnapshot(scanned, new Date().toISOString())] : undefined,
+        });
       } finally {
         setAddingId(null);
       }
     },
-    [user, allOwned, volumes]
+    [user, allOwned, volumes, volumeBooks]
   );
 
   const clearRecent = () => {
@@ -374,7 +383,12 @@ export const MangaSearchPage = () => {
                   owned={ownedById.get(result.id)}
                   alias={aliases[result.id]}
                   adding={addingId === result.id}
-                  onOpen={() => navigate(mangaPath(result.id, volumes[result.id]))}
+                  onOpen={() =>
+                    navigate(
+                      mangaPath(result.id, volumes[result.id]),
+                      volumeBookState(volumeBooks[result.id])
+                    )
+                  }
                   onAdd={(e) => handleAdd(e, result)}
                 />
               ))}

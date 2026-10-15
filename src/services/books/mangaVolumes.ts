@@ -166,5 +166,6 @@ export async function findMangaByIsbn(isbn: string): Promise<MangaSearchOutcome>
     results: [hit.manga],
     aliases: { [hit.manga.id]: book.title },
     volumes: { [hit.manga.id]: hit.volume ?? 0 },
+    books: { [hit.manga.id]: book },
   };
 }

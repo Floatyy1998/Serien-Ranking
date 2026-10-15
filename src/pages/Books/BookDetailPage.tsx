@@ -25,10 +25,15 @@ import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
-import { coverAtSize } from '../../lib/books/bookSearchMapping';
+import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { removeBook, setBookHidden } from '../../services/books/bookService';
-import { sameEdition, volumeSnapshot, withSourceBook } from '../../lib/books/mangaBooks';
+import {
+  sameEdition,
+  volumeBookState,
+  volumeSnapshot,
+  withSourceBook,
+} from '../../lib/books/mangaBooks';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   moveMangaToBooks,
@@ -346,7 +351,11 @@ export const BookDetailPage = () => {
   };
 
   const openManga = () => {
-    if (mangaLink) navigate(mangaPath(mangaLink.manga.id, mangaLink.volume));
+    if (!mangaLink) return;
+    navigate(
+      mangaPath(mangaLink.manga.id, mangaLink.volume),
+      volumeBookState(owned ? bookAsResult(owned) : preview)
+    );
   };
 
   const addAsManga = async () => {

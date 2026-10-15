@@ -10,6 +10,13 @@ import { splitVolume } from './mangaVolume';
 export const volumeSnapshot = (result: BookSearchResult, nowIso: string): Book =>
   stripUndefined(searchResultToBook(result, 'planned', nowIso));
 
+/** Navigations-State zur Manga-Seite: der Band, über den man kam (ISBN, Buchseite). */
+export const volumeBookState = (book: BookSearchResult | null | undefined) =>
+  book ? { state: { volumeBook: book } } : undefined;
+
+export const volumeBookFrom = (state: unknown): BookSearchResult | null =>
+  (state as { volumeBook?: BookSearchResult } | null)?.volumeBook ?? null;
+
 const volumeOf = (book: Book): number | undefined =>
   book.series?.position ?? splitVolume(book.title).volume;
 

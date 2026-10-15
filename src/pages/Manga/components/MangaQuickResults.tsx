@@ -3,10 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { volumeBookState, volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { mangaPath } from '../../../lib/manga/mangaSource';
 import { discoverManga } from '../../../services/api/anilistService';
 import { searchMangaWithTitleFallback } from '../../../services/api/mangaSearch';
 import { t } from '../../../services/i18n';
+import type { BookSearchResult } from '../../../types/Book';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { useAddManga } from '../useAddManga';
 import { MangaResultCard } from './MangaResultCard';
@@ -22,6 +24,7 @@ function useMangaQuickSearch(query: string) {
     results: AniListMangaSearchResult[];
     aliases: Record<number, string>;
     volumes?: Record<number, number>;
+    books?: Record<number, BookSearchResult>;
   }>({ query: '', results: [], aliases: {} });
   const reqId = useRef(0);
 
@@ -43,6 +46,7 @@ function useMangaQuickSearch(query: string) {
     results: q.length >= 2 && settled ? state.results : [],
     aliases: settled ? state.aliases : {},
     volumes: (settled && state.volumes) || {},
+    books: (settled && state.books) || {},
     loading: q.length >= 2 && !settled,
   };
 }
@@ -58,19 +62,27 @@ function useMangaCards(onAdded?: () => void) {
     return map;
   }, [allMangaList]);
 
-  /** volume: über einen gedruckten Band gefunden (0 = Bandnummer unbekannt). */
-  const render = (result: AniListMangaSearchResult, alias?: string, volume?: number) => (
+  /** volume: über einen gedruckten Band gefunden (0 = Bandnummer unbekannt), book: dieser Band. */
+  const render = (
+    result: AniListMangaSearchResult,
+    alias?: string,
+    volume?: number,
+    book?: BookSearchResult
+  ) => (
     <MangaResultCard
       key={result.id}
       result={result}
       owned={ownedById.get(result.id)}
       alias={alias}
       adding={addingId === result.id}
-      onOpen={() => navigate(mangaPath(result.id, volume))}
+      onOpen={() => navigate(mangaPath(result.id, volume), volumeBookState(book))}
       onAdd={(e) => {
         e.stopPropagation();
         onAdded?.();
-        void add(result, { byVolume: volume !== undefined });
+        void add(result, {
+          byVolume: volume !== undefined,
+          fromBooks: book ? [volumeSnapshot(book, new Date().toISOString())] : undefined,
+        });
       }}
     />
   );
@@ -97,7 +109,7 @@ export const MangaQuickResults = ({
   onAdded,
 }: MangaQuickResultsProps) => {
   const { currentTheme } = useTheme();
-  const { results, aliases, volumes, loading } = useMangaQuickSearch(query);
+  const { results, aliases, volumes, books, loading } = useMangaQuickSearch(query);
   const { ownedById, render } = useMangaCards(onAdded);
 
   const sorted = useMemo(
@@ -151,7 +163,7 @@ export const MangaQuickResults = ({
         </div>
       ) : (
         <div className={`mqr-grid${variant === 'row' ? ' mqr-grid--row' : ''}`}>
-          {sorted.map((r) => render(r, aliases[r.id], volumes[r.id]))}
+          {sorted.map((r) => render(r, aliases[r.id], volumes[r.id], books[r.id]))}
         </div>
       )}
     </div>

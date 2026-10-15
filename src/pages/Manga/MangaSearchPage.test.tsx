@@ -121,6 +121,42 @@ describe('MangaSearchPage', () => {
     expect(screen.getByText('Gefunden als „Der Schöne und das Biest“')).toBeInTheDocument();
   });
 
+  it('nimmt den Band aus der ISBN-Suche beim Hinzufügen und Öffnen mit', async () => {
+    const volume = {
+      id: 'dnb-9783551000000',
+      title: 'Naruto – Band 3',
+      authors: [],
+      source: 'dnb' as const,
+      isbn13: '9783551000000',
+    };
+    searchMangaWithTitleFallback.mockResolvedValue({
+      results: [makeResult()],
+      aliases: { 1: volume.title },
+      volumes: { 1: 3 },
+      books: { 1: volume },
+    });
+    addMangaToList.mockResolvedValue(undefined);
+    render(<MangaSearchPage />);
+    fireEvent.change(screen.getByPlaceholderText('Manga, Manhwa, Manhua suchen...'), {
+      target: { value: '9783551000000' },
+    });
+    const add = await screen.findByLabelText(
+      'Naruto EN zur Sammlung hinzufügen',
+      {},
+      { timeout: 2000 }
+    );
+    fireEvent.click(add);
+    await waitFor(() => expect(addMangaToList).toHaveBeenCalled());
+    const options = addMangaToList.mock.calls[0][3];
+    expect(options.byVolume).toBe(true);
+    expect(options.fromBooks.map((book: { isbn13?: string }) => book.isbn13)).toEqual([
+      '9783551000000',
+    ]);
+
+    fireEvent.click(screen.getByLabelText('Naruto EN öffnen'));
+    expect(navigate).toHaveBeenCalledWith('/manga/1?band=3', { state: { volumeBook: volume } });
+  });
+
   it('zeigt die Format-Filter an', () => {
     render(<MangaSearchPage />);
     expect(screen.getByText('Manhwa')).toBeInTheDocument();

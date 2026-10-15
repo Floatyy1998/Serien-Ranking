@@ -483,8 +483,8 @@ const dict: Record<string, string> = {
   'Such dir die Bände aus, die du als Buch führen willst':
     'Pick the volumes you want to keep as books',
   'Gedruckte Bände': 'Printed volumes',
-  '1 Band aus deinen Büchern': '1 volume from your books',
-  '{n} Bände aus deinen Büchern': '{n} volumes from your books',
+  '1 Band verknüpft': '1 volume linked',
+  '{n} Bände verknüpft': '{n} volumes linked',
   'Bei deinen Büchern führst du jeden Band einzeln, mit Seiten und Lesedatum.':
     'In your books, every volume is tracked on its own, with pages and reading date.',
   'Zum Buch': 'View book',

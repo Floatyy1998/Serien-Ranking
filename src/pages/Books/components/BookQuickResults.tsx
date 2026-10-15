@@ -8,7 +8,7 @@ import { useMangaVolumes } from '../../../hooks/books/useMangaVolumes';
 import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { groupMangaVolumes } from '../../../lib/books/mangaVolume';
 import { mangaPath } from '../../../lib/manga/mangaSource';
-import { volumeSnapshot } from '../../../lib/books/mangaBooks';
+import { volumeBookState, volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { t } from '../../../services/i18n';
 import { MangaResultCard } from '../../Manga/components/MangaResultCard';
 import { useAddManga } from '../../Manga/useAddManga';
@@ -103,14 +103,13 @@ export const BookQuickResults: React.FC<Props> = ({
                     owned={entry.link.owned}
                     alias={entry.volumes.length === 1 ? entry.volumes[0].title : undefined}
                     adding={addingId === entry.link.manga.id}
-                    onOpen={() =>
+                    onOpen={() => {
+                      const single = entry.volumes.length === 1;
                       navigate(
-                        mangaPath(
-                          entry.link.manga.id,
-                          entry.volumes.length === 1 ? entry.link.volume : undefined
-                        )
-                      )
-                    }
+                        mangaPath(entry.link.manga.id, single ? entry.link.volume : undefined),
+                        volumeBookState(single ? entry.volumes[0] : null)
+                      );
+                    }}
                     onAdd={(e) => {
                       e.stopPropagation();
                       onAdded?.('manga');

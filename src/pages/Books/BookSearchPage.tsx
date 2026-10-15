@@ -12,7 +12,7 @@ import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import { groupMangaVolumes, type MangaLink } from '../../lib/books/mangaVolume';
 import { mangaPath } from '../../lib/manga/mangaSource';
-import { volumeSnapshot } from '../../lib/books/mangaBooks';
+import { volumeBookState, volumeSnapshot } from '../../lib/books/mangaBooks';
 import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { addRecentSearch, useRecentSearches } from '../../services/settings/recentSearches';
@@ -344,8 +344,10 @@ const BookSearchView = () => {
                 adding={addingId === manga.id}
                 onOpen={() => {
                   remember(query);
+                  const single = entry.volumes.length === 1;
                   navigate(
-                    mangaPath(manga.id, entry.volumes.length === 1 ? entry.link.volume : undefined)
+                    mangaPath(manga.id, single ? entry.link.volume : undefined),
+                    volumeBookState(single ? entry.volumes[0] : null)
                   );
                 }}
                 onAdd={() => {

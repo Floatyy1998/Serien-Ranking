@@ -31,9 +31,9 @@ export const BookSwitchPanel = ({
   const bookCount = Object.keys(manga.fromBooks ?? {}).length;
   const subline =
     bookCount === 1
-      ? t('1 Band aus deinen Büchern')
+      ? t('1 Band verknüpft')
       : bookCount > 1
-        ? t('{n} Bände aus deinen Büchern', { n: bookCount })
+        ? t('{n} Bände verknüpft', { n: bookCount })
         : mangaStandLabel(manga, true);
 
   return (

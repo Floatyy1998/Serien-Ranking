@@ -449,8 +449,8 @@ const dict: Record<string, string> = {
   'Such dir die Bände aus, die du als Buch führen willst':
     'Escolha os volumes que quer acompanhar como livros',
   'Gedruckte Bände': 'Volumes impressos',
-  '1 Band aus deinen Büchern': '1 volume dos seus livros',
-  '{n} Bände aus deinen Büchern': '{n} volumes dos seus livros',
+  '1 Band verknüpft': '1 volume vinculado',
+  '{n} Bände verknüpft': '{n} volumes vinculados',
   'Bei deinen Büchern führst du jeden Band einzeln, mit Seiten und Lesedatum.':
     'Nos seus livros, cada volume é acompanhado separadamente, com páginas e data de leitura.',
   'Zum Buch': 'Ir para o livro',

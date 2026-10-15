@@ -6,6 +6,7 @@ import {
 } from '../../lib/manga/mangaUpdatesAdapter';
 import { findExactTitleMatch, pickRelevantAliasHits } from '../../lib/manga/titleMatch';
 import { normalizeTitle } from '../../lib/text/searchRelevance';
+import type { BookSearchResult } from '../../types/Book';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { searchMangaByTitles } from './anilistService';
 import { searchMangaUpdatesTitles } from './mangaUpdatesService';
@@ -16,6 +17,8 @@ export interface MangaSearchOutcome {
   aliases: Record<number, string>;
   /** Über einen gedruckten Band gefunden (ISBN): AniList-ID → Bandnummer, 0 = unbekannt. */
   volumes?: Record<number, number>;
+  /** Der Band hinter der ISBN — „Zum Buch" braucht dann keine Titelsuche. */
+  books?: Record<number, BookSearchResult>;
 }
 
 const isMangaUpdatesOnlyHit = (hit: MangaUpdatesHit): hit is MangaUpdatesHit & { id: number } =>
