@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getGreeting } from './greetings';
+import { getGreeting, greetingPool } from './greetings';
 
 // getGreeting waehlt den Slot ueber den `hour`-Parameter, den Tages-Seed aber
 // aus `new Date()`. Fake-Timers fixieren das Datum, damit die Auswahl
@@ -138,5 +138,50 @@ describe('getGreeting — Determinismus & Rotation', () => {
       expect(typeof g.lang).toBe('string');
       expect(g.lang.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('getGreeting — Jahres-Permutation ohne frühe Wiederholung', () => {
+  const DAY = 86_400_000;
+
+  it('zur selben Stunde wiederholt sich innerhalb eines Jahres kein Gruß', () => {
+    expect(greetingPool('evening').length).toBeGreaterThan(365);
+    const base = Date.UTC(2027, 0, 1, 12, 0, 0);
+    const texts: string[] = [];
+    for (let i = 0; i < 365; i++) {
+      vi.setSystemTime(new Date(base + i * DAY));
+      texts.push(getGreeting(19).text);
+    }
+    expect(new Set(texts).size).toBe(365);
+  });
+
+  it('über alle Stunden eines Slots gibt es 40 Tage lang keine Wiederholung', () => {
+    const base = Date.UTC(2027, 2, 1, 12, 0, 0);
+    const texts: string[] = [];
+    for (let i = 0; i < 40; i++) {
+      vi.setSystemTime(new Date(base + i * DAY));
+      for (const h of [5, 6, 7, 8, 9, 10, 11]) texts.push(getGreeting(h).text);
+    }
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+
+  it('jedes Jahr mischt den Pool neu', () => {
+    const a: string[] = [];
+    const b: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      vi.setSystemTime(new Date(Date.UTC(2027, 4, 1 + i, 12)));
+      a.push(getGreeting(14).text);
+      vi.setSystemTime(new Date(Date.UTC(2028, 4, 1 + i, 12)));
+      b.push(getGreeting(14).text);
+    }
+    expect(a).not.toEqual(b);
+  });
+
+  it('Zitate-Pool und Slot-Grüße tauchen gemeinsam im Slot auf', () => {
+    const morning = reconstructSlotTexts(5, 4000);
+    expect(morning.has('Guten Morgen')).toBe(true);
+    expect(morning.has('Es gibt keinen Löffel')).toBe(true);
+    expect(morning.has('Verdammt guter Kaffee')).toBe(true);
+    expect(morning.has('Heute Abend ist die Nacht')).toBe(false);
   });
 });
