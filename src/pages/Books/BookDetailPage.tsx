@@ -25,6 +25,7 @@ import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
+import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
 import { BookMoodPanel, SimilarBooksPanel } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
@@ -139,8 +140,27 @@ export const BookDetailPage = () => {
     () => allBookList.find((b) => b.id === decodeURIComponent(bookId)) ?? null,
     [allBookList, bookId]
   );
-  const preview = (location.state as { result?: BookSearchResult } | null)?.result ?? null;
+  const stateResult = (location.state as { result?: BookSearchResult } | null)?.result ?? null;
+  const decodedId = decodeURIComponent(bookId);
+  const hardcoverFromId = /^hc-(\d+)$/.exec(decodedId)?.[1];
+  const [fetched, setFetched] = useState<BookSearchResult | null>(null);
+  const [fetchSettled, setFetchSettled] = useState(false);
+  // Link, Neuladen oder fehlender Navigationszustand: Hardcover-Bücher lassen sich über ihre ID wieder laden.
+  useEffect(() => {
+    if (owned || stateResult || !hardcoverFromId || !hardcoverReady()) return;
+    let alive = true;
+    void hardcoverBook(Number(hardcoverFromId))
+      .then((hit) => alive && setFetched(hit?.result ?? null))
+      .catch(() => undefined)
+      .finally(() => alive && setFetchSettled(true));
+    return () => {
+      alive = false;
+    };
+  }, [owned, stateResult, hardcoverFromId]);
+  const preview = stateResult ?? (fetched?.id === decodedId ? fetched : null);
   const view: (Book | BookSearchResult) | null = owned ?? preview;
+  const fetchingPreview =
+    !view && !!hardcoverFromId && !stateResult && hardcoverReady() && !fetchSettled;
 
   const [notes, setNotes] = useState(owned?.notes ?? '');
   useEffect(() => {
@@ -220,9 +240,9 @@ export const BookDetailPage = () => {
         </div>
         <div className="bk-empty" style={{ marginTop: 40 }}>
           <h2 className="bk-empty-title" style={{ color: currentTheme.text.secondary }}>
-            {loading ? t('Lädt…') : t('Buch nicht gefunden')}
+            {loading || fetchingPreview ? t('Lädt…') : t('Buch nicht gefunden')}
           </h2>
-          {!loading && (
+          {!loading && !fetchingPreview && (
             <button
               type="button"
               className="bk-cta bk-cta--ghost"

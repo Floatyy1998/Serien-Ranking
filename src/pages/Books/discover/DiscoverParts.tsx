@@ -42,7 +42,7 @@ export function useOpenResult() {
       navigate(`/manga/${manga.anilistId}`);
       return;
     }
-    navigate(bookPath(owned?.id ?? result.id), owned ? undefined : { state: { result } });
+    navigate(bookPath(owned?.id ?? result.id), { state: { result } });
   };
 }
 
@@ -63,7 +63,7 @@ export function useOpenByTitle() {
         source: 'openlibrary' as const,
       };
       const owned = ownedFor(result);
-      navigate(bookPath(owned?.id ?? result.id), owned ? undefined : { state: { result } });
+      navigate(bookPath(owned?.id ?? result.id), { state: { result } });
     } finally {
       setBusyKey(null);
     }
