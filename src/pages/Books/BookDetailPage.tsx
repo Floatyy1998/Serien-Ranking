@@ -205,7 +205,8 @@ export const BookDetailPage = () => {
     ownDescription ?? seriesDescription,
     detailsLoading,
     links,
-    linksLoading
+    linksLoading,
+    view?.hardcoverId
   );
   // Reihe soll als Bücher laufen: fremde Bände zeigen wieder „In deine Bücher".
   const mangaOffer = mangaLink && !mangaLink.asBooks ? mangaLink : undefined;

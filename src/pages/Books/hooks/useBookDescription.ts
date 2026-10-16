@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { guessLanguage, htmlToPlainText } from '../../../lib/books/bookText';
 import { fetchWikipediaSummary } from '../../../services/api/bookDiscovery';
+import { hardcoverDescription } from '../../../services/api/hardcoverApi';
 import { translateBookDescription } from '../../../services/books/bookTranslation';
 import { appLocale } from '../../../services/i18n';
 import type { BookLinks } from '../../../types/Book';
@@ -27,7 +28,8 @@ export function useBookDescription(
   rawDescription: string | undefined,
   detailsLoading: boolean,
   links: BookLinks | null,
-  linksLoading: boolean
+  linksLoading: boolean,
+  hardcoverId?: number
 ): BookDescription {
   const [state, setState] = useState<BookDescription>({
     text: '',
@@ -54,6 +56,12 @@ export function useBookDescription(
     };
     const translate = async (foreign: string) => {
       setState({ text: '', source: 'translated', loading: true });
+      // Hardcover-Bücher: der Server übersetzt einmal für alle. Ist sein Tageslimit leer, bleibt es beim Original.
+      if (hardcoverId && foreign === raw) {
+        const shared = await hardcoverDescription(hardcoverId);
+        if (shared.text) return shared.text;
+        if (shared.capped) return null;
+      }
       const translated = bookKey
         ? await translateBookDescription(bookKey, foreign, appLocale)
         : null;
@@ -96,7 +104,7 @@ export function useBookDescription(
     return () => {
       alive = false;
     };
-  }, [bookKey, raw, waiting, impatient, wikiLang, wikiTitle]);
+  }, [bookKey, raw, waiting, impatient, wikiLang, wikiTitle, hardcoverId]);
 
   return state;
 }

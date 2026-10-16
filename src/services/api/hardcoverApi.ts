@@ -83,7 +83,15 @@ async function post<T>(
     });
     if (!res.ok) {
       const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
-      const known = code ?? (res.status === 404 || res.status === 401 ? 'config' : 'upstream');
+      // Nur bekannte Codes zählen; ein 429 anderer Herkunft (allgemeine Bremse) ist nur kurz „busy“, nie eine Stundenpause.
+      const known =
+        code && code in PAUSE_BY_CODE
+          ? code
+          : res.status === 429
+            ? 'busy'
+            : res.status === 404 || res.status === 401
+              ? 'config'
+              : 'upstream';
       // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
       if (!(background && known === 'busy')) pause(PAUSE_BY_CODE[known] ?? 60_000);
       throw new HardcoverError(known, `HTTP ${res.status}`);
@@ -205,6 +213,29 @@ export function hardcoverDetails(id: number): Promise<BookDetails | null> {
     },
     120
   ).catch(() => null);
+}
+
+/**
+ * Klappentext in der App-Sprache vom Server: er übersetzt jedes Buch höchstens einmal pro Sprache und merkt es sich für alle.
+ * `capped` heißt: Tageslimit erreicht — dann bewusst keine weitere KI-Anfrage, sondern Original zeigen.
+ */
+export async function hardcoverDescription(
+  id: number
+): Promise<{ text: string | null; capped: boolean }> {
+  try {
+    const res = await backendFetch('/hc/describe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, lang: appLocale }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) return { text: null, capped: false };
+    const data = (await res.json()) as { text?: string | null; reason?: string };
+    const text = typeof data.text === 'string' && data.text.trim() ? data.text : null;
+    return { text, capped: data.reason === 'cap' };
+  } catch {
+    return { text: null, capped: false };
+  }
 }
 
 /** Ähnliche Bücher laut Hardcover (eine Abfrage, Server merkt sie sich 14 Tage). */
