@@ -63,7 +63,12 @@ const PAUSE_BY_CODE: Record<string, number> = {
   config: 30 * 60_000,
 };
 
-async function post<T>(path: string, body: Record<string, unknown>, signal?: AbortSignal) {
+async function post<T>(
+  path: string,
+  body: Record<string, unknown>,
+  signal?: AbortSignal,
+  background = false
+) {
   if (!hardcoverReady()) throw new HardcoverError('paused');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -73,13 +78,14 @@ async function post<T>(path: string, body: Record<string, unknown>, signal?: Abo
     const res = await backendFetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lang: appLocale, ...body }),
+      body: JSON.stringify({ lang: appLocale, ...(background ? { bg: true } : {}), ...body }),
       signal: controller.signal,
     });
     if (!res.ok) {
       const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
       const known = code ?? (res.status === 404 || res.status === 401 ? 'config' : 'upstream');
-      pause(PAUSE_BY_CODE[known] ?? 60_000);
+      // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
+      if (!(background && known === 'busy')) pause(PAUSE_BY_CODE[known] ?? 60_000);
       throw new HardcoverError(known, `HTTP ${res.status}`);
     }
     return (await res.json()) as T;
@@ -153,9 +159,10 @@ const mapList = (list: HcItem[] | undefined): BookSearchResult[] =>
 
 export async function hardcoverSearch(
   query: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  background = false
 ): Promise<BookSearchResult[]> {
-  const data = await post<{ results?: HcItem[] }>('/hc/search', { q: query }, signal);
+  const data = await post<{ results?: HcItem[] }>('/hc/search', { q: query }, signal, background);
   return mapList(data.results);
 }
 
@@ -164,28 +171,56 @@ export async function hardcoverIsbn(isbn13: string): Promise<BookSearchResult | 
   return data.result ? mapHardcoverItem(data.result) : null;
 }
 
-export async function hardcoverBook(id: number): Promise<BookSearchResult | null> {
-  const data = await post<{ result?: HcItem | null }>('/hc/book', { id });
-  return data.result ? mapHardcoverItem(data.result) : null;
+interface HcExtras {
+  moods?: string[];
+  pace?: string[];
+  warnings?: string[];
+}
+
+export async function hardcoverBook(
+  id: number
+): Promise<{ result: BookSearchResult; extras: HcExtras } | null> {
+  const data = await post<{ result?: HcItem | null; extras?: HcExtras }>('/hc/book', { id });
+  return data.result ? { result: mapHardcoverItem(data.result), extras: data.extras ?? {} } : null;
 }
 
 export function hardcoverDetails(id: number): Promise<BookDetails | null> {
   return cached<BookDetails | null>(
     'hcdetails',
-    `${appLocale}:${id}`,
+    `${appLocale}:${id}:2`,
     14 * DAY,
     async () => {
       const hit = await hardcoverBook(id);
       if (!hit) throw new Error('no details');
+      const { result, extras } = hit;
       return stripUndefined({
-        description: hit.description,
-        categories: hit.categories,
-        pageCount: hit.pageCount,
-        publisher: hit.publisher,
+        description: result.description,
+        categories: result.categories,
+        pageCount: result.pageCount,
+        publisher: result.publisher,
+        moods: extras.moods,
+        pace: extras.pace,
+        warnings: extras.warnings,
       });
     },
     120
   ).catch(() => null);
+}
+
+/** Ähnliche Bücher laut Hardcover (eine Abfrage, Server merkt sie sich 14 Tage). */
+export function hardcoverSimilar(id: number): Promise<BookSearchResult[]> {
+  return cached<BookSearchResult[]>(
+    'hcsimilar',
+    `${appLocale}:${id}`,
+    14 * DAY,
+    async () => {
+      const data = await post<{ results?: HcItem[] }>('/hc/similar', { id });
+      const list = mapList(data.results);
+      if (!list.length) throw new Error('none');
+      return list;
+    },
+    40
+  ).catch(() => []);
 }
 
 export async function hardcoverAuthorBooks(name: string): Promise<BookSearchResult[]> {
@@ -196,7 +231,10 @@ export async function hardcoverAuthorBooks(name: string): Promise<BookSearchResu
 export type HardcoverSort = 'popular' | 'top' | 'gems' | 'recent';
 
 export interface HardcoverBrowse {
-  shelf: string;
+  /** Regal-Schlüssel (fantasy, thriller, …) ODER Katalog-Genre — eines von beiden. */
+  shelf?: string;
+  genre?: string;
+  mood?: string;
   sort?: HardcoverSort;
   theme?: string;
   audience?: 'adult' | 'young';

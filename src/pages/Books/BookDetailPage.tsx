@@ -9,6 +9,7 @@ import {
   OpenInNew,
   Person,
   Schedule,
+  Star,
   TabletAndroid,
   Translate,
   ViewWeek,
@@ -24,6 +25,7 @@ import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
+import { BookMoodPanel, SimilarBooksPanel } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
@@ -458,6 +460,14 @@ export const BookDetailPage = () => {
   }
   const lang = languageName(view.language);
   if (lang) facts.push({ key: 'lang', icon: <Language style={factStyle} />, label: lang });
+  const community = 'avgRating' in view ? view : undefined;
+  if (community?.avgRating && (community.ratingCount ?? 0) >= 5) {
+    facts.push({
+      key: 'rating',
+      icon: <Star style={factStyle} />,
+      label: `${(community.avgRating * 2).toFixed(1)} / 10 · ${new Intl.NumberFormat(dateLocale(), { notation: 'compact' }).format(community.ratingCount ?? 0)}`,
+    });
+  }
 
   return (
     <div className="bd-page" style={{ background: currentTheme.background.default }}>
@@ -757,7 +767,10 @@ export const BookDetailPage = () => {
 
           <BookAdaptationsPanel items={adaptations} />
 
+          <BookMoodPanel moods={details?.moods} pace={details?.pace} warnings={details?.warnings} />
+
           {author && !mangaOffer && <MoreByAuthor author={author} title={view.title} />}
+          {view.hardcoverId && !mangaOffer && <SimilarBooksPanel hardcoverId={view.hardcoverId} />}
 
           {owned && (
             <div className="bd-panel">

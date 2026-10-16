@@ -6,6 +6,7 @@ import type { Book } from '../../types/Book';
 
 interface OwnedLookup {
   id: string;
+  hardcoverId?: number;
   title: string;
   authors?: string[];
   isbn13?: string;
@@ -19,6 +20,7 @@ export function useOwnedBooks() {
     const byTitle = new Map<string, Book>();
     for (const b of allBookList) {
       map.set(b.id, b);
+      if (b.hardcoverId) map.set(`hc#${b.hardcoverId}`, b);
       map.set(bookMatchKey(b.title, b.authors), b);
       if (b.isbn13) map.set(b.isbn13, b);
       if (!byTitle.has(bookTitleKey(b.title))) byTitle.set(bookTitleKey(b.title), b);
@@ -30,6 +32,7 @@ export function useOwnedBooks() {
     (item: OwnedLookup): Book | undefined => {
       const owned =
         index.map.get(item.id) ??
+        (item.hardcoverId ? index.map.get(`hc#${item.hardcoverId}`) : undefined) ??
         (item.isbn13 ? index.map.get(item.isbn13) : undefined) ??
         index.map.get(bookMatchKey(item.title, item.authors));
       if (owned) return owned;

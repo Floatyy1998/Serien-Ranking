@@ -340,6 +340,17 @@ export const GenreTiles: React.FC<{
         {ordered.map((g) => (
           <GenreTile key={g.id} id={g.id} onOpen={() => navigate(`/books/search?genre=${g.id}`)} />
         ))}
+        <button
+          type="button"
+          className="dsc-genre dsc-genre--all"
+          onClick={() => navigate('/books/search?all=1')}
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          }}
+        >
+          <ChevronRight className="dsc-genre-icon" aria-hidden />
+          <span className="dsc-genre-label">{t('Alle Genres & Stimmungen')}</span>
+        </button>
       </div>
     </section>
   );

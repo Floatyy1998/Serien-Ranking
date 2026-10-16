@@ -109,3 +109,40 @@ describe('Stöbern über Hardcover', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe('Katalog-Genres über Hardcover', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    hc.browse.mockReset();
+  });
+
+  it('holt Genre, Stimmung und Sortierung seitenweise und lässt Bücher ohne Cover weg', async () => {
+    hc.browse.mockResolvedValue({
+      items: [
+        book(1),
+        book(2, { cover: undefined }),
+        book(3, { title: 'Buch 1', authors: ['Autor 1'] }),
+      ],
+      done: false,
+    });
+    const { fetchCatalogPage } = await import('./bookDiscovery');
+    const page = await fetchCatalogPage('horror', { mood: 'dark', sort: 'top' }, 2);
+    expect(hc.browse).toHaveBeenCalledWith({
+      genre: 'horror',
+      mood: 'dark',
+      sort: 'top',
+      audience: undefined,
+      page: 2,
+    });
+    expect(page.items.map((b) => b.id)).toEqual(['hc-1']);
+    expect(page.done).toBe(false);
+  });
+
+  it('merkt sich Seiten im Arbeitsspeicher', async () => {
+    hc.browse.mockResolvedValue({ items: [book(1)], done: true });
+    const { fetchCatalogPage } = await import('./bookDiscovery');
+    await fetchCatalogPage('poetry', {}, 1);
+    await fetchCatalogPage('poetry', {}, 1);
+    expect(hc.browse).toHaveBeenCalledTimes(1);
+  });
+});

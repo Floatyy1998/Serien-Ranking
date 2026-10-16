@@ -318,6 +318,35 @@ export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<Boo
 
 export const SHELF_PAGE_SIZE = 60;
 
+export interface CatalogOptions {
+  mood?: string;
+  sort?: ShelfSort;
+  audience?: ShelfAudience;
+}
+
+/** Eine Seite (25 Bücher, Seiten ab 1) eines Katalog-Genres, optional gefiltert nach Stimmung — nur über Hardcover. */
+export function fetchCatalogPage(
+  genre: string | undefined,
+  options: CatalogOptions,
+  page: number
+): Promise<{ items: BookSearchResult[]; done: boolean }> {
+  const { mood, sort = 'popular', audience } = options;
+  const key = `catalog:${appLocale}:${genre ?? ''}:${mood ?? ''}:${sort}:${audience ?? ''}:${page}`;
+  return cachedSearch(key, async () => {
+    if (!hardcoverReady()) throw new Error('Hardcover pausiert');
+    const out = await hardcoverBrowse({ genre, mood, sort, audience, page });
+    const seen = new Set<string>();
+    const items = out.items.filter((r) => {
+      if (!r.cover) return false;
+      const dedupe = bookMatchKey(r.title, r.authors);
+      if (seen.has(dedupe)) return false;
+      seen.add(dedupe);
+      return true;
+    });
+    return { items, done: out.done };
+  });
+}
+
 /** Folgeseite (ab 1) eines Regals, immer live — der Tagesexport deckt nur den Anfang ab. */
 export function fetchShelfPage(
   id: ShelfId,

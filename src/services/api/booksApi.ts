@@ -160,6 +160,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
       publishedYear: primary.publishedYear ?? national.publishedYear,
       categories: primary.categories ?? national.categories,
       edition: primary.edition ?? national.edition,
+      series: primary.series ?? national.series,
       isbn13: primary.isbn13 ?? isbn13,
     }),
   ];
@@ -228,12 +229,13 @@ export async function searchBooks(
 
 /**
  * typing: Suche beim Tippen — Open Library fragt zusätzlich den Titel mit angefangenem letzten Wort ab.
- * hardcover: false für Hintergrund-Abfragen (Verfilmungs-Brücke, Reihenteile) — die schonen das Tageskontingent.
+ * background: Hintergrund-Abfragen (Verfilmungs-Brücke, „Bücher zu deinen Serien") laufen über Hardcover mit niedriger
+ * Priorität — der Server weist sie bei Andrang ab, ohne die normale Suche zu bremsen.
  */
 async function runSearch(
   trimmed: string,
   signal?: AbortSignal,
-  options: { typing?: boolean; google?: boolean; hardcover?: boolean } = {}
+  options: { typing?: boolean; google?: boolean; hardcover?: boolean; background?: boolean } = {}
 ): Promise<BookSearchResult[]> {
   if (looksLikeIsbn(trimmed)) {
     return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
@@ -241,7 +243,7 @@ async function runSearch(
   let primary: BookSearchResult[] = [];
   if (options.hardcover !== false && hardcoverReady()) {
     try {
-      primary = await hardcoverSearch(trimmed, signal);
+      primary = await hardcoverSearch(trimmed, signal, options.background);
       // Hardcover findet angefangene Wörter („fourth wi") nicht — dann ergänzen die anderen Quellen.
       if (primary.some((r) => searchMatch(r, trimmed).matches))
         return rankResults(primary, trimmed);
@@ -273,16 +275,26 @@ async function loadDetails(ref: {
   googleId?: string;
   olWorkId?: string;
 }): Promise<BookDetails | null> {
-  if (ref.hardcoverId && hardcoverReady()) {
-    const details = await hardcoverDetails(ref.hardcoverId);
-    if (details?.description) return details;
-  }
+  const hardcover =
+    ref.hardcoverId && hardcoverReady() ? await hardcoverDetails(ref.hardcoverId) : null;
+  if (hardcover?.description) return hardcover;
+  // Fehlt der Klappentext bei Hardcover, ergänzen Google/Open Library ihn; Stimmungen und Hinweise bleiben erhalten.
+  const withExtras = (details: BookDetails): BookDetails =>
+    hardcover
+      ? {
+          ...details,
+          moods: hardcover.moods,
+          pace: hardcover.pace,
+          warnings: hardcover.warnings,
+          categories: details.categories?.length ? details.categories : hardcover.categories,
+        }
+      : details;
   if (ref.googleId && hasGoogleBooks()) {
     try {
       const volume = await fetchJson<GoogleVolume>(
         `${GOOGLE_API}/volumes/${encodeURIComponent(ref.googleId)}?key=${googleKey()}`
       );
-      return mapGoogleDetails(volume);
+      return withExtras(mapGoogleDetails(volume));
     } catch {
       /* Open Library versuchen */
     }
@@ -294,16 +306,16 @@ async function loadDetails(ref: {
     }>(`${OPEN_LIBRARY}/works/${encodeURIComponent(ref.olWorkId)}.json`);
     const description =
       typeof work.description === 'string' ? work.description : work.description?.value;
-    return {
+    return withExtras({
       description: description
         ?.replace(/\r\n/g, '\n')
         .split(/\n-{3,}|\n\(\[source\]/)[0]
         .trim(),
       categories: work.subjects?.slice(0, 4),
       infoLink: `${OPEN_LIBRARY}/works/${ref.olWorkId}`,
-    };
+    });
   }
-  return null;
+  return hardcover;
 }
 
 export function getBookDetails(ref: {
@@ -333,7 +345,7 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
     // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.
-    const results = await runSearch(query, undefined, { google: false, hardcover: false }).catch(
+    const results = await runSearch(query, undefined, { google: false, background: true }).catch(
       () => [] as BookSearchResult[]
     );
     const hit = byAuthor(results) ?? (index === 0 ? results[0] : undefined);

@@ -84,6 +84,10 @@ export interface BookSearchResult {
 export interface BookDetails {
   description?: string;
   categories?: string[];
+  /** Stimmungen, Tempo und Inhaltshinweise der Hardcover-Community (englisch, klein geschrieben). */
+  moods?: string[];
+  pace?: string[];
+  warnings?: string[];
   pageCount?: number;
   publisher?: string;
   publishedDate?: string;

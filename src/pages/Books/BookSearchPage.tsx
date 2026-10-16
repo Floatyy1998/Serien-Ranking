@@ -25,7 +25,9 @@ import './components/books.css';
 import { bookPath, STATUS_LABELS } from './helpers';
 import { useBookActions } from './hooks/useBookActions';
 import { ForYourShowsSection } from './sections/ForYourShowsSection';
+import { catalogGenre, isCatalogMood } from './data/genreCatalog';
 import { isShelfId } from './data/genres';
+import { AllGenresView, CatalogGenreView } from './discover/CatalogViews';
 import { GenreView } from './discover/GenreView';
 
 const ResultRow: React.FC<{
@@ -160,6 +162,17 @@ const MangaVolumeRow: React.FC<{
 export const BookSearchPage = () => {
   const [params] = useSearchParams();
   const genre = params.get('genre');
+  const cat = params.get('cat');
+  const mood = params.get('mood');
+  if (params.get('all')) return <AllGenresView />;
+  if (catalogGenre(cat) || isCatalogMood(mood)) {
+    return (
+      <CatalogGenreView
+        genre={catalogGenre(cat)?.id}
+        mood={isCatalogMood(mood) ? mood : undefined}
+      />
+    );
+  }
   return isShelfId(genre) ? <GenreView id={genre} /> : <BookSearchView />;
 };
 

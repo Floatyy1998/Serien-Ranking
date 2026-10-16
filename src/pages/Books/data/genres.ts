@@ -158,7 +158,7 @@ export const SORT_LABELS: Record<ShelfSort, () => string> = {
 
 export const SORT_HINTS: Record<ShelfSort, () => string> = {
   popular: () => t('Die beliebtesten Bücher in deiner Sprache'),
-  top: () => t('Am besten bewertet bei Open Library'),
+  top: () => t('Am besten bewertet'),
   gems: () => t('Stark bewertet, aber abseits der Bestseller'),
   recent: () => t('Viel gelesen aus den letzten Jahren'),
 };

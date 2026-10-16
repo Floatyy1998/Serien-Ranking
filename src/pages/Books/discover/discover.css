@@ -601,3 +601,17 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.dsc-group-title {
+  margin: 0 0 10px;
+  padding: 0 20px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.dsc-genre--all {
+  grid-column: 1 / -1;
+  min-height: 64px;
+}

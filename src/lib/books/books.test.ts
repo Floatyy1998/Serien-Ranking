@@ -11,7 +11,7 @@ import {
 } from './bookIdentity';
 import { applyPageUpdate, applyStatusChange, pagesReadOf, progressPercent } from './bookProgress';
 import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
-import { findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
+import { alignSeriesKey, findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
 import { bookTotals, computeBookYearStats, goalPace } from './bookStats';
 import { guessLanguage, htmlToPlainText } from './bookText';
 import {
@@ -338,5 +338,48 @@ describe('readingTaste', () => {
     expect(taste.genres).toEqual([{ id: 'romance', share: 100 }]);
     expect(tasteGenres(taste)).toEqual([]);
     expect(hasReadingTaste(taste)).toBe(false);
+  });
+});
+
+describe('Hardcover-Cover in Größen', () => {
+  const mirror = 'https://serienapi.konrad-dinges.de/bookcover/hc/L2VkaXRpb24vMS9hLmpwZw';
+
+  it('hängt die Größe vor die Dateiendung', () => {
+    expect(coverAtSize(`${mirror}.jpg`, 'M')).toBe(`${mirror}.M.jpg`);
+    expect(coverAtSize(`${mirror}.jpg`, 'L')).toBe(`${mirror}.L.jpg`);
+  });
+
+  it('tauscht eine vorhandene Größe aus', () => {
+    expect(coverAtSize(`${mirror}.M.jpg`, 'L')).toBe(`${mirror}.L.jpg`);
+  });
+
+  it('lässt das Original für directCoverAtSize unangetastet', () => {
+    expect(directCoverAtSize(`${mirror}.jpg`, 'M')).toBe(`${mirror}.jpg`);
+  });
+});
+
+describe('alignSeriesKey', () => {
+  const owned = (series: Book['series']): Book =>
+    ({
+      id: 'b1',
+      title: 'Band 1',
+      authors: [],
+      status: 'planned',
+      currentPage: 0,
+      addedAt: '',
+      series,
+    }) as Book;
+
+  it('übernimmt den Schlüssel einer schon geführten Reihe (Schreibweise egal)', () => {
+    const item = { series: { name: 'Harry Potter', position: 3, wikidataId: 'hc:Harry Potter' } };
+    const library = [owned({ name: 'Harry-Potter', wikidataId: 'Q8337' })];
+    expect(alignSeriesKey(item, library).series?.wikidataId).toBe('Q8337');
+    expect(alignSeriesKey(item, library).series?.position).toBe(3);
+  });
+
+  it('lässt alles, wie es ist, wenn keine passende Reihe da ist', () => {
+    const item = { series: { name: 'Dune', wikidataId: 'hc:Dune' } };
+    expect(alignSeriesKey(item, [owned({ name: 'Foundation', wikidataId: 'Q1' })])).toBe(item);
+    expect(alignSeriesKey({}, [])).toEqual({});
   });
 });

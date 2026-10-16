@@ -212,6 +212,11 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const authors = writers.length ? writers : names((tag) => tag === '100');
   const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
   const lang = first(['041'], 'a');
+  const seriesField = fields.find((f) => f.getAttribute('tag') === '490');
+  const seriesName = seriesField ? trimMarc(subfields(seriesField, 'a')[0]) : undefined;
+  const seriesVolume = seriesField
+    ? Number(subfields(seriesField, 'v')[0]?.match(/\d+/)?.[0])
+    : undefined;
   const comic = fields.some(
     (f) =>
       ['082', '083'].includes(f.getAttribute('tag') ?? '') &&
@@ -232,6 +237,13 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
     language: lang ? (LANG_3_TO_2[lang] ?? lang) : undefined,
     categories: comic ? ['Comics'] : undefined,
     isbn13,
+    series: seriesName
+      ? stripUndefined({
+          name: seriesName,
+          position: seriesVolume && Number.isFinite(seriesVolume) ? seriesVolume : undefined,
+          wikidataId: `hc:${seriesName}`,
+        })
+      : undefined,
     source: 'dnb' as const,
   });
 }
@@ -324,8 +336,14 @@ export function directCoverAtSize(url: string | undefined, size: 'M' | 'L'): str
   );
 }
 
-/** Open-Library-Cover kommen über den Backend-Spiegel — direkt leitet jedes Bild ~2 s über archive.org um. */
+const HARDCOVER_MIRROR = /(\/bookcover\/hc\/[A-Za-z0-9_-]+)(?:\.[ML])?\.jpg/;
+
+/**
+ * Open-Library-Cover kommen über den Backend-Spiegel — direkt leitet jedes Bild ~2 s über archive.org um.
+ * Hardcover-Cover liegen ebenfalls dort und werden serverseitig auf M (360 px) bzw. L (720 px) verkleinert.
+ */
 export function coverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
+  if (url && HARDCOVER_MIRROR.test(url)) return url.replace(HARDCOVER_MIRROR, `$1.${size}.jpg`);
   const id = url?.match(/covers\.openlibrary\.org\/b\/id\/(\d+)-[SML]\.jpg/)?.[1];
   return id ? `${COVER_MIRROR}/${id}-${size}.jpg` : directCoverAtSize(url, size);
 }

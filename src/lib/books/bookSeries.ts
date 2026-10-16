@@ -165,6 +165,24 @@ export function seriesProgress(
   return out.sort((a, b) => (a.next.daysUntil ?? -1) - (b.next.daysUntil ?? -1));
 }
 
+const seriesNameKey = (name: string) => fold(name).replace(/[^a-z0-9ß]+/g, '');
+
+/**
+ * Hat jemand die Reihe schon über einen anderen Schlüssel (z. B. Wikidata) in der Sammlung, übernimmt ein neu
+ * hinzugefügtes Buch diesen Schlüssel — sonst erschiene dieselbe Reihe zweimal unter „nächster Band".
+ */
+export function alignSeriesKey<T extends { series?: BookSeriesInfo }>(item: T, library: Book[]): T {
+  const series = item.series;
+  if (!series?.name) return item;
+  const wanted = seriesNameKey(series.name);
+  const known = library.find(
+    (b) => b.series?.wikidataId && b.series.name && seriesNameKey(b.series.name) === wanted
+  )?.series?.wikidataId;
+  return known && known !== series.wikidataId
+    ? { ...item, series: { ...series, wikidataId: known } }
+    : item;
+}
+
 const EXPLICIT_VOLUME = /\b(?:band|bd|vol|volume|tome|tomo|teil|nr|book|buch)\.?\s*\d{1,4}\s*$/i;
 
 export interface SeriesPlacement {

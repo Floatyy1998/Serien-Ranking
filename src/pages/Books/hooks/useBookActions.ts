@@ -10,6 +10,7 @@ import {
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
+import { alignSeriesKey } from '../../../lib/books/bookSeries';
 import { volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { mangaVolumeGuess } from '../../../lib/books/mangaVolume';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
@@ -62,7 +63,7 @@ export function useBookActions() {
   const ownedFor = useOwnedBooks();
   const mangaFor = useMangaForBook();
   const { allMangaList } = useMangaList();
-  const { seriesAsBooks } = useBooksList();
+  const { seriesAsBooks, allBookList } = useBooksList();
   const { add: addManga } = useAddManga();
 
   /** Ein erkannter Manga-Band landet als Manga-Reihe statt als Buch. */
@@ -107,7 +108,7 @@ export function useBookActions() {
       }
       if (await addVolumeAsManga(result)) return null;
       try {
-        const book = await addBook(uid, result, status, options);
+        const book = await addBook(uid, alignSeriesKey(result, allBookList), status, options);
         trackBookAdded(book.id, book.title, status);
         logBook(uid, book, 'book_added');
         hapticSuccess();
@@ -122,7 +123,7 @@ export function useBookActions() {
         return null;
       }
     },
-    [uid, ownedFor, mangaFor, addVolumeAsManga]
+    [uid, ownedFor, mangaFor, addVolumeAsManga, allBookList]
   );
 
   const saveProgress = useCallback(

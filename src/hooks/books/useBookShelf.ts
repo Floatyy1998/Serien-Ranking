@@ -84,7 +84,7 @@ export function useBookShelf(id: ShelfId, options: ShelfOptions & { eager?: bool
 const MAX_PAGES = 12;
 
 /** rootMargin wirkt nur am Root — mit dem Viewport als Root schneidet der App-Scrollcontainer den Vorlauf ab. */
-function scrollParent(node: HTMLElement): HTMLElement | null {
+export function scrollParent(node: HTMLElement): HTMLElement | null {
   for (let el = node.parentElement; el; el = el.parentElement) {
     if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el;
   }
