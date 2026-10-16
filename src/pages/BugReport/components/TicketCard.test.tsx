@@ -68,6 +68,8 @@ const baseTicket: BugTicket = {
 
 import { TicketCard } from './TicketCard';
 
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+
 afterEach(() => cleanup());
 
 describe('TicketCard', () => {

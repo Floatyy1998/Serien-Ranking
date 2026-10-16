@@ -10,6 +10,7 @@ import { DiscussionEditForm } from './DiscussionEditForm';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { SpoilerReveal } from '../ui/display/SpoilerReveal';
+import { LinkifiedText } from '../ui/display/LinkifiedText';
 import { UserAvatar } from '../ui/media/UserAvatar';
 import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
@@ -305,7 +306,7 @@ const DiscussionItemInner: React.FC<{
                   lineHeight: 1.6,
                 }}
               >
-                {displayText}
+                <LinkifiedText text={displayText} />
               </p>
             )}
             <TranslateButton translation={translation} />

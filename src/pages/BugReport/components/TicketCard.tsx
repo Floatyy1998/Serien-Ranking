@@ -1,4 +1,5 @@
 import { ChatBubbleOutlined, ExpandMore, Send } from '@mui/icons-material';
+import { LinkifiedText } from '../../../components/ui/display/LinkifiedText';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
@@ -338,7 +339,7 @@ export function TicketCard({
                       whiteSpace: 'pre-wrap',
                     }}
                   >
-                    {ticket.description}
+                    <LinkifiedText text={ticket.description} />
                   </div>
                 </div>
               )}
@@ -362,7 +363,7 @@ export function TicketCard({
                       whiteSpace: 'pre-wrap',
                     }}
                   >
-                    {ticket.stepsToReproduce}
+                    <LinkifiedText text={ticket.stepsToReproduce} />
                   </div>
                 </div>
               )}
@@ -456,7 +457,7 @@ export function TicketCard({
                             whiteSpace: 'pre-wrap',
                           }}
                         >
-                          {c.text}
+                          <LinkifiedText text={c.text} />
                         </div>
                         <div
                           style={{ fontSize: '10px', color: theme.text.muted, marginTop: '4px' }}

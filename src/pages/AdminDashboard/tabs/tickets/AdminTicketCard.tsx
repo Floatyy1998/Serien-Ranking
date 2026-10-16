@@ -1,4 +1,5 @@
 import { ChatBubbleOutlined, ContentCopy, Delete, ExpandMore, Send } from '@mui/icons-material';
+import { LinkifiedText } from '../../../../components/ui/display/LinkifiedText';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
@@ -290,7 +291,9 @@ export function AdminTicketCard({
                 style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}
               >
                 <Section title="Beschreibung" theme={theme}>
-                  <div style={contentBox(theme)}>{ticket.description}</div>
+                  <div style={contentBox(theme)}>
+                    <LinkifiedText text={ticket.description} />
+                  </div>
                 </Section>
 
                 {ticket.stepsToReproduce && (
@@ -447,7 +450,7 @@ export function AdminTicketCard({
                               whiteSpace: 'pre-wrap',
                             }}
                           >
-                            {c.text}
+                            <LinkifiedText text={c.text} />
                           </div>
                         </div>
                       ))}

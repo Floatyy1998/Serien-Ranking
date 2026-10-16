@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { SpoilerReveal } from '../ui/display/SpoilerReveal';
+import { LinkifiedText } from '../ui/display/LinkifiedText';
 import { UserAvatar } from '../ui/media/UserAvatar';
 import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
@@ -271,7 +272,7 @@ const ReplyItemInner: React.FC<{
                   lineHeight: 1.5,
                 }}
               >
-                {displayText}
+                <LinkifiedText text={displayText} />
               </p>
             )}
             <TranslateButton translation={translation} />

@@ -5,6 +5,8 @@ import type { BugTicket } from '../../../BugReport/types';
 import type { TicketTheme } from './ticketStyles';
 import { AdminTicketCard } from './AdminTicketCard';
 
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+
 const theme: TicketTheme = {
   primary: '#00d123',
   text: { primary: '#fff', secondary: '#ccc', muted: '#888' },
