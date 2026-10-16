@@ -42,7 +42,7 @@ vi.mock('../components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost:
 vi.mock('../features/tour', () => ({ PageTourHost: () => null }));
 vi.mock('../components/AvatarViewerHost', () => ({ AvatarViewerHost: () => null }));
 
-vi.mock('../pages/HomePage', () => ({ HomePage: () => <div /> }));
+vi.mock('../pages/HomePage', () => ({ HomePage: () => <div />, HomeRoute: () => <div /> }));
 vi.mock('../pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));
 vi.mock('../pages/Ratings', () => ({ RatingsPage: () => <div /> }));
 vi.mock('../pages/Profile', () => ({ ProfilePage: () => <div /> }));

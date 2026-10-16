@@ -19,6 +19,13 @@ import {
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
 import { PublicProfilesPreview } from './SocialPreviews';
 import {
+  OnboardingFocusPreview,
+  OnboardingReadingPreview,
+  OnboardingWelcomeReadingPreview,
+  ReadingHomePreview,
+  SettingsFocusPreview,
+} from './FocusPreviews';
+import {
   CatchUpPreview,
   RatingsYearFilterPreview,
   DropOffPreview,
@@ -176,6 +183,27 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
   { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
   { id: 'public-profiles', label: 'Öffentliche Profile', render: () => <PublicProfilesPreview /> },
+  { id: 'reading-home', label: 'Startseite: Lesen', render: () => <ReadingHomePreview /> },
+  {
+    id: 'onboarding-focus',
+    label: 'Onboarding: Auftakt',
+    render: () => <OnboardingFocusPreview />,
+  },
+  {
+    id: 'onboarding-welcome-reading',
+    label: 'Onboarding: Kuration Lesen',
+    render: () => <OnboardingWelcomeReadingPreview />,
+  },
+  {
+    id: 'onboarding-reading',
+    label: 'Onboarding: Lesen',
+    render: () => <OnboardingReadingPreview />,
+  },
+  {
+    id: 'settings-focus',
+    label: 'Einstellungen: Schwerpunkt',
+    render: () => <SettingsFocusPreview />,
+  },
   { id: 'ratings-books', label: 'Bewertungen: Bücher', render: () => <RatingsBooksPreview /> },
   { id: 'pet-poses', label: 'Pet: Posen', render: () => <PetPoseGalleryPreview levels={[1]} /> },
   {

@@ -16,7 +16,15 @@
 import { dbRef, serverTimestamp, userPath } from '../db/ref';
 
 export type OnboardingStepMark =
-  'welcome' | 'series' | 'movies' | 'subscriptions' | 'pet' | 'done' | 'guest-resume' | 'finished';
+  | 'welcome'
+  | 'series'
+  | 'movies'
+  | 'reading'
+  | 'subscriptions'
+  | 'pet'
+  | 'done'
+  | 'guest-resume'
+  | 'finished';
 
 /** Anmeldeart, auf die drei bekannten Werte reduziert. */
 export function signupProvider(providerId?: string | null): string {

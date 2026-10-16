@@ -945,6 +945,15 @@ const dict: Record<string, string> = {
   'Du darfst keine Angst haben, größer zu träumen':
     'Você não deve ter medo de sonhar um pouco maior',
   'Bitte keine Albträume': 'Sem pesadelos, por favor',
+  'Bücher, Manga und mehr': 'Livros, mangás e mais',
+  'Was liest du gerade?': 'O que você está lendo?',
+  'Leg dein erstes Buch oder deinen ersten Manga an – hier siehst du dann deinen Lesestand.':
+    'Adicione seu primeiro livro ou mangá – seu progresso de leitura aparece aqui.',
+  'Du liest mehr, als du schaust': 'Você lê mais do que assiste',
+  '{read} Manga und Bücher, {watch} Serien und Filme. Soll deine Startseite das Lesen zeigen? Umstellen kannst du jederzeit in den Einstellungen.':
+    '{read} mangás e livros, {watch} séries e filmes. Quer que seu início foque na leitura? Dá pra mudar quando quiser nas configurações.',
+  'Nein, so lassen': 'Não, deixar assim',
+  'Lese-Startseite': 'Início de leitura',
 };
 
 export default dict;

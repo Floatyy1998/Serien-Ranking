@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CoverWall } from '../components/CoverWall';
 import { GenreTile } from '../components/GenreTile';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
-import { ACT_COUNT } from '../data/acts';
+import { useActs } from '../data/acts';
 import { CURATED_GENRES, type CuratedGenre } from '../genres';
+import { READING_GENRE_LABEL, readingGenreCovers, spreadCovers } from '../hooks/useReadingPicks';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import { t } from '../../../services/i18n';
 
@@ -25,6 +26,8 @@ interface Props {
   onNext: () => void;
   /** Gast-Flow hat oben schon eine Fortschrittsleiste — innere „Programm"-Leiste ausblenden. */
   hideProgram?: boolean;
+  /** Schwerpunkt „Manga & Bücher": Überschrift fragt nach Lesestoff. */
+  reading?: boolean;
 }
 
 async function fetchGenrePosters(g: CuratedGenre): Promise<string[]> {
@@ -66,24 +69,34 @@ export const WelcomeStep: React.FC<Props> = ({
   onToggleGenre,
   onNext,
   hideProgram = false,
+  reading = false,
 }) => {
+  const actCount = useActs().length;
   const [postersBySlug, setPostersBySlug] = useState<Record<string, string[]>>({});
   const nameTooShort = !!nameEditable && (nameValue ?? '').trim().length < 3;
 
   useEffect(() => {
     let cancelled = false;
     Promise.all(
-      CURATED_GENRES.map(async (g) => [g.slug, await fetchGenrePosters(g)] as const)
+      CURATED_GENRES.map(
+        async (g) =>
+          [g.slug, reading ? await readingGenreCovers(g.slug) : await fetchGenrePosters(g)] as const
+      )
     ).then((pairs) => {
       if (cancelled) return;
       const next: Record<string, string[]> = {};
       for (const [slug, list] of pairs) next[slug] = list;
-      setPostersBySlug(next);
+      setPostersBySlug(reading ? spreadCovers(next) : next);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reading]);
+
+  const readingWall = useMemo(
+    () => (reading ? Object.values(postersBySlug).flat() : undefined),
+    [reading, postersBySlug]
+  );
 
   const selectedCount = selectedSlugs.length;
   const selectedGenres = CURATED_GENRES.filter((g) => selectedSlugs.includes(g.slug));
@@ -96,7 +109,7 @@ export const WelcomeStep: React.FC<Props> = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.45 }}
     >
-      <CoverWall tvGenreIds={selectedGenres.map((g) => g.tvId)} />
+      <CoverWall tvGenreIds={selectedGenres.map((g) => g.tvId)} covers={readingWall} />
 
       <div
         className="ob-step__body"
@@ -186,11 +199,17 @@ export const WelcomeStep: React.FC<Props> = ({
                 style={{
                   fontSize: 'clamp(48px, 9vw, 140px)',
                   margin: 0,
+                  // Platz für Unterlängen („du gern?"), sonst rutscht die Zeile darunter hinein.
+                  paddingBottom: '0.12em',
                   color: 'var(--ob-paper)',
                   maxWidth: '14ch',
                 }}
               >
-                <LetterReveal text={t('Was läuft')} delay={0.18} stagger={0.04} />
+                <LetterReveal
+                  text={reading ? t('Was liest') : t('Was läuft')}
+                  delay={0.18}
+                  stagger={0.04}
+                />
                 <br />
                 <span
                   style={{
@@ -199,7 +218,11 @@ export const WelcomeStep: React.FC<Props> = ({
                     fontWeight: 900,
                   }}
                 >
-                  <LetterReveal text={t('bei dir?')} delay={0.55} stagger={0.04} />
+                  <LetterReveal
+                    text={reading ? t('du gern?') : t('bei dir?')}
+                    delay={0.55}
+                    stagger={0.04}
+                  />
                 </span>
               </h1>
               <motion.p
@@ -225,7 +248,7 @@ export const WelcomeStep: React.FC<Props> = ({
                     {t('Programm')}
                   </span>
                   <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                    {t('{n} Akte', { n: ACT_COUNT })}
+                    {t('{n} Akte', { n: actCount })}
                   </span>
                 </div>
                 <TableOfContents currentStep="welcome" variant="horizontal" delay={1.1} />
@@ -255,7 +278,7 @@ export const WelcomeStep: React.FC<Props> = ({
                     }}
                   >
                     <GenreTile
-                      label={t(g.label)}
+                      label={t(reading ? (READING_GENRE_LABEL[g.slug] ?? g.label) : g.label)}
                       index={i}
                       posters={postersBySlug[g.slug] || []}
                       selected={selected}

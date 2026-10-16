@@ -4,7 +4,7 @@ import { ContentCard, type WatchSummary } from '../components/ContentCard';
 import { CoverWall } from '../components/CoverWall';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
-import { ACT_COUNT } from '../data/acts';
+import { useActs } from '../data/acts';
 import { WatchStatusSheet } from '../components/WatchStatusSheet';
 import type { WatchTarget } from '../hooks/useApplyWatchProgress';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
@@ -70,6 +70,7 @@ export const DiscoveryStep: React.FC<Props> = ({
   disableWatchStatus = false,
   hideProgram = false,
 }) => {
+  const actCount = useActs().length;
   const [query, setQuery] = useState('');
   const [sheetItem, setSheetItem] = useState<OnboardingItem | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -256,7 +257,7 @@ export const DiscoveryStep: React.FC<Props> = ({
                   {t('Programm')}
                 </span>
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  {t('{n} Akte', { n: ACT_COUNT })}
+                  {t('{n} Akte', { n: actCount })}
                 </span>
               </div>
               <TableOfContents

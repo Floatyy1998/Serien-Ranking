@@ -854,7 +854,7 @@
 }
 .ob-choice:not(.ob-choice--active):hover {
   border-color: rgba(var(--ob-glow), 0.35);
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--ob-stage-2), #fff 4%);
 }
 .ob-choice--active {
   background: linear-gradient(135deg, var(--ob-paper), var(--ob-paper-2));

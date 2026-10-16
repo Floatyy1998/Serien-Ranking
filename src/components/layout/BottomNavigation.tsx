@@ -1,9 +1,16 @@
-import { MoreHoriz } from '@mui/icons-material';
+import { LiveTv, MoreHoriz } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MAIN_TAB_PATHS, NAV_SLOT_OPTIONS } from '../../config/navItems';
+import {
+  MAIN_TAB_PATHS,
+  NAV_SLOT_OPTIONS,
+  READER_WATCH_PATH,
+  READING_PATHS,
+} from '../../config/navItems';
+import { useAppFocus } from '../../hooks/ui/useAppFocus';
+import { readsFirst } from '../../services/settings/appFocus';
 import { resolveReadingPath } from '../../services/settings/readingTab';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -61,23 +68,30 @@ export const BottomNavigation = () => {
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const reader = readsFirst(useAppFocus().focus);
+
   const navItems: NavItem[] = useMemo(() => {
     const slotItems: NavItem[] = navSlots
       .map((id) => NAV_SLOT_OPTIONS.find((o) => o.id === id))
       .filter((o): o is (typeof NAV_SLOT_OPTIONS)[number] => !!o)
-      .map((o) => ({
-        id: o.id,
-        path: o.path,
-        aliases: o.aliases,
-        label: t(o.label),
-        icon: NAV_SLOT_ICONS[o.id],
-        badge: o.id === 'calendar' && unwatchedToday > 0 ? unwatchedToday : undefined,
-      }));
+      .map((o) =>
+        reader && o.id === 'manga'
+          ? { id: o.id, path: READER_WATCH_PATH, label: t('Serien'), icon: <LiveTv /> }
+          : {
+              id: o.id,
+              path: o.path,
+              aliases: o.aliases?.filter((p) => p !== READER_WATCH_PATH),
+              label: t(o.label),
+              icon: NAV_SLOT_ICONS[o.id],
+              badge: o.id === 'calendar' && unwatchedToday > 0 ? unwatchedToday : undefined,
+            }
+      );
 
     return [
       {
         id: 'home',
         path: '/',
+        aliases: reader ? READING_PATHS : undefined,
         icon: (
           <div
             style={{
@@ -107,7 +121,7 @@ export const BottomNavigation = () => {
         badge: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
       },
     ];
-  }, [navSlots, unwatchedToday, unreadRequestsCount]);
+  }, [navSlots, unwatchedToday, unreadRequestsCount, reader]);
 
   const getActiveIndex = () => {
     let best = 0;
@@ -177,8 +191,8 @@ export const BottomNavigation = () => {
   }, [pillTargetIndex, navItems.length, location.pathname]);
 
   const isActive = (path: string, aliases: string[] = []) => {
-    if (path === '/') return location.pathname === '/';
-    return [path, ...aliases].some((p) => location.pathname.startsWith(p));
+    if (path === '/' && location.pathname === '/') return true;
+    return [path, ...aliases].some((p) => p !== '/' && location.pathname.startsWith(p));
   };
 
   const handleNavigation = (item: NavItem, index: number) => {
@@ -188,8 +202,8 @@ export const BottomNavigation = () => {
       document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setPendingIndex(index);
-      const go = () => navigate(item.id === 'manga' ? resolveReadingPath() : item.path);
-      if (item.id === 'manga' || navItems[activeIndex]?.id === 'manga')
+      const go = () => navigate(item.id === 'manga' && !reader ? resolveReadingPath() : item.path);
+      if (!reader && (item.id === 'manga' || navItems[activeIndex]?.id === 'manga'))
         withCoinEgg(user?.uid, go, user?.photoURL);
       else go();
     }

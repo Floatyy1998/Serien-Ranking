@@ -1,5 +1,6 @@
 import React from 'react';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import DynamicFeed from '@mui/icons-material/DynamicFeed';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Group from '@mui/icons-material/Group';
 import History from '@mui/icons-material/History';
@@ -51,6 +52,12 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
       label: t('Freunde'),
       path: '/activity?tab=friends',
       color: currentTheme.status.info.main,
+    },
+    activity: {
+      icon: <DynamicFeed style={{ fontSize: '22px' }} />,
+      label: t('Aktivität'),
+      path: '/activity',
+      color: currentTheme.primary,
     },
   };
   const visible = config.quickActionsOrder.filter((id) => !config.hiddenQuickActions.includes(id));

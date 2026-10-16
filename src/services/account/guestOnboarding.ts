@@ -6,7 +6,10 @@
  * Serie erst im Katalog). Überlebt Popup- und Redirect-Signup.
  */
 
+import type { BookSearchResult } from '../../types/Book';
+import type { AniListMangaSearchResult } from '../../types/Manga';
 import type { Pet } from '../../types/pet.types';
+import { parseAppFocus, type AppFocus } from '../settings/appFocus';
 
 const KEY = 'guestOnboardingV2';
 const MAX_PICKS = 40;
@@ -25,6 +28,18 @@ export interface GuestPick {
   number_of_seasons?: number;
 }
 
+/** Strukturell kompatibel zu ReadingPick (pages/Onboarding). */
+export interface GuestReadingPick {
+  key: string;
+  kind: 'book' | 'manga';
+  title: string;
+  cover?: string;
+  year?: string;
+  book?: BookSearchResult;
+  manga?: AniListMangaSearchResult;
+  status: 'reading' | 'completed' | 'planned';
+}
+
 export interface GuestPet {
   name: string;
   type: Pet['type'];
@@ -32,12 +47,23 @@ export interface GuestPet {
 
 interface GuestStore {
   picks: GuestPick[];
+  readingPicks: GuestReadingPick[];
+  focus: AppFocus | null;
+  genres: string[];
   subscriptions: string[];
   pet: GuestPet | null;
   updatedAt: number;
 }
 
-const EMPTY: GuestStore = { picks: [], subscriptions: [], pet: null, updatedAt: 0 };
+const EMPTY: GuestStore = {
+  picks: [],
+  readingPicks: [],
+  focus: null,
+  genres: [],
+  subscriptions: [],
+  pet: null,
+  updatedAt: 0,
+};
 
 function read(): GuestStore {
   try {
@@ -46,6 +72,9 @@ function read(): GuestStore {
     const parsed = JSON.parse(raw) as Partial<GuestStore>;
     return {
       picks: Array.isArray(parsed?.picks) ? parsed.picks : [],
+      readingPicks: Array.isArray(parsed?.readingPicks) ? parsed.readingPicks : [],
+      focus: parseAppFocus(parsed?.focus),
+      genres: Array.isArray(parsed?.genres) ? parsed.genres : [],
       subscriptions: Array.isArray(parsed?.subscriptions) ? parsed.subscriptions : [],
       pet: parsed?.pet ?? null,
       updatedAt: parsed?.updatedAt ?? 0,
@@ -76,7 +105,25 @@ export function hasGuestPicks(): boolean {
 // localStorage-Teilverlust) darf das volle Onboarding NICHT ersetzen — sonst
 // schließt der Resume-Flow mit null Serien/Filmen ab.
 export function hasGuestOnboarding(): boolean {
-  return read().picks.length > 0;
+  const store = read();
+  return store.picks.length > 0 || store.readingPicks.length > 0;
+}
+
+export function getGuestReading(): {
+  picks: GuestReadingPick[];
+  focus: AppFocus | null;
+  genres: string[];
+} {
+  const store = read();
+  return { picks: store.readingPicks, focus: store.focus, genres: store.genres };
+}
+
+export function setGuestReading(
+  picks: GuestReadingPick[],
+  focus: AppFocus | null,
+  genres: string[]
+): void {
+  write({ ...read(), readingPicks: picks.slice(0, MAX_PICKS), focus, genres });
 }
 
 export function addGuestPick(item: GuestPick): void {

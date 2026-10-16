@@ -154,7 +154,7 @@ const dict: Record<string, string> = {
   'Setup läuft …': 'Configurando …',
   'Wir bereiten': 'Estamos preparando',
   'deine Bühne vor.': 'tu escenario.',
-  'Kapitel 06 — Premiere': 'Capítulo 06 — Estreno',
+  'Kapitel {n} — Premiere': 'Capítulo {n} — Estreno',
   Vorhang: 'Se abre',
   'auf.': 'el telón.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -211,7 +211,37 @@ const dict: Record<string, string> = {
   'Staffel 2 · Folge 5': 'Temporada 2 · Episodio 5',
   'Staffel 1 · Folge 8': 'Temporada 1 · Episodio 8',
   'Staffel 4 · Folge 12': 'Temporada 4 · Episodio 12',
-  '06 — Premiere': '06 — Estreno',
+  '{n} — Premiere': '{n} — Estreno',
+  '00 — Auftakt': '00 — Preludio',
+  Auftakt: 'Preludio',
+  'Wofür bist': '¿Qué te trae',
+  'du hier?': 'por aquí?',
+  'Danach richtet sich deine Startseite — umstellen kannst du jederzeit in den Einstellungen.':
+    'Tu pantalla de inicio se adapta a esto; puedes cambiarlo cuando quieras en Ajustes.',
+  'Folgen abhaken, Kalender, deine Streaming-Abos':
+    'Marca episodios, calendario, tus plataformas de streaming',
+  'Lesestand, neue Kapitel, dein Bücherregal':
+    'Progreso de lectura, capítulos nuevos, tu estantería',
+  'Schauen und Lesen an einem Ort': 'Ver y leer en un solo lugar',
+  'wähle eins': 'elige uno',
+  'lese ich gerade': 'leyendo ahora',
+  'schon gelesen': 'ya leído',
+  'will ich lesen': 'quiero leerlo',
+  'Lesestand ändern': 'Cambiar estado de lectura',
+  lesen: 'lectura',
+  'Liest du auch?': '¿También lees?',
+  'Welche Manga und Bücher gehören in dein Regal? Tipp sie an – den Lesestand stellst du darunter ein.':
+    '¿Qué manga y libros van en tu estantería? Tócalos y ajusta tu progreso justo debajo.',
+  'Manga und Bücher kannst du gleich mit anlegen – oder einfach weiter.':
+    'Añade manga y libros ahora, o sigue adelante sin más.',
+  'buch suchen …': 'buscar libros …',
+  'manga suchen …': 'buscar manga …',
+  'die regale werden durchsucht …': 'buscando en las estanterías …',
+  'ich lese nicht – weiter': 'no leo – siguiente',
+  'später möglich': 'puedes añadirlos luego',
+  'Was liest': '¿Qué te gusta',
+  'du gern?': 'leer?',
+  Lesestoff: 'Libros y manga',
 };
 
 export default dict;

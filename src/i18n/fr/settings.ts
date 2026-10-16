@@ -295,6 +295,13 @@ const dict: Record<string, string> = {
     'Cœurs flottants, pétales de rose et la flèche de Cupidon dans toute l’app',
   'Bis 14. Februar': 'Jusqu’au 14 février',
   'Alles Liebe zum Valentinstag': 'Joyeuse Saint-Valentin',
+  Schwerpunkt: 'Priorité',
+  'Serien & Filme': 'Séries & films',
+  'Manga & Bücher': 'Mangas & livres',
+  Beides: 'Les deux',
+  'Startseite für Serien und Filme': 'Accueil centré sur les séries et films',
+  'Startseite für Manga und Bücher': 'Accueil centré sur les mangas et livres',
+  'Serien-Startseite, Lesen über das Dock': 'Séries à l’accueil, lecture dans le dock',
 };
 
 export default dict;

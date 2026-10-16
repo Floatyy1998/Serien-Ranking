@@ -4,11 +4,15 @@ import { Confetti } from '../components/Confetti';
 import { CoverWall } from '../components/CoverWall';
 import { LetterReveal } from '../components/LetterReveal';
 import { t } from '../../../services/i18n';
+import { useActNum } from '../data/acts';
 
 interface Props {
   seriesCount: number;
   movieCount: number;
   watchedSeriesCount: number;
+  /** Gewählte Manga und Bücher. */
+  readingCount?: number;
+  /** Vollständige Bild-URLs (TMDB-Poster und Lese-Cover). */
   posters: string[];
   isCompleting: boolean;
   completionProgress: number;
@@ -39,15 +43,24 @@ export const CompletionStep: React.FC<Props> = ({
   seriesCount,
   movieCount,
   watchedSeriesCount,
+  readingCount = 0,
   posters,
   isCompleting,
   completionProgress,
   onFinish,
   onBack,
 }) => {
+  const premiereNum = useActNum('done');
   const series = useCountUp(seriesCount, 1100, !isCompleting);
   const movies = useCountUp(movieCount, 1100, !isCompleting);
   const watched = useCountUp(watchedSeriesCount, 1100, !isCompleting);
+  const reading = useCountUp(readingCount, 1100, !isCompleting);
+  const statCells = [
+    seriesCount > 0 && { key: 'series', value: series, label: t('Serien') },
+    watchedSeriesCount > 0 && { key: 'watched', value: watched, label: t('fortgesetzt') },
+    movieCount > 0 && { key: 'movies', value: movies, label: t('Filme') },
+    readingCount > 0 && { key: 'reading', value: reading, label: t('Lesestoff') },
+  ].filter((cell): cell is { key: string; value: number; label: string } => !!cell);
 
   if (isCompleting) {
     return (
@@ -171,7 +184,7 @@ export const CompletionStep: React.FC<Props> = ({
             {t('← zurück')}
           </button>
           <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.55 }}>
-            {t('06 — Premiere')}
+            {t('{n} — Premiere', { n: premiereNum })}
           </span>
         </div>
 
@@ -182,7 +195,7 @@ export const CompletionStep: React.FC<Props> = ({
           className="ob-mono"
           style={{ color: 'rgba(244,237,224,0.55)' }}
         >
-          {t('Kapitel 06 — Premiere')}
+          {t('Kapitel {n} — Premiere', { n: premiereNum })}
         </motion.span>
 
         <h1
@@ -233,8 +246,7 @@ export const CompletionStep: React.FC<Props> = ({
           transition={{ delay: 1.3, duration: 0.6 }}
           style={{
             display: 'grid',
-            gridTemplateColumns:
-              watchedSeriesCount > 0 ? 'repeat(3, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))',
+            gridTemplateColumns: `repeat(${Math.max(statCells.length, 1)}, minmax(0, 1fr))`,
             gap: 'clamp(16px, 3vw, 28px)',
             width: '100%',
             maxWidth: 540,
@@ -242,9 +254,9 @@ export const CompletionStep: React.FC<Props> = ({
             borderTop: '1px solid var(--ob-line)',
           }}
         >
-          <StatCell value={series} label={t('Serien')} />
-          {watchedSeriesCount > 0 && <StatCell value={watched} label={t('fortgesetzt')} />}
-          <StatCell value={movies} label={t('Filme')} />
+          {statCells.map((cell) => (
+            <StatCell key={cell.key} value={cell.value} label={cell.label} />
+          ))}
         </motion.div>
 
         {/* Curtain-call: user's selected posters fly in */}
@@ -292,7 +304,7 @@ export const CompletionStep: React.FC<Props> = ({
                   style={{
                     width: 56,
                     aspectRatio: '2 / 3',
-                    backgroundImage: `url(https://image.tmdb.org/t/p/w185${p})`,
+                    backgroundImage: `url(${p})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     borderRadius: 6,

@@ -57,7 +57,9 @@ export const GenreTile: React.FC<Props> = ({ label, index, posters, selected, on
           <div
             key={i}
             style={{
-              backgroundImage: p ? `url(https://image.tmdb.org/t/p/w185${p})` : undefined,
+              backgroundImage: p
+                ? `url(${p.startsWith('http') ? p : `https://image.tmdb.org/t/p/w185${p}`})`
+                : undefined,
             }}
           />
         ))}

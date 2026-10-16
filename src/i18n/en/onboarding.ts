@@ -169,7 +169,7 @@ const dict: Record<string, string> = {
   'Setup läuft …': 'Setting up …',
   'Wir bereiten': 'Preparing',
   'deine Bühne vor.': 'your stage.',
-  'Kapitel 06 — Premiere': 'Chapter 06 — Premiere',
+  'Kapitel {n} — Premiere': 'Chapter {n} — Premiere',
   Vorhang: 'Curtain',
   'auf.': 'up.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -230,7 +230,36 @@ const dict: Record<string, string> = {
   'Staffel 4 · Folge 12': 'Season 4 · Episode 12',
   // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
   // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
-  '06 — Premiere': '06 — Premiere',
+  '{n} — Premiere': '{n} — Premiere',
+  '00 — Auftakt': '00 — Prelude',
+  Auftakt: 'Prelude',
+  'Wofür bist': 'What brings',
+  'du hier?': 'you here?',
+  'Danach richtet sich deine Startseite — umstellen kannst du jederzeit in den Einstellungen.':
+    'Your home screen follows this — you can switch any time in Settings.',
+  'Folgen abhaken, Kalender, deine Streaming-Abos':
+    'Check off episodes, calendar, your streaming services',
+  'Lesestand, neue Kapitel, dein Bücherregal': 'Reading progress, new chapters, your bookshelf',
+  'Schauen und Lesen an einem Ort': 'Watching and reading in one place',
+  'wähle eins': 'pick one',
+  'lese ich gerade': 'reading now',
+  'schon gelesen': 'already read',
+  'will ich lesen': 'want to read',
+  'Lesestand ändern': 'Change reading status',
+  lesen: 'reading',
+  'Liest du auch?': 'Do you read too?',
+  'Welche Manga und Bücher gehören in dein Regal? Tipp sie an – den Lesestand stellst du darunter ein.':
+    'Which manga and books belong on your shelf? Tap them – set your progress right below.',
+  'Manga und Bücher kannst du gleich mit anlegen – oder einfach weiter.':
+    'Add some manga and books now – or just skip ahead.',
+  'buch suchen …': 'search books …',
+  'manga suchen …': 'search manga …',
+  'die regale werden durchsucht …': 'searching the shelves …',
+  'ich lese nicht – weiter': 'not a reader – next',
+  'später möglich': 'add them later',
+  'Was liest': 'What do you',
+  'du gern?': 'love to read?',
+  Lesestoff: 'Books & manga',
 };
 
 export default dict;

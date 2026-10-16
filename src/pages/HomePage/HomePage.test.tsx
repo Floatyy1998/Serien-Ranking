@@ -163,6 +163,8 @@ vi.mock('./cards/WatchStreakCard', () => ({ WatchStreakCard: () => null }));
 vi.mock('./cards/DailySpinCard', () => ({ DailySpinCard: () => null }));
 vi.mock('./cards/StreamingReminderCard', () => ({ StreamingReminderCard: () => null }));
 vi.mock('./cards/ActivityMarquee', () => ({ ActivityMarquee: () => null }));
+vi.mock('./cards/FocusSuggestionCard', () => ({ FocusSuggestionCard: () => null }));
+vi.mock('./sections/ReadingHomeSections', () => ({ ReadingHomeSections: () => null }));
 vi.mock('./cards/MilestoneBoxCard', () => ({ MilestoneBoxCard: () => null }));
 vi.mock('./sheets/WrappedNotification', () => ({ WrappedNotification: () => null }));
 vi.mock('./sections/GreetingSection', () => ({

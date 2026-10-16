@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const navigate = vi.hoisted(() => vi.fn<(path: string, opts?: unknown) => void>());
 const authState = vi.hoisted(() => ({
@@ -37,6 +37,16 @@ vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
 }));
 
 vi.mock('./steps/WelcomeStep', () => ({ WelcomeStep: () => <div>welcome-step</div> }));
+vi.mock('./steps/FocusStep', () => ({
+  FocusStep: ({ onChange, onNext }: { onChange: (f: string) => void; onNext: () => void }) => (
+    <div>
+      focus-step
+      <button onClick={() => onChange('read')}>pick-read</button>
+      <button onClick={onNext}>focus-next</button>
+    </div>
+  ),
+}));
+vi.mock('./steps/ReadingStep', () => ({ ReadingStep: () => <div>reading-step</div> }));
 vi.mock('./steps/DiscoveryStep', () => ({ DiscoveryStep: () => <div>discovery-step</div> }));
 vi.mock('./steps/SubscriptionsStep', () => ({ SubscriptionsStep: () => <div>subs-step</div> }));
 vi.mock('./steps/CompletionStep', () => ({ CompletionStep: () => <div>completion-step</div> }));
@@ -67,11 +77,19 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('OnboardingPage', () => {
-  it('renders the welcome step and progress on the first step', () => {
+  it('fragt zuerst nach dem Schwerpunkt', () => {
     render(<OnboardingPage />);
+    expect(screen.getByText('focus-step')).toBeInTheDocument();
+    expect(screen.getByText(/01 \/ 08/)).toBeInTheDocument();
+    expect(screen.getByText('Auftakt')).toBeInTheDocument();
+  });
+
+  it('kürzt das Programm für Lese-Nutzer auf Kuration, Lesen, Pet, Premiere', () => {
+    render(<OnboardingPage />);
+    fireEvent.click(screen.getByText('pick-read'));
+    fireEvent.click(screen.getByText('focus-next'));
     expect(screen.getByText('welcome-step')).toBeInTheDocument();
-    expect(screen.getByText(/01 \/ 06/)).toBeInTheDocument();
-    expect(screen.getByText('Kuration')).toBeInTheDocument();
+    expect(screen.getByText(/02 \/ 05/)).toBeInTheDocument();
   });
 
   it('redirects home when onboarding is already complete', async () => {

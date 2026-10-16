@@ -9,6 +9,8 @@ import {
   setReadingTab,
   type ReadingTab,
 } from '../../services/settings/readingTab';
+import { useAppFocus } from '../../hooks/ui/useAppFocus';
+import { readsFirst } from '../../services/settings/appFocus';
 import './ReadingSwitch.css';
 
 const TABS: { id: ReadingTab; label: () => string }[] = [
@@ -21,6 +23,8 @@ const TABS: { id: ReadingTab; label: () => string }[] = [
 export const ReadingSwitch: React.FC<{ active: ReadingTab }> = ({ active }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
+  // Bei „Manga & Bücher" ist „Alle" die Startseite selbst.
+  const allPath = readsFirst(useAppFocus().focus) ? '/' : READING_TAB_PATHS.all;
 
   useEffect(() => {
     setReadingTab(active);
@@ -40,7 +44,7 @@ export const ReadingSwitch: React.FC<{ active: ReadingTab }> = ({ active }) => {
             onClick={() => {
               if (selected) return;
               hapticTap();
-              navigate(READING_TAB_PATHS[tab.id], { replace: true });
+              navigate(tab.id === 'all' ? allPath : READING_TAB_PATHS[tab.id], { replace: true });
             }}
             style={{ color: selected ? currentTheme.text.secondary : currentTheme.text.muted }}
           >

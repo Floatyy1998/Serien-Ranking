@@ -14,6 +14,21 @@ import { DiscoveryStep } from './steps/DiscoveryStep';
 import { PetHatchStep } from './steps/PetHatchStep';
 import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
+import { FocusStep } from './steps/FocusStep';
+import { ReadingStep } from './steps/ReadingStep';
+import { ActsProvider, actsFor } from './data/acts';
+import {
+  bookGenresFor,
+  defaultPickStatus,
+  type ReadingItem,
+  type ReadingPick,
+  type ReadingPickStatus,
+} from './hooks/useReadingPicks';
+import { applyReadingPicks } from './applyReadingPicks';
+import { setAppFocus, type AppFocus } from '../../services/settings/appFocus';
+import { setNavSlots } from '../../services/settings/navConfig';
+import { READER_NAV_SLOTS } from '../../config/navItems';
+import { setFavoriteBookGenres } from '../../services/books/bookService';
 import { invalidateActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
@@ -28,12 +43,19 @@ import { showToast } from '../../lib/interaction/toast';
 import { mapLimit } from '../../utils/mapLimit';
 import type { Pet } from '../../types/pet.types';
 
-type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'pet' | 'done';
-const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'pet', 'done'];
+type Step =
+  'focus' | 'welcome' | 'series' | 'movies' | 'reading' | 'subscriptions' | 'pet' | 'done';
+/** Lese-Nutzer überspringen Serien, Filme und Abos. */
+const stepsFor = (focus: AppFocus | null): Step[] =>
+  focus === 'read'
+    ? ['focus', 'welcome', 'reading', 'pet', 'done']
+    : ['focus', 'welcome', 'series', 'movies', 'reading', 'subscriptions', 'pet', 'done'];
 /** Das Backend deckelt /add + /addMovie bei 30 Requests pro Minute. */
 const ADD_CONCURRENCY = 4;
 const STEP_LABELS: Record<Step, string> = {
+  focus: 'Auftakt',
   welcome: 'Kuration',
+  reading: 'Lesen',
   series: 'Serien',
   movies: 'Filme',
   subscriptions: 'Abos',
@@ -49,16 +71,27 @@ export const OnboardingPage: React.FC = () => {
     if (onboardingComplete === true) navigate('/', { replace: true });
   }, [onboardingComplete, navigate]);
 
-  const [step, setStep] = useState<Step>('welcome');
+  const [step, setStep] = useState<Step>('focus');
+  const [focus, setFocus] = useState<AppFocus | null>(null);
+  const steps = useMemo(() => stepsFor(focus), [focus]);
+  const acts = useMemo(() => actsFor(focus ?? 'watch'), [focus]);
+  const goNext = useCallback(
+    () => setStep((current) => steps[steps.indexOf(current) + 1] ?? current),
+    [steps]
+  );
+  const goBack = useCallback(
+    () => setStep((current) => steps[steps.indexOf(current) - 1] ?? current),
+    [steps]
+  );
 
   // Erreichten Schritt festhalten — ohne ihn bleibt ein Abbruch ein Konto ohne
   // alles, und niemand weiss, an welcher Stelle es geklemmt hat.
   useEffect(() => {
     const uid = user?.uid;
     if (!uid) return;
-    void markOnboardingStep(uid, step, {
+    void markOnboardingStep(uid, step === 'focus' ? 'welcome' : step, {
       provider: user?.providerData?.[0]?.providerId,
-      first: step === 'welcome',
+      first: step === 'focus',
     });
   }, [step, user]);
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
@@ -67,6 +100,7 @@ export const OnboardingPage: React.FC = () => {
   const [nameEditable, setNameEditable] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [pendingItems, setPendingItems] = useState<Map<string, OnboardingItem>>(new Map());
+  const [readingPicks, setReadingPicks] = useState<Map<string, ReadingPick>>(new Map());
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [watchTargets, setWatchTargets] = useState<Map<number, WatchTarget>>(new Map());
   const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
@@ -158,9 +192,28 @@ export const OnboardingPage: React.FC = () => {
 
   const handleWelcomeNext = useCallback(() => {
     void persistName();
-    fetchSuggestions(selectedSlugs);
-    setStep('series');
-  }, [persistName, selectedSlugs, fetchSuggestions]);
+    if (focus !== 'read') fetchSuggestions(selectedSlugs);
+    goNext();
+  }, [persistName, selectedSlugs, fetchSuggestions, focus, goNext]);
+
+  const toggleReading = useCallback((item: ReadingItem) => {
+    setReadingPicks((prev) => {
+      const next = new Map(prev);
+      if (next.has(item.key)) next.delete(item.key);
+      else next.set(item.key, { ...item, status: defaultPickStatus(item.kind) });
+      return next;
+    });
+  }, []);
+
+  const setReadingStatus = useCallback((key: string, status: ReadingPickStatus) => {
+    setReadingPicks((prev) => {
+      const pick = prev.get(key);
+      if (!pick) return prev;
+      const next = new Map(prev);
+      next.set(key, { ...pick, status });
+      return next;
+    });
+  }, []);
 
   const togglePending = useCallback((item: OnboardingItem) => {
     const key = `${item.type}-${item.id}`;
@@ -216,11 +269,16 @@ export const OnboardingPage: React.FC = () => {
     [watchTargets]
   );
   const completionPosters = useMemo(
-    () =>
-      Array.from(pendingItems.values())
+    () => [
+      ...Array.from(pendingItems.values())
         .map((it) => it.poster_path)
-        .filter((p): p is string => !!p),
-    [pendingItems]
+        .filter((p): p is string => !!p)
+        .map((p) => `https://image.tmdb.org/t/p/w185${p}`),
+      ...Array.from(readingPicks.values())
+        .map((pick) => pick.cover)
+        .filter((c): c is string => !!c),
+    ],
+    [pendingItems, readingPicks]
   );
 
   // Picked genres become the cover wall hue for the welcome step
@@ -237,7 +295,8 @@ export const OnboardingPage: React.FC = () => {
     setCompletionProgress(0);
 
     const items = Array.from(pendingItems.values());
-    const totalAdds = items.length;
+    const reading = Array.from(readingPicks.values());
+    const totalAdds = items.length + reading.length;
     const totalWatch = Array.from(watchTargets.values()).filter((t) => t.kind !== 'none').length;
     const totalUnits = Math.max(totalAdds + totalWatch + 2, 1);
     let unitsDone = 0;
@@ -250,8 +309,14 @@ export const OnboardingPage: React.FC = () => {
     // sondern liefert bei Netz-/Backend-Fehlern still false. Ohne diesen Check
     // schließt ein Backend-Ausfall das Onboarding mit null Titeln ab.
     let addedOk = 0;
+    const picksTotal = items.length + reading.length;
 
     try {
+      await setAppFocus(uid, focus ?? 'watch').catch(() => {});
+      if (focus === 'read') setNavSlots(uid, READER_NAV_SLOTS);
+      const bookGenres = focus === 'watch' ? [] : bookGenresFor(selectedSlugs);
+      if (bookGenres.length) void setFavoriteBookGenres(uid, bookGenres).catch(() => {});
+
       setPendingId(null);
       // Begrenzte Parallelität + EIN Katalog-Refetch am Ende: seasonsAll.json
       // ist ~9 MB, pro Titel neu geladen legt das ein Handy lahm — und das
@@ -267,8 +332,9 @@ export const OnboardingPage: React.FC = () => {
       });
       setPendingId(null);
       if (addedOk > 0) await refetchCatalog();
+      if (reading.length > 0) addedOk += await applyReadingPicks(uid, reading, tick);
 
-      if (items.length > 0 && addedOk === 0) {
+      if (picksTotal > 0 && addedOk === 0) {
         showToast(
           t('Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung.'),
           5000,
@@ -317,7 +383,7 @@ export const OnboardingPage: React.FC = () => {
       console.error('[onboarding] finish error', e);
       // Nur abschließen, wenn wenigstens ein Titel gelandet ist — sonst darf
       // der Nutzer es erneut versuchen statt mit leerem Konto zu starten.
-      if (items.length > 0 && addedOk === 0) {
+      if (picksTotal > 0 && addedOk === 0) {
         showToast(
           t('Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung.'),
           5000,
@@ -338,7 +404,10 @@ export const OnboardingPage: React.FC = () => {
     }
   }, [
     user?.uid,
+    focus,
+    selectedSlugs,
     pendingItems,
+    readingPicks,
     watchTargets,
     selectedProviders,
     petName,
@@ -352,8 +421,8 @@ export const OnboardingPage: React.FC = () => {
     navigate,
   ]);
 
-  const currentStepIndex = STEPS.indexOf(step);
-  const totalSteps = STEPS.length;
+  const currentStepIndex = steps.indexOf(step);
+  const totalSteps = steps.length;
   const progressPct = ((currentStepIndex + 1) / totalSteps) * 100;
 
   // Gast-Flow → nur anwenden + „wo stehst du?" (statt volles Onboarding erneut).
@@ -381,103 +450,122 @@ export const OnboardingPage: React.FC = () => {
 
       {/* Stage */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
-        <AnimatePresence mode="wait">
-          {step === 'welcome' && (
-            <WelcomeStep
-              key="welcome"
-              username={user?.displayName || 'Stranger'}
-              nameEditable={nameEditable}
-              nameValue={nameValue}
-              onNameChange={setNameValue}
-              selectedSlugs={selectedSlugs}
-              onToggleGenre={toggleGenre}
-              onNext={handleWelcomeNext}
-            />
-          )}
-          {step === 'series' && (
-            <DiscoveryStep
-              key="series"
-              contentType="series"
-              stepNumber={2}
-              suggestions={suggestions}
-              searchResults={searchResults}
-              loading={loading}
-              searchLoading={searchLoading}
-              pendingMap={pendingItems}
-              pendingId={pendingId}
-              watchTargets={watchTargets}
-              onSearchChange={search}
-              onTogglePending={togglePending}
-              onRemovePending={removePending}
-              onSetWatchTarget={setWatchTarget}
-              onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('movies')}
-              onBack={() => setStep('welcome')}
-            />
-          )}
-          {step === 'movies' && (
-            <DiscoveryStep
-              key="movies"
-              contentType="movie"
-              stepNumber={3}
-              suggestions={suggestions}
-              searchResults={searchResults}
-              loading={loading}
-              searchLoading={searchLoading}
-              pendingMap={pendingItems}
-              pendingId={pendingId}
-              watchTargets={watchTargets}
-              onSearchChange={search}
-              onTogglePending={togglePending}
-              onRemovePending={removePending}
-              onSetWatchTarget={setWatchTarget}
-              onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('subscriptions')}
-              onBack={() => setStep('series')}
-            />
-          )}
-          {step === 'subscriptions' && (
-            <SubscriptionsStep
-              key="subscriptions"
-              stepNumber={4}
-              selectedProviders={selectedProviders}
-              onToggle={toggleProvider}
-              onNext={() => setStep('pet')}
-              onBack={() => setStep('movies')}
-            />
-          )}
-          {step === 'pet' && (
-            <PetHatchStep
-              key="pet"
-              name={petName}
-              type={petType}
-              onNameChange={setPetName}
-              onTypeChange={setPetType}
-              onNext={() => {
-                setPetSkipped(false);
-                setStep('done');
-              }}
-              onSkip={() => {
-                setPetSkipped(true);
-                setStep('done');
-              }}
-              onBack={() => setStep('subscriptions')}
-            />
-          )}
-          {step === 'done' && (
-            <CompletionStep
-              key="done"
-              seriesCount={seriesCount}
-              movieCount={movieCount}
-              watchedSeriesCount={watchedSeriesCount}
-              posters={completionPosters}
-              isCompleting={isCompleting}
-              completionProgress={completionProgress}
-              onFinish={finish}
-              onBack={() => setStep('pet')}
-            />
-          )}
-        </AnimatePresence>
+        <ActsProvider value={acts}>
+          <AnimatePresence mode="wait">
+            {step === 'focus' && (
+              <FocusStep key="focus" focus={focus} onChange={setFocus} onNext={goNext} />
+            )}
+            {step === 'welcome' && (
+              <WelcomeStep
+                reading={focus === 'read'}
+                key="welcome"
+                username={user?.displayName || 'Stranger'}
+                nameEditable={nameEditable}
+                nameValue={nameValue}
+                onNameChange={setNameValue}
+                selectedSlugs={selectedSlugs}
+                onToggleGenre={toggleGenre}
+                onNext={handleWelcomeNext}
+              />
+            )}
+            {step === 'series' && (
+              <DiscoveryStep
+                key="series"
+                contentType="series"
+                stepNumber={2}
+                suggestions={suggestions}
+                searchResults={searchResults}
+                loading={loading}
+                searchLoading={searchLoading}
+                pendingMap={pendingItems}
+                pendingId={pendingId}
+                watchTargets={watchTargets}
+                onSearchChange={search}
+                onTogglePending={togglePending}
+                onRemovePending={removePending}
+                onSetWatchTarget={setWatchTarget}
+                onClearSearch={() => setSearchResults([])}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            )}
+            {step === 'movies' && (
+              <DiscoveryStep
+                key="movies"
+                contentType="movie"
+                stepNumber={3}
+                suggestions={suggestions}
+                searchResults={searchResults}
+                loading={loading}
+                searchLoading={searchLoading}
+                pendingMap={pendingItems}
+                pendingId={pendingId}
+                watchTargets={watchTargets}
+                onSearchChange={search}
+                onTogglePending={togglePending}
+                onRemovePending={removePending}
+                onSetWatchTarget={setWatchTarget}
+                onClearSearch={() => setSearchResults([])}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            )}
+            {step === 'reading' && (
+              <ReadingStep
+                key="reading"
+                genreSlugs={selectedSlugs}
+                picks={readingPicks}
+                required={focus !== 'watch'}
+                onToggle={toggleReading}
+                onStatus={setReadingStatus}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            )}
+            {step === 'subscriptions' && (
+              <SubscriptionsStep
+                key="subscriptions"
+                stepNumber={acts.findIndex((act) => act.key === 'subscriptions') + 1}
+                selectedProviders={selectedProviders}
+                onToggle={toggleProvider}
+                onNext={goNext}
+                onBack={goBack}
+              />
+            )}
+            {step === 'pet' && (
+              <PetHatchStep
+                key="pet"
+                name={petName}
+                type={petType}
+                onNameChange={setPetName}
+                onTypeChange={setPetType}
+                onNext={() => {
+                  setPetSkipped(false);
+                  goNext();
+                }}
+                onSkip={() => {
+                  setPetSkipped(true);
+                  goNext();
+                }}
+                onBack={goBack}
+              />
+            )}
+            {step === 'done' && (
+              <CompletionStep
+                key="done"
+                seriesCount={seriesCount}
+                movieCount={movieCount}
+                watchedSeriesCount={watchedSeriesCount}
+                readingCount={readingPicks.size}
+                posters={completionPosters}
+                isCompleting={isCompleting}
+                completionProgress={completionProgress}
+                onFinish={finish}
+                onBack={goBack}
+              />
+            )}
+          </AnimatePresence>
+        </ActsProvider>
       </div>
     </div>
   );

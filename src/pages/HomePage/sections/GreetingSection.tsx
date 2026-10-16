@@ -13,15 +13,28 @@ import { LiveClock } from '../cards/LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
 import { HomeSearchOverlay } from './HomeSearchOverlay';
 
+export interface GreetingPod {
+  key: string;
+  value: number | string;
+  label: string;
+  to: string;
+  highlight: boolean;
+}
+
 interface GreetingSectionProps {
   displayName: string | undefined;
   photoURL: string | undefined;
   totalUnreadBadge: number;
   onNotificationsOpen: () => void;
-  watchedEpisodes: number;
-  totalMovies: number;
-  progress: number;
-  todayEpisodes: number;
+  watchedEpisodes?: number;
+  totalMovies?: number;
+  progress?: number;
+  todayEpisodes?: number;
+  /** Ersetzt die Serien-/Film-Pods (Lese-Startseite). */
+  pods?: GreetingPod[];
+  searchHint?: string;
+  /** Steht im Kopf über dem Deck — wie der Lesen-Umschalter auf Manga/Bücher. */
+  above?: React.ReactNode;
 }
 
 export const GreetingSection = React.memo(function GreetingSection({
@@ -29,10 +42,13 @@ export const GreetingSection = React.memo(function GreetingSection({
   photoURL,
   totalUnreadBadge,
   onNotificationsOpen,
-  watchedEpisodes,
-  totalMovies,
-  progress,
-  todayEpisodes,
+  watchedEpisodes = 0,
+  totalMovies = 0,
+  progress = 0,
+  todayEpisodes = 0,
+  pods,
+  searchHint,
+  above,
 }: GreetingSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -45,30 +61,37 @@ export const GreetingSection = React.memo(function GreetingSection({
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 
   // Daten-Pods im Deck: einheitliches Glas statt vierfarbiger Chips.
-  const statPods = useMemo(
-    () => [
-      { key: 'eps', value: watchedEpisodes, label: t('Episoden'), to: '/stats', highlight: false },
-      {
-        key: 'movies',
-        value: totalMovies,
-        label: t('Filme'),
-        to: '/ratings?tab=movies',
-        highlight: false,
-      },
-      { key: 'active', value: `${progress}%`, label: t('Aktiv'), to: '/stats', highlight: false },
-      ...(todayEpisodes > 0
-        ? [
-            {
-              key: 'today',
-              value: todayEpisodes,
-              label: t('Heute'),
-              to: '/calendar',
-              highlight: true,
-            },
-          ]
-        : []),
-    ],
-    [watchedEpisodes, totalMovies, progress, todayEpisodes]
+  const statPods = useMemo<GreetingPod[]>(
+    () =>
+      pods ?? [
+        {
+          key: 'eps',
+          value: watchedEpisodes,
+          label: t('Episoden'),
+          to: '/stats',
+          highlight: false,
+        },
+        {
+          key: 'movies',
+          value: totalMovies,
+          label: t('Filme'),
+          to: '/ratings?tab=movies',
+          highlight: false,
+        },
+        { key: 'active', value: `${progress}%`, label: t('Aktiv'), to: '/stats', highlight: false },
+        ...(todayEpisodes > 0
+          ? [
+              {
+                key: 'today',
+                value: todayEpisodes,
+                label: t('Heute'),
+                to: '/calendar',
+                highlight: true,
+              },
+            ]
+          : []),
+      ],
+    [pods, watchedEpisodes, totalMovies, progress, todayEpisodes]
   );
 
   // Update greeting only when hour changes — paused while tab is hidden
@@ -191,6 +214,7 @@ export const GreetingSection = React.memo(function GreetingSection({
           marginBottom: isMobile ? '16px' : '24px',
         }}
       >
+        {above}
         <div
           className="liquid-glass"
           style={{
@@ -353,7 +377,7 @@ export const GreetingSection = React.memo(function GreetingSection({
                   textOverflow: 'ellipsis',
                 }}
               >
-                {t('Titel oder Schauspieler')}
+                {searchHint ?? t('Titel oder Schauspieler')}
               </span>
             </motion.button>
 

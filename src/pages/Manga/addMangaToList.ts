@@ -18,6 +18,8 @@ export interface AddMangaOptions {
   byVolume?: boolean;
   /** Bücher, aus denen der Manga wird — „Als Buch führen" holt sie zurück. */
   fromBooks?: Book[];
+  /** Lesestand beim Anlegen (Onboarding). „Gelesen" ohne Datum, wie „Früher gelesen" bei Büchern. */
+  status?: 'reading' | 'completed' | 'planned';
 }
 
 export async function addMangaToList(
@@ -67,6 +69,13 @@ export async function addMangaToList(
   }
   if (options.fromBooks?.length) {
     manga.fromBooks = Object.fromEntries(options.fromBooks.map((book) => [book.id, book]));
+  }
+  if (options.status === 'reading') {
+    manga.readStatus = 'reading';
+    manga.startedAt = new Date().toISOString();
+  } else if (options.status === 'completed') {
+    manga.readStatus = 'completed';
+    if (result.chapters) manga.currentChapter = result.chapters;
   }
 
   // Fuer laufende und Hiatus-Manga MangaUpdates abfragen — AniList's chapters-

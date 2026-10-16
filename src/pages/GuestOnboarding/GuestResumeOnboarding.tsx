@@ -11,9 +11,16 @@ import {
   clearGuestPicks,
   getGuestPet,
   getGuestPicks,
+  getGuestReading,
   getGuestSubscriptions,
   type GuestPick,
 } from '../../services/account/guestOnboarding';
+import { applyReadingPicks } from '../Onboarding/applyReadingPicks';
+import { bookGenresFor } from '../Onboarding/hooks/useReadingPicks';
+import { setAppFocus } from '../../services/settings/appFocus';
+import { setNavSlots } from '../../services/settings/navConfig';
+import { READER_NAV_SLOTS } from '../../config/navItems';
+import { setFavoriteBookGenres } from '../../services/books/bookService';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { WatchStatusSheet } from '../Onboarding/components/WatchStatusSheet';
 import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
@@ -54,6 +61,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
   // Auswahl einmalig einlesen — der Store wird am Ende geleert.
   const [data] = useState(() => ({
     picks: getGuestPicks(),
+    reading: getGuestReading(),
     subscriptions: getGuestSubscriptions(),
     pet: getGuestPet(),
   }));
@@ -119,7 +127,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
     setPhase('applying');
     setProgress(0);
 
-    const { picks, subscriptions, pet } = data;
+    const { picks, reading, subscriptions, pet } = data;
 
     let unameMissing = false;
     try {
@@ -139,7 +147,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
       /* best-effort — im Zweifel nicht blockieren */
     }
 
-    const total = Math.max(picks.length + 2, 1);
+    const total = Math.max(picks.length + reading.picks.length + 2, 1);
     let done = 0;
     const tick = () => {
       done++;
@@ -149,6 +157,12 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
     // wirklich gelandet ist, statt mit leerem Konto abzuschließen.
     let addedOk = 0;
     try {
+      const focus = reading.focus ?? 'watch';
+      await setAppFocus(uid, focus).catch(() => {});
+      if (focus === 'read') setNavSlots(uid, READER_NAV_SLOTS);
+      const bookGenres = focus === 'watch' ? [] : bookGenresFor(reading.genres);
+      if (bookGenres.length) void setFavoriteBookGenres(uid, bookGenres).catch(() => {});
+
       // Was schon im Konto liegt (abgebrochener erster Anlauf), nicht erneut
       // ans Backend schicken: /add antwortet darauf mit 400 und die Requests
       // fressen das 30/min-Limit auf.
@@ -176,6 +190,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
         tick();
       });
       if (todo.length > 0) await refetchCatalog();
+      if (reading.picks.length > 0) addedOk += await applyReadingPicks(uid, reading.picks, tick);
 
       if (subscriptions.length > 0) {
         const cfg: Record<string, { active: boolean }> = {};
@@ -197,7 +212,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
       console.error('[guest-resume] apply error', e);
     }
 
-    if (picks.length > 0 && addedOk === 0) {
+    if (picks.length + reading.picks.length > 0 && addedOk === 0) {
       setPhase('failed');
       return;
     }

@@ -7,7 +7,7 @@ import { normalizeProviderName } from '../../../lib/provider/providerName';
 import { watchRegion } from '../../../services/settings/region';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { TableOfContents } from '../components/TableOfContents';
-import { ACT_COUNT } from '../data/acts';
+import { useActs } from '../data/acts';
 import { t } from '../../../services/i18n';
 
 interface Props {
@@ -35,6 +35,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
   onBack,
   hideProgram = false,
 }) => {
+  const actCount = useActs().length;
   // Anbieter folgen der Streaming-Region: DE = kuratierte Liste, sonst die
   // populären Dienste des Landes von TMDB.
   const [regionTiles, setRegionTiles] = useState<ProviderTile[] | null>(null);
@@ -168,7 +169,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                     {t('Programm')}
                   </span>
                   <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                    {t('{n} Akte', { n: ACT_COUNT })}
+                    {t('{n} Akte', { n: actCount })}
                   </span>
                 </div>
                 <TableOfContents currentStep="subscriptions" variant="horizontal" delay={0.4} />

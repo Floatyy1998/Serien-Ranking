@@ -1,10 +1,8 @@
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
-import Campaign from '@mui/icons-material/Campaign';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { showToast } from '../../lib/interaction/toast';
 import { SectionHeader } from '../../components/ui';
@@ -44,14 +42,15 @@ import { usePetEnabled } from '../../hooks/pet/usePetEnabled';
 import { useRewatchHandler } from './hooks/useRewatchHandler';
 import { useUnifiedNotifications } from './hooks/useUnifiedNotifications';
 import { GreetingSection } from './sections/GreetingSection';
+import { AdminMessageBanner } from './cards/AdminMessageBanner';
+import { useGreetingIdentity } from './hooks/useGreetingIdentity';
+import { FocusSuggestionCard } from './cards/FocusSuggestionCard';
 import { PlayTestBanner } from './cards/PlayTestBanner';
 import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { NewOnSubscriptionsSection } from './sections/NewOnSubscriptionsSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
-import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
-import { onValue } from '../../services/db/subscribeValue';
 
 // „Für dich"-Karten, die nur mit eingeschaltetem Pet Sinn ergeben.
 const PET_FOR_YOU_CARDS = new Set(['daily-spin', 'milestone-box']);
@@ -62,26 +61,7 @@ export const HomePage: React.FC = () => {
   const user = authContext?.user ?? null;
 
   // All hooks must be called unconditionally (before any return)
-  const [dbDisplayName, setDbDisplayName] = useState<string | null>(null);
-  const [dbPhotoURL, setDbPhotoURL] = useState<string | null>(null);
-  // Reaktiv statt Einmal-Lesung: nach einem Upload aktualisiert sich der Avatar sofort.
-  const ownPhotoURL = useOwnPhotoURL(dbPhotoURL || user?.photoURL);
-
-  useEffect(() => {
-    if (user) {
-      dbGet<string>(paths.displayName(user.uid))
-        .then((name) => {
-          if (name) setDbDisplayName(name);
-        })
-        .catch(() => {}); // bewusst still: Begrüßung fällt auf den Auth-Displaynamen zurück
-      // DB-Profilbild hat Vorrang — Auth-photoURL kann das Google-/Apple-Foto sein
-      dbGet<string>(paths.photoURL(user.uid))
-        .then((url) => {
-          if (url) setDbPhotoURL(url);
-        })
-        .catch(() => {});
-    }
-  }, [user]);
+  const identity = useGreetingIdentity(user);
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -191,15 +171,6 @@ export const HomePage: React.FC = () => {
   const deferredTrending = useDeferredValue(trending);
   const deferredTopRated = useDeferredValue(topRated);
   const deferredSeasonalItems = useDeferredValue(seasonal.items);
-
-  const [adminMessage, setAdminMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const ref = dbRef(`admin/userMessages/${user.uid}/text`);
-    onValue(ref, (snap) => setAdminMessage(snap.val() || null));
-    return () => ref.off('value');
-  }, [user]);
 
   // Early returns after all hooks
   if (!authContext || !user) {
@@ -416,66 +387,7 @@ export const HomePage: React.FC = () => {
     <div style={{ overflowY: 'auto', position: 'relative' }}>
       <WrappedNotification />
 
-      {adminMessage && (
-        <motion.div
-          className="home-top-banner"
-          initial={{ opacity: 0, y: -14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-          style={{
-            margin: '0 16px 16px',
-            padding: '16px 18px',
-            borderRadius: '16px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}2E 0%, ${currentTheme.primary}12 45%, ${currentTheme.background.surface} 100%)`,
-            border: `1.5px solid ${currentTheme.primary}66`,
-            boxShadow: `0 8px 32px ${currentTheme.primary}30, inset 0 1px 0 rgba(255,255,255,0.08)`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-          }}
-        >
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: '12px',
-              background: `${currentTheme.primary}26`,
-              border: `1px solid ${currentTheme.primary}55`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Campaign style={{ color: currentTheme.primary, fontSize: 24 }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: currentTheme.primary,
-                marginBottom: '3px',
-              }}
-            >
-              {t('Nachricht vom TV-Rank Team')}
-            </div>
-            <div
-              style={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: currentTheme.text.secondary,
-                lineHeight: 1.45,
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {adminMessage}
-            </div>
-          </div>
-        </motion.div>
-      )}
+      <AdminMessageBanner />
 
       {/* Unified Series-Notification Hub — Tab-Bar + Mini-Mode + alle Kategorien */}
       <SeriesNotificationHub
@@ -504,8 +416,8 @@ export const HomePage: React.FC = () => {
       <PlayTestBanner />
 
       <GreetingSection
-        displayName={dbDisplayName || user.displayName || undefined}
-        photoURL={ownPhotoURL || undefined}
+        displayName={identity.displayName}
+        photoURL={identity.photoURL}
         totalUnreadBadge={notifs.totalUnreadBadge}
         onNotificationsOpen={() => setShowNotifications(true)}
         watchedEpisodes={stats.watchedEpisodes}
@@ -513,6 +425,8 @@ export const HomePage: React.FC = () => {
         progress={stats.progress}
         todayEpisodes={stats.todayEpisodes}
       />
+
+      <FocusSuggestionCard />
 
       <AnimatePresence initial={false}>
         {config.visibleSections.map((sectionId) => {

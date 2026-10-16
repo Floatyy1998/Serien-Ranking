@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ACTS, type ActStep } from '../data/acts';
+import { useActs, type ActStep } from '../data/acts';
 import { t } from '../../../services/i18n';
 
 interface Props {
@@ -14,7 +14,8 @@ export const TableOfContents: React.FC<Props> = ({
   variant = 'responsive',
   delay = 0,
 }) => {
-  const currentIdx = ACTS.findIndex((a) => a.key === currentStep);
+  const acts = useActs();
+  const currentIdx = acts.findIndex((a) => a.key === currentStep);
 
   return (
     <motion.ol
@@ -23,7 +24,7 @@ export const TableOfContents: React.FC<Props> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
     >
-      {ACTS.map((a, i) => {
+      {acts.map((a, i) => {
         const state = i < currentIdx ? 'done' : a.key === currentStep ? 'active' : 'next';
         return (
           <li key={a.key} className={`ob-toc__row ob-toc__row--${state}`}>

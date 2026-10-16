@@ -16,8 +16,10 @@ const dict: Record<string, string> = {
   Anmelden: 'Sign in',
   'Schon ein Konto? Anmelden': 'Already have an account? Sign in',
   überspringen: 'skip',
-  'Serien · Filme · Manga': 'Series · Movies · Manga',
-  'Alles, was du schaust.': 'Everything you watch.',
+  'Serien · Filme · Manga · Bücher': 'Shows · Movies · Manga · Books',
+  'Alles, was du schaust und liest.': 'Everything you watch and read.',
+  'Manga und Bücher mit Lesestand und neuen Kapiteln.':
+    'Manga and books with reading progress and new chapters.',
   Begleiter: 'Companion',
   Wrapped: 'Wrapped',
   Streaming: 'Streaming',

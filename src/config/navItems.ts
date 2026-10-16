@@ -4,7 +4,7 @@ export interface NavSlotOption {
   id: string;
   path: string;
   label: string;
-  /** Weitere Seiten, auf denen der Slot als aktiv gilt (Lesen: Manga, Bücher, Alle). */
+  /** Weitere Seiten, auf denen der Slot als aktiv gilt (Lesen: Manga, Bücher, Alle; für Leser /watch). */
   aliases?: string[];
 }
 
@@ -12,7 +12,7 @@ export const NAV_SLOT_OPTIONS: NavSlotOption[] = [
   { id: 'watchnext', path: '/watchlist', label: 'Weiter' },
   { id: 'calendar', path: '/calendar', label: 'Kalender' },
   { id: 'ratings', path: '/ratings', label: 'Bewertungen' },
-  { id: 'manga', path: '/manga', label: 'Lesen', aliases: ['/books', '/reading'] },
+  { id: 'manga', path: '/manga', label: 'Lesen', aliases: ['/books', '/reading', '/watch'] },
   { id: 'discover', path: '/discover', label: 'Entdecken' },
   { id: 'stats', path: '/stats', label: 'Statistiken' },
   { id: 'leaderboard', path: '/leaderboard', label: 'Rangliste' },
@@ -47,5 +47,12 @@ export const MAIN_TAB_PATHS: ReadonlySet<string> = new Set([
 ]);
 
 export const DEFAULT_NAV_SLOTS = ['watchnext', 'calendar', 'ratings', 'manga'];
+
+/** Bei „Manga & Bücher" ist Home die Lese-Seite — der Lesen-Platz führt dann zur Serien-Startseite. */
+export const READER_WATCH_PATH = '/watch';
+export const READING_PATHS = ['/reading', '/manga', '/books'];
+
+/** Dock für den Schwerpunkt „Manga & Bücher" — ohne Watchlist und Kalender. */
+export const READER_NAV_SLOTS = ['manga', 'ratings', 'activity', 'badges'];
 
 export const MAX_NAV_SLOTS = 4;

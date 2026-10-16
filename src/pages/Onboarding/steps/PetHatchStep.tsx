@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { EvolvingPixelPet } from '../../../components/pet';
 import { t } from '../../../services/i18n';
+import { useActNum } from '../data/acts';
 import type { Pet } from '../../../types/pet.types';
 import { PET_COLORS } from '../../../types/pet.types';
 
@@ -62,6 +63,7 @@ export const PetHatchStep: React.FC<Props> = ({
   onSkip,
   onBack,
 }) => {
+  const petNum = useActNum('pet');
   const heroPet = useMemo(() => previewPet(type, name), [type, name]);
   const nameEmpty = name.trim().length === 0;
   const heroHex = PET_COLORS[typeColorKey(type)] ?? PET_COLORS.blau;
@@ -90,7 +92,7 @@ export const PetHatchStep: React.FC<Props> = ({
           {t('← zurück')}
         </button>
         <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-          05 — {t('dein Begleiter')}
+          {petNum} — {t('dein Begleiter')}
         </span>
       </div>
 

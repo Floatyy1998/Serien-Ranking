@@ -152,7 +152,7 @@ const dict: Record<string, string> = {
   überspringen: 'passer',
   'Wir bereiten': 'On prépare',
   'deine Bühne vor.': 'ta scène.',
-  'Kapitel 06 — Premiere': 'Chapitre 06 — Première',
+  'Kapitel {n} — Premiere': 'Chapitre {n} — Première',
   Vorhang: 'Lever',
   'auf.': 'de rideau.',
   'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.':
@@ -211,7 +211,37 @@ const dict: Record<string, string> = {
   'Staffel 2 · Folge 5': 'Saison 2 · Épisode 5',
   'Staffel 1 · Folge 8': 'Saison 1 · Épisode 8',
   'Staffel 4 · Folge 12': 'Saison 4 · Épisode 12',
-  '06 — Premiere': '06 — Première',
+  '{n} — Premiere': '{n} — Première',
+  '00 — Auftakt': '00 — Prélude',
+  Auftakt: 'Prélude',
+  'Wofür bist': 'Qu’est-ce qui',
+  'du hier?': 't’amène ici ?',
+  'Danach richtet sich deine Startseite — umstellen kannst du jederzeit in den Einstellungen.':
+    'Ton accueil s’adapte à ce choix — tu peux le changer à tout moment dans les paramètres.',
+  'Folgen abhaken, Kalender, deine Streaming-Abos':
+    'Coche tes épisodes, calendrier, tes abonnements streaming',
+  'Lesestand, neue Kapitel, dein Bücherregal':
+    'Progression de lecture, nouveaux chapitres, ta bibliothèque',
+  'Schauen und Lesen an einem Ort': 'Regarder et lire au même endroit',
+  'wähle eins': 'choisis-en un',
+  'lese ich gerade': 'en cours',
+  'schon gelesen': 'déjà lu',
+  'will ich lesen': 'à lire',
+  'Lesestand ändern': 'Changer l’état de lecture',
+  lesen: 'lecture',
+  'Liest du auch?': 'Tu lis aussi ?',
+  'Welche Manga und Bücher gehören in dein Regal? Tipp sie an – den Lesestand stellst du darunter ein.':
+    'Quels mangas et livres ont leur place dans ta bibliothèque ? Touche-les – règle ta progression juste en dessous.',
+  'Manga und Bücher kannst du gleich mit anlegen – oder einfach weiter.':
+    'Ajoute des mangas et des livres dès maintenant – ou passe directement à la suite.',
+  'buch suchen …': 'chercher un livre …',
+  'manga suchen …': 'chercher un manga …',
+  'die regale werden durchsucht …': 'on fouille les étagères …',
+  'ich lese nicht – weiter': 'je ne lis pas – suivant',
+  'später möglich': 'possible plus tard',
+  'Was liest': 'Qu’aimes-tu',
+  'du gern?': 'lire ?',
+  Lesestoff: 'Livres & mangas',
 };
 
 export default dict;

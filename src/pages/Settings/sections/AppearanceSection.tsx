@@ -1,4 +1,11 @@
-import { ChevronRight, FormatSize, Palette, ViewQuilt, VisibilityOff } from '@mui/icons-material';
+import {
+  ChevronRight,
+  FormatSize,
+  Palette,
+  ViewQuilt,
+  VisibilityOff,
+  Weekend,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -17,6 +24,9 @@ import {
   type SpoilerLevel,
 } from '../../../services/settings/spoilerMode';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
+import { useAppFocus } from '../../../hooks/ui/useAppFocus';
+import { setAppFocus, type AppFocus } from '../../../services/settings/appFocus';
+import { showToast } from '../../../lib/interaction/toast';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
   { scale: DISPLAY_SCALES[0], label: t('Klein'), a: 13 },
@@ -93,6 +103,85 @@ const DisplaySizeControl = memo(() => {
 });
 
 DisplaySizeControl.displayName = 'DisplaySizeControl';
+
+const focusOptions = (): { focus: AppFocus; label: string; hint: string }[] => [
+  { focus: 'watch', label: t('Serien & Filme'), hint: t('Startseite für Serien und Filme') },
+  { focus: 'read', label: t('Manga & Bücher'), hint: t('Startseite für Manga und Bücher') },
+  { focus: 'both', label: t('Beides'), hint: t('Serien-Startseite, Lesen über das Dock') },
+];
+
+/** Schwerpunkt der App — schaltet die Startseite zwischen Schauen und Lesen um. */
+const FocusControl = memo(() => {
+  const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const { focus } = useAppFocus();
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
+  const options = focusOptions();
+  const current = options.find((o) => o.focus === focus);
+
+  const choose = (next: AppFocus) => {
+    if (!user || next === focus) return;
+    setAppFocus(user.uid, next).catch(() =>
+      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.16 }}
+      className="settings-nav-btn settings-size-card"
+      style={{ color: currentTheme.text.primary }}
+    >
+      <div className="settings-size-head">
+        <div
+          className="settings-nav-btn-icon"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.primary})`,
+          }}
+        >
+          <Weekend style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+        </div>
+        <div className="settings-nav-btn-text">
+          <h2 className="settings-nav-btn-title">{t('Schwerpunkt')}</h2>
+          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+            {current?.hint}
+          </p>
+        </div>
+      </div>
+      <div className="settings-size-seg">
+        {options.map((o) => {
+          const active = focus === o.focus;
+          return (
+            <button
+              key={o.focus}
+              type="button"
+              onClick={() => choose(o.focus)}
+              aria-pressed={active}
+              className={active ? 'is-active' : ''}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                      color: onPrimary,
+                      borderColor: 'transparent',
+                    }
+                  : { color: currentTheme.text.muted }
+              }
+            >
+              <span className="sz-lbl" style={{ fontSize: 13 }}>
+                {o.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+});
+
+FocusControl.displayName = 'FocusControl';
 
 const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = [
   { level: 0, label: t('Aus'), hint: t('Alles sichtbar') },
@@ -200,6 +289,8 @@ export const AppearanceSection = memo(
           </div>
           <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
         </motion.button>
+
+        <FocusControl />
 
         {/* Homepage Layout */}
         <motion.button

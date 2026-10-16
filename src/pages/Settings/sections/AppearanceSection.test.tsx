@@ -22,6 +22,7 @@ vi.mock('@mui/icons-material', () => ({
   ViewQuilt: () => null,
   FormatSize: () => null,
   VisibilityOff: () => null,
+  Weekend: () => null,
 }));
 
 vi.mock('../../../contexts/ThemeContext', () => {
@@ -45,6 +46,14 @@ describe('AppearanceSection', () => {
     render(<AppearanceSection onNavigateTheme={vi.fn()} onNavigateLayout={vi.fn()} />);
     expect(screen.getByText('Design & Themes')).toBeInTheDocument();
     expect(screen.getByText('Homepage Layout')).toBeInTheDocument();
+  });
+
+  it('bietet den Schwerpunkt mit allen drei Möglichkeiten an', () => {
+    render(<AppearanceSection onNavigateTheme={vi.fn()} onNavigateLayout={vi.fn()} />);
+    expect(screen.getByText('Schwerpunkt')).toBeInTheDocument();
+    expect(screen.getByText('Serien & Filme')).toBeInTheDocument();
+    expect(screen.getByText('Manga & Bücher')).toBeInTheDocument();
+    expect(screen.getByText('Beides')).toBeInTheDocument();
   });
 
   it('calls onNavigateTheme when the theme button is clicked', () => {

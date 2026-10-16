@@ -11,6 +11,9 @@ import {
 } from '../../lib/interaction/pageTour';
 import { loadSeenTours, readSeenTours, writeSeenTours } from '../../services/settings/pageTour';
 import { PAGE_TOURS } from './data/pageTours';
+import { useAppFocus } from '../../hooks/ui/useAppFocus';
+import { readsFirst } from '../../services/settings/appFocus';
+import { READER_WATCH_PATH } from '../../config/navItems';
 import { PageTourSheet } from './PageTourSheet';
 
 /**
@@ -27,8 +30,17 @@ import { PageTourSheet } from './PageTourSheet';
 const OPEN_DELAY_MS = 1200;
 
 export const PageTourHost = () => {
-  const { pathname } = useLocation();
+  const { pathname: route } = useLocation();
   const { user } = useAuth() || {};
+  // Bei „Manga & Bücher" ist / die Lese-Seite und /watch die Serien-Startseite.
+  const reader = readsFirst(useAppFocus().focus);
+  const pathname = !reader
+    ? route
+    : route === '/'
+      ? '/reading'
+      : route === READER_WATCH_PATH
+        ? '/'
+        : route;
   const [tour, setTour] = useState<PageTour | null>(null);
   const openRef = useRef(false);
   const seenRef = useRef<SeenTours>(readSeenTours());

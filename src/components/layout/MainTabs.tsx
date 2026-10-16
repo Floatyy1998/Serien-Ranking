@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
+import { MAIN_TAB_PATHS, NAV_SLOT_PATHS, READER_WATCH_PATH } from '../../config/navItems';
 import { useNavSlots } from '../../hooks/ui/useNavConfig';
 import { resolveReadingPath } from '../../services/settings/readingTab';
 import {
@@ -28,7 +28,9 @@ import {
   StatsPage,
   SubscriptionsPage,
 } from '../../app/lazyRoutes';
-import { HomePage } from '../../pages/HomePage';
+import { HomePage, HomeRoute } from '../../pages/HomePage';
+import { useAppFocus } from '../../hooks/ui/useAppFocus';
+import { readsFirst } from '../../services/settings/appFocus';
 import { ProfilePage } from '../../pages/Profile';
 import { RatingsPage } from '../../pages/Ratings';
 import { SearchPage } from '../../pages/Search';
@@ -36,7 +38,8 @@ import { WatchNextPage } from '../../pages/WatchNext';
 
 // Keep-Alive: besuchte Haupt-Tabs bleiben gemountet (display:none statt Unmount)
 const TAB_COMPONENTS: Record<string, ComponentType> = {
-  '/': HomePage,
+  '/': HomeRoute,
+  '/watch': HomePage,
   '/profile': ProfilePage,
   '/search': SearchPage,
   '/watchlist': WatchNextPage,
@@ -69,6 +72,7 @@ TabHost.displayName = 'TabHost';
 export const MainTabs = () => {
   const { pathname } = useLocation();
   const navSlots = useNavSlots();
+  const reader = readsFirst(useAppFocus().focus);
   const isTab = MAIN_TAB_PATHS.has(pathname);
 
   const [active, setActive] = useState<string | null>(isTab ? pathname : null);
@@ -81,7 +85,7 @@ export const MainTabs = () => {
   useEffect(() => {
     if (!active) return;
     const slotPaths = navSlots.map((id) =>
-      id === 'manga' ? resolveReadingPath() : NAV_SLOT_PATHS[id]
+      id === 'manga' ? (reader ? READER_WATCH_PATH : resolveReadingPath()) : NAV_SLOT_PATHS[id]
     );
     const premountOrder = ['/', ...slotPaths, '/profile', '/search'].filter(
       (p) => p in TAB_COMPONENTS
@@ -107,7 +111,7 @@ export const MainTabs = () => {
       cancelled = true;
       clearTimeout(id);
     };
-  }, [active, mounted, navSlots]);
+  }, [active, mounted, navSlots, reader]);
 
   const scrollPositions = useRef<Record<string, number>>({});
 

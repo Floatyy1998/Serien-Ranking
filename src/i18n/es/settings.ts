@@ -296,6 +296,13 @@ const dict: Record<string, string> = {
     'Corazones flotantes, pétalos de rosa y la flecha de Cupido en toda la app',
   'Bis 14. Februar': 'Hasta el 14 de febrero',
   'Alles Liebe zum Valentinstag': 'Feliz San Valentín',
+  Schwerpunkt: 'Enfoque',
+  'Serien & Filme': 'Series y películas',
+  'Manga & Bücher': 'Manga y libros',
+  Beides: 'Ambos',
+  'Startseite für Serien und Filme': 'Inicio centrado en series y películas',
+  'Startseite für Manga und Bücher': 'Inicio centrado en manga y libros',
+  'Serien-Startseite, Lesen über das Dock': 'Series en el inicio, lectura en el dock',
 };
 
 export default dict;

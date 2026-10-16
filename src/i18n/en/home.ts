@@ -1021,6 +1021,15 @@ const dict: Record<string, string> = {
   'Du darfst keine Angst haben, größer zu träumen':
     'You mustn’t be afraid to dream a little bigger',
   'Bitte keine Albträume': 'No nightmares, please',
+  'Bücher, Manga und mehr': 'Books, manga and more',
+  'Was liest du gerade?': 'What are you reading?',
+  'Leg dein erstes Buch oder deinen ersten Manga an – hier siehst du dann deinen Lesestand.':
+    'Add your first book or manga – your reading progress will show up here.',
+  'Du liest mehr, als du schaust': 'You read more than you watch',
+  '{read} Manga und Bücher, {watch} Serien und Filme. Soll deine Startseite das Lesen zeigen? Umstellen kannst du jederzeit in den Einstellungen.':
+    '{read} manga and books, {watch} shows and movies. Want your home screen to focus on reading? You can switch any time in Settings.',
+  'Nein, so lassen': 'No, keep it',
+  'Lese-Startseite': 'Reading home',
 };
 
 export default dict;

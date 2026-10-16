@@ -226,7 +226,7 @@ const SHOWS: { id: number; kind: 'tv' | 'movie'; title: string }[] = [
   { id: 550, kind: 'movie', title: 'Fight Club' },
 ];
 
-const BooksPreviewShell = ({
+export const BooksPreviewShell = ({
   children,
   empty,
   extra,

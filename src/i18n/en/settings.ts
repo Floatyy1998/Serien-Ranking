@@ -331,6 +331,13 @@ const settings: Record<string, string> = {
     "Floating hearts, rose petals and Cupid's arrow across the whole app",
   'Bis 14. Februar': 'Until February 14',
   'Alles Liebe zum Valentinstag': "Happy Valentine's Day",
+  Schwerpunkt: 'Focus',
+  'Serien & Filme': 'Shows & movies',
+  'Manga & Bücher': 'Manga & books',
+  Beides: 'Both',
+  'Startseite für Serien und Filme': 'Home built around shows and movies',
+  'Startseite für Manga und Bücher': 'Home built around manga and books',
+  'Serien-Startseite, Lesen über das Dock': 'Shows on home, reading in the dock',
 };
 
 export default settings;
