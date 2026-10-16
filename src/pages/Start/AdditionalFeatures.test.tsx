@@ -6,7 +6,7 @@ import { AdditionalFeatures } from './AdditionalFeatures';
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
-    ['Speed', 'CloudSync', 'Notifications', 'Analytics'].map((n) => [n, stub])
+    ['Devices', 'NotificationsActive', 'Public', 'Translate'].map((n) => [n, stub])
   );
 });
 
@@ -22,12 +22,12 @@ describe('AdditionalFeatures', () => {
 
   it('renders all highlight titles and descriptions', () => {
     render(<AdditionalFeatures />);
-    expect(screen.getByText('Blitzschnell')).toBeInTheDocument();
-    expect(screen.getByText('Cloud-Sync')).toBeInTheDocument();
-    expect(screen.getByText('Smart Notifications')).toBeInTheDocument();
-    expect(screen.getByText('Deep Analytics')).toBeInTheDocument();
+    expect(screen.getByText('Überall dabei')).toBeInTheDocument();
+    expect(screen.getByText('Push zur richtigen Zeit')).toBeInTheDocument();
+    expect(screen.getByText('Für dein Land')).toBeInTheDocument();
+    expect(screen.getByText('In deiner Sprache')).toBeInTheDocument();
     expect(
-      screen.getByText('Optimierte Performance für ein flüssiges Erlebnis')
+      screen.getByText('Neue Folgen, neue Kapitel und Nachrichten von Freunden.')
     ).toBeInTheDocument();
   });
 });

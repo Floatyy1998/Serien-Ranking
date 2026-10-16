@@ -18,7 +18,9 @@ describe('FooterCTA', () => {
     render(<FooterCTA />);
     expect(screen.getByText('Bereit loszulegen?')).toBeInTheDocument();
     expect(
-      screen.getByText('Starte noch heute und entdecke deine neue Lieblingsserie')
+      screen.getByText(
+        'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.'
+      )
     ).toBeInTheDocument();
   });
 

@@ -111,6 +111,64 @@ const dict: Record<string, string> = {
   'Wieder einblenden?': 'La réafficher ?',
   'Serie wird wieder angezeigt': 'La série est de nouveau affichée',
   '„{title}" wird wieder angezeigt': '« {title} » est de nouveau affichée',
+  'Serien, Filme, Manga, Bücher …': 'Séries, films, mangas, livres …',
+  'Gerade dabei': 'En cours',
+  'Kapitel {n}': 'Chapitre {n}',
+  'Serien · Filme · Anime · Manga · Bücher': 'Séries · Films · Anime · Mangas · Livres',
+  'Ein Ort für alles, was du schaust und liest.':
+    'Un seul endroit pour tout ce que tu regardes et lis.',
+  'Hak Folgen ab, verfolge neue Kapitel, führ dein Bücherregal – und sieh, was deine Freunde gerade schauen und lesen.':
+    'Coche tes épisodes, suis les nouveaux chapitres, tiens ta bibliothèque – et vois ce que tes amis regardent et lisent.',
+  'Ob Staffelfinale oder neues Kapitel – TV-Rank merkt sich, wo du stehst.':
+    'Fin de saison ou nouveau chapitre – TV-Rank retient où tu en es.',
+  Schauen: 'Regarder',
+  'Serien, Filme und Anime': 'Séries, films et anime',
+  'Folgen abhaken – einzeln, staffelweise oder per Wisch':
+    'Coche tes épisodes – un par un, par saison ou d’un simple glissement',
+  'Kalender mit allem, was diese Woche läuft': 'Un calendrier avec tout ce qui sort cette semaine',
+  'Wo es läuft: Streaming-Anbieter für dein Land': 'Où regarder : les plateformes de ton pays',
+  'Anime mit Filler- und Recap-Markierung': 'Anime avec les épisodes filler et récap signalés',
+  'Manga, Manhwa und Bücher': 'Mangas, manhwas et livres',
+  'Neue Kapitel im Blick – nach Kapiteln oder Bänden':
+    'Les nouveaux chapitres en vue – par chapitre ou par tome',
+  'Bücher mit Seiten, Lesedatum und Jahresziel':
+    'Livres avec pages, dates de lecture et objectif annuel',
+  'ISBN-Scanner für Bücher und Manga-Bände': 'Scanner ISBN pour livres et tomes de manga',
+  'Bücher zu deinen Lieblingsserien': 'Les livres derrière tes séries préférées',
+  'Was TV-Rank alles kann': 'Tout ce que TV-Rank sait faire',
+  'Jede Folge im Blick – neue Staffeln, Kalender und Countdowns.':
+    'Chaque épisode en vue – nouvelles saisons, calendrier et comptes à rebours.',
+  'Watchlist, Bewertungen und wo der Film gerade läuft.':
+    'Watchlist, notes et où le film est disponible en ce moment.',
+  'Die aktuelle Saison mit deutschen Anbietern, Filler und Recaps markiert.':
+    'La saison en cours avec les plateformes locales, filler et récaps signalés.',
+  'Manga, Manhwa und Manhua – nach Kapiteln oder Bänden, mit neuen Releases.':
+    'Mangas, manhwas et manhuas – par chapitre ou par tome, avec les nouvelles sorties.',
+  'Dein Regal mit Seiten, Lesejahr, Wunschliste und ISBN-Scanner.':
+    'Ta bibliothèque avec pages, année de lecture, liste d’envies et scanner ISBN.',
+  'Freunde & Chat': 'Amis & chat',
+  'Sieh, was Freunde schauen und lesen, empfiehl Titel und schreib im Chat.':
+    'Vois ce que tes amis regardent et lisent, recommande des titres et discute.',
+  'Badges & Pets': 'Badges & compagnons',
+  'Sammle Badges und zieh dein Pet groß – es levelt mit jeder Folge.':
+    'Collectionne des badges et élève ton compagnon – il gagne un niveau à chaque épisode.',
+  'Wrapped & Statistiken': 'Wrapped & statistiques',
+  'Dein Jahr in Zahlen – Folgen, Filme, Kapitel und Seiten.':
+    'Ton année en chiffres – épisodes, films, chapitres et pages.',
+  'Überall dabei': 'Partout avec toi',
+  'Web, Android, iPhone und Windows – alles synchron.':
+    'Web, Android, iPhone et Windows – tout est synchronisé.',
+  'Push zur richtigen Zeit': 'Des notifs au bon moment',
+  'Neue Folgen, neue Kapitel und Nachrichten von Freunden.':
+    'Nouveaux épisodes, nouveaux chapitres et messages de tes amis.',
+  'Für dein Land': 'Pour ton pays',
+  'Welche Anbieter was im Programm haben – passend zu deiner Region.':
+    'Quelle plateforme propose quoi – selon ta région.',
+  'In deiner Sprache': 'Dans ta langue',
+  'Deutsch, Englisch, Spanisch, Französisch und Portugiesisch.':
+    'Allemand, anglais, espagnol, français et portugais.',
+  'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.':
+    'Commence dès aujourd’hui – avec ta série préférée, ton manga ou le livre sur ta table de chevet.',
 };
 
 export default dict;

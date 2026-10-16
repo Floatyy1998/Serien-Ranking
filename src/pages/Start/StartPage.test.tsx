@@ -7,6 +7,15 @@ vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
     [
+      'Android',
+      'Apple',
+      'Chat',
+      'Devices',
+      'Insights',
+      'LiveTv',
+      'LocalLibrary',
+      'Public',
+      'Translate',
       'PlayArrow',
       'Whatshot',
       'AccessTime',
@@ -97,6 +106,11 @@ const firebaseMock = vi.hoisted(() => ({
 }));
 vi.mock('firebase/compat/app', () => firebaseMock);
 vi.mock('firebase/compat/database', () => ({}));
+vi.mock('./landingCovers', () => ({
+  getLandingCovers: () => null,
+  loadLandingCovers: () => new Promise(() => {}),
+}));
+vi.mock('../../components/ui/media/CoverWall', () => ({ CoverWall: () => null }));
 
 afterEach(() => {
   cleanup();
@@ -107,6 +121,7 @@ describe('StartPage', () => {
     render(<StartPage />);
     expect(screen.getByText('TV-RANK')).toBeInTheDocument();
     expect(screen.getByText('Alles was du brauchst')).toBeInTheDocument();
+    expect(screen.getByText('Schauen und Lesen an einem Ort')).toBeInTheDocument();
     expect(screen.getByText('Bereit loszulegen?')).toBeInTheDocument();
   });
 

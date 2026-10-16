@@ -1,4 +1,13 @@
-import { Star, TrendingUp, People, EmojiEvents, Movie, Tv, AutoStories } from '@mui/icons-material';
+import {
+  AutoStories,
+  Chat,
+  EmojiEvents,
+  Insights,
+  LocalLibrary,
+  Movie,
+  Tv,
+  Whatshot,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { FeatureCard } from './FeatureCard';
 import { t } from '../../services/i18n';
@@ -9,54 +18,58 @@ import { t } from '../../services/i18n';
 const FEATURES = [
   {
     icon: <Tv sx={{ fontSize: 24 }} />,
-    title: 'Serien-Tracking',
-    description:
-      'Verfolge jede Episode, markiere gesehene Folgen und verpasse nie wieder eine neue Staffel.',
+    title: 'Serien',
+    description: 'Jede Folge im Blick – neue Staffeln, Kalender und Countdowns.',
     delay: 0.1,
     color: '#ef6f8a',
   },
   {
     icon: <Movie sx={{ fontSize: 24 }} />,
-    title: 'Film-Bibliothek',
-    description: 'Organisiere deine Filmsammlung, bewerte Filme und entdecke neue Highlights.',
-    delay: 0.15,
+    title: 'Filme',
+    description: 'Watchlist, Bewertungen und wo der Film gerade läuft.',
+    delay: 0.14,
     color: '#e07a3a',
   },
   {
-    icon: <Star sx={{ fontSize: 24 }} />,
-    title: 'Bewertungssystem',
-    description:
-      'Bewerte nach verschiedenen Kategorien und behalte den Überblick über deine Favoriten.',
-    delay: 0.2,
+    icon: <Whatshot sx={{ fontSize: 24 }} />,
+    title: 'Anime',
+    description: 'Die aktuelle Saison mit deutschen Anbietern, Filler und Recaps markiert.',
+    delay: 0.18,
     color: '#f97316',
   },
   {
-    icon: <EmojiEvents sx={{ fontSize: 24 }} />,
-    title: 'Badges & Erfolge',
-    description: 'Sammle Badges für deine Aktivitäten und zeige deine Achievements.',
-    delay: 0.25,
-    color: '#ecc06a',
+    icon: <AutoStories sx={{ fontSize: 24 }} />,
+    title: 'Manga',
+    description: 'Manga, Manhwa und Manhua – nach Kapiteln oder Bänden, mit neuen Releases.',
+    delay: 0.22,
+    color: '#d9903a',
   },
   {
-    icon: <People sx={{ fontSize: 24 }} />,
-    title: 'Freunde-System',
-    description: 'Teile deine Listen mit Freunden und entdecke, was andere schauen.',
+    icon: <LocalLibrary sx={{ fontSize: 24 }} />,
+    title: 'Bücher',
+    description: 'Dein Regal mit Seiten, Lesejahr, Wunschliste und ISBN-Scanner.',
+    delay: 0.26,
+    color: '#f2a648',
+  },
+  {
+    icon: <Chat sx={{ fontSize: 24 }} />,
+    title: 'Freunde & Chat',
+    description: 'Sieh, was Freunde schauen und lesen, empfiehl Titel und schreib im Chat.',
     delay: 0.3,
     color: '#e8905a',
   },
   {
-    icon: <AutoStories sx={{ fontSize: 24 }} />,
-    title: 'Manga-Tracking',
-    description:
-      'Tracke Manga, Manhwa und Manhua. Kapitelfortschritt, Bewertungen und Release-Daten.',
-    delay: 0.35,
-    color: '#d9903a',
+    icon: <EmojiEvents sx={{ fontSize: 24 }} />,
+    title: 'Badges & Pets',
+    description: 'Sammle Badges und zieh dein Pet groß – es levelt mit jeder Folge.',
+    delay: 0.34,
+    color: '#ecc06a',
   },
   {
-    icon: <TrendingUp sx={{ fontSize: 24 }} />,
-    title: 'Statistiken',
-    description: 'Detaillierte Einblicke in deine Seh- und Lesegewohnheiten.',
-    delay: 0.4,
+    icon: <Insights sx={{ fontSize: 24 }} />,
+    title: 'Wrapped & Statistiken',
+    description: 'Dein Jahr in Zahlen – Folgen, Filme, Kapitel und Seiten.',
+    delay: 0.38,
     color: '#fb923c',
   },
 ] as const;
@@ -72,7 +85,7 @@ export const FeaturesGrid = () => (
         {t('Alles was du brauchst')}
       </h2>
       <p className="start-features-subheading" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-        {t('Features für das beste Tracking-Erlebnis')}
+        {t('Was TV-Rank alles kann')}
       </p>
     </motion.div>
 

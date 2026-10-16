@@ -1,5 +1,5 @@
 import { Paper } from '@mui/material';
-import { Speed, CloudSync, Notifications, Analytics } from '@mui/icons-material';
+import { Devices, NotificationsActive, Public, Translate } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { t } from '../../services/i18n';
@@ -16,27 +16,27 @@ interface HighlightItem {
 // currentTheme/Theme-Tokens umstellen.
 const HIGHLIGHTS: HighlightItem[] = [
   {
-    icon: Speed,
-    title: 'Blitzschnell',
-    desc: 'Optimierte Performance für ein flüssiges Erlebnis',
+    icon: Devices,
+    title: 'Überall dabei',
+    desc: 'Web, Android, iPhone und Windows – alles synchron.',
     color: '#ef6f8a',
   },
   {
-    icon: CloudSync,
-    title: 'Cloud-Sync',
-    desc: 'Deine Daten auf allen Geräten synchronisiert',
+    icon: NotificationsActive,
+    title: 'Push zur richtigen Zeit',
+    desc: 'Neue Folgen, neue Kapitel und Nachrichten von Freunden.',
     color: '#e07a3a',
   },
   {
-    icon: Notifications,
-    title: 'Smart Notifications',
-    desc: 'Benachrichtigungen für neue Episoden und Updates',
+    icon: Public,
+    title: 'Für dein Land',
+    desc: 'Welche Anbieter was im Programm haben – passend zu deiner Region.',
     color: '#f97316',
   },
   {
-    icon: Analytics,
-    title: 'Deep Analytics',
-    desc: 'Umfassende Einblicke in deine Seh- und Lesegewohnheiten',
+    icon: Translate,
+    title: 'In deiner Sprache',
+    desc: 'Deutsch, Englisch, Spanisch, Französisch und Portugiesisch.',
     color: '#ecc06a',
   },
 ];

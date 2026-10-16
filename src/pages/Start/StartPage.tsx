@@ -1,5 +1,6 @@
 import { Container } from '@mui/material';
 import { HeroSection } from './HeroSection';
+import { WatchReadShowcase } from './WatchReadShowcase';
 import { FeaturesGrid } from './FeaturesGrid';
 import { AdditionalFeatures } from './AdditionalFeatures';
 import { FooterCTA } from './FooterCTA';
@@ -20,6 +21,7 @@ export const StartPage = () => (
       sx={{ py: { xs: 6, sm: 8, md: 10 }, px: { xs: 2, sm: 4, md: 6 }, maxWidth: '2200px' }}
     >
       <HeroSection />
+      <WatchReadShowcase />
       <FeaturesGrid />
       <AdditionalFeatures />
       <FooterCTA />

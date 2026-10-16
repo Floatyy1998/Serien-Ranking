@@ -1,4 +1,7 @@
 import { memo, useEffect, useState } from 'react';
+import { coverAtSize } from '../../../lib/books/bookSearchMapping';
+import { discoverManga } from '../../../services/api/anilistService';
+import { fetchShelf } from '../../../services/api/bookDiscovery';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
 import './CoverWall.css';
 
@@ -7,12 +10,63 @@ interface Props {
   tvGenreIds?: number[];
   /** Anzahl Marquee-Reihen (3 = Onboarding-Bühne, 6 = volle Seiten-Pane). */
   rows?: number;
+  /** Fertige Bild-URLs (Manga-/Buchcover) statt TMDB-Postern. */
+  covers?: string[];
 }
+
+const imageUrl = (p: string) =>
+  p.startsWith('http') || p.startsWith('data:') ? p : `https://image.tmdb.org/t/p/w342${p}`;
 
 /** Schlanke TMDB-Listen-Response (nur `poster_path` wird gelesen). */
 type TmdbPosterResponse = { results?: Array<{ poster_path?: string | null }> };
 
+let readingCovers: Promise<string[][]> | null = null;
+
+/** Bekannte Manga und Buch-Bestseller für die gemischte Wand — einmal je Sitzung. */
+function loadReadingCovers(): Promise<string[][]> {
+  readingCovers ??= Promise.all([
+    discoverManga('popular', 1, 24)
+      .then(({ results }) => results.filter((m) => !m.isAdult).map((m) => m.coverImage.large))
+      .catch(() => [] as string[]),
+    Promise.all(
+      (['fantasy', 'thriller', 'romance'] as const).map((id) =>
+        fetchShelf(id, { limit: 8 }).catch(() => [])
+      )
+    ).then((shelves) =>
+      shelves
+        .flat()
+        .map((book) => coverAtSize(book.cover, 'M'))
+        .filter((cover): cover is string => !!cover)
+    ),
+  ]);
+  return readingCovers;
+}
+
+/** Jedes dritte Bild ein Manga- oder Buchcover, abwechselnd. */
+function mixCovers(posters: string[], [manga, books]: string[][]): string[] {
+  const reading: string[] = [];
+  for (let i = 0; i < Math.max(manga.length, books.length); i++) {
+    if (manga[i]) reading.push(manga[i]);
+    if (books[i]) reading.push(books[i]);
+  }
+  if (posters.length === 0) return reading.slice(0, 60);
+  const out: string[] = [];
+  posters.forEach((poster, i) => {
+    out.push(poster);
+    if (i % 2 === 1 && reading.length) out.push(reading.shift() as string);
+  });
+  return out.slice(0, 72);
+}
+
 async function loadPosters(tvGenreIds: number[]): Promise<string[]> {
+  if (tvGenreIds.length === 0) {
+    const [posters, reading] = await Promise.all([loadTmdbPosters([]), loadReadingCovers()]);
+    return mixCovers(posters, reading);
+  }
+  return loadTmdbPosters(tvGenreIds);
+}
+
+async function loadTmdbPosters(tvGenreIds: number[]): Promise<string[]> {
   if (!getTmdbApiKey()) return [];
   try {
     const requests =
@@ -53,18 +107,21 @@ async function loadPosters(tvGenreIds: number[]): Promise<string[]> {
  * Start-Seite und den Auth-Seiten. Three offset rows, each on its own
  * animation cycle, masked, vignetted.
  */
-export const CoverWall = memo(({ tvGenreIds = [], rows = 3 }: Props) => {
-  const [posters, setPosters] = useState<string[]>([]);
+export const CoverWall = memo(({ tvGenreIds = [], rows = 3, covers }: Props) => {
+  const [loaded, setLoaded] = useState<string[]>([]);
+  const ownCovers = !!covers?.length;
+  const posters = ownCovers ? covers : loaded;
 
   useEffect(() => {
+    if (ownCovers) return;
     let cancelled = false;
     loadPosters(tvGenreIds).then((list) => {
-      if (!cancelled) setPosters(list);
+      if (!cancelled) setLoaded(list);
     });
     return () => {
       cancelled = true;
     };
-  }, [tvGenreIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tvGenreIds.join(','), ownCovers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (posters.length === 0) {
     return (
@@ -101,7 +158,7 @@ export const CoverWall = memo(({ tvGenreIds = [], rows = 3 }: Props) => {
                   <div
                     key={`${idx}-${i}`}
                     className="ob-wall-poster"
-                    style={{ backgroundImage: `url(https://image.tmdb.org/t/p/w342${p})` }}
+                    style={{ backgroundImage: `url(${imageUrl(p)})` }}
                   />
                 ))}
               </div>

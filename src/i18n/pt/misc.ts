@@ -111,6 +111,63 @@ const dict: Record<string, string> = {
   'Wieder einblenden?': 'Mostrar novamente?',
   'Serie wird wieder angezeigt': 'A série volta a aparecer',
   '„{title}" wird wieder angezeigt': '"{title}" volta a aparecer',
+  'Serien, Filme, Manga, Bücher …': 'Séries, filmes, mangás, livros …',
+  'Gerade dabei': 'Em andamento',
+  'Kapitel {n}': 'Capítulo {n}',
+  'Serien · Filme · Anime · Manga · Bücher': 'Séries · Filmes · Animes · Mangás · Livros',
+  'Ein Ort für alles, was du schaust und liest.': 'Um só lugar para tudo o que você assiste e lê.',
+  'Hak Folgen ab, verfolge neue Kapitel, führ dein Bücherregal – und sieh, was deine Freunde gerade schauen und lesen.':
+    'Marque episódios, acompanhe capítulos novos, organize sua estante – e veja o que seus amigos estão assistindo e lendo.',
+  'Ob Staffelfinale oder neues Kapitel – TV-Rank merkt sich, wo du stehst.':
+    'Final de temporada ou capítulo novo – o TV-Rank lembra onde você parou.',
+  Schauen: 'Assistir',
+  'Serien, Filme und Anime': 'Séries, filmes e animes',
+  'Folgen abhaken – einzeln, staffelweise oder per Wisch':
+    'Marque episódios – um a um, por temporada ou com um deslize',
+  'Kalender mit allem, was diese Woche läuft': 'Um calendário com tudo o que sai nesta semana',
+  'Wo es läuft: Streaming-Anbieter für dein Land': 'Onde assistir: streamings do seu país',
+  'Anime mit Filler- und Recap-Markierung': 'Animes com fillers e recaps sinalizados',
+  'Manga, Manhwa und Bücher': 'Mangás, manhwas e livros',
+  'Neue Kapitel im Blick – nach Kapiteln oder Bänden':
+    'Capítulos novos à vista – por capítulo ou por volume',
+  'Bücher mit Seiten, Lesedatum und Jahresziel':
+    'Livros com páginas, datas de leitura e meta anual',
+  'ISBN-Scanner für Bücher und Manga-Bände': 'Leitor de ISBN para livros e volumes de mangá',
+  'Bücher zu deinen Lieblingsserien': 'Livros das suas séries favoritas',
+  'Was TV-Rank alles kann': 'Tudo o que o TV-Rank faz',
+  'Jede Folge im Blick – neue Staffeln, Kalender und Countdowns.':
+    'Cada episódio à vista – temporadas novas, calendário e contagens regressivas.',
+  'Watchlist, Bewertungen und wo der Film gerade läuft.':
+    'Watchlist, avaliações e onde o filme está passando agora.',
+  'Die aktuelle Saison mit deutschen Anbietern, Filler und Recaps markiert.':
+    'A temporada atual com streamings locais, fillers e recaps sinalizados.',
+  'Manga, Manhwa und Manhua – nach Kapiteln oder Bänden, mit neuen Releases.':
+    'Mangás, manhwas e manhuas – por capítulo ou volume, com os lançamentos novos.',
+  'Dein Regal mit Seiten, Lesejahr, Wunschliste und ISBN-Scanner.':
+    'Sua estante com páginas, ano de leitura, lista de desejos e leitor de ISBN.',
+  'Freunde & Chat': 'Amigos e chat',
+  'Sieh, was Freunde schauen und lesen, empfiehl Titel und schreib im Chat.':
+    'Veja o que seus amigos assistem e leem, recomende títulos e converse no chat.',
+  'Badges & Pets': 'Badges e pets',
+  'Sammle Badges und zieh dein Pet groß – es levelt mit jeder Folge.':
+    'Colecione badges e crie seu pet – ele sobe de nível a cada episódio.',
+  'Wrapped & Statistiken': 'Wrapped e estatísticas',
+  'Dein Jahr in Zahlen – Folgen, Filme, Kapitel und Seiten.':
+    'Seu ano em números – episódios, filmes, capítulos e páginas.',
+  'Überall dabei': 'Sempre com você',
+  'Web, Android, iPhone und Windows – alles synchron.':
+    'Web, Android, iPhone e Windows – tudo sincronizado.',
+  'Push zur richtigen Zeit': 'Notificações na hora certa',
+  'Neue Folgen, neue Kapitel und Nachrichten von Freunden.':
+    'Episódios novos, capítulos novos e mensagens dos amigos.',
+  'Für dein Land': 'Para o seu país',
+  'Welche Anbieter was im Programm haben – passend zu deiner Region.':
+    'O que cada streaming tem – de acordo com a sua região.',
+  'In deiner Sprache': 'No seu idioma',
+  'Deutsch, Englisch, Spanisch, Französisch und Portugiesisch.':
+    'Alemão, inglês, espanhol, francês e português.',
+  'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.':
+    'Comece hoje – com sua série favorita, seu mangá ou o livro na sua cabeceira.',
 };
 
 export default dict;

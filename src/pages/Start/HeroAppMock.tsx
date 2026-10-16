@@ -1,71 +1,53 @@
 import { memo, useEffect, useState } from 'react';
 import { PlayArrow, Search, Whatshot } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { t } from '../../services/i18n';
+import { getLandingCovers, loadLandingCovers, type Kind, type MockItem } from './landingCovers';
 
 /**
  * HeroAppMock — das Produkt-Schaufenster der Landing: eine stilisierte
- * Mini-App (Weiterschauen-Banner + Trending-Poster) aus ECHTEN
- * TMDB-Trending-Daten, perspektivisch gekippt wie ein Hero-Product-Shot.
+ * Mini-App mit ECHTEN Daten (TMDB-Trends, beliebte Manga, Buch-Bestseller),
+ * perspektivisch gekippt wie ein Hero-Product-Shot. Zeigt bewusst Schauen
+ * und Lesen nebeneinander.
  */
 
-interface MockItem {
-  title: string;
-  poster: string | null;
-  backdrop: string | null;
-}
-
-type TmdbTrendingResponse = {
-  results?: Array<{
-    name?: string;
-    title?: string;
-    poster_path?: string | null;
-    backdrop_path?: string | null;
-  }>;
+const META: Record<Kind, () => string> = {
+  series: () => t('Staffel 2 · Folge 5'),
+  manga: () => t('Kapitel {n}', { n: 112 }),
+  book: () => t('S. {page} / {total}', { page: 214, total: 528 }),
 };
-
-// Modul-Cache: die Landing soll beim Navigieren Login→Start nicht neu laden.
-let cachedItems: MockItem[] | null = null;
-
-async function loadTrending(): Promise<MockItem[]> {
-  if (cachedItems) return cachedItems;
-  if (!getTmdbApiKey()) return [];
-  try {
-    const data = await tmdbFetch<TmdbTrendingResponse>('trending/tv/week');
-    const items = (data.results || [])
-      .map((r) => ({
-        title: r.name || r.title || '',
-        poster: r.poster_path || null,
-        backdrop: r.backdrop_path || null,
-      }))
-      .filter((r) => r.title && (r.poster || r.backdrop));
-    cachedItems = items;
-    return items;
-  } catch {
-    return [];
-  }
-}
-
-const PROGRESS = [72, 38, 55];
-const FAKE_META = ['Staffel 2 · Folge 5', 'Staffel 1 · Folge 8', 'Staffel 4 · Folge 12'];
+const PROGRESS: Record<Kind, number> = { series: 72, manga: 58, book: 41 };
 
 export const HeroAppMock = memo(() => {
-  const [items, setItems] = useState<MockItem[]>(cachedItems ?? []);
+  const [data, setData] = useState(getLandingCovers);
 
   useEffect(() => {
-    if (cachedItems) return;
+    if (data) return;
     let cancelled = false;
-    loadTrending().then((list) => {
-      if (!cancelled) setItems(list);
+    loadLandingCovers().then((loaded) => {
+      if (!cancelled) setData(loaded);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [data]);
 
-  const banners = items.filter((i) => i.backdrop && i.poster).slice(0, 3);
-  const posters = items.filter((i) => i.poster).slice(3, 9);
+  const series = data?.series ?? [];
+  const manga = data?.manga ?? [];
+  const books = data?.books ?? [];
+  const banners = [
+    series.find((s) => s.art),
+    manga.find((m) => m.art) ?? manga[0],
+    books[0],
+  ].filter((item): item is MockItem => !!item);
+  const used = new Set(banners.map((b) => b.poster));
+  const fresh = (list: MockItem[]) => list.filter((item) => !used.has(item.poster));
+  const posters = [
+    ...fresh(series).slice(0, 2),
+    ...fresh(manga).slice(0, 2),
+    ...fresh(books).slice(0, 2),
+  ];
+  const trending = [0, 2, 4, 1, 3, 5].map((i) => posters[i]).filter(Boolean);
 
   return (
     <motion.div
@@ -75,49 +57,40 @@ export const HeroAppMock = memo(() => {
       transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
     >
       <div className="sm-window" aria-hidden>
-        {/* Kopfzeile der Mini-App */}
         <div className="sm-topbar">
           <span className="sm-brand-dot" />
           <span className="sm-search">
             <Search sx={{ fontSize: 15 }} />
-            {t('Suche nach Serien oder Filmen')}
+            {t('Serien, Filme, Manga, Bücher …')}
           </span>
           <span className="sm-avatar" />
         </div>
 
-        {/* Weiterschauen: Kino-Banner-Zeilen */}
         <div className="sm-label">
-          <PlayArrow sx={{ fontSize: 15 }} /> {t('Weiterschauen')}
+          <PlayArrow sx={{ fontSize: 15 }} /> {t('Gerade dabei')}
         </div>
         <div className="sm-banners">
-          {(banners.length ? banners : Array.from({ length: 3 })).map((item, i) => {
+          {(banners.length === 3 ? banners : Array.from({ length: 3 })).map((item, i) => {
             const b = item as MockItem | undefined;
             return (
               <div key={i} className={`sm-banner ${b ? '' : 'sm-skeleton'}`}>
-                {/* Backdrop-Art läuft rechts mit Maske ein (App-Kino-Zeile) */}
-                {b?.backdrop && (
+                {b && (
                   <div
-                    className="sm-banner-art"
-                    style={{
-                      backgroundImage: `url(https://image.tmdb.org/t/p/w780${b.backdrop})`,
-                    }}
+                    className={`sm-banner-art ${b.art ? '' : 'sm-banner-art--cover'}`}
+                    style={{ backgroundImage: `url(${b.art ?? b.poster})` }}
                   />
                 )}
                 {b && (
                   <div className="sm-banner-left">
-                    {b.poster && (
-                      <div
-                        className="sm-banner-poster"
-                        style={{
-                          backgroundImage: `url(https://image.tmdb.org/t/p/w185${b.poster})`,
-                        }}
-                      />
-                    )}
+                    <div
+                      className="sm-banner-poster"
+                      style={{ backgroundImage: `url(${b.poster})` }}
+                    />
                     <div className="sm-banner-info">
                       <span className="sm-banner-title">{b.title}</span>
-                      <span className="sm-banner-meta">{t(FAKE_META[i % FAKE_META.length])}</span>
+                      <span className="sm-banner-meta">{META[b.kind]()}</span>
                       <span className="sm-progress">
-                        <i style={{ width: `${PROGRESS[i % PROGRESS.length]}%` }} />
+                        <i style={{ width: `${PROGRESS[b.kind]}%` }} />
                       </span>
                     </div>
                   </div>
@@ -127,24 +100,17 @@ export const HeroAppMock = memo(() => {
           })}
         </div>
 
-        {/* Trending: Poster-Reihe */}
         <div className="sm-label">
           <Whatshot sx={{ fontSize: 15 }} /> Trending
         </div>
         <div className="sm-posters">
-          {(posters.length ? posters : Array.from({ length: 6 })).map((item, i) => {
+          {(trending.length === 6 ? trending : Array.from({ length: 6 })).map((item, i) => {
             const p = item as MockItem | undefined;
             return (
               <div
                 key={i}
-                className={`sm-poster ${p?.poster ? '' : 'sm-skeleton'}`}
-                style={
-                  p?.poster
-                    ? {
-                        backgroundImage: `url(https://image.tmdb.org/t/p/w342${p.poster})`,
-                      }
-                    : undefined
-                }
+                className={`sm-poster ${p ? '' : 'sm-skeleton'}`}
+                style={p ? { backgroundImage: `url(${p.poster})` } : undefined}
               />
             );
           })}
@@ -153,4 +119,5 @@ export const HeroAppMock = memo(() => {
     </motion.div>
   );
 });
+
 HeroAppMock.displayName = 'HeroAppMock';

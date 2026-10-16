@@ -29,7 +29,9 @@ export const FooterCTA = () => (
         {t('Bereit loszulegen?')}
       </h2>
       <p className="start-footer-cta-text" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-        {t('Starte noch heute und entdecke deine neue Lieblingsserie')}
+        {t(
+          'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.'
+        )}
       </p>
       <Button
         component={Link}

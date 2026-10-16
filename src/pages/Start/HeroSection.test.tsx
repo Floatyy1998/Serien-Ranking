@@ -7,6 +7,15 @@ vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
     [
+      'Android',
+      'Apple',
+      'Chat',
+      'Devices',
+      'Insights',
+      'LiveTv',
+      'LocalLibrary',
+      'Public',
+      'Translate',
       'PlayArrow',
       'Whatshot',
       'AccessTime',
@@ -98,6 +107,11 @@ const firebaseMock = vi.hoisted(() => ({
 }));
 vi.mock('firebase/compat/app', () => firebaseMock);
 vi.mock('firebase/compat/database', () => ({}));
+vi.mock('./landingCovers', () => ({
+  getLandingCovers: () => null,
+  loadLandingCovers: () => new Promise(() => {}),
+}));
+vi.mock('../../components/ui/media/CoverWall', () => ({ CoverWall: () => null }));
 
 beforeEach(() => {
   (window as unknown as { electronAPI?: unknown }).electronAPI = undefined;
@@ -111,7 +125,8 @@ describe('HeroSection', () => {
   it('renders the brand name and tagline', () => {
     render(<HeroSection />);
     expect(screen.getByText('TV-RANK')).toBeInTheDocument();
-    expect(screen.getByText('Serien, Filme, Manga & Bücher')).toBeInTheDocument();
+    expect(screen.getByText('Serien · Filme · Anime · Manga · Bücher')).toBeInTheDocument();
+    expect(screen.getByText('Ein Ort für alles, was du schaust und liest.')).toBeInTheDocument();
   });
 
   it('renders the register and login CTAs with correct links', () => {
@@ -123,18 +138,25 @@ describe('HeroSection', () => {
     expect(screen.getByRole('link', { name: /Anmelden/ })).toHaveAttribute('href', '/login');
   });
 
-  it('shows the desktop download button outside Electron', () => {
+  it('verlinkt App Store, Google Play und den Windows-Download', () => {
     render(<HeroSection />);
-    expect(screen.getByRole('link', { name: /Desktop App herunterladen/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /App Store/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('apps.apple.com')
+    );
+    expect(screen.getByRole('link', { name: /Google Play/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('play.google.com')
+    );
+    expect(screen.getByRole('link', { name: /Windows/ })).toBeInTheDocument();
   });
 
-  it('hides the desktop download button inside Electron', () => {
+  it('versteckt den Windows-Download in der Desktop-App', () => {
     (window as unknown as { electronAPI?: { isElectron: boolean } }).electronAPI = {
       isElectron: true,
     };
     render(<HeroSection />);
-    expect(
-      screen.queryByRole('link', { name: /Desktop App herunterladen/ })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Windows/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Google Play/ })).toBeInTheDocument();
   });
 });

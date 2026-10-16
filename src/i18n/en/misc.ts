@@ -130,6 +130,64 @@ const dict: Record<string, string> = {
   'Wieder einblenden?': 'Unhide it?',
   'Serie wird wieder angezeigt': 'Show is visible again',
   '„{title}" wird wieder angezeigt': '"{title}" is visible again',
+  'Serien, Filme, Manga, Bücher …': 'Shows, movies, manga, books …',
+  'Gerade dabei': 'In progress',
+  'Kapitel {n}': 'Chapter {n}',
+  'Serien · Filme · Anime · Manga · Bücher': 'Shows · Movies · Anime · Manga · Books',
+  'Ein Ort für alles, was du schaust und liest.': 'One place for everything you watch and read.',
+  'Hak Folgen ab, verfolge neue Kapitel, führ dein Bücherregal – und sieh, was deine Freunde gerade schauen und lesen.':
+    'Check off episodes, follow new chapters, keep your bookshelf – and see what your friends are watching and reading.',
+  'Ob Staffelfinale oder neues Kapitel – TV-Rank merkt sich, wo du stehst.':
+    'Season finale or new chapter – TV-Rank remembers where you are.',
+  Schauen: 'Watch',
+  'Serien, Filme und Anime': 'Shows, movies and anime',
+  'Folgen abhaken – einzeln, staffelweise oder per Wisch':
+    'Check off episodes – one by one, by season or with a swipe',
+  'Kalender mit allem, was diese Woche läuft': 'A calendar with everything airing this week',
+  'Wo es läuft: Streaming-Anbieter für dein Land':
+    'Where to watch: streaming services in your country',
+  'Anime mit Filler- und Recap-Markierung': 'Anime with filler and recap labels',
+  'Manga, Manhwa und Bücher': 'Manga, manhwa and books',
+  'Neue Kapitel im Blick – nach Kapiteln oder Bänden':
+    'Keep up with new chapters – by chapter or by volume',
+  'Bücher mit Seiten, Lesedatum und Jahresziel':
+    'Books with pages, reading dates and a yearly goal',
+  'ISBN-Scanner für Bücher und Manga-Bände': 'ISBN scanner for books and manga volumes',
+  'Bücher zu deinen Lieblingsserien': 'Books behind your favorite shows',
+  'Was TV-Rank alles kann': 'Everything TV-Rank can do',
+  'Jede Folge im Blick – neue Staffeln, Kalender und Countdowns.':
+    'Every episode at a glance – new seasons, calendar and countdowns.',
+  'Watchlist, Bewertungen und wo der Film gerade läuft.':
+    'Watchlist, ratings and where the movie is streaming right now.',
+  'Die aktuelle Saison mit deutschen Anbietern, Filler und Recaps markiert.':
+    'The current season with local services, fillers and recaps marked.',
+  'Manga, Manhwa und Manhua – nach Kapiteln oder Bänden, mit neuen Releases.':
+    'Manga, manhwa and manhua – by chapter or volume, with new releases.',
+  'Dein Regal mit Seiten, Lesejahr, Wunschliste und ISBN-Scanner.':
+    'Your shelf with pages, reading year, wishlist and ISBN scanner.',
+  'Freunde & Chat': 'Friends & chat',
+  'Sieh, was Freunde schauen und lesen, empfiehl Titel und schreib im Chat.':
+    'See what friends watch and read, recommend titles and chat.',
+  'Badges & Pets': 'Badges & pets',
+  'Sammle Badges und zieh dein Pet groß – es levelt mit jeder Folge.':
+    'Collect badges and raise your pet – it levels up with every episode.',
+  'Wrapped & Statistiken': 'Wrapped & stats',
+  'Dein Jahr in Zahlen – Folgen, Filme, Kapitel und Seiten.':
+    'Your year in numbers – episodes, movies, chapters and pages.',
+  'Überall dabei': 'Everywhere you are',
+  'Web, Android, iPhone und Windows – alles synchron.':
+    'Web, Android, iPhone and Windows – always in sync.',
+  'Push zur richtigen Zeit': 'Pushes at the right moment',
+  'Neue Folgen, neue Kapitel und Nachrichten von Freunden.':
+    'New episodes, new chapters and messages from friends.',
+  'Für dein Land': 'For your country',
+  'Welche Anbieter was im Programm haben – passend zu deiner Region.':
+    'Which services carry what – matched to your region.',
+  'In deiner Sprache': 'In your language',
+  'Deutsch, Englisch, Spanisch, Französisch und Portugiesisch.':
+    'German, English, Spanish, French and Portuguese.',
+  'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.':
+    'Start today – with your favorite show, your manga or the book on your nightstand.',
 };
 
 export default dict;

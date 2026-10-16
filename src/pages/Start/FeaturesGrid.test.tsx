@@ -6,10 +6,16 @@ import { FeaturesGrid } from './FeaturesGrid';
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
-    ['Star', 'TrendingUp', 'People', 'EmojiEvents', 'Movie', 'Tv', 'AutoStories'].map((n) => [
-      n,
-      stub,
-    ])
+    [
+      'AutoStories',
+      'Chat',
+      'EmojiEvents',
+      'Insights',
+      'LocalLibrary',
+      'Movie',
+      'Tv',
+      'Whatshot',
+    ].map((n) => [n, stub])
   );
 });
 
@@ -21,19 +27,20 @@ describe('FeaturesGrid', () => {
   it('renders the section heading and subheading', () => {
     render(<FeaturesGrid />);
     expect(screen.getByText('Alles was du brauchst')).toBeInTheDocument();
-    expect(screen.getByText('Features für das beste Tracking-Erlebnis')).toBeInTheDocument();
+    expect(screen.getByText('Was TV-Rank alles kann')).toBeInTheDocument();
   });
 
-  it('renders all seven feature titles', () => {
+  it('zeigt alle acht Bereiche, Anime und Bücher eingeschlossen', () => {
     render(<FeaturesGrid />);
     for (const title of [
-      'Serien-Tracking',
-      'Film-Bibliothek',
-      'Bewertungssystem',
-      'Badges & Erfolge',
-      'Freunde-System',
-      'Manga-Tracking',
-      'Statistiken',
+      'Serien',
+      'Filme',
+      'Anime',
+      'Manga',
+      'Bücher',
+      'Freunde & Chat',
+      'Badges & Pets',
+      'Wrapped & Statistiken',
     ]) {
       expect(screen.getByText(title)).toBeInTheDocument();
     }

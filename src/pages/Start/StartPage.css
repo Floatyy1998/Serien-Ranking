@@ -251,6 +251,12 @@
   -webkit-mask-image: linear-gradient(to left, black 55%, transparent 100%);
 }
 
+.sm-banner-art--cover {
+  background-position: center 35%;
+  filter: blur(14px) saturate(1.2) brightness(0.7);
+  transform: scale(1.15);
+}
+
 .sm-banner-left {
   position: relative;
   z-index: 1;
@@ -407,6 +413,99 @@
   margin-right: auto;
 }
 
+/* Schauen & Lesen: zwei Hälften der App nebeneinander */
+.start-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .start-showcase-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.start-showcase-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 28px 24px 26px;
+  min-height: 300px;
+}
+
+.start-showcase-fan {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  display: flex;
+  pointer-events: none;
+}
+
+.start-showcase-cover {
+  width: 64px;
+  aspect-ratio: 2 / 3;
+  margin-left: -22px;
+  border-radius: 9px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+  transform-origin: bottom center;
+}
+
+.start-showcase-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.start-showcase-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.start-showcase-claim {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.start-showcase-list {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.start-showcase-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (min-width: 600px) {
+  .start-showcase-card {
+    padding: 32px 32px 30px;
+  }
+
+  .start-showcase-cover {
+    width: 78px;
+  }
+}
+
 .start-features-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -425,16 +524,17 @@
   }
 }
 
-/* Desktop-Bento: 4 Spalten volle Breite, erste Karte doppelt breit —
-   7 Karten füllen exakt 2 Reihen (2+1+1 / 1+1+1+1) */
+@media (min-width: 1200px) {
+  .start-features-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Desktop: 8 Karten in zwei vollen Reihen zu je 4 */
 @media (min-width: 1400px) {
   .start-features-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
-  }
-
-  .start-features-grid > :first-child {
-    grid-column: span 2;
   }
 }
 
@@ -568,4 +668,11 @@
 .start-legal-link {
   font-size: 0.75rem;
   text-decoration: none;
+}
+
+.start-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
 }
