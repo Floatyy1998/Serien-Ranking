@@ -39,7 +39,8 @@ type SourcesFile = { tv: Record<string, StaticSource[]>; movie: Record<string, S
 const memory = new Map<string, Promise<unknown>>();
 
 function load<T>(file: string): Promise<T> {
-  const url = `${BACKEND}/catalog/books/${file}?d=${day()}`;
+  // v=2: Tagesdateien von vor der Hardcover-Umstellung stecken unter derselben Tages-URL im Cloudflare-/Browser-Cache.
+  const url = `${BACKEND}/catalog/books/${file}?d=${day()}&v=2`;
   let pending = memory.get(url) as Promise<T> | undefined;
   if (!pending) {
     pending = fetch(url).then((res) => {

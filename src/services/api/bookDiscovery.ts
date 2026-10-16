@@ -261,7 +261,7 @@ const knownAudience = (id: ShelfId, audience: ShelfAudience | undefined) =>
   audience && AUDIENCE_QUERY[audience] && SHELF_AUDIENCES.includes(id) ? audience : undefined;
 
 const shelfKey = (id: ShelfId, { sort = 'popular', theme, audience, limit = 24 }: ShelfOptions) =>
-  `${appLocale}:${id}:${sort}:${knownTheme(id, theme) ?? ''}:${knownAudience(id, audience) ?? ''}:${limit}`;
+  `h2:${appLocale}:${id}:${sort}:${knownTheme(id, theme) ?? ''}:${knownAudience(id, audience) ?? ''}:${limit}`;
 
 /** Nur Kartenfelder, damit viele Regale zusammen nur ein paar Dutzend KB belegen. */
 const compactResult = (r: BookSearchResult): BookSearchResult => ({
