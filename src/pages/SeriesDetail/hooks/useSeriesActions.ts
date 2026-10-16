@@ -83,14 +83,23 @@ export function useSeriesActions(
         } else if (tmdbSeries?.poster?.poster) {
           posterPath = tmdbSeries.poster.poster;
         }
-        await logSeriesAdded(
-          userId,
-          series.name || series.title || 'Unbekannte Serie',
-          series.id,
-          posterPath
-        );
-        trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
-        await refetchAfterAdd(series.id);
+        // Die Serie ist ab hier angelegt — Nacharbeiten duerfen den Erfolg nicht kippen.
+        try {
+          await logSeriesAdded(
+            userId,
+            series.name || series.title || 'Unbekannte Serie',
+            series.id,
+            posterPath
+          );
+          trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
+        } catch {
+          /* Aktivitaets-Log ist best-effort */
+        }
+        try {
+          await refetchAfterAdd(series.id);
+        } catch {
+          /* Auto-Refetch des Katalogs holt es nach */
+        }
         showSnackbar(t('Serie erfolgreich hinzugefügt!'));
         navigate(`/series/${series.id}`, { replace: true });
       } else {
