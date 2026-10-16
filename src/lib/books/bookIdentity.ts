@@ -49,13 +49,19 @@ export function bookTitleKey(title: string): string {
   return volume ? `${base} ${volume}` : base;
 }
 
+/** Nachname des Erstautors als Vergleichsschlüssel, leer ohne Autor. */
+export function bookAuthorKey(authors: string[] | undefined): string {
+  return (
+    normalizeBookText(authors?.[0] ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .pop() ?? ''
+  );
+}
+
 /** Vergleichsschlüssel für „dieses Buch hast du schon" über Quellen und Ausgaben hinweg. */
 export function bookMatchKey(title: string, authors: string[] | undefined): string {
-  const author = normalizeBookText(authors?.[0] ?? '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .pop();
-  return `${bookTitleKey(title)}|${author ?? ''}`;
+  return `${bookTitleKey(title)}|${bookAuthorKey(authors)}`;
 }
 
 type MangaTitles = Pick<Manga, 'title' | 'titleEnglish' | 'titleRomaji'>;

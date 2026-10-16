@@ -1,5 +1,5 @@
 import type { BookDetails, BookSearchResult } from '../../types/Book';
-import { bookMatchKey, looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
+import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import {
   coverAtSize,
   mapDnbRecord,
@@ -10,6 +10,7 @@ import {
   type GoogleVolume,
   type OpenLibraryDoc,
 } from '../../lib/books/bookSearchMapping';
+import { mergeEditions, orderSeriesVolumes } from '../../lib/books/searchEditions';
 import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
@@ -152,45 +153,37 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
 }
 
 /**
- * Treffer mit Cover und Seitenzahl nach oben, Dubletten (gleicher Titel + Autor) raus.
+ * Treffer mit Cover und Seitenzahl nach oben, Ausgaben desselben Buchs (Sprache, Verlag) als einer.
  * Treffer, in denen die Suchwörter weder im Titel noch beim Autor stehen, fallen weg —
  * außer es bliebe dann gar nichts übrig (Tippfehler, fremde Schreibweise).
+ * Bände einer Reihe stehen in Reihenfolge, außer die Suche nennt selbst eine Bandnummer.
  */
 export function rankResults(results: BookSearchResult[], query: string): BookSearchResult[] {
   const matched = results.map((r) => ({ r, match: searchMatch(r, query) }));
   const relevant = matched.filter(({ match }) => match.matches);
   const pool = relevant.length ? relevant : matched;
-  const titleHit = new Set(
-    pool.filter(({ match }) => match.inTitle || match.byAuthor).map(({ r }) => r)
+  const unique = mergeEditions(
+    pool.map(({ r }) => r),
+    appLocale
   );
-  const candidates = pool.map(({ r }) => r);
+  const titleHit = (r: BookSearchResult) => {
+    const match = searchMatch(r, query);
+    return match.inTitle || match.byAuthor;
+  };
   const q = query.toLowerCase().trim();
-  const richness = (r: BookSearchResult) =>
-    (r.description ? 3 : 0) + (r.pageCount ? 2 : 0) + (r.cover ? 1 : 0) + (r.isbn13 ? 1 : 0);
-  const byKey = new Map<string, number>();
-  const unique: BookSearchResult[] = [];
-  for (const r of candidates) {
-    const key = bookMatchKey(r.title, r.authors);
-    const at = byKey.get(key);
-    if (at === undefined) {
-      byKey.set(key, unique.length);
-      unique.push(r);
-    } else if (richness(r) > richness(unique[at])) {
-      unique[at] = r;
-    }
-  }
   const score = (r: BookSearchResult) =>
     (r.title.toLowerCase() === q ? 6 : r.title.toLowerCase().startsWith(q) ? 3 : 0) +
-    (titleHit.has(r) ? 3 : 0) +
+    (titleHit(r) ? 3 : 0) +
     (r.cover ? 2 : 0) +
     (r.pageCount ? 1 : 0) +
     (r.authors.length ? 1 : 0) +
     (r.language === appLocale ? 1 : 0) +
     Math.min(5, Math.log10((r.popularity ?? 0) + 1) * 1.4);
-  return unique
+  const ranked = unique
     .map((r, index) => ({ r, index, s: score(r) }))
     .sort((a, b) => b.s - a.s || a.index - b.index)
     .map(({ r }) => r);
+  return /\d/.test(query) ? ranked : orderSeriesVolumes(ranked);
 }
 
 export async function searchBooks(
@@ -199,7 +192,8 @@ export async function searchBooks(
 ): Promise<BookSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
-  const key = `${appLocale}:${hasGoogleBooks() ? 'g' : 'o'}:${trimmed.toLowerCase()}`;
+  // e2: Ausgaben zusammengefasst — alte Listen im Cache verdrängt das LRU nach und nach.
+  const key = `e2:${appLocale}:${hasGoogleBooks() ? 'g' : 'o'}:${trimmed.toLowerCase()}`;
   const results = await cached(
     'search',
     key,

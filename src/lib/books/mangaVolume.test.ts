@@ -3,6 +3,7 @@ import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
 import {
   anchoredVolumeGuess,
   groupMangaVolumes,
+  linkSeriesSiblings,
   mangaAsSearchResult,
   mangaVolumeGuess,
   matchSeries,
@@ -163,6 +164,37 @@ describe('groupMangaVolumes', () => {
       'op18',
       'op45',
     ]);
+  });
+});
+
+describe('linkSeriesSiblings', () => {
+  const stepmom: MangaLink = { manga: anilist(141502, 'Not-Sew-Wicked Stepmom'), volume: 3 };
+  const items = [
+    { id: 'v1', title: 'Not-Sew-Wicked Stepmom, Vol. 1' },
+    { id: 'v3', title: 'Not-Sew-Wicked Stepmom, Vol. 3' },
+    { id: 'de8', title: 'Not-Sew-Wicked Stepmom 8' },
+    { id: 'novel', title: 'Not-Sew-Wicked Stepmom 2 (Light Novel)' },
+    { id: 'guide', title: 'Not-Sew-Wicked Stepmom Artbook' },
+    { id: 'other', title: 'Wicked Stepmom Diaries 4' },
+  ];
+
+  it('nimmt die übrigen Bände derselben Reihe mit, mit eigener Bandnummer', () => {
+    const linked = linkSeriesSiblings(items, new Map([['v3', stepmom]]));
+    expect(linked.get('v1')).toMatchObject({ manga: stepmom.manga, volume: 1 });
+    expect(linked.get('de8')).toMatchObject({ manga: stepmom.manga, volume: 8 });
+    expect(linked.get('v3')).toBe(stepmom);
+  });
+
+  it('lässt Romane, Bücher ohne Band und fremde Reihen außen vor', () => {
+    const linked = linkSeriesSiblings(items, new Map([['v3', stepmom]]));
+    expect(linked.has('novel')).toBe(false);
+    expect(linked.has('guide')).toBe(false);
+    expect(linked.has('other')).toBe(false);
+  });
+
+  it('ändert nichts ohne erkannten Band', () => {
+    const links = new Map<string, MangaLink>();
+    expect(linkSeriesSiblings(items, links)).toBe(links);
   });
 });
 

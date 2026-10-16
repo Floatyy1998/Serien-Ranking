@@ -5,6 +5,7 @@ import { findMangaForBook } from '../../lib/books/bookIdentity';
 import {
   hasComicHint,
   isMangaVolumeCandidate,
+  linkSeriesSiblings,
   mangaAsSearchResult,
   splitVolume,
   type MangaLink,
@@ -73,7 +74,7 @@ export function useMangaVolumes(
       const own = findMangaForBook(item, allMangaList);
       if (own) map.set(item.id, { manga: mangaAsSearchResult(own), owned: own, volume });
     }
-    return map;
+    return linkSeriesSiblings(items, map);
   }, [items, hits, allMangaList, seriesAsBooks]);
 
   const isPending = (item: MangaVolumeInput) =>

@@ -147,6 +147,28 @@ export function mangaAsSearchResult(manga: Manga): AniListMangaSearchResult {
   };
 }
 
+/** Ist ein Band als Manga erkannt, gehören die übrigen Bände derselben Reihe mit dazu — Romane nicht. */
+export function linkSeriesSiblings(
+  items: MangaVolumeInput[],
+  links: Map<string, MangaLink>
+): Map<string, MangaLink> {
+  const seriesKey = (title: string) => normalizeTitle(splitVolume(title).series);
+  const bySeries = new Map<string, MangaLink>();
+  for (const item of items) {
+    const link = links.get(item.id);
+    if (link && !bySeries.has(seriesKey(item.title))) bySeries.set(seriesKey(item.title), link);
+  }
+  if (!bySeries.size) return links;
+  const linked = new Map(links);
+  for (const item of items) {
+    if (linked.has(item.id) || NOVEL_HINT.test(`${item.title} ${item.subtitle ?? ''}`)) continue;
+    const { volume } = splitVolume(item.title);
+    const link = volume === undefined ? undefined : bySeries.get(seriesKey(item.title));
+    if (link) linked.set(item.id, { ...link, volume });
+  }
+  return linked;
+}
+
 export type MangaVolumeEntry<T> =
   { kind: 'book'; result: T } | { kind: 'manga'; link: MangaLink; volumes: T[] };
 
