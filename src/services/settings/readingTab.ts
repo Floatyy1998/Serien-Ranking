@@ -25,7 +25,7 @@ export function setReadingTab(tab: ReadingTab): void {
   }
 }
 
-/** Ziel des „Lesen"-Platzes im Dock: der zuletzt genutzte Reiter, sonst Manga wie bisher. */
+/** Ziel des „Lesen"-Platzes im Dock: der zuletzt genutzte Reiter, beim ersten Mal „Alle". */
 export function resolveReadingPath(): string {
-  return READING_TAB_PATHS[getReadingTab() ?? 'manga'];
+  return READING_TAB_PATHS[getReadingTab() ?? 'all'];
 }

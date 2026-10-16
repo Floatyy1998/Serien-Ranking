@@ -56,7 +56,7 @@ describe('BottomNavigation', () => {
   it('navigiert beim Klick auf einen inaktiven Tab', () => {
     render(<BottomNavigation />);
     fireEvent.click(screen.getByText('Lesen'));
-    expect(navigate).toHaveBeenCalledWith('/manga');
+    expect(navigate).toHaveBeenCalledWith('/reading');
   });
 
   it('versteckt sich auf Detail-Seiten', () => {
