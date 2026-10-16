@@ -70,6 +70,7 @@ export function translateBookDescription(
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texts: batch, targetLang }),
+          signal: AbortSignal.timeout(25_000),
         });
         if (!res.ok) return null;
         const data = (await res.json()) as { translations?: unknown };

@@ -13,6 +13,9 @@ export interface BookDescription {
   loading: boolean;
 }
 
+/** So lange wartet der Block auf Details und Wikidata, bevor er ohne Text aufgibt (Wikipedia kann später noch nachkommen). */
+export const DESCRIPTION_PATIENCE_MS = 6000;
+
 const isAppLanguage = (text: string) => {
   const lang = guessLanguage(text);
   return lang === null ? (text.match(/\p{L}+/gu) ?? []).length < 12 : lang === appLocale;
@@ -34,6 +37,15 @@ export function useBookDescription(
   const raw = htmlToPlainText(rawDescription ?? '');
   const wikiLang = links?.wikipedia?.lang;
   const wikiTitle = links?.wikipedia?.title;
+  const [impatient, setImpatient] = useState(false);
+  const waiting = detailsLoading || linksLoading;
+
+  useEffect(() => {
+    setImpatient(false);
+    if (!waiting) return;
+    const timer = setTimeout(() => setImpatient(true), DESCRIPTION_PATIENCE_MS);
+    return () => clearTimeout(timer);
+  }, [bookKey, waiting]);
 
   useEffect(() => {
     let alive = true;
@@ -60,7 +72,7 @@ export function useBookDescription(
           return finish({ text: translated, original: raw, source: 'translated', loading: false });
         return finish({ text: raw, source: 'foreign', loading: false });
       }
-      if (detailsLoading || linksLoading) {
+      if (waiting && !impatient) {
         finish({ text: '', source: 'publisher', loading: true });
         return;
       }
@@ -84,7 +96,7 @@ export function useBookDescription(
     return () => {
       alive = false;
     };
-  }, [bookKey, raw, detailsLoading, linksLoading, wikiLang, wikiTitle]);
+  }, [bookKey, raw, waiting, impatient, wikiLang, wikiTitle]);
 
   return state;
 }
