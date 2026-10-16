@@ -1,13 +1,47 @@
 import { AutoAwesome, ExpandMore, WarningAmber } from '@mui/icons-material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { HorizontalScrollContainer } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { scrollParent } from '../../../hooks/books/useBookShelf';
 import { hardcoverReady, hardcoverSimilar } from '../../../services/api/hardcoverApi';
 import { t } from '../../../services/i18n';
 import type { BookSearchResult } from '../../../types/Book';
 import { moodLabel, warningLabel } from '../data/genreCatalog';
 import { DiscoverCard, SkeletonCards } from '../discover/DiscoverParts';
 import { useAddFlow } from '../discover/useAddFlow';
+
+/** Zeigt den Inhalt erst, wenn der Platz dafür in die Nähe des Sichtbereichs kommt — spart Abfragen für nie gesehene Blöcke. */
+export const WhenNearViewport: React.FC<{ children: React.ReactNode; minHeight?: number }> = ({
+  children,
+  minHeight = 180,
+}) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (near || !node) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { root: scrollParent(node), rootMargin: '600px 0px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [near]);
+  return (
+    <div ref={ref} style={near ? undefined : { minHeight }}>
+      {near ? children : null}
+    </div>
+  );
+};
 
 /** Stimmung und Tempo als Chips, Inhaltshinweise eingeklappt (sie können Handlung verraten). */
 export const BookMoodPanel: React.FC<{

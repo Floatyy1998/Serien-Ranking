@@ -27,6 +27,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
     },
   }),
 }));
+vi.mock('../../../hooks/books/useBookShelf', () => ({ scrollParent: () => null }));
 vi.mock('../../../components/ui', () => ({
   HorizontalScrollContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -42,7 +43,7 @@ vi.mock('../discover/useAddFlow', () => ({
   useAddFlow: () => ({ openAdd: vi.fn(), sheet: null }),
 }));
 
-import { BookMoodPanel, SimilarBooksPanel } from './BookExtrasPanels';
+import { BookMoodPanel, SimilarBooksPanel, WhenNearViewport } from './BookExtrasPanels';
 
 const book = (n: number): BookSearchResult => ({
   id: `hc-${n}`,
@@ -105,5 +106,35 @@ describe('SimilarBooksPanel', () => {
     const { container } = render(<SimilarBooksPanel hardcoverId={1} />);
     await waitFor(() => expect(container.firstChild).toBeNull());
     expect(similar).not.toHaveBeenCalled();
+  });
+});
+
+describe('WhenNearViewport', () => {
+  it('zeigt den Inhalt erst, wenn der Platz in Sichtnähe kommt', async () => {
+    const observers: { callback: IntersectionObserverCallback }[] = [];
+    class FakeObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        observers.push({ callback });
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+      takeRecords() {
+        return [];
+      }
+    }
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    render(
+      <WhenNearViewport>
+        <div>Inhalt</div>
+      </WhenNearViewport>
+    );
+    expect(screen.queryByText('Inhalt')).toBeNull();
+    observers[0].callback(
+      [{ isIntersecting: true } as IntersectionObserverEntry],
+      {} as IntersectionObserver
+    );
+    await waitFor(() => expect(screen.getByText('Inhalt')).toBeTruthy());
+    vi.unstubAllGlobals();
   });
 });

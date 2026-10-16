@@ -26,7 +26,7 @@ import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
-import { BookMoodPanel, SimilarBooksPanel } from './detail/BookExtrasPanels';
+import { BookMoodPanel, SimilarBooksPanel, WhenNearViewport } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
@@ -790,8 +790,16 @@ export const BookDetailPage = () => {
 
           <BookMoodPanel moods={details?.moods} pace={details?.pace} warnings={details?.warnings} />
 
-          {author && !mangaOffer && <MoreByAuthor author={author} title={view.title} />}
-          {view.hardcoverId && !mangaOffer && <SimilarBooksPanel hardcoverId={view.hardcoverId} />}
+          {author && !mangaOffer && (
+            <WhenNearViewport>
+              <MoreByAuthor author={author} title={view.title} />
+            </WhenNearViewport>
+          )}
+          {view.hardcoverId && !mangaOffer && (
+            <WhenNearViewport>
+              <SimilarBooksPanel hardcoverId={view.hardcoverId} />
+            </WhenNearViewport>
+          )}
 
           {owned && (
             <div className="bd-panel">

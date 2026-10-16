@@ -14,7 +14,7 @@ import { appLocale } from '../i18n';
 import { backendFetch } from './backendApi';
 
 const DAY = 86_400_000;
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 20_000;
 
 /** Antwort des Backend-Proxys (/hc/*) — Hardcover-Token und Kontingent bleiben auf dem Server. */
 export interface HcItem {
@@ -55,21 +55,42 @@ const pause = (ms: number) => {
 /** Falsch, solange Hardcover nicht erreichbar oder das Tageskontingent leer ist — dann greifen Google/Open Library. */
 export const hardcoverReady = (): boolean => Date.now() >= pausedUntil;
 
-const PAUSE_BY_CODE: Record<string, number> = {
+/** Harte Fehler (Kontingent, Konfiguration) pausieren sofort; weiche (busy, upstream, network) erst, wenn sie sich häufen. */
+const HARD_PAUSE_BY_CODE: Record<string, number> = {
   budget: 15 * 60_000,
   cap: 15 * 60_000,
-  busy: 20_000,
-  upstream: 60_000,
   config: 30 * 60_000,
 };
+const SOFT_PAUSE_BY_CODE: Record<string, number> = {
+  busy: 20_000,
+  upstream: 60_000,
+  network: 30_000,
+};
+const KNOWN_CODES = new Set([
+  ...Object.keys(HARD_PAUSE_BY_CODE),
+  ...Object.keys(SOFT_PAUSE_BY_CODE),
+]);
+const SOFT_FAILURES_BEFORE_PAUSE = 3;
+const SOFT_WINDOW_MS = 60_000;
+const RETRY_DELAY_MS = 1200;
+let softFailures: number[] = [];
 
-async function post<T>(
+/** Einzelne Ausreißer (Warteschlange beim Server, Funkloch) sollen nicht gleich alle Hardcover-Daten für Minuten abschalten. */
+function noteSoftFailure(code: string) {
+  const now = Date.now();
+  softFailures = [...softFailures.filter((at) => now - at < SOFT_WINDOW_MS), now];
+  if (softFailures.length >= SOFT_FAILURES_BEFORE_PAUSE) {
+    pause(SOFT_PAUSE_BY_CODE[code] ?? 30_000);
+    softFailures = [];
+  }
+}
+
+async function attempt<T>(
   path: string,
   body: Record<string, unknown>,
-  signal?: AbortSignal,
-  background = false
-) {
-  if (!hardcoverReady()) throw new HardcoverError('paused');
+  signal: AbortSignal | undefined,
+  background: boolean
+): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   const abort = () => controller.abort();
@@ -85,27 +106,52 @@ async function post<T>(
       const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
       // Nur bekannte Codes zählen; ein 429 anderer Herkunft (allgemeine Bremse) ist nur kurz „busy“, nie eine Stundenpause.
       const known =
-        code && code in PAUSE_BY_CODE
+        code && KNOWN_CODES.has(code)
           ? code
           : res.status === 429
             ? 'busy'
             : res.status === 404 || res.status === 401
               ? 'config'
               : 'upstream';
-      // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
-      if (!(background && known === 'busy')) pause(PAUSE_BY_CODE[known] ?? 60_000);
       throw new HardcoverError(known, `HTTP ${res.status}`);
     }
     return (await res.json()) as T;
   } catch (err) {
     if (err instanceof HardcoverError) throw err;
     if (signal?.aborted) throw err;
-    pause(30_000);
     throw new HardcoverError('network', (err as Error).message);
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', abort);
   }
+}
+
+async function post<T>(
+  path: string,
+  body: Record<string, unknown>,
+  signal?: AbortSignal,
+  background = false
+): Promise<T> {
+  if (!hardcoverReady()) throw new HardcoverError('paused');
+  let last: HardcoverError | null = null;
+  for (let round = 0; round < 2; round++) {
+    try {
+      return await attempt<T>(path, body, signal, background);
+    } catch (err) {
+      if (!(err instanceof HardcoverError)) throw err;
+      last = err;
+      const hard = HARD_PAUSE_BY_CODE[err.code];
+      if (hard) {
+        pause(hard);
+        throw err;
+      }
+      // Weiche Fehler einmal nach kurzer Pause wiederholen — meist war nur die Warteschlange beim Server voll.
+      if (round === 0 && !signal?.aborted) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    }
+  }
+  // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
+  if (last && !(background && last.code === 'busy')) noteSoftFailure(last.code);
+  throw last as HardcoverError;
 }
 
 /** Reihen aus Hardcover tragen den Schlüssel `hc:<Name>` im Feld der Wikidata-ID — so laufen sie durch die vorhandene Reihenlogik. */

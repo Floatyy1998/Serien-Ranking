@@ -81,6 +81,35 @@ describe('hardcoverApi', () => {
     expect(hardcoverReady()).toBe(false);
   });
 
+  it('wiederholt einen weichen Fehler einmal, ohne Hardcover zu pausieren', async () => {
+    vi.useFakeTimers();
+    backendFetch
+      .mockResolvedValueOnce(json({ error: 'busy' }, 503))
+      .mockResolvedValueOnce(json({ results: [item] }));
+    const { hardcoverSearch, hardcoverReady } = await import('./hardcoverApi');
+    const pending = hardcoverSearch('harry');
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(await pending).toHaveLength(1);
+    expect(backendFetch).toHaveBeenCalledTimes(2);
+    expect(hardcoverReady()).toBe(true);
+  });
+
+  it('pausiert erst, wenn sich weiche Fehler binnen einer Minute häufen', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockResolvedValue(json({ error: 'upstream' }, 503));
+    const { hardcoverSearch, hardcoverReady } = await import('./hardcoverApi');
+    for (let i = 0; i < 2; i++) {
+      const pending = hardcoverSearch(`harry ${i}`).catch((e) => e);
+      await vi.advanceTimersByTimeAsync(1500);
+      await pending;
+      expect(hardcoverReady()).toBe(true);
+    }
+    const third = hardcoverSearch('harry 3').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(1500);
+    await third;
+    expect(hardcoverReady()).toBe(false);
+  });
+
   it('liefert Reihenteile nur mit ganzzahliger Bandnummer und zeigt Zukunftsbände als erscheinend', async () => {
     const { seriesPartsFrom, mapHardcoverItem } = await import('./hardcoverApi');
     const book = (position: number, year: number) =>
