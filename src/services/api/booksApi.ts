@@ -356,7 +356,8 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
 
 /** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge werden nicht gemerkt. */
 export function findBook(title: string, author?: string): Promise<BookSearchResult | null> {
-  const key = `${appLocale}:${title}|${author ?? ''}`.toLowerCase();
+  // h2: Treffer von vor der Hardcover-Umstellung (Open Library) fliegen aus dem Zwischenspeicher.
+  const key = `h2:${appLocale}:${title}|${author ?? ''}`.toLowerCase();
   return cached(
     'find',
     key,

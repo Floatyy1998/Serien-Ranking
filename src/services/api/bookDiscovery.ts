@@ -394,7 +394,7 @@ export function fetchMoreByAuthor(
   const name = author.replace(/"/g, '');
   return cached(
     'author',
-    `${appLocale}:${name}`,
+    `h2:${appLocale}:${name}`,
     3 * 86_400_000,
     async () => {
       if (hardcoverReady()) {
