@@ -2,12 +2,14 @@ export type BookStatus = 'reading' | 'planned' | 'completed' | 'paused' | 'dropp
 
 export type BookFormat = 'print' | 'ebook' | 'audio';
 
-export type BookSource = 'google' | 'openlibrary' | 'goodreads' | 'dnb';
+export type BookSource = 'hardcover' | 'google' | 'openlibrary' | 'goodreads' | 'dnb';
 
 export interface BookSeriesInfo {
   name: string;
   position?: number;
+  /** Reihen-Schlüssel: Wikidata-QID oder `hc:<Reihenname>` für Reihen aus Hardcover. */
   wikidataId?: string;
+  hardcoverId?: number;
 }
 
 /** Ein Buch in `users/$uid/books/{id}` — vollständig gespeichert wie Manga, es gibt keinen Katalog. */
@@ -27,6 +29,7 @@ export interface Book {
   isbn13?: string;
   googleId?: string;
   olWorkId?: string;
+  hardcoverId?: number;
   /** Wikidata-Werk, mit dem die Bände einer Reihe abgeglichen werden. */
   wikidataId?: string;
   series?: BookSeriesInfo;
@@ -49,7 +52,7 @@ export interface Book {
   wdChecked?: string;
 }
 
-/** Suchtreffer aus Google Books oder Open Library, noch nicht in der Sammlung. */
+/** Suchtreffer aus Hardcover, Google Books oder Open Library, noch nicht in der Sammlung. */
 export interface BookSearchResult {
   id: string;
   title: string;
@@ -66,7 +69,9 @@ export interface BookSearchResult {
   isbn13?: string;
   googleId?: string;
   olWorkId?: string;
+  hardcoverId?: number;
   description?: string;
+  series?: BookSeriesInfo;
   source: BookSource;
   /** Open Library: Leseliste + Ausgaben — trennt echte Bücher von Dubletten-Einträgen. */
   popularity?: number;
@@ -92,6 +97,8 @@ export interface BookSeriesPart {
   position: number;
   publishedDate?: string;
   olWorkId?: string;
+  /** Fertiger Treffer, wenn die Reihe aus Hardcover kommt — spart die Suche je Band. */
+  result?: BookSearchResult;
 }
 
 export interface BookAdaptation {

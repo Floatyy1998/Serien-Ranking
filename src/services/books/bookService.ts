@@ -77,6 +77,7 @@ export async function addBookCopy(uid: string, source: Book): Promise<void> {
     isbn13: source.isbn13,
     googleId: source.googleId,
     olWorkId: source.olWorkId,
+    hardcoverId: source.hardcoverId,
     series: source.series,
     source: source.source,
     status: 'planned' as const,

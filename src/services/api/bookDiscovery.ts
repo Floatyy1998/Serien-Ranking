@@ -4,6 +4,12 @@ import type { BookSearchResult } from '../../types/Book';
 import { cached, cacheGet, cacheSet } from '../books/bookCache';
 import { loadStaticShelf } from './bookStatic';
 import { appLocale } from '../i18n';
+import {
+  hardcoverAuthorBooks,
+  hardcoverBrowse,
+  hardcoverReady,
+  type HardcoverSort,
+} from './hardcoverApi';
 
 const OPEN_LIBRARY = 'https://openlibrary.org';
 const FIELDS = [
@@ -206,6 +212,30 @@ async function olSearchPage(
 const olSearch = async (q: string, limit: number, sort?: string) =>
   (await olSearchPage(q, limit, sort)).items;
 
+/** Hardcover liefert Genre, Untergenre, Zielgruppe und Sortierung serverseitig; Treffer ohne Cover und Dubletten fliegen raus. */
+async function hardcoverShelf(
+  id: ShelfId,
+  { sort = 'popular', theme, audience }: ShelfOptions,
+  page: number
+): Promise<{ items: BookSearchResult[]; done: boolean }> {
+  const out = await hardcoverBrowse({
+    shelf: id,
+    sort: sort as HardcoverSort,
+    theme,
+    audience,
+    page,
+  });
+  const seen = new Set<string>();
+  const items = out.items.filter((r) => {
+    if (!r.cover) return false;
+    const key = bookMatchKey(r.title, r.authors);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return { items, done: out.done };
+}
+
 function cachedSearch<T>(key: string, load: () => Promise<T>): Promise<T> {
   let pending = memory.get(key) as Promise<T> | undefined;
   if (!pending) {
@@ -243,6 +273,9 @@ const compactResult = (r: BookSearchResult): BookSearchResult => ({
   publishedYear: r.publishedYear,
   isbn13: r.isbn13,
   olWorkId: r.olWorkId,
+  hardcoverId: r.hardcoverId,
+  coverFallback: r.coverFallback,
+  series: r.series,
   language: r.language,
   source: r.source,
   popularity: r.popularity,
@@ -271,10 +304,13 @@ export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<Boo
       theme || audience
         ? null
         : await loadStaticShelf(sort === 'popular' ? id : `${id}:${sort}`).catch(() => null);
-    const list =
-      prebuilt && prebuilt.length >= 8
-        ? prebuilt.slice(0, limit)
-        : await olSearch(query, limit, SORT_QUERY[sort].sort);
+    let list: BookSearchResult[] | null =
+      prebuilt && prebuilt.length >= 8 ? prebuilt.slice(0, limit) : null;
+    if (!list && hardcoverReady()) {
+      const live = await hardcoverShelf(id, { sort, theme, audience }, 1).catch(() => null);
+      if (live && live.items.length >= 8) list = live.items.slice(0, limit);
+    }
+    if (!list) list = await olSearch(query, limit, SORT_QUERY[sort].sort);
     cacheSet(SHELF_CACHE, key, list.map(compactResult), SHELF_CACHE_ENTRIES);
     return list;
   });
@@ -293,6 +329,10 @@ export function fetchShelfPage(
   const audience = knownAudience(id, options.audience);
   const key = `page:${shelfKey(id, { sort, theme, audience, limit: SHELF_PAGE_SIZE })}:${page}`;
   return cachedSearch(key, async () => {
+    if (hardcoverReady()) {
+      const live = await hardcoverShelf(id, { sort, theme, audience }, page + 1).catch(() => null);
+      if (live && (live.items.length || page > 0)) return live;
+    }
     const { items, raw } = await olSearchPage(
       shelfQuery(id, { sort, theme, audience }),
       SHELF_PAGE_SIZE,
@@ -328,6 +368,10 @@ export function fetchMoreByAuthor(
     `${appLocale}:${name}`,
     3 * 86_400_000,
     async () => {
+      if (hardcoverReady()) {
+        const own = await hardcoverAuthorBooks(name).catch(() => []);
+        if (own.length >= 3) return own.filter((r) => !!r.cover).slice(0, 24);
+      }
       let list = await olSearch(`author:"${name}"${languageFilter()}`, 24);
       if (list.length < 4) list = await olSearch(`author:"${name}"`, 24);
       return list;

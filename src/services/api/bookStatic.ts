@@ -3,17 +3,21 @@ import type { TasteGenre } from '../../lib/books/readingTaste';
 import { openLibraryCoverById } from '../../lib/books/bookSearchMapping';
 import type { BasedOnBook, BookSearchResult } from '../../types/Book';
 import { appLocale } from '../i18n';
+import { mapHardcoverItem } from './hardcoverApi';
 
 const BACKEND = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
 
 /** Tagesstempel als Cache-Bust — /catalog/ ist immutable, die Datei wird täglich neu gebaut. */
 const day = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
+/** Eintrag der Tagesdatei: Hardcover-Bücher tragen h (ID) und u (Cover-Spiegel), Open-Library-Bücher w und c. */
 interface StaticShelfItem {
-  w: string;
+  w?: string;
+  h?: number;
+  u?: string;
   t: string;
   a?: string;
-  c: number;
+  c?: number;
   y?: number;
   p?: number;
   i?: string;
@@ -48,11 +52,29 @@ function load<T>(file: string): Promise<T> {
   return pending;
 }
 
-const toResult = (item: StaticShelfItem): BookSearchResult => ({
+const toResult = (item: StaticShelfItem): BookSearchResult =>
+  item.h
+    ? mapHardcoverItem({
+        id: `hc-${item.h}`,
+        hardcoverId: item.h,
+        title: item.t,
+        authors: item.a ? [item.a] : [],
+        cover: item.u,
+        pageCount: item.p,
+        publishedYear: item.y,
+        isbn13: item.i,
+        language: item.l,
+        popularity: item.r,
+        avgRating: item.s,
+        ratingCount: item.n,
+      })
+    : toOpenLibraryResult(item);
+
+const toOpenLibraryResult = (item: StaticShelfItem): BookSearchResult => ({
   id: `ol-${item.w}`,
   title: item.t,
   authors: item.a ? [item.a] : [],
-  cover: openLibraryCoverById(item.c),
+  cover: item.c ? openLibraryCoverById(item.c) : undefined,
   pageCount: item.p,
   publishedYear: item.y,
   isbn13: item.i,
@@ -92,7 +114,8 @@ export async function loadShelfGenreIndex(): Promise<Map<string, TasteGenre[]>> 
   ).catch(() => null);
   for (const genre of GENRE_SHELVES) {
     for (const item of data?.shelves?.[genre] ?? []) {
-      for (const key of [`ol-${item.w}`, bookMatchKey(item.t, item.a ? [item.a] : [])]) {
+      const id = item.h ? `hc-${item.h}` : `ol-${item.w}`;
+      for (const key of [id, bookMatchKey(item.t, item.a ? [item.a] : [])]) {
         index.set(key, [...(index.get(key) ?? []), genre]);
       }
     }

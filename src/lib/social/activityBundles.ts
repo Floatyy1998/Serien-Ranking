@@ -52,8 +52,14 @@ export function bookPreviewFromActivity(activity: FriendActivity): BookSearchRes
     cover: activity.poster,
     googleId: ref.googleId,
     olWorkId: ref.olWorkId,
+    hardcoverId: ref.hardcoverId,
     isbn13: ref.isbn13,
-    source: (ref.source ?? (ref.googleId ? 'google' : 'openlibrary')) as BookSearchResult['source'],
+    source: (ref.source ??
+      (ref.hardcoverId
+        ? 'hardcover'
+        : ref.googleId
+          ? 'google'
+          : 'openlibrary')) as BookSearchResult['source'],
   };
 }
 

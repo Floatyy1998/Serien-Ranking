@@ -78,5 +78,6 @@ export interface BookActivityRef {
   source?: string;
   googleId?: string;
   olWorkId?: string;
+  hardcoverId?: number;
   isbn13?: string;
 }

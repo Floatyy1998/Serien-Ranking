@@ -14,6 +14,7 @@ import { mergeEditions, orderSeriesVolumes } from '../../lib/books/searchEdition
 import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
+import { hardcoverDetails, hardcoverIsbn, hardcoverReady, hardcoverSearch } from './hardcoverApi';
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -124,17 +125,28 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
   return hit ? [hit] : [];
 }
 
-/** Google und Open Library kennen viele deutsche ISBNs nicht (oder antworten mit 503) — die DNB fragt parallel mit. */
+/**
+ * Hardcover kennt die meisten ISBNs samt lokaler Ausgabe; Google und Open Library springen nur ein, wenn es nichts findet
+ * (oder pausiert). Die DNB fragt immer mit: sie ist kostenlos und liefert Auflage und Seitenzahl deutscher Ausgaben.
+ */
 async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
   const settle = (request: Promise<BookSearchResult[]>) =>
     request.catch(() => [] as BookSearchResult[]);
-  const [google, openLibrary, dnb] = await Promise.all([
-    hasGoogleBooks() ? settle(searchGoogle(isbn13, signal)) : Promise.resolve([]),
-    settle(searchOpenLibrary(isbn13, signal)),
+  const [hardcover, dnb] = await Promise.all([
+    hardcoverReady()
+      ? settle(hardcoverIsbn(isbn13).then((hit) => (hit ? [hit] : [])))
+      : Promise.resolve([] as BookSearchResult[]),
     settle(searchDnb(isbn13, signal)),
   ]);
+  let primary = hardcover[0];
+  if (!primary) {
+    const [google, openLibrary] = await Promise.all([
+      hasGoogleBooks() ? settle(searchGoogle(isbn13, signal)) : Promise.resolve([]),
+      settle(searchOpenLibrary(isbn13, signal)),
+    ]);
+    primary = google[0] ?? openLibrary[0] ?? dnb[0];
+  }
   const national = dnb[0];
-  const primary = google[0] ?? openLibrary[0] ?? national;
   if (!primary || !national || primary === national) return primary ? [primary] : [];
   const weakCover = !primary.cover || /\/b\/isbn\//.test(primary.cover);
   return [
@@ -147,6 +159,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
       publisher: primary.publisher ?? national.publisher,
       publishedYear: primary.publishedYear ?? national.publishedYear,
       categories: primary.categories ?? national.categories,
+      edition: primary.edition ?? national.edition,
       isbn13: primary.isbn13 ?? isbn13,
     }),
   ];
@@ -192,8 +205,9 @@ export async function searchBooks(
 ): Promise<BookSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
-  // e2: Ausgaben zusammengefasst — alte Listen im Cache verdrängt das LRU nach und nach.
-  const key = `e2:${appLocale}:${hasGoogleBooks() ? 'g' : 'o'}:${trimmed.toLowerCase()}`;
+  // e3: Hardcover als erste Quelle (e2: Ausgaben zusammengefasst) — alte Listen im Cache verdrängt das LRU nach und nach.
+  const source = hardcoverReady() ? 'h' : hasGoogleBooks() ? 'g' : 'o';
+  const key = `e3:${appLocale}:${source}:${trimmed.toLowerCase()}`;
   const results = await cached(
     'search',
     key,
@@ -212,19 +226,33 @@ export async function searchBooks(
   return results.map((r) => (r.authors ? r : { ...r, authors: [] }));
 }
 
-/** typing: Suche beim Tippen — Open Library fragt zusätzlich den Titel mit angefangenem letzten Wort ab. */
+/**
+ * typing: Suche beim Tippen — Open Library fragt zusätzlich den Titel mit angefangenem letzten Wort ab.
+ * hardcover: false für Hintergrund-Abfragen (Verfilmungs-Brücke, Reihenteile) — die schonen das Tageskontingent.
+ */
 async function runSearch(
   trimmed: string,
   signal?: AbortSignal,
-  options: { typing?: boolean; google?: boolean } = {}
+  options: { typing?: boolean; google?: boolean; hardcover?: boolean } = {}
 ): Promise<BookSearchResult[]> {
   if (looksLikeIsbn(trimmed)) {
     return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
   }
+  let primary: BookSearchResult[] = [];
+  if (options.hardcover !== false && hardcoverReady()) {
+    try {
+      primary = await hardcoverSearch(trimmed, signal);
+      // Hardcover findet angefangene Wörter („fourth wi") nicht — dann ergänzen die anderen Quellen.
+      if (primary.some((r) => searchMatch(r, trimmed).matches))
+        return rankResults(primary, trimmed);
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') throw err;
+    }
+  }
   if (options.google !== false && hasGoogleBooks()) {
     try {
       const google = await searchGoogle(trimmed, signal);
-      if (google.length) return rankResults(google, trimmed);
+      if (google.length) return rankResults([...primary, ...google], trimmed);
     } catch (err) {
       if ((err as Error).name === 'AbortError') throw err;
     }
@@ -237,13 +265,18 @@ async function runSearch(
       : Promise.resolve([] as BookSearchResult[]),
   ]);
   const generalFits = general.some((r) => searchMatch(r, trimmed).matches);
-  return rankResults(generalFits ? general : [...byTitle, ...general], trimmed);
+  return rankResults([...primary, ...(generalFits ? general : [...byTitle, ...general])], trimmed);
 }
 
 async function loadDetails(ref: {
+  hardcoverId?: number;
   googleId?: string;
   olWorkId?: string;
 }): Promise<BookDetails | null> {
+  if (ref.hardcoverId && hardcoverReady()) {
+    const details = await hardcoverDetails(ref.hardcoverId);
+    if (details?.description) return details;
+  }
   if (ref.googleId && hasGoogleBooks()) {
     try {
       const volume = await fetchJson<GoogleVolume>(
@@ -274,10 +307,11 @@ async function loadDetails(ref: {
 }
 
 export function getBookDetails(ref: {
+  hardcoverId?: number;
   googleId?: string;
   olWorkId?: string;
 }): Promise<BookDetails | null> {
-  const key = ref.googleId ?? ref.olWorkId;
+  const key = ref.hardcoverId ? `hc${ref.hardcoverId}` : (ref.googleId ?? ref.olWorkId);
   if (!key) return Promise.resolve(null);
   return cached(
     'details',
@@ -299,7 +333,7 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
     // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.
-    const results = await runSearch(query, undefined, { google: false }).catch(
+    const results = await runSearch(query, undefined, { google: false, hardcover: false }).catch(
       () => [] as BookSearchResult[]
     );
     const hit = byAuthor(results) ?? (index === 0 ? results[0] : undefined);

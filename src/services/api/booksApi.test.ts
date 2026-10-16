@@ -2,6 +2,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
+vi.mock('./hardcoverApi', () => ({
+  hardcoverReady: () => false,
+  hardcoverSearch: vi.fn(),
+  hardcoverIsbn: vi.fn(),
+  hardcoverDetails: vi.fn(),
+  hardcoverBrowse: vi.fn(),
+  hardcoverAuthorBooks: vi.fn(),
+}));
 
 import { findBook, searchBooks } from './booksApi';
 
@@ -173,7 +181,7 @@ describe('searchBooks per ISBN', () => {
     const fetchMock = route({});
     vi.stubGlobal('fetch', fetchMock);
     localStorage.setItem(
-      'bk:search:e2:de:o:9783963588850',
+      'bk:search:e3:de:o:9783963588850',
       JSON.stringify({
         at: Date.now(),
         value: [{ id: 'dnb-9783963588850', title: 'Ohne Autor', source: 'dnb' }],

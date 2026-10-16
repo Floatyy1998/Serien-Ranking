@@ -258,6 +258,8 @@ export function searchResultToBook(
     isbn13: result.isbn13,
     googleId: result.googleId,
     olWorkId: result.olWorkId,
+    hardcoverId: result.hardcoverId,
+    series: result.series,
     source: result.source,
     status,
     currentPage: status === 'completed' ? (result.pageCount ?? 0) : 0,
@@ -286,7 +288,10 @@ export function bookAsResult(book: Book): BookSearchResult {
     isbn13: book.isbn13,
     googleId: book.googleId,
     olWorkId: book.olWorkId,
-    source: book.source ?? (book.googleId ? 'google' : 'openlibrary'),
+    hardcoverId: book.hardcoverId,
+    series: book.series,
+    source:
+      book.source ?? (book.hardcoverId ? 'hardcover' : book.googleId ? 'google' : 'openlibrary'),
   });
 }
 

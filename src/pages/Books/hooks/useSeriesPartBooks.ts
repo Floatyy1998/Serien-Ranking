@@ -16,6 +16,11 @@ export function useSeriesPartBooks(lookups: PartLookup[]): Record<string, BookSe
   useEffect(() => {
     let cancelled = false;
     for (const { part, author } of lookups.slice(0, MAX_PARTS)) {
+      if (part.result) {
+        const ready = part.result;
+        setFound((prev) => (prev[part.wikidataId] ? prev : { ...prev, [part.wikidataId]: ready }));
+        continue;
+      }
       const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
       void findBook(part.title, author).then((result) => {
         if (cancelled || !result) return;

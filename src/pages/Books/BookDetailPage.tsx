@@ -146,9 +146,15 @@ export const BookDetailPage = () => {
   }, [owned?.id, owned?.notes]);
 
   const { details, loading: detailsLoading } = useBookDetails(
-    view ? { googleId: view.googleId, olWorkId: view.olWorkId } : null
+    view
+      ? { hardcoverId: view.hardcoverId, googleId: view.googleId, olWorkId: view.olWorkId }
+      : null
   );
-  const { links, parts, loading: linksLoading } = useBookLinks(view?.title, view?.authors?.[0]);
+  const {
+    links,
+    parts,
+    loading: linksLoading,
+  } = useBookLinks(view?.title, view?.authors?.[0], view?.series);
   const adaptations = useAdaptationMeta(links?.adaptations ?? []);
   const mangaItems = useMemo(
     () =>

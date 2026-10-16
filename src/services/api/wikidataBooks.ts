@@ -2,6 +2,7 @@ import type { BasedOnBook, BookAdaptation, BookLinks, BookSeriesPart } from '../
 import { normalizeSeriesParts } from '../../lib/books/bookSeries';
 import { appLocale } from '../i18n';
 import { loadStaticBasedOn } from './bookStatic';
+import { hardcoverSeriesParts, isHardcoverSeriesKey } from './hardcoverApi';
 
 const ENDPOINT = 'https://query.wikidata.org/sparql';
 const CACHE_PREFIX = 'wdBooks:';
@@ -168,6 +169,7 @@ export function fetchBookLinks(title: string, author?: string): Promise<BookLink
 }
 
 export function fetchSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
+  if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3));
   return cached(`parts:${appLocale}:${seriesId}`, 3 * DAY, async () => {
     const rows = await runQuery(`SELECT ?part ?partLabel ?ord ?date ?olid WHERE {
   ?part p:P179 ?st . ?st ps:P179 wd:${seriesId} .

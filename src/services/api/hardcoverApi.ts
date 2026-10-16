@@ -1,0 +1,250 @@
+import {
+  dnbCoverUrl,
+  openLibraryCoverByIsbn,
+  stripUndefined,
+} from '../../lib/books/bookSearchMapping';
+import type {
+  BookDetails,
+  BookSearchResult,
+  BookSeriesInfo,
+  BookSeriesPart,
+} from '../../types/Book';
+import { cached } from '../books/bookCache';
+import { appLocale } from '../i18n';
+import { backendFetch } from './backendApi';
+
+const DAY = 86_400_000;
+const TIMEOUT_MS = 10_000;
+
+/** Antwort des Backend-Proxys (/hc/*) — Hardcover-Token und Kontingent bleiben auf dem Server. */
+export interface HcItem {
+  id: string;
+  hardcoverId: number;
+  title: string;
+  subtitle?: string;
+  authors?: string[];
+  cover?: string;
+  coverFallback?: string;
+  pageCount?: number;
+  publishedYear?: number;
+  publisher?: string;
+  language?: string;
+  categories?: string[];
+  isbn13?: string;
+  description?: string;
+  popularity?: number;
+  avgRating?: number;
+  ratingCount?: number;
+  series?: { name: string; position?: number; hardcoverId?: number };
+}
+
+export class HardcoverError extends Error {
+  constructor(
+    readonly code: string,
+    message?: string
+  ) {
+    super(message ?? code);
+  }
+}
+
+let pausedUntil = 0;
+const pause = (ms: number) => {
+  pausedUntil = Math.max(pausedUntil, Date.now() + ms);
+};
+
+/** Falsch, solange Hardcover nicht erreichbar oder das Tageskontingent leer ist — dann greifen Google/Open Library. */
+export const hardcoverReady = (): boolean => Date.now() >= pausedUntil;
+
+const PAUSE_BY_CODE: Record<string, number> = {
+  budget: 15 * 60_000,
+  cap: 15 * 60_000,
+  busy: 20_000,
+  upstream: 60_000,
+  config: 30 * 60_000,
+};
+
+async function post<T>(path: string, body: Record<string, unknown>, signal?: AbortSignal) {
+  if (!hardcoverReady()) throw new HardcoverError('paused');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const abort = () => controller.abort();
+  signal?.addEventListener('abort', abort);
+  try {
+    const res = await backendFetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lang: appLocale, ...body }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
+      const known = code ?? (res.status === 404 || res.status === 401 ? 'config' : 'upstream');
+      pause(PAUSE_BY_CODE[known] ?? 60_000);
+      throw new HardcoverError(known, `HTTP ${res.status}`);
+    }
+    return (await res.json()) as T;
+  } catch (err) {
+    if (err instanceof HardcoverError) throw err;
+    if (signal?.aborted) throw err;
+    pause(30_000);
+    throw new HardcoverError('network', (err as Error).message);
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
+  }
+}
+
+/** Reihen aus Hardcover tragen den Schlüssel `hc:<Name>` im Feld der Wikidata-ID — so laufen sie durch die vorhandene Reihenlogik. */
+export const hardcoverSeriesKey = (name: string): string => `hc:${name}`;
+export const isHardcoverSeriesKey = (key: string | undefined): key is string =>
+  !!key && key.startsWith('hc:');
+
+function mapSeries(series: HcItem['series']): BookSeriesInfo | undefined {
+  if (!series?.name) return undefined;
+  return stripUndefined({
+    name: series.name,
+    position: series.position,
+    wikidataId: hardcoverSeriesKey(series.name),
+    hardcoverId: series.hardcoverId,
+  });
+}
+
+/** Cover des Treffers; fehlt eines, kommt es über die ISBN (DNB für Deutsch, sonst Open Library). */
+function coverChain(item: HcItem): Pick<BookSearchResult, 'cover' | 'coverFallback'> {
+  const byIsbn = item.isbn13
+    ? item.language === 'de'
+      ? dnbCoverUrl(item.isbn13)
+      : openLibraryCoverByIsbn(item.isbn13)
+    : undefined;
+  if (item.cover) return { cover: item.cover, coverFallback: item.coverFallback ?? byIsbn };
+  if (item.coverFallback) {
+    return byIsbn
+      ? { cover: byIsbn, coverFallback: item.coverFallback }
+      : { cover: item.coverFallback };
+  }
+  return { cover: byIsbn };
+}
+
+export function mapHardcoverItem(item: HcItem): BookSearchResult {
+  return stripUndefined({
+    id: item.id,
+    title: item.title,
+    subtitle: item.subtitle,
+    authors: item.authors ?? [],
+    ...coverChain(item),
+    pageCount: item.pageCount,
+    publishedYear: item.publishedYear,
+    publisher: item.publisher,
+    language: item.language,
+    categories: item.categories,
+    isbn13: item.isbn13,
+    hardcoverId: item.hardcoverId,
+    description: item.description,
+    series: mapSeries(item.series),
+    source: 'hardcover' as const,
+    popularity: item.popularity,
+    avgRating: item.avgRating,
+    ratingCount: item.ratingCount,
+  });
+}
+
+const mapList = (list: HcItem[] | undefined): BookSearchResult[] =>
+  (list ?? []).map(mapHardcoverItem);
+
+export async function hardcoverSearch(
+  query: string,
+  signal?: AbortSignal
+): Promise<BookSearchResult[]> {
+  const data = await post<{ results?: HcItem[] }>('/hc/search', { q: query }, signal);
+  return mapList(data.results);
+}
+
+export async function hardcoverIsbn(isbn13: string): Promise<BookSearchResult | null> {
+  const data = await post<{ result?: HcItem | null }>('/hc/isbn', { isbn: isbn13 });
+  return data.result ? mapHardcoverItem(data.result) : null;
+}
+
+export async function hardcoverBook(id: number): Promise<BookSearchResult | null> {
+  const data = await post<{ result?: HcItem | null }>('/hc/book', { id });
+  return data.result ? mapHardcoverItem(data.result) : null;
+}
+
+export function hardcoverDetails(id: number): Promise<BookDetails | null> {
+  return cached<BookDetails | null>(
+    'hcdetails',
+    `${appLocale}:${id}`,
+    14 * DAY,
+    async () => {
+      const hit = await hardcoverBook(id);
+      if (!hit) throw new Error('no details');
+      return stripUndefined({
+        description: hit.description,
+        categories: hit.categories,
+        pageCount: hit.pageCount,
+        publisher: hit.publisher,
+      });
+    },
+    120
+  ).catch(() => null);
+}
+
+export async function hardcoverAuthorBooks(name: string): Promise<BookSearchResult[]> {
+  const data = await post<{ results?: HcItem[] }>('/hc/author', { name });
+  return mapList(data.results);
+}
+
+export type HardcoverSort = 'popular' | 'top' | 'gems' | 'recent';
+
+export interface HardcoverBrowse {
+  shelf: string;
+  sort?: HardcoverSort;
+  theme?: string;
+  audience?: 'adult' | 'young';
+  /** Hardcover liefert 25 Treffer je Seite, gezählt ab 1. */
+  page?: number;
+}
+
+export async function hardcoverBrowse(
+  options: HardcoverBrowse
+): Promise<{ items: BookSearchResult[]; done: boolean }> {
+  const data = await post<{ results?: HcItem[]; done?: boolean }>('/hc/browse', { ...options });
+  return { items: mapList(data.results), done: !!data.done };
+}
+
+/** Bände der Reihe als Teile für die Reihenansicht — Zwischenbände (Band 1,5) bleiben außen vor. */
+export function seriesPartsFrom(books: BookSearchResult[], now = new Date()): BookSeriesPart[] {
+  const year = now.getFullYear();
+  const parts: BookSeriesPart[] = [];
+  for (const book of books) {
+    const position = book.series?.position;
+    if (!position || !Number.isInteger(position) || position <= 0) continue;
+    parts.push(
+      stripUndefined({
+        wikidataId: book.id,
+        title: book.title,
+        position,
+        publishedDate:
+          book.publishedYear && book.publishedYear > year
+            ? `${book.publishedYear}-01-01`
+            : undefined,
+        result: book,
+      })
+    );
+  }
+  return parts.sort((a, b) => a.position - b.position);
+}
+
+export function hardcoverSeriesParts(name: string): Promise<BookSeriesPart[]> {
+  return cached<BookSeriesPart[]>(
+    'hcseries',
+    `${appLocale}:${name.toLowerCase()}`,
+    7 * DAY,
+    async () => {
+      const data = await post<{ results?: HcItem[] }>('/hc/series', { name });
+      const parts = seriesPartsFrom(mapList(data.results));
+      if (!parts.length) throw new Error('no series');
+      return parts;
+    },
+    40
+  ).catch(() => []);
+}

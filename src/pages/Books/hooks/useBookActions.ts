@@ -43,6 +43,7 @@ const logBook = (uid: string, book: Book, type: ReadingActivity['type'], rating?
       source: book.source,
       googleId: book.googleId,
       olWorkId: book.olWorkId,
+      hardcoverId: book.hardcoverId,
       isbn13: book.isbn13,
     },
   });

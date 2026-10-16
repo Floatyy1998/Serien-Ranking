@@ -4,6 +4,14 @@ const staticShelf = vi.hoisted(() => vi.fn());
 
 vi.mock('./bookStatic', () => ({ loadStaticShelf: staticShelf }));
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
+vi.mock('./hardcoverApi', () => ({
+  hardcoverReady: () => false,
+  hardcoverSearch: vi.fn(),
+  hardcoverIsbn: vi.fn(),
+  hardcoverDetails: vi.fn(),
+  hardcoverBrowse: vi.fn(),
+  hardcoverAuthorBooks: vi.fn(),
+}));
 
 const doc = (key: string, title: string, author: string) => ({
   key: `/works/${key}`,
