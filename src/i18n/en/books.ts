@@ -61,6 +61,7 @@ const dict: Record<string, string> = {
   'Buchdaten: Open Library': 'Book data: Open Library',
   Autor: 'Author',
   Früher: 'Earlier',
+  'Im Regal suchen': 'Search your shelf',
   'Dein Regal': 'Your shelf',
   '{n} Bücher': '{n} books',
   Rasteransicht: 'Grid view',

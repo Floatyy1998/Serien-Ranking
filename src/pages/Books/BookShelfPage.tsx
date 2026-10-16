@@ -1,10 +1,26 @@
-import { GridView, LocalLibrary, Sort } from '@mui/icons-material';
+import {
+  ArrowDownward,
+  ArrowUpward,
+  Close,
+  GridView,
+  LocalLibrary,
+  Search,
+  Sort,
+} from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { progressPercent } from '../../lib/books/bookProgress';
+import {
+  bookGenres,
+  collectGenres,
+  DEFAULT_DESC,
+  matchesQuery,
+  sortShelf,
+  type ShelfSortKey,
+} from '../../lib/books/shelfView';
 import { t } from '../../services/i18n';
 import type { Book, BookStatus } from '../../types/Book';
 import { BookCover } from './components/BookCover';
@@ -13,12 +29,11 @@ import './components/books.css';
 import { bookPath, STATUS_LABELS } from './helpers';
 
 type Filter = 'all' | BookStatus | 'hidden';
-type SortKey = 'recent' | 'title' | 'author' | 'rating' | 'pages';
 type ViewMode = 'shelf' | 'grid';
 
 const FILTERS: Filter[] = ['all', 'reading', 'planned', 'completed', 'paused', 'dropped', 'hidden'];
 
-const SORTS: { id: SortKey; label: () => string }[] = [
+const SORTS: { id: ShelfSortKey; label: () => string }[] = [
   { id: 'recent', label: () => t('Zuletzt') },
   { id: 'title', label: () => t('Titel') },
   { id: 'author', label: () => t('Autor') },
@@ -26,24 +41,17 @@ const SORTS: { id: SortKey; label: () => string }[] = [
   { id: 'pages', label: () => t('Seiten') },
 ];
 
-const activity = (b: Book) =>
-  new Date(b.completedAt || b.lastReadAt || b.startedAt || b.addedAt || 0).getTime();
+const PAGE_SIZE: Record<ViewMode, number> = { shelf: 45, grid: 30 };
 
-function sortBooks(books: Book[], sort: SortKey): Book[] {
-  const list = [...books];
-  switch (sort) {
-    case 'title':
-      return list.sort((a, b) => a.title.localeCompare(b.title));
-    case 'author':
-      return list.sort((a, b) => (a.authors?.[0] ?? '').localeCompare(b.authors?.[0] ?? ''));
-    case 'rating':
-      return list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || activity(b) - activity(a));
-    case 'pages':
-      return list.sort((a, b) => (b.pageCount ?? 0) - (a.pageCount ?? 0));
-    default:
-      return list.sort((a, b) => activity(b) - activity(a));
+const readSortPref = (): { sort: ShelfSortKey; flip: boolean } => {
+  try {
+    const [sort, flip] = (localStorage.getItem('bookShelfSort') ?? '').split(':');
+    if (SORTS.some((s) => s.id === sort)) return { sort: sort as ShelfSortKey, flip: flip === '1' };
+  } catch {
+    /* egal */
   }
-}
+  return { sort: 'recent', flip: false };
+};
 
 export const BookShelfPage = () => {
   const { currentTheme } = useTheme();
@@ -53,7 +61,11 @@ export const BookShelfPage = () => {
   const filter = (
     FILTERS.includes(params.get('status') as Filter) ? params.get('status') : 'all'
   ) as Filter;
-  const [sort, setSort] = useState<SortKey>('recent');
+  const [pref, setPref] = useState(readSortPref);
+  const { sort, flip } = pref;
+  const [query, setQuery] = useState('');
+  const [genre, setGenre] = useState<string | null>(null);
+  const [limit, setLimit] = useState<{ key: string; n: number }>({ key: '', n: 0 });
   const [view, setView] = useState<ViewMode>(() =>
     (localStorage.getItem('bookShelfView') as ViewMode) === 'grid' ? 'grid' : 'shelf'
   );
@@ -72,29 +84,52 @@ export const BookShelfPage = () => {
     return out;
   }, [bookList, hiddenBookList]);
 
-  const filtered = useMemo(() => {
-    const base =
+  const statusBase = useMemo(
+    () =>
       filter === 'all'
         ? bookList
         : filter === 'hidden'
           ? hiddenBookList
-          : bookList.filter((b) => b.status === filter);
-    const sorted = sortBooks(base, sort);
-    return view === 'shelf' && sort === 'recent' ? sorted.reverse() : sorted;
-  }, [bookList, hiddenBookList, filter, sort, view]);
+          : bookList.filter((b) => b.status === filter),
+    [bookList, hiddenBookList, filter]
+  );
+
+  const genres = useMemo(() => collectGenres(statusBase), [statusBase]);
+  const activeGenre = genre && genres.some((g) => g.name === genre) ? genre : null;
+
+  const filtered = useMemo(() => {
+    const narrowed = statusBase.filter(
+      (b) => matchesQuery(b, query) && (!activeGenre || bookGenres(b).includes(activeGenre))
+    );
+    return sortShelf(narrowed, sort, flip);
+  }, [statusBase, query, activeGenre, sort, flip]);
+
+  const viewKey = `${filter}|${query}|${activeGenre}|${sort}|${flip}|${view}`;
+  const shown = Math.max(limit.key === viewKey ? limit.n : 0, PAGE_SIZE[view]);
+  const visible = useMemo(() => filtered.slice(0, shown), [filtered, shown]);
+  const remaining = filtered.length - visible.length;
 
   const byYear = useMemo(() => {
     if (filter !== 'completed' || view !== 'shelf') return null;
     const groups = new Map<string, Book[]>();
-    for (const b of filtered) {
+    for (const b of visible) {
       const key = b.completedAt ? String(new Date(b.completedAt).getFullYear()) : t('Früher');
       groups.set(key, [...(groups.get(key) ?? []), b]);
     }
     return [...groups.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-  }, [filtered, filter, view]);
+  }, [visible, filter, view]);
 
   const setFilter = (next: Filter) =>
     setParams(next === 'all' ? {} : { status: next }, { replace: true });
+  const pickSort = (id: ShelfSortKey) => {
+    const next = { sort: id, flip: id === sort ? !flip : false };
+    setPref(next);
+    try {
+      localStorage.setItem('bookShelfSort', `${next.sort}:${next.flip ? 1 : 0}`);
+    } catch {
+      /* egal */
+    }
+  };
   const toggleView = () => {
     const next = view === 'shelf' ? 'grid' : 'shelf';
     setView(next);
@@ -151,29 +186,92 @@ export const BookShelfPage = () => {
             );
           })}
         </div>
+        <label className="bk-search" style={{ color: currentTheme.text.muted }}>
+          <Search style={{ fontSize: 20 }} />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('Im Regal suchen')}
+            aria-label={t('Im Regal suchen')}
+            style={{ color: currentTheme.text.primary }}
+          />
+          {query && (
+            <button
+              type="button"
+              className="bk-search-clear"
+              onClick={() => setQuery('')}
+              aria-label={t('Suche löschen')}
+              style={{ color: currentTheme.text.muted }}
+            >
+              <Close style={{ fontSize: 18 }} />
+            </button>
+          )}
+        </label>
+        {genres.length > 1 && (
+          <div className="bk-carousel" style={{ padding: 0, gap: 6 }}>
+            {[{ name: null, count: statusBase.length }, ...genres].map((g) => {
+              const active = g.name === activeGenre;
+              return (
+                <button
+                  key={g.name ?? 'all'}
+                  type="button"
+                  className="bk-chip-btn"
+                  onClick={() => setGenre(g.name)}
+                  style={{
+                    flexShrink: 0,
+                    minHeight: 32,
+                    fontSize: 12,
+                    color: active ? currentTheme.accent : currentTheme.text.muted,
+                    borderColor: active ? `${currentTheme.accent}80` : undefined,
+                    background: active ? `${currentTheme.accent}1a` : undefined,
+                  }}
+                >
+                  {g.name ?? t('Alle Genres')}
+                  <span style={{ opacity: 0.7, fontWeight: 600 }}>{g.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Sort style={{ fontSize: 18, color: currentTheme.text.muted }} />
-          {SORTS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className="bk-chip-btn"
-              onClick={() => setSort(s.id)}
-              style={{
-                minHeight: 32,
-                fontSize: 12,
-                color: sort === s.id ? currentTheme.text.secondary : currentTheme.text.muted,
-                borderColor: sort === s.id ? `${currentTheme.text.secondary}55` : undefined,
-              }}
-            >
-              {s.label()}
-            </button>
-          ))}
+          {SORTS.map((s) => {
+            const active = sort === s.id;
+            const desc = DEFAULT_DESC[s.id] !== flip;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                className="bk-chip-btn"
+                onClick={() => pickSort(s.id)}
+                style={{
+                  minHeight: 32,
+                  fontSize: 12,
+                  color: active ? currentTheme.text.secondary : currentTheme.text.muted,
+                  borderColor: active ? `${currentTheme.text.secondary}55` : undefined,
+                }}
+              >
+                {s.label()}
+                {active &&
+                  (desc ? (
+                    <ArrowDownward style={{ fontSize: 14 }} />
+                  ) : (
+                    <ArrowUpward style={{ fontSize: 14 }} />
+                  ))}
+              </button>
+            );
+          })}
         </div>
+        {(query || activeGenre) && (
+          <div style={{ fontSize: 12.5, color: currentTheme.text.muted }}>
+            {t('{n} Bücher', { n: filtered.length })}
+          </div>
+        )}
 
         {filtered.length === 0 ? (
           <div className="bk-card" style={{ textAlign: 'center', color: currentTheme.text.muted }}>
-            {t('Hier steht noch nichts.')}
+            {query || activeGenre ? t('Nichts gefunden') : t('Hier steht noch nichts.')}
           </div>
         ) : view === 'shelf' ? (
           byYear ? (
@@ -192,17 +290,17 @@ export const BookShelfPage = () => {
               </div>
             ))
           ) : (
-            <Bookshelf books={filtered} />
+            <Bookshelf books={visible} />
           )
         ) : (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 1fr))',
               gap: 16,
             }}
           >
-            {filtered.map((b) => {
+            {visible.map((b) => {
               const pct = progressPercent(b);
               return (
                 <button
@@ -231,6 +329,17 @@ export const BookShelfPage = () => {
               );
             })}
           </div>
+        )}
+        {remaining > 0 && (
+          <button
+            type="button"
+            className="bk-chip-btn"
+            onClick={() => setLimit({ key: viewKey, n: shown + PAGE_SIZE[view] })}
+            style={{ alignSelf: 'center', color: currentTheme.text.secondary }}
+          >
+            {t('Mehr anzeigen')}
+            <span style={{ color: currentTheme.text.muted, fontWeight: 600 }}>{remaining}</span>
+          </button>
         )}
         <div style={{ height: 'var(--page-bottom-gap)' }} />
       </div>
