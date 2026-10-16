@@ -33,8 +33,16 @@ class ServiceWorkerManager {
   private intentionalActivation = false;
   private hiddenApplyHandler: (() => void) | null = null;
   private retryOnlineHandler: (() => void) | null = null;
+  private interacted = false;
 
   constructor() {
+    if (typeof document !== 'undefined') {
+      const markInteraction = () => {
+        this.interacted = true;
+      };
+      document.addEventListener('pointerdown', markInteraction, { capture: true, once: true });
+      document.addEventListener('keydown', markInteraction, { capture: true, once: true });
+    }
     // In der nativen Huelle KEIN Service Worker. Die Android-WebView bietet
     // navigator.serviceWorker zwar an, verweigert dem Worker aber den Storage
     // ("Failed to access storage") — die Registrierung schlaegt also immer fehl.
@@ -131,6 +139,13 @@ class ServiceWorkerManager {
   private onUpdateReady(registration: ServiceWorkerRegistration): void {
     if (this.updateReadyHandled) return;
     this.updateReadyHandled = true;
+
+    // Frischer Start ohne Eingabe: sofort übernehmen. Auf Android feuert „hidden“ beim
+    // Wegwischen oft nicht mehr, der Worker würde sonst über mehrere Starts warten.
+    if (!this.interacted && document.visibilityState === 'visible' && performance.now() < 30000) {
+      this.applyUpdate(registration);
+      return;
+    }
 
     showUpdatePill(() => this.applyUpdate(registration));
 
