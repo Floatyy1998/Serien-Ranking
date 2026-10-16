@@ -9,7 +9,12 @@ import {
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf, useShelfMore } from '../../../hooks/books/useBookShelf';
 import { curateShelf } from '../../../lib/books/discoverMix';
-import { SHELF_SORTS, type ShelfId } from '../../../services/api/bookDiscovery';
+import {
+  SHELF_AUDIENCES,
+  SHELF_SORTS,
+  type ShelfAudience,
+  type ShelfId,
+} from '../../../services/api/bookDiscovery';
 import { t } from '../../../services/i18n';
 import { BookCover } from '../components/BookCover';
 import '../components/books.css';
@@ -20,6 +25,11 @@ import { useAddFlow, useHideOwned } from './useAddFlow';
 
 const FEW_RESULTS = 6;
 
+const AUDIENCES: { id: ShelfAudience; label: () => string }[] = [
+  { id: 'adult', label: () => t('Erwachsene') },
+  { id: 'young', label: () => t('Jugend & Kinder') },
+];
+
 /** Ganzes Genre-Regal als Poster-Raster mit Sortierung, Untergenres und ohne eigene Bücher. */
 export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
   const { currentTheme } = useTheme();
@@ -29,14 +39,22 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
   const sort = sorts.find((s) => s === params.get('sort')) ?? sorts[0];
   const themes = genre?.themes ?? [];
   const theme = themes.find((th) => th.id === params.get('theme'))?.id;
-  const { items, loading, error } = useBookShelf(id, { eager: true, limit: 80, sort, theme });
+  const audiences = SHELF_AUDIENCES.includes(id) ? AUDIENCES : [];
+  const audience = audiences.find((a) => a.id === params.get('audience'))?.id;
+  const { items, loading, error } = useBookShelf(id, {
+    eager: true,
+    limit: 80,
+    sort,
+    theme,
+    audience,
+  });
   const canLoadMore = !loading && !error && items.length > 0;
   const {
     sentinelRef,
     items: moreItems,
     loadingMore,
     exhausted,
-  } = useShelfMore(id, { sort, theme }, canLoadMore);
+  } = useShelfMore(id, { sort, theme, audience }, canLoadMore);
   const finished = !canLoadMore || exhausted;
   const hideOwned = useHideOwned();
   const { items: shown, hidden } = useMemo(
@@ -46,7 +64,7 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
   const { openAdd, sheet } = useAddFlow();
   const colors = genre?.colors ?? [currentTheme.primary, currentTheme.accent];
 
-  const setFilter = (key: 'sort' | 'theme', value: string | undefined) =>
+  const setFilter = (key: 'sort' | 'theme' | 'audience', value: string | undefined) =>
     setParams(
       (prev) => {
         const next = new URLSearchParams(prev);
@@ -122,6 +140,23 @@ export const GenreView: React.FC<{ id: ShelfId }> = ({ id }) => {
             onTabChange={(s) => setFilter('sort', s === sorts[0] ? undefined : s)}
             style={{ margin: '0 20px' }}
           />
+        )}
+        {audiences.length > 0 && (
+          <HorizontalScrollContainer scrollerClassName="dsc-themes" gap={8}>
+            <FilterPill
+              label={t('Für alle')}
+              active={!audience}
+              onClick={() => setFilter('audience', undefined)}
+            />
+            {audiences.map((a) => (
+              <FilterPill
+                key={a.id}
+                label={a.label()}
+                active={audience === a.id}
+                onClick={() => setFilter('audience', a.id)}
+              />
+            ))}
+          </HorizontalScrollContainer>
         )}
         {themes.length > 0 && (
           <HorizontalScrollContainer scrollerClassName="dsc-themes" gap={8}>

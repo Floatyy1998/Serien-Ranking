@@ -100,10 +100,15 @@ interface MorePages {
 /** Lädt weitere Seiten nach, solange das Element hinter der Liste in Sichtnähe ist. */
 export function useShelfMore(
   id: ShelfId,
-  options: Pick<ShelfOptions, 'sort' | 'theme'>,
+  options: Pick<ShelfOptions, 'sort' | 'theme' | 'audience'>,
   enabled: boolean
 ) {
-  const key = JSON.stringify({ id, sort: options.sort, theme: options.theme });
+  const key = JSON.stringify({
+    id,
+    sort: options.sort,
+    theme: options.theme,
+    audience: options.audience,
+  });
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [near, setNear] = useState(false);
   const [more, setMore] = useState<MorePages>({ key, pages: [], done: false });
@@ -129,9 +134,9 @@ export function useShelfMore(
   useEffect(() => {
     if (!enabled || !near || exhausted || pending) return;
     const tag = `${key}#${page}`;
-    const { id: shelf, sort, theme } = JSON.parse(key) as ShelfOptions & { id: ShelfId };
+    const { id: shelf, sort, theme, audience } = JSON.parse(key) as ShelfOptions & { id: ShelfId };
     setPending(tag);
-    void fetchShelfPage(shelf, { sort, theme }, page)
+    void fetchShelfPage(shelf, { sort, theme, audience }, page)
       .then(
         ({ items, done }) => ({ items, done }),
         () => ({ items: [] as BookSearchResult[], done: true })

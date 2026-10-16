@@ -54,11 +54,23 @@ export type ShelfId =
 /** popular = meistgelesen, top = bestbewertet, gems = stark bewertet abseits der Bestseller, recent = letzte Jahre. */
 export type ShelfSort = 'popular' | 'top' | 'gems' | 'recent';
 
+/** Kinder und Jugend trennt Open Library nicht verlässlich — daher nur Erwachsene gegen Jugend & Kinder. */
+export type ShelfAudience = 'adult' | 'young';
+
 export interface ShelfOptions {
   sort?: ShelfSort;
   theme?: string;
+  audience?: ShelfAudience;
   limit?: number;
 }
+
+const AUDIENCE_QUERY: Record<ShelfAudience, string> = {
+  adult: ' -subject:juvenile_fiction -subject:young_adult_fiction',
+  young: ' (subject:juvenile_fiction OR subject:young_adult_fiction)',
+};
+
+/** Genres, bei denen sich die Zielgruppe wählen lässt (Young Adult ist selbst eine, Sachbuch schließt Fiction aus). */
+export const SHELF_AUDIENCES: ShelfId[] = ['fantasy', 'thriller', 'romance', 'scifi', 'horror'];
 
 const SHELF_QUERY: Record<ShelfId, (year: number) => string> = {
   new: (year) => `first_publish_year:[${year - 3} TO ${year}]`,
@@ -215,8 +227,11 @@ const SHELF_CACHE_ENTRIES = 40;
 const knownTheme = (id: ShelfId, theme: string | undefined) =>
   theme && SHELF_THEMES[id]?.[theme] ? theme : undefined;
 
-const shelfKey = (id: ShelfId, { sort = 'popular', theme, limit = 24 }: ShelfOptions) =>
-  `${appLocale}:${id}:${sort}:${knownTheme(id, theme) ?? ''}:${limit}`;
+const knownAudience = (id: ShelfId, audience: ShelfAudience | undefined) =>
+  audience && AUDIENCE_QUERY[audience] && SHELF_AUDIENCES.includes(id) ? audience : undefined;
+
+const shelfKey = (id: ShelfId, { sort = 'popular', theme, audience, limit = 24 }: ShelfOptions) =>
+  `${appLocale}:${id}:${sort}:${knownTheme(id, theme) ?? ''}:${knownAudience(id, audience) ?? ''}:${limit}`;
 
 /** Nur Kartenfelder, damit viele Regale zusammen nur ein paar Dutzend KB belegen. */
 const compactResult = (r: BookSearchResult): BookSearchResult => ({
@@ -235,24 +250,27 @@ const compactResult = (r: BookSearchResult): BookSearchResult => ({
   ratingCount: r.ratingCount,
 });
 
-function shelfQuery(id: ShelfId, { sort = 'popular', theme }: ShelfOptions) {
+function shelfQuery(id: ShelfId, { sort = 'popular', theme, audience }: ShelfOptions) {
   const themeQuery = theme ? SHELF_THEMES[id]?.[theme] : undefined;
+  const audienceQuery = audience ? AUDIENCE_QUERY[audience] : '';
   const year = new Date().getFullYear();
-  return `${themeQuery ?? SHELF_QUERY[id](year)}${SORT_QUERY[sort].filter(year)}${languageFilter()}`;
+  return `${themeQuery ?? SHELF_QUERY[id](year)}${audienceQuery}${SORT_QUERY[sort].filter(year)}${languageFilter()}`;
 }
 
 /** Regal fürs Stöbern in der App-Sprache — vorberechnet vom Backend, sonst live bei Open Library. */
 export function fetchShelf(id: ShelfId, options: ShelfOptions = {}): Promise<BookSearchResult[]> {
   const { sort = 'popular', limit = 24 } = options;
   const theme = knownTheme(id, options.theme);
-  const query = shelfQuery(id, { sort, theme });
+  const audience = knownAudience(id, options.audience);
+  const query = shelfQuery(id, { sort, theme, audience });
   const key = shelfKey(id, options);
   return cachedSearch(key, async () => {
     const stored = cacheGet<BookSearchResult[]>(SHELF_CACHE, key, SHELF_TTL);
     if (stored) return stored;
-    const prebuilt = theme
-      ? null
-      : await loadStaticShelf(sort === 'popular' ? id : `${id}:${sort}`).catch(() => null);
+    const prebuilt =
+      theme || audience
+        ? null
+        : await loadStaticShelf(sort === 'popular' ? id : `${id}:${sort}`).catch(() => null);
     const list =
       prebuilt && prebuilt.length >= 8
         ? prebuilt.slice(0, limit)
@@ -272,10 +290,11 @@ export function fetchShelfPage(
 ): Promise<{ items: BookSearchResult[]; done: boolean }> {
   const { sort = 'popular' } = options;
   const theme = knownTheme(id, options.theme);
-  const key = `page:${shelfKey(id, { sort, theme, limit: SHELF_PAGE_SIZE })}:${page}`;
+  const audience = knownAudience(id, options.audience);
+  const key = `page:${shelfKey(id, { sort, theme, audience, limit: SHELF_PAGE_SIZE })}:${page}`;
   return cachedSearch(key, async () => {
     const { items, raw } = await olSearchPage(
-      shelfQuery(id, { sort, theme }),
+      shelfQuery(id, { sort, theme, audience }),
       SHELF_PAGE_SIZE,
       SORT_QUERY[sort].sort,
       page * SHELF_PAGE_SIZE

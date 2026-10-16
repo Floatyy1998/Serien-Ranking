@@ -329,6 +329,9 @@ const dict: Record<string, string> = {
   'Wähl deine Lieblingsgenres, dann passen die Vorschläge zu dir.':
     'Elige tus géneros favoritos y las sugerencias encajarán contigo.',
   'Genres wählen': 'Elegir géneros',
+  'Für alle': 'Para todos',
+  Erwachsene: 'Adultos',
+  'Jugend & Kinder': 'Jóvenes y niños',
 };
 
 export default dict;

@@ -81,6 +81,29 @@ describe('fetchShelf', () => {
     expect(done).toBe(true);
   });
 
+  it('grenzt die Zielgruppe ein und geht dafür immer live, auch auf Folgeseiten', async () => {
+    staticShelf.mockResolvedValue(Array.from({ length: 10 }, (_, i) => staticItem(i)));
+    const { fetchShelf, fetchShelfPage } = await import('./bookDiscovery');
+    await fetchShelf('fantasy', { sort: 'top', audience: 'adult' });
+    expect(staticShelf).not.toHaveBeenCalled();
+    expect(query().get('q')).toBe(
+      'subject:fantasy -subject:juvenile_fiction -subject:young_adult_fiction ratings_count:[15 TO *] language:ger'
+    );
+    fetchMock.mockClear();
+    await fetchShelfPage('romance', { sort: 'top', audience: 'young' }, 1);
+    expect(query().get('q')).toBe(
+      'subject:romance (subject:juvenile_fiction OR subject:young_adult_fiction) ratings_count:[15 TO *] language:ger'
+    );
+  });
+
+  it('lässt die Zielgruppe bei Young Adult und Sachbuch weg', async () => {
+    staticShelf.mockResolvedValue(null);
+    const { fetchShelf } = await import('./bookDiscovery');
+    await fetchShelf('ya', { audience: 'adult' });
+    expect(staticShelf).toHaveBeenCalledWith('ya');
+    expect(query().get('q')).toBe('subject:young_adult_fiction language:ger');
+  });
+
   it('ignoriert unbekannte Untergenres', async () => {
     staticShelf.mockResolvedValue(null);
     const { fetchShelf } = await import('./bookDiscovery');
