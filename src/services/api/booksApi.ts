@@ -125,6 +125,16 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
   return hit ? [hit] : [];
 }
 
+/** Die DNB zählt die Bände der deutschen Ausgabe selbst (Quartalsbände); ihre Nummer schlägt die der Hauptquelle. */
+function mergeSeries(
+  primary: BookSearchResult['series'],
+  national: BookSearchResult['series']
+): BookSearchResult['series'] {
+  if (!primary) return national;
+  if (!national?.position || national.position === primary.position) return primary;
+  return { ...primary, position: national.position };
+}
+
 /**
  * Hardcover kennt die meisten ISBNs samt lokaler Ausgabe; Google und Open Library springen nur ein, wenn es nichts findet
  * (oder pausiert). Die DNB fragt immer mit: sie ist kostenlos und liefert Auflage und Seitenzahl deutscher Ausgaben.
@@ -160,7 +170,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
       publishedYear: primary.publishedYear ?? national.publishedYear,
       categories: primary.categories ?? national.categories,
       edition: primary.edition ?? national.edition,
-      series: primary.series ?? national.series,
+      series: mergeSeries(primary.series, national.series),
       isbn13: primary.isbn13 ?? isbn13,
     }),
   ];
