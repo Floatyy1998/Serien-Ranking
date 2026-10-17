@@ -25,6 +25,7 @@ vi.mock('../../components/ui', () => ({
   BackButton: () => <button>Zurück</button>,
   GradientText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   NameBadges: () => null,
+  UserAvatar: () => <span />,
 }));
 
 import { PublicProfileHeader } from './PublicProfileHeader';
@@ -63,6 +64,6 @@ describe('PublicProfileHeader', () => {
         currentTheme={makeTheme()}
       />
     );
-    expect(screen.getByText('Ø 7.3')).toBeInTheDocument();
+    expect(screen.getByText('7.3')).toBeInTheDocument();
   });
 });

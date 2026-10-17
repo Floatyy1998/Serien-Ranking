@@ -22,12 +22,12 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => {
   const Stub = () => <span />;
-  return { Movie: Stub, Public: Stub, Star: Stub, Tv: Stub };
+  return { GridView: Stub, Movie: Stub, Public: Stub, Star: Stub, Tv: Stub, ViewList: Stub };
 });
 vi.mock('../../components/ui', () => ({
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
   PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  ProfileItemCard: ({ title }: { title: string }) => <div data-testid="item-card">{title}</div>,
+  SearchInput: () => <input data-testid="search" />,
   QuickFilter: () => <div data-testid="quick-filter" />,
   ScrollToTopButton: () => <div />,
   Skeleton: () => <div data-testid="skeleton" />,
@@ -46,6 +46,15 @@ vi.mock('./usePublicProfileData', () => ({
   calculateProgress: () => 50,
 }));
 vi.mock('../../lib/motion', () => ({ tapScale: {} }));
+vi.mock('../../hooks/data/usePersistedState', () => ({
+  usePersistedState: (_k: string, d: unknown) => [d, vi.fn()],
+}));
+vi.mock('../Ratings/RatingItemCard', () => ({
+  RatingItemCard: ({ item }: { item: { title: string } }) => (
+    <div data-testid="item-card">{item.title}</div>
+  ),
+}));
+vi.mock('../Ratings/RatingCompactRow', () => ({ RatingCompactRow: () => <div /> }));
 
 import { PublicProfilePage } from './PublicProfilePage';
 
