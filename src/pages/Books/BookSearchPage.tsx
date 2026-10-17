@@ -38,7 +38,7 @@ const ResultRow: React.FC<{
 }> = ({ result, owned, onOpen, onAdd }) => {
   const { currentTheme } = useTheme();
   const meta = [
-    result.authors.slice(0, 2).join(', '),
+    (result.authors ?? []).slice(0, 2).join(', '),
     result.publishedYear,
     result.pageCount && t('{n} S.', { n: result.pageCount }),
   ]

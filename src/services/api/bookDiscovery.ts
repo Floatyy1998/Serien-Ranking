@@ -267,7 +267,7 @@ const shelfKey = (id: ShelfId, { sort = 'popular', theme, audience, limit = 24 }
 const compactResult = (r: BookSearchResult): BookSearchResult => ({
   id: r.id,
   title: r.title,
-  authors: r.authors.slice(0, 1),
+  authors: (r.authors ?? []).slice(0, 1),
   cover: r.cover,
   pageCount: r.pageCount,
   publishedYear: r.publishedYear,

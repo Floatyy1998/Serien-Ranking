@@ -2,7 +2,7 @@ import type { BookSearchResult } from '../../types/Book';
 import { bookMatchKey } from './bookIdentity';
 
 const authorKey = (r: BookSearchResult) =>
-  (r.authors[0] ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '') ||
+  (r.authors?.[0] ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '') ||
   `title:${r.title.toLowerCase()}`;
 
 /** Höchstens `max` Bücher je Autor — die meistgelesenen (meist Band 1) auf den ersten Plätzen des Autors. */

@@ -154,7 +154,7 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
       ...primary,
       cover: weakCover ? national.cover : primary.cover,
       coverFallback: weakCover ? primary.cover : (primary.coverFallback ?? national.cover),
-      authors: primary.authors.length ? primary.authors : national.authors,
+      authors: primary.authors?.length ? primary.authors : national.authors,
       pageCount: primary.pageCount ?? national.pageCount,
       publisher: primary.publisher ?? national.publisher,
       publishedYear: primary.publishedYear ?? national.publishedYear,
@@ -190,7 +190,7 @@ export function rankResults(results: BookSearchResult[], query: string): BookSea
     (titleHit(r) ? 3 : 0) +
     (r.cover ? 2 : 0) +
     (r.pageCount ? 1 : 0) +
-    (r.authors.length ? 1 : 0) +
+    (r.authors?.length ? 1 : 0) +
     (r.language === appLocale ? 1 : 0) +
     Math.min(5, Math.log10((r.popularity ?? 0) + 1) * 1.4);
   const ranked = unique
@@ -341,7 +341,7 @@ export function getBookDetails(ref: {
 async function lookupBook(title: string, author?: string): Promise<BookSearchResult | null> {
   const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
   const byAuthor = (list: BookSearchResult[]) =>
-    last ? list.find((r) => r.authors.some((a) => a.toLowerCase().includes(last))) : list[0];
+    last ? list.find((r) => r.authors?.some((a) => a.toLowerCase().includes(last))) : list[0];
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
     // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.

@@ -118,7 +118,7 @@ export const DiscoverCard: React.FC<{
         {result.title}
       </span>
       <span className="dsc-card-meta" style={{ color: currentTheme.text.muted }}>
-        <span className="bk-item-sub">{result.authors[0] ?? ''}</span>
+        <span className="bk-item-sub">{result.authors?.[0] ?? ''}</span>
         {rating && (
           <span
             className="dsc-rating"
@@ -511,7 +511,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
               </span>
               <h2 className="dsc-hero-title">{current.title}</h2>
               <span className="dsc-hero-author">
-                {[current.authors[0], current.publishedYear].filter(Boolean).join(' · ')}
+                {[current.authors?.[0], current.publishedYear].filter(Boolean).join(' · ')}
               </span>
             </div>
             <div className="dsc-hero-actions">
@@ -582,7 +582,7 @@ export const FeaturedHero: React.FC<{ onAdd: (result: BookSearchResult) => void 
               style={i === index ? { outlineColor: currentTheme.primary } : undefined}
             >
               <BookCover book={f.result} />
-              <span className="dsc-hero-thumb-label">{f.result.authors[0] ?? ''}</span>
+              <span className="dsc-hero-thumb-label">{f.result.authors?.[0] ?? ''}</span>
             </button>
           ))}
         </div>

@@ -24,7 +24,7 @@ export function useSeriesPartBooks(lookups: PartLookup[]): Record<string, BookSe
       const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
       void findBook(part.title, author).then((result) => {
         if (cancelled || !result) return;
-        if (last && !result.authors.some((a) => a.toLowerCase().includes(last))) return;
+        if (last && !result.authors?.some((a) => a.toLowerCase().includes(last))) return;
         setFound((prev) => ({ ...prev, [part.wikidataId]: result }));
       });
     }

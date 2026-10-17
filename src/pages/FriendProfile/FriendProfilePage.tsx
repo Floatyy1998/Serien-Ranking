@@ -838,7 +838,7 @@ export const FriendProfilePage = memo(() => {
                         rating={book.rating ?? 0}
                         progress={book.status === 'reading' && progress > 0 ? progress : undefined}
                         providers={[]}
-                        genres={book.authors[0]}
+                        genres={book.authors?.[0]}
                         index={index}
                         currentTheme={currentTheme}
                         onClick={() => openBookResult(bookAsResult(book))}

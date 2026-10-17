@@ -188,9 +188,9 @@ export const FriendBooksInsights = memo(function FriendBooksInsights({
                 <span className="fbi-title" style={{ color: currentTheme.text.secondary }}>
                   {idea.title}
                 </span>
-                {idea.authors[0] && (
+                {idea.authors?.[0] && (
                   <span className="fbi-author" style={{ color: currentTheme.text.muted }}>
-                    {idea.authors[0]}
+                    {idea.authors?.[0]}
                   </span>
                 )}
               </button>

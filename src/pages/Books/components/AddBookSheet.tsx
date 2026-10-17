@@ -114,7 +114,7 @@ export const AddBookSheet: React.FC<AddBookSheetProps> = ({
                 {result.title}
               </h3>
               <span className="bk-muted" style={{ color: currentTheme.text.muted }}>
-                {[result.authors[0], result.publishedYear].filter(Boolean).join(' · ')}
+                {[result.authors?.[0], result.publishedYear].filter(Boolean).join(' · ')}
               </span>
             </div>
           </div>
