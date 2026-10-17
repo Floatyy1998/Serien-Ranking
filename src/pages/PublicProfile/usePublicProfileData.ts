@@ -34,6 +34,7 @@ export function usePublicProfileData() {
   const [loading, setLoading] = useState(true);
   const [profileName, setProfileName] = useState('');
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [profilePhotoURL, setProfilePhotoURL] = useState<string | undefined>();
   const [profileSeries, setProfileSeries] = useState<PublicItem[]>([]);
   const [profileMovies, setProfileMovies] = useState<PublicItem[]>([]);
   // Tab und Filter leben in der URL (wie auf der eigenen Bewertungsseite): die
@@ -113,6 +114,9 @@ export function usePublicProfileData() {
         }
         setProfileName(usernameSnap.val() || displayNameSnap.val() || t('Unbekannt'));
         setProfileUserId(foundUserId);
+        dbGet<string>(userPath(foundUserId, 'photoURL'))
+          .then((url) => setProfilePhotoURL(typeof url === 'string' && url ? url : undefined))
+          .catch(() => {});
 
         const series = seriesSnapshot.val();
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
@@ -341,6 +345,7 @@ export function usePublicProfileData() {
     /* profile info */
     profileName,
     profileUserId,
+    profilePhotoURL,
     averageRating,
     itemsWithRatingCount,
     /* tab */

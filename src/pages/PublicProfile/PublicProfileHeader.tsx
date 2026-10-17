@@ -9,13 +9,14 @@ import '../FriendProfile/FriendProfilePage.css';
 interface PublicProfileHeaderProps {
   profileName: string;
   profileUid?: string | null;
+  photoURL?: string;
   itemsWithRatingCount: number;
   averageRating: number;
   currentTheme: PublicTheme;
 }
 
 export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
-  ({ profileName, profileUid, itemsWithRatingCount, averageRating, currentTheme }) => {
+  ({ profileName, profileUid, photoURL, itemsWithRatingCount, averageRating, currentTheme }) => {
     const muted = (currentTheme.text as { muted?: string }).muted ?? currentTheme.text.secondary;
     const accent = (
       'accent' in currentTheme ? currentTheme.accent : currentTheme.primary
@@ -61,6 +62,7 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
             <UserAvatar
               userId={profileUid ?? ''}
               username={profileName}
+              photoURL={photoURL}
               size={40}
               navigable={false}
             />

@@ -167,6 +167,7 @@ export const PublicProfilePage: React.FC = () => {
     profileExists,
     profileName,
     profileUserId,
+    profilePhotoURL,
     averageRating,
     itemsWithRatingCount,
     activeTab,
@@ -293,6 +294,7 @@ export const PublicProfilePage: React.FC = () => {
         <PublicProfileHeader
           profileName={profileName}
           profileUid={profileUserId}
+          photoURL={profilePhotoURL}
           itemsWithRatingCount={itemsWithRatingCount}
           averageRating={averageRating}
           currentTheme={currentTheme}
@@ -410,7 +412,7 @@ export const PublicProfilePage: React.FC = () => {
                               background: currentTheme.primary,
                               color: currentTheme.background.default,
                             }
-                          : { color: currentTheme.text.secondary }
+                          : { color: ratingsTheme.text.muted }
                       }
                     >
                       <Icon fontSize="small" />

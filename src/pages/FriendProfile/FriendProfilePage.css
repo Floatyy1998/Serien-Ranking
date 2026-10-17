@@ -886,6 +886,7 @@
 
 .fp-hero-name > span:first-child {
   min-width: 0;
+  padding-bottom: 0.14em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
