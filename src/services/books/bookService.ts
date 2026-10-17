@@ -157,6 +157,10 @@ export async function setBookWish(uid: string, bookId: string, wished: boolean):
   await dbRef(paths.bookItem(uid, bookId)).update({ wishedAt: wished ? nowIso() : null });
 }
 
+export async function setBookOwned(uid: string, bookId: string, owned: boolean): Promise<void> {
+  await dbRef(paths.bookItem(uid, bookId)).update({ ownedAt: owned ? nowIso() : null });
+}
+
 /** Lieblingsgenres fürs Stöbern — leer heißt: wieder aus dem Lesegeschmack ableiten. */
 export async function setFavoriteBookGenres(uid: string, ids: string[]): Promise<void> {
   await dbRef(paths.bookGenres(uid)).set(

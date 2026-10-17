@@ -28,10 +28,19 @@ import { Bookshelf } from './components/Bookshelf';
 import './components/books.css';
 import { bookPath, STATUS_LABELS } from './helpers';
 
-type Filter = 'all' | BookStatus | 'hidden';
+type Filter = 'all' | BookStatus | 'owned' | 'hidden';
 type ViewMode = 'shelf' | 'grid';
 
-const FILTERS: Filter[] = ['all', 'reading', 'planned', 'completed', 'paused', 'dropped', 'hidden'];
+const FILTERS: Filter[] = [
+  'all',
+  'reading',
+  'planned',
+  'completed',
+  'paused',
+  'dropped',
+  'owned',
+  'hidden',
+];
 
 const SORTS: { id: ShelfSortKey; label: () => string }[] = [
   { id: 'recent', label: () => t('Zuletzt') },
@@ -78,9 +87,13 @@ export const BookShelfPage = () => {
       completed: 0,
       paused: 0,
       dropped: 0,
+      owned: 0,
       hidden: hiddenBookList.length,
     };
-    for (const b of bookList) out[b.status] += 1;
+    for (const b of bookList) {
+      out[b.status] += 1;
+      if (b.ownedAt) out.owned += 1;
+    }
     return out;
   }, [bookList, hiddenBookList]);
 
@@ -90,7 +103,9 @@ export const BookShelfPage = () => {
         ? bookList
         : filter === 'hidden'
           ? hiddenBookList
-          : bookList.filter((b) => b.status === filter),
+          : filter === 'owned'
+            ? bookList.filter((b) => !!b.ownedAt)
+            : bookList.filter((b) => b.status === filter),
     [bookList, hiddenBookList, filter]
   );
 
@@ -141,7 +156,13 @@ export const BookShelfPage = () => {
   };
 
   const filterLabel = (f: Filter) =>
-    f === 'all' ? t('Alle') : f === 'hidden' ? t('Ausgeblendet') : STATUS_LABELS[f]();
+    f === 'all'
+      ? t('Alle')
+      : f === 'hidden'
+        ? t('Ausgeblendet')
+        : f === 'owned'
+          ? t('Im Besitz')
+          : STATUS_LABELS[f]();
 
   return (
     <PageLayout>

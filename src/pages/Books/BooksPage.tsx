@@ -1,6 +1,7 @@
 import {
   AutoAwesome,
   Bookmarks,
+  LibraryBooks,
   LocalLibrary,
   PauseCircle,
   Redeem,
@@ -47,6 +48,7 @@ import { BookCarouselSection } from './sections/BookCarouselSection';
 import { BooksDeck } from './sections/BooksDeck';
 import { BookStatsSection } from './sections/BookStatsSection';
 import { CurrentlyReadingSection } from './sections/CurrentlyReadingSection';
+import { FriendsOwnedSection } from './sections/FriendsOwnedSection';
 import { ForYourShowsSection } from './sections/ForYourShowsSection';
 import { NextVolumesSection } from './sections/NextVolumesSection';
 import { ReadingGoalSection } from './sections/ReadingGoalSection';
@@ -101,6 +103,13 @@ export const BooksPage = () => {
       bookList
         .filter((b) => !!b.wishedAt)
         .sort((a, b) => (b.wishedAt ?? '').localeCompare(a.wishedAt ?? '')),
+    [bookList]
+  );
+  const ownedBooks = useMemo(
+    () =>
+      bookList
+        .filter((b) => !!b.ownedAt)
+        .sort((a, b) => (b.ownedAt ?? '').localeCompare(a.ownedAt ?? '')),
     [bookList]
   );
   const paused = useMemo(() => sorted.filter((b) => b.status === 'paused'), [sorted]);
@@ -256,6 +265,17 @@ export const BooksPage = () => {
         icon={<Redeem />}
         iconColor={currentTheme.status.warning}
       />
+
+      <BookCarouselSection
+        books={ownedBooks.slice(0, 20)}
+        title={t('Im Besitz')}
+        icon={<LibraryBooks />}
+        iconColor={currentTheme.status.success}
+        onSeeAll={() => navigate('/books/shelf?status=owned')}
+        seeAllLabel={t('Alle')}
+      />
+
+      {hasBooks && <FriendsOwnedSection ownBooks={bookList} />}
 
       <BookCarouselSection
         books={paused}

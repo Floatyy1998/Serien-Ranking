@@ -218,6 +218,21 @@ const dict: Record<string, string> = {
   'Freunde sehen es als Geschenkidee · Tippen zum Entfernen':
     'Os teus amigos veem-no como ideia de presente · Toca para remover',
   'Freunde sehen es als Geschenkidee': 'Os teus amigos veem-no como ideia de presente',
+  'Bei Freunden im Besitz': 'Na posse de amigos',
+  'Leihen anfragen': 'Pedir',
+  'Leihwunsch gesendet': 'Pedido',
+  'Anfrage geschickt': 'Pedido enviado',
+  'Ein Freund': 'Um amigo',
+  '{name} möchte ein Buch leihen': '{name} gostaria de pedir um livro emprestado',
+  'Hast du „{title}" noch im Regal? {name} würde es gern ausleihen.':
+    'Ainda tens «{title}»? {name} gostaria de o pedir emprestado.',
+  '{name} +{n}': '{name} +{n}',
+  'Im Besitz': 'Em posse',
+  'Als Besitz markieren': 'Marcar como meu',
+  'Freunde sehen, dass du es besitzt': 'Os teus amigos veem que o tens',
+  'Freunde sehen, dass du es besitzt · Tippen zum Entfernen':
+    'Os teus amigos veem que o tens · Toca para remover',
+  'Bei Freunden vorhanden': 'Amigos que o têm',
   'Deine Wunschliste': 'A tua lista de desejos',
   Wunschliste: 'Lista de desejos',
   'Erscheint {date}': 'Sai a {date}',

@@ -21,6 +21,7 @@ import {
   setBookHidden,
   setBookRating,
   setBookStatus,
+  setBookOwned,
   setBookWish,
   updateBookFields,
   updateBookProgress,
@@ -201,6 +202,16 @@ export function useBookActions() {
     [uid]
   );
 
+  const toggleOwned = useCallback(
+    async (book: Book) => {
+      if (!uid) return;
+      await setBookOwned(uid, book.id, !book.ownedAt).catch(() =>
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+      );
+    },
+    [uid]
+  );
+
   const remove = useCallback(
     (book: Book, onRemoved?: () => void) => {
       if (!uid) return;
@@ -234,9 +245,20 @@ export function useBookActions() {
       rate,
       updateFields,
       toggleWish,
+      toggleOwned,
       remove,
       toggleHidden,
     }),
-    [add, saveProgress, changeStatus, rate, updateFields, toggleWish, remove, toggleHidden]
+    [
+      add,
+      saveProgress,
+      changeStatus,
+      rate,
+      updateFields,
+      toggleWish,
+      toggleOwned,
+      remove,
+      toggleHidden,
+    ]
   );
 }

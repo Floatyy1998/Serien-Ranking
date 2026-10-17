@@ -48,6 +48,8 @@ export interface Book {
   hidden?: boolean;
   /** Auf der Wunschliste seit — Freunde sehen das Buch als Geschenkidee. */
   wishedAt?: string;
+  /** Physisch im Regal seit — Freunde sehen, wer das Buch besitzt. */
+  ownedAt?: string;
   /** Zeitpunkt der letzten Wikidata-Suche nach Reihe/Verfilmung (verhindert Dauer-Abfragen). */
   wdChecked?: string;
 }

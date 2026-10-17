@@ -57,7 +57,9 @@ import { ProgressSheet } from './components/ProgressSheet';
 import { BookAdaptationsPanel, BookSeriesPanel } from './detail/BookLinksPanels';
 import { BookStatePanel } from './detail/BookStatePanel';
 import { MangaVolumePanel } from './detail/MangaVolumePanel';
+import { OwnToggle } from './detail/OwnToggle';
 import { WishToggle } from './detail/WishToggle';
+import { FriendsOwningPanel } from './detail/FriendsOwningPanel';
 import { DiscoverCard, SkeletonCards } from './discover/DiscoverParts';
 import { useAddFlow } from './discover/useAddFlow';
 import { useAdaptationMeta } from './hooks/useAdaptationMeta';
@@ -600,6 +602,12 @@ export const BookDetailPage = () => {
           ) : null}
           {(owned || (preview && !mangaOffer)) && (
             <WishToggle wished={!!owned?.wishedAt} busy={busy} onToggle={() => void toggleWish()} />
+          )}
+          {owned && (
+            <OwnToggle owned={!!owned.ownedAt} onToggle={() => void actions.toggleOwned(owned)} />
+          )}
+          {view && !owned?.ownedAt && (
+            <FriendsOwningPanel id={view.id} title={view.title} authors={view.authors ?? []} />
           )}
 
           {detailRows.length > 0 && (

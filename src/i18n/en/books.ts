@@ -217,6 +217,21 @@ const dict: Record<string, string> = {
   'Freunde sehen es als Geschenkidee · Tippen zum Entfernen':
     'Friends see it as a gift idea · Tap to remove',
   'Freunde sehen es als Geschenkidee': 'Friends see it as a gift idea',
+  'Bei Freunden im Besitz': 'Owned by friends',
+  'Leihen anfragen': 'Ask',
+  'Leihwunsch gesendet': 'Asked',
+  'Anfrage geschickt': 'Request sent',
+  'Ein Freund': 'A friend',
+  '{name} möchte ein Buch leihen': '{name} would like to borrow a book',
+  'Hast du „{title}" noch im Regal? {name} würde es gern ausleihen.':
+    'Do you still have “{title}”? {name} would like to borrow it.',
+  '{name} +{n}': '{name} +{n}',
+  'Im Besitz': 'Owned',
+  'Als Besitz markieren': 'Mark as owned',
+  'Freunde sehen, dass du es besitzt': 'Friends see that you own it',
+  'Freunde sehen, dass du es besitzt · Tippen zum Entfernen':
+    'Friends see that you own it · Tap to remove',
+  'Bei Freunden vorhanden': 'Friends who own it',
   'Deine Wunschliste': 'Your wishlist',
   Wunschliste: 'Wishlist',
   'Erscheint {date}': 'Out {date}',

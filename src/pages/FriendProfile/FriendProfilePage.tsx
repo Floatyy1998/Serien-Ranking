@@ -821,16 +821,21 @@ export const FriendProfilePage = memo(() => {
                         key={book.id}
                         mediaType="none"
                         statusText={
-                          book.status === 'reading'
-                            ? book.pageCount
-                              ? t('S. {page} / {total}', {
-                                  page: book.currentPage,
-                                  total: book.pageCount,
-                                })
-                              : t('S. {page}', { page: book.currentPage })
-                            : book.status === 'planned'
-                              ? t('Will ich lesen')
-                              : undefined
+                          [
+                            book.status === 'reading'
+                              ? book.pageCount
+                                ? t('S. {page} / {total}', {
+                                    page: book.currentPage,
+                                    total: book.pageCount,
+                                  })
+                                : t('S. {page}', { page: book.currentPage })
+                              : book.status === 'planned'
+                                ? t('Will ich lesen')
+                                : undefined,
+                            book.ownedAt ? t('Im Besitz') : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ') || undefined
                         }
                         title={book.title}
                         posterUrl={coverAtSize(book.cover, 'M') ?? ''}
