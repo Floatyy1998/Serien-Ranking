@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/data/useEnhancedFirebaseCache';
 import { getMangaDetails } from '../services/api/mangaDetails';
-import { getMangaDexChapterDates, getMangaDexInfo } from '../services/api/mangaUpdatesService';
+import { getMangaChaptersBatch, mangaChapterKey } from '../services/api/mangaUpdatesService';
 import { getDisplayFormatKey, shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 import { dbRef, paths, updateIfExists, userPath } from '../services/db/ref';
@@ -10,8 +10,7 @@ import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
 const ANILIST_REFRESH_KEY_PREFIX = 'mangaAniListRefreshLastRun:';
-// Je Manga zwei Anfragen (search + releases); das Backend erlaubt 60/min je Nutzer.
-const MANGAUPDATES_REFRESH_SPACING_MS = 2500;
+const UNKNOWN_CHAPTERS_RETRY_MS = 90 * 1000;
 
 export const MangaListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -46,8 +45,10 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
   //    wo AniList chapters=2 meldet aber user schon bei 59 ist.
   // 2. Kein persistierter Total-Wert: immer refetchen (frisch hinzugefügt).
   // 3. Sonst: einmal pro Session, um neue Chapter zu erfassen.
-  // Holt MAX aus /search (getMangaDexInfo) UND /releases (getMangaDexChapterDates),
-  // weil bei manchen Titeln nur einer der beiden Endpoints liefert.
+  // Der Stand kommt mit EINER Batch-Anfrage aus dem Backend (lokale Datei dort,
+  // MAX aus search + releases, kein Firebase). Titel, die das Backend noch nicht
+  // kennt, holt es im Hintergrund nach; sie werden einmal nach kurzer Zeit erneut
+  // abgefragt, sonst beim nächsten Start.
   const refreshedIdsRef = useRef(new Set<number>());
   useEffect(() => {
     if (!user || loading || allMangaList.length === 0) return;
@@ -77,19 +78,19 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
 
     if (!sessionDone) sessionStorage.setItem('mangaChapterRefreshDone', 'true');
 
-    toFetch.forEach((manga, i) => {
-      refreshedIdsRef.current.add(manga.anilistId);
-      setTimeout(async () => {
-        try {
-          const [info, chapterInfo] = await Promise.all([
-            getMangaDexInfo(manga.title),
-            getMangaDexChapterDates(manga.title),
-          ]);
-          const latestFromReleases = chapterInfo?.recentChapters?.length
-            ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
-            : 0;
-          const live = Math.max(info.latestChapter || 0, latestFromReleases);
+    toFetch.forEach((manga) => refreshedIdsRef.current.add(manga.anilistId));
 
+    const applyChapters = async (mangaList: Manga[]): Promise<Manga[]> => {
+      const snapshots = await getMangaChaptersBatch(mangaList.map((m) => m.title));
+      const unknown: Manga[] = [];
+      for (const manga of mangaList) {
+        const snapshot = snapshots[mangaChapterKey(manga.title)];
+        if (!snapshot) {
+          unknown.push(manga);
+          continue;
+        }
+        try {
+          const live = snapshot.c || 0;
           const updates: Record<string, unknown> = {};
           const persistedTotal = Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
           if (live > 0 && live > (manga.latestChapterAvailable || 0)) {
@@ -100,13 +101,8 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           if (shouldReopenCompleted(manga, persistedTotal, Math.max(persistedTotal, live))) {
             updates.readStatus = 'reading';
           }
-          // lastReleaseDate = juengstes valides Release. recentChapters sind
-          // bereits durch den Renumbering-Filter im Service bereinigt.
-          if (chapterInfo?.recentChapters?.length) {
-            const newest = chapterInfo.recentChapters[0].publishedAt;
-            if (newest && newest !== manga.lastReleaseDate) {
-              updates.lastReleaseDate = newest;
-            }
+          if (snapshot.d && snapshot.d !== manga.lastReleaseDate) {
+            updates.lastReleaseDate = snapshot.d;
           }
           if (Object.keys(updates).length > 0) {
             await updateIfExists(paths.mangaItem(user.uid, manga.anilistId), updates);
@@ -114,7 +110,14 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
         } catch {
           // Silent fail per manga
         }
-      }, i * MANGAUPDATES_REFRESH_SPACING_MS);
+      }
+      return unknown;
+    };
+
+    void applyChapters(toFetch).then((unknown) => {
+      if (unknown.length > 0) {
+        setTimeout(() => void applyChapters(unknown), UNKNOWN_CHAPTERS_RETRY_MS);
+      }
     });
   }, [user, loading, allMangaList]);
 

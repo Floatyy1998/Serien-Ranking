@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EnhancedCacheResult } from '../hooks/data/firebaseCache/types';
 
 const cacheResult = vi.hoisted(
@@ -43,9 +43,12 @@ vi.mock('../services/db/ref', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   updateIfExists,
 }));
+const getMangaChaptersBatch = vi.hoisted(() =>
+  vi.fn(async (_titles: string[]): Promise<Record<string, unknown>> => ({}))
+);
 vi.mock('../services/api/mangaUpdatesService', () => ({
-  getMangaDexInfo: vi.fn(async () => ({ latestChapter: 0 })),
-  getMangaDexChapterDates: vi.fn(async () => ({ recentChapters: [] })),
+  getMangaChaptersBatch,
+  mangaChapterKey: (title: string) => title.toLowerCase().trim(),
 }));
 
 import { MangaListProvider } from './MangaListProvider';
@@ -107,5 +110,78 @@ describe('MangaListProvider', () => {
 
     expect(getMangaDetails).toHaveBeenCalledWith(1);
     expect(updateIfExists).toHaveBeenCalledWith('users/u1/manga/1', { format: 'MANHWA' });
+  });
+
+  describe('Kapitel-Refresh über das Backend', () => {
+    const releasing = (id: number, title: string) => ({
+      nmr: id,
+      anilistId: id,
+      title,
+      poster: 'p.jpg',
+      format: 'MANGA',
+      status: 'RELEASING',
+      chapters: 10,
+      rating: {},
+      currentChapter: 3,
+      readStatus: 'reading',
+    });
+
+    const renderProvider = () =>
+      render(
+        <MangaListProvider>
+          <Consumer />
+        </MangaListProvider>
+      );
+
+    beforeEach(() => {
+      sessionStorage.clear();
+      localStorage.setItem('mangaAniListRefreshLastRun:u1', String(Date.now()));
+      getMangaChaptersBatch.mockClear();
+      updateIfExists.mockClear();
+    });
+
+    it('holt alle laufenden Manga mit EINER Anfrage und speichert Kapitel + Release-Datum', async () => {
+      vi.useFakeTimers();
+      cacheResult.data = {
+        1: releasing(1, 'Berserk'),
+        2: releasing(2, 'Vagabond'),
+        3: { ...releasing(3, 'Fertig'), status: 'FINISHED' },
+      };
+      getMangaChaptersBatch.mockResolvedValueOnce({
+        berserk: { c: 120, d: '2026-10-01', at: 1 },
+        vagabond: { c: null, d: null, at: 1 },
+      });
+
+      renderProvider();
+      await vi.advanceTimersByTimeAsync(10);
+
+      expect(getMangaChaptersBatch).toHaveBeenCalledTimes(1);
+      expect(getMangaChaptersBatch).toHaveBeenCalledWith(['Berserk', 'Vagabond']);
+      expect(updateIfExists).toHaveBeenCalledTimes(1);
+      expect(updateIfExists).toHaveBeenCalledWith('users/u1/manga/1', {
+        latestChapterAvailable: 120,
+        lastReleaseDate: '2026-10-01',
+      });
+    });
+
+    it('fragt dem Backend unbekannte Titel einmal nach kurzer Zeit erneut ab', async () => {
+      vi.useFakeTimers();
+      cacheResult.data = { 1: releasing(1, 'Neu') };
+      getMangaChaptersBatch.mockResolvedValueOnce({}).mockResolvedValueOnce({
+        neu: { c: 7, d: null, at: 1 },
+      });
+
+      renderProvider();
+      await vi.advanceTimersByTimeAsync(10);
+      expect(getMangaChaptersBatch).toHaveBeenCalledTimes(1);
+      expect(updateIfExists).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(91_000);
+      expect(getMangaChaptersBatch).toHaveBeenCalledTimes(2);
+      expect(getMangaChaptersBatch).toHaveBeenLastCalledWith(['Neu']);
+      expect(updateIfExists).toHaveBeenCalledWith('users/u1/manga/1', {
+        latestChapterAvailable: 7,
+      });
+    });
   });
 });

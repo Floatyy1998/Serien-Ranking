@@ -184,6 +184,47 @@ describe('getMangaDexChapterDates', () => {
   });
 });
 
+describe('getMangaChaptersBatch', () => {
+  it('schickt alle Titel in einer Anfrage und liefert die Einträge', async () => {
+    backendFetchMock.mockResolvedValueOnce(
+      res({ items: { berserk: { c: 120, d: '2026-10-01', at: 1 } } })
+    );
+    const { getMangaChaptersBatch } = await load();
+
+    const items = await getMangaChaptersBatch(['Berserk', 'Vagabond']);
+
+    expect(items).toEqual({ berserk: { c: 120, d: '2026-10-01', at: 1 } });
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+    expect(backendFetchMock).toHaveBeenCalledWith(
+      '/mangaupdates/batch',
+      expect.objectContaining({ body: JSON.stringify({ titles: ['Berserk', 'Vagabond'] }) })
+    );
+  });
+
+  it('teilt sehr lange Listen in Pakete zu 200 Titeln', async () => {
+    backendFetchMock.mockResolvedValue(res({ items: {} }));
+    const { getMangaChaptersBatch } = await load();
+
+    await getMangaChaptersBatch(Array.from({ length: 450 }, (_, i) => `Titel ${i}`));
+
+    expect(backendFetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('Fehler und non-ok Antworten ergeben ein leeres Ergebnis', async () => {
+    backendFetchMock.mockResolvedValueOnce(res({}, false));
+    const { getMangaChaptersBatch } = await load();
+    expect(await getMangaChaptersBatch(['A'])).toEqual({});
+
+    backendFetchMock.mockRejectedValueOnce(new Error('netz'));
+    expect(await getMangaChaptersBatch(['B'])).toEqual({});
+  });
+
+  it('mangaChapterKey normalisiert wie das Backend', async () => {
+    const { mangaChapterKey } = await load();
+    expect(mangaChapterKey('  One Piece ')).toBe('one piece');
+  });
+});
+
 describe('searchMangaUpdatesTitles', () => {
   it('liefert Haupt- und Fundtitel, dekodiert HTML-Entities und verwirft kaputte Einträge', async () => {
     backendFetchMock.mockResolvedValueOnce(

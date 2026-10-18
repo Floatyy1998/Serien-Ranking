@@ -213,6 +213,44 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
   }
 }
 
+export interface MangaChapterSnapshot {
+  /** Neuestes bekanntes Kapitel (null: MangaUpdates kennt keins). */
+  c: number | null;
+  /** Datum des letzten Releases (null: unbekannt). */
+  d: string | null;
+  at: number;
+}
+
+const BATCH_SIZE = 200;
+
+export const mangaChapterKey = (title: string): string => title.toLowerCase().trim();
+
+/**
+ * Kapitelstand für viele Manga mit EINER Anfrage. Das Backend antwortet aus
+ * einer lokalen Datei; Titel, die es noch nicht kennt, holt es im Hintergrund
+ * nach und liefert sie beim nächsten Aufruf. Schlüssel: `mangaChapterKey(title)`.
+ */
+export async function getMangaChaptersBatch(
+  titles: string[]
+): Promise<Record<string, MangaChapterSnapshot>> {
+  const items: Record<string, MangaChapterSnapshot> = {};
+  for (let i = 0; i < titles.length; i += BATCH_SIZE) {
+    try {
+      const res = await backendFetch('/mangaupdates/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titles: titles.slice(i, i + BATCH_SIZE) }),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      Object.assign(items, data?.items ?? {});
+    } catch {
+      // Beim nächsten Start erneut
+    }
+  }
+  return items;
+}
+
 function nullResult(): MangaDexInfo {
   return { mangadexId: null, latestChapter: null, totalChapters: 0, status: null };
 }
