@@ -7,7 +7,6 @@ import {
   AutoStories,
   CalendarMonth,
   EmojiEvents,
-  Explore,
   Forum,
   Group,
   History,
@@ -15,7 +14,6 @@ import {
   Leaderboard,
   LibraryBooks,
   LiveTv,
-  LocalLibrary,
   MenuBook,
   Palette,
   Pets,
@@ -40,8 +38,10 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBadges } from '../../features/badges/BadgeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
+import { useReadingAreas } from '../../hooks/ui/useReadingAreas';
 import { bookTotals } from '../../lib/books/bookStats';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { usesArea } from '../../lib/reading/readingMedium';
 import { t } from '../../services/i18n';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
@@ -195,6 +195,7 @@ export const useProfileData = (): UseProfileDataResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { mangaList } = useMangaList();
+  const readingAreas = useReadingAreas();
   const { bookList } = useBooksList();
 
   const stats = useMemo(() => computeStats(seriesList, movieList), [seriesList, movieList]);
@@ -254,9 +255,15 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const mangaMenuItems: ProfileMenuItem[] = useMemo(
     () => [
-      { label: t('Bücher'), icon: LocalLibrary, color: currentTheme.primary, path: '/books' },
+      { label: t('Lesen'), icon: AutoStories, color: currentTheme.primary, path: '/reading' },
       {
-        label: t('Dein Regal'),
+        label: t('Leseliste'),
+        icon: MenuBook,
+        color: currentTheme.secondary,
+        path: '/reading/list',
+      },
+      {
+        label: t('Bibliothek'),
         icon: LibraryBooks,
         color: currentTheme.status.warning,
         path: '/reading/library',
@@ -268,37 +275,23 @@ export const useProfileData = (): UseProfileDataResult => {
         path: '/reading/stats',
       },
       {
-        label: t('Bücher importieren'),
-        icon: UploadFile,
-        color: currentTheme.status.success,
-        path: '/books/import',
+        label: t('Lese-Verlauf'),
+        icon: History,
+        color: currentTheme.status.error,
+        path: '/reading/history',
       },
-      { label: t('Manga Home'), icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
-      ...(mangaList.length > 0
+      ...(usesArea(readingAreas, 'books')
         ? [
             {
-              label: t('Manga-Leseliste'),
-              icon: MenuBook,
-              color: currentTheme.status.error,
-              path: '/reading/list',
-            },
-            {
-              label: t('Manga-Statistiken'),
-              icon: TrendingUp,
-              color: currentTheme.secondary,
-              path: '/reading/stats',
+              label: t('Bücher importieren'),
+              icon: UploadFile,
+              color: currentTheme.status.success,
+              path: '/books/import',
             },
           ]
-        : [
-            {
-              label: t('Manga entdecken'),
-              icon: Explore,
-              color: currentTheme.status.error,
-              path: '/reading/discover',
-            },
-          ]),
+        : []),
     ],
-    [currentTheme, mangaList]
+    [currentTheme, readingAreas]
   );
 
   const secondaryMenuItems: ProfileMenuItem[] = useMemo(

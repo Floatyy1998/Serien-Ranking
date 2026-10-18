@@ -356,7 +356,7 @@ export const MangaDetailPage = () => {
     if (!user) return;
     await dbRef(paths.mangaItem(user.uid, anilistId)).remove();
     trackMangaDeleted(String(anilistId), mangaTitle);
-    navigate('/manga');
+    navigate('/reading');
   }, [user, anilistId, mangaTitle, navigate]);
 
   const heroData = useMemo(
@@ -373,7 +373,7 @@ export const MangaDetailPage = () => {
             <EmptyState
               icon={<SearchOff style={{ fontSize: 44 }} />}
               title={t('Manga nicht gefunden')}
-              action={{ label: t('Zur Manga-Übersicht'), onClick: () => navigate('/manga') }}
+              action={{ label: t('Zur Lesen-Seite'), onClick: () => navigate('/reading') }}
             />
           ) : (
             <LoadingSpinner text={t('Laden...')} />

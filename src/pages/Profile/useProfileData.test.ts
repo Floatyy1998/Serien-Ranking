@@ -28,6 +28,8 @@ const theme = vi.hoisted(() => ({
   text: { primary: '#tp', secondary: '#ts' },
 }));
 
+const readingAreas = vi.hoisted(() => ({ value: 'both' as 'both' | 'books' | 'manga' }));
+vi.mock('../../hooks/ui/useReadingAreas', () => ({ useReadingAreas: () => readingAreas.value }));
 vi.mock('firebase/compat/app', () => ({
   default: { auth: () => ({ signOut: state.signOut }) },
 }));
@@ -78,6 +80,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  readingAreas.value = 'both';
   cleanup();
   vi.restoreAllMocks();
 });
@@ -149,13 +152,18 @@ describe('useProfileData - Menüs & Aktionen', () => {
     expect(activity?.badge).toBe(5);
   });
 
-  it('zeigt erweiterte Manga-Menüpunkte nur bei nicht-leerer Manga-Liste', () => {
-    const { result: empty } = renderHook(() => useProfileData());
-    const emptyLen = empty.current.mangaMenuItems.length;
+  it('führt im Lesen-Block auf die gemeinsamen Seiten, den Import nur mit Büchern', () => {
+    const { result } = renderHook(() => useProfileData());
+    const paths = result.current.mangaMenuItems.map((i) => i.path);
+    expect(paths).toEqual(
+      expect.arrayContaining(['/reading', '/reading/list', '/reading/library', '/reading/stats'])
+    );
+    expect(paths).toContain('/books/import');
+    expect(paths.some((p) => p.startsWith('/manga'))).toBe(false);
 
-    state.mangaList = [{ id: 1 }];
-    const { result: filled } = renderHook(() => useProfileData());
-    expect(filled.current.mangaMenuItems.length).toBeGreaterThan(emptyLen);
+    readingAreas.value = 'manga';
+    const { result: mangaOnly } = renderHook(() => useProfileData());
+    expect(mangaOnly.current.mangaMenuItems.map((i) => i.path)).not.toContain('/books/import');
   });
 
   it('blendet das Admin-Panel nur für die Admin-UID ein', () => {

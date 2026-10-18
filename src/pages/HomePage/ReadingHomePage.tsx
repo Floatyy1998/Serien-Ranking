@@ -60,7 +60,7 @@ export const ReadingHomePage = () => {
               key: 'books',
               value: bookList.length,
               label: t('Bücher'),
-              to: '/books',
+              to: '/reading/library?medium=books',
               highlight: false,
             },
           ]
@@ -71,7 +71,7 @@ export const ReadingHomePage = () => {
               key: 'manga',
               value: mangaList.length,
               label: 'Manga',
-              to: '/manga',
+              to: '/reading/library?medium=manga',
               highlight: false,
             },
           ]
