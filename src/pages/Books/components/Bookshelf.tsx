@@ -1,7 +1,7 @@
 import { ChevronRight, Star } from '@mui/icons-material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { spineStyle, spineTitleLayout } from '../../../lib/books/bookSpine';
+import { spineStyle, spineTitleLayout, type SpineMeasure } from '../../../lib/books/bookSpine';
 import { t } from '../../../services/i18n';
 import type { Book } from '../../../types/Book';
 import { BookCover } from './BookCover';
@@ -14,6 +14,30 @@ interface BookshelfProps {
   scale?: number;
   /** Ziel beim Antippen; Standard ist die Buch-Detailseite. */
   hrefFor?: (book: Book) => string;
+}
+
+let spineCanvas: CanvasRenderingContext2D | null | undefined;
+const spineWidths = new Map<string, number>();
+
+/** Misst Titel in der Rücken-Schrift (Georgia fett, 0.02em Sperrung) — auch mit Android-Ersatzschrift genau. */
+function spineMeasure(): SpineMeasure | undefined {
+  if (spineCanvas === undefined) {
+    spineCanvas =
+      typeof document === 'undefined' || /jsdom/i.test(navigator.userAgent)
+        ? null
+        : document.createElement('canvas').getContext('2d');
+    if (spineCanvas) spineCanvas.font = "700 100px Georgia, 'Times New Roman', serif";
+  }
+  const ctx = spineCanvas;
+  if (!ctx) return undefined;
+  return (text) => {
+    let width = spineWidths.get(text);
+    if (width === undefined) {
+      width = (ctx.measureText(text).width / 100 + text.length * 0.02) * 1.04;
+      spineWidths.set(text, width);
+    }
+    return width;
+  };
 }
 
 const canHover = () =>
@@ -29,7 +53,7 @@ export const BookSpine: React.FC<{
   onPeek?: (el: HTMLElement | null) => void;
 }> = ({ book, scale = 1, onOpen, lifted = false, onPeek }) => {
   const style = spineStyle(book, scale);
-  const title = spineTitleLayout(book.title, style);
+  const title = spineTitleLayout(book.title, style, spineMeasure());
   return (
     <button
       type="button"
@@ -61,7 +85,7 @@ export const BookSpine: React.FC<{
           className={`bk-spine-title${title.lines === 2 ? ' bk-spine-title--wrap' : ''}`}
           style={{ fontSize: title.fontSize, maxHeight: title.maxHeight }}
         >
-          {book.title}
+          {title.text}
         </span>
         {style.bands > 0 && (
           <span className="bk-spine-band" style={{ bottom: 22, background: style.band }} />

@@ -665,7 +665,6 @@
   white-space: normal;
   max-width: calc(100% - 6px);
   text-align: center;
-  overflow-wrap: break-word;
 }
 
 .bk-spine-band {

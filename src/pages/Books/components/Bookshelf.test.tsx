@@ -19,12 +19,30 @@ const books = [
 describe('Bookshelf', () => {
   it('setzt lange Titel kleiner und auf breiten Rücken zweizeilig', () => {
     const spine = { width: 24, height: 150, bands: 0 as const };
-    expect(spineTitleLayout('1984', spine)).toEqual({ fontSize: 11, lines: 1, maxHeight: 124 });
+    expect(spineTitleLayout('1984', spine)).toEqual({
+      text: '1984',
+      fontSize: 11,
+      lines: 1,
+      maxHeight: 124,
+    });
     expect(spineTitleLayout('Das Erbe der Elfen', spine).fontSize).toBeLessThan(11);
     expect(
       spineTitleLayout('Das Schwert der Vorsehung', { ...spine, width: 20, bands: 1 })
     ).toMatchObject({ fontSize: 8, lines: 1 });
     expect(spineTitleLayout('Das Schwert der Vorsehung', { ...spine, width: 40 }).lines).toBe(2);
+  });
+
+  it('trennt nie mitten im Wort und kürzt notfalls auf den Haupttitel', () => {
+    const narrow = { width: 30, height: 140, bands: 1 as const };
+    const tower = spineTitleLayout('Der Schwalbenturm', narrow);
+    expect(tower.lines).toBe(2);
+    expect(tower.fontSize * 'Schwalbenturm'.length * 0.68).toBeLessThanOrEqual(tower.maxHeight);
+    expect(
+      spineTitleLayout('Blade Runner: Träumen Androiden von elektrischen Schafen?', narrow).text
+    ).toBe('Blade Runner');
+    expect(spineTitleLayout('Blade Runner: Kurz', { ...narrow, height: 170, bands: 0 }).text).toBe(
+      'Blade Runner: Kurz'
+    );
   });
 
   it('zeigt am Handy erst eine Vorschau und öffnet beim zweiten Tipp', () => {

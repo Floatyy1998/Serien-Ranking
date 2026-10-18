@@ -53,35 +53,72 @@ export function spineStyle(book: Pick<Book, 'id' | 'title' | 'pageCount'>, scale
   };
 }
 
-const SPINE_CHAR_WIDTH = 0.68;
 const SPINE_LINE_HEIGHT = 1.05;
+const MIN_SIZE = 8;
+const MAX_SIZE = 11;
+
+/** Textbreite bei 1 px Schriftgröße; ohne Messung (Tests, SSR) eine vorsichtige Schätzung. */
+export type SpineMeasure = (text: string) => number;
+const estimate: SpineMeasure = (text) => text.length * 0.68;
 
 export interface SpineTitleLayout {
+  text: string;
   fontSize: number;
-  lines: 1 | 2;
+  lines: 1 | 2 | 3;
   maxHeight: number;
 }
 
-const half = (n: number) => Math.round(n * 2) / 2;
+const half = (n: number) => Math.floor(n * 2) / 2;
+
+function fitTitle(
+  text: string,
+  width: number,
+  maxHeight: number,
+  measure: SpineMeasure
+): Omit<SpineTitleLayout, 'text' | 'maxHeight'> & { fits: boolean } {
+  const length = Math.max(measure(text), 0.1);
+  const longestWord = Math.max(...text.split(/\s+/).map(measure), 0.1);
+  const sizeFor = (lines: number) =>
+    lines === 1
+      ? Math.min(MAX_SIZE, maxHeight / length, (width - 4) / SPINE_LINE_HEIGHT)
+      : Math.min(
+          MAX_SIZE,
+          ((lines * maxHeight) / length) * 0.85,
+          (width - 6) / (lines * SPINE_LINE_HEIGHT),
+          maxHeight / longestWord
+        );
+  let lines: 1 | 2 | 3 = 1;
+  let size = sizeFor(1);
+  for (const more of [2, 3] as const) {
+    if (size >= 10.5) break;
+    const candidate = sizeFor(more);
+    if (candidate >= size + 1.5 || (size < MIN_SIZE && candidate >= MIN_SIZE)) {
+      lines = more;
+      size = candidate;
+    }
+  }
+  if (size >= MIN_SIZE) return { fontSize: half(size), lines, fits: true };
+  return { fontSize: MIN_SIZE, lines: 1, fits: false };
+}
 
 /**
- * Lange Titel werden bis 8 px kleiner gesetzt und auf breiten Rücken zweizeilig, statt sofort
- * abgeschnitten zu werden. Ohne Zierbänder steht dem Titel fast die ganze Höhe zur Verfügung.
+ * Lange Titel werden bis 8 px kleiner gesetzt und auf breiten Rücken zwei- oder dreizeilig (nie
+ * mitten im Wort), statt sofort abgeschnitten zu werden. Passt der Titel gar nicht, steht wie auf
+ * echten Rücken nur der Teil vor dem Untertitel. Ohne Zierbänder hat der Titel fast die ganze Höhe.
  */
 export function spineTitleLayout(
   title: string,
-  spine: Pick<SpineStyle, 'width' | 'height' | 'bands'>
+  spine: Pick<SpineStyle, 'width' | 'height' | 'bands'>,
+  measure: SpineMeasure = estimate
 ): SpineTitleLayout {
   const maxHeight = spine.height - (spine.bands > 0 ? 50 : 26);
-  const length = Math.max(1, title.length) * SPINE_CHAR_WIDTH;
-  const one = maxHeight / length;
-  const widthLimit = (spine.width - 6) / (2 * SPINE_LINE_HEIGHT);
-  const two = Math.min(11, ((2 * maxHeight) / length) * 0.85, widthLimit);
-  if (one >= 10.5 || (one >= 9 && two < one + 1.5)) {
-    return { fontSize: half(Math.min(11, one)), lines: 1, maxHeight };
+  const full = fitTitle(title, spine.width, maxHeight, measure);
+  const main = title.split(/\s*[:–—]\s+|\s+-\s+/)[0].trim();
+  if (!full.fits && main && main !== title) {
+    const short = fitTitle(main, spine.width, maxHeight, measure);
+    return { text: main, fontSize: short.fontSize, lines: short.lines, maxHeight };
   }
-  if (two > one && two >= 8) return { fontSize: half(two), lines: 2, maxHeight };
-  return { fontSize: half(Math.max(8, Math.min(11, one))), lines: 1, maxHeight };
+  return { text: title, fontSize: full.fontSize, lines: full.lines, maxHeight };
 }
 
 /** Teilt Buchrücken auf Regalbretter auf, ohne dass ein Brett überläuft. */
