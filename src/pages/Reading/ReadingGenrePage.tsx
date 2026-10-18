@@ -54,7 +54,7 @@ export const ReadingGenrePage = () => {
             icon={genre ? <genre.icon /> : null}
             iconColor={genre?.colors[1]}
             title="Manga"
-            onSeeAll={() => navigate('/manga/discover')}
+            onSeeAll={() => navigate('/reading/discover')}
           >
             {manga.map((item) => (
               <MangaPosterCard

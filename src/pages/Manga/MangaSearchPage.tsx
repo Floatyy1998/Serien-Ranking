@@ -412,7 +412,7 @@ export const MangaSearchPage = () => {
               description={t(
                 'Suche nach Manga, Manhwa oder Manhua — deine eigenen Titel findest du hier auch.'
               )}
-              action={{ label: t('Entdecken'), onClick: () => navigate('/manga/discover') }}
+              action={{ label: t('Entdecken'), onClick: () => navigate('/reading/discover') }}
             />
           )}
         </div>

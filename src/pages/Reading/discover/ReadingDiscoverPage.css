@@ -1,0 +1,66 @@
+/* ─── Lese-Entdecken: Charts ────────────────────────────── */
+
+.rdc-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 20px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 768px) {
+  .rdc-tabs {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 150px));
+  }
+}
+
+.mobile-app .rdc-tab,
+.rdc-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-subtle);
+  background: linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%);
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-app .rdc-tab--active,
+.rdc-tab--active {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary-40);
+  background: linear-gradient(135deg, var(--theme-primary-20), var(--theme-primary-15));
+  font-weight: 700;
+}
+
+.rdc-tab:active {
+  opacity: 0.7;
+}
+
+.manga-pill-row.rdc-filters {
+  margin: 0 0 16px;
+}
+
+.rdc-grid {
+  padding: 0 20px;
+}
+
+.rdc-grid .mpc {
+  width: auto;
+}
+
+.mobile-app .bk-chip-btn.rdc-more,
+.bk-chip-btn.rdc-more {
+  margin: 16px auto 0;
+  padding: 0 18px;
+}

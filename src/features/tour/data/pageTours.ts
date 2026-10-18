@@ -983,43 +983,43 @@ export const PAGE_TOURS: readonly PageTour[] = [
   },
 
   {
-    path: '/manga',
-    version: 1,
-    title: 'Manga-Sammlung',
-    intro: 'Der Einstieg in alles rund um Manga, Manhwa und Manhua.',
+    path: '/reading',
+    version: 2,
+    title: 'Lesen',
+    intro: 'Bücher und Manga auf einer Seite, nach Thema statt nach Medium.',
     actions: [
       {
         icon: 'search',
         title: 'Suchen und hinzufügen',
-        text: 'Neue Titel findest du über die Manga-Suche.',
-      },
-      {
-        icon: 'filter',
-        title: 'Sammlung filtern',
-        text: 'Am Lesen, Geplant, Abgeschlossen oder Abgebrochen getrennt anzeigen.',
+        text: 'Die Suche oben findet Bücher und Manga zugleich.',
       },
       {
         icon: 'explore',
-        title: 'Bereiche',
-        text: 'Leseliste, Bewertungen, Entdecken, Statistiken und Journey erreichst du von hier.',
+        title: 'Schnellzugriff',
+        text: 'Leseliste, Bibliothek, Entdecken, Statistiken, Verlauf und Aufholen zeigen alles zusammen.',
+      },
+      {
+        icon: 'filter',
+        title: 'Anpassen',
+        text: 'Unter „Lesen-Seite anpassen" sortierst du Bereiche oder blendest sie aus.',
       },
     ],
   },
   {
-    path: '/manga/reading-list',
-    version: 1,
+    path: '/reading/list',
+    version: 2,
     title: 'Leseliste',
-    intro: 'Was gerade offen ist, in deiner Reihenfolge.',
+    intro: 'Was gerade offen ist, Bücher und Manga zusammen.',
     actions: [
       {
         icon: 'check',
-        title: 'Kapitel setzen',
-        text: 'Ein Kapitel weiter oder zurück, direkt auf der Karte.',
+        title: 'Weiterlesen',
+        text: 'Nach rechts wischen: ein Kapitel weiter oder zehn Seiten weiter.',
       },
       {
         icon: 'sort',
         title: 'Sortieren',
-        text: 'Nach Fortschritt, Bewertung oder Titel ordnen.',
+        text: 'Nach Fortschritt, Titel oder zuletzt gelesen ordnen.',
       },
       {
         icon: 'bookmark',
@@ -1052,10 +1052,33 @@ export const PAGE_TOURS: readonly PageTour[] = [
     ],
   },
   {
-    path: '/manga/ratings',
+    path: '/reading/library',
     version: 1,
-    title: 'Manga-Bewertungen',
-    intro: 'Alles, was du bewertet hast, und was noch offen ist.',
+    title: 'Bibliothek',
+    intro: 'Alle deine Bücher und Manga in einem Regal.',
+    actions: [
+      {
+        icon: 'filter',
+        title: 'Filtern',
+        text: 'Nach Status, Medium und Genre eingrenzen oder im Bestand suchen.',
+      },
+      {
+        icon: 'sort',
+        title: 'Regal oder Raster',
+        text: 'Buchrücken im Regal oder Cover im Raster, sortiert wie du willst.',
+      },
+      {
+        icon: 'replay',
+        title: 'Versteckte zurückholen',
+        text: 'Unter „Versteckt" blendest du Titel wieder ein, der Fortschritt bleibt erhalten.',
+      },
+    ],
+  },
+  {
+    path: '/reading/ratings',
+    version: 2,
+    title: 'Bewertungen',
+    intro: 'Alles, was du gelesen und bewertet hast, und was noch offen ist.',
     actions: [
       {
         icon: 'star',
@@ -1075,107 +1098,84 @@ export const PAGE_TOURS: readonly PageTour[] = [
     ],
   },
   {
-    path: '/manga/discover',
-    version: 1,
-    title: 'Manga entdecken',
-    intro: 'Vorschläge und beliebte Titel, die zu dir passen.',
+    path: '/reading/discover',
+    version: 2,
+    title: 'Entdecken',
+    intro: 'Charts, Neues und Vorschläge für Bücher und Manga.',
     actions: [
       {
         icon: 'explore',
-        title: 'Für dich',
-        text: 'Empfehlungen auf Basis deiner Sammlung und Bewertungen.',
+        title: 'Charts',
+        text: 'Trend, Beliebt, Top bewertet und Bald, mit Länderfilter für Manga.',
       },
       {
         icon: 'filter',
-        title: 'Beliebt und Formate',
-        text: 'Zwischen Empfehlungen, Beliebtem und einzelnen Formaten wechseln.',
+        title: 'Genres',
+        text: 'Ein Genre zeigt passende Bücher und Manga zusammen.',
       },
       {
         icon: 'add',
         title: 'Direkt übernehmen',
-        text: 'Aus jeder Karte heraus landet ein Titel in deiner Sammlung.',
+        text: 'Aus jeder Karte heraus landet ein Titel in deiner Bibliothek.',
       },
     ],
   },
   {
-    path: '/manga/stats',
-    version: 1,
-    title: 'Manga-Statistiken',
-    intro: 'Dein Lese-Universum in Zahlen.',
+    path: '/reading/stats',
+    version: 2,
+    title: 'Lese-Statistik',
+    intro: 'Dein Lesejahr in Zahlen, Bücher und Manga zusammen.',
     actions: [
       {
         icon: 'stats',
-        title: 'Deine Zahlen',
-        text: 'Gelesene Kapitel, Titel und Durchschnittsbewertung auf einen Blick.',
+        title: 'Jahr wählen',
+        text: 'Seiten, Kapitel, Lesetage und Beendetes für jedes Jahr.',
+      },
+      {
+        icon: 'streak',
+        title: 'Lese-Serie',
+        text: 'Wie viele Tage am Stück du gelesen hast, egal ob Buch oder Manga.',
       },
       {
         icon: 'explore',
         title: 'Genres und Formate',
         text: 'Zeigt, worauf deine Lesezeit wirklich entfällt.',
       },
-      {
-        icon: 'share',
-        title: 'Weitergeben',
-        text: 'Die Auswertung lässt sich als Bild teilen.',
-      },
     ],
   },
   {
-    path: '/manga/catch-up',
-    version: 1,
-    title: 'Manga aufholen',
+    path: '/reading/catch-up',
+    version: 2,
+    title: 'Aufholen',
     intro: 'Wo du beim Lesen am weitesten zurückliegst.',
     actions: [
       {
         icon: 'stats',
         title: 'Rückstand sehen',
-        text: 'Je Titel stehen offene Kapitel und Fortschritt nebeneinander.',
+        text: 'Offene Kapitel, Restseiten und neue Bände deiner Reihen auf einen Blick.',
       },
       {
-        icon: 'check',
-        title: 'Aufholen',
-        text: 'Bis zu einem bestimmten Kapitel auf einmal als gelesen markieren.',
+        icon: 'sort',
+        title: 'Sortieren',
+        text: 'Nach dem größten Rückstand, dem Fortschritt oder dem längsten Abstand.',
       },
       {
         icon: 'calendar',
-        title: 'Erscheinungsrhythmus',
-        text: 'Zu vielen Titeln steht, in welchem Abstand neue Kapitel kommen.',
+        title: 'Restzeit',
+        text: 'Zu jedem Titel steht, wie lange du noch ungefähr brauchst.',
       },
     ],
   },
   {
-    path: '/manga/journey',
-    version: 1,
-    title: 'Lese-Journey',
-    intro: 'Deine Lese-Trends über die Zeit.',
-    actions: [
-      {
-        icon: 'stats',
-        title: 'Kapitel pro Monat',
-        text: 'Zeigt, wann du viel und wann du kaum gelesen hast.',
-      },
-      {
-        icon: 'streak',
-        title: 'Lese-Streak',
-        text: 'Wie viele Tage am Stück du gelesen hast.',
-      },
-      {
-        icon: 'explore',
-        title: 'Genre-Verteilung',
-        text: 'Welche Genres und Formate deine Sammlung prägen.',
-      },
-    ],
-  },
-  {
-    path: '/manga/recently-read',
-    version: 1,
-    title: 'Zuletzt gelesen',
-    intro: 'Deine letzten Kapitel, chronologisch.',
+    path: '/reading/history',
+    version: 2,
+    title: 'Verlauf',
+    intro: 'Was du zuletzt gelesen hast, Tag für Tag.',
     actions: [
       {
         icon: 'history',
         title: 'Zeitraum wählen',
-        text: 'Die letzten Tage, Wochen oder Monate getrennt durchsehen.',
+        text: 'Die letzten 7, 30 oder 90 Tage durchsehen.',
       },
       {
         icon: 'explore',
@@ -1185,30 +1185,7 @@ export const PAGE_TOURS: readonly PageTour[] = [
       {
         icon: 'stats',
         title: 'Aktivität',
-        text: 'Zeigt, wie gleichmäßig du zuletzt gelesen hast.',
-      },
-    ],
-  },
-  {
-    path: '/manga/hidden',
-    version: 1,
-    title: 'Ausgeblendete Manga',
-    intro: 'Titel, die du aus deiner Sammlung genommen hast.',
-    actions: [
-      {
-        icon: 'bookmark',
-        title: 'Was hier landet',
-        text: 'Ausgeblendete Titel verschwinden aus Leseliste, Aufholen und Statistiken.',
-      },
-      {
-        icon: 'replay',
-        title: 'Zurückholen',
-        text: 'Einblenden macht einen Titel wieder überall sichtbar.',
-      },
-      {
-        icon: 'stats',
-        title: 'Nichts geht verloren',
-        text: 'Dein Kapitel-Fortschritt bleibt beim Ausblenden erhalten.',
+        text: 'Seiten, Kapitel und Lesetage des Zeitraums zusammengezählt.',
       },
     ],
   },

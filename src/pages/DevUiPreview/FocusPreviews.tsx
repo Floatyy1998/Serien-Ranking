@@ -7,12 +7,6 @@ import type { AppFocus } from '../../services/settings/appFocus';
 import type { Manga } from '../../types/Manga';
 import { GreetingSection } from '../HomePage/sections/GreetingSection';
 import { ReadingHomeSections } from '../HomePage/sections/ReadingHomeSections';
-import {
-  DEFAULT_FOR_YOU_ORDER,
-  DEFAULT_QUICK_ACTIONS_ORDER,
-  DEFAULT_SECONDARY_ACTIONS_ORDER,
-  DEFAULT_SECTION_ORDER,
-} from '../HomePage/hooks/useHomeConfig';
 import { ActsProvider, actsFor } from '../Onboarding/data/acts';
 import type {
   ReadingItem,
@@ -46,27 +40,9 @@ const MANGA: Manga[] = [
 
 const NO_MANGA: Manga[] = [];
 
-const HOME_CONFIG = {
-  sectionOrder: DEFAULT_SECTION_ORDER,
-  hiddenSections: [],
-  forYouOrder: DEFAULT_FOR_YOU_ORDER,
-  hiddenForYou: [],
-  quickActionsOrder: DEFAULT_QUICK_ACTIONS_ORDER,
-  hiddenQuickActions: [],
-  secondaryActionsOrder: DEFAULT_SECONDARY_ACTIONS_ORDER,
-  hiddenSecondaryActions: [],
-};
-
 const ReadingHomePreviewSections = () => {
   const bookYear = useBookYear();
-  return (
-    <ReadingHomeSections
-      config={HOME_CONFIG}
-      areas="both"
-      bookYear={bookYear}
-      onSearch={() => {}}
-    />
-  );
+  return <ReadingHomeSections areas="both" bookYear={bookYear} onSearch={() => {}} />;
 };
 
 /** Startseite beim Schwerpunkt „Manga & Bücher"; `?empty=1` zeigt den Leerzustand. */
@@ -185,3 +161,25 @@ export const SettingsFocusPreview = () => (
     <AppearanceSection onNavigateTheme={() => {}} onNavigateLayout={() => {}} />
   </div>
 );
+
+/** Lese-Unterseite mit Beispiel-Büchern und -Manga. */
+export const ReadingSubpagePreview = ({ page }: { page: React.ReactNode }) => {
+  const ctx = useMemo(
+    () => ({
+      mangaList: MANGA,
+      allMangaList: MANGA,
+      hiddenMangaList: [],
+      loading: false,
+      refetchManga: () => {},
+      toggleHideManga: async () => {},
+      isOffline: false,
+      isStale: false,
+    }),
+    []
+  );
+  return (
+    <BooksPreviewShell>
+      <MangaListContext.Provider value={ctx}>{page}</MangaListContext.Provider>
+    </BooksPreviewShell>
+  );
+};

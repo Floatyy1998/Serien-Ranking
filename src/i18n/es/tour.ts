@@ -555,6 +555,58 @@ const tour: Record<string, string> = {
   'Bewerten und notieren': 'Valorar y anotar',
   'Wertung setzen und eigene Notizen zum Titel hinterlegen.':
     'Pon una valoración y guarda tus propias notas sobre el título.',
+  'Bücher und Manga auf einer Seite, nach Thema statt nach Medium.':
+    'Libros y manga en una sola página, por tema en lugar de por medio.',
+  'Die Suche oben findet Bücher und Manga zugleich.':
+    'La búsqueda de arriba encuentra libros y manga a la vez.',
+  'Leseliste, Bibliothek, Entdecken, Statistiken, Verlauf und Aufholen zeigen alles zusammen.':
+    'Lista de lectura, biblioteca, descubrir, estadísticas, historial y ponerse al día lo muestran todo junto.',
+  'Unter „Lesen-Seite anpassen" sortierst du Bereiche oder blendest sie aus.':
+    'En «Personalizar página de lectura» ordenas u ocultas secciones.',
+  'Was gerade offen ist, Bücher und Manga zusammen.':
+    'Lo que tienes abierto, libros y manga juntos.',
+  'Nach rechts wischen: ein Kapitel weiter oder zehn Seiten weiter.':
+    'Desliza a la derecha: un capítulo o diez páginas más.',
+  'Nach Fortschritt, Titel oder zuletzt gelesen ordnen.':
+    'Ordenar por progreso, título o última lectura.',
+  'Alle deine Bücher und Manga in einem Regal.': 'Todos tus libros y manga en una estantería.',
+  'Nach Status, Medium und Genre eingrenzen oder im Bestand suchen.':
+    'Filtra por estado, medio y género o busca en tu colección.',
+  'Regal oder Raster': 'Estantería o cuadrícula',
+  'Buchrücken im Regal oder Cover im Raster, sortiert wie du willst.':
+    'Lomos en la estantería o portadas en cuadrícula, ordenados a tu gusto.',
+  'Versteckte zurückholen': 'Recuperar ocultos',
+  'Unter „Versteckt" blendest du Titel wieder ein, der Fortschritt bleibt erhalten.':
+    'En «Ocultos» vuelves a mostrar títulos, el progreso se conserva.',
+  'Alles, was du gelesen und bewertet hast, und was noch offen ist.':
+    'Todo lo que has leído y valorado, y lo que queda pendiente.',
+  'Charts, Neues und Vorschläge für Bücher und Manga.':
+    'Listas, novedades y sugerencias de libros y manga.',
+  'Trend, Beliebt, Top bewertet und Bald, mit Länderfilter für Manga.':
+    'Tendencia, populares, mejor valorados y próximamente, con filtro de país para manga.',
+  'Ein Genre zeigt passende Bücher und Manga zusammen.':
+    'Un género muestra libros y manga afines juntos.',
+  'Aus jeder Karte heraus landet ein Titel in deiner Bibliothek.':
+    'Desde cualquier tarjeta un título llega a tu biblioteca.',
+  'Dein Lesejahr in Zahlen, Bücher und Manga zusammen.':
+    'Tu año de lectura en cifras, libros y manga juntos.',
+  'Jahr wählen': 'Elegir año',
+  'Seiten, Kapitel, Lesetage und Beendetes für jedes Jahr.':
+    'Páginas, capítulos, días de lectura y terminados de cada año.',
+  'Lese-Serie': 'Racha de lectura',
+  'Wie viele Tage am Stück du gelesen hast, egal ob Buch oder Manga.':
+    'Cuántos días seguidos has leído, sea libro o manga.',
+  'Offene Kapitel, Restseiten und neue Bände deiner Reihen auf einen Blick.':
+    'Capítulos pendientes, páginas restantes y nuevos tomos de tus series de un vistazo.',
+  'Nach dem größten Rückstand, dem Fortschritt oder dem längsten Abstand.':
+    'Por mayor retraso, progreso o la pausa más larga.',
+  Restzeit: 'Tiempo restante',
+  'Zu jedem Titel steht, wie lange du noch ungefähr brauchst.':
+    'Cada título indica cuánto te falta aproximadamente.',
+  'Was du zuletzt gelesen hast, Tag für Tag.': 'Lo que has leído últimamente, día a día.',
+  'Die letzten 7, 30 oder 90 Tage durchsehen.': 'Revisa los últimos 7, 30 o 90 días.',
+  'Seiten, Kapitel und Lesetage des Zeitraums zusammengezählt.':
+    'Páginas, capítulos y días de lectura del periodo sumados.',
 };
 
 export default tour;

@@ -1,3 +1,10 @@
+import { ReadingListPage } from '../Reading/list/ReadingListPage';
+import { ReadingLibraryPage } from '../Reading/library/ReadingLibraryPage';
+import { ReadingDiscoverPage } from '../Reading/discover/ReadingDiscoverPage';
+import { ReadingRatingsPage } from '../Reading/ratings/ReadingRatingsPage';
+import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
+import { ReadingHistoryPage } from '../Reading/history/ReadingHistoryPage';
+import { ReadingCatchUpPage } from '../Reading/list/ReadingCatchUpPage';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
@@ -23,6 +30,7 @@ import {
   OnboardingReadingPreview,
   OnboardingWelcomeReadingPreview,
   ReadingHomePreview,
+  ReadingSubpagePreview,
   SettingsFocusPreview,
 } from './FocusPreviews';
 import {
@@ -324,6 +332,41 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   },
   { id: 'book-import', label: 'Bücher: Import', render: () => <BookImportPreview /> },
   { id: 'reading-hub', label: 'Lesen: Alle', render: () => <ReadingHubPreview /> },
+  {
+    id: 'reading-list',
+    label: 'Lesen: Leseliste',
+    render: () => <ReadingSubpagePreview page={<ReadingListPage />} />,
+  },
+  {
+    id: 'reading-library',
+    label: 'Lesen: Bibliothek',
+    render: () => <ReadingSubpagePreview page={<ReadingLibraryPage />} />,
+  },
+  {
+    id: 'reading-discover',
+    label: 'Lesen: Entdecken',
+    render: () => <ReadingSubpagePreview page={<ReadingDiscoverPage />} />,
+  },
+  {
+    id: 'reading-ratings',
+    label: 'Lesen: Bewertungen',
+    render: () => <ReadingSubpagePreview page={<ReadingRatingsPage />} />,
+  },
+  {
+    id: 'reading-stats',
+    label: 'Lesen: Statistik',
+    render: () => <ReadingSubpagePreview page={<ReadingStatsPage />} />,
+  },
+  {
+    id: 'reading-history',
+    label: 'Lesen: Verlauf',
+    render: () => <ReadingSubpagePreview page={<ReadingHistoryPage />} />,
+  },
+  {
+    id: 'reading-catch-up',
+    label: 'Lesen: Aufholen',
+    render: () => <ReadingSubpagePreview page={<ReadingCatchUpPage />} />,
+  },
   { id: 'coin-egg', label: 'Lesen: Flos Münze', render: () => <CoinEggPreview /> },
   {
     id: 'coin-egg-photo',

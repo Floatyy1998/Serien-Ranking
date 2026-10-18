@@ -177,73 +177,70 @@ export const MangaDetailPage = lazyWithRetry(() =>
     default: m.MangaDetailPage,
   }))
 );
-export const MangaRatingsPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-ratings" */ '../pages/Manga/MangaRatingsPage').then((m) => ({
-    default: m.MangaRatingsPage,
-  }))
-);
 export const MangaSearchPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "manga-search" */ '../pages/Manga/MangaSearchPage').then((m) => ({
     default: m.MangaSearchPage,
   }))
 );
-export const MangaCatchUpPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-catch-up" */ '../pages/Manga/MangaCatchUpPage').then((m) => ({
-    default: m.MangaCatchUpPage,
-  }))
-);
-export const HiddenMangaPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "hidden-manga" */ '../pages/Manga/HiddenMangaPage').then((m) => ({
-    default: m.HiddenMangaPage,
-  }))
-);
-export const RecentlyReadPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "recently-read" */ '../pages/Manga/RecentlyReadPage').then((m) => ({
-    default: m.RecentlyReadPage,
-  }))
-);
-export const MangaStatsPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-stats" */ '../pages/Manga/MangaStatsPage').then((m) => ({
-    default: m.MangaStatsPage,
-  }))
-);
-export const MangaDiscoverPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-discover" */ '../pages/Manga/MangaDiscoverPage').then((m) => ({
-    default: m.MangaDiscoverPage,
-  }))
-);
-export const MangaReadJourneyPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-journey" */ '../pages/Manga/MangaReadJourneyPage').then(
+
+export const ReadingListPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading-list" */ '../pages/Reading/list/ReadingListPage').then(
     (m) => ({
-      default: m.MangaReadJourneyPage,
+      default: m.ReadingListPage,
     })
   )
 );
-
+export const ReadingCatchUpPage = lazyWithRetry(() =>
+  import(
+    /* webpackChunkName: "reading-catch-up" */ '../pages/Reading/list/ReadingCatchUpPage'
+  ).then((m) => ({
+    default: m.ReadingCatchUpPage,
+  }))
+);
+export const ReadingRatingsPage = lazyWithRetry(() =>
+  import(
+    /* webpackChunkName: "reading-ratings" */ '../pages/Reading/ratings/ReadingRatingsPage'
+  ).then((m) => ({
+    default: m.ReadingRatingsPage,
+  }))
+);
+export const ReadingHistoryPage = lazyWithRetry(() =>
+  import(
+    /* webpackChunkName: "reading-history" */ '../pages/Reading/history/ReadingHistoryPage'
+  ).then((m) => ({
+    default: m.ReadingHistoryPage,
+  }))
+);
+export const ReadingStatsPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading-stats" */ '../pages/Reading/stats/ReadingStatsPage').then(
+    (m) => ({
+      default: m.ReadingStatsPage,
+    })
+  )
+);
+export const ReadingLibraryPage = lazyWithRetry(() =>
+  import(
+    /* webpackChunkName: "reading-library" */ '../pages/Reading/library/ReadingLibraryPage'
+  ).then((m) => ({
+    default: m.ReadingLibraryPage,
+  }))
+);
+export const ReadingDiscoverPage = lazyWithRetry(() =>
+  import(
+    /* webpackChunkName: "reading-discover" */ '../pages/Reading/discover/ReadingDiscoverPage'
+  ).then((m) => ({
+    default: m.ReadingDiscoverPage,
+  }))
+);
 export const ReadingGenrePage = lazyWithRetry(() =>
   import(/* webpackChunkName: "reading-genre" */ '../pages/Reading/ReadingGenrePage').then((m) => ({
     default: m.ReadingGenrePage,
   }))
 );
-export const MangaCollectionPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-collection" */ '../pages/Manga/MangaCollectionPage').then(
-    (m) => ({
-      default: m.MangaCollectionPage,
-    })
-  )
-);
 export const ReadingLayoutPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "reading-layout" */ '../pages/Reading/ReadingLayoutPage').then(
     (m) => ({
       default: m.ReadingLayoutPage,
-    })
-  )
-);
-
-export const MangaReadingListPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-reading-list" */ '../pages/Manga/MangaReadingListPage').then(
-    (m) => ({
-      default: m.MangaReadingListPage,
     })
   )
 );
@@ -256,16 +253,6 @@ export const BookSearchPage = lazyWithRetry(() =>
 export const BookDetailPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "book-detail" */ '../pages/Books/BookDetailPage').then((m) => ({
     default: m.BookDetailPage,
-  }))
-);
-export const BookShelfPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "book-shelf" */ '../pages/Books/BookShelfPage').then((m) => ({
-    default: m.BookShelfPage,
-  }))
-);
-export const BookStatsPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "book-stats" */ '../pages/Books/BookStatsPage').then((m) => ({
-    default: m.BookStatsPage,
   }))
 );
 export const BookImportPage = lazyWithRetry(() =>
@@ -343,21 +330,17 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/Person'),
     () => import('../pages/Manga/MangaDetailPage'),
     () => import('../pages/Manga/MangaSearchPage'),
-    () => import('../pages/Manga/MangaRatingsPage'),
-    () => import('../pages/Manga/MangaCatchUpPage'),
-    () => import('../pages/Manga/RecentlyReadPage'),
-    () => import('../pages/Manga/MangaStatsPage'),
-    () => import('../pages/Manga/MangaDiscoverPage'),
-    () => import('../pages/Manga/MangaReadJourneyPage'),
-    () => import('../pages/Manga/MangaReadingListPage'),
-    () => import('../pages/Manga/HiddenMangaPage'),
     () => import('../pages/Reading/ReadingLayoutPage'),
+    () => import('../pages/Reading/list/ReadingListPage'),
+    () => import('../pages/Reading/list/ReadingCatchUpPage'),
+    () => import('../pages/Reading/ratings/ReadingRatingsPage'),
+    () => import('../pages/Reading/history/ReadingHistoryPage'),
+    () => import('../pages/Reading/stats/ReadingStatsPage'),
+    () => import('../pages/Reading/library/ReadingLibraryPage'),
+    () => import('../pages/Reading/discover/ReadingDiscoverPage'),
     () => import('../pages/Reading/ReadingGenrePage'),
-    () => import('../pages/Manga/MangaCollectionPage'),
     () => import('../pages/Books/BookSearchPage'),
     () => import('../pages/Books/BookDetailPage'),
-    () => import('../pages/Books/BookShelfPage'),
-    () => import('../pages/Books/BookStatsPage'),
     () => import('../pages/Books/BookImportPage'),
     () => import('../pages/AnimeSeason'),
     () => import('../pages/SerienKalender'),

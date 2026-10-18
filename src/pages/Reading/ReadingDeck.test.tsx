@@ -88,7 +88,7 @@ describe('ReadingDeck', () => {
     expect(screen.getByText('2 Bücher · 1 dieses Jahr gelesen')).toBeTruthy();
     expect(screen.getByRole('button', { name: '2 Im Regal' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '2 Im Regal' }));
-    expect(navigate).toHaveBeenCalledWith('/books/shelf');
+    expect(navigate).toHaveBeenCalledWith('/reading/library');
   });
 
   it('zeigt Mangalesern die Sammlung', () => {
@@ -109,7 +109,7 @@ describe('ReadingDeck', () => {
     fireEvent.click(screen.getByRole('button', { name: '2 Manga' }));
     expect(onShowCollection).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '2 Bücher' }));
-    expect(navigate).toHaveBeenCalledWith('/books/shelf');
+    expect(navigate).toHaveBeenCalledWith('/reading/library');
   });
 
   it('sucht in beidem oder nur im genutzten Lesebereich', () => {

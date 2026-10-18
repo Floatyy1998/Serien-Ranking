@@ -98,7 +98,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
               key: 'new',
               value: manga.newChapters,
               label: t('Neu'),
-              onClick: () => navigate('/manga/catch-up'),
+              onClick: () => navigate('/reading/catch-up'),
               highlight: true,
             },
           ]
@@ -119,7 +119,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
           key: 'books',
           value: bookList.length,
           label: t('Bücher'),
-          onClick: () => navigate('/books/shelf'),
+          onClick: () => navigate('/reading/library'),
         },
         { key: 'manga', value: mangaList.length, label: 'Manga', onClick: onShowCollection },
       ];
@@ -131,19 +131,19 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
           key: 'year',
           value: yearStats.booksFinished,
           label: t('Gelesen'),
-          onClick: () => navigate('/books/stats'),
+          onClick: () => navigate('/reading/stats'),
         },
         {
           key: 'pages',
           value: yearStats.pagesRead.toLocaleString(),
           label: t('Seiten'),
-          onClick: () => navigate('/books/stats'),
+          onClick: () => navigate('/reading/stats'),
         },
         {
           key: 'shelf',
           value: bookList.length,
           label: t('Im Regal'),
-          onClick: () => navigate('/books/shelf'),
+          onClick: () => navigate('/reading/library'),
         },
       ];
       sub = hasBooks
@@ -162,7 +162,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
           key: 'chapters',
           value: manga.chapters.toLocaleString(),
           label: t('Kapitel'),
-          onClick: () => navigate('/manga/stats'),
+          onClick: () => navigate('/reading/stats'),
         },
         {
           key: 'collection',

@@ -46,7 +46,7 @@ const dayKey = (ms: number): string => {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 };
 
-const dayStart = (ms: number): number => {
+export const dayStart = (ms: number): number => {
   const d = new Date(ms);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 };
@@ -58,11 +58,18 @@ export function buildReadHistory(
   rangeDays: number
 ): ReadHistory {
   const cutoff = dayStart(now) - (rangeDays - 1) * 86400000;
-  const byId = new Map(library.map((m) => [m.anilistId, m]));
+  const byId = new Map(library.map((m) => [Number(m.anilistId), m]));
+  // Ereignisse älterer Einträge tragen mitunter eine andere ID — dann hilft der Titel.
+  const titleKey = (title: string) => title.trim().toLowerCase();
+  const byTitle = new Map(library.map((m) => [titleKey(m.title || ''), m]));
   const days = new Map<string, { date: number; entries: Map<number, ReadHistoryEntry> }>();
   const seenManga = new Set<number>();
 
-  const entryFor = (key: string, date: number, anilistId: number, fallbackTitle?: string) => {
+  const entryFor = (key: string, date: number, rawId: number, fallbackTitle?: string) => {
+    const known =
+      byId.get(Number(rawId)) ?? (fallbackTitle ? byTitle.get(titleKey(fallbackTitle)) : undefined);
+    const anilistId = known ? Number(known.anilistId) : Number(rawId);
+    if (known) seenManga.add(anilistId);
     let day = days.get(key);
     if (!day) {
       day = { date, entries: new Map() };
@@ -70,11 +77,10 @@ export function buildReadHistory(
     }
     let entry = day.entries.get(anilistId);
     if (!entry) {
-      const manga = byId.get(anilistId);
       entry = {
         anilistId,
-        title: manga?.title || fallbackTitle || '',
-        poster: manga?.poster,
+        title: known?.title || fallbackTitle || '',
+        poster: known?.poster,
         fromChapter: null,
         toChapter: null,
         chapters: 0,
@@ -107,7 +113,7 @@ export function buildReadHistory(
       }
     }
     if (op.reread) entry.reread = true;
-    seenManga.add(op.s);
+    seenManga.add(Number(op.s));
   }
 
   for (const op of toVolumeOperations(events)) {
@@ -123,14 +129,14 @@ export function buildReadHistory(
       entry.fromVolume = entry.fromVolume === null ? op.from : Math.min(entry.fromVolume, op.from);
     }
     if (op.reread) entry.reread = true;
-    seenManga.add(op.s);
+    seenManga.add(Number(op.s));
   }
 
   // Lesen von vor den Ereignissen: nur der Gesamtstand am letzten Lesetag ist bekannt.
   for (const manga of library) {
     const byVolume = mangaUnit(manga) === 'volume';
     const current = byVolume ? manga.currentVolume : manga.currentChapter;
-    if (seenManga.has(manga.anilistId) || !manga.lastReadAt || !current) continue;
+    if (seenManga.has(Number(manga.anilistId)) || !manga.lastReadAt || !current) continue;
     const at = new Date(manga.lastReadAt).getTime();
     if (!Number.isFinite(at) || at < cutoff || at > now + 60000) continue;
     const entry = entryFor(dayKey(at), dayStart(at), manga.anilistId);

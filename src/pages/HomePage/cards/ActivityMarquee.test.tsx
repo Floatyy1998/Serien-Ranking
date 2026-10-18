@@ -58,6 +58,22 @@ describe('ActivityMarquee', () => {
     expect(matches.length).toBeGreaterThan(0);
   });
 
+  it('zeigt auf der Lesen-Seite nur Bücher und Manga, sonst nur Serien und Filme', () => {
+    actsRef.value = [
+      makeActivity({ id: 's', itemTitle: 'Dark' }),
+      makeActivity({ id: 'b', type: 'book_added', itemTitle: 'Momo' }),
+      makeActivity({ id: 'm', type: 'manga_rated', itemTitle: 'Frieren', rating: 9 }),
+    ];
+    render(<ActivityMarquee scope="read" />);
+    expect(screen.queryAllByText((c) => c.includes('Dark'))).toHaveLength(0);
+    expect(screen.getAllByText((c) => c.includes('Momo')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText((c) => c.includes('Frieren')).length).toBeGreaterThan(0);
+    cleanup();
+    render(<ActivityMarquee scope="watch" />);
+    expect(screen.getAllByText((c) => c.includes('Dark')).length).toBeGreaterThan(0);
+    expect(screen.queryAllByText((c) => c.includes('Momo'))).toHaveLength(0);
+  });
+
   it('navigates to the activity feed when clicked', () => {
     actsRef.value = [makeActivity()];
     render(<ActivityMarquee />);

@@ -29,6 +29,13 @@ export function naechstePosition(aktuell: number, deltaMs: number, lap: number):
   return next <= -lap ? -(-next % lap) : next;
 }
 
+/** Lesen-Seite: nur Bücher und Manga; Serien-Startseite: nur Serien und Filme. */
+const isReadingActivity = (a: FriendActivity) =>
+  a.itemType === 'book' ||
+  a.itemType === 'manga' ||
+  a.type.startsWith('book_') ||
+  a.type.startsWith('manga_');
+
 function formatActivity(a: FriendActivity): string | null {
   const who = a.userName || t('Jemand');
   switch (a.type) {
@@ -71,7 +78,11 @@ function formatActivity(a: FriendActivity): string | null {
   }
 }
 
-export const ActivityMarquee = memo(function ActivityMarquee() {
+export const ActivityMarquee = memo(function ActivityMarquee({
+  scope,
+}: {
+  scope?: 'watch' | 'read';
+}) {
   const { currentTheme } = useTheme();
   const navigate = useTransitionNavigate();
   const { friendActivities } = useOptimizedFriends();
@@ -127,13 +138,14 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
   }, [prefersReducedMotion, x]);
 
   const entries = useMemo(() => {
-    const sorted = [...friendActivities]
+    const sorted = friendActivities
+      .filter((a) => !scope || (scope === 'read') === isReadingActivity(a))
       .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
       .slice(0, MAX_ENTRIES);
     return sorted
       .map((a) => ({ id: a.id, label: formatActivity(a) }))
       .filter((e): e is { id: string; label: string } => e.label !== null);
-  }, [friendActivities]);
+  }, [friendActivities, scope]);
 
   // Neu messen, sobald sich die Liste aendert, eine Schrift nachlaedt oder das
   // Fenster seine Breite aendert — der Beobachter deckt alle drei ab. Eine

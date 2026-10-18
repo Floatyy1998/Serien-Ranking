@@ -16,7 +16,10 @@ export const HiddenMangaCard: React.FC = React.memo(() => {
   const count = hiddenMangaList.length;
 
   return (
-    <NavCard onClick={() => navigate('/manga/hidden')} accentColor={currentTheme.text.secondary}>
+    <NavCard
+      onClick={() => navigate('/reading/library?status=hidden')}
+      accentColor={currentTheme.text.secondary}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <IconContainer color={currentTheme.text.secondary} size={40} borderRadius={12}>
           <VisibilityOff style={{ fontSize: 20 }} />

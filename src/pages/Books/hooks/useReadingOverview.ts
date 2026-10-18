@@ -7,7 +7,7 @@ import type { Book } from '../../../types/Book';
 import type { Manga } from '../../../types/Manga';
 import type { BookYear } from './useBookYear';
 
-const mangaAsShelfBook = (m: Manga): Book => ({
+export const mangaAsShelfBook = (m: Manga): Book => ({
   id: `manga-${m.anilistId}`,
   title: m.title,
   authors: [],

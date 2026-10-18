@@ -492,6 +492,75 @@ const dict: Record<string, string> = {
   'Komplette Sammlung mit Suche': 'Collection complète avec recherche',
   'Neues, Vorschläge und Genres für Bücher und Manga':
     'Nouveautés, suggestions et genres pour livres et mangas',
+  'Manga beendet': 'Mangas terminés',
+  'Bände gelesen': 'Tomes lus',
+  'Kapitel pro Tag': 'Chapitres par jour',
+  'Bände pro Monat': 'Tomes par mois',
+  'Beendet pro Monat': 'Terminés par mois',
+  Übernatürlich: 'Surnaturel',
+  'Noch nichts gelesen': "Rien lu pour l'instant",
+  'Sobald du liest, siehst du hier dein Lesejahr in Zahlen.':
+    'Dès que tu lis, tu verras ici ton année de lecture en chiffres.',
+  'Zum Lesen': 'Aller à la lecture',
+  'Für {year} gibt es noch keine Lese-Daten.':
+    "Aucune donnée de lecture pour {year} pour l'instant.",
+  '{n} Bücher zum Lesen': '{n} livres à lire',
+  '{n} Titel zum Lesen': '{n} titres à lire',
+  'Keine Bücher zum Lesen': 'Aucun livre à lire',
+  'Nichts zum Lesen': 'Rien à lire',
+  'Setze Bücher auf „Lese ich“ oder „Will ich lesen“, dann stehen sie hier.':
+    'Passe des livres en « Je lis » ou « Envie de lire » et ils apparaîtront ici.',
+  'Setze Manga auf „Lese ich“ oder „Geplant“, dann stehen sie hier.':
+    'Passe des mangas en « Je lis » ou « Prévu » et ils apparaîtront ici.',
+  'Setze Bücher oder Manga auf „Lese ich“ oder „Geplant“, dann stehen sie hier.':
+    'Passe des livres ou des mangas en « Je lis » ou « Prévu » et ils apparaîtront ici.',
+  'Seitenzahl unbekannt': 'Nombre de pages inconnu',
+  '{n} Seiten übrig': '{n} pages restantes',
+  'Titel oder Autor suchen …': 'Rechercher un titre ou un auteur …',
+  'Leseliste wird geladen …': 'Chargement de la liste de lecture …',
+  'Am meisten offen': 'Le plus à lire',
+  'Am längsten nicht gelesen': 'Pas lu depuis le plus longtemps',
+  '{n} Titel · {m} Kapitel · {p} Seiten offen': '{n} titres · {m} chapitres · {p} pages restantes',
+  '{n} Titel · {p} Seiten offen': '{n} titres · {p} pages restantes',
+  'Du bist bei allen Büchern auf dem aktuellen Stand.': 'Tu es à jour sur tous tes livres.',
+  'Du bist bei allen Büchern und Manga auf dem aktuellen Stand.':
+    'Tu es à jour sur tous tes livres et mangas.',
+  'Titel offen': 'Titres en cours',
+  'Seiten offen': 'Pages restantes',
+  'S. {a}–{b} (+{n})': 'p. {a}–{b} (+{n})',
+  '+{n} Seiten': '+{n} pages',
+  'Stand nachgetragen: S. {n}': 'Progression ajoutée : p. {n}',
+  '1 Seite': '1 page',
+  'Mit diesem Filter gibt es gerade nichts. Wähle einen anderen Filter oder füge neue Titel hinzu.':
+    "Rien ne correspond à ce filtre pour l'instant. Choisis un autre filtre ou ajoute de nouveaux titres.",
+  'Hier siehst du, was du zuletzt gelesen hast, sobald du deinen Lesestand einträgst.':
+    'Dès que tu notes ta progression de lecture, tu verras ici ce que tu as lu récemment.',
+  Bald: 'Bientôt',
+  Charts: 'Classements',
+  Versteckt: 'Masqués',
+  'Alle Medien': 'Tous les médias',
+  Umfang: 'Longueur',
+  'Suche nach Manga, Manhwa oder Manhua und füge sie hinzu.':
+    'Recherche des mangas, manhwas ou manhuas et ajoute-les.',
+  Medium: 'Support',
+  'In der Bibliothek suchen': 'Rechercher dans la bibliothèque',
+  Bibliothek: 'Bibliothèque',
+  '{n} beendet': '{n} terminés',
+  'Ziel {n}/{m}': 'Objectif {n}/{m}',
+  'Deine Leute': 'Tes proches',
+  'Was los ist': 'Quoi de neuf',
+  'Läuft gerade': 'En cours',
+  'Neues finden': 'Découvrir',
+  Wertungen: 'Notes',
+  Gelesenes: 'Lectures',
+  'Was offen ist': 'En attente',
+  'Noch zu bewerten': 'À noter',
+  '{title} bewerten': 'Noter {title}',
+  'Noch keine Bewertungen': "Aucune note pour l'instant",
+  'Bewerte, was du gelesen hast – hier entsteht dein Ranking.':
+    "Note ce que tu as lu – c'est ici que ton classement prend forme.",
+  'Buch oder Manga suchen...': 'Chercher un livre ou un manga...',
+  'Buch oder Manga suchen': 'Chercher un livre ou un manga',
 };
 
 export default dict;

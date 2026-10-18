@@ -50,11 +50,7 @@ export const UpNextRow = ({ showBooks, showManga }: UpNextRowProps) => {
       icon={<Bookmarks />}
       iconColor={currentTheme.accent}
       title={t('Als Nächstes')}
-      onSeeAll={
-        showBooks
-          ? () => navigate('/books/shelf?status=planned')
-          : () => navigate('/manga/reading-list')
-      }
+      onSeeAll={() => navigate('/reading/list')}
     >
       {entries.map((entry) => {
         if ('book' in entry && entry.book) {

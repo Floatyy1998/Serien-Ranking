@@ -51,22 +51,18 @@ import {
   AdminDashboardPage,
   BugReportPage,
   MangaDetailPage,
-  MangaRatingsPage,
   MangaSearchPage,
-  MangaCatchUpPage,
-  HiddenMangaPage,
-  RecentlyReadPage,
-  MangaStatsPage,
-  MangaDiscoverPage,
-  MangaReadJourneyPage,
-  MangaReadingListPage,
   ReadingLayoutPage,
+  ReadingListPage,
+  ReadingCatchUpPage,
+  ReadingRatingsPage,
+  ReadingHistoryPage,
+  ReadingStatsPage,
+  ReadingLibraryPage,
+  ReadingDiscoverPage,
   ReadingGenrePage,
-  MangaCollectionPage,
   BookSearchPage,
   BookDetailPage,
-  BookShelfPage,
-  BookStatsPage,
   BookImportPage,
   AnimeSeasonPage,
   SerienKalenderPage,
@@ -90,6 +86,16 @@ const DevUiPreviewPage = import.meta.env.DEV
 
 // Themed Spinner statt rohem "Loading..."-Text — das hier ist der Suspense-
 // Fallback, den Nutzer beim ersten Besuch fast jeder Lazy-Route sehen
+/** Alte Lese-Adressen: Filter aus der URL wandern mit auf die gemeinsame Seite. */
+const KeepSearchRedirect = ({ to, extra }: { to: string; extra?: string }) => {
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  for (const [key, value] of new URLSearchParams(extra))
+    if (!params.has(key)) params.set(key, value);
+  const query = params.toString();
+  return <Navigate to={query ? `${to}?${query}` : to} replace />;
+};
+
 const PageLoader = () => (
   <div
     style={{
@@ -444,14 +450,7 @@ export const MobileApp = () => {
                 }
               />
               {/* Manga Pages - specific routes before :id */}
-              <Route
-                path="/manga/ratings"
-                element={
-                  <Layout hideNav>
-                    <MangaRatingsPage />
-                  </Layout>
-                }
-              />
+              <Route path="/manga/ratings" element={<Navigate to="/reading/ratings" replace />} />
               <Route
                 path="/manga/search"
                 element={
@@ -460,67 +459,79 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
-              <Route
-                path="/manga/catch-up"
-                element={
-                  <Layout hideNav>
-                    <MangaCatchUpPage />
-                  </Layout>
-                }
-              />
+              <Route path="/manga/catch-up" element={<Navigate to="/reading/catch-up" replace />} />
               <Route
                 path="/manga/hidden"
-                element={
-                  <Layout hideNav>
-                    <HiddenMangaPage />
-                  </Layout>
-                }
+                element={<KeepSearchRedirect to="/reading/library" extra="status=hidden" />}
               />
               <Route
                 path="/manga/recently-read"
-                element={
-                  <Layout hideNav>
-                    <RecentlyReadPage />
-                  </Layout>
-                }
+                element={<Navigate to="/reading/history" replace />}
               />
-              <Route
-                path="/manga/stats"
-                element={
-                  <Layout hideNav>
-                    <MangaStatsPage />
-                  </Layout>
-                }
-              />
+              <Route path="/manga/stats" element={<Navigate to="/reading/stats" replace />} />
               <Route
                 path="/manga/discover"
-                element={
-                  <Layout hideNav>
-                    <MangaDiscoverPage />
-                  </Layout>
-                }
+                element={<KeepSearchRedirect to="/reading/discover" />}
               />
-              <Route
-                path="/manga/journey"
-                element={
-                  <Layout hideNav>
-                    <MangaReadJourneyPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/manga/reading-list"
-                element={
-                  <Layout hideNav>
-                    <MangaReadingListPage />
-                  </Layout>
-                }
-              />
+              <Route path="/manga/journey" element={<Navigate to="/reading/stats" replace />} />
+              <Route path="/manga/reading-list" element={<Navigate to="/reading/list" replace />} />
               <Route
                 path="/manga/collection"
+                element={<KeepSearchRedirect to="/reading/library" extra="medium=manga" />}
+              />
+              <Route
+                path="/reading/list"
                 element={
                   <Layout hideNav>
-                    <MangaCollectionPage />
+                    <ReadingListPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/catch-up"
+                element={
+                  <Layout hideNav>
+                    <ReadingCatchUpPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/ratings"
+                element={
+                  <Layout hideNav>
+                    <ReadingRatingsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/history"
+                element={
+                  <Layout hideNav>
+                    <ReadingHistoryPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/stats"
+                element={
+                  <Layout hideNav>
+                    <ReadingStatsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/library"
+                element={
+                  <Layout hideNav>
+                    <ReadingLibraryPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/discover"
+                element={
+                  <Layout hideNav>
+                    <ReadingDiscoverPage />
                   </Layout>
                 }
               />
@@ -565,22 +576,8 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
-              <Route
-                path="/books/shelf"
-                element={
-                  <Layout hideNav>
-                    <BookShelfPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/books/stats"
-                element={
-                  <Layout hideNav>
-                    <BookStatsPage />
-                  </Layout>
-                }
-              />
+              <Route path="/books/shelf" element={<KeepSearchRedirect to="/reading/library" />} />
+              <Route path="/books/stats" element={<Navigate to="/reading/stats" replace />} />
               <Route
                 path="/books/import"
                 element={

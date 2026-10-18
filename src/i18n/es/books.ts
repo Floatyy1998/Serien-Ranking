@@ -492,6 +492,75 @@ const dict: Record<string, string> = {
   'Komplette Sammlung mit Suche': 'Colección completa con búsqueda',
   'Neues, Vorschläge und Genres für Bücher und Manga':
     'Novedades, sugerencias y géneros de libros y manga',
+  'Manga beendet': 'Manga terminados',
+  'Bände gelesen': 'Tomos leídos',
+  'Kapitel pro Tag': 'Capítulos por día',
+  'Bände pro Monat': 'Tomos por mes',
+  'Beendet pro Monat': 'Terminados por mes',
+  Übernatürlich: 'Sobrenatural',
+  'Noch nichts gelesen': 'Aún no has leído nada',
+  'Sobald du liest, siehst du hier dein Lesejahr in Zahlen.':
+    'En cuanto empieces a leer, aquí verás tu año de lectura en cifras.',
+  'Zum Lesen': 'Ir a lectura',
+  'Für {year} gibt es noch keine Lese-Daten.': 'Aún no hay datos de lectura de {year}.',
+  '{n} Bücher zum Lesen': '{n} libros por leer',
+  '{n} Titel zum Lesen': '{n} títulos por leer',
+  'Keine Bücher zum Lesen': 'No hay libros por leer',
+  'Nichts zum Lesen': 'Nada por leer',
+  'Setze Bücher auf „Lese ich“ oder „Will ich lesen“, dann stehen sie hier.':
+    'Marca libros como «Leyendo» o «Quiero leer» y aparecerán aquí.',
+  'Setze Manga auf „Lese ich“ oder „Geplant“, dann stehen sie hier.':
+    'Marca manga como «Leyendo» o «Planeado» y aparecerán aquí.',
+  'Setze Bücher oder Manga auf „Lese ich“ oder „Geplant“, dann stehen sie hier.':
+    'Marca libros o manga como «Leyendo» o «Planeado» y aparecerán aquí.',
+  'Seitenzahl unbekannt': 'Número de páginas desconocido',
+  '{n} Seiten übrig': 'Quedan {n} páginas',
+  'Titel oder Autor suchen …': 'Buscar título o autor …',
+  'Leseliste wird geladen …': 'Cargando lista de lectura …',
+  'Am meisten offen': 'Más pendiente',
+  'Am längsten nicht gelesen': 'Más tiempo sin leer',
+  '{n} Titel · {m} Kapitel · {p} Seiten offen':
+    '{n} títulos · {m} capítulos · {p} páginas pendientes',
+  '{n} Titel · {p} Seiten offen': '{n} títulos · {p} páginas pendientes',
+  'Du bist bei allen Büchern auf dem aktuellen Stand.': 'Estás al día con todos tus libros.',
+  'Du bist bei allen Büchern und Manga auf dem aktuellen Stand.':
+    'Estás al día con todos tus libros y manga.',
+  'Titel offen': 'Títulos pendientes',
+  'Seiten offen': 'Páginas pendientes',
+  'S. {a}–{b} (+{n})': 'pág. {a}–{b} (+{n})',
+  '+{n} Seiten': '+{n} páginas',
+  'Stand nachgetragen: S. {n}': 'Progreso añadido: pág. {n}',
+  '1 Seite': '1 página',
+  'Mit diesem Filter gibt es gerade nichts. Wähle einen anderen Filter oder füge neue Titel hinzu.':
+    'No hay nada con este filtro por ahora. Elige otro filtro o añade títulos nuevos.',
+  'Hier siehst du, was du zuletzt gelesen hast, sobald du deinen Lesestand einträgst.':
+    'Cuando registres tu progreso de lectura, aquí verás lo que leíste últimamente.',
+  Bald: 'Próximamente',
+  Charts: 'Listas',
+  Versteckt: 'Ocultos',
+  'Alle Medien': 'Todos los medios',
+  Umfang: 'Extensión',
+  'Suche nach Manga, Manhwa oder Manhua und füge sie hinzu.':
+    'Busca manga, manhwa o manhua y añádelos.',
+  Medium: 'Medio',
+  'In der Bibliothek suchen': 'Buscar en la biblioteca',
+  Bibliothek: 'Biblioteca',
+  '{n} beendet': '{n} terminados',
+  'Ziel {n}/{m}': 'Meta {n}/{m}',
+  'Deine Leute': 'Tu gente',
+  'Was los ist': 'Qué pasa',
+  'Läuft gerade': 'En curso',
+  'Neues finden': 'Descubrir',
+  Wertungen: 'Valoraciones',
+  Gelesenes: 'Lo leído',
+  'Was offen ist': 'Pendientes',
+  'Noch zu bewerten': 'Por calificar',
+  '{title} bewerten': 'Calificar {title}',
+  'Noch keine Bewertungen': 'Aún no hay calificaciones',
+  'Bewerte, was du gelesen hast – hier entsteht dein Ranking.':
+    'Califica lo que has leído: aquí se forma tu ranking.',
+  'Buch oder Manga suchen...': 'Buscar libro o manga...',
+  'Buch oder Manga suchen': 'Buscar libro o manga',
 };
 
 export default dict;

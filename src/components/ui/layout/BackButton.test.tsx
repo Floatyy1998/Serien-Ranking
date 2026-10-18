@@ -35,10 +35,14 @@ vi.mock('../../../contexts/ThemeContext', () => ({
   }),
 }));
 
+const focus = vi.hoisted(() => ({ value: 'watch' }));
+vi.mock('../../../hooks/ui/useAppFocus', () => ({ useAppFocus: () => ({ focus: focus.value }) }));
+
 afterEach(() => {
   cleanup();
   navigate.mockReset();
   location.pathname = '/series/42';
+  focus.value = 'watch';
 });
 
 describe('BackButton', () => {
@@ -65,12 +69,30 @@ describe('BackButton', () => {
     expect(navigate).toHaveBeenCalledWith('/');
   });
 
-  it('führt im Bücher-Bereich zur Bücher-Übersicht statt zur Startseite', () => {
-    location.pathname = '/books/gb-abc';
+  it.each(['/books/gb-abc', '/manga/21', '/reading/stats'])(
+    'führt auf %s zur Lesen-Seite statt zur Startseite',
+    (path) => {
+      location.pathname = path;
+      render(<BackButton />);
+      fireEvent.click(screen.getByRole('button', { name: 'Zum Lesen' }));
+      expect(navigate).toHaveBeenCalledWith('/reading');
+      fireEvent.click(screen.getByRole('button', { name: 'Zurück' }));
+      expect(navigate).toHaveBeenLastCalledWith('/reading');
+    }
+  );
+
+  it('führt beim Schwerpunkt Lesen zur Startseite, denn die ist schon die Lesen-Seite', () => {
+    focus.value = 'read';
+    location.pathname = '/reading/stats';
     render(<BackButton />);
-    fireEvent.click(screen.getByRole('button', { name: 'Bücher' }));
-    expect(navigate).toHaveBeenCalledWith('/books');
-    fireEvent.click(screen.getByRole('button', { name: 'Zurück' }));
-    expect(navigate).toHaveBeenLastCalledWith('/books');
+    fireEvent.click(screen.getByRole('button', { name: 'Zur Startseite' }));
+    expect(navigate).toHaveBeenCalledWith('/');
+  });
+
+  it('führt auf /readings nicht zur Lesen-Seite', () => {
+    location.pathname = '/readings';
+    render(<BackButton />);
+    fireEvent.click(screen.getByRole('button', { name: 'Zur Startseite' }));
+    expect(navigate).toHaveBeenCalledWith('/');
   });
 });

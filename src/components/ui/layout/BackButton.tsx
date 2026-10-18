@@ -1,7 +1,9 @@
 import { ArrowBack } from '@mui/icons-material';
 import * as React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAppFocus } from '../../../hooks/ui/useAppFocus';
 import { t } from '../../../services/i18n';
+import { readsFirst } from '../../../services/settings/appFocus';
 import { IconButton } from '../input/IconButton';
 
 interface BackButtonProps {
@@ -10,13 +12,14 @@ interface BackButtonProps {
   showHome?: boolean;
 }
 
-/** Manga und Bücher haben eine eigene Übersicht — dorthin führt Home statt zur Startseite. */
-const areaHome = (path: string) =>
-  path.startsWith('/manga') ? '/manga' : path.startsWith('/books') ? '/books' : '/';
+const READING_AREA = /^\/(manga|books|reading)(\/|$)/;
 
 export const BackButton = ({ label, style, showHome = true }: BackButtonProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const reader = readsFirst(useAppFocus().focus);
+  // Lese-Seiten führen Home zur Lesen-Seite; beim Schwerpunkt Lesen ist das die Startseite.
+  const areaHome = (path: string) => (!reader && READING_AREA.test(path) ? '/reading' : '/');
 
   const handleBack = () => {
     const cameFromRatings = sessionStorage.getItem('cameFromRatings') === 'true';
@@ -87,8 +90,12 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
           size={40}
           borderRadius="14px"
           variant="glass"
-          ariaLabel={areaHome(location.pathname) === '/books' ? t('Bücher') : t('Zur Startseite')}
-          tooltip={areaHome(location.pathname) === '/books' ? t('Bücher') : t('Zur Startseite')}
+          ariaLabel={
+            areaHome(location.pathname) === '/reading' ? t('Zum Lesen') : t('Zur Startseite')
+          }
+          tooltip={
+            areaHome(location.pathname) === '/reading' ? t('Zum Lesen') : t('Zur Startseite')
+          }
           style={style}
         />
       )}

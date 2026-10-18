@@ -28,7 +28,7 @@ export const LibrarySection = ({ showBooks, showManga }: LibrarySectionProps) =>
             title: t('Bücher'),
             count: bookList.length,
             hint: t('Ganzes Regal mit Filtern'),
-            to: '/books/shelf',
+            to: '/reading/library?medium=books',
           },
         ]
       : []),
@@ -40,7 +40,7 @@ export const LibrarySection = ({ showBooks, showManga }: LibrarySectionProps) =>
             title: 'Manga',
             count: mangaList.length,
             hint: t('Komplette Sammlung mit Suche'),
-            to: '/manga/collection',
+            to: '/reading/library?medium=manga',
           },
         ]
       : []),

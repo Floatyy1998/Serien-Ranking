@@ -31,7 +31,7 @@ export const ReadingStatsBanner = memo(() => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35 }}
       whileTap={tapScaleSmall}
-      onClick={() => navigate('/books/stats')}
+      onClick={() => navigate('/reading/stats')}
       aria-label={t('Lese-Statistik öffnen')}
     >
       <div className="stats-actor-content">

@@ -1,0 +1,220 @@
+.rs-body {
+  padding: 0 20px;
+  padding-bottom: var(--page-bottom-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rs-year {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.rs-year-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  min-width: 70px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.rs-card-title svg {
+  font-size: 18px;
+}
+
+.rs-hint {
+  text-align: center;
+  font-size: 13px;
+  margin: 0;
+}
+
+.rs-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mobile-app button.rs-rank-row,
+button.rs-rank-row {
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  justify-content: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.rs-rank-row--tap:active {
+  filter: brightness(0.75);
+}
+
+.rs-rank-pos {
+  flex-shrink: 0;
+  width: 18px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-rank-img {
+  flex-shrink: 0;
+  width: 40px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rs-rank-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rs-rank-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.rs-rank-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rs-rank-detail {
+  flex-shrink: 0;
+}
+
+.rs-stack {
+  width: 100%;
+  max-width: 26px;
+  min-height: 3px;
+  border-radius: 6px 6px 3px 3px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rs-stack > span {
+  display: block;
+  flex-basis: 0;
+}
+
+.rs-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rs-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rs-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.rs-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rs-status-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto 72px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.rs-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.rs-status-count {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rs-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-light);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+}
+
+.rs-chip strong {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-app button.rs-longest,
+button.rs-longest {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.rs-longest:active {
+  filter: brightness(0.8);
+}
+
+.bk-divider.rs-divider {
+  margin: 14px 0 0;
+}

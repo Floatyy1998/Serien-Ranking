@@ -8,6 +8,7 @@ import { useReadingAreas } from '../../hooks/ui/useReadingAreas';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 import '../Books/components/books.css';
 import { useBookYear } from '../Books/hooks/useBookYear';
+import { ActivityMarquee } from '../HomePage/cards/ActivityMarquee';
 import { useUnifiedNotifications } from '../HomePage/hooks/useUnifiedNotifications';
 import { HomeSearchOverlay } from '../HomePage/sections/HomeSearchOverlay';
 import { NotificationSheet } from '../HomePage/sheets/NotificationSheet';
@@ -68,8 +69,10 @@ export const ReadingPage = () => {
         onNotificationsOpen={() => setShowNotifications(true)}
         onSearch={openSearch}
         onShowReading={() => scrollTo(readingRef)}
-        onShowCollection={() => navigate('/manga/collection')}
+        onShowCollection={() => navigate('/reading/library?medium=manga')}
       />
+
+      <ActivityMarquee scope="read" />
 
       <ReadingBody
         areas={areas}

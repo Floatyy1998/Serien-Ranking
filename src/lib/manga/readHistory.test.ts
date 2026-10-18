@@ -40,6 +40,29 @@ describe('buildReadHistory', () => {
     });
   });
 
+  it('findet das Cover auch bei Text-IDs und über den Titel, wenn sich die ID geändert hat', () => {
+    const history = buildReadHistory(
+      [
+        { ...ch(1, 5, at(0, 9)), s: '1' as unknown as number },
+        { ...ch(99, 12, at(0, 10)), st: 'Dead Mount Death Play' },
+      ],
+      [
+        manga({ anilistId: 1, title: 'Vagabond', poster: 'v.jpg' }),
+        manga({ anilistId: 7, title: 'Dead Mount Death Play', poster: 'd.jpg', lastReadAt: '' }),
+      ],
+      NOW,
+      7
+    );
+    const posters = history.days[0].entries.map((e) => [e.anilistId, e.poster]);
+    expect(posters).toEqual(
+      expect.arrayContaining([
+        [1, 'v.jpg'],
+        [7, 'd.jpg'],
+      ])
+    );
+    expect(history.days[0].entries).toHaveLength(2);
+  });
+
   it('trennt Lesetage nach lokalem Kalendertag, neueste zuerst', () => {
     const history = buildReadHistory(
       [ch(1, 1, at(2, 23)), ch(1, 2, at(1, 0)), ch(1, 3, at(0, 8))],

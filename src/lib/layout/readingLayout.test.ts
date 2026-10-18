@@ -29,16 +29,24 @@ describe('readingLayout', () => {
   it('übernimmt die alte Manga-Übersicht: Ausblendungen, Schnellzugriffe und Karten', () => {
     const layout = readingLayoutFromManga({
       sections: { order: [], hidden: ['quick-actions', 'trending', 'continue-reading'] },
-      quick: { order: ['stats', 'reading-list'], hidden: ['journey'] },
+      quick: { order: ['stats', 'reading-list'], hidden: ['journey', 'history'] },
       forYou: { order: ['reread'], hidden: ['hidden'] },
     });
-    expect(layout.sections.hidden).toContain('quick-actions');
+    expect(layout.sections.hidden).not.toContain('quick-actions');
     expect(layout.sections.hidden).not.toContain('continue-reading');
     expect(layout.quick.order.indexOf('stats')).toBeLessThan(
       layout.quick.order.indexOf('reading-list')
     );
-    expect(layout.quick.hidden).toEqual(['journey']);
+    expect(layout.quick.hidden).toEqual(['history']);
     expect(layout.forYou.hidden).toEqual(['hidden']);
+  });
+
+  it('hält die Navigation oben, lässt sie aber ausblenden', () => {
+    const layout = sanitizeReadingLayout({
+      sections: { order: ['continue-reading', 'quick-actions', 'new'], hidden: ['quick-actions'] },
+    });
+    expect(layout.sections.order[0]).toBe('quick-actions');
+    expect(layout.sections.hidden).toContain('quick-actions');
   });
 
   it('ohne altes Manga-Layout gelten die Vorgaben', () => {

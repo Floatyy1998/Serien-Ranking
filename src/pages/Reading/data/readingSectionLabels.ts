@@ -8,7 +8,7 @@ export const READING_SECTION_LABELS: Record<string, string> = {
   'for-you': t('Für dich'),
   'up-next': t('Als Nächstes'),
   wishlist: t('Wunschliste'),
-  'quick-actions': t('Manga-Schnellzugriff'),
+  'quick-actions': t('Schnellzugriff'),
   shelf: t('Lese-Regal'),
   library: t('Deine Bibliothek'),
   discover: t('Entdecken'),
@@ -67,7 +67,16 @@ export const READING_DISCOVER_LABELS: Record<string, string> = {
   'genre-rows': t('Genre-Reihen'),
 };
 
-export const READING_FOR_YOU_LABELS: Record<string, string> = {
-  goal: t('Leseziel'),
-  ...MANGA_FOR_YOU_LABELS,
+export const READING_QUICK_ACTION_LABELS: Record<string, string> = {
+  friends: t('Freunde'),
+  activity: t('Aktivität'),
+  'reading-list': t('Leseliste'),
+  library: t('Bibliothek'),
+  discover: t('Entdecken'),
+  ratings: t('Ratings'),
+  stats: t('Statistiken'),
+  history: t('Verlauf'),
+  'catch-up': t('Aufholen'),
 };
+
+export const READING_FOR_YOU_LABELS: Record<string, string> = MANGA_FOR_YOU_LABELS;

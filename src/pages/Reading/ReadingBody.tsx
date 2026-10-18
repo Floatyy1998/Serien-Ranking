@@ -26,6 +26,8 @@ import { useMangaSections } from '../Manga/useMangaSections';
 import './ReadingPage.css';
 import { ForYouMixedRow, GenreMixedRow, NewMixedRow } from './discover/MixedDiscover';
 import { LibrarySection } from './rows/LibrarySection';
+import { ReadingExtrasRow } from './rows/ReadingExtrasRow';
+import { ReadingQuickActions } from './rows/ReadingQuickActions';
 import { ContinueReadingRow } from './rows/ContinueReadingRow';
 import { NewForYouRow } from './rows/NewForYouRow';
 import { UpNextRow } from './rows/UpNextRow';
@@ -131,7 +133,7 @@ export const ReadingBody = ({ areas, bookYear, readingRef, onSearch }: ReadingBo
   const both = showBooks && showManga && hasBooks && hasManga;
 
   const books = useBookSections({ bookYear });
-  const manga = useMangaSections({ layout });
+  const manga = useMangaSections();
   const overview = useReadingOverview(bookYear);
   const { year } = bookYear;
 
@@ -209,9 +211,7 @@ export const ReadingBody = ({ areas, bookYear, readingRef, onSearch }: ReadingBo
       case 'for-you': {
         const cards = layout.forYou.order
           .filter((card) => !layout.forYou.hidden.includes(card))
-          .map((card) =>
-            card === 'goal' ? bookOnly(books.goalCard) : mangaOnly(manga.forYouCards[card])
-          )
+          .map((card) => mangaOnly(manga.forYouCards[card]))
           .filter(Boolean);
         if (cards.length === 0) return null;
         return (
@@ -234,7 +234,17 @@ export const ReadingBody = ({ areas, bookYear, readingRef, onSearch }: ReadingBo
       case 'wishlist':
         return books.wished;
       case 'quick-actions':
-        return manga.quickActions;
+        return (
+          <>
+            <ReadingQuickActions
+              order={layout.quick.order}
+              hidden={layout.quick.hidden}
+              showBooks={showBooks}
+              showManga={showManga}
+            />
+            <ReadingExtrasRow goal={bookOnly(books.goal)} />
+          </>
+        );
       case 'shelf':
         if (!both) return showBooks ? books.shelf : null;
         if (overview.shelf.length === 0) return null;
@@ -244,7 +254,7 @@ export const ReadingBody = ({ areas, bookYear, readingRef, onSearch }: ReadingBo
               icon={<LocalLibrary />}
               iconColor={currentTheme.status.warning}
               title={t('Dein Lese-Regal')}
-              onSeeAll={() => navigate('/books/shelf')}
+              onSeeAll={() => navigate('/reading/library')}
               seeAllLabel={t('Ganzes Regal')}
             />
             <div className="bk-pad">

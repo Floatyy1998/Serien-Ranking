@@ -547,6 +547,57 @@ const tour: Record<string, string> = {
   'Bewerten und notieren': 'Rate and take notes',
   'Wertung setzen und eigene Notizen zum Titel hinterlegen.':
     'Set a rating and keep your own notes on the title.',
+  'Bücher und Manga auf einer Seite, nach Thema statt nach Medium.':
+    'Books and manga on one page, sorted by topic instead of medium.',
+  'Die Suche oben findet Bücher und Manga zugleich.':
+    'The search at the top finds books and manga at once.',
+  'Leseliste, Bibliothek, Entdecken, Statistiken, Verlauf und Aufholen zeigen alles zusammen.':
+    'Reading list, library, discover, stats, history and catch up show everything together.',
+  'Unter „Lesen-Seite anpassen" sortierst du Bereiche oder blendest sie aus.':
+    'Under “Customize reading page” you reorder or hide sections.',
+  'Was gerade offen ist, Bücher und Manga zusammen.':
+    "What's currently open, books and manga together.",
+  'Nach rechts wischen: ein Kapitel weiter oder zehn Seiten weiter.':
+    'Swipe right: one chapter or ten pages further.',
+  'Nach Fortschritt, Titel oder zuletzt gelesen ordnen.': 'Sort by progress, title or last read.',
+  'Alle deine Bücher und Manga in einem Regal.': 'All your books and manga on one shelf.',
+  'Nach Status, Medium und Genre eingrenzen oder im Bestand suchen.':
+    'Narrow down by status, medium and genre, or search your collection.',
+  'Regal oder Raster': 'Shelf or grid',
+  'Buchrücken im Regal oder Cover im Raster, sortiert wie du willst.':
+    'Spines on the shelf or covers in a grid, sorted the way you like.',
+  'Versteckte zurückholen': 'Bring back hidden titles',
+  'Unter „Versteckt" blendest du Titel wieder ein, der Fortschritt bleibt erhalten.':
+    'Under “Hidden” you can show titles again, your progress is kept.',
+  'Alles, was du gelesen und bewertet hast, und was noch offen ist.':
+    "Everything you've read and rated, and what's still open.",
+  'Charts, Neues und Vorschläge für Bücher und Manga.':
+    'Charts, new releases and suggestions for books and manga.',
+  'Trend, Beliebt, Top bewertet und Bald, mit Länderfilter für Manga.':
+    'Trending, popular, top rated and upcoming, with a country filter for manga.',
+  'Ein Genre zeigt passende Bücher und Manga zusammen.':
+    'A genre shows matching books and manga together.',
+  'Aus jeder Karte heraus landet ein Titel in deiner Bibliothek.':
+    'Any card adds its title to your library.',
+  'Dein Lesejahr in Zahlen, Bücher und Manga zusammen.':
+    'Your reading year in numbers, books and manga together.',
+  'Jahr wählen': 'Choose a year',
+  'Seiten, Kapitel, Lesetage und Beendetes für jedes Jahr.':
+    'Pages, chapters, reading days and finished titles for every year.',
+  'Lese-Serie': 'Reading streak',
+  'Wie viele Tage am Stück du gelesen hast, egal ob Buch oder Manga.':
+    "How many days in a row you've read, book or manga.",
+  'Offene Kapitel, Restseiten und neue Bände deiner Reihen auf einen Blick.':
+    'Open chapters, pages left and new volumes of your series at a glance.',
+  'Nach dem größten Rückstand, dem Fortschritt oder dem längsten Abstand.':
+    'By the biggest backlog, progress or longest gap.',
+  Restzeit: 'Time left',
+  'Zu jedem Titel steht, wie lange du noch ungefähr brauchst.':
+    'Each title shows roughly how much longer you need.',
+  'Was du zuletzt gelesen hast, Tag für Tag.': "What you've read lately, day by day.",
+  'Die letzten 7, 30 oder 90 Tage durchsehen.': 'Look through the last 7, 30 or 90 days.',
+  'Seiten, Kapitel und Lesetage des Zeitraums zusammengezählt.':
+    'Pages, chapters and reading days of the period added up.',
 };
 
 export default tour;

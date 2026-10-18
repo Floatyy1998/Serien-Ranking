@@ -218,7 +218,7 @@ export const HomePage: React.FC = () => {
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
       case 'activity-marquee':
-        return <ActivityMarquee key="activity-marquee" />;
+        return <ActivityMarquee key="activity-marquee" scope="watch" />;
 
       case 'quick-actions':
         return <QuickActionsSection key="quick-actions" config={config} navigate={navigate} />;

@@ -259,13 +259,13 @@ export const useProfileData = (): UseProfileDataResult => {
         label: t('Dein Regal'),
         icon: LibraryBooks,
         color: currentTheme.status.warning,
-        path: '/books/shelf',
+        path: '/reading/library',
       },
       {
         label: t('Lese-Statistik'),
         icon: Insights,
         color: currentTheme.accent,
-        path: '/books/stats',
+        path: '/reading/stats',
       },
       {
         label: t('Bücher importieren'),
@@ -280,13 +280,13 @@ export const useProfileData = (): UseProfileDataResult => {
               label: t('Manga-Leseliste'),
               icon: MenuBook,
               color: currentTheme.status.error,
-              path: '/manga/reading-list',
+              path: '/reading/list',
             },
             {
               label: t('Manga-Statistiken'),
               icon: TrendingUp,
               color: currentTheme.secondary,
-              path: '/manga/stats',
+              path: '/reading/stats',
             },
           ]
         : [
@@ -294,7 +294,7 @@ export const useProfileData = (): UseProfileDataResult => {
               label: t('Manga entdecken'),
               icon: Explore,
               color: currentTheme.status.error,
-              path: '/manga/discover',
+              path: '/reading/discover',
             },
           ]),
     ],

@@ -74,7 +74,7 @@ export const BookStatsSection: React.FC<{ stats: BookYearStats; currentMonth: nu
         icon={<Insights />}
         iconColor={currentTheme.accent}
         title={t('Dein Lesejahr')}
-        onSeeAll={() => navigate('/books/stats')}
+        onSeeAll={() => navigate('/reading/stats')}
         seeAllLabel={t('Mehr')}
       />
       <div className="bk-pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

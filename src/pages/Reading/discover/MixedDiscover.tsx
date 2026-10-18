@@ -203,7 +203,7 @@ export const NewMixedRow = ({ showBooks, showManga }: AreaProps) => {
       title={t('Neu & beliebt')}
       icon={<Whatshot />}
       iconColor={currentTheme.status.warning}
-      onSeeAll={() => navigate(showBooks ? '/books/search?genre=new' : '/manga/discover')}
+      onSeeAll={() => navigate('/reading/discover?category=trending')}
       books={books}
       manga={manga}
       loading={showBooks && loading}

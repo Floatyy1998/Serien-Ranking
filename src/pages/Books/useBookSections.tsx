@@ -121,12 +121,12 @@ export function useBookSections({ bookYear }: BookSectionsOptions) {
     hasBooks,
     /** Nächste Bände deiner Reihen — für „Neu für dich". */
     nextVolumes,
-    goalCard: hasBooks ? (
+    /** Leseziel als Knopf in der Reihe unter dem Schnellzugriff. */
+    goal: hasBooks ? (
       <ReadingGoalCard
         year={year}
         goal={goal}
         finished={yearStats.finishedBooks.length}
-        now={now}
         onSaveGoal={(g) => void saveGoal(g)}
       />
     ) : null,
@@ -144,7 +144,7 @@ export function useBookSections({ bookYear }: BookSectionsOptions) {
         title={t('Im Besitz')}
         icon={<LibraryBooks />}
         iconColor={currentTheme.status.success}
-        onSeeAll={() => navigate('/books/shelf?status=owned')}
+        onSeeAll={() => navigate('/reading/library?status=owned')}
         seeAllLabel={t('Alle')}
       />
     ),
@@ -164,7 +164,7 @@ export function useBookSections({ bookYear }: BookSectionsOptions) {
             icon={<LocalLibrary />}
             iconColor={currentTheme.status.warning}
             title={shelfIsYear ? t('Dein Regal {year}', { year }) : t('Dein Regal')}
-            onSeeAll={() => navigate('/books/shelf')}
+            onSeeAll={() => navigate('/reading/library')}
             seeAllLabel={t('Ganzes Regal')}
           />
           <div className="bk-pad">

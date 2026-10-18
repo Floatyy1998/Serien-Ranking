@@ -11,7 +11,7 @@ import { MangaDetailPage } from '../Manga/MangaDetailPage';
 import { ReadingLayoutPage } from '../Reading/ReadingLayoutPage';
 import { ReadingPage } from '../Reading/ReadingPage';
 import { MangaSearchPage } from '../Manga/MangaSearchPage';
-import { RecentlyReadPage } from '../Manga/RecentlyReadPage';
+import { ReadingHistoryPage } from '../Reading/history/ReadingHistoryPage';
 import { getDisplayFormatKey } from '../Manga/mangaUtils';
 
 const PREVIEW_UID = 'preview-user';
@@ -185,5 +185,5 @@ export const MangaLayoutPreview = () => (
 );
 
 export const MangaHistoryPreview = () => (
-  <MangaPreviewShell>{() => <RecentlyReadPage />}</MangaPreviewShell>
+  <MangaPreviewShell>{() => <ReadingHistoryPage />}</MangaPreviewShell>
 );

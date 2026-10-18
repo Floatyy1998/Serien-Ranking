@@ -25,13 +25,33 @@ export const defaultReadingLayout = (): ReadingLayout =>
     ])
   ) as ReadingLayout;
 
+/** Die Navigation (Freunde, Aktivität, Lese-Seiten) steht immer ganz oben; ausblenden geht. */
+export const PINNED_READING_SECTION = 'quick-actions';
+
+const pinNavigation = (layout: ReadingLayout): ReadingLayout => ({
+  ...layout,
+  sections: {
+    order: [
+      PINNED_READING_SECTION,
+      ...layout.sections.order.filter((id) => id !== PINNED_READING_SECTION),
+    ],
+    hidden: layout.sections.hidden,
+  },
+});
+
 /** Gespeichertes Layout auf die aktuellen Bereiche abgleichen; fehlende Listen bekommen ihre Vorgabe. */
 export const sanitizeReadingLayout = (raw: unknown): ReadingLayout => {
   const source = (raw && typeof raw === 'object' ? raw : {}) as Record<
     string,
     { order?: unknown; hidden?: unknown } | undefined
   >;
-  return Object.fromEntries(
+  return pinNavigation(sanitizeLists(source));
+};
+
+const sanitizeLists = (
+  source: Record<string, { order?: unknown; hidden?: unknown } | undefined>
+): ReadingLayout =>
+  Object.fromEntries(
     LIST_KEYS.map((key) => {
       const defaults = READING_LAYOUT_DEFAULTS[key];
       const saved = source[key];
@@ -44,10 +64,9 @@ export const sanitizeReadingLayout = (raw: unknown): ReadingLayout => {
       ];
     })
   ) as ReadingLayout;
-};
 
 // Manga-Bereiche, die es auf der Lesen-Seite unter demselben Namen gibt.
-const CARRIED_SECTIONS = ['for-you', 'quick-actions', 'recently-added'];
+const CARRIED_SECTIONS = ['for-you', 'recently-added'];
 
 /**
  * Erstes Lesen-Layout aus der alten Manga-Übersicht: ausgeblendete Manga-Bereiche,

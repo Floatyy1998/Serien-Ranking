@@ -56,7 +56,7 @@ export const NewForYouRow = ({ showBooks, showManga, nextVolumes }: NewForYouRow
       icon={<FiberNew />}
       iconColor={currentTheme.status?.success || currentTheme.accent}
       title={t('Neu für dich')}
-      onSeeAll={chapters.length > 0 ? () => navigate('/manga/catch-up') : undefined}
+      onSeeAll={chapters.length > 0 ? () => navigate('/reading/catch-up') : undefined}
     >
       {chapters.map(({ manga, unread, releasedAt }) => (
         <MangaPosterCard

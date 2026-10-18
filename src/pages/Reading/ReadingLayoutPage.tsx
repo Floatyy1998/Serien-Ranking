@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReadingAreas } from '../../hooks/ui/useReadingAreas';
 import { useReadingLayout } from '../../hooks/ui/useReadingLayout';
+import { PINNED_READING_SECTION } from '../../lib/layout/readingLayout';
 import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { tapScaleTight } from '../../lib/motion';
 import { usesArea } from '../../lib/reading/readingMedium';
@@ -21,17 +22,17 @@ import {
 import { LayoutCanvasSection, type CanvasChips } from '../HomeLayout/LayoutCanvasSection';
 import '../HomeLayout/HomeLayoutPage.css';
 import '../Manga/MangaLayoutPage.css';
-import { MANGA_QUICK_ACTION_LABELS } from '../Manga/data/mangaSectionLabels';
 import {
   READING_DISCOVER_LABELS,
   READING_FOR_YOU_LABELS,
+  READING_QUICK_ACTION_LABELS,
   READING_SECTION_HINTS,
   READING_SECTION_LABELS,
   READING_SECTION_SHAPES,
 } from './data/readingSectionLabels';
 
 const SUB_LISTS: Record<string, { key: ReadingLayoutListKey; labels: Record<string, string> }> = {
-  'quick-actions': { key: 'quick', labels: MANGA_QUICK_ACTION_LABELS },
+  'quick-actions': { key: 'quick', labels: READING_QUICK_ACTION_LABELS },
   'for-you': { key: 'forYou', labels: READING_FOR_YOU_LABELS },
   discover: { key: 'discover', labels: READING_DISCOVER_LABELS },
 };
@@ -50,6 +51,7 @@ export const ReadingLayoutPage = () => {
     return area === 'both' || usesArea(areas, area);
   };
   const order = layout.sections.order.filter(applies);
+  const movable = order.filter((id) => id !== PINNED_READING_SECTION);
 
   const chipsFor = (sectionId: string): CanvasChips | null => {
     const sub = SUB_LISTS[sectionId];
@@ -69,8 +71,27 @@ export const ReadingLayoutPage = () => {
   // Nicht angezeigte Bereiche behalten beim Verschieben ihren Platz am Ende.
   const reorder = (next: string[]) =>
     setReadingLayoutList(uid, 'sections', {
-      order: [...next, ...layout.sections.order.filter((id) => !applies(id))],
+      order: [
+        PINNED_READING_SECTION,
+        ...next,
+        ...layout.sections.order.filter((id) => !applies(id)),
+      ],
     });
+
+  const canvasSection = (id: string) => (
+    <LayoutCanvasSection
+      key={id}
+      id={id}
+      label={READING_SECTION_LABELS[id] || id}
+      shape={READING_SECTION_SHAPES[id] || 'cards'}
+      hidden={layout.sections.hidden.includes(id)}
+      onToggle={() => {
+        toggleReadingLayoutItem(uid, 'sections', id);
+        hapticSelect();
+      }}
+      expandable={chipsFor(id)}
+    />
+  );
 
   return (
     <PageLayout>
@@ -145,24 +166,19 @@ export const ReadingLayoutPage = () => {
 
               <Reorder.Group
                 axis="y"
-                values={order}
+                values={[PINNED_READING_SECTION]}
+                onReorder={() => {}}
+                className="hl-canvas-list hide-scrollbar"
+              >
+                {canvasSection(PINNED_READING_SECTION)}
+              </Reorder.Group>
+              <Reorder.Group
+                axis="y"
+                values={movable}
                 onReorder={reorder}
                 className="hl-canvas-list hide-scrollbar"
               >
-                {order.map((id) => (
-                  <LayoutCanvasSection
-                    key={id}
-                    id={id}
-                    label={READING_SECTION_LABELS[id] || id}
-                    shape={READING_SECTION_SHAPES[id] || 'cards'}
-                    hidden={layout.sections.hidden.includes(id)}
-                    onToggle={() => {
-                      toggleReadingLayoutItem(uid, 'sections', id);
-                      hapticSelect();
-                    }}
-                    expandable={chipsFor(id)}
-                  />
-                ))}
+                {movable.map(canvasSection)}
               </Reorder.Group>
             </div>
           </div>

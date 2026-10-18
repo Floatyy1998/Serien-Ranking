@@ -13,8 +13,8 @@ import type { Book, BookStatus } from '../../types/Book';
 import { BookDetailPage } from '../Books/BookDetailPage';
 import { BookImportPage } from '../Books/BookImportPage';
 import { BookSearchPage } from '../Books/BookSearchPage';
-import { BookShelfPage } from '../Books/BookShelfPage';
-import { BookStatsPage } from '../Books/BookStatsPage';
+import { ReadingLibraryPage } from '../Reading/library/ReadingLibraryPage';
+import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
 import { FriendBooksInsights } from '../FriendProfile/FriendBooksInsights';
 import { ReadingPage } from '../Reading/ReadingPage';
 
@@ -403,7 +403,7 @@ export const BookSearchPreview = () => (
 
 export const BookShelfPreview = () => (
   <BooksPreviewShell>
-    <BookShelfPage />
+    <ReadingLibraryPage />
   </BooksPreviewShell>
 );
 
@@ -420,7 +420,7 @@ export const FriendBooksInsightsPreview = () => {
 
 export const BookStatsPreview = () => (
   <BooksPreviewShell>
-    <BookStatsPage />
+    <ReadingStatsPage />
   </BooksPreviewShell>
 );
 

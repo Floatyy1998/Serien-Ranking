@@ -556,6 +556,58 @@ const tour: Record<string, string> = {
   'Bewerten und notieren': 'Noter et annoter',
   'Wertung setzen und eigene Notizen zum Titel hinterlegen.':
     'Mets une note et conserve tes propres notes sur le titre.',
+  'Bücher und Manga auf einer Seite, nach Thema statt nach Medium.':
+    'Livres et mangas sur une seule page, par thème plutôt que par support.',
+  'Die Suche oben findet Bücher und Manga zugleich.':
+    'La recherche en haut trouve livres et mangas à la fois.',
+  'Leseliste, Bibliothek, Entdecken, Statistiken, Verlauf und Aufholen zeigen alles zusammen.':
+    'Liste de lecture, bibliothèque, découvrir, statistiques, historique et rattrapage affichent tout ensemble.',
+  'Unter „Lesen-Seite anpassen" sortierst du Bereiche oder blendest sie aus.':
+    'Sous « Personnaliser la page lecture », tu réorganises ou masques les sections.',
+  'Was gerade offen ist, Bücher und Manga zusammen.':
+    'Ce qui est en cours, livres et mangas ensemble.',
+  'Nach rechts wischen: ein Kapitel weiter oder zehn Seiten weiter.':
+    'Glisse vers la droite : un chapitre ou dix pages de plus.',
+  'Nach Fortschritt, Titel oder zuletzt gelesen ordnen.':
+    'Trier par progression, titre ou dernière lecture.',
+  'Alle deine Bücher und Manga in einem Regal.': 'Tous tes livres et mangas sur une seule étagère.',
+  'Nach Status, Medium und Genre eingrenzen oder im Bestand suchen.':
+    'Affine par statut, support et genre, ou cherche dans ta collection.',
+  'Regal oder Raster': 'Étagère ou grille',
+  'Buchrücken im Regal oder Cover im Raster, sortiert wie du willst.':
+    "Dos sur l'étagère ou couvertures en grille, triés comme tu veux.",
+  'Versteckte zurückholen': 'Récupérer les titres masqués',
+  'Unter „Versteckt" blendest du Titel wieder ein, der Fortschritt bleibt erhalten.':
+    'Sous « Masqués », tu réaffiches des titres, la progression est conservée.',
+  'Alles, was du gelesen und bewertet hast, und was noch offen ist.':
+    'Tout ce que tu as lu et noté, et ce qui reste à noter.',
+  'Charts, Neues und Vorschläge für Bücher und Manga.':
+    'Classements, nouveautés et suggestions de livres et mangas.',
+  'Trend, Beliebt, Top bewertet und Bald, mit Länderfilter für Manga.':
+    'Tendance, populaires, mieux notés et à venir, avec un filtre par pays pour les mangas.',
+  'Ein Genre zeigt passende Bücher und Manga zusammen.':
+    'Un genre affiche ensemble les livres et mangas correspondants.',
+  'Aus jeder Karte heraus landet ein Titel in deiner Bibliothek.':
+    'Depuis chaque carte, un titre rejoint ta bibliothèque.',
+  'Dein Lesejahr in Zahlen, Bücher und Manga zusammen.':
+    'Ton année de lecture en chiffres, livres et mangas ensemble.',
+  'Jahr wählen': "Choisir l'année",
+  'Seiten, Kapitel, Lesetage und Beendetes für jedes Jahr.':
+    'Pages, chapitres, jours de lecture et titres terminés pour chaque année.',
+  'Lese-Serie': 'Série de lecture',
+  'Wie viele Tage am Stück du gelesen hast, egal ob Buch oder Manga.':
+    "Combien de jours d'affilée tu as lu, livre ou manga.",
+  'Offene Kapitel, Restseiten und neue Bände deiner Reihen auf einen Blick.':
+    "Chapitres en attente, pages restantes et nouveaux tomes de tes séries en un coup d'œil.",
+  'Nach dem größten Rückstand, dem Fortschritt oder dem längsten Abstand.':
+    'Par le plus gros retard, la progression ou la plus longue pause.',
+  Restzeit: 'Temps restant',
+  'Zu jedem Titel steht, wie lange du noch ungefähr brauchst.':
+    'Chaque titre indique à peu près combien de temps il te reste.',
+  'Was du zuletzt gelesen hast, Tag für Tag.': 'Ce que tu as lu récemment, jour après jour.',
+  'Die letzten 7, 30 oder 90 Tage durchsehen.': 'Parcours les 7, 30 ou 90 derniers jours.',
+  'Seiten, Kapitel und Lesetage des Zeitraums zusammengezählt.':
+    'Pages, chapitres et jours de lecture de la période additionnés.',
 };
 
 export default tour;

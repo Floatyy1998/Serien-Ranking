@@ -269,3 +269,25 @@ export async function discoverMangaByGenres(
   });
   return data.Page.media;
 }
+
+const coverCache = new Map<number, string>();
+
+/** Cover mehrerer Manga in einer Anfrage — für Einträge ohne eigenes Bild (z. B. im Verlauf). */
+export async function getMangaCovers(ids: number[]): Promise<Record<number, string>> {
+  const wanted = [...new Set(ids.filter((id) => id > 0 && !coverCache.has(id)))].slice(0, 50);
+  if (wanted.length > 0) {
+    const data = await anilistFetch<{
+      Page: { media: { id: number; coverImage?: { large?: string; medium?: string } }[] };
+    }>(
+      `query ($ids: [Int]) { Page(perPage: 50) { media(id_in: $ids, type: MANGA) { id coverImage { large medium } } } }`,
+      { ids: wanted }
+    );
+    for (const m of data.Page.media) {
+      const url = m.coverImage?.large || m.coverImage?.medium;
+      if (url) coverCache.set(m.id, url);
+    }
+  }
+  return Object.fromEntries(
+    ids.filter((id) => coverCache.has(id)).map((id) => [id, coverCache.get(id) as string])
+  );
+}

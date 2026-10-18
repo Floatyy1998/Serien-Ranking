@@ -63,7 +63,7 @@ export const ContinueReadingRow = ({ showBooks, showManga }: ContinueReadingRowP
       icon={<AutoStories />}
       iconColor={currentTheme.primary}
       title={t('Weiterlesen')}
-      onSeeAll={showManga && !showBooks ? () => navigate('/manga/reading-list') : undefined}
+      onSeeAll={() => navigate('/reading/list')}
     >
       {entries.map((entry) => {
         if ('book' in entry && entry.book) {

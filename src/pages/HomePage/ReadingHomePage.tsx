@@ -32,7 +32,8 @@ export const ReadingHomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const identity = useGreetingIdentity(user ?? null);
-  const config = useHomeConfig(user?.uid ?? '');
+  // Meldet dem Splash „homeConfig bereit“, auch wenn die Lese-Startseite die Werte nicht braucht.
+  useHomeConfig(user?.uid ?? '');
   const petEnabled = usePetEnabled();
   const notifs = useUnifiedNotifications();
   const areas = useReadingAreas();
@@ -113,7 +114,6 @@ export const ReadingHomePage = () => {
       />
 
       <ReadingHomeSections
-        config={config}
         areas={areas}
         bookYear={bookYear}
         onSearch={(filter) => openSearch(filter)}

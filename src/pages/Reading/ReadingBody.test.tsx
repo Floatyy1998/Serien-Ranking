@@ -57,6 +57,13 @@ vi.mock('./rows/ContinueReadingRow', () => ({
 }));
 vi.mock('./rows/NewForYouRow', () => ({ NewForYouRow: () => block('new') }));
 vi.mock('./rows/UpNextRow', () => ({ UpNextRow: () => block('up-next') }));
+vi.mock('./rows/ReadingQuickActions', () => ({
+  ReadingQuickActions: ({ showBooks, showManga }: { showBooks: boolean; showManga: boolean }) =>
+    block(`quick-actions:${showBooks ? 'b' : ''}${showManga ? 'm' : ''}`),
+}));
+vi.mock('./rows/ReadingExtrasRow', () => ({
+  ReadingExtrasRow: ({ goal }: { goal: ReactNode }) => <>{goal}</>,
+}));
 vi.mock('./rows/LibrarySection', () => ({
   LibrarySection: ({ showBooks, showManga }: { showBooks: boolean; showManga: boolean }) =>
     block(`library:${showBooks ? 'b' : ''}${showManga ? 'm' : ''}`),
@@ -75,7 +82,7 @@ vi.mock('../Books/useBookSections', () => ({
   useBookSections: () => ({
     hasBooks: true,
     nextVolumes: [],
-    goalCard: block('goal-card'),
+    goal: block('goal'),
     wished: block('wished'),
     owned: block('owned'),
     friends: block('friends'),
@@ -92,8 +99,7 @@ vi.mock('../Books/useBookSections', () => ({
 vi.mock('../Manga/useMangaSections', () => ({
   useMangaSections: () => ({
     hasManga: true,
-    quickActions: block('quick-actions'),
-    forYouCards: { 'catch-up': block('catch-up-card'), reread: block('reread-card') },
+    forYouCards: { reread: block('reread-card'), hidden: block('hidden-card') },
     recentlyAdded: block('recently-added'),
     stats: block('manga-stats'),
   }),
@@ -121,39 +127,39 @@ afterEach(() => {
 });
 
 describe('ReadingBody', () => {
-  it('beginnt mit den gemischten Reihen und lässt Ausgeblendetes weg', () => {
+  it('beginnt mit dem Schnellzugriff und den gemischten Reihen, lässt Ausgeblendetes weg', () => {
     const shown = blocks();
-    expect(shown.slice(0, 2)).toEqual(['continue:bm', 'new']);
+    expect(shown.slice(0, 4)).toEqual(['quick-actions:bm', 'goal', 'continue:bm', 'new']);
     expect(shown).toContain('up-next');
     expect(shown).not.toContain('owned');
     expect(shown).not.toContain('book-stats');
   });
 
-  it('mischt das Leseziel mit den Manga-Karten in „Für dich"', () => {
+  it('zeigt das Leseziel direkt unter dem Schnellzugriff, „Für dich" nur mit Manga-Karten', () => {
     const shown = blocks();
-    const goal = shown.indexOf('goal-card');
-    expect(goal).toBeGreaterThan(-1);
-    expect(shown.indexOf('catch-up-card')).toBe(goal + 1);
+    expect(shown.indexOf('goal')).toBe(1);
+    expect(shown.indexOf('hidden-card')).toBe(shown.indexOf('reread-card') + 1);
   });
 
   it('folgt der Reihenfolge aus dem Lesen-Layout', () => {
     const layout = defaultReadingLayout();
     layout.sections.order = ['library', ...layout.sections.order.filter((id) => id !== 'library')];
     layout.sections.hidden = ['continue-reading'];
-    layout.forYou.hidden = ['goal'];
+    layout.forYou.hidden = ['reread'];
     state.layout = layout;
     const shown = blocks();
     expect(shown[0]).toBe('library:bm');
     expect(shown).not.toContain('continue:bm');
-    expect(shown).not.toContain('goal-card');
+    expect(shown).not.toContain('reread-card');
   });
 
   it('blendet bei nur Büchern alle Manga-Bausteine aus', () => {
     const shown = blocks('books');
     expect(shown).toContain('continue:b');
-    expect(shown).toContain('goal-card');
+    expect(shown).toContain('goal');
     expect(shown).toContain('library:b');
-    for (const id of ['quick-actions', 'catch-up-card', 'discover-new:bm']) {
+    expect(shown).toContain('quick-actions:b');
+    for (const id of ['reread-card', 'discover-new:bm']) {
       expect(shown).not.toContain(id);
     }
   });
@@ -161,7 +167,7 @@ describe('ReadingBody', () => {
   it('blendet bei nur Manga alle Buch-Bausteine aus', () => {
     const shown = blocks('manga');
     expect(shown).toContain('continue:m');
-    for (const id of ['goal-card', 'wished', 'hero', 'for-shows']) {
+    for (const id of ['goal', 'wished', 'hero', 'for-shows']) {
       expect(shown).not.toContain(id);
     }
   });
