@@ -24,6 +24,9 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { auth: fb.authMock } }));
 vi.mock('firebase/compat/auth', () => ({}));
 
+const captureError = vi.hoisted(() => vi.fn());
+vi.mock('../errorReporting/errorReporter', () => ({ captureError }));
+
 let fetchMock: ReturnType<typeof vi.fn>;
 const sentinel = { ok: true, status: 200 };
 
@@ -39,6 +42,7 @@ beforeEach(() => {
   fb.state.failFirst = 0;
   fb.state.refreshedToken = undefined;
   fb.getIdToken.mockClear();
+  captureError.mockClear();
   vi.stubEnv('VITE_BACKEND_API_URL', 'https://backend.test');
   fetchMock = vi.fn(async () => sentinel);
   vi.stubGlobal('fetch', fetchMock);
@@ -140,6 +144,74 @@ describe('backendFetch', () => {
     expect((fetchMock.mock.calls[1][1].headers as Headers).get('Authorization')).toBe(
       'Bearer idtoken-neu'
     );
+  });
+
+  it('wiederholt /add bei Verbindungsabbruch und liefert die spätere Antwort', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock
+        .mockRejectedValueOnce(new TypeError('Load failed'))
+        .mockResolvedValueOnce({ ok: true, status: 201 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/add', { method: 'POST', body: '{}' });
+      await vi.advanceTimersByTimeAsync(2000);
+      await expect(pending).resolves.toEqual({ ok: true, status: 201 });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(captureError).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('wiederholt /addMovie bei 502 (Neustart des Backends)', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock
+        .mockResolvedValueOnce({ ok: false, status: 502 })
+        .mockResolvedValueOnce({ ok: true, status: 201 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/addMovie', { method: 'POST' });
+      await vi.advanceTimersByTimeAsync(2000);
+      await expect(pending).resolves.toEqual({ ok: true, status: 201 });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('meldet einen endgültigen Verbindungsfehler und wirft ihn weiter', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock.mockRejectedValue(new TypeError('Load failed'));
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/add', { method: 'POST' });
+      const assertion = expect(pending).rejects.toThrow('Load failed');
+      await vi.advanceTimersByTimeAsync(6000);
+      await assertion;
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(captureError).toHaveBeenCalledTimes(1);
+      expect(captureError.mock.calls[0][0].message).toContain('POST /add Verbindungsfehler');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('wiederholt andere Pfade bei Verbindungsfehlern nicht', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Load failed'));
+    const backendFetch = await loadBackendFetch();
+    await expect(backendFetch('/ai/recap', { method: 'POST' })).rejects.toThrow('Load failed');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('meldet 5xx-Antworten, aber keine 400er', async () => {
+    const backendFetch = await loadBackendFetch();
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 400 });
+    await backendFetch('/add', { method: 'POST' });
+    expect(captureError).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 500 });
+    await backendFetch('/mangaupdates/search', { method: 'POST' });
+    expect(captureError).toHaveBeenCalledTimes(1);
+    expect(captureError.mock.calls[0][0].message).toContain('/mangaupdates/search -> 500');
   });
 
   it('401 ohne eingeloggten User wird nicht wiederholt', async () => {

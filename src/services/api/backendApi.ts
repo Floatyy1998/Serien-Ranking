@@ -1,5 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { captureError } from '../errorReporting/errorReporter';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL as string;
 
@@ -65,10 +66,49 @@ async function getToken(): Promise<string | null> {
   return token;
 }
 
+/**
+ * Nur das Hinzufügen wird bei Verbindungsabbruch oder 502/503/504 wiederholt:
+ * Das Backend prüft zuerst auf „bereits vorhanden", ein Doppelversand schadet
+ * also nicht. Der Prozess startet gelegentlich neu (pm2) und ist dann einige
+ * Sekunden nicht erreichbar bzw. reißt die laufende Anfrage ab.
+ */
+const RETRY_PATHS = new Set(['/add', '/addMovie']);
+const CONNECTION_RETRY_DELAYS_MS = [1500, 4000];
+const TRANSIENT_STATUS = new Set([502, 503, 504]);
+
 function send(path: string, init: RequestInit, token: string | null): Promise<Response> {
   const headers = new Headers(init.headers);
   if (token) headers.set('Authorization', `Bearer ${token}`);
   return fetch(`${BACKEND_URL}${path}`, { ...init, headers });
+}
+
+function reportFailure(path: string, init: RequestInit, outcome: string): void {
+  captureError({
+    kind: 'error',
+    name: 'BackendFetch',
+    message: `${init.method ?? 'GET'} ${path} ${outcome} (online=${navigator.onLine})`,
+    source: path,
+  });
+}
+
+async function sendWithRetry(
+  path: string,
+  init: RequestInit,
+  token: string | null
+): Promise<Response> {
+  const delays = RETRY_PATHS.has(path) ? CONNECTION_RETRY_DELAYS_MS : [];
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const response = await send(path, init, token);
+      if (!TRANSIENT_STATUS.has(response.status) || attempt >= delays.length) return response;
+    } catch (error) {
+      if (attempt >= delays.length) {
+        reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
+        throw error;
+      }
+    }
+    await sleep(delays[attempt]);
+  }
 }
 
 /**
@@ -77,15 +117,22 @@ function send(path: string, init: RequestInit, token: string | null): Promise<Re
  * das Backend nutzt es als vertrauenswuerdige Identitaet, faellt aber noch
  * auf die im Body gesendete uid/uuid zurueck). `path` beginnt mit '/'.
  * Antwortet das Backend mit 401, wird einmal mit frisch erzwungenem Token
- * wiederholt (abgelaufene oder nicht erneuerte Sitzung).
+ * wiederholt (abgelaufene oder nicht erneuerte Sitzung). Scheitert ein
+ * Aufruf endgültig (401/403/429/5xx oder Verbindungsfehler), geht eine
+ * Meldung an die Client-Fehlerberichte, damit der Grund sichtbar wird.
  */
 export async function backendFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = await getToken();
-  const response = await send(path, init, token);
-  const user = response.status === 401 ? firebase.auth().currentUser : null;
-  if (!user) return response;
+  let response = await sendWithRetry(path, init, token);
 
-  const fresh = await fetchToken(user, true);
-  if (!fresh || fresh === token) return response;
-  return send(path, init, fresh);
+  const user = response.status === 401 ? firebase.auth().currentUser : null;
+  if (user) {
+    const fresh = await fetchToken(user, true);
+    if (fresh && fresh !== token) response = await sendWithRetry(path, init, fresh);
+  }
+
+  if ([401, 403, 429].includes(response.status) || response.status >= 500) {
+    reportFailure(path, init, `-> ${response.status} (${token ? 'mit' : 'ohne'} Token)`);
+  }
+  return response;
 }
