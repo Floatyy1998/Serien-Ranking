@@ -53,6 +53,37 @@ export function spineStyle(book: Pick<Book, 'id' | 'title' | 'pageCount'>, scale
   };
 }
 
+const SPINE_CHAR_WIDTH = 0.68;
+const SPINE_LINE_HEIGHT = 1.05;
+
+export interface SpineTitleLayout {
+  fontSize: number;
+  lines: 1 | 2;
+  maxHeight: number;
+}
+
+const half = (n: number) => Math.round(n * 2) / 2;
+
+/**
+ * Lange Titel werden bis 8 px kleiner gesetzt und auf breiten Rücken zweizeilig, statt sofort
+ * abgeschnitten zu werden. Ohne Zierbänder steht dem Titel fast die ganze Höhe zur Verfügung.
+ */
+export function spineTitleLayout(
+  title: string,
+  spine: Pick<SpineStyle, 'width' | 'height' | 'bands'>
+): SpineTitleLayout {
+  const maxHeight = spine.height - (spine.bands > 0 ? 50 : 26);
+  const length = Math.max(1, title.length) * SPINE_CHAR_WIDTH;
+  const one = maxHeight / length;
+  const widthLimit = (spine.width - 6) / (2 * SPINE_LINE_HEIGHT);
+  const two = Math.min(11, ((2 * maxHeight) / length) * 0.85, widthLimit);
+  if (one >= 10.5 || (one >= 9 && two < one + 1.5)) {
+    return { fontSize: half(Math.min(11, one)), lines: 1, maxHeight };
+  }
+  if (two > one && two >= 8) return { fontSize: half(two), lines: 2, maxHeight };
+  return { fontSize: half(Math.max(8, Math.min(11, one))), lines: 1, maxHeight };
+}
+
 /** Teilt Buchrücken auf Regalbretter auf, ohne dass ein Brett überläuft. */
 export function packShelves<T extends { width: number }>(items: T[], shelfWidth: number): T[][] {
   const shelves: T[][] = [];
