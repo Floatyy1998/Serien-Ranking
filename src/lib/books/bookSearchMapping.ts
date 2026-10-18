@@ -322,7 +322,8 @@ export function stripResult(result: BookSearchResult): BookSearchResult {
   return { ...stripUndefined(result), authors: result.authors ?? [] };
 }
 
-const COVER_MIRROR = `${import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de'}/bookcover/id`;
+const BOOKCOVER_BASE = `${import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de'}/bookcover`;
+const COVER_MIRROR = `${BOOKCOVER_BASE}/id`;
 
 /** Original-URL in passender Größe: M (~180 px) für Karten, L nur für große Darstellungen. */
 export function directCoverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
@@ -341,9 +342,12 @@ const HARDCOVER_MIRROR = /(\/bookcover\/hc\/[A-Za-z0-9_-]+)(?:\.[ML])?\.jpg/;
 /**
  * Open-Library-Cover kommen über den Backend-Spiegel — direkt leitet jedes Bild ~2 s über archive.org um.
  * Hardcover-Cover liegen ebenfalls dort und werden serverseitig auf M (360 px) bzw. L (720 px) verkleinert.
+ * DNB-Cover nur über den Spiegel: das Portal stellt Browsern eine Bot-Prüfseite statt des Bildes zu.
  */
 export function coverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
   if (url && HARDCOVER_MIRROR.test(url)) return url.replace(HARDCOVER_MIRROR, `$1.${size}.jpg`);
+  const dnb = url?.match(/portal\.dnb\.de\/opac\/mvb\/cover\?isbn=(97[89]\d{10})/)?.[1];
+  if (dnb) return `${BOOKCOVER_BASE}/dnb/${dnb}-${size}.jpg`;
   const id = url?.match(/covers\.openlibrary\.org\/b\/id\/(\d+)-[SML]\.jpg/)?.[1];
   return id ? `${COVER_MIRROR}/${id}-${size}.jpg` : directCoverAtSize(url, size);
 }

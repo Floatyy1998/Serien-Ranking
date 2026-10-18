@@ -358,6 +358,16 @@ describe('Hardcover-Cover in Größen', () => {
   });
 });
 
+describe('DNB-Cover über den Spiegel', () => {
+  const dnb = 'https://portal.dnb.de/opac/mvb/cover?isbn=9783741650987';
+
+  it('leitet auf den Backend-Spiegel in der passenden Größe um', () => {
+    expect(coverAtSize(dnb, 'M')).toMatch(/\/bookcover\/dnb\/9783741650987-M\.jpg$/);
+    expect(coverAtSize(dnb, 'L')).toMatch(/\/bookcover\/dnb\/9783741650987-L\.jpg$/);
+    expect(directCoverAtSize(dnb, 'M')).toBe(dnb);
+  });
+});
+
 describe('alignSeriesKey', () => {
   const owned = (series: Book['series']): Book =>
     ({
