@@ -108,6 +108,86 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('Oktober 2026 – Crossover, Schauspieler-Suche und Schwerpunkt Lesen'),
+      date: '2026-10-18',
+      features: [
+        {
+          icon: <SwapHoriz />,
+          color: currentTheme.primary,
+          title: t('Crossover in der richtigen Reihenfolge'),
+          description: t(
+            'Manche Geschichten laufen über mehrere Serien, etwa bei Arrow und The Flash, One Chicago oder Grey’s Anatomy und Station 19. Auf der Serienseite siehst du jetzt, welche Folgen dazugehören und was du vorher und danach schauen solltest, mit Haken für alles, was du schon gesehen hast. Ein Chip markiert solche Folgen auch unter Weiterschauen und Heute neu. Über 600 Crossover sind schon eingetragen, und fehlt eins, ergänzt du es selbst.'
+          ),
+        },
+        {
+          icon: <AutoStories />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Manga in Bänden zählen'),
+          description: t(
+            'Wer Manga gedruckt liest, hakt jetzt Band für Band ab statt Kapitel. Bände aus der ISBN-Suche landen direkt beim passenden Manga, und eine Reihe lässt sich jederzeit zwischen Manga und Buch hin- und herschieben.'
+          ),
+        },
+        {
+          icon: <MenuBook />,
+          color: currentTheme.primary,
+          title: t('Stöbern nach Genre und Stimmung'),
+          description: t(
+            '65 Genres und 16 Stimmungen helfen beim Finden des nächsten Buchs, auf Wunsch getrennt nach Erwachsenen und Jugend. Die Detailseite zeigt Stimmung, Tempo, Inhaltshinweise und ähnliche Bücher, und dein Regal lässt sich durchsuchen, filtern und sortieren.'
+          ),
+          link: { label: t('Zu den Büchern'), path: '/books' },
+        },
+        {
+          icon: <LibraryAddCheck />,
+          color: currentTheme.secondary,
+          title: t('Im Besitz und Leihwünsche'),
+          description: t(
+            'Markiere Bücher, die bei dir im Regal stehen. Auf den Profilen deiner Freunde siehst du, was sie besitzen, und kannst dir ein Buch zum Ausleihen wünschen.'
+          ),
+        },
+        {
+          icon: <Search />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Schauspieler finden'),
+          description: t(
+            'Die Suche findet jetzt auch Schauspielerinnen und Schauspieler. Ein Tipp öffnet ihre Seite mit den Serien und Filmen, in denen sie mitgespielt haben.'
+          ),
+        },
+        {
+          icon: <NotificationsActive />,
+          color: currentTheme.primary,
+          title: t('Benachrichtigungen aufgeräumt'),
+          description: t(
+            'Neues steht oben, der Rest ist nach Heute, Gestern und Früher sortiert. Meldungen aus demselben Ticket oder derselben Diskussion sind gebündelt, Chats haben einen eigenen Bereich, und die Aktivität deiner Freunde zeigt große Poster samt Uhrzeit.'
+          ),
+        },
+        {
+          icon: <Tune />,
+          color: currentTheme.secondary,
+          title: t('Schwerpunkt: Schauen, Lesen oder beides'),
+          description: t(
+            'Wer mehr liest als schaut, bekommt eine eigene Startseite mit Büchern, Manga, Freunden und Pet. Den Schwerpunkt stellst du unter Design ein, Serien und Filme bleiben einen Tipp entfernt.'
+          ),
+          link: { label: t('Zum Design'), path: '/theme' },
+        },
+        {
+          icon: <Public />,
+          color: currentTheme.accent || currentTheme.primary,
+          title: t('Öffentliche Profile mit Manga, Büchern und Listen'),
+          description: t(
+            'Dein öffentliches Profil zeigt jetzt neben Serien und Filmen auch Manga, Bücher und deine Listen. Im eigenen Profil stehen gelesene Bücher, Seiten und Manga-Kapitel neben deinen Serienzahlen, und unter Bewertungen gibt es einen Reiter für Bücher.'
+          ),
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.primary,
+          title: t('Kleinere Korrekturen'),
+          description: t(
+            'Links in Diskussionen und Tickets sind anklickbar, seitliches Wischen in Kalender und Staffeln scrollt nicht mehr mit, die Manga-Suche findet auch westliche Webtoons, und Updates der Android-App kommen schon beim ersten Start an.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat'),
       date: '2026-10-14',
       features: [

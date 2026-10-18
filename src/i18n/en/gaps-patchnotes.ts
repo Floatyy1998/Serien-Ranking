@@ -337,6 +337,35 @@ const dict: Record<string, string> = {
     'In the calendar, the rating shown next to a show could differ slightly from the one in the rating dialog — both now calculate it the same way. And a movie rated from the home screen reliably shows up in your statistics again.',
 
   // Oktober 2026
+  'Oktober 2026 – Crossover, Schauspieler-Suche und Schwerpunkt Lesen':
+    'October 2026 – Crossovers, Actor Search and Reading Focus',
+  'Crossover in der richtigen Reihenfolge': 'Crossovers in the right order',
+  'Manche Geschichten laufen über mehrere Serien, etwa bei Arrow und The Flash, One Chicago oder Grey’s Anatomy und Station 19. Auf der Serienseite siehst du jetzt, welche Folgen dazugehören und was du vorher und danach schauen solltest, mit Haken für alles, was du schon gesehen hast. Ein Chip markiert solche Folgen auch unter Weiterschauen und Heute neu. Über 600 Crossover sind schon eingetragen, und fehlt eins, ergänzt du es selbst.':
+    'Some stories run across several shows, like Arrow and The Flash, One Chicago or Grey’s Anatomy and Station 19. The show page now tells you which episodes belong together and what to watch before and after, with checkmarks for everything you have already seen. A chip marks these episodes in Continue Watching and New Today as well. Over 600 crossovers are already listed, and if one is missing, you can add it yourself.',
+  'Manga in Bänden zählen': 'Count manga by volume',
+  'Wer Manga gedruckt liest, hakt jetzt Band für Band ab statt Kapitel. Bände aus der ISBN-Suche landen direkt beim passenden Manga, und eine Reihe lässt sich jederzeit zwischen Manga und Buch hin- und herschieben.':
+    'If you read manga in print, you now tick off volume by volume instead of chapters. Volumes found via ISBN search go straight to the matching manga, and a series can be moved between manga and books at any time.',
+  'Stöbern nach Genre und Stimmung': 'Browse by genre and mood',
+  '65 Genres und 16 Stimmungen helfen beim Finden des nächsten Buchs, auf Wunsch getrennt nach Erwachsenen und Jugend. Die Detailseite zeigt Stimmung, Tempo, Inhaltshinweise und ähnliche Bücher, und dein Regal lässt sich durchsuchen, filtern und sortieren.':
+    '65 genres and 16 moods help you find your next book, split into adult and young readers if you like. The detail page shows mood, pace, content notes and similar books, and you can search, filter and sort your shelf.',
+  'Im Besitz und Leihwünsche': 'Owned books and borrow requests',
+  'Markiere Bücher, die bei dir im Regal stehen. Auf den Profilen deiner Freunde siehst du, was sie besitzen, und kannst dir ein Buch zum Ausleihen wünschen.':
+    'Mark the books that sit on your own shelf. On your friends’ profiles you can see what they own and ask to borrow a book.',
+  'Schauspieler finden': 'Find actors',
+  'Die Suche findet jetzt auch Schauspielerinnen und Schauspieler. Ein Tipp öffnet ihre Seite mit den Serien und Filmen, in denen sie mitgespielt haben.':
+    'Search now finds actors too. A tap opens their page with the shows and movies they have appeared in.',
+  'Benachrichtigungen aufgeräumt': 'Tidier notifications',
+  'Neues steht oben, der Rest ist nach Heute, Gestern und Früher sortiert. Meldungen aus demselben Ticket oder derselben Diskussion sind gebündelt, Chats haben einen eigenen Bereich, und die Aktivität deiner Freunde zeigt große Poster samt Uhrzeit.':
+    'New items sit at the top, the rest is sorted into Today, Yesterday and Earlier. Updates from the same ticket or discussion are bundled, chats have their own section, and your friends’ activity shows large posters with the time.',
+  'Schwerpunkt: Schauen, Lesen oder beides': 'Focus: watching, reading or both',
+  'Wer mehr liest als schaut, bekommt eine eigene Startseite mit Büchern, Manga, Freunden und Pet. Den Schwerpunkt stellst du unter Design ein, Serien und Filme bleiben einen Tipp entfernt.':
+    'If you read more than you watch, you get your own home screen with books, manga, friends and your pet. You set your focus under Appearance, and shows and movies stay one tap away.',
+  'Öffentliche Profile mit Manga, Büchern und Listen':
+    'Public profiles with manga, books and lists',
+  'Dein öffentliches Profil zeigt jetzt neben Serien und Filmen auch Manga, Bücher und deine Listen. Im eigenen Profil stehen gelesene Bücher, Seiten und Manga-Kapitel neben deinen Serienzahlen, und unter Bewertungen gibt es einen Reiter für Bücher.':
+    'Your public profile now shows manga, books and your lists alongside shows and movies. Your own profile lists books read, pages and manga chapters next to your show stats, and Ratings has a tab for books.',
+  'Links in Diskussionen und Tickets sind anklickbar, seitliches Wischen in Kalender und Staffeln scrollt nicht mehr mit, die Manga-Suche findet auch westliche Webtoons, und Updates der Android-App kommen schon beim ersten Start an.':
+    'Links in discussions and tickets are clickable, swiping sideways in the calendar and seasons no longer scrolls the page, manga search also finds Western webtoons, and Android app updates arrive on the first launch.',
   'Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat':
     'October 2026 – Books, Pets on the Dock and Chat Replies',
   'Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile':

@@ -27,6 +27,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user }) }));
+vi.mock('../../config/admin', () => ({ ADMIN_UID: 'admin-uid' }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: seriesList, refetchAfterAdd: vi.fn() }),
 }));
@@ -68,6 +69,7 @@ const entry: CrossoverEntry = {
 afterEach(() => {
   cleanup();
   navigateMock.mockReset();
+  user.uid = 'u1';
 });
 
 describe('CrossoverSheet', () => {
@@ -95,8 +97,20 @@ describe('CrossoverSheet', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('bietet dem Ersteller Bearbeiten und Löschen an', () => {
+  it('bietet nur dem Admin Bearbeiten und Löschen an', () => {
     const onEdit = vi.fn();
+    const { unmount } = render(
+      <CrossoverSheet
+        isOpen
+        id="crisis"
+        entry={{ ...entry, createdBy: 'u1' }}
+        onClose={vi.fn()}
+        navigate={navigateMock}
+      />
+    );
+    expect(screen.queryByText('Bearbeiten')).toBeNull();
+    unmount();
+    user.uid = 'admin-uid';
     render(
       <CrossoverSheet
         isOpen

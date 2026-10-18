@@ -113,7 +113,7 @@ describe('PatchNotesPage', () => {
     render(<PatchNotesPage />);
     expect(screen.getByText('Patch Notes')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: 'Bücher, Pets auf dem Dock und Antworten im Chat' })
+      screen.getByRole('heading', { name: 'Crossover, Schauspieler-Suche und Schwerpunkt Lesen' })
     ).toBeInTheDocument();
     const older = screen.getByRole('button', { name: /Anime-Season-Kalender/ });
     expect(older).toHaveAttribute('aria-expanded', 'false');
@@ -129,7 +129,7 @@ describe('PatchNotesPage', () => {
 
   it('navigiert über den Link-Knopf einer Karte', () => {
     render(<PatchNotesPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Zu den Büchern' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zu den Büchern' })[0]);
     expect(navigateMock).toHaveBeenCalledWith('/books');
     expect(navigateMock).toHaveBeenCalledTimes(1);
   });

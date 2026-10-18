@@ -45,6 +45,20 @@ describe('crossoverIndex', () => {
     );
   });
 
+  it('blendet ungeprüfte Einträge aus, ausser für die Prüf-Ansicht', () => {
+    const map: CrossoverMap = {
+      crisis,
+      neu: { ...crisis, title: 'Neu', status: 'pending' },
+      frei: { ...crisis, title: 'Frei', status: 'approved' },
+    };
+    expect(
+      buildCrossoverIndex(map)
+        .entries.map((e) => e.id)
+        .sort()
+    ).toEqual(['crisis', 'frei']);
+    expect(buildCrossoverIndex(map, { includePending: true }).entries).toHaveLength(3);
+  });
+
   it('sortiert nach Jahr absteigend, dann Titel', () => {
     const index = buildCrossoverIndex({
       b: { ...crisis, title: 'B', year: 2016 },

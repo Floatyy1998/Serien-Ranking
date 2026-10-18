@@ -61,7 +61,8 @@ export function CrossoverSheet({
   const tone = currentTheme.accent || currentTheme.primary;
   const border = currentTheme.border?.default || 'rgba(255,255,255,0.12)';
   const isAdmin = user?.uid === ADMIN_UID;
-  const canEdit = !!user && (isAdmin || entry.createdBy === user.uid);
+  // Freigegebene Einträge ändert nur der Admin; alle anderen schlagen Korrekturen vor.
+  const canEdit = isAdmin;
   const note = entry.note ? pickLocalized(entry.note, entry.noteL) : '';
 
   const openPart = (part: CrossoverPart) => {

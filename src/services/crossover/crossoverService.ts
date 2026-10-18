@@ -58,10 +58,21 @@ export async function loadCrossovers(force = false): Promise<CrossoverMap> {
 export async function saveCrossover(id: string | null, entry: CrossoverEntry): Promise<string> {
   const key = id || dbRef(NODE).push().key || `c${Date.now()}`;
   const clean = compactEntry(entry);
-  await dbUpdate({ [`${NODE}/${key}`]: clean, [VERSION_PATH]: serverTimestamp() });
+  // Ungeprüfte Einträge sieht niemand ausser dem Admin-Tab — kein Grund, alle Caches zu leeren.
+  const updates: Record<string, unknown> = { [`${NODE}/${key}`]: clean };
+  if (clean.status !== 'pending') updates[VERSION_PATH] = serverTimestamp();
+  await dbUpdate(updates);
   memory = { ...(memory || {}), [key]: clean };
   emit();
   return key;
+}
+
+export async function approveCrossover(id: string): Promise<void> {
+  await dbUpdate({
+    [`${NODE}/${id}/status`]: 'approved',
+    [`${NODE}/${id}/updatedAt`]: Date.now(),
+    [VERSION_PATH]: serverTimestamp(),
+  });
 }
 
 export async function deleteCrossover(id: string): Promise<void> {

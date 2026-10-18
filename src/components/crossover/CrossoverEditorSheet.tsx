@@ -4,6 +4,7 @@ import Close from '@mui/icons-material/Close';
 import Add from '@mui/icons-material/Add';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ADMIN_UID } from '../../config/admin';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -61,6 +62,7 @@ export function CrossoverEditorSheet({
 }: CrossoverEditorSheetProps) {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const isAdmin = user?.uid === ADMIN_UID;
   const { allSeriesList } = useSeriesList();
   const [title, setTitle] = useState('');
   const [kind, setKind] = useState<CrossoverKind>('crossover');
@@ -266,11 +268,16 @@ export function CrossoverEditorSheet({
       createdAt: initial?.createdAt || Date.now(),
       updatedAt: Date.now(),
       source: initial?.source || 'community',
+      status: isAdmin ? 'approved' : 'pending',
     };
     try {
       const savedId = await saveCrossover(id, entry);
-      showToast(t('Crossover gespeichert'));
-      onSaved?.(savedId);
+      if (isAdmin) {
+        showToast(t('Crossover gespeichert'));
+        onSaved?.(savedId);
+      } else {
+        showToast(t('Danke! Wir prüfen den Eintrag, danach sehen ihn alle.'), 4000);
+      }
       onClose();
     } catch {
       showToast(t('Speichern fehlgeschlagen'), 3000, 'error');
@@ -370,7 +377,11 @@ export function CrossoverEditorSheet({
           {id ? t('Crossover bearbeiten') : t('Crossover ergänzen')}
         </h3>
         <p style={{ fontSize: 12.5, color: muted, margin: 0, lineHeight: 1.4 }}>
-          {t('Alle sehen deinen Eintrag sofort. Bitte nur echte, ausgestrahlte Crossover.')}
+          {isAdmin
+            ? t('Als Admin ist dein Eintrag sofort für alle sichtbar.')
+            : t(
+                'Dein Eintrag wird vor der Veröffentlichung geprüft. Bitte nur echte, ausgestrahlte Crossover.'
+              )}
         </p>
 
         <label style={labelStyle} htmlFor="crossover-title">

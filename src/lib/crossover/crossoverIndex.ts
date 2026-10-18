@@ -80,8 +80,13 @@ export function normalizeEntry(raw: unknown): CrossoverEntry | null {
   const updatedAt = num(r.updatedAt);
   if (updatedAt) entry.updatedAt = updatedAt;
   if (r.source === 'seed' || r.source === 'community') entry.source = r.source;
+  if (r.status === 'pending' || r.status === 'approved') entry.status = r.status;
   return entry;
 }
+
+/** Sichtbar für alle: freigegeben oder aus der Zeit vor der Freigabe (ohne Status). */
+export const isApproved = (entry: Pick<CrossoverEntry, 'status'>): boolean =>
+  entry.status !== 'pending';
 
 const compareEntries = (
   a: { id: string; entry: CrossoverEntry },
@@ -89,13 +94,17 @@ const compareEntries = (
 ): number =>
   (b.entry.year ?? 0) - (a.entry.year ?? 0) || a.entry.title.localeCompare(b.entry.title);
 
-export function buildCrossoverIndex(map: CrossoverMap | null | undefined): CrossoverIndex {
+export function buildCrossoverIndex(
+  map: CrossoverMap | null | undefined,
+  { includePending = false }: { includePending?: boolean } = {}
+): CrossoverIndex {
   const entries: CrossoverIndex['entries'] = [];
   const bySeries = new Map<number, CrossoverRef[]>();
   const byEpisode = new Map<string, CrossoverRef[]>();
   for (const [id, raw] of Object.entries(map || {})) {
     const entry = normalizeEntry(raw);
     if (!entry) continue;
+    if (!includePending && !isApproved(entry)) continue;
     entries.push({ id, entry });
     const seenSeries = new Set<number>();
     entry.parts.forEach((part, partIndex) => {

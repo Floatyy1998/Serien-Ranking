@@ -321,6 +321,35 @@ const dict: Record<string, string> = {
     'En el calendario, la valoración junto a una serie podía diferir un poco de la de la ventana de valoración; ahora ambas se calculan igual. Y una película valorada desde la pantalla de inicio vuelve a aparecer siempre en tus estadísticas.',
 
   // Oktober 2026
+  'Oktober 2026 – Crossover, Schauspieler-Suche und Schwerpunkt Lesen':
+    'Octubre de 2026 – Crossovers, búsqueda de actores y enfoque lectura',
+  'Crossover in der richtigen Reihenfolge': 'Crossovers en el orden correcto',
+  'Manche Geschichten laufen über mehrere Serien, etwa bei Arrow und The Flash, One Chicago oder Grey’s Anatomy und Station 19. Auf der Serienseite siehst du jetzt, welche Folgen dazugehören und was du vorher und danach schauen solltest, mit Haken für alles, was du schon gesehen hast. Ein Chip markiert solche Folgen auch unter Weiterschauen und Heute neu. Über 600 Crossover sind schon eingetragen, und fehlt eins, ergänzt du es selbst.':
+    'Algunas historias continúan en varias series, como Arrow y The Flash, One Chicago o Grey’s Anatomy y Station 19. En la página de la serie ahora ves qué episodios forman parte y qué conviene ver antes y después, con una marca en todo lo que ya has visto. Una etiqueta señala esos episodios también en Seguir viendo y Nuevo hoy. Ya hay más de 600 crossovers registrados, y si falta alguno, puedes añadirlo tú.',
+  'Manga in Bänden zählen': 'Contar manga por tomos',
+  'Wer Manga gedruckt liest, hakt jetzt Band für Band ab statt Kapitel. Bände aus der ISBN-Suche landen direkt beim passenden Manga, und eine Reihe lässt sich jederzeit zwischen Manga und Buch hin- und herschieben.':
+    'Si lees manga en papel, ahora marcas tomo a tomo en lugar de capítulos. Los tomos encontrados por ISBN van directamente al manga correspondiente, y una serie puede pasar de manga a libro y al revés en cualquier momento.',
+  'Stöbern nach Genre und Stimmung': 'Explorar por género y estado de ánimo',
+  '65 Genres und 16 Stimmungen helfen beim Finden des nächsten Buchs, auf Wunsch getrennt nach Erwachsenen und Jugend. Die Detailseite zeigt Stimmung, Tempo, Inhaltshinweise und ähnliche Bücher, und dein Regal lässt sich durchsuchen, filtern und sortieren.':
+    '65 géneros y 16 estados de ánimo te ayudan a encontrar tu próximo libro, separados por adultos y juvenil si quieres. La página de detalle muestra ambiente, ritmo, advertencias de contenido y libros parecidos, y tu estantería se puede buscar, filtrar y ordenar.',
+  'Im Besitz und Leihwünsche': 'Libros en propiedad y préstamos',
+  'Markiere Bücher, die bei dir im Regal stehen. Auf den Profilen deiner Freunde siehst du, was sie besitzen, und kannst dir ein Buch zum Ausleihen wünschen.':
+    'Marca los libros que tienes en tu estantería. En los perfiles de tus amigos ves cuáles tienen y puedes pedirles uno prestado.',
+  'Schauspieler finden': 'Buscar actores',
+  'Die Suche findet jetzt auch Schauspielerinnen und Schauspieler. Ein Tipp öffnet ihre Seite mit den Serien und Filmen, in denen sie mitgespielt haben.':
+    'La búsqueda ahora también encuentra actrices y actores. Un toque abre su página con las series y películas en las que han participado.',
+  'Benachrichtigungen aufgeräumt': 'Notificaciones más ordenadas',
+  'Neues steht oben, der Rest ist nach Heute, Gestern und Früher sortiert. Meldungen aus demselben Ticket oder derselben Diskussion sind gebündelt, Chats haben einen eigenen Bereich, und die Aktivität deiner Freunde zeigt große Poster samt Uhrzeit.':
+    'Lo nuevo aparece arriba y el resto se ordena en Hoy, Ayer y Antes. Los avisos del mismo ticket o de la misma discusión se agrupan, los chats tienen su propia sección y la actividad de tus amigos muestra pósteres grandes con la hora.',
+  'Schwerpunkt: Schauen, Lesen oder beides': 'Enfoque: ver, leer o ambos',
+  'Wer mehr liest als schaut, bekommt eine eigene Startseite mit Büchern, Manga, Freunden und Pet. Den Schwerpunkt stellst du unter Design ein, Serien und Filme bleiben einen Tipp entfernt.':
+    'Si lees más de lo que ves, tienes tu propia pantalla de inicio con libros, manga, amigos y tu mascota. El enfoque se ajusta en Diseño, y las series y películas siguen a un toque.',
+  'Öffentliche Profile mit Manga, Büchern und Listen':
+    'Perfiles públicos con manga, libros y listas',
+  'Dein öffentliches Profil zeigt jetzt neben Serien und Filmen auch Manga, Bücher und deine Listen. Im eigenen Profil stehen gelesene Bücher, Seiten und Manga-Kapitel neben deinen Serienzahlen, und unter Bewertungen gibt es einen Reiter für Bücher.':
+    'Tu perfil público ahora muestra manga, libros y tus listas además de series y películas. En tu propio perfil aparecen los libros leídos, las páginas y los capítulos de manga junto a tus cifras de series, y en Valoraciones hay una pestaña para libros.',
+  'Links in Diskussionen und Tickets sind anklickbar, seitliches Wischen in Kalender und Staffeln scrollt nicht mehr mit, die Manga-Suche findet auch westliche Webtoons, und Updates der Android-App kommen schon beim ersten Start an.':
+    'Los enlaces en discusiones y tickets se pueden pulsar, deslizar de lado en el calendario y las temporadas ya no desplaza la página, la búsqueda de manga también encuentra webtoons occidentales y las actualizaciones de la app de Android llegan en el primer inicio.',
   'Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat':
     'Octubre de 2026 – Libros, mascotas en el dock y respuestas en el chat',
   'Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile':

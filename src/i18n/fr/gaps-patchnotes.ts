@@ -322,6 +322,35 @@ const dict: Record<string, string> = {
     'Dans le calendrier, la note affichée à côté d’une série pouvait légèrement différer de celle de la fenêtre de notation : les deux se calculent désormais de la même façon. Et un film noté depuis l’écran d’accueil réapparaît bien dans tes statistiques.',
 
   // Oktober 2026
+  'Oktober 2026 – Crossover, Schauspieler-Suche und Schwerpunkt Lesen':
+    'Octobre 2026 – Crossovers, recherche d’acteurs et priorité lecture',
+  'Crossover in der richtigen Reihenfolge': 'Les crossovers dans le bon ordre',
+  'Manche Geschichten laufen über mehrere Serien, etwa bei Arrow und The Flash, One Chicago oder Grey’s Anatomy und Station 19. Auf der Serienseite siehst du jetzt, welche Folgen dazugehören und was du vorher und danach schauen solltest, mit Haken für alles, was du schon gesehen hast. Ein Chip markiert solche Folgen auch unter Weiterschauen und Heute neu. Über 600 Crossover sind schon eingetragen, und fehlt eins, ergänzt du es selbst.':
+    'Certaines histoires se poursuivent sur plusieurs séries, comme Arrow et The Flash, One Chicago ou Grey’s Anatomy et Station 19. La page de la série t’indique désormais quels épisodes en font partie et ce qu’il faut regarder avant et après, avec une coche pour tout ce que tu as déjà vu. Une étiquette signale aussi ces épisodes dans Continuer et Nouveau aujourd’hui. Plus de 600 crossovers sont déjà répertoriés, et s’il en manque un, tu peux l’ajouter toi-même.',
+  'Manga in Bänden zählen': 'Compter les manga par tome',
+  'Wer Manga gedruckt liest, hakt jetzt Band für Band ab statt Kapitel. Bände aus der ISBN-Suche landen direkt beim passenden Manga, und eine Reihe lässt sich jederzeit zwischen Manga und Buch hin- und herschieben.':
+    'Si tu lis des manga en version papier, tu coches désormais tome par tome au lieu des chapitres. Les tomes trouvés par ISBN rejoignent directement le bon manga, et une série peut passer à tout moment de manga à livre et inversement.',
+  'Stöbern nach Genre und Stimmung': 'Explorer par genre et par ambiance',
+  '65 Genres und 16 Stimmungen helfen beim Finden des nächsten Buchs, auf Wunsch getrennt nach Erwachsenen und Jugend. Die Detailseite zeigt Stimmung, Tempo, Inhaltshinweise und ähnliche Bücher, und dein Regal lässt sich durchsuchen, filtern und sortieren.':
+    '65 genres et 16 ambiances t’aident à trouver ton prochain livre, séparés entre adultes et jeunesse si tu veux. La page détaillée montre l’ambiance, le rythme, les avertissements de contenu et des livres similaires, et ta bibliothèque se laisse rechercher, filtrer et trier.',
+  'Im Besitz und Leihwünsche': 'Livres possédés et demandes de prêt',
+  'Markiere Bücher, die bei dir im Regal stehen. Auf den Profilen deiner Freunde siehst du, was sie besitzen, und kannst dir ein Buch zum Ausleihen wünschen.':
+    'Marque les livres qui se trouvent dans ta bibliothèque. Sur les profils de tes amis, tu vois ce qu’ils possèdent et tu peux leur demander d’en emprunter un.',
+  'Schauspieler finden': 'Trouver des acteurs',
+  'Die Suche findet jetzt auch Schauspielerinnen und Schauspieler. Ein Tipp öffnet ihre Seite mit den Serien und Filmen, in denen sie mitgespielt haben.':
+    'La recherche trouve désormais aussi les actrices et les acteurs. Un appui ouvre leur page avec les séries et les films dans lesquels ils ont joué.',
+  'Benachrichtigungen aufgeräumt': 'Notifications mieux rangées',
+  'Neues steht oben, der Rest ist nach Heute, Gestern und Früher sortiert. Meldungen aus demselben Ticket oder derselben Diskussion sind gebündelt, Chats haben einen eigenen Bereich, und die Aktivität deiner Freunde zeigt große Poster samt Uhrzeit.':
+    'Les nouveautés sont en haut, le reste est trié en Aujourd’hui, Hier et Plus tôt. Les messages d’un même ticket ou d’une même discussion sont regroupés, les chats ont leur propre section, et l’activité de tes amis affiche de grandes affiches avec l’heure.',
+  'Schwerpunkt: Schauen, Lesen oder beides': 'Priorité : regarder, lire ou les deux',
+  'Wer mehr liest als schaut, bekommt eine eigene Startseite mit Büchern, Manga, Freunden und Pet. Den Schwerpunkt stellst du unter Design ein, Serien und Filme bleiben einen Tipp entfernt.':
+    'Si tu lis plus que tu ne regardes, tu as ton propre écran d’accueil avec livres, manga, amis et ton compagnon. La priorité se règle dans Apparence, et les séries et films restent à portée d’un appui.',
+  'Öffentliche Profile mit Manga, Büchern und Listen':
+    'Profils publics avec manga, livres et listes',
+  'Dein öffentliches Profil zeigt jetzt neben Serien und Filmen auch Manga, Bücher und deine Listen. Im eigenen Profil stehen gelesene Bücher, Seiten und Manga-Kapitel neben deinen Serienzahlen, und unter Bewertungen gibt es einen Reiter für Bücher.':
+    'Ton profil public affiche désormais les manga, les livres et tes listes en plus des séries et des films. Ton propre profil montre les livres lus, les pages et les chapitres de manga à côté de tes chiffres de séries, et les Notes ont un onglet pour les livres.',
+  'Links in Diskussionen und Tickets sind anklickbar, seitliches Wischen in Kalender und Staffeln scrollt nicht mehr mit, die Manga-Suche findet auch westliche Webtoons, und Updates der Android-App kommen schon beim ersten Start an.':
+    'Les liens dans les discussions et les tickets sont cliquables, balayer sur le côté dans le calendrier et les saisons ne fait plus défiler la page, la recherche de manga trouve aussi les webtoons occidentaux, et les mises à jour de l’appli Android arrivent dès le premier lancement.',
   'Oktober 2026 – Bücher, Pets auf dem Dock und Antworten im Chat':
     'Octobre 2026 – Livres, compagnons sur le dock et réponses dans le chat',
   'Oktober 2026 – Eigene Listen, Long-Press und öffentliche Profile':

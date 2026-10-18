@@ -18,8 +18,12 @@ const dict: Record<string, string> = {
   'Von der Community ergänzt': 'Ajouté par la communauté',
   'Wirklich löschen?': 'Vraiment supprimer ?',
   'Korrektur vorschlagen': 'Proposer une correction',
-  'Alle sehen deinen Eintrag sofort. Bitte nur echte, ausgestrahlte Crossover.':
-    'Tout le monde voit ton entrée immédiatement. Uniquement de vrais crossovers déjà diffusés, s’il te plaît.',
+  'Dein Eintrag wird vor der Veröffentlichung geprüft. Bitte nur echte, ausgestrahlte Crossover.':
+    'Ton entrée est vérifiée avant d’être publiée. Uniquement de vrais crossovers déjà diffusés, s’il te plaît.',
+  'Als Admin ist dein Eintrag sofort für alle sichtbar.':
+    'En tant qu’admin, ton entrée est visible par tous immédiatement.',
+  'Danke! Wir prüfen den Eintrag, danach sehen ihn alle.':
+    'Merci ! Nous vérifions l’entrée, ensuite tout le monde la verra.',
   'z. B. Crisis on Infinite Earths': 'p. ex. Crisis on Infinite Earths',
   Art: 'Type',
   'Teile in Sehreihenfolge': 'Parties dans l’ordre de visionnage',

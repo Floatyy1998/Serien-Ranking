@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { DeleteOutlined, EditOutlined, SwapHoriz, UploadFile } from '@mui/icons-material';
+import { Check, DeleteOutlined, EditOutlined, SwapHoriz, UploadFile } from '@mui/icons-material';
 import { CrossoverEditorSheet } from '../../../components/crossover/CrossoverEditorSheet';
 import { kindLabel, partLabel } from '../../../components/crossover/crossoverLabels';
 import { ADMIN_UID } from '../../../config/admin';
@@ -8,6 +8,7 @@ import { buildCrossoverIndex, normalizeEntry } from '../../../lib/crossover/cros
 import { showToast } from '../../../lib/interaction/toast';
 import {
   applyCrossoverSnapshot,
+  approveCrossover,
   deleteCrossover,
   importCrossovers,
 } from '../../../services/crossover/crossoverService';
@@ -15,10 +16,11 @@ import { dbRef } from '../../../services/db/ref';
 import { onValue } from '../../../services/db/subscribeValue';
 import type { CrossoverEntry, CrossoverMap } from '../../../types/Crossover';
 
-type Filter = 'alle' | 'community' | 'seed';
+type Filter = 'pruefen' | 'alle' | 'community' | 'seed';
 
 const TONE_SEED = '#8a8a9a';
 const TONE_COMMUNITY = '#f2a648';
+const TONE_PENDING = '#ff5c7a';
 
 const formatDate = (ts?: number): string => (ts ? new Date(ts).toLocaleDateString('de-DE') : '—');
 
@@ -66,12 +68,13 @@ export function CrossoversTab() {
     return () => ref.off('value', handler);
   }, []);
 
-  const index = useMemo(() => buildCrossoverIndex(map), [map]);
+  const index = useMemo(() => buildCrossoverIndex(map, { includePending: true }), [map]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return index.entries.filter(({ entry }) => {
       const isSeed = entry.source === 'seed' || entry.createdBy === ADMIN_UID;
+      if (filter === 'pruefen' && entry.status !== 'pending') return false;
       if (filter === 'seed' && !isSeed) return false;
       if (filter === 'community' && isSeed) return false;
       if (!q) return true;
@@ -84,11 +87,33 @@ export function CrossoversTab() {
 
   const counts = useMemo(() => {
     let seed = 0;
+    let pending = 0;
     for (const { entry } of index.entries) {
       if (entry.source === 'seed' || entry.createdBy === ADMIN_UID) seed++;
+      if (entry.status === 'pending') pending++;
     }
-    return { total: index.entries.length, seed, community: index.entries.length - seed };
+    return { total: index.entries.length, seed, community: index.entries.length - seed, pending };
   }, [index]);
+
+  // Mit offenen Einreichungen startet der Tab direkt in der Prüf-Ansicht.
+  const [autoFilterDone, setAutoFilterDone] = useState(false);
+  useEffect(() => {
+    if (autoFilterDone || map === null) return;
+    setAutoFilterDone(true);
+    if (counts.pending > 0) setFilter('pruefen');
+  }, [autoFilterDone, map, counts.pending]);
+
+  const approve = async (id: string) => {
+    setBusy(true);
+    try {
+      await approveCrossover(id);
+      showToast('Freigegeben');
+    } catch (e) {
+      showToast(`Freigabe fehlgeschlagen: ${(e as Error)?.message || 'unbekannt'}`, 5000, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const remove = async (id: string) => {
     if (confirmId !== id) {
@@ -182,10 +207,15 @@ export function CrossoversTab() {
             <div className="adm-stat__value">{counts.community}</div>
             <div className="adm-stat__label">Community</div>
           </div>
+          <div className={`adm-stat ${counts.pending ? 'adm-tone-bad' : 'adm-tone-ok'}`}>
+            <div className="adm-stat__value">{counts.pending}</div>
+            <div className="adm-stat__label">Zu prüfen</div>
+          </div>
         </div>
         <div className="adm-note">
-          Gemeinsamer Knoten <code>crossovers/$id</code>: Nutzer legen Einträge an und bearbeiten
-          nur ihre eigenen, hier geht alles. Der Import nimmt die Datei
+          Gemeinsamer Knoten <code>crossovers/$id</code>: Nutzer reichen Einträge ein, sichtbar
+          werden sie erst nach Freigabe hier. Ändern kann freigegebene Einträge nur der Admin
+          (Speichern im Editor gibt gleich mit frei). Der Import nimmt die Datei
           <code> scripts/backend/data/crossovers-seed.json</code> (gleiche IDs werden
           überschrieben).
         </div>
@@ -194,6 +224,7 @@ export function CrossoversTab() {
       <div className="adm-chips">
         {(
           [
+            ['pruefen', 'Zu prüfen', counts.pending],
             ['alle', 'Alle', counts.total],
             ['community', 'Community', counts.community],
             ['seed', 'Seed', counts.seed],
@@ -226,17 +257,16 @@ export function CrossoversTab() {
       ) : (
         rows.map(({ id, entry }) => {
           const isSeed = entry.source === 'seed' || entry.createdBy === ADMIN_UID;
+          const pending = entry.status === 'pending';
+          const tone = pending ? TONE_PENDING : isSeed ? TONE_SEED : TONE_COMMUNITY;
           return (
-            <div
-              key={id}
-              className="adm-row"
-              style={{ '--adm-tone': isSeed ? TONE_SEED : TONE_COMMUNITY } as CSSProperties}
-            >
+            <div key={id} className="adm-row" style={{ '--adm-tone': tone } as CSSProperties}>
               <div className="adm-row__head" style={{ cursor: 'default' }}>
                 <div className="adm-row__bar" />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="adm-row__title">{entry.title}</div>
                   <div className="adm-row__meta">
+                    {pending ? <span style={{ color: TONE_PENDING }}>Zu prüfen</span> : null}
                     <span>{kindLabel(entry.kind)}</span>
                     {entry.year ? <span>{entry.year}</span> : null}
                     {entry.franchise ? <span>{entry.franchise}</span> : null}
@@ -256,6 +286,18 @@ export function CrossoversTab() {
                   ) : null}
                 </div>
                 <div className="adm-row__acts">
+                  {pending && (
+                    <button
+                      type="button"
+                      className="adm-icon-btn"
+                      title="Freigeben"
+                      disabled={busy}
+                      onClick={() => void approve(id)}
+                      style={{ color: 'var(--adm-ok)' }}
+                    >
+                      <Check style={{ fontSize: 16 }} />
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="adm-icon-btn"

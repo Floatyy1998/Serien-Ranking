@@ -31,7 +31,11 @@ export interface CrossoverEntry {
   createdAt: number;
   updatedAt?: number;
   source?: 'seed' | 'community';
+  /** Nutzer-Einträge warten auf Freigabe; ohne Feld gilt ein Eintrag als freigegeben. */
+  status?: CrossoverStatus;
 }
+
+export type CrossoverStatus = 'pending' | 'approved';
 
 export type CrossoverMap = Record<string, CrossoverEntry>;
 
