@@ -1,6 +1,12 @@
 import type { PetAnchors } from './shared';
 import { darken, lighten } from './shared';
 
+/** Halbe Kopfbreite in Stirnhöhe (depth unter dem Scheitel), damit Bänder anliegen statt zu schweben. */
+function foreheadHalfWidth(a: PetAnchors, depth: number): number {
+  const r = a.headHalfWidth * 1.1;
+  return r * Math.sqrt(Math.max(0, 1 - ((r - depth) / r) ** 2));
+}
+
 // Kleiner 4-Zack-Funkelstern
 function sparkle(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
   ctx.beginPath();
@@ -214,26 +220,25 @@ export function drawBandana(
   color?: string
 ): void {
   const cx = a.headCenterX;
-  const ty = a.headTopY;
-  const hw = a.headHalfWidth;
+  const ty = a.headTopY + 1.2;
   const c = color || '#FF0000';
 
-  const w = hw * 1.0;
+  const w = foreheadHalfWidth(a, 2.3) - 0.2;
   // Gewelltes Stirnband
   ctx.fillStyle = c;
   ctx.beginPath();
-  ctx.moveTo((cx - w - 0.3) * ps, (ty + 0.5) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ty - 0.1) * ps + off, (cx + w + 0.3) * ps, (ty + 0.5) * ps + off);
-  ctx.lineTo((cx + w + 0.3) * ps, (ty + 1.8) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ty + 2.3) * ps + off, (cx - w - 0.3) * ps, (ty + 1.8) * ps + off);
+  ctx.moveTo((cx - w - 0.3) * ps, (ty + 0.8) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, (ty - 0.2) * ps + off, (cx + w + 0.3) * ps, (ty + 0.8) * ps + off);
+  ctx.lineTo((cx + w + 0.3) * ps, (ty + 2.1) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, (ty + 1.4) * ps + off, (cx - w - 0.3) * ps, (ty + 2.1) * ps + off);
   ctx.closePath();
   ctx.fill();
   // Schattenfalte unten
   ctx.strokeStyle = darken(c, 40);
   ctx.lineWidth = ps * 0.3;
   ctx.beginPath();
-  ctx.moveTo((cx - w - 0.3) * ps, (ty + 1.7) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ty + 2.2) * ps + off, (cx + w + 0.3) * ps, (ty + 1.7) * ps + off);
+  ctx.moveTo((cx - w - 0.3) * ps, (ty + 2) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, (ty + 1.3) * ps + off, (cx + w + 0.3) * ps, (ty + 2) * ps + off);
   ctx.stroke();
   // Knoten rechts
   ctx.fillStyle = c;
@@ -938,19 +943,18 @@ export function drawHeadband(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ty = a.headTopY;
-  const hw = a.headHalfWidth;
-  const w = hw * 1.0;
+  const ty = a.headTopY + 1.3;
+  const w = foreheadHalfWidth(a, 2.3) - 0.2;
   // Geschwungenes Schweissband mit Verlauf
   const grad = ctx.createLinearGradient(0, (ty + 0.2) * ps + off, 0, (ty + 1.6) * ps + off);
   grad.addColorStop(0, '#FF6B6B');
   grad.addColorStop(1, '#E03131');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.moveTo((cx - w - 0.3) * ps, (ty + 0.6) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ty + 0.1) * ps + off, (cx + w + 0.3) * ps, (ty + 0.6) * ps + off);
-  ctx.lineTo((cx + w + 0.3) * ps, (ty + 1.5) * ps + off);
-  ctx.quadraticCurveTo(cx * ps, (ty + 2) * ps + off, (cx - w - 0.3) * ps, (ty + 1.5) * ps + off);
+  ctx.moveTo((cx - w - 0.3) * ps, (ty + 0.8) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, (ty - 0.1) * ps + off, (cx + w + 0.3) * ps, (ty + 0.8) * ps + off);
+  ctx.lineTo((cx + w + 0.3) * ps, (ty + 1.9) * ps + off);
+  ctx.quadraticCurveTo(cx * ps, (ty + 1.2) * ps + off, (cx - w - 0.3) * ps, (ty + 1.9) * ps + off);
   ctx.closePath();
   ctx.fill();
   // Frottee-Struktur

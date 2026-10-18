@@ -141,7 +141,9 @@ import {
 
 // Sicherer Default falls petType nicht bekannt (z.B. veralteter JS-Cache,
 // alte/korrupte Pet-Daten in Firebase mit unbekanntem Typ).
-const DEFAULT_ANCHORS: PetAnchors = {
+type BaseAnchors = Omit<PetAnchors, 'waist'> & Partial<Pick<PetAnchors, 'waist'>>;
+
+const DEFAULT_ANCHORS: BaseAnchors = {
   headTopY: 11,
   headCenterX: 16,
   headHalfWidth: 3.5,
@@ -158,11 +160,18 @@ const DEFAULT_ANCHORS: PetAnchors = {
 const eggCollar = (claspY: number, cy: number, rx: number, ry: number): number =>
   rx * Math.sqrt(Math.max(0, 1 - ((claspY - 1.5 - cy) / ry) ** 2)) + 0.2;
 
-export function getAnchors(
-  petType:
-    'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl',
-  level: number
-): PetAnchors {
+type AnchorPetType =
+  'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl';
+
+export function getAnchors(petType: AnchorPetType, level: number): PetAnchors {
+  const base = baseAnchors(petType, level);
+  return {
+    ...base,
+    waist: base.waist ?? { y: base.neckY + 4.4, hw: base.neckHalfWidth + 0.4 },
+  };
+}
+
+function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
   const cx = 16;
   // Kawaii-Skelett (seit Redesign Juli 2026): Kopf r=6.2*s bei y13, Körper bei y21.5
   const s = level >= 50 ? 1.16 : level >= 20 ? 1.12 : level >= 15 ? 1.08 : level >= 10 ? 1.05 : 1;
@@ -200,18 +209,20 @@ export function getAnchors(
         cloak: { claspY: 12.7 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
       };
     case 'bird': {
-      // Ei-Silhouette (Küken): Körper-Oben = Kopf
+      // Ei-Silhouette (Küken): Körper-Oben = Kopf; Flügel liegen seitlich auf
       const claspY = 17.5 - 6.2 * b * 0.35 + 3.3;
+      const wingX = 5.4 * b * 0.82;
       return {
-        headTopY: 17.5 - 6.2 * s,
+        headTopY: 17.5 - 6.2 * b,
         headCenterX: cx,
-        headHalfWidth: 4.6 * s,
-        eyeY: 17.5 - 6.2 * s * 0.35,
+        headHalfWidth: 4.6 * b,
+        eyeY: 17.5 - 6.2 * b * 0.35,
         eyeLeftX: -3.2,
         eyeRightX: 1.2,
         eyeWidth: 2,
-        neckY: 19.5,
-        neckHalfWidth: 4 * s,
+        neckY: 17.5 - 6.2 * b * 0.35 + 3.9,
+        neckHalfWidth: wingX + 0.8,
+        waist: { y: 17.5 + 6.2 * b * 0.5, hw: wingX + 1 },
         cloak: {
           claspY,
           collarHw: eggCollar(claspY, 17.5, 5.4 * b, 6.2 * b),
@@ -302,6 +313,7 @@ export function getAnchors(
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4.5 * s,
+        waist: { y: 17.5 + 7.4 * s * 0.42, hw: 6.2 * s * 0.95 + 0.6 },
         cloak: {
           claspY,
           collarHw: eggCollar(claspY, 17.5, 6.2 * s, 7.4 * s),
@@ -324,6 +336,7 @@ export function getAnchors(
         eyeWidth: 1.8,
         neckY: 18 - 7.2 * s * 0.62 + 3,
         neckHalfWidth: 4 * s,
+        waist: { y: 18 + 7.2 * b * 0.35, hw: 5.6 * b * 0.95 },
         cloak: {
           claspY: 18 - 7.2 * b * 0.62 + 3.3,
           collarHw: eggCollar(18 - 7.2 * b * 0.62 + 3.3, 18, 5.6 * b, 7.2 * b),

@@ -1,5 +1,6 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import { EvolvingPixelPet } from '../../components/pet/EvolvingPixelPet';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
@@ -165,13 +166,53 @@ const selectStyle: React.CSSProperties = {
 };
 
 export const DevPetPreviewPage: React.FC = () => {
-  const [accType, setAccType] = useState<Pet['type']>('owl');
-  const [accLevel, setAccLevel] = useState(25);
+  const themeCtx = useContext(ThemeContext);
+  const query = new URLSearchParams(window.location.search);
+  const accOnly = query.has('acc');
+  const [accType, setAccType] = useState<Pet['type']>((query.get('acc') as Pet['type']) || 'owl');
+  const [accLevel, setAccLevel] = useState(Number(query.get('lv')) || 25);
   const [bgType, setBgType] = useState<Pet['type']>('axolotl');
-  const [animated, setAnimated] = useState(true);
+  const [animated, setAnimated] = useState(!accOnly);
   const [onlyNew, setOnlyNew] = useState(false);
 
-  const accessoryIds = onlyNew ? NEW_ACCESSORY_IDS : Object.keys(ACCESSORIES);
+  const slotFilter = query.get('slot');
+  const from = Number(query.get('from')) || 0;
+  const pickedIds = query.get('ids')?.split(',');
+  const accessoryIds = (pickedIds ?? (onlyNew ? NEW_ACCESSORY_IDS : Object.keys(ACCESSORIES)))
+    .filter((id) => !slotFilter || ACCESSORIES[id].slot === slotFilter)
+    .slice(from, from + (Number(query.get('n')) || 999));
+
+  if (accOnly) {
+    const noSeason = themeCtx && {
+      ...themeCtx,
+      userConfig: {
+        ...themeCtx.userConfig,
+        seasons: { spooky: false, christmas: false, newyear: false, valentine: false } as const,
+      },
+    };
+    return (
+      <ThemeContext.Provider value={noSeason || themeCtx}>
+        <div style={{ padding: 12, color: '#fff', background: '#1b1420', ...gridStyle }}>
+          {(query.get('acc') || accType).split(',').flatMap((type) =>
+            accessoryIds.map((id) => (
+              <div key={`${type}-${id}`} style={cellStyle}>
+                <EvolvingPixelPet
+                  pet={makePet(type as Pet['type'], accLevel, {
+                    accessories: id.split('+').map(makeAccessory),
+                  })}
+                  size={Number(query.get('size')) || 220}
+                  animated={false}
+                />
+                <span style={capStyle}>
+                  {type} {id}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </ThemeContext.Provider>
+    );
+  }
   const backgroundIds = onlyNew ? NEW_BACKGROUND_IDS : Object.keys(PET_BACKGROUNDS);
 
   return (

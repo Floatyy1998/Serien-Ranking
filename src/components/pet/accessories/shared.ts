@@ -11,6 +11,8 @@ export interface PetAnchors {
   eyeWidth: number;
   neckY: number;
   neckHalfWidth: number;
+  /** Gürtellinie: Höhe + halbe Breite inklusive anliegender Flügel/Flossen. */
+  waist: { y: number; hw: number };
   /** Umhänge: Schließe + Kragenbreite vorne, Rumpf-Ellipse, hinter der das Rückenteil hängt. */
   cloak: { claspY: number; collarHw: number; bodyCY: number; bodyRx: number; bodyRy: number };
 }

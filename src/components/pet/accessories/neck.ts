@@ -409,6 +409,13 @@ export function drawTie(
 ): void {
   const cx = a.headCenterX;
   const ny = a.neckY;
+  // Bei kurzen Körpern (Küken) staucht die Spitze, statt über die Füße zu ragen
+  const room = a.cloak.bodyCY + a.cloak.bodyRy - 0.7 - ny;
+  const k = Math.min(1, room / 6.7);
+  ctx.save();
+  ctx.translate(0, ny * ps + off);
+  ctx.scale(1, k);
+  ctx.translate(0, -(ny * ps + off));
   // Knoten
   ctx.fillStyle = '#1E3A5F';
   ctx.beginPath();
@@ -468,6 +475,7 @@ export function drawTie(
     (ny + 5.5) * ps + off
   );
   ctx.stroke();
+  ctx.restore();
 }
 
 export function drawBandkerchief(
@@ -836,69 +844,56 @@ export function drawRoyalSash(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ny = a.neckY;
-  const nhw = a.neckHalfWidth;
-  const sx = cx - nhw + 0.6;
-  // Fliessende Schaerpe
-  ctx.fillStyle = '#3F51B5';
+  const c = a.cloak;
+  // Schulter links oben → Hüfte rechts unten, auf den Rumpf zugeschnitten
+  const x0 = cx - a.neckHalfWidth - 1;
+  const y0 = a.neckY + 0.2;
+  const x1 = cx + a.waist.hw + 1;
+  const y1 = a.waist.y + 2;
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const nx = -(y1 - y0) / len;
+  const ny = (x1 - x0) / len;
+  const band = (o: number, w: number, color: string) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = ps * w;
+    ctx.beginPath();
+    ctx.moveTo((x0 + nx * o) * ps, (y0 + ny * o) * ps + off);
+    ctx.lineTo((x1 + nx * o) * ps, (y1 + ny * o) * ps + off);
+    ctx.stroke();
+  };
+  ctx.save();
   ctx.beginPath();
-  ctx.moveTo((sx - 1.2) * ps, (ny - 0.4) * ps + off);
-  ctx.lineTo((sx + 0.9) * ps, (ny - 0.4) * ps + off);
-  ctx.quadraticCurveTo((sx + 2) * ps, (ny + 3.4) * ps + off, (sx + 1.4) * ps, (ny + 7) * ps + off);
-  ctx.lineTo((sx - 0.6) * ps, (ny + 7) * ps + off);
-  ctx.quadraticCurveTo(
-    (sx - 0.1) * ps,
-    (ny + 3.4) * ps + off,
-    (sx - 1.2) * ps,
-    (ny - 0.4) * ps + off
+  ctx.ellipse(
+    cx * ps,
+    c.bodyCY * ps + off,
+    (c.bodyRx + 0.2) * ps,
+    (c.bodyRy + 0.2) * ps,
+    0,
+    0,
+    Math.PI * 2
   );
-  ctx.closePath();
-  ctx.fill();
-  // Goldborten
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = ps * 0.2;
-  ctx.beginPath();
-  ctx.moveTo((sx - 1) * ps, (ny - 0.3) * ps + off);
-  ctx.quadraticCurveTo(
-    (sx - 0.05) * ps,
-    (ny + 3.4) * ps + off,
-    (sx - 0.45) * ps,
-    (ny + 6.9) * ps + off
-  );
-  ctx.moveTo((sx + 0.75) * ps, (ny - 0.3) * ps + off);
-  ctx.quadraticCurveTo(
-    (sx + 1.8) * ps,
-    (ny + 3.4) * ps + off,
-    (sx + 1.25) * ps,
-    (ny + 6.9) * ps + off
-  );
-  ctx.stroke();
-  // Stoffschimmer
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-  ctx.lineWidth = ps * 0.35;
-  ctx.beginPath();
-  ctx.moveTo((sx - 0.1) * ps, (ny - 0.2) * ps + off);
-  ctx.quadraticCurveTo(
-    (sx + 0.9) * ps,
-    (ny + 3.4) * ps + off,
-    (sx + 0.4) * ps,
-    (ny + 6.8) * ps + off
-  );
-  ctx.stroke();
-  // Ordensrosette
-  const rx = sx + 0.4;
-  const ryy = ny + 3.1;
+  ctx.clip();
+  band(0, 1.9, '#3F51B5');
+  band(-0.35, 0.5, 'rgba(255,255,255,0.14)');
+  band(0.45, 0.4, 'rgba(0,0,0,0.18)');
+  band(-0.9, 0.2, '#FFD700');
+  band(0.9, 0.2, '#FFD700');
+  ctx.restore();
+  // Ordensrosette auf der Brust
+  const t = 0.42;
+  const rx = x0 + (x1 - x0) * t;
+  const ryy = y0 + (y1 - y0) * t;
   ctx.fillStyle = '#DAA520';
   ctx.beginPath();
-  ctx.arc(rx * ps, ryy * ps + off, ps * 0.66, 0, Math.PI * 2);
+  ctx.arc(rx * ps, ryy * ps + off, ps * 0.75, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#FFD700';
   ctx.beginPath();
-  ctx.arc(rx * ps, ryy * ps + off, ps * 0.48, 0, Math.PI * 2);
+  ctx.arc(rx * ps, ryy * ps + off, ps * 0.55, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#E53935';
   ctx.beginPath();
-  ctx.arc(rx * ps, ryy * ps + off, ps * 0.24, 0, Math.PI * 2);
+  ctx.arc(rx * ps, ryy * ps + off, ps * 0.27, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
   ctx.beginPath();
@@ -1517,12 +1512,12 @@ export function drawChampionBelt(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  // Guertel sitzt am Bauch, nicht am Hals
-  const by = a.neckY + 3;
-  const nhw = a.neckHalfWidth;
+  const by = a.waist.y - 1.4;
+  const nhw = a.waist.hw - 0.4;
   // Ledergurt
   ctx.strokeStyle = '#5D4037';
   ctx.lineWidth = ps * 1.5;
+  ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo((cx - nhw - 0.4) * ps, (by + 1.4) * ps + off);
   ctx.quadraticCurveTo(
@@ -1539,6 +1534,7 @@ export function drawChampionBelt(
   ctx.moveTo((cx - nhw - 0.2) * ps, (by + 1) * ps + off);
   ctx.quadraticCurveTo(cx * ps, (by + 1.4) * ps + off, (cx + nhw + 0.2) * ps, (by + 1) * ps + off);
   ctx.stroke();
+  ctx.lineCap = 'butt';
   // Goldplatte mit Verlauf
   const grad = ctx.createRadialGradient(
     (cx - 0.4) * ps,
