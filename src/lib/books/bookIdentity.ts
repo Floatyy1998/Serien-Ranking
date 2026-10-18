@@ -27,7 +27,7 @@ export function looksLikeIsbn(query: string): boolean {
 
 const VOLUME_MARKER = /\b(?:band|bd|vol|volume|tome|tomo|teil|nr)\b\.?\s*(?=\d)/g;
 
-const normalizeBookText = (value: string): string =>
+export const normalizeBookText = (value: string): string =>
   value
     .toLowerCase()
     .normalize('NFKD')

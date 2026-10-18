@@ -12,6 +12,7 @@ import {
 } from '../../lib/books/bookSearchMapping';
 import { mergeEditions, orderSeriesVolumes } from '../../lib/books/searchEditions';
 import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
+import { pickWorkHit } from '../../lib/books/workHit';
 import { cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
 import { hardcoverDetails, hardcoverIsbn, hardcoverReady, hardcoverSearch } from './hardcoverApi';
@@ -351,7 +352,10 @@ export function getBookDetails(ref: {
 async function lookupBook(title: string, author?: string): Promise<BookSearchResult | null> {
   const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
   const byAuthor = (list: BookSearchResult[]) =>
-    last ? list.find((r) => r.authors?.some((a) => a.toLowerCase().includes(last))) : list[0];
+    pickWorkHit(
+      last ? list.filter((r) => r.authors?.some((a) => a.toLowerCase().includes(last))) : list,
+      title
+    );
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
     // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.
@@ -366,8 +370,8 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
 
 /** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge werden nicht gemerkt. */
 export function findBook(title: string, author?: string): Promise<BookSearchResult | null> {
-  // h2: Treffer von vor der Hardcover-Umstellung (Open Library) fliegen aus dem Zwischenspeicher.
-  const key = `h2:${appLocale}:${title}|${author ?? ''}`.toLowerCase();
+  // h3: Treffer von vor der Band-1-Wahl (h2: vor der Hardcover-Umstellung) fliegen raus.
+  const key = `h3:${appLocale}:${title}|${author ?? ''}`.toLowerCase();
   return cached(
     'find',
     key,

@@ -664,3 +664,65 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Schnellzugriff als Chip-Leiste (Lesen-Seite) */
+.manga-quick.manga-quick--chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 26px;
+}
+
+.manga-quick--chips::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-app .manga-quick--chips .manga-quick-tile,
+.manga-quick--chips .manga-quick-tile {
+  flex: 0 0 auto;
+  min-height: 0;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  text-align: left;
+}
+
+.manga-quick--chips .manga-quick-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.manga-quick--chips .manga-quick-icon svg {
+  font-size: 16px;
+}
+
+.manga-quick--chips .manga-quick-text {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.manga-quick--chips .manga-quick-label {
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .mobile-app .manga-quick--chips .manga-quick-tile,
+  .manga-quick--chips .manga-quick-tile {
+    padding: 6px 14px 6px 6px;
+    gap: 8px;
+  }
+
+  .manga-quick--chips .manga-quick-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .manga-quick--chips .manga-quick-label {
+    font-size: 13px;
+  }
+}

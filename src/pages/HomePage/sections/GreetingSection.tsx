@@ -36,6 +36,10 @@ interface GreetingSectionProps {
   searchHint?: string;
   /** Steht im Kopf über dem Deck — wie der Lesen-Umschalter auf Manga/Bücher. */
   above?: React.ReactNode;
+  /** Ersetzt den Serien-Gruß (Lese-Startseite). */
+  title?: React.ReactNode;
+  /** Eigene Suche statt des Serien-Overlays (Lese-Startseite). */
+  onSearch?: () => void;
 }
 
 export const GreetingSection = React.memo(function GreetingSection({
@@ -50,6 +54,8 @@ export const GreetingSection = React.memo(function GreetingSection({
   pods,
   searchHint,
   above,
+  title,
+  onSearch,
 }: GreetingSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -249,70 +255,72 @@ export const GreetingSection = React.memo(function GreetingSection({
             }}
           >
             <div style={{ minWidth: 0, flex: 1 }}>
-              <GradientText
-                as="h1"
-                from={currentTheme.primary}
-                to={currentTheme.accent}
-                style={{
-                  // Aus der nutzbaren Breite gerechnet: unter Anzeige-Zoom
-                  // stehen bei 412px nur 330px zur Verfuegung, dort brach der
-                  // Gruss sonst auf drei Zeilen um.
-                  fontSize: isMobile
-                    ? 'clamp(15px, calc(var(--effective-width, 412px) * 0.049), 20px)'
-                    : 'clamp(21px, 0.7vw + 17px, 26px)',
-                  fontWeight: 800,
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.18,
-                  margin: '0 0 2px 0',
-                  // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
-                  // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
-                  // sind dort nicht lesbar.
-                  display: isMobile ? 'block' : 'flex',
-                  alignItems: 'baseline',
-                  whiteSpace: isMobile ? 'normal' : 'nowrap',
-                  overflow: 'hidden',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                <span
-                  className="greeting-text"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('Sprache des Grußes anzeigen')}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setGreetingInfo(greetingInfo ? null : greeting.lang);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setGreetingInfo(greetingInfo ? null : greeting.lang);
-                    }
-                  }}
+              {title ?? (
+                <GradientText
+                  as="h1"
+                  from={currentTheme.primary}
+                  to={currentTheme.accent}
                   style={{
-                    cursor: 'pointer',
-                    // Nur Einzel-Properties: textDecoration wechselt mit dem Gruß, und
-                    // React warnt bei Kurz- und Einzelschreibweise auf demselben Element.
-                    textDecorationLine: greeting.title ? 'underline' : 'none',
-                    textDecorationStyle: 'dotted',
-                    textDecorationColor: currentTheme.primary,
-                    textUnderlineOffset: '3px',
-                    overflow: isMobile ? 'visible' : 'hidden',
-                    textOverflow: isMobile ? 'clip' : 'ellipsis',
-                    flexShrink: 1,
-                    minWidth: 0,
-                    // Tap-Highlight/Selektion übermalen den geclippten Gradient
-                    // (text-fill transparent) — Text wäre beim Tippen unsichtbar
+                    // Aus der nutzbaren Breite gerechnet: unter Anzeige-Zoom
+                    // stehen bei 412px nur 330px zur Verfuegung, dort brach der
+                    // Gruss sonst auf drei Zeilen um.
+                    fontSize: isMobile
+                      ? 'clamp(15px, calc(var(--effective-width, 412px) * 0.049), 20px)'
+                      : 'clamp(21px, 0.7vw + 17px, 26px)',
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.18,
+                    margin: '0 0 2px 0',
+                    // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
+                    // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
+                    // sind dort nicht lesbar.
+                    display: isMobile ? 'block' : 'flex',
+                    alignItems: 'baseline',
+                    whiteSpace: isMobile ? 'normal' : 'nowrap',
+                    overflow: 'hidden',
                     WebkitTapHighlightColor: 'transparent',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
                   }}
                 >
-                  {greeting.text}
-                </span>
-                <span style={{ flexShrink: 0 }}>, {displayName?.split(' ')[0] || 'User'}!</span>
-              </GradientText>
+                  <span
+                    className="greeting-text"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('Sprache des Grußes anzeigen')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setGreetingInfo(greetingInfo ? null : greeting.lang);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setGreetingInfo(greetingInfo ? null : greeting.lang);
+                      }
+                    }}
+                    style={{
+                      cursor: 'pointer',
+                      // Nur Einzel-Properties: textDecoration wechselt mit dem Gruß, und
+                      // React warnt bei Kurz- und Einzelschreibweise auf demselben Element.
+                      textDecorationLine: greeting.title ? 'underline' : 'none',
+                      textDecorationStyle: 'dotted',
+                      textDecorationColor: currentTheme.primary,
+                      textUnderlineOffset: '3px',
+                      overflow: isMobile ? 'visible' : 'hidden',
+                      textOverflow: isMobile ? 'clip' : 'ellipsis',
+                      flexShrink: 1,
+                      minWidth: 0,
+                      // Tap-Highlight/Selektion übermalen den geclippten Gradient
+                      // (text-fill transparent) — Text wäre beim Tippen unsichtbar
+                      WebkitTapHighlightColor: 'transparent',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                    }}
+                  >
+                    {greeting.text}
+                  </span>
+                  <span style={{ flexShrink: 0 }}>, {displayName?.split(' ')[0] || 'User'}!</span>
+                </GradientText>
+              )}
               <p
                 style={{
                   color: currentTheme.text.secondary,
@@ -346,7 +354,7 @@ export const GreetingSection = React.memo(function GreetingSection({
             <motion.button
               type="button"
               whileTap={tapScaleSmall}
-              onClick={() => setSearchOpen(true)}
+              onClick={() => (onSearch ? onSearch() : setSearchOpen(true))}
               aria-label={t('Suche öffnen')}
               style={{
                 flex: isMobile ? '1 1 100%' : '1 1 auto',
@@ -440,7 +448,7 @@ export const GreetingSection = React.memo(function GreetingSection({
         </div>
       </header>
 
-      <HomeSearchOverlay open={searchOpen} onClose={closeSearch} />
+      {!onSearch && <HomeSearchOverlay open={searchOpen} onClose={closeSearch} />}
     </>
   );
 });

@@ -475,3 +475,39 @@ describe('HomeSearchOverlay Suchverlauf', () => {
     expect(stored('recentSearches')).toBeNull();
   });
 });
+
+describe('HomeSearchOverlay Lesen-Suche', () => {
+  it('zeigt nur Bücher und Manga, ohne Serien, Filme und Personen', () => {
+    render(<HomeSearchOverlay open onClose={vi.fn()} scope="reading" initialFilter="all" />);
+    const filters = [...document.querySelectorAll('.hso__filter')].map((b) => b.textContent);
+    expect(filters).toEqual(['Alle', 'Bücher', 'Manga']);
+    expect(screen.queryByText('Breaking Bad')).toBeNull();
+    expect(screen.getByTestId('manga-row')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'book-add-row' })).toBeTruthy();
+  });
+
+  it('blendet die Filter aus, wenn nur ein Lesebereich genutzt wird', () => {
+    render(
+      <HomeSearchOverlay
+        open
+        onClose={vi.fn()}
+        scope="reading"
+        areas="books"
+        initialFilter="books"
+      />
+    );
+    expect(document.querySelector('.hso__filters')).toBeNull();
+    expect(screen.getByRole('button', { name: 'book-add-grid' })).toBeTruthy();
+    expect(screen.queryByTestId('manga-row')).toBeNull();
+  });
+
+  it('merkt sich Funde aus „Alle“ im Lesen- und im Bücher-Verlauf', () => {
+    search.query = 'momo';
+    render(<HomeSearchOverlay open onClose={vi.fn()} scope="reading" initialFilter="all" />);
+    fireEvent.click(screen.getByRole('button', { name: 'book-add-row' }));
+    const stored = (key: string) => JSON.parse(localStorage.getItem(key) ?? 'null');
+    expect(stored('readingRecentSearches')).toEqual(['momo']);
+    expect(stored('bookRecentSearches')).toEqual(['momo']);
+    expect(stored('recentSearches')).toBeNull();
+  });
+});

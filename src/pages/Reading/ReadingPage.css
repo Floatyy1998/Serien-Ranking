@@ -1,0 +1,110 @@
+/* Lesen-Seite: ein Kopf für Bücher und Manga, darunter alle Bereiche nach Thema. */
+
+.rd-deck-banner {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%;
+  opacity: 0.28;
+  -webkit-mask-image: linear-gradient(100deg, transparent 20%, #000 75%);
+  mask-image: linear-gradient(100deg, transparent 20%, #000 75%);
+  pointer-events: none;
+}
+
+.rd-deck-title {
+  min-width: 0;
+  flex: 1;
+}
+
+/* Leerzustand ohne Bücher und Manga */
+.rd-welcome {
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rd-welcome-title {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.rd-welcome-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rd-welcome-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mobile-app .rd-welcome-action,
+.rd-welcome-action {
+  flex: 1 1 140px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-weight: 600;
+}
+
+/* Deine Bibliothek: Bücherregal und Manga-Sammlung */
+.rd-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.mobile-app .rd-library-card,
+.rd-library-card {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border-light);
+  background: var(--glass-light);
+  box-shadow: var(--glass-specular);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rd-library-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.rd-library-head .rd-library-chevron {
+  margin-left: auto;
+}
+
+.rd-library-count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rd-library-hint {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (min-width: 900px) {
+  .rd-library {
+    max-width: 720px;
+  }
+}

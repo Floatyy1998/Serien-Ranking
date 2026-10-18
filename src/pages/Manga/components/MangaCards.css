@@ -445,3 +445,34 @@
   place-items: center;
   cursor: pointer;
 }
+
+/* Schnell-Knopf auf der Poster-Karte (+1 Kapitel, +10 Seiten) */
+.mpc--action .mpc-bottom {
+  padding-right: 52px;
+}
+
+.mobile-app .mpc-action,
+.mpc-action {
+  position: absolute;
+  right: 8px;
+  bottom: 12px;
+  z-index: 3;
+  min-width: 0;
+  min-height: 0;
+  height: 32px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  box-shadow: 0 6px 16px -6px var(--theme-primary-50);
+  cursor: pointer;
+}
+
+.mpc-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

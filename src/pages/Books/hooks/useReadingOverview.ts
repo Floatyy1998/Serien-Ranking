@@ -1,12 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useBooksForYourShows } from '../../../hooks/books/useBasedOnBooks';
-import { useBookEvents } from '../../../hooks/books/useBookEvents';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
-import { computeBookYearStats } from '../../../lib/books/bookStats';
 import type { Book } from '../../../types/Book';
 import type { Manga } from '../../../types/Manga';
+import type { BookYear } from './useBookYear';
 
 const mangaAsShelfBook = (m: Manga): Book => ({
   id: `manga-${m.anilistId}`,
@@ -21,31 +20,18 @@ const mangaAsShelfBook = (m: Manga): Book => ({
   rating: m.rating ? Object.values(m.rating)[0] : undefined,
 });
 
-/** Alles, was die Lese-Übersicht zeigt — auf /reading und auf der Lese-Startseite. */
-export function useReadingOverview() {
+/** Alles, was die gemischte Lese-Übersicht zeigt — auf der Lesen-Seite und der Lese-Startseite. */
+export function useReadingOverview({ year, yearStats }: BookYear) {
   const { bookList } = useBooksList();
   const { mangaList } = useMangaList();
-  const [now] = useState(() => Date.now());
-  const year = new Date(now).getFullYear();
-  const { events } = useBookEvents([year]);
-  const yearStats = useMemo(
-    () => computeBookYearStats(bookList, events, year, now),
-    [bookList, events, year, now]
-  );
   const { suggestions } = useBooksForYourShows();
 
   const readingBooks = useMemo(
     () => sortByRecentActivity(bookList).filter((b) => b.status === 'reading'),
     [bookList]
   );
-  const readingManga = useMemo(
-    () =>
-      mangaList
-        .filter((m) => m.readStatus === 'reading')
-        .sort(
-          (a, b) => new Date(b.lastReadAt || 0).getTime() - new Date(a.lastReadAt || 0).getTime()
-        )
-        .slice(0, 16),
+  const readingMangaCount = useMemo(
+    () => mangaList.filter((m) => m.readStatus === 'reading').length,
     [mangaList]
   );
 
@@ -56,7 +42,7 @@ export function useReadingOverview() {
           m.readStatus === 'completed' &&
           m.completedAt &&
           new Date(m.completedAt).getFullYear() === year
-      ),
+      ).length,
     [mangaList, year]
   );
 
@@ -79,10 +65,9 @@ export function useReadingOverview() {
     yearStats,
     suggestions,
     readingBooks,
-    readingManga,
-    finishedThisYear: yearStats.booksFinished + mangaDoneThisYear.length,
+    finishedThisYear: yearStats.booksFinished + mangaDoneThisYear,
     shelf,
-    totalReading: readingBooks.length + readingManga.length,
+    totalReading: readingBooks.length + readingMangaCount,
     chapters: mangaList.reduce((sum, m) => sum + (m.currentChapter || 0), 0),
   };
 }

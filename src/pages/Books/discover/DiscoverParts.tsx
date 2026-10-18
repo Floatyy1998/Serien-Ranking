@@ -317,16 +317,20 @@ export const GenreTiles: React.FC<{
   /** Lieblingsgenres zuerst. */
   preferred?: string[];
   onEditFavorites?: () => void;
-}> = ({ title, preferred = [], onEditFavorites }) => {
+  /** Ziel einer Kachel; ohne Angabe die Buchsuche im Genre. */
+  onOpenGenre?: (id: string) => void;
+  /** Nur diese Genres zeigen (z. B. die mit Manga-Entsprechung). */
+  only?: string[];
+}> = ({ title, preferred = [], onEditFavorites, onOpenGenre, only }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
-  const ordered = useMemo(
-    () => [
-      ...GENRES.filter((g) => preferred.includes(g.id)),
-      ...GENRES.filter((g) => !preferred.includes(g.id)),
-    ],
-    [preferred]
-  );
+  const ordered = useMemo(() => {
+    const pool = only ? GENRES.filter((g) => only.includes(g.id)) : GENRES;
+    return [
+      ...pool.filter((g) => preferred.includes(g.id)),
+      ...pool.filter((g) => !preferred.includes(g.id)),
+    ];
+  }, [preferred, only]);
   return (
     <section className="bk-section">
       <SectionHeader
@@ -338,7 +342,13 @@ export const GenreTiles: React.FC<{
       />
       <div className="dsc-genres">
         {ordered.map((g) => (
-          <GenreTile key={g.id} id={g.id} onOpen={() => navigate(`/books/search?genre=${g.id}`)} />
+          <GenreTile
+            key={g.id}
+            id={g.id}
+            onOpen={() =>
+              onOpenGenre ? onOpenGenre(g.id) : navigate(`/books/search?genre=${g.id}`)
+            }
+          />
         ))}
         <button
           type="button"

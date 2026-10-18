@@ -52,8 +52,10 @@ vi.mock('../pages/Search', () => ({ SearchPage: () => <div /> }));
 vi.mock('./lazyRoutes', () => {
   const Stub = () => <div />;
   const names = [
-    'BooksPage',
-    'ReadingHubPage',
+    'ReadingPage',
+    'ReadingLayoutPage',
+    'ReadingGenrePage',
+    'MangaCollectionPage',
     'BookSearchPage',
     'BookDetailPage',
     'BookShelfPage',
@@ -91,7 +93,6 @@ vi.mock('./lazyRoutes', () => {
     'PatchNotesPage',
     'AdminDashboardPage',
     'BugReportPage',
-    'MangaPage',
     'MangaDetailPage',
     'MangaRatingsPage',
     'MangaSearchPage',

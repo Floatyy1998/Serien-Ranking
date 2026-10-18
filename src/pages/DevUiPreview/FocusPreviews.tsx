@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MangaListContext } from '../../contexts/MangaListContext';
-import { ReadingSwitch } from '../../components/reading/ReadingSwitch';
+import { ReadingGreetingTitle } from '../../components/reading/ReadingGreetingTitle';
+import { useBookYear } from '../Books/hooks/useBookYear';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import type { AppFocus } from '../../services/settings/appFocus';
 import type { Manga } from '../../types/Manga';
@@ -56,6 +57,18 @@ const HOME_CONFIG = {
   hiddenSecondaryActions: [],
 };
 
+const ReadingHomePreviewSections = () => {
+  const bookYear = useBookYear();
+  return (
+    <ReadingHomeSections
+      config={HOME_CONFIG}
+      areas="both"
+      bookYear={bookYear}
+      onSearch={() => {}}
+    />
+  );
+};
+
 /** Startseite beim Schwerpunkt „Manga & Bücher"; `?empty=1` zeigt den Leerzustand. */
 export const ReadingHomePreview = () => {
   const empty = new URLSearchParams(window.location.search).get('empty') === '1';
@@ -85,10 +98,11 @@ export const ReadingHomePreview = () => {
             { key: 'books', value: 12, label: 'Bücher', to: '/books', highlight: false },
             { key: 'manga', value: manga.length, label: 'Manga', to: '/manga', highlight: false },
           ]}
-          searchHint="Bücher, Manga und mehr"
-          above={<ReadingSwitch active="all" />}
+          searchHint="Bücher und Manga suchen..."
+          onSearch={() => {}}
+          title={<ReadingGreetingTitle displayName="Bärbel" areas="both" onSearch={() => {}} />}
         />
-        <ReadingHomeSections config={HOME_CONFIG} />
+        <ReadingHomePreviewSections />
       </MangaListContext.Provider>
     </BooksPreviewShell>
   );

@@ -17,6 +17,8 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material', () => ({
+  AutoStories: () => null,
+  LibraryBooks: () => null,
   ChevronRight: () => null,
   Palette: () => null,
   ViewQuilt: () => null,
@@ -24,6 +26,9 @@ vi.mock('@mui/icons-material', () => ({
   VisibilityOff: () => null,
   Weekend: () => null,
 }));
+
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
 vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>
@@ -53,7 +58,12 @@ describe('AppearanceSection', () => {
     expect(screen.getByText('Schwerpunkt')).toBeInTheDocument();
     expect(screen.getByText('Serien & Filme')).toBeInTheDocument();
     expect(screen.getByText('Manga & Bücher')).toBeInTheDocument();
-    expect(screen.getByText('Beides')).toBeInTheDocument();
+    expect(screen.getAllByText('Beides')).toHaveLength(2);
+  });
+
+  it('bietet die Lesebereiche an', () => {
+    render(<AppearanceSection onNavigateTheme={vi.fn()} onNavigateLayout={vi.fn()} />);
+    expect(screen.getByText('Lesebereiche')).toBeInTheDocument();
   });
 
   it('calls onNavigateTheme when the theme button is clicked', () => {
@@ -68,5 +78,11 @@ describe('AppearanceSection', () => {
     render(<AppearanceSection onNavigateTheme={vi.fn()} onNavigateLayout={onNavigateLayout} />);
     fireEvent.click(screen.getByText('Homepage Layout'));
     expect(onNavigateLayout).toHaveBeenCalledTimes(1);
+  });
+
+  it('führt zum Editor der Lesen-Seite', () => {
+    render(<AppearanceSection onNavigateTheme={vi.fn()} onNavigateLayout={vi.fn()} />);
+    fireEvent.click(screen.getByText('Lesen-Seite'));
+    expect(navigate).toHaveBeenCalledWith('/reading/layout');
   });
 });

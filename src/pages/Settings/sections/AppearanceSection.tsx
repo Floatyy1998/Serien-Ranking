@@ -1,5 +1,7 @@
 import {
+  AutoStories,
   ChevronRight,
+  LibraryBooks,
   FormatSize,
   Palette,
   ViewQuilt,
@@ -8,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -26,6 +29,9 @@ import {
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { useAppFocus } from '../../../hooks/ui/useAppFocus';
 import { setAppFocus, type AppFocus } from '../../../services/settings/appFocus';
+import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
+import type { ReadingAreas } from '../../../lib/reading/readingMedium';
+import { setReadingAreas } from '../../../services/settings/readingAreas';
 import { showToast } from '../../../lib/interaction/toast';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
@@ -183,6 +189,89 @@ const FocusControl = memo(() => {
 
 FocusControl.displayName = 'FocusControl';
 
+const readingAreaOptions = (): { areas: ReadingAreas; label: string; hint: string }[] => [
+  {
+    areas: 'both',
+    label: t('Beides'),
+    hint: t('Bücher und Manga auf einer Lesen-Seite'),
+  },
+  { areas: 'books', label: t('Bücher'), hint: t('Lesen zeigt nur Bücher') },
+  { areas: 'manga', label: 'Manga', hint: t('Lesen zeigt nur Manga') },
+];
+
+/** Welche Lesebereiche die Lesen-Seite zeigt — reine Buch- oder Manga-Leser blenden den anderen aus. */
+const ReadingAreasControl = memo(() => {
+  const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const areas = useReadingAreas();
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
+  const options = readingAreaOptions();
+  const current = options.find((o) => o.areas === areas);
+
+  const choose = (next: ReadingAreas) => {
+    if (!user || next === areas) return;
+    setReadingAreas(user.uid, next).catch(() =>
+      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.17 }}
+      className="settings-nav-btn settings-size-card"
+      style={{ color: currentTheme.text.primary }}
+    >
+      <div className="settings-size-head">
+        <div
+          className="settings-nav-btn-icon"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          }}
+        >
+          <LibraryBooks style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+        </div>
+        <div className="settings-nav-btn-text">
+          <h2 className="settings-nav-btn-title">{t('Lesebereiche')}</h2>
+          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+            {current?.hint}
+          </p>
+        </div>
+      </div>
+      <div className="settings-size-seg">
+        {options.map((o) => {
+          const active = areas === o.areas;
+          return (
+            <button
+              key={o.areas}
+              type="button"
+              onClick={() => choose(o.areas)}
+              aria-pressed={active}
+              className={active ? 'is-active' : ''}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                      color: onPrimary,
+                      borderColor: 'transparent',
+                    }
+                  : { color: currentTheme.text.muted }
+              }
+            >
+              <span className="sz-lbl" style={{ fontSize: 13 }}>
+                {o.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+});
+
+ReadingAreasControl.displayName = 'ReadingAreasControl';
+
 const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = [
   { level: 0, label: t('Aus'), hint: t('Alles sichtbar') },
   { level: 1, label: t('Bilder'), hint: t('Bilder ungesehener Folgen blurren') },
@@ -260,6 +349,7 @@ interface AppearanceSectionProps {
 export const AppearanceSection = memo(
   ({ onNavigateTheme, onNavigateLayout }: AppearanceSectionProps) => {
     const { currentTheme } = useTheme();
+    const navigate = useNavigate();
 
     return (
       <>
@@ -292,6 +382,8 @@ export const AppearanceSection = memo(
 
         <FocusControl />
 
+        <ReadingAreasControl />
+
         {/* Homepage Layout */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
@@ -312,6 +404,33 @@ export const AppearanceSection = memo(
           </div>
           <div className="settings-nav-btn-text">
             <h2 className="settings-nav-btn-title">{t('Homepage Layout')}</h2>
+            <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+              {t('Sektionen sortieren & ausblenden')}
+            </p>
+          </div>
+          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+        </motion.button>
+
+        {/* Lesen-Seite: Bücher und Manga, gleicher Editor */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.19 }}
+          whileTap={tapScaleSmall}
+          onClick={() => navigate('/reading/layout')}
+          className="settings-nav-btn"
+          style={{ color: currentTheme.text.primary }}
+        >
+          <div
+            className="settings-nav-btn-icon"
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            }}
+          >
+            <AutoStories style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+          </div>
+          <div className="settings-nav-btn-text">
+            <h2 className="settings-nav-btn-title">{t('Lesen-Seite')}</h2>
             <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
               {t('Sektionen sortieren & ausblenden')}
             </p>

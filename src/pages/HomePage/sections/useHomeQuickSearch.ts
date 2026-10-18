@@ -72,8 +72,9 @@ export interface UseHomeQuickSearchResult {
 /**
  * @param active Erst wenn true (Overlay offen), werden die „Beliebt"-Poster
  *               aufgelöst — Nutzer, die die Suche nie öffnen, kosten keine Requests.
+ * @param searchMedia false: nur der Query-State, keine TMDB-Suche (Lesen-Suche).
  */
-export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
+export function useHomeQuickSearch(active = true, searchMedia = true): UseHomeQuickSearchResult {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<QuickResult[]>([]);
   const [people, setPeople] = useState<{ hits: PersonHit[]; first: boolean }>({
@@ -128,7 +129,7 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
+    if (q.length < 2 || !searchMedia) {
       setResults([]);
       setPeople({ hits: [], first: false });
       setLoading(false);
@@ -179,7 +180,7 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, searchMedia]);
 
   return {
     query,

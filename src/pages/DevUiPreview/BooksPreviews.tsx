@@ -14,10 +14,9 @@ import { BookDetailPage } from '../Books/BookDetailPage';
 import { BookImportPage } from '../Books/BookImportPage';
 import { BookSearchPage } from '../Books/BookSearchPage';
 import { BookShelfPage } from '../Books/BookShelfPage';
-import { BooksPage } from '../Books/BooksPage';
 import { BookStatsPage } from '../Books/BookStatsPage';
 import { FriendBooksInsights } from '../FriendProfile/FriendBooksInsights';
-import { ReadingHubPage } from '../Books/ReadingHubPage';
+import { ReadingPage } from '../Reading/ReadingPage';
 
 const cover = (id: number) => `https://covers.openlibrary.org/b/id/${id}-L.jpg`;
 
@@ -322,13 +321,13 @@ export const BooksPreviewShell = ({
 
 export const BooksOverviewPreview = () => (
   <BooksPreviewShell>
-    <BooksPage />
+    <ReadingPage />
   </BooksPreviewShell>
 );
 
 export const BooksEmptyPreview = () => (
   <BooksPreviewShell empty>
-    <BooksPage />
+    <ReadingPage />
   </BooksPreviewShell>
 );
 
@@ -433,7 +432,7 @@ export const BookImportPreview = () => (
 
 export const ReadingHubPreview = () => (
   <BooksPreviewShell>
-    <ReadingHubPage />
+    <ReadingPage />
   </BooksPreviewShell>
 );
 
@@ -464,7 +463,7 @@ export const CoinEggPreview = ({ photo = false }: { photo?: boolean }) => {
   return (
     <div onClick={play}>
       <BooksPreviewShell>
-        <BooksPage />
+        <ReadingPage />
       </BooksPreviewShell>
     </div>
   );

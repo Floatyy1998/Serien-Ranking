@@ -8,8 +8,8 @@ import { MangaListContext } from '../../contexts/MangaListContext';
 import { discoverManga } from '../../services/api/anilistService';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
 import { MangaDetailPage } from '../Manga/MangaDetailPage';
-import { MangaLayoutPage } from '../Manga/MangaLayoutPage';
-import { MangaPage } from '../Manga/MangaPage';
+import { ReadingLayoutPage } from '../Reading/ReadingLayoutPage';
+import { ReadingPage } from '../Reading/ReadingPage';
 import { MangaSearchPage } from '../Manga/MangaSearchPage';
 import { RecentlyReadPage } from '../Manga/RecentlyReadPage';
 import { getDisplayFormatKey } from '../Manga/mangaUtils';
@@ -141,7 +141,7 @@ const MangaPreviewShell = ({ children }: { children: (list: Manga[]) => React.Re
 };
 
 export const MangaOverviewPreview = () => (
-  <MangaPreviewShell>{() => <MangaPage />}</MangaPreviewShell>
+  <MangaPreviewShell>{() => <ReadingPage />}</MangaPreviewShell>
 );
 
 const DetailRoute = ({ id, search = '' }: { id: number; search?: string }) => (
@@ -181,7 +181,7 @@ export const MangaSearchPreview = () => (
 );
 
 export const MangaLayoutPreview = () => (
-  <MangaPreviewShell>{() => <MangaLayoutPage />}</MangaPreviewShell>
+  <MangaPreviewShell>{() => <ReadingLayoutPage />}</MangaPreviewShell>
 );
 
 export const MangaHistoryPreview = () => (

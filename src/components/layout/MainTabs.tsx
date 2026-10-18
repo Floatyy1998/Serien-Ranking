@@ -9,21 +9,23 @@ import {
   useState,
 } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MAIN_TAB_PATHS, NAV_SLOT_PATHS, READER_WATCH_PATH } from '../../config/navItems';
+import {
+  MAIN_TAB_PATHS,
+  NAV_SLOT_PATHS,
+  READER_WATCH_PATH,
+  READING_PATHS,
+} from '../../config/navItems';
 import { useNavSlots } from '../../hooks/ui/useNavConfig';
-import { resolveReadingPath } from '../../services/settings/readingTab';
 import {
   ActivityPage,
   BadgesPage,
-  BooksPage,
   CalendarPage,
   CatchUpPage,
   CountdownPage,
   DiscoverPage,
   LeaderboardPage,
-  MangaPage,
   PetsPage,
-  ReadingHubPage,
+  ReadingPage,
   RecentlyWatchedPage,
   StatsPage,
   SubscriptionsPage,
@@ -45,9 +47,7 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
   '/watchlist': WatchNextPage,
   '/ratings': RatingsPage,
   '/calendar': CalendarPage,
-  '/manga': MangaPage,
-  '/books': BooksPage,
-  '/reading': ReadingHubPage,
+  '/reading': ReadingPage,
   '/discover': DiscoverPage,
   '/stats': StatsPage,
   '/leaderboard': LeaderboardPage,
@@ -69,23 +69,27 @@ const TabHost = memo(({ path, visible }: { path: string; visible: boolean }) => 
 });
 TabHost.displayName = 'TabHost';
 
+// /reading, /books und /manga sind eine Seite (Filter im Pfad) und teilen sich einen Host.
+const hostOf = (path: string): string => (READING_PATHS.includes(path) ? '/reading' : path);
+
 export const MainTabs = () => {
   const { pathname } = useLocation();
   const navSlots = useNavSlots();
   const reader = readsFirst(useAppFocus().focus);
   const isTab = MAIN_TAB_PATHS.has(pathname);
+  const host = hostOf(pathname);
 
-  const [active, setActive] = useState<string | null>(isTab ? pathname : null);
-  if (isTab && active !== pathname) setActive(pathname);
+  const [active, setActive] = useState<string | null>(isTab ? host : null);
+  if (isTab && active !== host) setActive(host);
 
-  const [mounted, setMounted] = useState<string[]>(() => (isTab ? [pathname] : []));
+  const [mounted, setMounted] = useState<string[]>(() => (isTab ? [host] : []));
   if (active && !mounted.includes(active)) setMounted([...mounted, active]);
 
   // Aktive Navbar-Ziele im Leerlauf versteckt vormounten (nicht alle 17 Tabs)
   useEffect(() => {
     if (!active) return;
     const slotPaths = navSlots.map((id) =>
-      id === 'manga' ? (reader ? READER_WATCH_PATH : resolveReadingPath()) : NAV_SLOT_PATHS[id]
+      id === 'manga' ? (reader ? READER_WATCH_PATH : '/reading') : NAV_SLOT_PATHS[id]
     );
     const premountOrder = ['/', ...slotPaths, '/profile', '/search'].filter(
       (p) => p in TAB_COMPONENTS

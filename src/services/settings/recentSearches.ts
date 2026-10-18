@@ -1,16 +1,20 @@
 import { useSyncExternalStore } from 'react';
 
-/** Suchverlauf je Bereich: Serien/Filme/Personen, Bücher und Manga getrennt, nur auf diesem Gerät. */
-export type RecentSearchScope = 'media' | 'books' | 'manga';
+/**
+ * Suchverlauf je Bereich: Serien/Filme/Personen, Bücher, Manga und die gemeinsame
+ * Lesen-Suche getrennt, nur auf diesem Gerät.
+ */
+export type RecentSearchScope = 'media' | 'books' | 'manga' | 'reading';
 
 // Bestehende Schlüssel, damit /search, /books/search und /manga/search denselben Verlauf sehen.
 const KEYS: Record<RecentSearchScope, string> = {
   media: 'recentSearches',
   books: 'bookRecentSearches',
   manga: 'mangaRecentSearches',
+  reading: 'readingRecentSearches',
 };
 
-const LIMITS: Record<RecentSearchScope, number> = { media: 6, books: 8, manga: 8 };
+const LIMITS: Record<RecentSearchScope, number> = { media: 6, books: 8, manga: 8, reading: 8 };
 
 const EMPTY: string[] = [];
 const cache = new Map<RecentSearchScope, { raw: string | null; list: string[] }>();

@@ -338,6 +338,10 @@ const settings: Record<string, string> = {
   'Startseite für Serien und Filme': 'Home built around shows and movies',
   'Startseite für Manga und Bücher': 'Home built around manga and books',
   'Serien-Startseite, Lesen über das Dock': 'Shows on home, reading in the dock',
+  Lesebereiche: 'Reading areas',
+  'Bücher und Manga auf einer Lesen-Seite': 'Books and manga on one reading page',
+  'Lesen zeigt nur Bücher': 'Reading shows books only',
+  'Lesen zeigt nur Manga': 'Reading shows manga only',
 };
 
 export default settings;

@@ -40,9 +40,11 @@ import {
 import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQuickResults';
 import { MangaOverlayIdle, MangaQuickResults } from '../../Manga/components/MangaQuickResults';
 import { IsbnScanButton } from '../../../components/scanner/IsbnScanButton';
+import { usesArea, type ReadingAreas } from '../../../lib/reading/readingMedium';
 import './HomeSearchOverlay.css';
 
-type Filter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
+export type SearchFilter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
+type Filter = SearchFilter;
 
 // Das Bewertungs-Sheet muss über dem Overlay liegen (.hso: z-index 1400).
 const OVERLAY_SHEET_Z = 1450;
@@ -56,19 +58,42 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'books', label: t('Bücher') },
 ];
 
+/** Lesen-Suche: nur Bücher und Manga, je nach genutzten Lesebereichen. */
+const readingFilters = (areas: ReadingAreas): { key: Filter; label: string }[] =>
+  [
+    { key: 'all' as const, label: t('Alle') },
+    { key: 'books' as const, label: t('Bücher') },
+    { key: 'manga' as const, label: t('Manga') },
+  ].filter((f) => (f.key === 'all' ? areas === 'both' : usesArea(areas, f.key)));
+
 const foundAt = (path: string): RecentSearchScope =>
   path.startsWith('/books/') ? 'books' : path.startsWith('/manga/') ? 'manga' : 'media';
 
 interface HomeSearchOverlayProps {
   open: boolean;
   onClose: () => void;
-  /** Seite, auf der das Overlay lebt (Home oder Bücher). */
+  /** Seite, auf der das Overlay lebt (Home oder Lesen). */
   homePath?: string;
   initialFilter?: Filter;
+  /** Suchbegriff beim Öffnen, z. B. das Werk eines Lese-Grußes. */
+  initialQuery?: string;
+  /** `reading`: nur Bücher und Manga, ohne Serien, Filme und Personen. */
+  scope?: 'media' | 'reading';
+  /** Genutzte Lesebereiche — blenden in der Lesen-Suche Filter aus. */
+  areas?: ReadingAreas;
 }
 
 export const HomeSearchOverlay = memo(
-  ({ open, onClose, homePath = '/', initialFilter }: HomeSearchOverlayProps) => {
+  ({
+    open,
+    onClose,
+    homePath = '/',
+    initialFilter,
+    initialQuery,
+    scope = 'media',
+    areas = 'both',
+  }: HomeSearchOverlayProps) => {
+    const reading = scope === 'reading';
     const navigate = useNavigate();
     const { pathname, key } = useLocation();
     // Home bleibt beim Sprung auf eine Detailseite gemountet (MainTabs-Keep-Alive),
@@ -93,20 +118,25 @@ export const HomeSearchOverlay = memo(
     const { currentTheme } = useTheme();
     const communityMap = useCommunityRatingsMap();
     const { query, setQuery, results, people, peopleFirst, loading, popular, popularItems } =
-      useHomeQuickSearch(open);
+      useHomeQuickSearch(open && !reading, !reading);
     const [filter, setFilter] = useState<Filter>(initialFilter ?? 'all');
+    const filters = reading ? readingFilters(areas) : FILTERS;
 
     // Bücher und Manga haben eigene Verläufe; Funde aus „Alle" landen zusätzlich dort.
     const recentScope: RecentSearchScope =
-      filter === 'books' || filter === 'manga' ? filter : 'media';
+      filter === 'books' || filter === 'manga' ? filter : reading ? 'reading' : 'media';
     const recent = useRecentSearches(recentScope);
     const remember = useCallback(
       (found: RecentSearchScope) => {
         addRecentSearch(recentScope, query);
-        if (recentScope === 'media' && found !== 'media') addRecentSearch(found, query);
+        if (found !== recentScope && found !== 'media') addRecentSearch(found, query);
       },
       [recentScope, query]
     );
+
+    useEffect(() => {
+      if (open && initialQuery) setQuery(initialQuery);
+    }, [open, initialQuery, setQuery]);
 
     // Wer aus den Treffern auf eine Detailseite springt, hat gefunden, was er suchte —
     // gilt auch für Bücher und Manga, deren Karten selbst navigieren.
@@ -212,19 +242,28 @@ export const HomeSearchOverlay = memo(
       [results, filter]
     );
     const shownPeople = filter === 'all' || filter === 'people' ? people : [];
-    const [bookHits, setBookHits] = useState({ count: 0, loading: false });
+    // Die Reihen melden ihren Stand erst nach dem Rendern; die Query dazu merken,
+    // damit „Keine Treffer" in der Lesen-Suche nicht vor der ersten Meldung aufblitzt.
+    const queryRef = useRef(query);
+    useLayoutEffect(() => {
+      queryRef.current = query;
+    }, [query]);
+    const [bookHits, setBookHits] = useState({ count: 0, loading: false, q: '' });
     const onBookCount = useCallback(
-      (count: number, isLoading: boolean) => setBookHits({ count, loading: isLoading }),
+      (count: number, isLoading: boolean) =>
+        setBookHits({ count, loading: isLoading, q: queryRef.current }),
       []
     );
-    const [mangaHits, setMangaHits] = useState({ count: 0, loading: false });
+    const [mangaHits, setMangaHits] = useState({ count: 0, loading: false, q: '' });
     const onMangaCount = useCallback(
-      (count: number, isLoading: boolean) => setMangaHits({ count, loading: isLoading }),
+      (count: number, isLoading: boolean) =>
+        setMangaHits({ count, loading: isLoading, q: queryRef.current }),
       []
     );
     const [mangaRowIds, setMangaRowIds] = useState<number[]>([]);
     const otherHits = bookHits.count + mangaHits.count;
     const otherLoading = bookHits.loading || mangaHits.loading;
+    const readingSettled = !otherLoading && bookHits.q === query && mangaHits.q === query;
 
     // Der Segment-Filter gilt für ALLES Sichtbare — auch für „Beliebt".
     const shownPopular = useMemo(
@@ -517,13 +556,17 @@ export const HomeSearchOverlay = memo(
                         if (e.key === 'Enter') onEnter();
                       }}
                       placeholder={
-                        filter === 'books'
+                        filter === 'books' || (reading && filter === 'all')
                           ? t('Titel, Autor oder ISBN')
                           : filter === 'manga'
                             ? t('Titel oder ISBN')
                             : t('Titel oder Schauspieler')
                       }
-                      aria-label={t('Serien, Filme und Personen suchen')}
+                      aria-label={
+                        reading
+                          ? t('Bücher und Manga suchen')
+                          : t('Serien, Filme und Personen suchen')
+                      }
                       autoFocus
                       className="hso__input"
                       style={{ color: currentTheme.text.primary, outline: 'none' }}
@@ -543,7 +586,7 @@ export const HomeSearchOverlay = memo(
                       </button>
                     )}
                     <IsbnScanButton
-                      hidden={!!query || (filter !== 'books' && filter !== 'manga')}
+                      hidden={!!query || (!reading && filter !== 'books' && filter !== 'manga')}
                       className="hso__scan"
                       style={{ color: currentTheme.primary }}
                       onIsbn={setQuery}
@@ -562,41 +605,43 @@ export const HomeSearchOverlay = memo(
                 </div>
 
                 {/* Segment-Filter */}
-                <div className="hso__filters" ref={filtersRef}>
-                  {FILTERS.map((f) => {
-                    const active = filter === f.key;
-                    return (
-                      <button
-                        key={f.key}
-                        type="button"
-                        className="hso__filter"
-                        onClick={(e) => {
-                          setFilter(f.key);
-                          e.currentTarget.scrollIntoView?.({
-                            behavior: 'smooth',
-                            block: 'nearest',
-                            inline: 'nearest',
-                          });
-                        }}
-                        aria-pressed={active}
-                        style={{
-                          background: active
-                            ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                            : 'var(--glass-medium)',
-                          border: active ? 'none' : '1px solid var(--glass-border-light)',
-                          color: active ? onPrimary : currentTheme.text.muted,
-                          boxShadow: active
-                            ? `0 6px 18px -4px ${currentTheme.primary}66`
-                            : 'var(--glass-specular)',
-                          backdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                          WebkitBackdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                        }}
-                      >
-                        {f.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                {filters.length > 1 && (
+                  <div className="hso__filters" ref={filtersRef}>
+                    {filters.map((f) => {
+                      const active = filter === f.key;
+                      return (
+                        <button
+                          key={f.key}
+                          type="button"
+                          className="hso__filter"
+                          onClick={(e) => {
+                            setFilter(f.key);
+                            e.currentTarget.scrollIntoView?.({
+                              behavior: 'smooth',
+                              block: 'nearest',
+                              inline: 'nearest',
+                            });
+                          }}
+                          aria-pressed={active}
+                          style={{
+                            background: active
+                              ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                              : 'var(--glass-medium)',
+                            border: active ? 'none' : '1px solid var(--glass-border-light)',
+                            color: active ? onPrimary : currentTheme.text.muted,
+                            boxShadow: active
+                              ? `0 6px 18px -4px ${currentTheme.primary}66`
+                              : 'var(--glass-specular)',
+                            backdropFilter: active ? undefined : 'var(--glass-filter-sm)',
+                            WebkitBackdropFilter: active ? undefined : 'var(--glass-filter-sm)',
+                          }}
+                        >
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </motion.div>
 
               {/* Inhalt */}
@@ -652,6 +697,19 @@ export const HomeSearchOverlay = memo(
                   ) : (
                     renderPeople(people, false)
                   )
+                ) : hasQuery && reading ? (
+                  readingSettled && otherHits === 0 ? (
+                    <motion.div
+                      key="reading-empty"
+                      className="hso__msg"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      style={{ color: currentTheme.text.muted }}
+                    >
+                      <Search style={{ fontSize: '40px', opacity: 0.5 }} />
+                      <p>{t('Keine Treffer für „{query}“', { query })}</p>
+                    </motion.div>
+                  ) : null
                 ) : hasQuery ? (
                   loading && shown.length === 0 && shownPeople.length === 0 && otherHits === 0 ? (
                     <motion.div
@@ -758,8 +816,10 @@ export const HomeSearchOverlay = memo(
                         ))}
                       </div>
                     )}
-                    {filter === 'books' && <BookOverlayIdle sheetZIndex={OVERLAY_SHEET_Z} />}
-                    {filter === 'manga' && <MangaOverlayIdle />}
+                    {(filter === 'books' || (reading && filter === 'all')) && (
+                      <BookOverlayIdle sheetZIndex={OVERLAY_SHEET_Z} />
+                    )}
+                    {(filter === 'manga' || (reading && filter === 'all')) && <MangaOverlayIdle />}
                     {filter === 'people' && (
                       <div className="hso__group">
                         <div
@@ -775,43 +835,44 @@ export const HomeSearchOverlay = memo(
                         )}
                       </div>
                     )}
-                    {(filter === 'all' || filter === 'series' || filter === 'movies') && (
-                      <div className="hso__group">
-                        <div
-                          className="hso__group-title"
-                          style={{ color: currentTheme.text.muted }}
-                        >
-                          {t('Beliebt')}
+                    {!reading &&
+                      (filter === 'all' || filter === 'series' || filter === 'movies') && (
+                        <div className="hso__group">
+                          <div
+                            className="hso__group-title"
+                            style={{ color: currentTheme.text.muted }}
+                          >
+                            {t('Beliebt')}
+                          </div>
+                          {shownPopular.length > 0 ? (
+                            <div className="hso__pop-row">
+                              {shownPopular.map((item, i) => renderCard(item, i, 0.02))}
+                            </div>
+                          ) : (
+                            <div className="hso__chips">
+                              {popular.map((term, i) => (
+                                <motion.button
+                                  key={term}
+                                  type="button"
+                                  className="hso__chip"
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.05 + i * 0.04 }}
+                                  whileTap={tapScale}
+                                  onClick={() => setQuery(term)}
+                                  style={{
+                                    color: currentTheme.text.secondary,
+                                    background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
+                                    border: `1px solid ${currentTheme.primary}33`,
+                                  }}
+                                >
+                                  {term}
+                                </motion.button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {shownPopular.length > 0 ? (
-                          <div className="hso__pop-row">
-                            {shownPopular.map((item, i) => renderCard(item, i, 0.02))}
-                          </div>
-                        ) : (
-                          <div className="hso__chips">
-                            {popular.map((term, i) => (
-                              <motion.button
-                                key={term}
-                                type="button"
-                                className="hso__chip"
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.05 + i * 0.04 }}
-                                whileTap={tapScale}
-                                onClick={() => setQuery(term)}
-                                style={{
-                                  color: currentTheme.text.secondary,
-                                  background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
-                                  border: `1px solid ${currentTheme.primary}33`,
-                                }}
-                              >
-                                {term}
-                              </motion.button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      )}
                   </motion.div>
                 )}
               </div>

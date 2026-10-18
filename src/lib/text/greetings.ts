@@ -959,7 +959,7 @@ function localDayNumber(d: Date): number {
   return Math.floor((d.getTime() - d.getTimezoneOffset() * 60_000) / 86_400_000);
 }
 
-type Slot = 'morning' | 'afternoon' | 'evening' | 'night';
+export type Slot = 'morning' | 'afternoon' | 'evening' | 'night';
 
 const SLOTS: Record<Slot, { list: Greeting[]; start: number; seed: number }> = {
   morning: { list: morningGreetings, start: 5, seed: 1 },
@@ -968,7 +968,7 @@ const SLOTS: Record<Slot, { list: Greeting[]; start: number; seed: number }> = {
   night: { list: nightGreetings, start: 22, seed: 4 },
 };
 
-function slotFor(hour: number): Slot {
+export function slotFor(hour: number): Slot {
   if (hour >= 5 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 17) return 'afternoon';
   if (hour >= 17 && hour < 22) return 'evening';
@@ -987,9 +987,14 @@ export function greetingPool(slot: Slot): Greeting[] {
   });
 }
 
-export function getGreeting(hour: number): Greeting {
+/**
+ * Eintrag des Pools für diese Stunde. `seedOffset` trennt weitere Pools (Lese-Grüße)
+ * von der Serien-Permutation, damit beide nicht im Gleichschritt laufen.
+ */
+export function pickForHour<T>(pool: readonly T[], hour: number, seedOffset = 0): T {
   const slot = slotFor(hour);
-  const { start, seed } = SLOTS[slot];
+  const { start, seed: slotSeed } = SLOTS[slot];
+  const seed = slotSeed + seedOffset;
   const now = new Date();
   // 0–4 Uhr zählt zur Nacht des Vortags, damit die Nacht durchgehend bleibt.
   const day = localDayNumber(now) - (hour < 5 ? 1 : 0);
@@ -1001,10 +1006,13 @@ export function getGreeting(hour: number): Greeting {
   // Aufeinanderfolgende Stunden sind dadurch immer verschieden, und wer
   // täglich zur selben Zeit reinschaut, sieht erst nach „Poolgröße" Tagen
   // einen Gruß zum zweiten Mal.
-  const pool = greetingPool(slot);
   const shuffled = seededShuffle(pool, year * 7919 + seed * 104_729);
   const n = shuffled.length;
   const index = (((day * dayStride(n) + offsetHour) % n) + n) % n;
-  const g = shuffled[index];
+  return shuffled[index];
+}
+
+export function getGreeting(hour: number): Greeting {
+  const g = pickForHour(greetingPool(slotFor(hour)), hour);
   return { ...g, text: t(g.text), lang: t(g.lang) };
 }

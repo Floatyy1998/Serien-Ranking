@@ -11,7 +11,6 @@ import {
 } from '../../config/navItems';
 import { useAppFocus } from '../../hooks/ui/useAppFocus';
 import { readsFirst } from '../../services/settings/appFocus';
-import { resolveReadingPath } from '../../services/settings/readingTab';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -202,7 +201,7 @@ export const BottomNavigation = () => {
       document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setPendingIndex(index);
-      const go = () => navigate(item.id === 'manga' && !reader ? resolveReadingPath() : item.path);
+      const go = () => navigate(item.id === 'manga' && !reader ? '/reading' : item.path);
       if (!reader && (item.id === 'manga' || navItems[activeIndex]?.id === 'manga'))
         withCoinEgg(user?.uid, go, user?.photoURL);
       else go();

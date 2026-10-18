@@ -20,10 +20,12 @@ import { MANGA_QUICK_ACTION_LABELS } from '../data/mangaSectionLabels';
 interface MangaQuickActionsProps {
   order: string[];
   hidden: string[];
+  /** `chips`: schmale, waagerecht scrollende Leiste statt Kachelraster. */
+  variant?: 'tiles' | 'chips';
 }
 
 export const MangaQuickActions: React.FC<MangaQuickActionsProps> = React.memo(
-  ({ order, hidden }) => {
+  ({ order, hidden, variant = 'tiles' }) => {
     const { currentTheme } = useTheme();
     const { mangaList } = useMangaList();
     const navigate = useNavigate();
@@ -93,7 +95,10 @@ export const MangaQuickActions: React.FC<MangaQuickActionsProps> = React.memo(
     if (visible.length === 0) return null;
 
     return (
-      <nav className="manga-quick" aria-label={t('Schnellzugriff')}>
+      <nav
+        className={variant === 'chips' ? 'manga-quick manga-quick--chips' : 'manga-quick'}
+        aria-label={t('Schnellzugriff')}
+      >
         {visible.map((id) => {
           const action = actions[id];
           return (

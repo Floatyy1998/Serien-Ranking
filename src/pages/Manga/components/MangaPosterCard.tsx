@@ -19,6 +19,17 @@ interface MangaPosterCardProps {
   score?: string;
   owned?: boolean;
   progress?: number;
+  /** Ersetzt das Format-Abzeichen, z. B. „Buch" in gemischten Lese-Reihen. */
+  badge?: string;
+  /** Schnell-Knopf unten rechts, z. B. „+1" Kapitel. */
+  action?: {
+    label: string;
+    ariaLabel: string;
+    onClick: () => void;
+    disabled?: boolean;
+    /** Textfarbe auf dem Themen-Verlauf. */
+    color?: string;
+  };
   onClick: () => void;
 }
 
@@ -32,6 +43,8 @@ export const MangaPosterCard = ({
   score,
   owned,
   progress,
+  badge,
+  action,
   onClick,
 }: MangaPosterCardProps) => {
   const formatKey = getDisplayFormatKey(countryOfOrigin, format);
@@ -39,7 +52,7 @@ export const MangaPosterCard = ({
 
   return (
     <motion.div
-      className="mpc"
+      className={action ? 'mpc mpc--action' : 'mpc'}
       role="button"
       tabIndex={0}
       aria-label={t('{title} öffnen', { title })}
@@ -55,8 +68,11 @@ export const MangaPosterCard = ({
       <div className="mpc-art">
         <img src={poster} alt={title} loading="lazy" decoding="async" />
         <div className="mpc-top">
-          <span className="mpc-chip" style={{ color: FORMAT_COLORS[formatKey] || undefined }}>
-            {formatLabel}
+          <span
+            className="mpc-chip"
+            style={{ color: badge ? undefined : FORMAT_COLORS[formatKey] || undefined }}
+          >
+            {badge ?? formatLabel}
           </span>
           {highlight ? (
             <span className="mpc-chip mpc-chip--hot">{highlight}</span>
@@ -75,6 +91,22 @@ export const MangaPosterCard = ({
           <div className="mpc-title">{title}</div>
           {meta && <div className="mpc-meta">{meta}</div>}
         </div>
+        {action && (
+          <button
+            type="button"
+            className="mpc-action"
+            aria-label={action.ariaLabel}
+            disabled={action.disabled}
+            style={action.color ? { color: action.color } : undefined}
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick();
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            {action.label}
+          </button>
+        )}
         {progress !== undefined && progress > 0 && (
           <div className="mpc-progress" aria-hidden>
             <span style={{ width: `${Math.min(progress, 100)}%` }} />

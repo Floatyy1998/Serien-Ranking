@@ -302,6 +302,10 @@ const dict: Record<string, string> = {
   'Startseite für Serien und Filme': 'Início focado em séries e filmes',
   'Startseite für Manga und Bücher': 'Início focado em mangás e livros',
   'Serien-Startseite, Lesen über das Dock': 'Séries no início, leitura no dock',
+  Lesebereiche: 'Áreas de leitura',
+  'Bücher und Manga auf einer Lesen-Seite': 'Livros e mangás em uma só página de leitura',
+  'Lesen zeigt nur Bücher': 'Leitura mostra só livros',
+  'Lesen zeigt nur Manga': 'Leitura mostra só mangás',
 };
 
 export default dict;

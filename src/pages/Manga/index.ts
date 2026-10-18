@@ -1,1 +1,0 @@
-export { MangaPage } from './MangaPage';

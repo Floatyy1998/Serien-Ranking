@@ -167,9 +167,9 @@ export const SubscriptionsPage = lazyWithRetry(() =>
     default: m.SubscriptionsPage,
   }))
 );
-export const MangaPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga" */ '../pages/Manga').then((m) => ({
-    default: m.MangaPage,
+export const ReadingPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading" */ '../pages/Reading').then((m) => ({
+    default: m.ReadingPage,
   }))
 );
 export const MangaDetailPage = lazyWithRetry(() =>
@@ -220,10 +220,24 @@ export const MangaReadJourneyPage = lazyWithRetry(() =>
   )
 );
 
-export const MangaLayoutPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "manga-layout" */ '../pages/Manga/MangaLayoutPage').then((m) => ({
-    default: m.MangaLayoutPage,
+export const ReadingGenrePage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading-genre" */ '../pages/Reading/ReadingGenrePage').then((m) => ({
+    default: m.ReadingGenrePage,
   }))
+);
+export const MangaCollectionPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "manga-collection" */ '../pages/Manga/MangaCollectionPage').then(
+    (m) => ({
+      default: m.MangaCollectionPage,
+    })
+  )
+);
+export const ReadingLayoutPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "reading-layout" */ '../pages/Reading/ReadingLayoutPage').then(
+    (m) => ({
+      default: m.ReadingLayoutPage,
+    })
+  )
 );
 
 export const MangaReadingListPage = lazyWithRetry(() =>
@@ -234,16 +248,6 @@ export const MangaReadingListPage = lazyWithRetry(() =>
   )
 );
 
-export const BooksPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "books" */ '../pages/Books').then((m) => ({
-    default: m.BooksPage,
-  }))
-);
-export const ReadingHubPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "reading-hub" */ '../pages/Books/ReadingHubPage').then((m) => ({
-    default: m.ReadingHubPage,
-  }))
-);
 export const BookSearchPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "book-search" */ '../pages/Books/BookSearchPage').then((m) => ({
     default: m.BookSearchPage,
@@ -316,8 +320,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
   const coreRoutes = [
     () => import('../pages/SeriesDetail'),
     () => import('../pages/MovieDetail'),
-    () => import('../pages/Manga'),
-    () => import('../pages/Books'),
+    () => import('../pages/Reading'),
     () => import('../pages/Activity'),
     () => import('../pages/Discover'),
     () => import('../pages/RecentlyWatched'),
@@ -348,8 +351,9 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/Manga/MangaReadJourneyPage'),
     () => import('../pages/Manga/MangaReadingListPage'),
     () => import('../pages/Manga/HiddenMangaPage'),
-    () => import('../pages/Manga/MangaLayoutPage'),
-    () => import('../pages/Books/ReadingHubPage'),
+    () => import('../pages/Reading/ReadingLayoutPage'),
+    () => import('../pages/Reading/ReadingGenrePage'),
+    () => import('../pages/Manga/MangaCollectionPage'),
     () => import('../pages/Books/BookSearchPage'),
     () => import('../pages/Books/BookDetailPage'),
     () => import('../pages/Books/BookShelfPage'),

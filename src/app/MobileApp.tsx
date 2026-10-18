@@ -60,7 +60,9 @@ import {
   MangaDiscoverPage,
   MangaReadJourneyPage,
   MangaReadingListPage,
-  MangaLayoutPage,
+  ReadingLayoutPage,
+  ReadingGenrePage,
+  MangaCollectionPage,
   BookSearchPage,
   BookDetailPage,
   BookShelfPage,
@@ -515,10 +517,34 @@ export const MobileApp = () => {
                 }
               />
               <Route
+                path="/manga/collection"
+                element={
+                  <Layout hideNav>
+                    <MangaCollectionPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/genre/:id"
+                element={
+                  <Layout hideNav>
+                    <ReadingGenrePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/reading/layout"
+                element={
+                  <Layout hideNav>
+                    <ReadingLayoutPage />
+                  </Layout>
+                }
+              />
+              <Route
                 path="/manga/layout"
                 element={
                   <Layout hideNav>
-                    <MangaLayoutPage />
+                    <ReadingLayoutPage />
                   </Layout>
                 }
               />
