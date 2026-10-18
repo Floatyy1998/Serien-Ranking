@@ -7,6 +7,7 @@ import { ReadingGreetingTitle } from '../../components/reading/ReadingGreetingTi
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { getNewChapterEntries } from '../../lib/manga/overview';
 import { tapScaleSmall } from '../../lib/motion';
 import { usesArea, type ReadingAreas } from '../../lib/reading/readingMedium';
@@ -50,6 +51,8 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
     onShowCollection,
   }) => {
     const { currentTheme } = useTheme();
+    // Abstände wie der Kopf der Startseite (GreetingSection), damit beim Wechsel nichts springt.
+    const { isMobile } = useDeviceType();
     const navigate = useNavigate();
     const { bookList } = useBooksList();
     const { mangaList } = useMangaList();
@@ -182,9 +185,19 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
     const showCovers = !showBanner && kind !== 'manga' && books.art.length > 0;
 
     return (
-      <header className="bk-deck-wrap">
+      <header
+        className="bk-deck-wrap"
+        style={{
+          padding: `calc(${isMobile ? '10px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '14px' : '20px'} 0`,
+          marginBottom: isMobile ? '16px' : '24px',
+        }}
+      >
         <motion.div
           className="bk-deck liquid-glass"
+          style={{
+            borderRadius: isMobile ? '20px' : '24px',
+            padding: isMobile ? '12px 14px 14px' : '20px 24px',
+          }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 26 }}
