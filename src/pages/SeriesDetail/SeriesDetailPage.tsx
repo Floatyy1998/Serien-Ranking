@@ -610,6 +610,7 @@ export const SeriesDetailPage = memo(() => {
           {/* Crossover — Mehrteiler über Serien hinweg, mit Sehstatus je Teil */}
           <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
             <CrossoverSection
+              seriesId={seriesTmdbId ?? series.id}
               refs={crossovers.refs}
               currentTheme={currentTheme}
               isMobile={isMobile}

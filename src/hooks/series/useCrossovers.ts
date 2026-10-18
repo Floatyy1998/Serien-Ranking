@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   buildCrossoverIndex,
+  crossoverEpisodeKey,
   crossoverKeysForSeries,
   type CrossoverIndex,
   type CrossoverRef,
@@ -36,13 +37,39 @@ export function useCrossoverIndex(): UseCrossoverIndexResult {
     };
   }, []);
 
-  const index = useMemo(() => (map ? buildCrossoverIndex(map) : null), [map]);
+  const index = useMemo(() => indexFor(map), [map]);
   const reload = useCallback(async () => {
     setMap(await loadCrossovers(true));
   }, []);
 
   return { index, loading: map === null, reload };
 }
+
+// Ein Index pro Datenstand — Listen mit vielen Zeilen teilen ihn statt ihn je Zeile neu zu bauen.
+let cachedMap: CrossoverMap | null = null;
+let cachedIndex: CrossoverIndex | null = null;
+function indexFor(map: CrossoverMap | null): CrossoverIndex | null {
+  if (!map) return null;
+  if (map !== cachedMap) {
+    cachedMap = map;
+    cachedIndex = buildCrossoverIndex(map);
+  }
+  return cachedIndex;
+}
+
+/** Crossover einer einzelnen Folge (Staffel/Folge 1-basiert wie in den Routen). */
+export function useEpisodeCrossovers(
+  seriesId: number | string | undefined,
+  seasonNumber: number | undefined,
+  episodeNumber: number | undefined
+): CrossoverRef[] {
+  const { index } = useCrossoverIndex();
+  const id = Number(seriesId);
+  if (!index || !id || !seasonNumber || !episodeNumber) return EMPTY;
+  return index.byEpisode.get(crossoverEpisodeKey(id, seasonNumber, episodeNumber)) || EMPTY;
+}
+
+const EMPTY: CrossoverRef[] = [];
 
 interface UseSeriesCrossoversResult {
   refs: CrossoverRef[];

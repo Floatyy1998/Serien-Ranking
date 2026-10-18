@@ -1,6 +1,7 @@
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
 import ReportOutlined from '@mui/icons-material/ReportOutlined';
 import { motion } from 'framer-motion';
@@ -19,7 +20,7 @@ import { addToLibrary } from '../../services/series/addToLibrary';
 import type { CrossoverEntry, CrossoverPart } from '../../types/Crossover';
 import { getImageUrl } from '../../utils/imageUrl';
 import { BottomSheet } from '../ui/overlay/BottomSheet';
-import { kindLabel, partLabel, partTitle } from './crossoverLabels';
+import { kindDescription, kindLabel, partLabel, partTitle } from './crossoverLabels';
 
 interface CrossoverSheetProps {
   isOpen: boolean;
@@ -44,9 +45,13 @@ export function CrossoverSheet({
   const [adding, setAdding] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [kindInfo, setKindInfo] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) setConfirmDelete(false);
+    if (!isOpen) {
+      setConfirmDelete(false);
+      setKindInfo(false);
+    }
   }, [isOpen]);
 
   if (!entry || !id) return null;
@@ -160,6 +165,37 @@ export function CrossoverSheet({
           >
             {kindLabel(entry.kind)}
           </span>
+          <button
+            type="button"
+            onClick={() => setKindInfo((v) => !v)}
+            aria-expanded={kindInfo}
+            aria-label={t('Was bedeutet das?')}
+            title={t('Was bedeutet das?')}
+            style={{
+              minWidth: 28,
+              minHeight: 28,
+              width: 28,
+              height: 28,
+              padding: 0,
+              marginLeft: 4,
+              verticalAlign: 'middle',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'transparent',
+              color: kindInfo ? tone : muted,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <InfoOutlined style={{ fontSize: 17 }} />
+          </button>
+          {kindInfo && (
+            <p style={{ fontSize: 12.5, lineHeight: 1.45, color: secondary, margin: '6px 0 0' }}>
+              {kindDescription(entry.kind)}
+            </p>
+          )}
           <h3 style={{ fontSize: 19, fontWeight: 700, margin: '10px 0 4px' }}>{entry.title}</h3>
           {(entry.franchise || entry.year) && (
             <p style={{ fontSize: 13, color: muted, margin: 0 }}>

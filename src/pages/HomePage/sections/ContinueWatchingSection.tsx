@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { CrossoverEpisodeBadge } from '../../../components/crossover/CrossoverEpisodeBadge';
 import { NowPlayingIndicator } from '../../../components/ui/media/NowPlayingIndicator';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import {
@@ -426,6 +427,11 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                             />
                           </span>
                         )}
+                        <CrossoverEpisodeBadge
+                          seriesId={item.id}
+                          seasonNumber={item.nextEpisode.seasonNumber}
+                          episodeNumber={item.nextEpisode.episodeNumber}
+                        />
                       </p>
                       {(() => {
                         const lastWatchedText = formatLastWatched(item.lastWatchedAt);

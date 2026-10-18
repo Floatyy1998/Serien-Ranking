@@ -2,6 +2,7 @@ import ArrowDownward from '@mui/icons-material/ArrowDownward';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import Close from '@mui/icons-material/Close';
 import Add from '@mui/icons-material/Add';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -19,7 +20,7 @@ import type { CrossoverEntry, CrossoverKind, CrossoverPart } from '../../types/C
 import { CROSSOVER_KINDS } from '../../types/Crossover';
 import { getImageUrl } from '../../utils/imageUrl';
 import { BottomSheet } from '../ui/overlay/BottomSheet';
-import { kindLabel, tmdbPosterPath } from './crossoverLabels';
+import { kindDescription, kindLabel, tmdbPosterPath } from './crossoverLabels';
 
 export interface CrossoverPrefill {
   id: number;
@@ -74,6 +75,7 @@ export function CrossoverEditorSheet({
   const [searchOpen, setSearchOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [kindInfo, setKindInfo] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -383,7 +385,56 @@ export function CrossoverEditorSheet({
           style={inputStyle}
         />
 
-        <span style={labelStyle}>{t('Art')}</span>
+        <span style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {t('Art')}
+          <button
+            type="button"
+            onClick={() => setKindInfo((v) => !v)}
+            aria-expanded={kindInfo}
+            aria-label={t('Was bedeuten die Arten?')}
+            title={t('Was bedeuten die Arten?')}
+            style={{
+              minWidth: 28,
+              minHeight: 28,
+              width: 28,
+              height: 28,
+              padding: 0,
+              borderRadius: '50%',
+              border: 'none',
+              background: kindInfo
+                ? `color-mix(in srgb, ${currentTheme.primary} 18%, transparent)`
+                : 'transparent',
+              color: kindInfo ? currentTheme.primary : muted,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <InfoOutlined style={{ fontSize: 17 }} />
+          </button>
+        </span>
+        {kindInfo && (
+          <div
+            style={{
+              margin: '0 0 10px',
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: surface,
+              border: `1px solid ${border}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            {CROSSOVER_KINDS.map((k) => (
+              <div key={k} style={{ fontSize: 12.5, lineHeight: 1.45, color: secondary }}>
+                <strong style={{ color: currentTheme.text?.primary }}>{kindLabel(k)}:</strong>{' '}
+                {kindDescription(k)}
+              </div>
+            ))}
+          </div>
+        )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {CROSSOVER_KINDS.map((k) => {
             const active = k === kind;
@@ -411,6 +462,11 @@ export function CrossoverEditorSheet({
             );
           })}
         </div>
+        {!kindInfo && (
+          <p style={{ margin: '8px 0 0', fontSize: 12.5, lineHeight: 1.45, color: muted }}>
+            {kindDescription(kind)}
+          </p>
+        )}
 
         <span style={labelStyle}>{t('Teile in Sehreihenfolge')}</span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

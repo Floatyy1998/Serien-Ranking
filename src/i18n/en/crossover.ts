@@ -33,5 +33,23 @@ const dict: Record<string, string> = {
   'Mindestens zwei Teile nötig': 'At least two parts are needed',
   'Mindestens ein Teil nötig': 'At least one part is needed',
   'Teil {i} von {n}': 'Part {i} of {n}',
+  'Was bedeuten die Arten?': 'What do the types mean?',
+  'Was bedeutet das?': 'What does this mean?',
+  'Eine neue Serie wird in Folgen einer anderen Serie eingeführt. Diese Folgen sind ihre Vorgeschichte und gehören vor die erste Folge.':
+    'A new series is introduced in episodes of another series. Those episodes are its prologue and belong before its first episode.',
+  'Figuren aus einer anderen Serie tauchen kurz auf. Nett zu wissen, zum Verstehen aber nicht nötig.':
+    'Characters from another series make a brief appearance. Nice to know, but not needed to follow along.',
+  'Empfohlene Reihenfolge ganzer Staffeln über mehrere Serien hinweg.':
+    'Recommended order of whole seasons across several series.',
+  'Eine Geschichte läuft über Folgen mehrerer Serien. Sie ergibt nur zusammen und in dieser Reihenfolge Sinn.':
+    'One story runs across episodes of several series. It only makes sense together and in this order.',
+  Vorher: 'Before',
+  Danach: 'After',
+  'Alle Teile in dieser Serie': 'All parts are in this series',
+  'Diese Folgen gehören zu Geschichten über mehrere Serien. Tippen zeigt die ganze Reihenfolge.':
+    'These episodes belong to stories spanning several series. Tap to see the full order.',
+  'Gastauftritte aus anderen Serien ({n})': 'Guest appearances from other series ({n})',
+  'mit Figuren aus {series}': 'with characters from {series}',
+  'Figuren aus dieser Serie zu Gast': 'characters from this series appear',
 };
 export default dict;

@@ -15,6 +15,26 @@ export const kindLabel = (kind: CrossoverKind): string => {
   }
 };
 
+/** Ein Satz, was die Art für den Zuschauer bedeutet (Info im Editor und im Sheet). */
+export const kindDescription = (kind: CrossoverKind): string => {
+  switch (kind) {
+    case 'backdoor':
+      return t(
+        'Eine neue Serie wird in Folgen einer anderen Serie eingeführt. Diese Folgen sind ihre Vorgeschichte und gehören vor die erste Folge.'
+      );
+    case 'guest':
+      return t(
+        'Figuren aus einer anderen Serie tauchen kurz auf. Nett zu wissen, zum Verstehen aber nicht nötig.'
+      );
+    case 'order':
+      return t('Empfohlene Reihenfolge ganzer Staffeln über mehrere Serien hinweg.');
+    default:
+      return t(
+        'Eine Geschichte läuft über Folgen mehrerer Serien. Sie ergibt nur zusammen und in dieser Reihenfolge Sinn.'
+      );
+  }
+};
+
 /** Serientitel aus der eigenen Liste (Katalog-Schreibweise), sonst der gespeicherte. */
 export const partTitle = (
   part: CrossoverPart,

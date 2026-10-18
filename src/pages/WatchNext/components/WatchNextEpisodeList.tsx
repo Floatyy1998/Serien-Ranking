@@ -5,6 +5,7 @@ import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { SwipeableEpisodeRow } from '../../../components/ui';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { CrossoverEpisodeBadge } from '../../../components/crossover/CrossoverEpisodeBadge';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import type { useEpisodeDragDrop } from '../../../hooks/watch/useEpisodeDragDrop';
@@ -244,6 +245,11 @@ export const WatchNextEpisodeList = ({
                             />
                           </span>
                         )}
+                        <CrossoverEpisodeBadge
+                          seriesId={episode.seriesId}
+                          seasonNumber={(episode.seasonNumber ?? 0) + 1}
+                          episodeNumber={episode.episodeNumber}
+                        />
                       </p>
                       <p
                         style={{

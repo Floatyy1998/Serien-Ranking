@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { CrossoverEpisodeBadge } from '../../../components/crossover/CrossoverEpisodeBadge';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -249,6 +250,11 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                             />
                           </span>
                         )}
+                        <CrossoverEpisodeBadge
+                          seriesId={episode.seriesId}
+                          seasonNumber={episode.seasonNumber}
+                          episodeNumber={episode.episodeNumber}
+                        />
                       </p>
                     </>
                   }

@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
+import { CrossoverEpisodeBadge } from '../../../components/crossover/CrossoverEpisodeBadge';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -219,6 +220,11 @@ export const RewatchSection = React.memo(function RewatchSection({
                             />
                           </span>
                         )}
+                        <CrossoverEpisodeBadge
+                          seriesId={item.id}
+                          seasonNumber={item.seasonNumber}
+                          episodeNumber={item.episodeNumber}
+                        />
                       </p>
                       <p
                         style={{

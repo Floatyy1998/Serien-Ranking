@@ -17,6 +17,7 @@ import { PushOptInPrompt } from '../components/PushOptInPrompt';
 import { WidgetDataSync } from '../components/WidgetDataSync';
 import { SharedListSync } from '../components/SharedListSync';
 import { MediaActionsHost } from '../features/mediaActions/MediaActionsHost';
+import { CrossoverHost } from '../features/crossover/CrossoverHost';
 import { EpisodeRatingSheetHost } from '../components/EpisodeRatingSheetHost';
 import { AvatarViewerHost } from '../components/AvatarViewerHost';
 import { SeasonalHost } from '../components/seasonal/SeasonalHost';
@@ -250,6 +251,7 @@ export const MobileApp = () => {
       <WidgetDataSync />
       <SharedListSync />
       <MediaActionsHost />
+      <CrossoverHost />
       <EpisodeRatingSheetHost />
       <PageTourHost />
       <AvatarViewerHost />

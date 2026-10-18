@@ -33,5 +33,23 @@ const dict: Record<string, string> = {
   'Mindestens zwei Teile nötig': 'Se necesitan al menos dos partes',
   'Mindestens ein Teil nötig': 'Se necesita al menos una parte',
   'Teil {i} von {n}': 'Parte {i} de {n}',
+  'Was bedeuten die Arten?': '¿Qué significan los tipos?',
+  'Was bedeutet das?': '¿Qué significa esto?',
+  'Eine neue Serie wird in Folgen einer anderen Serie eingeführt. Diese Folgen sind ihre Vorgeschichte und gehören vor die erste Folge.':
+    'Una serie nueva se presenta en episodios de otra serie. Esos episodios son su precuela y van antes de su primer episodio.',
+  'Figuren aus einer anderen Serie tauchen kurz auf. Nett zu wissen, zum Verstehen aber nicht nötig.':
+    'Personajes de otra serie aparecen brevemente. Es un dato curioso, pero no hace falta para entender la historia.',
+  'Empfohlene Reihenfolge ganzer Staffeln über mehrere Serien hinweg.':
+    'Orden recomendado de temporadas completas de varias series.',
+  'Eine Geschichte läuft über Folgen mehrerer Serien. Sie ergibt nur zusammen und in dieser Reihenfolge Sinn.':
+    'Una historia continúa en episodios de varias series. Solo tiene sentido completa y en este orden.',
+  Vorher: 'Antes',
+  Danach: 'Después',
+  'Alle Teile in dieser Serie': 'Todas las partes están en esta serie',
+  'Diese Folgen gehören zu Geschichten über mehrere Serien. Tippen zeigt die ganze Reihenfolge.':
+    'Estos episodios forman parte de historias entre varias series. Toca para ver el orden completo.',
+  'Gastauftritte aus anderen Serien ({n})': 'Apariciones de otras series ({n})',
+  'mit Figuren aus {series}': 'con personajes de {series}',
+  'Figuren aus dieser Serie zu Gast': 'aparecen personajes de esta serie',
 };
 export default dict;
