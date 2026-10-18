@@ -10,6 +10,8 @@ import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
 const ANILIST_REFRESH_KEY_PREFIX = 'mangaAniListRefreshLastRun:';
+// Je Manga zwei Anfragen (search + releases); das Backend erlaubt 60/min je Nutzer.
+const MANGAUPDATES_REFRESH_SPACING_MS = 2500;
 
 export const MangaListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -112,7 +114,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
         } catch {
           // Silent fail per manga
         }
-      }, i * 250);
+      }, i * MANGAUPDATES_REFRESH_SPACING_MS);
     });
   }, [user, loading, allMangaList]);
 
