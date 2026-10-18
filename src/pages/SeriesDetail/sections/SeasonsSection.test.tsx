@@ -53,6 +53,9 @@ vi.mock('../../../lib/validation/rewatch.utils', () => ({
 vi.mock('./SeasonTabs', () => ({ SeasonTabs: () => <div data-testid="season-tabs" /> }));
 vi.mock('./RewatchBanner', () => ({ RewatchBanner: () => <div data-testid="rewatch-banner" /> }));
 vi.mock('../../../components/ui/display/FillerChip', () => ({ FillerChip: () => <span /> }));
+vi.mock('../../../components/ui/display/CrossoverChip', () => ({
+  CrossoverChip: () => <span />,
+}));
 
 import { SeasonsSection } from './SeasonsSection';
 

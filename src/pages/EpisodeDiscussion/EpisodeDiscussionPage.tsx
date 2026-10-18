@@ -4,6 +4,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/manga/useAnimeFillerData';
+import { useSeriesCrossovers } from '../../hooks/series/useCrossovers';
+import { CrossoverSheet } from '../../components/crossover/CrossoverSheet';
+import { CrossoverStrip } from '../../components/crossover/CrossoverStrip';
+import { crossoverSeasonKey } from '../../lib/crossover/crossoverIndex';
 import { useEpisodeRatings } from '../../hooks/rating/useCommunityRatings';
 import { StarRatingSlider } from '../../components/ui/input/StarRatingSlider';
 import { setEpisodeRating } from '../../services/rating/episodeRatingService';
@@ -152,6 +156,22 @@ export const EpisodeDiscussionPage = memo(() => {
     ? { filler: currentFiller.filler, recap: currentFiller.recap }
     : null;
 
+  // Crossover-Teil dieser Folge (gemeinsame Datenbank) + Sheet mit der ganzen Reihenfolge.
+  const crossovers = useSeriesCrossovers(Number(series?.tmdb_id || seriesId) || undefined);
+  const crossoverRefs = useMemo(
+    () =>
+      seasonNumber && episodeNumber
+        ? crossovers.byEpisodeKey.get(
+            crossoverSeasonKey(Number(seasonNumber), Number(episodeNumber))
+          ) || []
+        : [],
+    [crossovers.byEpisodeKey, seasonNumber, episodeNumber]
+  );
+  const [crossoverView, setCrossoverView] = useState<string | null>(null);
+  const crossoverViewEntry = crossoverView
+    ? (crossovers.index?.entries.find((e) => e.id === crossoverView)?.entry ?? null)
+    : null;
+
   if (loading) {
     return <LoadingState currentTheme={currentTheme} />;
   }
@@ -274,6 +294,15 @@ export const EpisodeDiscussionPage = memo(() => {
           onShare={hasUser ? () => setShareOpen(true) : undefined}
           getStillUrl={getStillUrl}
           navigate={navigate}
+        />
+
+        <CrossoverStrip refs={crossoverRefs} navigate={navigate} onOpen={setCrossoverView} />
+        <CrossoverSheet
+          isOpen={crossoverView !== null && crossoverViewEntry !== null}
+          id={crossoverView}
+          entry={crossoverViewEntry}
+          navigate={navigate}
+          onClose={() => setCrossoverView(null)}
         />
 
         {/* Folgenbewertung: eigene Sterne + Community-Durchschnitt */}

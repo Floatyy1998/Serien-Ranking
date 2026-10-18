@@ -61,6 +61,9 @@ vi.mock('../../contexts/ThemeContext', () => {
 vi.mock('../../hooks/manga/useAnimeFillerData', () => ({
   useAnimeFillerData: () => ({ fillerByKey: new Map() }),
 }));
+vi.mock('../../hooks/series/useCrossovers', () => ({
+  useSeriesCrossovers: () => ({ refs: [], byEpisodeKey: new Map(), loading: false, index: null }),
+}));
 vi.mock('../../services/catalog/animeFillerService', () => ({ fillerLookupKey: () => 'k' }));
 
 const disc = vi.hoisted(() => ({

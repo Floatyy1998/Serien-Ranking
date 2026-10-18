@@ -21,6 +21,9 @@ interface NewTicketFormProps {
   onCancel: () => void;
   onUpload: (file: File) => Promise<string | null>;
   initialConsoleErrors?: string;
+  initialTitle?: string;
+  initialDescription?: string;
+  initialType?: TicketType;
 }
 
 export function NewTicketForm({
@@ -29,11 +32,14 @@ export function NewTicketForm({
   onCancel,
   onUpload,
   initialConsoleErrors,
+  initialTitle,
+  initialDescription,
+  initialType,
 }: NewTicketFormProps) {
-  const [ticketType, setTicketType] = useState<TicketType>('bug');
+  const [ticketType, setTicketType] = useState<TicketType>(initialType || 'bug');
   const [priority, setPriority] = useState<TicketPriority>('low');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState(initialTitle || '');
+  const [description, setDescription] = useState(initialDescription || '');
   const [consoleErrors, setConsoleErrors] = useState(initialConsoleErrors || '');
   const [steps, setSteps] = useState('');
   const [screenshots, setScreenshots] = useState<string[]>([]);

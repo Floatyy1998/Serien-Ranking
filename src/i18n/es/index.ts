@@ -13,6 +13,7 @@ import browse from './browse';
 import browse2 from './browse2';
 import chat from './chat';
 import components from './components';
+import crossover from './crossover';
 import detail from './detail';
 import gapsActivity from './gaps-activity';
 import gapsDiscussions from './gaps-discussions';
@@ -45,6 +46,7 @@ const es: Record<string, string> = {
   ...browse2,
   ...chat,
   ...components,
+  ...crossover,
   ...detail,
   ...gapsActivity,
   ...gapsDiscussions,

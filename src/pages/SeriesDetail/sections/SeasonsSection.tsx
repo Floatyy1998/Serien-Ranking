@@ -7,8 +7,10 @@ import { Tooltip } from '@mui/material';
 import { motion, type PanInfo } from 'framer-motion';
 import { useCallback, useRef, useState } from 'react';
 import type { useNavigate } from 'react-router-dom';
+import { CrossoverChip } from '../../../components/ui/display/CrossoverChip';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
 import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
+import { crossoverSeasonKey, type CrossoverRef } from '../../../lib/crossover/crossoverIndex';
 import {
   getImplicitRewatchRound,
   hasActiveRewatch,
@@ -49,6 +51,8 @@ interface SeasonsSectionProps {
   handleEpisodeQuickToggle: (seasonIndex: number, episodeIndex: number) => Promise<void>;
   navigate: ReturnType<typeof useNavigate>;
   fillerByKey?: Map<string, FillerEpisode>;
+  crossoverByKey?: Map<string, CrossoverRef[]>;
+  onOpenCrossover?: (id: string) => void;
 }
 
 function formatDate(input: string | Date | undefined | null): string | null {
@@ -96,6 +100,8 @@ export function SeasonsSection({
   handleEpisodeQuickToggle,
   navigate,
   fillerByKey,
+  crossoverByKey,
+  onOpenCrossover,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
   // Anonyme Community-Episoden-Durchschnitte (ab 5 Bewertungen), lazy pro Serie.
@@ -363,6 +369,9 @@ export function SeasonsSection({
                 const fillerInfo = fillerByKey?.get(
                   fillerLookupKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
                 );
+                const crossoverRefs = crossoverByKey?.get(
+                  crossoverSeasonKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
+                );
                 const activateRow = () => {
                   if (episode.watched) {
                     setShowRewatchDialog({
@@ -538,6 +547,16 @@ export function SeasonsSection({
                       <FillerChip filler={fillerInfo.filler} recap={fillerInfo.recap} />
                     )}
 
+                    {/* Crossover-Markierung — öffnet den Mehrteiler im Sheet */}
+                    {crossoverRefs && crossoverRefs.length > 0 && (
+                      <CrossoverChip
+                        title={crossoverRefs.map((r) => r.entry.title).join(' · ')}
+                        onClick={
+                          onOpenCrossover ? () => onOpenCrossover(crossoverRefs[0].id) : undefined
+                        }
+                      />
+                    )}
+
                     {/* Rewatch badge */}
                     {isRewatched && (
                       <span
@@ -592,11 +611,12 @@ export function SeasonsSection({
                 const fillerInfo = fillerByKey?.get(
                   fillerLookupKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
                 );
-                const fillerLabel = fillerInfo?.filler
-                  ? ' · Filler'
-                  : fillerInfo?.recap
-                    ? ' · Recap'
-                    : '';
+                const hasCrossover = !!crossoverByKey?.get(
+                  crossoverSeasonKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
+                )?.length;
+                const fillerLabel =
+                  (fillerInfo?.filler ? ' · Filler' : fillerInfo?.recap ? ' · Recap' : '') +
+                  (hasCrossover ? ' · Crossover' : '');
                 const discussionSuffix =
                   discussionCount > 0 ? ` · ${discussionLabel(discussionCount)}` : '';
                 const fillerDotColor = fillerInfo?.filler
@@ -701,6 +721,21 @@ export function SeasonsSection({
                             top: '-3px',
                             left: '-3px',
                             background: fillerDotColor,
+                            borderRadius: '50%',
+                            width: '8px',
+                            height: '8px',
+                            boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
+                          }}
+                        />
+                      )}
+                      {hasCrossover && (
+                        <span
+                          aria-hidden
+                          style={{
+                            position: 'absolute',
+                            bottom: '-3px',
+                            left: '-3px',
+                            background: currentTheme.accent,
                             borderRadius: '50%',
                             width: '8px',
                             height: '8px',

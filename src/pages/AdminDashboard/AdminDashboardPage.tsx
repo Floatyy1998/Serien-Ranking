@@ -17,6 +17,7 @@ import {
   ReportProblem,
   Settings,
   Speed,
+  SwapHoriz,
   Timeline,
   Timer,
 } from '@mui/icons-material';
@@ -42,6 +43,7 @@ import { TicketsTab } from './tabs/TicketsTab';
 import { ConfigTab } from './tabs/ConfigTab';
 import { NewEpisodesTab } from './tabs/NewEpisodesTab';
 import { AnimeFillerTab } from './tabs/AnimeFillerTab';
+import { CrossoversTab } from './tabs/CrossoversTab';
 import { TmdbAheadTab } from './tabs/TmdbAheadTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
 import { ModerationTab } from './tabs/ModerationTab';
@@ -117,6 +119,12 @@ const TABS = [
     label: 'Anime Filler',
     group: 'Inhalte',
     icon: <FilterAlt style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'crossovers',
+    label: 'Crossover',
+    group: 'Inhalte',
+    icon: <SwapHoriz style={{ fontSize: 16 }} />,
   },
   { id: 'performance', label: 'Perf', group: 'Betrieb', icon: <Timer style={{ fontSize: 16 }} /> },
   {
@@ -279,6 +287,7 @@ export function AdminDashboardPage() {
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
               {activeTab === 'tmdb-ahead' && <TmdbAheadTab />}
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
+              {activeTab === 'crossovers' && <CrossoversTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
               {activeTab === 'client-errors' && <ClientErrorsTab />}
               {activeTab === 'suspicious' && <SuspiciousAccountsTab />}

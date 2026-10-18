@@ -85,6 +85,7 @@ vi.mock('./tabs/MessagesTab', () => ({ MessagesTab: () => <div>messages-tab</div
 vi.mock('./tabs/DataHealthTab', () => ({ DataHealthTab: () => <div>health-tab</div> }));
 vi.mock('./tabs/NewEpisodesTab', () => ({ NewEpisodesTab: () => <div>new-episodes-tab</div> }));
 vi.mock('./tabs/AnimeFillerTab', () => ({ AnimeFillerTab: () => <div>anime-filler-tab</div> }));
+vi.mock('./tabs/CrossoversTab', () => ({ CrossoversTab: () => <div>crossovers-tab</div> }));
 vi.mock('./tabs/PerformanceTab', () => ({ PerformanceTab: () => <div>performance-tab</div> }));
 vi.mock('./tabs/BackendErrorsTab', () => ({ BackendErrorsTab: () => <div>backend-tab</div> }));
 vi.mock('./tabs/ConfigTab', () => ({ ConfigTab: () => <div>config-tab</div> }));

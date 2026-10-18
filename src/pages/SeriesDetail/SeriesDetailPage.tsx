@@ -27,6 +27,10 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/watch/markNextEpisode';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
+import { CrossoverEditorSheet } from '../../components/crossover/CrossoverEditorSheet';
+import { CrossoverSheet } from '../../components/crossover/CrossoverSheet';
+import { useSeriesCrossovers } from '../../hooks/series/useCrossovers';
+import { CrossoverSection } from './sections/CrossoverSection';
 import { DropOffSection } from './sections/DropOffSection';
 import { FeverCurveSection } from './sections/FeverCurveSection';
 import { FriendsProgressStrip } from './sections/FriendsProgressStrip';
@@ -227,6 +231,35 @@ export const SeriesDetailPage = memo(() => {
     series?.id,
     progressStats.total,
     series?.seasons
+  );
+
+  // Crossover-Datenbank (gemeinsam, von allen erweiterbar) — Sheet zum Ansehen + Editor.
+  const seriesTmdbId = Number(series?.tmdb_id || series?.id) || undefined;
+  const crossovers = useSeriesCrossovers(seriesTmdbId);
+  const [crossoverView, setCrossoverView] = useState<string | null>(null);
+  const [crossoverEdit, setCrossoverEdit] = useState<{ id: string | null } | null>(null);
+  const crossoverViewEntry = useMemo(
+    () => crossovers.index?.entries.find((e) => e.id === crossoverView)?.entry ?? null,
+    [crossovers.index, crossoverView]
+  );
+  const crossoverEditEntry = useMemo(
+    () =>
+      crossoverEdit?.id
+        ? (crossovers.index?.entries.find((e) => e.id === crossoverEdit.id)?.entry ?? null)
+        : null,
+    [crossovers.index, crossoverEdit]
+  );
+  const crossoverPrefill = useMemo(
+    () =>
+      series && seriesTmdbId
+        ? {
+            id: seriesTmdbId,
+            title: series.title,
+            poster: series.poster?.poster,
+            season: selectedSeasonIndex + 1,
+          }
+        : undefined,
+    [series, seriesTmdbId, selectedSeasonIndex]
   );
 
   // Loading / Not Found states
@@ -574,6 +607,17 @@ export const SeriesDetailPage = memo(() => {
             </Deferred>
           </div>
 
+          {/* Crossover — Mehrteiler über Serien hinweg, mit Sehstatus je Teil */}
+          <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
+            <CrossoverSection
+              refs={crossovers.refs}
+              currentTheme={currentTheme}
+              isMobile={isMobile}
+              onOpen={setCrossoverView}
+              onAdd={() => setCrossoverEdit({ id: null })}
+            />
+          </div>
+
           {/* Seasons Overview */}
           {series.seasons && series.seasons.length > 0 && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
@@ -591,6 +635,8 @@ export const SeriesDetailPage = memo(() => {
                   handleEpisodeQuickToggle={handleEpisodeQuickToggle}
                   navigate={navigate}
                   fillerByKey={animeFiller.fillerByKey}
+                  crossoverByKey={crossovers.byEpisodeKey}
+                  onOpenCrossover={setCrossoverView}
                 />
               </Deferred>
             </div>
@@ -675,6 +721,26 @@ export const SeriesDetailPage = memo(() => {
         onAskQuestion={recap.askQuestion}
         questionAnswer={recap.questionAnswer}
         questionLoading={recap.questionLoading}
+      />
+
+      <CrossoverSheet
+        isOpen={crossoverView !== null && crossoverViewEntry !== null}
+        id={crossoverView}
+        entry={crossoverViewEntry}
+        navigate={navigate}
+        onClose={() => setCrossoverView(null)}
+        onEdit={(id) => {
+          setCrossoverView(null);
+          setCrossoverEdit({ id });
+        }}
+      />
+      <CrossoverEditorSheet
+        isOpen={crossoverEdit !== null}
+        id={crossoverEdit?.id ?? null}
+        initial={crossoverEditEntry}
+        prefill={crossoverPrefill}
+        onClose={() => setCrossoverEdit(null)}
+        onSaved={(id) => setCrossoverView(id)}
       />
     </div>
   );

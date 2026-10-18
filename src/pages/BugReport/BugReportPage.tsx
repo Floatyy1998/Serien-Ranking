@@ -30,6 +30,9 @@ export const BugReportPage = memo(() => {
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'open' | 'archive'>('open');
   const initialErrors = searchParams.get('errors') || '';
+  const initialTitle = searchParams.get('title') || '';
+  const initialDescription = searchParams.get('description') || '';
+  const initialType = searchParams.get('type') === 'feature' ? 'feature' : undefined;
 
   const openTickets = tickets.filter((tk) => !isArchived(tk.status));
   const archivedTickets = tickets.filter((tk) => isArchived(tk.status));
@@ -113,6 +116,9 @@ export const BugReportPage = memo(() => {
                 onCancel={() => setShowForm(false)}
                 onUpload={uploadScreenshot}
                 initialConsoleErrors={initialErrors}
+                initialTitle={initialTitle}
+                initialDescription={initialDescription}
+                initialType={initialType}
               />
             </motion.div>
           )}

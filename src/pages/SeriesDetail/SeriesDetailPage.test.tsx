@@ -174,6 +174,9 @@ vi.mock('./sections/CharacterGuide', () => ({
   CharacterGuide: () => <div data-testid="char-guide" />,
 }));
 vi.mock('./sections/AnimeFillerBanner', () => ({ AnimeFillerBanner: () => <div /> }));
+vi.mock('../../hooks/series/useCrossovers', () => ({
+  useSeriesCrossovers: () => ({ refs: [], byEpisodeKey: new Map(), loading: false, index: null }),
+}));
 vi.mock('../../components/detail', () => ({
   CastCrew: () => <div data-testid="cast" />,
   RecommendationsSection: () => <div data-testid="recs" />,
