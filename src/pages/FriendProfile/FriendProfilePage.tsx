@@ -838,7 +838,7 @@ export const FriendProfilePage = memo(() => {
                             .join(' · ') || undefined
                         }
                         title={book.title}
-                        posterUrl={coverAtSize(book.cover, 'M') ?? ''}
+                        posterUrl={coverAtSize(book.cover, 'L') ?? ''}
                         isMovie={false}
                         rating={book.rating ?? 0}
                         progress={book.status === 'reading' && progress > 0 ? progress : undefined}
