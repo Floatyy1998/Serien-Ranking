@@ -1,10 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fb = vi.hoisted(() => {
-  const state = { token: 'idtoken-abc' as string | undefined, throws: false };
-  const getIdToken = vi.fn(async () => {
+  const state = {
+    token: 'idtoken-abc' as string | undefined,
+    throws: false,
+    failFirst: 0,
+    refreshedToken: undefined as string | undefined,
+  };
+  const getIdToken = vi.fn(async (forceRefresh?: boolean) => {
+    if (state.failFirst > 0) {
+      state.failFirst--;
+      throw new Error('network-request-failed');
+    }
     if (state.throws) throw new Error('token error');
-    return state.token;
+    return forceRefresh && state.refreshedToken ? state.refreshedToken : state.token;
   });
   const authMock = vi.fn(() => ({
     currentUser: state.token || state.throws ? { getIdToken } : null,
@@ -27,6 +36,8 @@ async function loadBackendFetch() {
 beforeEach(() => {
   fb.state.token = 'idtoken-abc';
   fb.state.throws = false;
+  fb.state.failFirst = 0;
+  fb.state.refreshedToken = undefined;
   fb.getIdToken.mockClear();
   vi.stubEnv('VITE_BACKEND_API_URL', 'https://backend.test');
   fetchMock = vi.fn(async () => sentinel);
@@ -81,12 +92,62 @@ describe('backendFetch', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('getIdToken-Fehler wird verschluckt, fetch laeuft ohne Token', async () => {
-    fb.state.throws = true;
+  it('getIdToken-Fehler wird nach drei Versuchen verschluckt, fetch laeuft ohne Token', async () => {
+    vi.useFakeTimers();
+    try {
+      fb.state.throws = true;
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/x');
+      await vi.advanceTimersByTimeAsync(2000);
+      await pending;
+      const headers = fetchMock.mock.calls[0][1].headers as Headers;
+      expect(headers.get('Authorization')).toBeNull();
+      expect(fb.getIdToken).toHaveBeenCalledTimes(3);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('scheitert das Token kurz am Netz, klappt der zweite Versuch und die Anfrage hat Token', async () => {
+    vi.useFakeTimers();
+    try {
+      fb.state.failFirst = 1;
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/add');
+      await vi.advanceTimersByTimeAsync(2000);
+      await pending;
+      const headers = fetchMock.mock.calls[0][1].headers as Headers;
+      expect(headers.get('Authorization')).toBe('Bearer idtoken-abc');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('wiederholt bei 401 einmal mit frisch erzwungenem Token', async () => {
+    fb.state.refreshedToken = 'idtoken-neu';
+    fetchMock
+      .mockResolvedValueOnce({ ok: false, status: 401 })
+      .mockResolvedValueOnce({ ok: true, status: 201 });
     const backendFetch = await loadBackendFetch();
-    await backendFetch('/x');
-    const headers = fetchMock.mock.calls[0][1].headers as Headers;
-    expect(headers.get('Authorization')).toBeNull();
+    const res = await backendFetch('/add', { method: 'POST', body: '{}' });
+    expect(res).toEqual({ ok: true, status: 201 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect((fetchMock.mock.calls[0][1].headers as Headers).get('Authorization')).toBe(
+      'Bearer idtoken-abc'
+    );
+    expect((fetchMock.mock.calls[1][1].headers as Headers).get('Authorization')).toBe(
+      'Bearer idtoken-neu'
+    );
+  });
+
+  it('401 ohne eingeloggten User wird nicht wiederholt', async () => {
+    fb.state.token = undefined;
+    fetchMock.mockResolvedValue({ ok: false, status: 401 });
+    const backendFetch = await loadBackendFetch();
+    const res = await backendFetch('/public');
+    expect(res.status).toBe(401);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

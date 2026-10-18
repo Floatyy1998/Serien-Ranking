@@ -7,6 +7,7 @@ import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
+import { pickGreetingMatch, type GreetingSearchHit } from '../../../lib/text/greetingMatch';
 import { t } from '../../../services/i18n';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { LiveClock } from '../cards/LiveClock';
@@ -164,13 +165,13 @@ export const GreetingSection = React.memo(function GreetingSection({
             e.stopPropagation();
             if (greeting.title && greeting.type) {
               try {
-                const data = await tmdbFetch<{ results?: Array<{ id: number }> }>(
+                const data = await tmdbFetch<{ results?: GreetingSearchHit[] }>(
                   `search/${greeting.type}`,
                   { query: greeting.title }
                 );
 
-                if (data.results && data.results.length > 0) {
-                  const result = data.results[0];
+                const result = pickGreetingMatch(data.results ?? [], greeting.title);
+                if (result) {
                   const routeType = greeting.type === 'tv' ? 'series' : 'movie';
                   navigate(`/${routeType}/${result.id}`);
                   setGreetingInfo(null);

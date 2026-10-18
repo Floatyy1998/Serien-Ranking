@@ -37,12 +37,6 @@ const morningGreetings: Greeting[] = [
 
   // Film/Serien-Zitate die als Morgen-Gruß funktionieren
   {
-    text: 'Guten Morgen, Sam',
-    lang: 'Der Herr der Ringe',
-    title: 'The Lord of the Rings',
-    type: 'movie',
-  },
-  {
     text: 'Lauf, Forrest, lauf',
     lang: 'Forrest Gump',
     title: 'Forrest Gump',
@@ -55,7 +49,7 @@ const morningGreetings: Greeting[] = [
     type: 'movie',
   },
   {
-    text: 'Wach auf, Neo',
+    text: 'Wach auf',
     lang: 'Matrix',
     title: 'The Matrix',
     type: 'movie',
@@ -622,12 +616,6 @@ const eveningGreetings: Greeting[] = [
   { text: 'Dobrý večer', lang: 'Tschechisch' },
   { text: 'Evenin’, all', lang: 'Britisch', enOnly: true },
   { text: 'Cheers, love', lang: 'Britisch', enOnly: true },
-  {
-    text: 'Guten Abend, Clarice',
-    lang: 'Das Schweigen der Lämmer',
-    title: 'The Silence of the Lambs',
-    type: 'movie',
-  },
   {
     text: 'Mein Name ist Bond. James Bond',
     lang: 'James Bond',
