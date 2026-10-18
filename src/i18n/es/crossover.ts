@@ -49,7 +49,7 @@ const dict: Record<string, string> = {
   'Diese Folgen gehören zu Geschichten über mehrere Serien. Tippen zeigt die ganze Reihenfolge.':
     'Estos episodios forman parte de historias entre varias series. Toca para ver el orden completo.',
   'Gastauftritte aus anderen Serien ({n})': 'Apariciones de otras series ({n})',
-  'mit Figuren aus {series}': 'con personajes de {series}',
-  'Figuren aus dieser Serie zu Gast': 'aparecen personajes de esta serie',
+  'Figuren aus dieser Serie tauchen auf in': 'Los personajes de esta serie aparecen en',
+  'Zu Gast in dieser Serie': 'Invitados en esta serie',
 };
 export default dict;

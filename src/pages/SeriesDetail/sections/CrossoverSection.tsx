@@ -32,6 +32,12 @@ interface CrossoverSectionProps {
 
 const VISIBLE = 3;
 
+interface GuestChip {
+  part: CrossoverPart;
+  refId: string;
+  title: string;
+}
+
 interface Row {
   ref: CrossoverRef;
   own: CrossoverPart[];
@@ -81,30 +87,92 @@ export const CrossoverSection = memo(
       };
     }, [refs, seriesId, allSeriesList]);
 
-    const addButton = (compact: boolean) => (
-      <button
-        type="button"
-        onClick={onAdd}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 4,
-          minHeight: compact ? 32 : 40,
-          padding: compact ? '6px 10px' : '8px 14px',
-          borderRadius: 999,
-          border: compact ? 'none' : `1px dashed ${border}`,
-          background: 'transparent',
-          color: compact ? muted : secondary,
-          fontSize: compact ? 12.5 : 13.5,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        <Add style={{ fontSize: compact ? 15 : 17 }} />
-        {t('Crossover ergänzen')}
-      </button>
-    );
+    // Gastauftritte nach Serie gebündelt: wo tauchen Figuren von hier auf, wer ist hier zu Gast.
+    const guestGroups = useMemo(() => {
+      const byCode = (a: GuestChip, b: GuestChip) =>
+        (a.part.s ?? 0) - (b.part.s ?? 0) || (a.part.e ?? 0) - (b.part.e ?? 0);
+      const visiting = new Map<number, { key: string; label: string; chips: GuestChip[] }>();
+      const hosting = new Map<string, { key: string; label: string; chips: GuestChip[] }>();
+      for (const { ref, own } of guests) {
+        const ownNumbered = own.filter((p) => p.s !== undefined);
+        const others = ref.entry.parts.filter((p) => p.id !== seriesId);
+        if (ownNumbered.length === 0) {
+          for (const p of others) {
+            if (p.s === undefined) continue;
+            const g = visiting.get(p.id) || {
+              key: `v${p.id}`,
+              label: partTitle(p, allSeriesList),
+              chips: [],
+            };
+            g.chips.push({ part: p, refId: ref.id, title: ref.entry.title });
+            visiting.set(p.id, g);
+          }
+        } else {
+          const label = [...new Set(others.map((p) => partTitle(p, allSeriesList)))].join(', ');
+          const g = hosting.get(label) || { key: `h${label}`, label, chips: [] };
+          for (const p of ownNumbered)
+            g.chips.push({ part: p, refId: ref.id, title: ref.entry.title });
+          hosting.set(label, g);
+        }
+      }
+      const finish = <T extends { chips: GuestChip[] }>(list: T[]) =>
+        list
+          .map((g) => ({ ...g, chips: [...g.chips].sort(byCode) }))
+          .sort((a, b) => byCode(a.chips[0], b.chips[0]));
+      return { visiting: finish([...visiting.values()]), hosting: finish([...hosting.values()]) };
+    }, [guests, seriesId, allSeriesList]);
+
+    const addButton = (compact: boolean) =>
+      isMobile && !compact ? (
+        <button
+          type="button"
+          onClick={onAdd}
+          aria-label={t('Crossover ergänzen')}
+          title={t('Crossover ergänzen')}
+          style={{
+            flexShrink: 0,
+            width: 36,
+            height: 36,
+            minWidth: 36,
+            minHeight: 36,
+            padding: 0,
+            borderRadius: '50%',
+            border: `1px dashed ${border}`,
+            background: 'transparent',
+            color: secondary,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Add style={{ fontSize: 19 }} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onAdd}
+          style={{
+            flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            minHeight: compact ? 32 : 40,
+            padding: compact ? '6px 10px' : '8px 14px',
+            borderRadius: 999,
+            border: compact ? 'none' : `1px dashed ${border}`,
+            background: 'transparent',
+            color: compact ? muted : secondary,
+            fontSize: compact ? 12.5 : 13.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          <Add style={{ fontSize: compact ? 15 : 17 }} />
+          {t('Crossover ergänzen')}
+        </button>
+      );
 
     if (refs.length === 0) {
       return (
@@ -242,6 +310,77 @@ export const CrossoverSection = memo(
 
     const visibleMain = showAll ? main : main.slice(0, VISIBLE);
 
+    const guestHeading: React.CSSProperties = {
+      fontSize: 11,
+      fontWeight: 700,
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
+      color: muted,
+      margin: '0 0 4px',
+    };
+
+    const episodeChip = (chip: GuestChip) => {
+      const state = partWatchState(chip.part, allSeriesList);
+      const watched = state === 'watched';
+      return (
+        <button
+          key={`${chip.refId}-${chip.part.id}-${chip.part.s}-${chip.part.e}`}
+          type="button"
+          onClick={() => onOpen(chip.refId)}
+          title={chip.title}
+          style={{
+            minHeight: 26,
+            minWidth: 0,
+            padding: '3px 8px',
+            borderRadius: 999,
+            border: `1px solid ${watched ? `color-mix(in srgb, ${currentTheme.primary} 45%, transparent)` : border}`,
+            background: watched
+              ? `color-mix(in srgb, ${currentTheme.primary} 12%, transparent)`
+              : 'rgba(255,255,255,0.04)',
+            color: watched ? currentTheme.primary : secondary,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {watched && <CheckCircle style={{ fontSize: 12 }} />}
+          {partCode(chip.part)}
+        </button>
+      );
+    };
+
+    const guestRow = (key: string, label: string, chips: GuestChip[]) => (
+      <div
+        key={key}
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 10,
+          padding: '6px 0',
+          flexDirection: isMobile ? 'column' : 'row',
+        }}
+      >
+        <span
+          style={{
+            flex: isMobile ? undefined : '0 0 180px',
+            fontSize: 13,
+            fontWeight: 700,
+            color: currentTheme.text.primary,
+            paddingTop: isMobile ? 0 : 3,
+          }}
+        >
+          {label}
+        </span>
+        <span style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minWidth: 0 }}>
+          {chips.map(episodeChip)}
+        </span>
+      </div>
+    );
+
     return (
       <section
         style={{
@@ -256,14 +395,24 @@ export const CrossoverSection = memo(
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 7,
-              fontSize: 15,
-              fontWeight: 800,
-              color: currentTheme.text.primary,
+              justifyContent: 'space-between',
+              gap: 10,
             }}
           >
-            <SwapHorizRounded style={{ fontSize: 20, color: accent }} />
-            {t('Crossover')}
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 7,
+                fontSize: 15,
+                fontWeight: 800,
+                color: currentTheme.text.primary,
+              }}
+            >
+              <SwapHorizRounded style={{ fontSize: 20, color: accent }} />
+              {t('Crossover')}
+            </span>
+            {guests.length === 0 && addButton(true)}
           </span>
           {main.length > 0 && (
             <p style={{ margin: '4px 0 0', fontSize: 12.5, color: muted, lineHeight: 1.4 }}>
@@ -319,89 +468,67 @@ export const CrossoverSection = memo(
               borderTop: main.length > 0 ? `1px solid ${border}` : 'none',
             }}
           >
-            <button
-              type="button"
-              onClick={() => setShowGuests((v) => !v)}
-              aria-expanded={showGuests}
+            <div
               style={{
-                width: '100%',
-                minHeight: 36,
-                padding: 0,
-                border: 'none',
-                background: 'transparent',
-                color: secondary,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                textAlign: 'left',
+                gap: 10,
               }}
             >
-              <span>{t('Gastauftritte aus anderen Serien ({n})', { n: guests.length })}</span>
-              {showGuests ? (
-                <ExpandLess style={{ fontSize: 18 }} />
-              ) : (
-                <ExpandMore style={{ fontSize: 18 }} />
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowGuests((v) => !v)}
+                aria-expanded={showGuests}
+                style={{
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  minHeight: 36,
+                  padding: '0 4px 0 0',
+                  border: 'none',
+                  background: 'transparent',
+                  color: secondary,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  gap: 4,
+                  textAlign: 'left',
+                }}
+              >
+                <span
+                  style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
+                  {t('Gastauftritte aus anderen Serien ({n})', { n: guests.length })}
+                </span>
+                {showGuests ? (
+                  <ExpandLess style={{ fontSize: 18, flexShrink: 0 }} />
+                ) : (
+                  <ExpandMore style={{ fontSize: 18, flexShrink: 0 }} />
+                )}
+              </button>
+              {addButton(false)}
+            </div>
             {showGuests && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4 }}>
-                {guests.map(({ ref, own }) => {
-                  const ownNumbered = own.filter((p) => p.s !== undefined);
-                  const others = ref.entry.parts.filter((p) => p.id !== seriesId);
-                  return (
-                    <button
-                      key={ref.id}
-                      type="button"
-                      onClick={() => onOpen(ref.id)}
-                      style={{
-                        width: '100%',
-                        minHeight: 36,
-                        padding: '6px 4px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: currentTheme.text.primary,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        gap: 10,
-                        fontSize: 12.5,
-                        textAlign: 'left',
-                      }}
-                    >
-                      {ownNumbered.length > 0 ? (
-                        <>
-                          <span style={{ minWidth: 64, fontWeight: 700 }}>
-                            {ownNumbered.map((p, i) => partChip(p, i, false))}
-                          </span>
-                          <span style={{ color: secondary }}>
-                            {t('mit Figuren aus {series}', {
-                              series: others.map((p) => partTitle(p, allSeriesList)).join(', '),
-                            })}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ fontWeight: 600 }}>{partList(others)}</span>
-                          <span style={{ color: secondary }}>
-                            {t('Figuren aus dieser Serie zu Gast')}
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  );
-                })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 6 }}>
+                {guestGroups.visiting.length > 0 && (
+                  <div>
+                    <div style={guestHeading}>{t('Figuren aus dieser Serie tauchen auf in')}</div>
+                    {guestGroups.visiting.map((g) => guestRow(g.key, g.label, g.chips))}
+                  </div>
+                )}
+                {guestGroups.hosting.length > 0 && (
+                  <div>
+                    <div style={guestHeading}>{t('Zu Gast in dieser Serie')}</div>
+                    {guestGroups.hosting.map((g) => guestRow(g.key, g.label, g.chips))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
-
-        <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
-          {addButton(false)}
-        </div>
       </section>
     );
   }
