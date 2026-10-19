@@ -100,6 +100,60 @@ const dict: Record<string, string> = {
   'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
     'This link opens {host} in a new tab. Only open links from people you trust.',
   'Link öffnen': 'Open link',
+
+  // Nachrichten-Menü, Lesebestätigungen
+  'Weitere Optionen': 'More options',
+  Markiert: 'Starred',
+  Weitergeleitet: 'Forwarded',
+  'Du hast diese Nachricht gelöscht.': 'You deleted this message.',
+  'Diese Nachricht wurde gelöscht.': 'This message was deleted.',
+  'Mit {emoji} reagieren': 'React with {emoji}',
+  'Reaktion entfernen': 'Remove reaction',
+  'Weitere Reaktionen': 'More reactions',
+  Weiterleiten: 'Forward',
+  Lösen: 'Unpin',
+  Fixieren: 'Pin',
+  'Stern entfernen': 'Unstar',
+  'Mit Stern markieren': 'Star',
+  Auswählen: 'Select',
+  'Nachricht löschen?': 'Delete message?',
+  '{count} Nachrichten löschen?': 'Delete {count} messages?',
+  '„Für alle löschen“ entfernt die Nachricht auch bei deinem Gegenüber.':
+    '“Delete for everyone” also removes it for the other person.',
+  'Die Nachricht verschwindet nur bei dir.': 'The message will only disappear for you.',
+  'Für alle löschen': 'Delete for everyone',
+  'Für mich löschen': 'Delete for me',
+  'Weiterleiten an …': 'Forward to …',
+  '1 Nachricht': '1 message',
+  '{count} Nachrichten': '{count} messages',
+  'An {count} senden': 'Send to {count}',
+  'Fixierte Nachricht': 'Pinned message',
+  'Markierte Nachrichten': 'Starred messages',
+  'Noch nichts markiert. Halte eine Nachricht gedrückt und wähle „Mit Stern markieren“.':
+    'Nothing starred yet. Press and hold a message and choose “Star”.',
+  'Lesebestätigungen an.': 'Read receipts on.',
+  'Lesebestätigungen aus.': 'Read receipts off.',
+  'Kopiert.': 'Copied.',
+  'Nachricht gelöst.': 'Message unpinned.',
+  'Nachricht fixiert.': 'Message pinned.',
+  'Löschen hat nicht geklappt — versuch es nochmal.': "Couldn't delete — please try again.",
+  'Weitergeleitet.': 'Forwarded.',
+  'Weiterleiten hat nicht geklappt — versuch es nochmal.': "Couldn't forward — please try again.",
+  'Nachricht melden': 'Report message',
+  'Die Nachricht wird mit etwas Verlauf davor zur Prüfung an die Moderation übermittelt. Fortfahren?':
+    'The message and some of the conversation before it will be sent to our moderators for review. Continue?',
+  'Auswahl beenden': 'Cancel selection',
+  '{count} ausgewählt': '{count} selected',
+  'Lesebestätigungen ausschalten': 'Turn off read receipts',
+  'Lesebestätigungen einschalten': 'Turn on read receipts',
+  'Nachricht gelöscht': 'Message deleted',
+
+  // Nachrichten bearbeiten
+  Bearbeitet: 'Edited',
+  'Nachricht bearbeiten': 'Edit message',
+  'Bearbeiten abbrechen': 'Cancel editing',
+  'Die Zeit zum Bearbeiten ist abgelaufen.': 'The time to edit this message has run out.',
+  'Nachricht konnte nicht bearbeitet werden.': "Couldn't edit message.",
 };
 
 export default dict;

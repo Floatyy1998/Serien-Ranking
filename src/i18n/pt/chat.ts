@@ -99,6 +99,61 @@ const dict: Record<string, string> = {
   'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
     'O link abre {host} em uma nova aba. Só abra links de pessoas em quem você confia.',
   'Link öffnen': 'Abrir link',
+
+  // Nachrichten-Menü, Lesebestätigungen
+  'Weitere Optionen': 'Mais opções',
+  Markiert: 'Com estrela',
+  Weitergeleitet: 'Encaminhada',
+  'Du hast diese Nachricht gelöscht.': 'Você apagou esta mensagem.',
+  'Diese Nachricht wurde gelöscht.': 'Esta mensagem foi apagada.',
+  'Mit {emoji} reagieren': 'Reagir com {emoji}',
+  'Reaktion entfernen': 'Remover reação',
+  'Weitere Reaktionen': 'Mais reações',
+  Weiterleiten: 'Encaminhar',
+  Lösen: 'Desafixar',
+  Fixieren: 'Fixar',
+  'Stern entfernen': 'Remover estrela',
+  'Mit Stern markieren': 'Marcar com estrela',
+  Auswählen: 'Selecionar',
+  'Nachricht löschen?': 'Apagar mensagem?',
+  '{count} Nachrichten löschen?': 'Apagar {count} mensagens?',
+  '„Für alle löschen“ entfernt die Nachricht auch bei deinem Gegenüber.':
+    '“Apagar para todos” também remove para a outra pessoa.',
+  'Die Nachricht verschwindet nur bei dir.': 'A mensagem só desaparece para você.',
+  'Für alle löschen': 'Apagar para todos',
+  'Für mich löschen': 'Apagar para mim',
+  'Weiterleiten an …': 'Encaminhar para …',
+  '1 Nachricht': '1 mensagem',
+  '{count} Nachrichten': '{count} mensagens',
+  'An {count} senden': 'Enviar para {count}',
+  'Fixierte Nachricht': 'Mensagem fixada',
+  'Markierte Nachrichten': 'Mensagens com estrela',
+  'Noch nichts markiert. Halte eine Nachricht gedrückt und wähle „Mit Stern markieren“.':
+    'Nada marcado ainda. Toque e segure uma mensagem e escolha “Marcar com estrela”.',
+  'Lesebestätigungen an.': 'Confirmações de leitura ativadas.',
+  'Lesebestätigungen aus.': 'Confirmações de leitura desativadas.',
+  'Kopiert.': 'Copiado.',
+  'Nachricht gelöst.': 'Mensagem desafixada.',
+  'Nachricht fixiert.': 'Mensagem fixada.',
+  'Löschen hat nicht geklappt — versuch es nochmal.': 'Não foi possível apagar — tente de novo.',
+  'Weitergeleitet.': 'Encaminhado.',
+  'Weiterleiten hat nicht geklappt — versuch es nochmal.':
+    'Não foi possível encaminhar — tente de novo.',
+  'Nachricht melden': 'Denunciar mensagem',
+  'Die Nachricht wird mit etwas Verlauf davor zur Prüfung an die Moderation übermittelt. Fortfahren?':
+    'A mensagem e parte da conversa anterior serão enviadas à moderação para análise. Continuar?',
+  'Auswahl beenden': 'Cancelar seleção',
+  '{count} ausgewählt': '{count} selecionadas',
+  'Lesebestätigungen ausschalten': 'Desativar confirmações de leitura',
+  'Lesebestätigungen einschalten': 'Ativar confirmações de leitura',
+  'Nachricht gelöscht': 'Mensagem apagada',
+
+  // Nachrichten bearbeiten
+  Bearbeitet: 'Editada',
+  'Nachricht bearbeiten': 'Editar mensagem',
+  'Bearbeiten abbrechen': 'Cancelar edição',
+  'Die Zeit zum Bearbeiten ist abgelaufen.': 'O tempo para editar esta mensagem acabou.',
+  'Nachricht konnte nicht bearbeitet werden.': 'Não foi possível editar a mensagem.',
 };
 
 export default dict;

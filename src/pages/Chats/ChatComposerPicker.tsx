@@ -2,60 +2,9 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import { EMOJI_SET } from './chatEmojis';
 import { StickerCanvas } from './StickerCanvas';
 import { STICKER_IDS } from './stickers';
-
-// Kuratiertes Set für den Emoji-Tab — Tastatur-Emojis gehen natürlich auch.
-const EMOJI_SET = [
-  '😂',
-  '🤣',
-  '😊',
-  '😍',
-  '🥰',
-  '😎',
-  '🤩',
-  '😅',
-  '😉',
-  '🙃',
-  '😭',
-  '🥺',
-  '😤',
-  '😱',
-  '🤯',
-  '🥳',
-  '❤️',
-  '🧡',
-  '💛',
-  '💚',
-  '💙',
-  '💜',
-  '🖤',
-  '💔',
-  '❤️‍🔥',
-  '✨',
-  '⭐',
-  '🔥',
-  '💯',
-  '🎉',
-  '👀',
-  '💀',
-  '👍',
-  '👎',
-  '👏',
-  '🙌',
-  '🤝',
-  '💪',
-  '🙏',
-  '🤞',
-  '✌️',
-  '🫶',
-  '😴',
-  '🤔',
-  '🍿',
-  '🎬',
-  '📺',
-  '🎧',
-];
 
 type Tab = 'emoji' | 'sticker';
 

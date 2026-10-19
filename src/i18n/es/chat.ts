@@ -99,6 +99,61 @@ const dict: Record<string, string> = {
   'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
     'El enlace abre {host} en una pestaña nueva. Abre solo enlaces de gente de confianza.',
   'Link öffnen': 'Abrir enlace',
+
+  // Nachrichten-Menü, Lesebestätigungen
+  'Weitere Optionen': 'Más opciones',
+  Markiert: 'Destacado',
+  Weitergeleitet: 'Reenviado',
+  'Du hast diese Nachricht gelöscht.': 'Eliminaste este mensaje.',
+  'Diese Nachricht wurde gelöscht.': 'Se eliminó este mensaje.',
+  'Mit {emoji} reagieren': 'Reaccionar con {emoji}',
+  'Reaktion entfernen': 'Quitar reacción',
+  'Weitere Reaktionen': 'Más reacciones',
+  Weiterleiten: 'Reenviar',
+  Lösen: 'No fijar',
+  Fixieren: 'Fijar',
+  'Stern entfernen': 'Quitar destacado',
+  'Mit Stern markieren': 'Destacar',
+  Auswählen: 'Seleccionar',
+  'Nachricht löschen?': '¿Eliminar mensaje?',
+  '{count} Nachrichten löschen?': '¿Eliminar {count} mensajes?',
+  '„Für alle löschen“ entfernt die Nachricht auch bei deinem Gegenüber.':
+    '«Eliminar para todos» también lo quita para la otra persona.',
+  'Die Nachricht verschwindet nur bei dir.': 'El mensaje solo desaparecerá para ti.',
+  'Für alle löschen': 'Eliminar para todos',
+  'Für mich löschen': 'Eliminar para mí',
+  'Weiterleiten an …': 'Reenviar a …',
+  '1 Nachricht': '1 mensaje',
+  '{count} Nachrichten': '{count} mensajes',
+  'An {count} senden': 'Enviar a {count}',
+  'Fixierte Nachricht': 'Mensaje fijado',
+  'Markierte Nachrichten': 'Mensajes destacados',
+  'Noch nichts markiert. Halte eine Nachricht gedrückt und wähle „Mit Stern markieren“.':
+    'Aún no hay nada destacado. Mantén pulsado un mensaje y elige «Destacar».',
+  'Lesebestätigungen an.': 'Confirmaciones de lectura activadas.',
+  'Lesebestätigungen aus.': 'Confirmaciones de lectura desactivadas.',
+  'Kopiert.': 'Copiado.',
+  'Nachricht gelöst.': 'Mensaje desfijado.',
+  'Nachricht fixiert.': 'Mensaje fijado.',
+  'Löschen hat nicht geklappt — versuch es nochmal.': 'No se pudo eliminar — inténtalo de nuevo.',
+  'Weitergeleitet.': 'Reenviado.',
+  'Weiterleiten hat nicht geklappt — versuch es nochmal.':
+    'No se pudo reenviar — inténtalo de nuevo.',
+  'Nachricht melden': 'Denunciar mensaje',
+  'Die Nachricht wird mit etwas Verlauf davor zur Prüfung an die Moderation übermittelt. Fortfahren?':
+    'El mensaje y parte de la conversación anterior se enviarán a moderación para revisarlos. ¿Continuar?',
+  'Auswahl beenden': 'Cancelar selección',
+  '{count} ausgewählt': '{count} seleccionados',
+  'Lesebestätigungen ausschalten': 'Desactivar confirmaciones de lectura',
+  'Lesebestätigungen einschalten': 'Activar confirmaciones de lectura',
+  'Nachricht gelöscht': 'Mensaje eliminado',
+
+  // Nachrichten bearbeiten
+  Bearbeitet: 'Editado',
+  'Nachricht bearbeiten': 'Editar mensaje',
+  'Bearbeiten abbrechen': 'Cancelar edición',
+  'Die Zeit zum Bearbeiten ist abgelaufen.': 'Se acabó el tiempo para editar este mensaje.',
+  'Nachricht konnte nicht bearbeitet werden.': 'No se pudo editar el mensaje.',
 };
 
 export default dict;

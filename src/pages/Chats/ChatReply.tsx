@@ -16,7 +16,7 @@ interface ReplyProps {
   original?: ChatMessage;
 }
 
-const ReplySnippet = ({ reply }: { reply: ChatReply }) => {
+export const ReplySnippet = ({ reply }: { reply: ChatReply }) => {
   switch (reply.kind) {
     case 'sp':
       return (
@@ -98,8 +98,14 @@ export const ChatReplyDraft = ({
   onCancel,
   color,
   mutedColor,
+  cancelLabel,
   ...props
-}: ReplyProps & { onCancel: () => void; color: string; mutedColor: string }) => (
+}: ReplyProps & {
+  onCancel: () => void;
+  color: string;
+  mutedColor: string;
+  cancelLabel?: string;
+}) => (
   <motion.div
     className="ch-reply-draft"
     initial={{ opacity: 0, y: 6 }}
@@ -117,7 +123,7 @@ export const ChatReplyDraft = ({
       type="button"
       className="ch-reply-cancel"
       onClick={onCancel}
-      aria-label={t('Antwort abbrechen')}
+      aria-label={cancelLabel ?? t('Antwort abbrechen')}
       style={{ color: mutedColor }}
     >
       <Close style={{ fontSize: 20 }} />

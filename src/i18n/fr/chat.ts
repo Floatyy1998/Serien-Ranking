@@ -99,6 +99,60 @@ const dict: Record<string, string> = {
   'Der Link öffnet {host} in einem neuen Tab. Öffne nur Links von Leuten, denen du vertraust.':
     "Ce lien ouvre {host} dans un nouvel onglet. N'ouvre que les liens de personnes de confiance.",
   'Link öffnen': 'Ouvrir le lien',
+
+  // Nachrichten-Menü, Lesebestätigungen
+  'Weitere Optionen': "Plus d'options",
+  Markiert: 'Favori',
+  Weitergeleitet: 'Transféré',
+  'Du hast diese Nachricht gelöscht.': 'Vous avez supprimé ce message.',
+  'Diese Nachricht wurde gelöscht.': 'Ce message a été supprimé.',
+  'Mit {emoji} reagieren': 'Réagir avec {emoji}',
+  'Reaktion entfernen': 'Retirer la réaction',
+  'Weitere Reaktionen': 'Plus de réactions',
+  Weiterleiten: 'Transférer',
+  Lösen: 'Désépingler',
+  Fixieren: 'Épingler',
+  'Stern entfernen': 'Retirer des favoris',
+  'Mit Stern markieren': 'Ajouter aux favoris',
+  Auswählen: 'Sélectionner',
+  'Nachricht löschen?': 'Supprimer le message ?',
+  '{count} Nachrichten löschen?': 'Supprimer {count} messages ?',
+  '„Für alle löschen“ entfernt die Nachricht auch bei deinem Gegenüber.':
+    "« Supprimer pour tous » le retire aussi chez l'autre personne.",
+  'Die Nachricht verschwindet nur bei dir.': 'Le message ne disparaîtra que pour vous.',
+  'Für alle löschen': 'Supprimer pour tous',
+  'Für mich löschen': 'Supprimer pour moi',
+  'Weiterleiten an …': 'Transférer à …',
+  '1 Nachricht': '1 message',
+  '{count} Nachrichten': '{count} messages',
+  'An {count} senden': 'Envoyer à {count}',
+  'Fixierte Nachricht': 'Message épinglé',
+  'Markierte Nachrichten': 'Messages favoris',
+  'Noch nichts markiert. Halte eine Nachricht gedrückt und wähle „Mit Stern markieren“.':
+    "Aucun favori pour l'instant. Maintenez un message appuyé et choisissez « Ajouter aux favoris ».",
+  'Lesebestätigungen an.': 'Confirmations de lecture activées.',
+  'Lesebestätigungen aus.': 'Confirmations de lecture désactivées.',
+  'Kopiert.': 'Copié.',
+  'Nachricht gelöst.': 'Message désépinglé.',
+  'Nachricht fixiert.': 'Message épinglé.',
+  'Löschen hat nicht geklappt — versuch es nochmal.': 'Impossible de supprimer — réessayez.',
+  'Weitergeleitet.': 'Transféré.',
+  'Weiterleiten hat nicht geklappt — versuch es nochmal.': 'Impossible de transférer — réessayez.',
+  'Nachricht melden': 'Signaler le message',
+  'Die Nachricht wird mit etwas Verlauf davor zur Prüfung an die Moderation übermittelt. Fortfahren?':
+    'Le message et une partie de la conversation qui précède seront transmis à la modération. Continuer ?',
+  'Auswahl beenden': 'Annuler la sélection',
+  '{count} ausgewählt': '{count} sélectionné(s)',
+  'Lesebestätigungen ausschalten': 'Désactiver les confirmations de lecture',
+  'Lesebestätigungen einschalten': 'Activer les confirmations de lecture',
+  'Nachricht gelöscht': 'Message supprimé',
+
+  // Nachrichten bearbeiten
+  Bearbeitet: 'Modifié',
+  'Nachricht bearbeiten': 'Modifier le message',
+  'Bearbeiten abbrechen': 'Annuler la modification',
+  'Die Zeit zum Bearbeiten ist abgelaufen.': 'Le délai de modification est dépassé.',
+  'Nachricht konnte nicht bearbeitet werden.': 'Impossible de modifier le message.',
 };
 
 export default dict;

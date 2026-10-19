@@ -1,5 +1,11 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import CheckRounded from '@mui/icons-material/CheckRounded';
 import Close from '@mui/icons-material/Close';
+import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import ShortcutRounded from '@mui/icons-material/ShortcutRounded';
+import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
 import ImageOutlined from '@mui/icons-material/ImageOutlined';
 import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
 import InsertEmoticonOutlined from '@mui/icons-material/InsertEmoticonOutlined';
@@ -19,6 +25,7 @@ import { showToast } from '../../lib/interaction/toast';
 import { internalPath, linkHost } from '../../lib/text/linkify';
 import { t } from '../../services/i18n';
 import {
+  canEditMessage,
   chatPairId,
   deleteChat,
   ensureChat,
@@ -55,6 +62,8 @@ import { ChatComposerPicker } from './ChatComposerPicker';
 import { ChatDesignSheet } from './ChatDesignSheet';
 import { ChatMessageItem } from './ChatMessageItem';
 import { ChatReplyDraft } from './ChatReply';
+import { editMessage } from '../../services/chat/chatMessageActions';
+import { useChatMessageActions } from './useChatMessageActions';
 import { useChatPartner } from './useChatPartner';
 
 function dayLabel(ts: number): string {
@@ -122,6 +131,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   } | null>(null);
   const [caption, setCaption] = useState('');
   const [replyTo, setReplyTo] = useState<ChatReply | null>(null);
+  const [editing, setEditing] = useState<ChatMessage | null>(null);
   const [flashId, setFlashId] = useState<string | null>(null);
   const [pendingLink, setPendingLink] = useState('');
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -171,6 +181,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     setMessages([]);
     setDraft('');
     setReplyTo(null);
+    setEditing(null);
     setEmojiOpen(false);
     const offMessages = subscribeMessages(pairId, setMessages);
     const offReactions = subscribeReactions(pairId, setReactions);
@@ -204,24 +215,6 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     const id = setInterval(evaluate, 2000);
     return () => clearInterval(id);
   }, [otherTypingAt]);
-
-  useEffect(() => {
-    if (!pairId || !myUid || messages.length === 0) return;
-    const markRead = () => {
-      if (document.visibilityState !== 'visible') return;
-      void markChatRead(myUid, pairId);
-      // Gelesen = zugestellte Pushes dieses Chats vom Sperrbildschirm räumen —
-      // hier lokal, auf den übrigen Geräten per stillem Push über die Queue.
-      void clearDeliveredChatPushes(friendId);
-      void queueDismiss(myUid, `/chat/${friendId}`);
-    };
-    markRead();
-    // Trifft die Nachricht ein, während die App im Hintergrund liegt, läuft der
-    // Effekt ins Leere und wiederholt sich nicht — beim Zurückkommen bliebe der
-    // offene Chat sonst ungelesen und der Push auf dem Sperrbildschirm liegen.
-    document.addEventListener('visibilitychange', markRead);
-    return () => document.removeEventListener('visibilitychange', markRead);
-  }, [pairId, myUid, messages.length, friendId]);
 
   const scrollToBottom = useCallback(() => {
     const el = listRef.current;
@@ -298,6 +291,24 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     if (!myUid || sending) return;
     const text = draft.trim();
     if (!text) return;
+    if (editing) {
+      if (!canEditMessage(editing, myUid)) {
+        showToast(t('Die Zeit zum Bearbeiten ist abgelaufen.'), 4000, 'error');
+        return;
+      }
+      setSending(true);
+      try {
+        await editMessage(myUid, chatPairId(myUid, friendId), editing, text);
+        setEditing(null);
+        setDraft('');
+        if (inputRef.current) inputRef.current.style.height = 'auto';
+      } catch {
+        showToast(t('Nachricht konnte nicht bearbeitet werden.'), 4000, 'error');
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
     setSending(true);
     try {
       await sendMessage(
@@ -317,7 +328,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     } finally {
       setSending(false);
     }
-  }, [myUid, friendId, draft, myName, sending, spoilerMode, replyTo]);
+  }, [myUid, friendId, draft, myName, sending, spoilerMode, replyTo, editing]);
 
   // WhatsApp-Flow: erst Vorschau mit optionaler Bildunterschrift, dann senden.
   const openImagePreview = useCallback((file: File) => {
@@ -452,8 +463,34 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   );
 
   const startReply = useCallback((m: ChatMessage) => {
+    setEditing((prev) => {
+      if (prev) setDraft('');
+      return null;
+    });
     setReplyTo(replyFromMessage(m));
     requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
+  const startEdit = useCallback((m: ChatMessage) => {
+    setReplyTo(null);
+    setSpoilerMode(false);
+    setEmojiOpen(false);
+    setEditing(m);
+    setDraft(m.text);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight + 2, 120)}px`;
+      el.focus();
+      el.setSelectionRange(m.text.length, m.text.length);
+    });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditing(null);
+    setDraft('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
   }, []);
 
   const jumpToMessage = useCallback((id: string) => {
@@ -489,6 +526,41 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
 
   const messagesById = useMemo(() => new Map(messages.map((m) => [m.id, m])), [messages]);
 
+  const actions = useChatMessageActions({
+    myUid,
+    myName,
+    pairId,
+    friendId,
+    partnerName: partner?.name ?? '',
+    chatReady,
+    canReply: !!partner?.isFriend && !chatFrozen,
+    messages,
+    reactions,
+    onReply: startReply,
+    onEdit: startEdit,
+    onJump: jumpToMessage,
+  });
+  const { publishRead, visibleMessages, selection } = actions;
+
+  useEffect(() => {
+    if (!pairId || !myUid || messages.length === 0) return;
+    const markRead = () => {
+      if (document.visibilityState !== 'visible') return;
+      void markChatRead(myUid, pairId);
+      publishRead();
+      // Gelesen = zugestellte Pushes dieses Chats vom Sperrbildschirm räumen —
+      // hier lokal, auf den übrigen Geräten per stillem Push über die Queue.
+      void clearDeliveredChatPushes(friendId);
+      void queueDismiss(myUid, `/chat/${friendId}`);
+    };
+    markRead();
+    // Trifft die Nachricht ein, während die App im Hintergrund liegt, läuft der
+    // Effekt ins Leere und wiederholt sich nicht — beim Zurückkommen bliebe der
+    // offene Chat sonst ungelesen und der Push auf dem Sperrbildschirm liegen.
+    document.addEventListener('visibilitychange', markRead);
+    return () => document.removeEventListener('visibilitychange', markRead);
+  }, [pairId, myUid, messages.length, friendId, publishRead]);
+
   const insertEmoji = useCallback(
     (emoji: string) => {
       const el = inputRef.current;
@@ -509,10 +581,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       day: string;
       items: Array<ChatMessage & { cont: boolean; last: boolean }>;
     }> = [];
-    for (let i = 0; i < messages.length; i++) {
-      const m = messages[i];
-      const prev = messages[i - 1];
-      const next = messages[i + 1];
+    for (let i = 0; i < visibleMessages.length; i++) {
+      const m = visibleMessages[i];
+      const prev = visibleMessages[i - 1];
+      const next = visibleMessages[i + 1];
       const day = dayLabel(m.timestamp);
       const cont =
         !!prev &&
@@ -529,7 +601,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       else days.push({ day, items: [{ ...m, cont, last }] });
     }
     return days;
-  }, [messages]);
+  }, [visibleMessages]);
 
   if (!myUid || !partner) return null;
   const canChat = partner.isFriend;
@@ -544,99 +616,172 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
         />
       )}
       <div className="ch-thread-bg" aria-hidden />
-      <div className="ch-thread-header">
-        {showBack && (
+      {selection ? (
+        <div className="ch-thread-header ch-select-bar">
           <button
             className="ch-icon-btn"
-            onClick={() => {
-              hapticTap();
-              // Dahin zurück, wo man herkam (Liste, Profil, Activity) —
-              // ohne Vorseite (z. B. Push-Deep-Link) in die Chat-Liste.
-              const idx =
-                typeof window.history.state?.idx === 'number' ? window.history.state.idx : 0;
-              if (idx > 0) navigate(-1);
-              else navigate('/chats', { replace: true });
-            }}
-            aria-label={t('Zurück')}
+            onClick={actions.clearSelection}
+            aria-label={t('Auswahl beenden')}
             style={{ color: currentTheme.text.primary }}
           >
-            <ArrowBack />
+            <Close />
           </button>
-        )}
-        <ChatAvatar
-          name={partner.name}
-          photoURL={partner.photoURL}
-          small
-          online={partner.isOnline}
-        />
-        <button
-          className="ch-thread-title"
-          onClick={() => canChat && navigate(`/profile/${friendId}`)}
-        >
-          <strong style={{ color: currentTheme.text.primary }}>
-            {partner.name}
-            <NameBadges uid={friendId} />
+          <strong className="ch-select-count" style={{ color: currentTheme.text.primary }}>
+            {t('{count} ausgewählt', { count: selection.size })}
           </strong>
-          <span style={{ color: partner.isOnline ? '#22c55e' : currentTheme.text.muted }}>
-            {otherTyping
-              ? t('schreibt …')
-              : partner.isOnline
-                ? t('Online')
-                : canChat
-                  ? t('Zum Profil')
-                  : t('Kein Freund mehr')}
-          </span>
-        </button>
-        <button
-          className="ch-icon-btn"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label={t('Chat-Optionen')}
-          aria-expanded={menuOpen}
-          style={{ color: currentTheme.text.primary }}
-        >
-          <MoreVert />
-        </button>
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              className="ch-menu"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
+          <button
+            className="ch-icon-btn"
+            onClick={actions.starSelected}
+            aria-label={
+              actions.allSelectedStarred ? t('Stern entfernen') : t('Mit Stern markieren')
+            }
+            title={actions.allSelectedStarred ? t('Stern entfernen') : t('Mit Stern markieren')}
+            style={{ color: currentTheme.text.primary }}
+          >
+            {actions.allSelectedStarred ? <StarRounded /> : <StarBorderRounded />}
+          </button>
+          <button
+            className="ch-icon-btn"
+            onClick={actions.copySelected}
+            aria-label={t('Kopieren')}
+            title={t('Kopieren')}
+            style={{ color: currentTheme.text.primary }}
+          >
+            <ContentCopyRounded />
+          </button>
+          <button
+            className="ch-icon-btn"
+            onClick={actions.forwardSelected}
+            aria-label={t('Weiterleiten')}
+            title={t('Weiterleiten')}
+            style={{ color: currentTheme.text.primary }}
+          >
+            <ShortcutRounded />
+          </button>
+          <button
+            className="ch-icon-btn"
+            onClick={actions.deleteSelected}
+            aria-label={t('Löschen')}
+            title={t('Löschen')}
+            style={{ color: currentTheme.status.error }}
+          >
+            <DeleteOutlineRounded />
+          </button>
+        </div>
+      ) : (
+        <div className="ch-thread-header">
+          {showBack && (
+            <button
+              className="ch-icon-btn"
+              onClick={() => {
+                hapticTap();
+                // Dahin zurück, wo man herkam (Liste, Profil, Activity) —
+                // ohne Vorseite (z. B. Push-Deep-Link) in die Chat-Liste.
+                const idx =
+                  typeof window.history.state?.idx === 'number' ? window.history.state.idx : 0;
+                if (idx > 0) navigate(-1);
+                else navigate('/chats', { replace: true });
+              }}
+              aria-label={t('Zurück')}
               style={{ color: currentTheme.text.primary }}
             >
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  setDesignOpen(true);
-                }}
-              >
-                {t('Design & Hintergrund')}
-              </button>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  setConfirm('report');
-                }}
-              >
-                {t('Nachrichten melden')}
-              </button>
-              <button onClick={toggleBlock}>
-                {iBlocked ? t('Chat entsperren') : t('Chat blockieren')}
-              </button>
-              <button
-                style={{ color: currentTheme.status.error }}
-                onClick={() => {
-                  setMenuOpen(false);
-                  setConfirm('delete');
-                }}
-              >
-                {t('Chat löschen')}
-              </button>
-            </motion.div>
+              <ArrowBack />
+            </button>
           )}
-        </AnimatePresence>
-      </div>
+          <ChatAvatar
+            name={partner.name}
+            photoURL={partner.photoURL}
+            small
+            online={partner.isOnline}
+          />
+          <button
+            className="ch-thread-title"
+            onClick={() => canChat && navigate(`/profile/${friendId}`)}
+          >
+            <strong style={{ color: currentTheme.text.primary }}>
+              {partner.name}
+              <NameBadges uid={friendId} />
+            </strong>
+            <span style={{ color: partner.isOnline ? '#22c55e' : currentTheme.text.muted }}>
+              {otherTyping
+                ? t('schreibt …')
+                : partner.isOnline
+                  ? t('Online')
+                  : canChat
+                    ? t('Zum Profil')
+                    : t('Kein Freund mehr')}
+            </span>
+          </button>
+          <button
+            className="ch-icon-btn"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={t('Chat-Optionen')}
+            aria-expanded={menuOpen}
+            style={{ color: currentTheme.text.primary }}
+          >
+            <MoreVert />
+          </button>
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                className="ch-menu"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                style={{ color: currentTheme.text.primary }}
+              >
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setDesignOpen(true);
+                  }}
+                >
+                  {t('Design & Hintergrund')}
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    actions.openStarred();
+                  }}
+                >
+                  {t('Markierte Nachrichten')}
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    void actions.toggleReceipts();
+                  }}
+                >
+                  {actions.receiptsEnabled
+                    ? t('Lesebestätigungen ausschalten')
+                    : t('Lesebestätigungen einschalten')}
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setConfirm('report');
+                  }}
+                >
+                  {t('Nachrichten melden')}
+                </button>
+                <button onClick={toggleBlock}>
+                  {iBlocked ? t('Chat entsperren') : t('Chat blockieren')}
+                </button>
+                <button
+                  style={{ color: currentTheme.status.error }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setConfirm('delete');
+                  }}
+                >
+                  {t('Chat löschen')}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+      {actions.pinnedBar}
 
       <div
         className="ch-messages"
@@ -645,7 +790,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
         onClick={() => setMenuOpen(false)}
       >
         <div className="ch-messages-inner" ref={listContentRef}>
-          {messages.length === 0 && (
+          {visibleMessages.length === 0 && (
             <div className="ch-empty" style={{ color: currentTheme.text.muted }}>
               <h3 style={{ color: currentTheme.text.primary }}>
                 {t('Sag hallo zu {name}!', { name: partner.name })}
@@ -673,9 +818,17 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                   spoilerRevealed={revealedSpoilers.has(m.id)}
                   flash={flashId === m.id}
                   quotedOriginal={m.replyTo ? messagesById.get(m.replyTo.id) : undefined}
+                  canReply={canChat && !chatFrozen}
+                  starred={actions.starredIds.has(m.id)}
+                  receipt={actions.receiptFor(m)}
+                  selecting={!!selection}
+                  selected={!!selection?.has(m.id)}
+                  highlighted={actions.menuMessageId === m.id}
                   onRevealSpoiler={revealSpoiler}
                   onToggleHeart={toggleHeart}
                   onReply={startReply}
+                  onMenu={actions.openMenu}
+                  onToggleSelect={actions.toggleSelect}
                   onJump={jumpToMessage}
                   onLink={openLink}
                   onOpenImage={setLightboxUrl}
@@ -715,6 +868,18 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             {emojiOpen && <ChatComposerPicker onEmoji={insertEmoji} onSticker={sendSticker} />}
           </AnimatePresence>
           <AnimatePresence>
+            {editing && (
+              <ChatReplyDraft
+                key="edit"
+                reply={replyFromMessage(editing)}
+                author={t('Nachricht bearbeiten')}
+                mine
+                color={currentTheme.text.primary}
+                mutedColor={currentTheme.text.muted}
+                cancelLabel={t('Bearbeiten abbrechen')}
+                onCancel={cancelEdit}
+              />
+            )}
             {replyTo && (
               <ChatReplyDraft
                 reply={replyTo}
@@ -746,27 +911,31 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               e.target.value = '';
             }}
           />
-          <button
-            className="ch-icon-btn"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingImage}
-            aria-label={t('Bild senden')}
-            style={{
-              color: uploadingImage ? currentTheme.primary : currentTheme.text.muted,
-              opacity: uploadingImage ? 0.6 : 1,
-            }}
-          >
-            <ImageOutlined className={uploadingImage ? 'ch-upload-pulse' : undefined} />
-          </button>
-          <button
-            className="ch-icon-btn"
-            onClick={() => setSpoilerMode((v) => !v)}
-            aria-label={t('Als Spoiler senden')}
-            aria-pressed={spoilerMode}
-            style={{ color: spoilerMode ? currentTheme.primary : currentTheme.text.muted }}
-          >
-            <VisibilityOffOutlined />
-          </button>
+          {!editing && (
+            <button
+              className="ch-icon-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImage}
+              aria-label={t('Bild senden')}
+              style={{
+                color: uploadingImage ? currentTheme.primary : currentTheme.text.muted,
+                opacity: uploadingImage ? 0.6 : 1,
+              }}
+            >
+              <ImageOutlined className={uploadingImage ? 'ch-upload-pulse' : undefined} />
+            </button>
+          )}
+          {!editing && (
+            <button
+              className="ch-icon-btn"
+              onClick={() => setSpoilerMode((v) => !v)}
+              aria-label={t('Als Spoiler senden')}
+              aria-pressed={spoilerMode}
+              style={{ color: spoilerMode ? currentTheme.primary : currentTheme.text.muted }}
+            >
+              <VisibilityOffOutlined />
+            </button>
+          )}
           <textarea
             ref={inputRef}
             className="ch-input"
@@ -790,6 +959,9 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               if (e.key === 'Enter' && !e.shiftKey && hasFinePointer()) {
                 e.preventDefault();
                 void handleSend();
+              } else if (e.key === 'Escape' && editing) {
+                e.preventDefault();
+                cancelEdit();
               } else if (e.key === 'Escape' && replyTo) {
                 e.preventDefault();
                 setReplyTo(null);
@@ -801,12 +973,16 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             className="ch-send-btn"
             onClick={() => void handleSend()}
             disabled={!draft.trim() || sending}
-            aria-label={t('Senden')}
+            aria-label={editing ? t('Speichern') : t('Senden')}
             style={{
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
             }}
           >
-            <Send style={{ fontSize: 20, transform: 'translateX(1px)' }} />
+            {editing ? (
+              <CheckRounded style={{ fontSize: 22 }} />
+            ) : (
+              <Send style={{ fontSize: 20, transform: 'translateX(1px)' }} />
+            )}
           </button>
         </div>
       ) : (
@@ -921,6 +1097,8 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           />
         )}
       </AnimatePresence>
+
+      {actions.overlays}
 
       <Dialog
         open={confirm === 'report'}

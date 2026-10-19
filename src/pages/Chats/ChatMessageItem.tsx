@@ -1,3 +1,9 @@
+import BlockRounded from '@mui/icons-material/BlockRounded';
+import CheckRounded from '@mui/icons-material/CheckRounded';
+import DoneAllRounded from '@mui/icons-material/DoneAllRounded';
+import DoneRounded from '@mui/icons-material/DoneRounded';
+import ShortcutRounded from '@mui/icons-material/ShortcutRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
 import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
@@ -22,9 +28,17 @@ interface ChatMessageItemProps {
   spoilerRevealed: boolean;
   flash: boolean;
   quotedOriginal?: ChatMessage;
+  canReply: boolean;
+  starred: boolean;
+  receipt: 'sent' | 'read' | null;
+  selecting: boolean;
+  selected: boolean;
+  highlighted: boolean;
   onRevealSpoiler: (id: string) => void;
   onToggleHeart: (id: string) => void;
   onReply: (m: ChatMessage) => void;
+  onMenu: (m: ChatMessage) => void;
+  onToggleSelect: (id: string) => void;
   onJump: (id: string) => void;
   onLink: (href: string) => void;
   onOpenImage: (url: string) => void;
@@ -40,20 +54,29 @@ export const ChatMessageItem = memo(
     spoilerRevealed,
     flash,
     quotedOriginal,
+    canReply,
+    starred,
+    receipt,
+    selecting,
+    selected,
+    highlighted,
     onRevealSpoiler,
     onToggleHeart,
     onReply,
+    onMenu,
+    onToggleSelect,
     onJump,
     onLink,
     onOpenImage,
   }: ChatMessageItemProps) => {
     const { currentTheme } = useTheme();
     const own = m.senderId === myUid;
-    const quoted = m.replyTo;
-    const media = !!(m.stickerId || m.imageUrl);
+    const quoted = m.deleted ? undefined : m.replyTo;
+    const media = !m.deleted && !!(m.stickerId || m.imageUrl);
 
     const bubbleStyle = ((): React.CSSProperties | undefined => {
       if (media) return undefined;
+      if (m.deleted) return { color: currentTheme.text.muted };
       const s = own ? myStyle : null;
       if (s) {
         return {
@@ -76,20 +99,59 @@ export const ChatMessageItem = memo(
       </button>
     );
 
+    const meta = (
+      <span className="ch-bubble-time">
+        {starred && <StarRounded className="ch-meta-icon" aria-label={t('Markiert')} />}
+        {m.editedAt && !m.deleted && <span className="ch-edited">{t('Bearbeitet')}</span>}
+        {new Date(m.timestamp).toLocaleTimeString('de-DE', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+        {receipt &&
+          (receipt === 'read' ? (
+            <DoneAllRounded className="ch-receipt ch-receipt--read" aria-label={t('Gelesen')} />
+          ) : (
+            <DoneRounded className="ch-receipt" aria-label={t('Gesendet')} />
+          ))}
+      </span>
+    );
+
     return (
       <div
         data-msg-id={m.id}
-        className={`ch-bubble-wrap${own ? ' ch-bubble-wrap--own' : ''}${flash ? ' ch-bubble-wrap--flash' : ''}`}
+        className={`ch-bubble-wrap${own ? ' ch-bubble-wrap--own' : ''}${flash ? ' ch-bubble-wrap--flash' : ''}${selecting ? ' ch-bubble-wrap--selecting' : ''}${selected || highlighted ? ' ch-bubble-wrap--selected' : ''}`}
+        onClickCapture={(e) => {
+          if (!selecting) return;
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect(m.id);
+        }}
       >
-        <ChatSwipeRow cont={m.cont} onReply={() => onReply(m)}>
+        {selecting && (
+          <span className={`ch-select-dot${selected ? ' is-on' : ''}`} aria-hidden>
+            {selected && <CheckRounded />}
+          </span>
+        )}
+        <ChatSwipeRow
+          cont={m.cont}
+          canReply={canReply && !m.deleted && !selecting}
+          onReply={() => onReply(m)}
+          onMenu={() => (selecting ? onToggleSelect(m.id) : onMenu(m))}
+        >
           <motion.div
             initial={{ opacity: 0, y: 6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.15 }}
-            className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${media ? ' ch-bubble--media' : ''}`}
-            onDoubleClick={() => onToggleHeart(m.id)}
+            className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${media ? ' ch-bubble--media' : ''}${m.deleted ? ' ch-bubble--deleted' : ''}`}
+            onDoubleClick={() => !m.deleted && !selecting && onToggleHeart(m.id)}
             style={bubbleStyle}
           >
+            {m.forwarded && !m.deleted && (
+              <span className="ch-forwarded">
+                <ShortcutRounded />
+                {t('Weitergeleitet')}
+              </span>
+            )}
             {quoted && (
               <ChatReplyQuote
                 reply={quoted}
@@ -99,7 +161,14 @@ export const ChatMessageItem = memo(
                 onJump={() => onJump(quoted.id)}
               />
             )}
-            {m.episode ? (
+            {m.deleted ? (
+              <span className="ch-deleted">
+                <BlockRounded />
+                {own
+                  ? t('Du hast diese Nachricht gelöscht.')
+                  : t('Diese Nachricht wurde gelöscht.')}
+              </span>
+            ) : m.episode ? (
               <>
                 <EpisodeShareCard episode={m.episode} own={own} />
                 {m.text &&
@@ -147,20 +216,15 @@ export const ChatMessageItem = memo(
             ) : (
               <ChatMessageText text={m.text} onLink={onLink} />
             )}
-            <span className="ch-bubble-time">
-              {new Date(m.timestamp).toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
+            {meta}
           </motion.div>
         </ChatSwipeRow>
-        {reactions.length > 0 && (
+        {reactions.length > 0 && !m.deleted && (
           <motion.button
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="ch-reactions"
-            onClick={() => onToggleHeart(m.id)}
+            onClick={() => onMenu(m)}
             aria-label={t('Reaktion')}
           >
             {[...new Set(reactions)].join('')}

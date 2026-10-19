@@ -5,7 +5,8 @@
  *   chats/$pairId/participants/{uidA,uidB}   — einmalig beim Anlegen (Rules: create-once, nur Freunde)
  *   chats/$pairId/summary                    — lastMessage/lastMessageAt/lastSender/createdAt
  *   chats/$pairId/blocked/{uid}              — Blocker trägt sich selbst ein; solange gesetzt: kein Senden
- *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms } (+ st | img | ep, re = Zitat)
+ *   chats/$pairId/messages/{id}              — { s: senderUid, t: text, ts: ms } (+ st | img | ep, re = Zitat, fw = weitergeleitet)
+ *                                              gelöscht „für alle" = Grabstein { s, ts, del: true }
  *   chatIndex/$uid/$pairId = lastMessageAt   — pro Nutzer die Chat-Liste (beide Seiten werden beim Senden gepflegt)
  *   users/$uid/chatState/$pairId/lastReadAt  — eigener Lese-Stand (Unread-Badges)
  *
@@ -34,6 +35,11 @@ export interface ChatMessage {
   isSpoiler?: boolean;
   episode?: SharedEpisode;
   replyTo?: ChatReply;
+  forwarded?: boolean;
+  /** Vom Absender für alle gelöscht — nur noch der Grabstein ist übrig. */
+  deleted?: boolean;
+  /** Zeitpunkt der letzten Bearbeitung. */
+  editedAt?: number;
 }
 
 export type ReplyKind = 'img' | 'st' | 'ep' | 'sp';
@@ -47,7 +53,7 @@ export interface ChatReply {
   stickerId?: string;
 }
 
-interface CompactReply {
+export interface CompactReply {
   id: string;
   s: string;
   t?: string;
@@ -80,7 +86,7 @@ export type OutgoingMessage = (
   | { kind: 'text'; text: string; spoiler?: boolean }
   | { kind: 'sticker'; stickerId: string }
   | { kind: 'episode'; episode: SharedEpisode; text?: string; spoiler?: boolean }
-) & { replyTo?: ChatReply };
+) & { replyTo?: ChatReply; forwarded?: boolean };
 
 const compactEpisode = (ep: SharedEpisode): CompactEpisode => ({
   id: ep.seriesId,
@@ -126,7 +132,7 @@ export function replyFromMessage(m: ChatMessage): ChatReply {
   return { ...base, text: clip(m.text, REPLY_SNIPPET_MAX) };
 }
 
-const compactReply = (r: ChatReply): CompactReply => ({
+export const compactReply = (r: ChatReply): CompactReply => ({
   id: r.id,
   s: r.senderId,
   ...(r.text && { t: clip(r.text, REPLY_SNIPPET_MAX) }),
@@ -134,7 +140,7 @@ const compactReply = (r: ChatReply): CompactReply => ({
   ...(r.stickerId && { st: r.stickerId.slice(0, 64) }),
 });
 
-const expandReply = (r: CompactReply | undefined): ChatReply | undefined =>
+export const expandReply = (r: CompactReply | undefined): ChatReply | undefined =>
   r && typeof r.id === 'string' && typeof r.s === 'string'
     ? { id: r.id, senderId: r.s, text: r.t, kind: r.k, stickerId: r.st }
     : undefined;
@@ -147,6 +153,22 @@ export interface ChatSummary {
 }
 
 export const MAX_MESSAGE_LENGTH = 2000;
+
+/** So lange nach dem Senden lässt sich eine Nachricht bearbeiten (wie bei WhatsApp, Rules spiegeln es). */
+export const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+/** Nur eigene, reine Textnachrichten — Bilder, Sticker und geteilte Folgen bleiben, wie sie sind. */
+export function canEditMessage(m: ChatMessage, myUid: string, now = Date.now()): boolean {
+  return (
+    m.senderId === myUid &&
+    !m.deleted &&
+    !!m.text &&
+    !m.imageUrl &&
+    !m.stickerId &&
+    !m.episode &&
+    now - m.timestamp < EDIT_WINDOW_MS
+  );
+}
 
 /** Stabile Chat-ID für ein Nutzer-Paar (sortiert, unabhängig von der Richtung). */
 export function chatPairId(uidA: string, uidB: string): string {
@@ -221,6 +243,7 @@ export async function sendMessage(
   if (!msgId) return;
 
   if (message.replyTo) payload.re = compactReply(message.replyTo);
+  if (message.forwarded) payload.fw = true;
 
   await dbUpdate({
     [`chats/${pairId}/messages/${msgId}`]: { s: myUid, ts, ...payload },
@@ -250,7 +273,8 @@ export async function sendImageMessage(
   file: File,
   myName: string,
   caption = '',
-  replyTo?: ChatReply
+  replyTo?: ChatReply,
+  forwarded = false
 ): Promise<void> {
   const prepared = await prepareImageForUpload(file);
   const pairId = await ensureChat(myUid, friendUid);
@@ -273,6 +297,7 @@ export async function sendImageMessage(
       h: prepared.height,
       ...(text && { t: text }),
       ...(replyTo && { re: compactReply(replyTo) }),
+      ...(forwarded && { fw: true }),
     },
     [`chats/${pairId}/summary/lastMessage`]: preview,
     [`chats/${pairId}/summary/lastMessageAt`]: ts,
@@ -292,10 +317,13 @@ export async function sendImageMessage(
   });
 }
 
+export const DELETED_PREVIEW = 'Nachricht gelöscht';
+
 /** Anzeige-Label für Vorschau-Tokens (lastMessage speichert DE-Quelle). */
 export function previewLabel(preview: string | undefined): string {
   if (!preview) return '';
   if (preview === 'Bild') return t('Bild');
+  if (preview === DELETED_PREVIEW) return t(DELETED_PREVIEW);
   return preview;
 }
 
@@ -326,6 +354,9 @@ export function subscribeMessages(
         sp?: boolean;
         ep?: CompactEpisode;
         re?: CompactReply;
+        fw?: boolean;
+        del?: boolean;
+        ed?: number;
         ts: number;
       }
     >;
@@ -342,6 +373,9 @@ export function subscribeMessages(
         isSpoiler: m.sp === true,
         episode: expandEpisode(m.ep),
         replyTo: expandReply(m.re),
+        forwarded: m.fw === true,
+        deleted: m.del === true,
+        editedAt: typeof m.ed === 'number' ? m.ed : undefined,
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     cb(list);
@@ -479,19 +513,25 @@ export async function reportChat(
   reportedUid: string,
   reportedName: string,
   pairId: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  focusId?: string
 ): Promise<void> {
-  const recent = messages.slice(-30);
+  const focusAt = focusId ? messages.findIndex((m) => m.id === focusId) : -1;
+  const recent =
+    focusAt >= 0 ? messages.slice(Math.max(0, focusAt - 24), focusAt + 6) : messages.slice(-30);
   const excerpt = recent
     .map((m) => {
       const who = m.senderId === reporter.uid ? reporter.name : reportedName;
-      const content = m.imageUrl
-        ? `[Bild] ${m.imageUrl}`
-        : m.stickerId
-          ? `[Sticker ${m.stickerId}]`
-          : m.text;
+      const mark = m.id === focusId ? '>>> ' : '';
+      const content = m.deleted
+        ? '[gelöscht]'
+        : m.imageUrl
+          ? `[Bild] ${m.imageUrl}`
+          : m.stickerId
+            ? `[Sticker ${m.stickerId}]`
+            : m.text;
       const quote = m.replyTo ? `[↪ ${m.replyTo.text ?? m.replyTo.kind ?? ''}] ` : '';
-      return `${who}: ${quote}${content}`;
+      return `${mark}${who}: ${quote}${content}`;
     })
     .join('\n')
     .slice(0, 5500);
@@ -509,7 +549,7 @@ export async function reportChat(
   await dbRef(userPath(ADMIN_UID, 'notifications'))
     .push({
       type: 'moderation_flag',
-      title: 'Chat-Meldung',
+      title: focusId ? 'Chat-Meldung (einzelne Nachricht, markiert mit >>>)' : 'Chat-Meldung',
       message: `${reporter.name} meldet ${reportedName}. Auszug:\n${excerpt.slice(0, 1800)}`,
       timestamp: ts,
       read: false,

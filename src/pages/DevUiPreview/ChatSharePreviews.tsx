@@ -18,6 +18,8 @@ import { t } from '../../services/i18n';
 import type { Friend } from '../../types/Friend';
 import '../Chats/ChatPages.css';
 import { ChatMessageItem } from '../Chats/ChatMessageItem';
+import { ChatMessageMenu } from '../Chats/ChatMessageMenu';
+import { ChatPinnedBar } from '../Chats/ChatPinnedBar';
 import { ChatReplyDraft } from '../Chats/ChatReply';
 import { EpisodeShareCard } from '../Chats/EpisodeShareCard';
 import { ShareEpisodeSheet } from '../EpisodeDiscussion/ShareEpisodeSheet';
@@ -148,6 +150,15 @@ const THREAD: ChatMessage[] = [
       text: 'Frieren – Nach dem Ende der Reise S1·E5 – Die Folge!!',
     },
   },
+  {
+    id: 'b3',
+    senderId: FRIEND,
+    text: 'Schau mal, was mir Lena geschickt hat: Staffel 2 kommt im Januar',
+    timestamp: at(14),
+    forwarded: true,
+  },
+  { id: 'b4', senderId: ME, text: '', timestamp: at(15), deleted: true },
+  { id: 'b5', senderId: ME, text: 'Endlich!!', timestamp: at(15) },
 ];
 
 const ITEMS = THREAD.map((m, i) => ({
@@ -180,12 +191,50 @@ export const ChatReplyPreview = () => {
     setLinkOpen(true);
   }, []);
   const noop = useCallback(() => {}, []);
+  const params = new URLSearchParams(window.location.search);
+  const [menu, setMenu] = useState<{ id: string; anchor: DOMRect } | null>(null);
+  const [selection, setSelection] = useState<Set<string> | null>(() =>
+    params.get('select') === '1' ? new Set(['a4', 'b3']) : null
+  );
+  const openMenu = useCallback((m: ChatMessage) => {
+    const el = document.querySelector(`[data-msg-id="${m.id}"] .ch-bubble`);
+    if (el) setMenu({ id: m.id, anchor: el.getBoundingClientRect() });
+  }, []);
+  const toggleSelect = useCallback(
+    (id: string) =>
+      setSelection((prev) => {
+        const next = new Set(prev ?? []);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next.size ? next : null;
+      }),
+    []
+  );
+  const autoMenu = params.get('menu');
+  const autoMenuRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (!el || !autoMenu) return;
+      requestAnimationFrame(() => {
+        const target = THREAD.find((m) => m.id === autoMenu);
+        document.querySelector(`[data-msg-id="${autoMenu}"]`)?.scrollIntoView({ block: 'center' });
+        if (target) requestAnimationFrame(() => openMenu(target));
+      });
+    },
+    [autoMenu, openMenu]
+  );
+  const menuMsg = menu ? THREAD.find((m) => m.id === menu.id) : undefined;
+  const lastOwn = [...THREAD].reverse().find((m) => m.senderId === ME)?.id;
 
   return (
     <div className="ch-shell" style={{ height: '100vh' }}>
       <div className="ch-pane-thread" style={{ background: currentTheme.background.default }}>
         <div className="ch-thread-bg" aria-hidden />
-        <div className="ch-messages">
+        <ChatPinnedBar
+          pinned={replyFromMessage(THREAD[3])}
+          onJump={() => onJump('a4')}
+          onUnpin={noop}
+        />
+        <div className="ch-messages" ref={autoMenuRef}>
           <div className="ch-messages-inner">
             {ITEMS.map((m) => (
               <ChatMessageItem
@@ -198,9 +247,19 @@ export const ChatReplyPreview = () => {
                 spoilerRevealed={false}
                 flash={flashId === m.id}
                 quotedOriginal={m.replyTo ? byId.get(m.replyTo.id) : undefined}
+                canReply
+                starred={m.id === 'a4'}
+                receipt={
+                  m.senderId === ME && !m.deleted ? (m.id === lastOwn ? 'sent' : 'read') : null
+                }
+                selecting={!!selection}
+                selected={!!selection?.has(m.id)}
+                highlighted={menu?.id === m.id}
                 onRevealSpoiler={noop}
                 onToggleHeart={noop}
                 onReply={onReply}
+                onMenu={openMenu}
+                onToggleSelect={toggleSelect}
                 onJump={onJump}
                 onLink={onLink}
                 onOpenImage={noop}
@@ -208,6 +267,34 @@ export const ChatReplyPreview = () => {
             ))}
           </div>
         </div>
+        {menu && menuMsg && (
+          <ChatMessageMenu
+            anchor={menu.anchor}
+            own={menuMsg.senderId === ME}
+            deleted={!!menuMsg.deleted}
+            myReaction={menuMsg.id === 'a3' ? '❤️' : null}
+            starred={menuMsg.id === 'a4'}
+            pinned={menuMsg.id === 'a4'}
+            canReply
+            canCopy={!!menuMsg.text}
+            canReact={!menuMsg.deleted}
+            canEdit={menuMsg.senderId === ME && !menuMsg.deleted}
+            onEdit={() => setMenu(null)}
+            onReact={() => setMenu(null)}
+            onReply={() => setMenu(null)}
+            onCopy={() => setMenu(null)}
+            onForward={() => setMenu(null)}
+            onPin={() => setMenu(null)}
+            onStar={() => setMenu(null)}
+            onSelect={() => {
+              setSelection(new Set([menuMsg.id]));
+              setMenu(null);
+            }}
+            onReport={() => setMenu(null)}
+            onDelete={() => setMenu(null)}
+            onClose={() => setMenu(null)}
+          />
+        )}
         <div className="ch-input-bar">
           <AnimatePresence>
             {replyTo && (
