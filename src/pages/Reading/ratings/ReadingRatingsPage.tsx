@@ -9,6 +9,7 @@ import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
+import { useScrollRestore } from '../../../hooks/ui/useScrollRestore';
 import { PLACEHOLDER_SVG } from '../../../lib/image/posterPlaceholder';
 import { mangaStandLabel } from '../../../lib/manga/progress';
 import { usesArea } from '../../../lib/reading/readingMedium';
@@ -103,6 +104,7 @@ export const ReadingRatingsPage = () => {
 
   const [kind, setKind] = useState<RatingKind | null>(null);
   const [rateBook, setRateBook] = useState<Book | null>(null);
+  useScrollRestore('readingRatings-scroll', '.mobile-content', { restoreOnPop: true });
 
   const all = useMemo(
     () => buildRatingItems(showBooks ? bookList : [], showManga ? mangaList : [], user?.uid),

@@ -356,6 +356,10 @@
   padding: 0 16px;
 }
 
+.tm-reading-section + .tm-reading-section {
+  margin-top: 20px;
+}
+
 /* Section Headers (Series/Movies) */
 .tm-section-header {
   display: flex;

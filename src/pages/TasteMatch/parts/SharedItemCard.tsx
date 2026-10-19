@@ -1,4 +1,4 @@
-import { Favorite, Movie, Star, Tv } from '@mui/icons-material';
+import { AutoStories, Favorite, MenuBook, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,15 +6,43 @@ import type { SharedItem } from '../../../services/social/tasteMatchService';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from '../constants';
 import { t } from '../../../services/i18n';
 import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
+import { BookCover } from '../../Books/components/BookCover';
+import { bookPath } from '../../Books/helpers';
+
+export type SharedItemType = 'series' | 'movie' | 'manga' | 'book';
+
+const hrefOf = (type: SharedItemType, id: number | string): string => {
+  if (type === 'book') return bookPath(String(id));
+  return `/${type}/${id}`;
+};
+
+const ARIA_LABELS: Record<SharedItemType, (title: string) => string> = {
+  series: (title) => t('{title} – Serie Details anzeigen', { title }),
+  movie: (title) => t('{title} – Film Details anzeigen', { title }),
+  manga: (title) => t('{title} – Manga Details anzeigen', { title }),
+  book: (title) => t('{title} – Buch Details anzeigen', { title }),
+};
+
+const FALLBACK_ICONS: Record<SharedItemType, { Icon: typeof Tv; color: string }> = {
+  series: { Icon: Tv, color: ACCENT_COLORS.series },
+  movie: { Icon: Movie, color: ACCENT_COLORS.movies },
+  manga: { Icon: AutoStories, color: ACCENT_COLORS.reading },
+  book: { Icon: MenuBook, color: ACCENT_COLORS.reading },
+};
+
+const posterSrc = (type: SharedItemType, poster: string): string =>
+  type === 'series' || type === 'movie' ? `https://image.tmdb.org/t/p/w92${poster}` : poster;
 
 export const SharedItemCard: React.FC<{
   item: SharedItem;
   index: number;
-  type: 'series' | 'movie';
+  type: SharedItemType;
   bgColor: string;
 }> = ({ item, index, type, bgColor }) => {
   const navigate = useNavigate();
   const hasMatchingRatings = item.ratingDiff !== undefined && item.ratingDiff < 1;
+  const fallback = FALLBACK_ICONS[type];
+  const isWatchMedia = type === 'series' || type === 'movie';
 
   return (
     <motion.button
@@ -24,14 +52,12 @@ export const SharedItemCard: React.FC<{
       whileTap={{ opacity: 0.7 }}
       whileHover={{ scale: 1.01, y: -2 }}
       onClick={() => {
-        navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`);
+        navigate(hrefOf(type, item.id));
       }}
-      {...mediaTargetProps({ type, id: item.id, title: item.title, poster: item.poster })}
-      aria-label={
-        type === 'series'
-          ? t('{title} – Serie Details anzeigen', { title: item.title })
-          : t('{title} – Film Details anzeigen', { title: item.title })
-      }
+      {...(isWatchMedia
+        ? mediaTargetProps({ type, id: item.id, title: item.title, poster: item.poster })
+        : {})}
+      aria-label={ARIA_LABELS[type](item.title)}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -67,9 +93,20 @@ export const SharedItemCard: React.FC<{
         />
       )}
 
-      {item.poster ? (
+      {type === 'book' ? (
+        <BookCover
+          book={{
+            id: String(item.id),
+            title: item.title,
+            authors: item.authors,
+            cover: item.poster,
+          }}
+          width={52}
+          style={{ borderRadius: 12, flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+        />
+      ) : item.poster ? (
         <motion.img
-          src={`https://image.tmdb.org/t/p/w92${item.poster}`}
+          src={posterSrc(type, item.poster)}
           alt={item.title}
           style={{
             width: 52,
@@ -91,11 +128,7 @@ export const SharedItemCard: React.FC<{
             justifyContent: 'center',
           }}
         >
-          {type === 'series' ? (
-            <Tv style={{ fontSize: 26, color: `${ACCENT_COLORS.series}40` }} />
-          ) : (
-            <Movie style={{ fontSize: 26, color: `${ACCENT_COLORS.movies}40` }} />
-          )}
+          <fallback.Icon style={{ fontSize: 26, color: `${fallback.color}40` }} />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>

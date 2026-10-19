@@ -144,3 +144,68 @@ describe('calculateTasteMatch — leere Nutzer', () => {
     expect(r.providerMatch.sharedProviders).toEqual([]);
   });
 });
+
+describe('calculateTasteMatch — Manga und Bücher', () => {
+  beforeEach(() => {
+    fb.store.set('users/A/series', { '1': { rating: { A: 8 } } });
+    fb.store.set('users/B/series', { '1': { rating: { B: 8 } } });
+  });
+
+  it('vergleicht Manga und Bücher und rechnet sie in den Gesamt-Match ein', async () => {
+    fb.store.set('users/A/manga', {
+      '1': { anilistId: 1, title: 'Berserk', poster: 'p', rating: { A: 9 }, readStatus: 'reading' },
+      '2': { anilistId: 2, title: 'Naruto', poster: 'p', rating: {}, readStatus: 'reading' },
+    });
+    fb.store.set('users/B/manga', {
+      '1': { anilistId: 1, title: 'Berserk', poster: 'p', rating: { B: 9 }, readStatus: 'reading' },
+    });
+    fb.store.set('users/A/books', {
+      x: { id: 'x', title: 'Dune', authors: ['Frank Herbert'], rating: 7, status: 'completed' },
+    });
+    fb.store.set('users/B/books', {
+      y: { id: 'y', title: 'Dune', authors: ['Frank Herbert'], rating: 9, status: 'completed' },
+    });
+    const { calculateTasteMatch } = await load();
+    const r = await calculateTasteMatch('A', 'B');
+
+    expect(r.mangaOverlap.shared).toHaveLength(1);
+    expect(r.mangaOverlap.shared[0]).toMatchObject({ id: '1', userRating: 9, friendRating: 9 });
+    expect(r.mangaOverlap.userOnlyCount).toBe(1);
+    expect(r.bookOverlap.shared[0]).toMatchObject({ id: 'x', ratingDiff: 2 });
+    expect(r.reading).toEqual({ shown: true, compared: true, score: 67 });
+    expect(r.ratingMatch.sameRatingCount).toBe(2);
+  });
+
+  it('liest nur einer, zeigt den Reiter, lässt den Gesamt-Match aber unverändert', async () => {
+    const without = await (await load()).calculateTasteMatch('A', 'B');
+
+    vi.resetModules();
+    fb.store.set('users/A/books', {
+      x: { id: 'x', title: 'Dune', authors: ['Frank Herbert'], status: 'completed' },
+    });
+    const withBooks = await (await load()).calculateTasteMatch('A', 'B');
+
+    expect(withBooks.reading.shown).toBe(true);
+    expect(withBooks.reading.compared).toBe(false);
+    expect(withBooks.overallMatch).toBe(without.overallMatch);
+  });
+
+  it('fehlendes Leserecht auf Manga lässt den Match nicht scheitern', async () => {
+    fb.store.set('users/A/manga', {
+      '1': { anilistId: 1, title: 'Berserk', poster: 'p', rating: {}, readStatus: 'reading' },
+    });
+    fb.store.set('users/B/manga', {
+      '1': { anilistId: 1, title: 'Berserk', poster: 'p', rating: {}, readStatus: 'reading' },
+    });
+    const read = async (path: string) => {
+      if (path === 'users/B/manga') throw new Error('permission_denied');
+      return { val: () => fb.store.get(path) ?? null };
+    };
+    fb.once.mockImplementation(read);
+    const { calculateTasteMatch } = await load();
+    const r = await calculateTasteMatch('A', 'B');
+    fb.once.mockImplementation(async (path: string) => ({ val: () => fb.store.get(path) ?? null }));
+    expect(r.mangaOverlap.shared).toEqual([]);
+    expect(r.seriesOverlap.sharedSeries).toHaveLength(1);
+  });
+});

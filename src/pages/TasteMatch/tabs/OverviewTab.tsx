@@ -1,4 +1,4 @@
-import { Category, Movie, Star, Tv } from '@mui/icons-material';
+import { AutoStories, Category, MenuBook, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import type { TasteMatchResult } from '../../../services/social/tasteMatchService';
@@ -26,6 +26,24 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
       icon: <Movie style={{ fontSize: 20 }} />,
       delay: 0.15,
     },
+    ...(result.reading.shown
+      ? [
+          {
+            value: result.mangaOverlap.shared.length,
+            label: t('Gemeinsame Manga'),
+            color: ACCENT_COLORS.reading,
+            icon: <AutoStories style={{ fontSize: 20 }} />,
+            delay: 0.17,
+          },
+          {
+            value: result.bookOverlap.shared.length,
+            label: t('Gemeinsame Bücher'),
+            color: ACCENT_COLORS.reading,
+            icon: <MenuBook style={{ fontSize: 20 }} />,
+            delay: 0.19,
+          },
+        ]
+      : []),
     {
       value: result.genreMatch.sharedGenres.filter(
         (g) => g.userPercentage > 0 && g.friendPercentage > 0

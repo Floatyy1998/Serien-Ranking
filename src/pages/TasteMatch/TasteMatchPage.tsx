@@ -4,6 +4,7 @@ import {
   CompareArrows,
   Favorite,
   ImageOutlined,
+  MenuBook,
   Movie,
   Share,
   Star,
@@ -22,7 +23,8 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { SeriesTab } from './tabs/SeriesTab';
 import { MoviesTab } from './tabs/MoviesTab';
 import { GenresTab } from './tabs/GenresTab';
-import { useTasteMatchData } from './useTasteMatchData';
+import { ReadingTab } from './tabs/ReadingTab';
+import { useTasteMatchData, type TasteMatchTab } from './useTasteMatchData';
 import './TasteMatchPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -92,7 +94,19 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
   </div>
 );
 
-const TAB_CONFIG = (primaryColor: string, seriesCount: number, moviesCount: number) => [
+interface TabConfig {
+  id: TasteMatchTab;
+  label: string;
+  color: string;
+  icon: React.ReactNode;
+}
+
+const TAB_CONFIG = (
+  primaryColor: string,
+  seriesCount: number,
+  moviesCount: number,
+  readingCount: number | null
+): TabConfig[] => [
   {
     id: 'overview' as const,
     label: t('Übersicht'),
@@ -111,6 +125,16 @@ const TAB_CONFIG = (primaryColor: string, seriesCount: number, moviesCount: numb
     color: ACCENT_COLORS.movies,
     icon: <Movie style={{ fontSize: 16 }} />,
   },
+  ...(readingCount === null
+    ? []
+    : [
+        {
+          id: 'reading' as const,
+          label: t('Lesen ({n})', { n: readingCount }),
+          color: ACCENT_COLORS.reading,
+          icon: <MenuBook style={{ fontSize: 16 }} />,
+        },
+      ]),
   {
     id: 'genres' as const,
     label: 'Genres',
@@ -148,7 +172,10 @@ export const TasteMatchPage: React.FC = () => {
   const tabs = TAB_CONFIG(
     primaryColor,
     result.seriesOverlap.sharedSeries.length,
-    result.movieOverlap.sharedMovies.length
+    result.movieOverlap.sharedMovies.length,
+    result.reading.shown
+      ? result.mangaOverlap.shared.length + result.bookOverlap.shared.length
+      : null
   );
 
   return (
@@ -297,6 +324,7 @@ export const TasteMatchPage: React.FC = () => {
             {activeTab === 'overview' && <OverviewTab result={result} cardBg={cardBg} />}
             {activeTab === 'series' && <SeriesTab result={result} cardBg={cardBg} />}
             {activeTab === 'movies' && <MoviesTab result={result} cardBg={cardBg} />}
+            {activeTab === 'reading' && <ReadingTab result={result} cardBg={cardBg} />}
             {activeTab === 'genres' && (
               <GenresTab
                 result={result}

@@ -77,6 +77,7 @@ import {
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
 import { ProfileStatsPreview } from './ProfilePreviews';
 import { RatingsBooksPreview } from './RatingsPreviews';
+import { TasteMatchOverviewPreview, TasteMatchReadingPreview } from './TasteMatchPreviews';
 import { NotificationHubPreview } from './NotificationPreviews';
 import { BookOverlaySearchPreview, PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
 import {
@@ -189,6 +190,16 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  {
+    id: 'taste-match-reading',
+    label: 'Taste Match: Lesen',
+    render: () => <TasteMatchReadingPreview />,
+  },
+  {
+    id: 'taste-match-overview',
+    label: 'Taste Match: Übersicht',
+    render: () => <TasteMatchOverviewPreview />,
+  },
   { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
   { id: 'public-profiles', label: 'Öffentliche Profile', render: () => <PublicProfilesPreview /> },
   { id: 'reading-home', label: 'Startseite: Lesen', render: () => <ReadingHomePreview /> },

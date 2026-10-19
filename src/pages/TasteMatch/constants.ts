@@ -10,6 +10,7 @@ export const ACCENT_COLORS = {
   genres: '#00cec9', // Cyan für Genres
   ratings: '#fdcb6e', // Gold für Ratings
   providers: '#00b894', // Grün für Provider
+  reading: '#fd9644', // Orange für Manga & Bücher
   match: '#ff6b9d', // Herz-Pink
 };
 

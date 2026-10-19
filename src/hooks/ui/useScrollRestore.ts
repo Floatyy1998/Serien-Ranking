@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useNavigationType } from 'react-router-dom';
 
+/** Bis der Inhalt hoch genug ist bzw. ScrollToTop nicht mehr dazwischenfunkt. */
+const MIN_RESTORE_FRAMES = 3;
+const MAX_RESTORE_FRAMES = 30;
+
+/** Die Keep-Alive-Tabs halten ein verstecktes `.mobile-content` im DOM — gemeint ist das sichtbare. */
+function findScroller(selector: string): HTMLElement | null {
+  const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
+  return matches.find((el) => el.getClientRects().length > 0) ?? matches[0] ?? null;
+}
+
 /**
  * Saves and restores scroll position via sessionStorage.
  *
@@ -18,6 +28,14 @@ export function useScrollRestore(
   const { restoreOnPop = false, debounceMs = 100 } = options ?? {};
   const navigationType = useNavigationType();
   const restoredRef = useRef(false);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Restore
   useEffect(() => {
@@ -33,17 +51,24 @@ export function useScrollRestore(
     restoredRef.current = true;
     const scrollY = parseInt(saved, 10);
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const container = document.querySelector(selector) as HTMLElement;
-        if (container) container.scrollTop = scrollY;
-      });
-    });
+    let frames = 0;
+    const apply = () => {
+      if (!mountedRef.current) return;
+      const container = findScroller(selector);
+      if (!container) return;
+      if (Math.abs(container.scrollTop - scrollY) > 1) container.scrollTop = scrollY;
+      frames += 1;
+      const settled = Math.abs(container.scrollTop - scrollY) <= 1;
+      if (frames < MAX_RESTORE_FRAMES && (frames < MIN_RESTORE_FRAMES || !settled)) {
+        requestAnimationFrame(apply);
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(apply));
   }, [key, selector, navigationType, restoreOnPop]);
 
   // Save on scroll (debounced)
   useEffect(() => {
-    const container = document.querySelector(selector) as HTMLElement;
+    const container = findScroller(selector);
     if (!container) return;
 
     let timeout: ReturnType<typeof setTimeout>;
@@ -63,7 +88,7 @@ export function useScrollRestore(
 
   // Manual save (for pages that need to save at specific moments)
   const saveNow = useCallback(() => {
-    const container = document.querySelector(selector) as HTMLElement;
+    const container = findScroller(selector);
     if (container && container.scrollTop > 0) {
       sessionStorage.setItem(key, String(container.scrollTop));
     }

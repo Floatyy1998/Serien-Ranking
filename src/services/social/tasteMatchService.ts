@@ -4,6 +4,16 @@
 
 import { dbRef, paths } from '../db/ref';
 import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../catalog/staticCatalog';
+import {
+  bookEntries,
+  mangaEntries,
+  readingOverlap,
+  type ReadingEntry,
+  type ReadingKind,
+  type ReadingOverlap,
+} from '../../lib/social/readingOverlap';
+import type { Book } from '../../types/Book';
+import type { Manga } from '../../types/Manga';
 
 export interface TasteMatchResult {
   overallMatch: number; // 0-100
@@ -18,6 +28,15 @@ export interface TasteMatchResult {
     sharedMovies: SharedItem[];
     userOnlyCount: number;
     friendOnlyCount: number;
+  };
+  mangaOverlap: ReadingOverlapResult;
+  bookOverlap: ReadingOverlapResult;
+  reading: {
+    /** Mindestens einer liest — dann gibt es den Lesen-Reiter. */
+    shown: boolean;
+    /** Beide lesen — erst dann zählt Lesen in den Gesamt-Match. */
+    compared: boolean;
+    score: number;
   };
   genreMatch: {
     score: number;
@@ -36,10 +55,18 @@ export interface TasteMatchResult {
   };
 }
 
+export interface ReadingOverlapResult {
+  score: number;
+  shared: SharedItem[];
+  userOnlyCount: number;
+  friendOnlyCount: number;
+}
+
 export interface SharedItem {
-  id: number;
+  id: number | string;
   title: string;
   poster?: string;
+  authors?: string[];
   userRating?: number;
   friendRating?: number;
   ratingDiff?: number;
@@ -55,6 +82,8 @@ export interface GenreComparison {
 interface UserData {
   series: SeriesItem[];
   movies: MovieItem[];
+  manga: ReadingEntry[];
+  books: ReadingEntry[];
 }
 
 interface SeriesItem {
@@ -85,6 +114,15 @@ interface MovieItem {
 const userDataCache = new Map<string, { data: UserData; ts: number }>();
 const USER_DATA_CACHE_TTL = 5 * 60 * 1000;
 
+async function readOptional<T>(path: string): Promise<T | null> {
+  try {
+    const snap = await dbRef(path).once('value');
+    return (snap.val() as T) || null;
+  } catch {
+    return null;
+  }
+}
+
 async function loadUserData(userId: string): Promise<UserData> {
   const cached = userDataCache.get(userId);
   if (cached && Date.now() - cached.ts < USER_DATA_CACHE_TTL) {
@@ -92,12 +130,14 @@ async function loadUserData(userId: string): Promise<UserData> {
   }
 
   // Catalog via Static-File, Firebase-Fallback.
-  const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
+  const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog, manga, books] =
     await Promise.all([
       dbRef(paths.series(userId)).once('value'),
       dbRef(paths.movies(userId)).once('value'),
       fetchStaticCatalogSeries(),
       fetchStaticCatalogMovies(),
+      readOptional<Record<string, Manga>>(paths.manga(userId)),
+      readOptional<Record<string, Book>>(paths.books(userId)),
     ]);
 
   const seriesRefs = seriesSnapshot.val() || {};
@@ -131,7 +171,12 @@ async function loadUserData(userId: string): Promise<UserData> {
     };
   });
 
-  const result = { series, movies };
+  const result = {
+    series,
+    movies,
+    manga: mangaEntries(manga, userId),
+    books: bookEntries(books),
+  };
   userDataCache.set(userId, { data: result, ts: Date.now() });
   return result;
 }
@@ -187,6 +232,41 @@ function getAverageRating(rating: Record<string, number> | undefined): number | 
   const values = Object.values(rating).filter((v) => typeof v === 'number' && v > 0);
   if (values.length === 0) return undefined;
   return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+function toReadingResult(overlap: ReadingOverlap): ReadingOverlapResult {
+  const shared = overlap.pairs.map(({ user, friend }): SharedItem => {
+    const ratingDiff =
+      user.rating && friend.rating ? Math.abs(user.rating - friend.rating) : undefined;
+    return {
+      id: user.id,
+      title: user.title,
+      poster: user.cover,
+      authors: user.authors,
+      userRating: user.rating,
+      friendRating: friend.rating,
+      ratingDiff,
+    };
+  });
+  return {
+    score: overlap.score,
+    shared: shared.sort((a, b) => (b.userRating || 0) - (a.userRating || 0)),
+    userOnlyCount: overlap.userCount - overlap.pairs.length,
+    friendOnlyCount: overlap.friendCount - overlap.pairs.length,
+  };
+}
+
+const readingCount = (data: UserData) => data.manga.length + data.books.length;
+
+function readingScore(parts: Record<ReadingKind, ReadingOverlap>): number {
+  const shared = parts.manga.pairs.length + parts.book.pairs.length;
+  const union =
+    parts.manga.userCount +
+    parts.manga.friendCount +
+    parts.book.userCount +
+    parts.book.friendCount -
+    shared;
+  return union > 0 ? Math.round((shared / union) * 100) : 0;
 }
 
 /**
@@ -246,6 +326,15 @@ export async function calculateTasteMatch(
   const movieOverlapScore =
     totalUniqueMovies > 0 ? Math.round((sharedMovieIds.length / totalUniqueMovies) * 100) : 0;
 
+  const readingParts: Record<ReadingKind, ReadingOverlap> = {
+    manga: readingOverlap(userData.manga, friendData.manga),
+    book: readingOverlap(userData.books, friendData.books),
+  };
+  const mangaOverlap = toReadingResult(readingParts.manga);
+  const bookOverlap = toReadingResult(readingParts.book);
+  const readingCompared = readingCount(userData) > 0 && readingCount(friendData) > 0;
+  const readingOverlapScore = readingScore(readingParts);
+
   // Genre-Match berechnen
   const userGenres = calculateGenreDistribution(userData.series, userData.movies);
   const friendGenres = calculateGenreDistribution(friendData.series, friendData.movies);
@@ -287,7 +376,12 @@ export async function calculateTasteMatch(
     );
 
   // Rating-Match berechnen (für gemeinsame Items)
-  const allSharedItems = [...sharedSeries, ...sharedMovies];
+  const allSharedItems = [
+    ...sharedSeries,
+    ...sharedMovies,
+    ...mangaOverlap.shared,
+    ...bookOverlap.shared,
+  ];
   const itemsWithBothRatings = allSharedItems.filter(
     (item) => item.userRating !== undefined && item.friendRating !== undefined
   );
@@ -325,6 +419,7 @@ export async function calculateTasteMatch(
     genres: 35,
     ratings: 15,
     providers: 10,
+    reading: readingCompared ? 15 : 0,
   };
 
   const overallMatch = Math.round(
@@ -332,8 +427,14 @@ export async function calculateTasteMatch(
       movieOverlapScore * weights.movies +
       genreMatchScore * weights.genres +
       ratingMatchScore * weights.ratings +
-      providerMatchScore * weights.providers) /
-      (weights.series + weights.movies + weights.genres + weights.ratings + weights.providers)
+      providerMatchScore * weights.providers +
+      readingOverlapScore * weights.reading) /
+      (weights.series +
+        weights.movies +
+        weights.genres +
+        weights.ratings +
+        weights.providers +
+        weights.reading)
   );
 
   return {
@@ -349,6 +450,13 @@ export async function calculateTasteMatch(
       sharedMovies: sharedMovies.sort((a, b) => (b.userRating || 0) - (a.userRating || 0)),
       userOnlyCount: userMovieIds.size - sharedMovieIds.length,
       friendOnlyCount: friendMovieIds.size - sharedMovieIds.length,
+    },
+    mangaOverlap,
+    bookOverlap,
+    reading: {
+      shown: readingCount(userData) > 0 || readingCount(friendData) > 0,
+      compared: readingCompared,
+      score: readingOverlapScore,
     },
     genreMatch: {
       score: genreMatchScore,

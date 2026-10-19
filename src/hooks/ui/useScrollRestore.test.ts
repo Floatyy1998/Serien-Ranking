@@ -96,6 +96,22 @@ describe('useScrollRestore', () => {
     expect(sessionStorage.getItem('key-g')).toBeNull();
   });
 
+  it('restores onto the visible container when a hidden one with the same selector comes first', async () => {
+    container.remove();
+    const hidden = document.createElement('div');
+    hidden.className = 'scroller';
+    Object.defineProperty(hidden, 'scrollTop', { value: 0, writable: true, configurable: true });
+    const visible = document.createElement('div');
+    visible.className = 'scroller';
+    Object.defineProperty(visible, 'scrollTop', { value: 0, writable: true, configurable: true });
+    vi.spyOn(visible, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList);
+    document.body.append(hidden, visible);
+    sessionStorage.setItem('key-i', '640');
+    renderHook(() => useScrollRestore('key-i', '.scroller'));
+    await waitFor(() => expect(visible.scrollTop).toBe(640));
+    expect(hidden.scrollTop).toBe(0);
+  });
+
   it('removes the scroll listener on unmount', () => {
     const removeSpy = vi.spyOn(container, 'removeEventListener');
     const { unmount } = renderHook(() => useScrollRestore('key-h', SELECTOR));

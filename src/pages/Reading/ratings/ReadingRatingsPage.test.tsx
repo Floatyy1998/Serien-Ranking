@@ -52,7 +52,10 @@ vi.mock('../../../components/ui/overlay/QuickRatingSheet', () => ({
     </div>
   ),
 }));
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigate,
+  useNavigationType: () => 'PUSH',
+}));
 vi.mock('../../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   PageHeader: ({ title, subtitle }: { title?: ReactNode; subtitle?: ReactNode }) => (

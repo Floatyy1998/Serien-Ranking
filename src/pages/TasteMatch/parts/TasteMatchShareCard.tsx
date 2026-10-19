@@ -204,6 +204,12 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
       <div style={{ display: 'flex', gap: 20 }}>
         <CountTile value={result.seriesOverlap.sharedSeries.length} label={t('Serien')} />
         <CountTile value={result.movieOverlap.sharedMovies.length} label={t('Filme')} />
+        {result.reading.compared && (
+          <CountTile
+            value={result.mangaOverlap.shared.length + result.bookOverlap.shared.length}
+            label={t('Lesen')}
+          />
+        )}
         <CountTile value={result.genreMatch.sharedGenres.length} label={t('Genres')} />
       </div>
 

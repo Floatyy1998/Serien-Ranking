@@ -22,6 +22,8 @@ export const getScoreMessage = (score: number): string => {
   return t('Gegensätze ziehen sich an');
 };
 
+export type TasteMatchTab = 'overview' | 'series' | 'movies' | 'reading' | 'genres';
+
 export interface TasteMatchData {
   loading: boolean;
   result: TasteMatchResult | null;
@@ -30,8 +32,8 @@ export interface TasteMatchData {
   friendPhoto: string | null;
   userName: string;
   userPhoto: string | null;
-  activeTab: 'overview' | 'series' | 'movies' | 'genres';
-  setActiveTab: React.Dispatch<React.SetStateAction<'overview' | 'series' | 'movies' | 'genres'>>;
+  activeTab: TasteMatchTab;
+  setActiveTab: React.Dispatch<React.SetStateAction<TasteMatchTab>>;
   handleShare: () => Promise<void>;
 }
 
@@ -45,9 +47,7 @@ export const useTasteMatchData = (): TasteMatchData => {
   const [friendPhoto, setFriendPhoto] = useState<string | null>(null);
   const [userName, setUserName] = useState(t('Du'));
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'series' | 'movies' | 'genres'>(
-    'overview'
-  );
+  const [activeTab, setActiveTab] = useState<TasteMatchTab>('overview');
 
   useEffect(() => {
     const loadData = async () => {
