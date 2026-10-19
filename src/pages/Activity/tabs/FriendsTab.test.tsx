@@ -99,6 +99,13 @@ vi.mock('../../../components/ui', () => ({
   ),
 }));
 
+const counts = vi.hoisted(() => ({
+  map: {} as Record<string, { series: number; movies: number; manga: number; books: number }>,
+}));
+vi.mock('../../../hooks/social/useFriendLibraryCounts', () => ({
+  useFriendLibraryCounts: () => counts.map,
+}));
+
 vi.mock('./PublicProfilesList', () => ({
   PublicProfilesList: () => <div>PUBLIC_PROFILES</div>,
 }));
@@ -131,6 +138,7 @@ beforeEach(() => {
   social.zustand = 'granted';
   social.toggleFavoriteFriend.mockClear();
   social.requestShare.mockClear();
+  counts.map = {};
 });
 afterEach(() => cleanup());
 
@@ -169,6 +177,18 @@ describe('FriendsTab', () => {
     });
     expect(screen.getByText('Frank')).toBeInTheDocument();
     expect(screen.queryByText('Berta')).not.toBeInTheDocument();
+  });
+
+  it('zeigt die Bibliothekszahlen wie bei den öffentlichen Profilen', () => {
+    counts.map = { f1: { series: 24, movies: 1, manga: 0, books: 3 } };
+    renderTab();
+    expect(screen.getAllByText('24 Serien · 1 Film · 3 Bücher').length).toBeGreaterThan(0);
+    expect(screen.queryByText('@frank')).not.toBeInTheDocument();
+  });
+
+  it('fällt ohne veröffentlichte Zahlen auf den Nutzernamen zurück', () => {
+    renderTab();
+    expect(screen.getByText('@frank')).toBeInTheDocument();
   });
 
   it('calls onRemoveFriend when a friend remove button is pressed', () => {

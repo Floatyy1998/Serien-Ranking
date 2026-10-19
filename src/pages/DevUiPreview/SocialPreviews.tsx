@@ -3,6 +3,9 @@ import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import { primePublicDirectory } from '../../services/social/publicDirectoryService';
 import type { PublicDirectoryEntry } from '../../types/PublicDirectory';
 import { PublicProfilesList } from '../Activity/tabs/PublicProfilesList';
+import { FriendsTab } from '../Activity/tabs/FriendsTab';
+import { primeFriendLibraryCounts } from '../../hooks/social/useFriendLibraryCounts';
+import type { Friend } from '../../types/Friend';
 
 const entry = (
   name: string,
@@ -38,6 +41,35 @@ export const PublicProfilesPreview = () => {
   return (
     <div style={{ padding: 16 }}>
       <PublicProfilesList saveScrollPosition={() => {}} />
+    </div>
+  );
+};
+
+const FRIENDS: Friend[] = ENTRIES.map((e) => ({
+  uid: e.uid,
+  email: '',
+  username: e.username ?? e.displayName,
+  displayName: e.displayName,
+  photoURL: e.photoURL ?? undefined,
+  friendsSince: 0,
+}));
+
+/** Freundesliste mit denselben Bibliothekszahlen wie das Verzeichnis. */
+export const FriendsListPreview = () => {
+  useState(() =>
+    primeFriendLibraryCounts(
+      Object.fromEntries(ENTRIES.map((e, i) => [e.uid, i === 2 ? null : { ...e }] as const))
+    )
+  );
+  return (
+    <div style={{ padding: 16 }}>
+      <FriendsTab
+        friends={FRIENDS}
+        friendProfiles={{}}
+        saveScrollPosition={() => {}}
+        onAddFriend={() => {}}
+        onRemoveFriend={() => {}}
+      />
     </div>
   );
 };

@@ -18,6 +18,8 @@ import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
 import { PublicProfilesList } from './PublicProfilesList';
+import { libraryCountLabel } from '../libraryCountLabel';
+import { useFriendLibraryCounts } from '../../../hooks/social/useFriendLibraryCounts';
 
 type FriendsView = 'mine' | 'public';
 
@@ -171,6 +173,8 @@ export const FriendsTab = ({
   const { currentTheme } = useTheme();
   const { favoriteIds, toggleFavoriteFriend, shareState, requestShare } = useOptimizedFriends();
   const [query, setQuery] = useState('');
+  const friendIds = useMemo(() => friends.map((f) => f.uid), [friends]);
+  const libraryCounts = useFriendLibraryCounts(friendIds);
   const [searchParams, setSearchParams] = useSearchParams();
   const view: FriendsView = searchParams.get('view') === 'public' ? 'public' : 'mine';
   const setView = (next: FriendsView) =>
@@ -189,15 +193,17 @@ export const FriendsTab = ({
     () =>
       friends.map((friend) => {
         const profile = friendProfiles[friend.uid] || friend;
+        const counts = libraryCounts[friend.uid];
         return {
           friend,
           displayName: profile.displayName || profile.username || t('Unbekannt'),
           username: profile.username || '',
           photoURL: profile.photoURL,
           isOnline: friend.isOnline,
+          meta: counts ? libraryCountLabel(counts) : '',
         };
       }),
-    [friends, friendProfiles]
+    [friends, friendProfiles, libraryCounts]
   );
 
   const filtered = useMemo(() => {
@@ -352,7 +358,7 @@ export const FriendsTab = ({
             gap: '10px',
           }}
         >
-          {filtered.map(({ friend, displayName, username, photoURL, isOnline }, index) => (
+          {filtered.map(({ friend, displayName, username, photoURL, isOnline, meta }, index) => (
             <motion.div
               key={friend.uid}
               initial={{ opacity: 0, y: 16 }}
@@ -366,8 +372,9 @@ export const FriendsTab = ({
               className="activity-friend-row"
               style={{
                 display: 'flex',
+                flexWrap: 'wrap',
                 alignItems: 'center',
-                gap: '14px',
+                columnGap: '14px',
                 padding: '13px 14px',
                 background: currentTheme.background.surface,
                 border: `1px solid ${currentTheme.border.default}`,
@@ -416,8 +423,11 @@ export const FriendsTab = ({
                   {displayName}
                   <NameBadges uid={friend.uid} />
                 </h3>
-                <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
-                  {username ? `@${username}` : isOnline ? t('Online') : t('Freund')}
+                <p
+                  className={meta ? 'ft-friend-sub ft-friend-sub--meta' : 'ft-friend-sub'}
+                  style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}
+                >
+                  {meta || (username ? `@${username}` : isOnline ? t('Online') : t('Freund'))}
                 </p>
               </div>
 
@@ -464,6 +474,15 @@ export const FriendsTab = ({
               <ChevronRightRounded
                 style={{ fontSize: '20px', color: currentTheme.text.muted, flexShrink: 0 }}
               />
+
+              {meta && (
+                <p
+                  className="ft-friend-meta-wide"
+                  style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}
+                >
+                  {meta}
+                </p>
+              )}
             </motion.div>
           ))}
         </div>

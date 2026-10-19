@@ -219,3 +219,40 @@ export async function fetchLibraryTotals(
   for (const { uid, totals } of results) map[uid] = totals;
   return map;
 }
+
+export interface PublishedLibraryCounts {
+  series: number;
+  movies: number;
+  manga: number;
+  books: number;
+}
+
+/** Dieselben Zahlen wie im Verzeichnis „Öffentliche Profile": Serien = begonnene Serien. */
+export async function fetchLibraryCounts(
+  uids: string[]
+): Promise<Record<string, PublishedLibraryCounts | null>> {
+  const results = await Promise.all(
+    uids.map(async (uid) => {
+      const [totals, reading] = await Promise.all([
+        dbGet<unknown>(userPath(uid, 'leaderboard', 'totals')).catch(() => null),
+        dbGet<unknown>(userPath(uid, 'leaderboard', 'reading')).catch(() => null),
+      ]);
+      const usable = isUsableTotals(totals) ? totals : null;
+      const lesen = parseReadingCounts(reading);
+      if (!usable && !lesen) return { uid, counts: null };
+      return {
+        uid,
+        counts: {
+          series: readingCount(usable?.seriesStarted),
+          movies: readingCount(usable?.movies),
+          manga: lesen?.manga ?? 0,
+          books: lesen?.books ?? 0,
+        },
+      };
+    })
+  );
+
+  const map: Record<string, PublishedLibraryCounts | null> = {};
+  for (const { uid, counts } of results) map[uid] = counts;
+  return map;
+}

@@ -700,6 +700,27 @@
   outline-offset: 2px;
 }
 
+/* Schmale Karten: neben drei Knöpfen bräche die Zahlenzeile vierfach um. */
+.ft-friend-meta-wide {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .activity-friend-row {
+    row-gap: 8px;
+  }
+
+  .ft-friend-sub--meta {
+    display: none;
+  }
+
+  .ft-friend-meta-wide {
+    display: block;
+    flex-basis: 100%;
+    padding-left: 64px;
+  }
+}
+
 /* Die globale 44px-Regel wuerde den Chip aufblaehen (siehe styles/App.css). */
 .mobile-app .ft-share-chip {
   min-width: 0;

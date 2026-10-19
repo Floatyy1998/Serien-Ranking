@@ -24,7 +24,7 @@ import {
   SignatureStripPreview,
 } from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
-import { PublicProfilesPreview } from './SocialPreviews';
+import { FriendsListPreview, PublicProfilesPreview } from './SocialPreviews';
 import {
   OnboardingFocusPreview,
   OnboardingReadingPreview,
@@ -202,6 +202,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   },
   { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
   { id: 'public-profiles', label: 'Öffentliche Profile', render: () => <PublicProfilesPreview /> },
+  { id: 'friends-list', label: 'Freundesliste', render: () => <FriendsListPreview /> },
   { id: 'reading-home', label: 'Startseite: Lesen', render: () => <ReadingHomePreview /> },
   {
     id: 'onboarding-focus',
