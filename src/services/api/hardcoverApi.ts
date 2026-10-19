@@ -9,7 +9,7 @@ import type {
   BookSeriesInfo,
   BookSeriesPart,
 } from '../../types/Book';
-import { cached } from '../books/bookCache';
+import { cacheGet, cacheSet, cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
 import { backendFetch } from './backendApi';
 
@@ -268,9 +268,28 @@ export function hardcoverDetails(id: number): Promise<BookDetails | null> {
  * Klappentext in der App-Sprache vom Server: er übersetzt jedes Buch höchstens einmal pro Sprache und merkt es sich für alle.
  * `capped` heißt: Tageslimit erreicht — dann bewusst keine weitere KI-Anfrage, sondern Original zeigen.
  */
-export async function hardcoverDescription(
+const describing = new Map<string, Promise<{ text: string | null; capped: boolean }>>();
+
+export function hardcoverDescription(
   id: number
 ): Promise<{ text: string | null; capped: boolean }> {
+  const key = `${appLocale}:${id}`;
+  const known = cacheGet<string>('hcdesc', key, 30 * DAY);
+  if (known) return Promise.resolve({ text: known, capped: false });
+  let pending = describing.get(key);
+  if (!pending) {
+    pending = loadDescription(id)
+      .then((result) => {
+        if (result.text) cacheSet('hcdesc', key, result.text, 60);
+        return result;
+      })
+      .finally(() => describing.delete(key));
+    describing.set(key, pending);
+  }
+  return pending;
+}
+
+async function loadDescription(id: number): Promise<{ text: string | null; capped: boolean }> {
   try {
     const res = await backendFetch('/hc/describe', {
       method: 'POST',

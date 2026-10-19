@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
 import { paths, updateWithSeriesVersion } from '../../../services/db/ref';
 import { useAuth } from '../../../contexts/AuthContext';
-import { fetchStaticCatalogSeasons } from '../../../services/catalog/staticCatalog';
+import {
+  fetchStaticCatalogSeasons,
+  refreshCatalogNow,
+} from '../../../services/catalog/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
 
 type CatalogEpisode = CatalogSeason['episodes'][number];
@@ -30,7 +33,8 @@ interface ApplyTargets {
 
 /**
  * Wartet bis catalog/seasons/{tmdbId} verfuegbar ist (Backend hat die Serie
- * im Catalog erfasst). Pollt mit exponentiellem Backoff bis max 30s.
+ * im Catalog erfasst). Pollt mit exponentiellem Backoff bis max 30s — zwischen
+ * den Versuchen nur version.json: erst eine neue Katalog-Version bringt die Serie.
  */
 async function waitForCatalogSeasons(
   tmdbId: number,
@@ -45,6 +49,7 @@ async function waitForCatalogSeasons(
     if (seasons && Object.keys(seasons).length > 0) return seasons;
     await new Promise((r) => setTimeout(r, delay));
     delay = Math.min(delay * 1.5, 3000);
+    await refreshCatalogNow();
   }
   return null;
 }

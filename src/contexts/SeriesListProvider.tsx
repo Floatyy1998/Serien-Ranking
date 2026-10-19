@@ -10,11 +10,13 @@ import type {
 } from '../types/CatalogTypes';
 import { mergeToSeriesView } from '../lib/series/seriesAdapter';
 import {
+  claimFreshFetch,
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeriesFresh,
   fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
   fetchStaticCatalogSeasonsBulkFresh,
+  refreshCatalogNow,
   subscribeCatalogChange,
 } from '../services/catalog/staticCatalog';
 
@@ -166,14 +168,19 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (!userSeriesRefs || Object.keys(userSeriesRefs).length === 0) return;
       setCatalogLoading(true);
 
-      // forceFresh: gezielt seriesMeta frisch (no-store) — bewusst OHNE
-      // clearStaticCatalogCache(): das nukte früher ALLE Katalog-Caches
-      // (Movies, Filler, Premieren, Overlays …) und löste beim Onboarding
-      // einen Refetch-Sturm über alle Konsumenten aus.
+      // forceFresh: erst die neue Katalog-Version holen (ein /add hat schon
+      // gebumpt) — seriesMeta ohne Cache nur, wenn ein Titel danach noch fehlt.
+      // Bewusst OHNE clearStaticCatalogCache(): das nukte früher ALLE Katalog-
+      // Caches und löste beim Onboarding einen Refetch-Sturm aus.
       let merged: Record<string, CatalogSeries> | null = null;
       if (forceFresh) {
         try {
-          merged = await fetchStaticCatalogSeriesFresh();
+          await refreshCatalogNow();
+          merged = await fetchStaticCatalogSeries();
+          const missing = Object.keys(userSeriesRefs).filter((id) => !merged?.[id]);
+          if (missing.length > 0 && claimFreshFetch('series', missing)) {
+            merged = (await fetchStaticCatalogSeriesFresh()) ?? merged;
+          }
         } catch {
           // weiter mit Cache-Pfad
         }
@@ -199,7 +206,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
       // Wenn der Fetch fehlschlaegt: bestehenden State NICHT leeren — sonst
       // sieht der User ploetzlich "keine Serien". Beim naechsten visibility-
-      // change / 5min-Poll wird's erneut versucht. Nur beim allerersten Run
+      // change / 15-min-Poll wird's erneut versucht. Nur beim allerersten Run
       // (initial state ist null) muss {} gesetzt werden, damit der Splash
       // aufloest.
       setCatalogMeta((prev) => {
@@ -309,7 +316,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Auto-Refresh: Silent refetch der Catalog-Daten, wenn serverseitig eine
   // neue Version vorliegt. Getrieben vom zentralen Versions-Watcher in
-  // staticCatalog (subscribeCatalogChange) — EIN tab-globaler Poll (5 min +
+  // staticCatalog (subscribeCatalogChange) — EIN tab-globaler Poll (15 min +
   // visibilitychange, 30s-Debounce) statt eines eigenen Intervalls pro
   // Provider. Der Callback laeuft ohne catalogLoading-Flag (kein UI-Flackern);
   // Background-Cron-Updates werden so ganz ohne App-Reload sichtbar.
@@ -574,11 +581,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetchWatch();
   }, [refetchRefs, refetchWatch]);
 
-  // Nach /add: deterministisch sowohl seriesMeta als auch seasonsBulk frisch
-  // ziehen. Loest die Race zwischen userSeriesRefs-Listener und dem
+  // Nach /add: deterministisch sowohl seriesMeta als auch seasonsBulk mit der
+  // neuen Serie ziehen. Loest die Race zwischen userSeriesRefs-Listener und dem
   // Stale-While-Revalidate-Cache, bei der direkt nach Hinzufuegen einer Serie
   // catalogSeasons noch keine Daten fuer die neue tmdbId enthielt und das
-  // Detail die Folgen erst nach Hard-Reload anzeigte.
+  // Detail die Folgen erst nach Hard-Reload anzeigte. Das Backend hat vor der
+  // Antwort gebumpt: der Versions-Check holt nur die geaenderten Dateien. Die
+  // Voll-Downloads ohne Cache bleiben der Rueckfall, falls etwas fehlt.
   //
   // newSeriesId ist die gerade hinzugefuegte TMDB-ID. Sie kann im
   // userSeriesRefs-Snapshot noch fehlen (Realtime-Listener feuert async nach
@@ -595,16 +604,29 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       // Download) laufen alle Aufrufer auf denselben frischen Fetch auf.
       if (!refetchAfterAddInflightRef.current) {
         refetchAfterAddInflightRef.current = (async () => {
+          await refreshCatalogNow();
           const [meta, bulk] = await Promise.all([
-            fetchStaticCatalogSeriesFresh(),
-            fetchStaticCatalogSeasonsBulkFresh(),
+            fetchStaticCatalogSeries(),
+            fetchStaticCatalogSeasonsBulk(),
           ]);
           return { meta, bulk };
         })().finally(() => {
           refetchAfterAddInflightRef.current = null;
         });
       }
-      const { meta, bulk } = await refetchAfterAddInflightRef.current;
+      let { meta, bulk } = await refetchAfterAddInflightRef.current;
+      const expected =
+        newSeriesId != null
+          ? [String(newSeriesId)]
+          : userSeriesRefs
+            ? Object.keys(userSeriesRefs)
+            : [];
+      if (!meta || expected.some((id) => !meta?.[id])) {
+        meta = (await fetchStaticCatalogSeriesFresh()) ?? meta;
+      }
+      if (!bulk || expected.some((id) => !bulk?.[id])) {
+        bulk = (await fetchStaticCatalogSeasonsBulkFresh()) ?? bulk;
+      }
       if (meta) setCatalogMeta(meta);
       if (bulk) {
         // Funktional + additiv: beim Onboarding laufen mehrere Adds parallel —

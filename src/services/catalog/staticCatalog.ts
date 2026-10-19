@@ -95,11 +95,14 @@ function migrateLocalStorageOnce(): void {
 interface VersionResponse {
   version: number;
   updatedAt: string;
+  /** Je Datei die Version der letzten inhaltlichen Änderung (Backend files-index.json). */
+  files?: Record<string, number>;
 }
 
 let memoryMeta: Record<string, CatalogSeries> | null = null;
 let memoryMovies: Record<string, CatalogMovie> | null = null;
 const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
+const missingSeasons = new Set<string>();
 let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
 let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
@@ -122,8 +125,23 @@ let memoryLangEpisodes: LangEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
+// Datei-Versionen der zuletzt gelesenen version.json: eine unveränderte Datei
+// behält über Bumps hinweg ihre URL und kommt aus dem Browser-Cache.
+let remoteFiles: { version: number; files: Record<string, number> } | null = null;
+const laufendeFetches = new Map<string, Promise<unknown>>();
 
-async function fetchJson<T>(
+function rememberRemote(v: VersionResponse | null | undefined): number | null {
+  const version = typeof v?.version === 'number' ? v.version : null;
+  cachedVersion = version;
+  remoteFiles =
+    version !== null && v?.files && typeof v.files === 'object'
+      ? { version, files: v.files }
+      : null;
+  if (version !== null) watcherLastCheck = Date.now();
+  return version;
+}
+
+function fetchJson<T>(
   path: string,
   opts?: { noStore?: boolean; version?: number | null; timeoutMs?: number }
 ): Promise<T> {
@@ -132,8 +150,27 @@ async function fetchJson<T>(
   // serverseitig neue Daten stehen — das umgehen wir, indem jede Version eine
   // eigene URL bekommt. So liegt alte Version 24h im Cache, neue Version ist
   // ein neuer URL-Key und wird vom Netz geholt.
-  const query = opts?.version != null ? `?v=${opts.version}` : '';
+  const fileVersion =
+    opts?.version != null && remoteFiles?.version === opts.version
+      ? remoteFiles.files[path]
+      : undefined;
+  const v = typeof fileVersion === 'number' ? fileVersion : opts?.version;
+  const query = v != null ? `?v=${v}` : '';
   const url = `${CATALOG_BASE_URL}/${path}${query}`;
+  if (opts?.noStore) return fetchJsonOnce<T>(url, opts);
+  // Gleichzeitige Bumps (mehrere Loader erkennen dieselbe neue Version) teilen sich die Downloads.
+  let pending = laufendeFetches.get(url) as Promise<T> | undefined;
+  if (!pending) {
+    pending = fetchJsonOnce<T>(url, opts).finally(() => laufendeFetches.delete(url));
+    laufendeFetches.set(url, pending);
+  }
+  return pending;
+}
+
+async function fetchJsonOnce<T>(
+  url: string,
+  opts?: { noStore?: boolean; timeoutMs?: number }
+): Promise<T> {
   const timeoutMs = opts?.timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -172,8 +209,7 @@ async function getRemoteVersion(): Promise<number | null> {
         // dass der ganze Stale-While-Revalidate-Check ewig haengt
         timeoutMs: 5_000,
       });
-      cachedVersion = typeof v?.version === 'number' ? v.version : null;
-      return cachedVersion;
+      return rememberRemote(v);
     } catch (e) {
       console.warn('[staticCatalog] version fetch failed', e);
       return null;
@@ -233,6 +269,31 @@ async function invalidateLocalCaches(opts?: {
 // und laden NUR die geaenderten Season-Files nach. Ab DELTA_MAX_FILES
 // Aenderungen ist der Bulk-Download billiger (Request-Overhead) → Voll-Refetch.
 const DELTA_MAX_FILES = 60;
+// Mehr parallel trifft nur die Ratenbremse des Servers, schneller wird es nicht.
+const DELTA_PARALLEL = 6;
+
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  let failed = false;
+  const worker = async () => {
+    while (!failed && next < items.length) {
+      const i = next++;
+      try {
+        out[i] = await fn(items[i]);
+      } catch (e) {
+        failed = true;
+        throw e;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
 
 interface SeasonsIndexResponse {
   version?: number;
@@ -271,14 +332,13 @@ async function applySeasonsDelta(localV: number | null, remote: number): Promise
     if (!(key in ids)) delete next[key];
   }
   try {
-    const results = await Promise.all(
-      changed.map(async (id) => {
-        const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
-          version: remote,
-        });
-        return [id, data] as const;
-      })
-    );
+    // Version je Datei statt der globalen: alle Clients teilen sich dieselbe URL im Edge-Cache.
+    const results = await mapLimit(changed, DELTA_PARALLEL, async (id) => {
+      const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
+        version: ids[id],
+      });
+      return [id, data] as const;
+    });
     for (const [id, data] of results) {
       if (data) next[id] = data;
     }
@@ -822,6 +882,8 @@ export async function fetchStaticCatalogSeasons(
   }
 
   const version = await ensureVersionFresh();
+  const missingKey = `${id}@${version}`;
+  if (missingSeasons.has(missingKey)) return null;
   try {
     const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
       version,
@@ -832,7 +894,9 @@ export async function fetchStaticCatalogSeasons(
     return applied;
   } catch (e) {
     // 404 = Serie existiert nicht im Katalog — dafür hilft auch der Mirror nicht.
-    if (!String(e).includes('404')) {
+    // Gilt bis zur nächsten Katalog-Version, dann hat die URL ohnehin ein neues ?v.
+    if (String(e).includes('404')) missingSeasons.add(missingKey);
+    else {
       console.warn(`[staticCatalog] seasons/${id} fetch failed, trying RTDB mirror`, e);
       const mirror = await readCatalogMirror<Record<string, CatalogSeason>>(
         `catalogMirror/seasons/${id}`
@@ -1248,6 +1312,8 @@ export async function fetchStaticTvPremieres(): Promise<TvPremiereStaticEntry[] 
   }
 }
 
+let laufenderBumpCheck: Promise<boolean> | null = null;
+
 /**
  * Prueft ob serverseitig eine neue Catalog-Version vorliegt und invalidiert
  * in diesem Fall Memory + IDB (aber ohne direkt neu zu fetchen).
@@ -1257,7 +1323,17 @@ export async function fetchStaticTvPremieres(): Promise<TvPremiereStaticEntry[] 
  * Returns true wenn eine neue Version gefunden wurde (und Caches invalidiert
  * wurden), false sonst.
  */
-export async function checkForCatalogVersionBump(): Promise<boolean> {
+export function checkForCatalogVersionBump(): Promise<boolean> {
+  // Gleichzeitige Prüfungen (Watcher, /add, Onboarding) teilen sich eine Anfrage.
+  if (!laufenderBumpCheck) {
+    laufenderBumpCheck = pruefeVersionBump().finally(() => {
+      laufenderBumpCheck = null;
+    });
+  }
+  return laufenderBumpCheck;
+}
+
+async function pruefeVersionBump(): Promise<boolean> {
   // Cached Version zuruecksetzen damit getRemoteVersion den Server neu abfragt
   cachedVersion = null;
   let remote: number | null;
@@ -1266,12 +1342,11 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
       noStore: true,
       timeoutMs: 5_000,
     });
-    remote = typeof v?.version === 'number' ? v.version : null;
+    remote = rememberRemote(v);
   } catch {
     return false;
   }
   if (remote === null) return false;
-  cachedVersion = remote;
   const local = await getLocalVersion();
   if (local !== null && local === remote) {
     return false;
@@ -1285,7 +1360,7 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
 
 // Zentraler Versions-Watcher (Silent-Refresh ueberall)
 //
-// Ein EINZIGER Watcher pro Tab pollt version.json (5-min-Intervall +
+// Ein EINZIGER Watcher pro Tab pollt version.json (15-min-Intervall +
 // visibilitychange, 30s-Debounce, nur wenn der Tab sichtbar ist). Erkennt er
 // einen Bump, invalidiert checkForCatalogVersionBump() ALLE Caches (Memory +
 // IDB, inkl. seasonalAnime + tvPremieres) und der Watcher benachrichtigt
@@ -1305,8 +1380,20 @@ const catalogChangeListeners = new Set<CatalogChangeListener>();
 let watcherStarted = false;
 let watcherLastCheck = 0;
 let watcherInFlight = false;
-const WATCHER_POLL_MS = 5 * 60 * 1000;
+// Der Katalog wechselt höchstens alle 2 h (Cron) oder nach einem /add — und
+// Fokus/Sichtbarkeit prüfen ohnehin sofort.
+const WATCHER_POLL_MS = 15 * 60 * 1000;
 const WATCHER_DEBOUNCE_MS = 30 * 1000;
+
+function notifyCatalogChange(): void {
+  for (const cb of Array.from(catalogChangeListeners)) {
+    try {
+      cb();
+    } catch {
+      // ein kaputter Listener darf die anderen nicht blockieren
+    }
+  }
+}
 
 async function runCatalogVersionCheck(): Promise<void> {
   if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
@@ -1317,19 +1404,27 @@ async function runCatalogVersionCheck(): Promise<void> {
   watcherInFlight = true;
   try {
     const bumped = await checkForCatalogVersionBump();
-    if (!bumped) return;
     // Caches sind jetzt invalidiert — alle Abonnenten silent refetchen lassen.
-    for (const cb of Array.from(catalogChangeListeners)) {
-      try {
-        cb();
-      } catch {
-        // ein kaputter Listener darf die anderen nicht blockieren
-      }
-    }
+    if (bumped) notifyCatalogChange();
   } catch {
     // best-effort — den Haupt-Flow nie stoeren
   } finally {
     watcherInFlight = false;
+  }
+}
+
+/**
+ * Sofortiger Versions-Check ohne Debounce, z. B. direkt nach einem /add: das
+ * Backend hat den Katalog da schon neu geschrieben und gebumpt. Benachrichtigt
+ * wie der Watcher alle Abonnenten. Liefert false, wenn version.json nicht kam.
+ */
+export async function refreshCatalogNow(): Promise<boolean> {
+  try {
+    const bumped = await checkForCatalogVersionBump();
+    if (bumped) notifyCatalogChange();
+    return cachedVersion !== null;
+  } catch {
+    return false;
   }
 }
 
@@ -1369,6 +1464,25 @@ export function subscribeCatalogChange(listener: CatalogChangeListener): () => v
   return () => {
     catalogChangeListeners.delete(listener);
   };
+}
+
+const FRESH_TRIED_PREFIX = 'catalogFreshTried:';
+
+/**
+ * Ob sich der Voll-Download ohne Cache für fehlende Titel lohnt: je Katalog-
+ * Version und Fehlliste nur einmal. Dauerhaft fehlende Titel (aus dem Katalog
+ * entfernt) kosteten sonst bei jedem App-Start den kompletten Katalog.
+ */
+export function claimFreshFetch(kind: 'series' | 'movies', missing: string[]): boolean {
+  const mark = `${cachedVersion ?? '-'}|${[...missing].sort().join(',')}`;
+  try {
+    const key = FRESH_TRIED_PREFIX + kind;
+    if (localStorage.getItem(key) === mark) return false;
+    localStorage.setItem(key, mark);
+  } catch {
+    // ohne Speicher wie bisher jedes Mal
+  }
+  return true;
 }
 
 /**

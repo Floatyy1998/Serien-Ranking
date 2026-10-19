@@ -43,10 +43,11 @@ interface FileResp {
 }
 const server: {
   version: number | null;
+  versionFiles: Record<string, number> | null;
   versionThrows: boolean;
   rejectFiles: boolean;
   files: Record<string, FileResp>;
-} = { version: 100, versionThrows: false, rejectFiles: false, files: {} };
+} = { version: 100, versionFiles: null, versionThrows: false, rejectFiles: false, files: {} };
 
 const fetchSpy = vi.fn(async (input: unknown) => {
   const url = String(input);
@@ -55,7 +56,11 @@ const fetchSpy = vi.fn(async (input: unknown) => {
     return {
       ok: true,
       status: 200,
-      json: async () => ({ version: server.version, updatedAt: '2026-07-04' }),
+      json: async () => ({
+        version: server.version,
+        updatedAt: '2026-07-04',
+        ...(server.versionFiles ? { files: server.versionFiles } : {}),
+      }),
     };
   }
   if (server.rejectFiles) throw new Error('network down');
@@ -138,6 +143,7 @@ beforeEach(() => {
   idb.idbRemove.mockClear();
   idb.idbRemovePrefix.mockClear();
   server.version = 100;
+  server.versionFiles = null;
   server.versionThrows = false;
   server.rejectFiles = false;
   server.files = {};
@@ -402,6 +408,112 @@ describe('checkForCatalogVersionBump', () => {
 
     await expect(checkForCatalogVersionBump()).resolves.toBe(true);
     expect(idb.idbRemove).toHaveBeenCalledWith(LS.seasonsBulk);
+  });
+});
+
+describe('Weniger Anfragen: Datei-Versionen, geteilte Abrufe, Deltas', () => {
+  it('nimmt für eine Datei die Version ihrer letzten Änderung aus version.json', async () => {
+    server.versionFiles = { 'moviesMeta.json': 50 };
+    server.files['moviesMeta.json'] = { ok: true, status: 200, json: { '7': { title: 'M' } } };
+    server.files['seriesMeta.json'] = { ok: true, status: 200, json: { '1': { title: 'S' } } };
+    const { fetchStaticCatalogMovies, fetchStaticCatalogSeries } = await load();
+
+    await fetchStaticCatalogMovies();
+    await fetchStaticCatalogSeries();
+
+    expect(lastUrlFor('moviesMeta.json')).toMatch(/moviesMeta\.json\?v=50$/);
+    // ohne Eintrag gilt wie bisher die globale Version
+    expect(lastUrlFor('seriesMeta.json')).toMatch(/seriesMeta\.json\?v=100$/);
+  });
+
+  it('gleichzeitige Abrufe derselben Datei teilen sich eine Anfrage', async () => {
+    server.files['drop-off.json'] = { ok: true, status: 200, json: { entries: {} } };
+    const { fetchStaticDropOff, fetchStaticAnimeFiller } = await load();
+    server.files['anime-filler.json'] = { ok: true, status: 200, json: { entries: {} } };
+
+    await Promise.all([fetchStaticDropOff(), fetchStaticDropOff(), fetchStaticAnimeFiller()]);
+
+    expect(callsTo('drop-off.json')).toBe(1);
+    expect(callsTo('version.json')).toBe(1);
+  });
+
+  it('Delta lädt jede Staffel-Datei mit ihrer Index-Version, höchstens 6 gleichzeitig', async () => {
+    server.version = 200;
+    seedLocalVersion(100);
+    idb.store.set(LS.seasonsBulk, { v: 100, data: {} });
+    const ids: Record<string, number> = {};
+    for (let i = 1; i <= 10; i++) {
+      ids[String(i)] = 150 + i;
+      server.files[`seasons/${i}.json`] = { ok: true, status: 200, json: { '0': { n: i } } };
+    }
+    server.files['seasons-index.json'] = { ok: true, status: 200, json: { version: 200, ids } };
+    let active = 0;
+    let peak = 0;
+    vi.stubGlobal('fetch', async (input: unknown) => {
+      const slow = String(input).includes('/seasons/');
+      if (slow) {
+        active++;
+        peak = Math.max(peak, active);
+        await new Promise((r) => setTimeout(r, 1));
+        active--;
+      }
+      return fetchSpy(input);
+    });
+    const { checkForCatalogVersionBump } = await load();
+
+    await expect(checkForCatalogVersionBump()).resolves.toBe(true);
+
+    expect(peak).toBeLessThanOrEqual(6);
+    expect(lastUrlFor('seasons/3.json')).toMatch(/\?v=153$/);
+    expect((idb.store.get(LS.seasonsBulk)?.data as Record<string, unknown>)['10']).toEqual({
+      '0': { n: 10 },
+    });
+  });
+
+  it('merkt sich ein 404 einer Staffel-Datei bis zur nächsten Katalog-Version', async () => {
+    const { fetchStaticCatalogSeasons } = await load();
+    expect(await fetchStaticCatalogSeasons(9)).toBeNull();
+    expect(await fetchStaticCatalogSeasons(9)).toBeNull();
+    expect(callsTo('seasons/9.json')).toBe(1);
+  });
+
+  it('gleichzeitige Versions-Prüfungen teilen sich eine Anfrage', async () => {
+    const { checkForCatalogVersionBump } = await load();
+    seedLocalVersion(100);
+    await Promise.all([checkForCatalogVersionBump(), checkForCatalogVersionBump()]);
+    expect(callsTo('version.json')).toBe(1);
+  });
+
+  it('refreshCatalogNow benachrichtigt die Abonnenten bei neuer Version', async () => {
+    server.version = 200;
+    seedLocalVersion(100);
+    server.files['seriesMeta.json'] = { ok: true, status: 200, json: { '1': { title: 'S' } } };
+    const { refreshCatalogNow, subscribeCatalogChange } = await load();
+    const listener = vi.fn();
+    subscribeCatalogChange(listener);
+
+    await expect(refreshCatalogNow()).resolves.toBe(true);
+    expect(listener).toHaveBeenCalledTimes(1);
+    await refreshCatalogNow();
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('claimFreshFetch erlaubt den Voll-Download je Version und Fehlliste nur einmal', async () => {
+    const mem = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => void mem.set(k, v),
+      removeItem: (k: string) => void mem.delete(k),
+      key: () => null,
+      length: 0,
+    });
+    const { claimFreshFetch, refreshCatalogNow } = await load();
+    await refreshCatalogNow();
+
+    expect(claimFreshFetch('series', ['5', '3'])).toBe(true);
+    expect(claimFreshFetch('series', ['3', '5'])).toBe(false);
+    expect(claimFreshFetch('movies', ['3', '5'])).toBe(true);
+    expect(claimFreshFetch('series', ['3'])).toBe(true);
   });
 });
 

@@ -94,6 +94,18 @@ describe('hardcoverApi', () => {
     expect(hardcoverReady()).toBe(true);
   });
 
+  it('merkt sich übersetzte Klappentexte, aber kein „Tageslimit erreicht“', async () => {
+    localStorage.clear();
+    backendFetch
+      .mockResolvedValueOnce(json({ text: null, reason: 'cap' }))
+      .mockResolvedValueOnce(json({ text: 'Ein Buch über Drachen.' }));
+    const { hardcoverDescription } = await import('./hardcoverApi');
+    expect(await hardcoverDescription(7)).toEqual({ text: null, capped: true });
+    expect((await hardcoverDescription(7)).text).toBe('Ein Buch über Drachen.');
+    expect((await hardcoverDescription(7)).text).toBe('Ein Buch über Drachen.');
+    expect(backendFetch).toHaveBeenCalledTimes(2);
+  });
+
   it('wiederholt ein 429 der Ratenbremse nicht', async () => {
     backendFetch.mockResolvedValue(new Response('slow down', { status: 429 }));
     const { hardcoverSearch } = await import('./hardcoverApi');

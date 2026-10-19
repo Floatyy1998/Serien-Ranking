@@ -57,6 +57,27 @@ interface UseTMDBTrendingResult {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
 
+// Wöchentliche Trends: eine Stunde pro Gerät reicht, der Server cached ohnehin länger.
+const TRENDING_TTL_MS = 60 * 60 * 1000;
+const trendingCacheKey = () => `trending:${appLocale}:${watchRegion}`;
+
+function readTrendingCache(): unknown {
+  try {
+    const entry = JSON.parse(localStorage.getItem(trendingCacheKey()) || 'null');
+    return entry && Date.now() - entry.at < TRENDING_TTL_MS ? entry.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeTrendingCache(data: unknown): void {
+  try {
+    localStorage.setItem(trendingCacheKey(), JSON.stringify({ at: Date.now(), data }));
+  } catch {
+    // Speicher voll — dann eben ohne
+  }
+}
+
 // Resolve a raw TMDB "DE flatrate" array to app providers (name + local logo).
 // Pure — used for both the cached backend payload and the direct-TMDB fallback.
 function resolveProviders(flatrate: RawWatchProvider[] | undefined): TrendingProvider[] {
@@ -131,11 +152,12 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
         try {
           // Sprache UND Land mitgeben: der Cache haelt jede Sprache getrennt,
           // sonst kaemen Titel und Anbieter fuer alle auf Deutsch heraus.
-          const res = await fetch(
-            `${BACKEND_URL}/trending?lang=${appLocale}&region=${watchRegion}`
-          );
-          if (res.ok) {
-            const data = await res.json();
+          const cachedData = readTrendingCache();
+          const res = cachedData
+            ? null
+            : await fetch(`${BACKEND_URL}/trending?lang=${appLocale}&region=${watchRegion}`);
+          if (cachedData || res?.ok) {
+            const data = cachedData ?? (await res?.json());
             const tv: (TMDBTrendingItem & { providers?: RawWatchProvider[] })[] = Array.isArray(
               data?.tv
             )
@@ -147,6 +169,7 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
               ? data.movie
               : [];
             if (tv.length || movie.length) {
+              if (!cachedData) writeTrendingCache(data);
               if (cancelled) return;
               setRawSeries(
                 tv.map((item) => ({

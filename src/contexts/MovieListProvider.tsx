@@ -6,8 +6,10 @@ import type { CatalogMovie, UserMovieRef } from '../types/CatalogTypes';
 import { mergeToMovieView } from '../lib/series/seriesAdapter';
 import { MovieListContext } from './MovieListContext';
 import {
+  claimFreshFetch,
   fetchStaticCatalogMovies,
   fetchStaticCatalogMoviesFresh,
+  refreshCatalogNow,
   subscribeCatalogChange,
 } from '../services/catalog/staticCatalog';
 
@@ -43,13 +45,19 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
       if (!userMovieRefs || Object.keys(userMovieRefs).length === 0) return;
       setCatalogLoading(true);
 
-      // forceFresh: gezielt moviesMeta frisch (no-store) — bewusst OHNE
-      // clearStaticCatalogCache(): das nukte alle Katalog-Caches und löste
-      // beim Onboarding einen Refetch-Sturm über alle Konsumenten aus.
+      // forceFresh: erst die neue Katalog-Version holen (ein /addMovie hat schon
+      // gebumpt) — moviesMeta ohne Cache nur, wenn ein Film danach noch fehlt.
+      // Bewusst OHNE clearStaticCatalogCache(): das nukte alle Katalog-Caches
+      // und löste beim Onboarding einen Refetch-Sturm über alle Konsumenten aus.
       let merged: Record<string, CatalogMovie> | null = null;
       if (forceFresh) {
         try {
-          merged = await fetchStaticCatalogMoviesFresh();
+          await refreshCatalogNow();
+          merged = await fetchStaticCatalogMovies();
+          const missing = Object.keys(userMovieRefs).filter((id) => !merged?.[id]);
+          if (missing.length > 0 && claimFreshFetch('movies', missing)) {
+            merged = (await fetchStaticCatalogMoviesFresh()) ?? merged;
+          }
         } catch {
           // weiter mit Cache-Pfad
         }

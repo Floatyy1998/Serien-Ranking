@@ -23,9 +23,11 @@ vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authSt
 
 const catalog = vi.hoisted(() => ({
   fetchStaticCatalogSeasons: vi.fn<(id: number) => Promise<Record<string, CatalogSeason> | null>>(),
+  refreshCatalogNow: vi.fn(async () => true),
 }));
 vi.mock('../../../services/catalog/staticCatalog', () => ({
   fetchStaticCatalogSeasons: catalog.fetchStaticCatalogSeasons,
+  refreshCatalogNow: catalog.refreshCatalogNow,
 }));
 
 import { useApplyWatchProgress } from './useApplyWatchProgress';
@@ -43,6 +45,7 @@ beforeEach(() => {
   fb.update.mockClear();
   authState.user = { uid: 'u1' };
   catalog.fetchStaticCatalogSeasons.mockReset();
+  catalog.refreshCatalogNow.mockClear();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
@@ -131,6 +134,8 @@ describe('useApplyWatchProgress', () => {
     await vi.advanceTimersByTimeAsync(600);
     await promise;
     expect(catalog.fetchStaticCatalogSeasons).toHaveBeenCalledTimes(2);
+    // Zwischen den Versuchen nur die Katalog-Version prüfen, nicht blind dieselbe URL.
+    expect(catalog.refreshCatalogNow).toHaveBeenCalledTimes(1);
     expect(fb.update).toHaveBeenCalledTimes(1);
   });
 });

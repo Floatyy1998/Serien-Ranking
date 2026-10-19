@@ -50,6 +50,7 @@ function movieItem(id: number, voteCount: number) {
 beforeEach(() => {
   ctx.allSeriesList = [];
   ctx.movieList = [];
+  localStorage.clear();
   vi.stubEnv('VITE_API_TMDB', 'tmdb-key');
 });
 
@@ -79,6 +80,19 @@ describe('useTMDBTrending', () => {
     // Sprache und Land gehoeren zum Vertrag — ohne sie liefert das Backend
     // deutsche Titel und deutsche Anbieter an alle.
     expect(fetchMock.mock.calls[0][0]).toMatch(/\/trending\?lang=de&region=/);
+  });
+
+  it('holt /trending binnen einer Stunde nicht erneut, sondern aus dem Gerätespeicher', async () => {
+    fetchMock = vi.fn(async (): Promise<FetchResult> => ok({ tv: [tvItem(1, 500)], movie: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+    const first = renderHook(() => useTMDBTrending());
+    await waitFor(() => expect(first.result.current.loading).toBe(false));
+    first.unmount();
+
+    const second = renderHook(() => useTMDBTrending());
+    await waitFor(() => expect(second.result.current.loading).toBe(false));
+    expect(second.result.current.trending.map((i) => i.id)).toEqual([1]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to the direct TMDB trending endpoints when the backend is empty', async () => {
