@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { t } from '../../services/i18n';
@@ -35,6 +35,7 @@ const VALID_SORT_OPTIONS: SortOption[] = ['episodes', 'time', 'progress', 'recen
 export const useCatchUpData = () => {
   const { seriesList, loading } = useSeriesList();
   const [searchParams, setSearchParams] = useSearchParams();
+  const onPage = useLocation().pathname === '/catch-up';
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
 
@@ -62,9 +63,13 @@ export const useCatchUpData = () => {
     [sortBy]
   );
 
+  // Keep-Alive-Tab: versteckt gemountet darf er nicht in fremde URLs schreiben
+  // (Ping-Pong mit dem Freundesprofil sprengte Safaris replaceState-Limit).
   useEffect(() => {
+    if (!onPage) return;
+    if (searchParams.get('sort') === sortBy && searchParams.get('dir') === sortDirection) return;
     setSearchParams({ sort: sortBy, dir: sortDirection }, { replace: true });
-  }, [sortBy, sortDirection, setSearchParams]);
+  }, [onPage, sortBy, sortDirection, searchParams, setSearchParams]);
 
   // Save scroll position on scroll (debounced)
   useEffect(() => {

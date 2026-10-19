@@ -14,9 +14,11 @@ import {
 const router = vi.hoisted(() => ({
   params: new URLSearchParams(),
   setParams: vi.fn(),
+  pathname: '/catch-up',
 }));
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [router.params, router.setParams] as const,
+  useLocation: () => ({ pathname: router.pathname }),
 }));
 
 // SeriesList context mock
@@ -87,6 +89,7 @@ describe('useCatchUpData', () => {
   beforeEach(() => {
     router.params = new URLSearchParams();
     router.setParams.mockReset();
+    router.pathname = '/catch-up';
     ctx.seriesList = [seriesA, seriesB, seriesDone];
   });
   afterEach(() => cleanup());
@@ -163,6 +166,18 @@ describe('useCatchUpData', () => {
       { sort: 'episodes', dir: 'desc' },
       { replace: true }
     );
+  });
+
+  it('leaves the URL alone when it already matches', () => {
+    router.params = new URLSearchParams('sort=episodes&dir=desc');
+    renderHook(() => useCatchUpData());
+    expect(router.setParams).not.toHaveBeenCalled();
+  });
+
+  it('never writes while hidden as a keep-alive tab on another route', () => {
+    router.pathname = '/profile/abc';
+    renderHook(() => useCatchUpData());
+    expect(router.setParams).not.toHaveBeenCalled();
   });
 });
 
