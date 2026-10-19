@@ -196,6 +196,20 @@ describe('backendFetch', () => {
     }
   });
 
+  it('meldet Verbindungsfehler im Hintergrund nicht, wirft sie aber weiter', async () => {
+    vi.stubGlobal('document', { visibilityState: 'hidden' });
+    try {
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+      const backendFetch = await loadBackendFetch();
+      await expect(backendFetch('/hc/search', { method: 'POST' })).rejects.toThrow(
+        'Failed to fetch'
+      );
+      expect(captureError).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('wiederholt andere Pfade bei Verbindungsfehlern nicht', async () => {
     fetchMock.mockRejectedValue(new TypeError('Load failed'));
     const backendFetch = await loadBackendFetch();

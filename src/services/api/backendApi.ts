@@ -103,7 +103,10 @@ async function sendWithRetry(
       if (!TRANSIENT_STATUS.has(response.status) || attempt >= delays.length) return response;
     } catch (error) {
       if (attempt >= delays.length) {
-        reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
+        // Im Hintergrund kappen Android-WebView und iOS das Netz — ein Abbruch dort ist kein Befund.
+        if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+          reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
+        }
         throw error;
       }
     }
