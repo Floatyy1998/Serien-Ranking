@@ -3,6 +3,8 @@ import { findBook } from '../../../services/api/booksApi';
 import type { BookSearchResult, BookSeriesPart } from '../../../types/Book';
 
 const MAX_PARTS = 16;
+// Jede Suche kostet bis zu drei Hardcover-Abfragen — nie alle Bände auf einmal.
+const PARALLEL = 3;
 
 export interface PartLookup {
   part: BookSeriesPart;
@@ -15,19 +17,25 @@ export function useSeriesPartBooks(lookups: PartLookup[]): Record<string, BookSe
 
   useEffect(() => {
     let cancelled = false;
-    for (const { part, author } of lookups.slice(0, MAX_PARTS)) {
+    const queue: PartLookup[] = [];
+    for (const lookup of lookups.slice(0, MAX_PARTS)) {
+      const { part } = lookup;
       if (part.result) {
         const ready = part.result;
         setFound((prev) => (prev[part.wikidataId] ? prev : { ...prev, [part.wikidataId]: ready }));
-        continue;
-      }
-      const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
-      void findBook(part.title, author).then((result) => {
-        if (cancelled || !result) return;
-        if (last && !result.authors?.some((a) => a.toLowerCase().includes(last))) return;
-        setFound((prev) => ({ ...prev, [part.wikidataId]: result }));
-      });
+      } else queue.push(lookup);
     }
+    const work = async () => {
+      for (let next = queue.shift(); next && !cancelled; next = queue.shift()) {
+        const { part, author } = next;
+        const result = await findBook(part.title, author);
+        if (cancelled || !result) continue;
+        const last = author?.toLowerCase().split(/\s+/).pop() ?? '';
+        if (last && !result.authors?.some((a) => a.toLowerCase().includes(last))) continue;
+        setFound((prev) => ({ ...prev, [part.wikidataId]: result }));
+      }
+    };
+    for (let i = 0; i < PARALLEL; i++) void work();
     return () => {
       cancelled = true;
     };

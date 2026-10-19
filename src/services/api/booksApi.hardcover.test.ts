@@ -19,7 +19,7 @@ vi.mock('./hardcoverApi', () => ({
   hardcoverAuthorBooks: vi.fn(),
 }));
 
-import { getBookDetails, searchBooks } from './booksApi';
+import { findBook, getBookDetails, searchBooks } from './booksApi';
 
 const hit = (over: Partial<BookSearchResult>): BookSearchResult => ({
   id: 'hc-1',
@@ -142,5 +142,14 @@ describe('Buchsuche mit Hardcover als erster Quelle', () => {
     const details = await getBookDetails({ hardcoverId: 1 });
     expect(details?.description).toBe('Ein Drachenreiter-Epos.');
     expect(hc.details).toHaveBeenCalledWith(1);
+  });
+
+  it('merkt sich einen Fehltreffer im Hintergrund, solange Hardcover erreichbar ist', async () => {
+    hc.search.mockResolvedValue([]);
+    vi.stubGlobal('fetch', route({}));
+    expect(await findBook('Unbekannt', 'Niemand')).toBeNull();
+    const calls = hc.search.mock.calls.length;
+    expect(await findBook('Unbekannt', 'Niemand')).toBeNull();
+    expect(hc.search.mock.calls.length).toBe(calls);
   });
 });

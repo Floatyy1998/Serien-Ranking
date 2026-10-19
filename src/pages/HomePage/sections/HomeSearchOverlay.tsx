@@ -41,6 +41,10 @@ import { BookOverlayIdle, BookQuickResults } from '../../Books/components/BookQu
 import { MangaOverlayIdle, MangaQuickResults } from '../../Manga/components/MangaQuickResults';
 import { IsbnScanButton } from '../../../components/scanner/IsbnScanButton';
 import { usesArea, type ReadingAreas } from '../../../lib/reading/readingMedium';
+import { useAppFocus } from '../../../hooks/ui/useAppFocus';
+import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
+import { useMangaList } from '../../../contexts/MangaListContext';
+import { useBooksList } from '../../../contexts/BooksListContext';
 import './HomeSearchOverlay.css';
 
 export type SearchFilter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
@@ -121,6 +125,16 @@ export const HomeSearchOverlay = memo(
       useHomeQuickSearch(open && !reading, !reading);
     const [filter, setFilter] = useState<Filter>(initialFilter ?? 'all');
     const filters = reading ? readingFilters(areas) : FILTERS;
+
+    // Lese-Reihen kosten je Tastendruck mehrere Backend-Anfragen: nur für Lesende.
+    const { focus } = useAppFocus();
+    const ownAreas = useReadingAreas();
+    const { allMangaList } = useMangaList();
+    const { allBookList } = useBooksList();
+    const readsToo = focus !== 'watch';
+    const mangaRow =
+      reading || allMangaList.length > 0 || (readsToo && usesArea(ownAreas, 'manga'));
+    const bookRow = reading || allBookList.length > 0 || (readsToo && usesArea(ownAreas, 'books'));
 
     // Bücher und Manga haben eigene Verläufe; Funde aus „Alle" landen zusätzlich dort.
     const recentScope: RecentSearchScope =
@@ -754,7 +768,7 @@ export const HomeSearchOverlay = memo(
                     </motion.div>
                   )
                 ) : null}
-                {hasQuery && filter === 'all' && (
+                {hasQuery && filter === 'all' && mangaRow && (
                   <MangaQuickResults
                     query={query}
                     variant="row"
@@ -764,7 +778,7 @@ export const HomeSearchOverlay = memo(
                     onAdded={() => remember('manga')}
                   />
                 )}
-                {hasQuery && filter === 'all' && (
+                {hasQuery && filter === 'all' && bookRow && (
                   <BookQuickResults
                     query={query}
                     variant="row"

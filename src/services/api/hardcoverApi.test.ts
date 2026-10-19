@@ -94,6 +94,13 @@ describe('hardcoverApi', () => {
     expect(hardcoverReady()).toBe(true);
   });
 
+  it('wiederholt ein 429 der Ratenbremse nicht', async () => {
+    backendFetch.mockResolvedValue(new Response('slow down', { status: 429 }));
+    const { hardcoverSearch } = await import('./hardcoverApi');
+    await expect(hardcoverSearch('harry')).rejects.toMatchObject({ code: 'busy' });
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+  });
+
   it('pausiert erst, wenn sich weiche Fehler binnen einer Minute häufen', async () => {
     vi.useFakeTimers();
     backendFetch.mockResolvedValue(json({ error: 'upstream' }, 503));

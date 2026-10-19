@@ -13,7 +13,7 @@ import {
 import { mergeEditions, orderSeriesVolumes } from '../../lib/books/searchEditions';
 import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { pickWorkHit } from '../../lib/books/workHit';
-import { cached } from '../books/bookCache';
+import { cacheGet, cacheSet, cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
 import { hardcoverDetails, hardcoverIsbn, hardcoverReady, hardcoverSearch } from './hardcoverApi';
 
@@ -368,17 +368,21 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
   return null;
 }
 
-/** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge werden nicht gemerkt. */
+/** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge gelten 6 Stunden, solange Hardcover erreichbar war. */
 export function findBook(title: string, author?: string): Promise<BookSearchResult | null> {
   // h3: Treffer von vor der Band-1-Wahl (h2: vor der Hardcover-Umstellung) fliegen raus.
   const key = `h3:${appLocale}:${title}|${author ?? ''}`.toLowerCase();
+  if (cacheGet<true>('find-miss', key, 6 * HOUR)) return Promise.resolve(null);
   return cached(
     'find',
     key,
     14 * DAY,
     async () => {
       const hit = await lookupBook(title, author);
-      if (!hit) throw new Error('not found');
+      if (!hit) {
+        if (hardcoverReady()) cacheSet('find-miss', key, true, 200);
+        throw new Error('not found');
+      }
       return hit;
     },
     120

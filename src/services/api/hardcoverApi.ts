@@ -41,7 +41,8 @@ export interface HcItem {
 export class HardcoverError extends Error {
   constructor(
     readonly code: string,
-    message?: string
+    message?: string,
+    readonly status?: number
   ) {
     super(message ?? code);
   }
@@ -113,7 +114,7 @@ async function attempt<T>(
             : res.status === 404 || res.status === 401
               ? 'config'
               : 'upstream';
-      throw new HardcoverError(known, `HTTP ${res.status}`);
+      throw new HardcoverError(known, `HTTP ${res.status}`, res.status);
     }
     return (await res.json()) as T;
   } catch (err) {
@@ -146,7 +147,9 @@ async function post<T>(
         throw err;
       }
       // Weiche Fehler einmal nach kurzer Pause wiederholen — meist war nur die Warteschlange beim Server voll.
-      if (round === 0 && !signal?.aborted) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      // Ein 429 der Ratenbremse würde durch die Wiederholung nur doppelt zählen.
+      if (err.status === 429 || signal?.aborted) break;
+      if (round === 0) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
     }
   }
   // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.

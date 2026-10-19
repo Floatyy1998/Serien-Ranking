@@ -287,6 +287,35 @@ describe('searchMangaUpdatesTitles', () => {
   });
 });
 
+describe('Last-Bremsen', () => {
+  it('teilt gleichzeitige Aufrufe für denselben Titel auf eine Anfrage', async () => {
+    backendFetchMock.mockResolvedValue(res({ seriesId: 1, releases: [] }));
+    const { getMangaDexChapterDates } = await load();
+    await Promise.all([getMangaDexChapterDates('Berserk'), getMangaDexChapterDates('berserk')]);
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('pausiert nach 429 alle MangaUpdates-Abfragen statt sie zu wiederholen', async () => {
+    backendFetchMock.mockResolvedValue({ ok: false, status: 429, json: async () => ({}) });
+    const { getMangaDexInfo, getMangaDexChapterDates } = await load();
+    expect((await getMangaDexInfo('A')).mangadexId).toBeNull();
+    expect((await getMangaDexChapterDates('B')).recentChapters).toEqual([]);
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('merkt sich „nicht gefunden“, aber keine Störung', async () => {
+    backendFetchMock.mockResolvedValueOnce(res({ latestChapter: 5 }));
+    backendFetchMock.mockRejectedValueOnce(new Error('netz'));
+    backendFetchMock.mockResolvedValueOnce(res({ seriesId: 9, latestChapter: 3 }));
+    const { getMangaDexInfo } = await load();
+    await getMangaDexInfo('Unbekannt');
+    await getMangaDexInfo('Unbekannt');
+    await getMangaDexInfo('Wackel');
+    expect((await getMangaDexInfo('Wackel')).mangadexId).toBe('9');
+    expect(backendFetchMock).toHaveBeenCalledTimes(3);
+  });
+});
+
 describe('getMangaUpdatesSeries', () => {
   it('holt die Serie per ID und cached sie', async () => {
     backendFetchMock.mockResolvedValue(res({ id: 48132338279, title: 'Boyfriends.' }));

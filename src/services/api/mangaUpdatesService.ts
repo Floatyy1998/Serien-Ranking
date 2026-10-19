@@ -10,14 +10,64 @@ import {
   type MangaUpdatesHit,
   type MangaUpdatesSeries,
 } from '../../lib/manga/mangaUpdatesAdapter';
+import { cacheGet, cacheSet } from '../books/bookCache';
 import { backendFetch } from './backendApi';
 
-// Simple in-memory cache
-const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
-const chapterCache = new Map<string, { data: MangaDexChapterInfo; timestamp: number }>();
-const titleCache = new Map<string, { hits: MangaUpdatesHit[]; timestamp: number }>();
-const seriesCache = new Map<number, { data: MangaUpdatesSeries; timestamp: number }>();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const HOUR = 3_600_000;
+const CHAPTER_TTL = 6 * HOUR;
+const SERIES_TTL = 24 * HOUR;
+const TITLES_TTL = 24 * HOUR;
+const MISS_TTL = 12 * HOUR;
+const PAUSE_MS = 60_000;
+const TIMEOUT_MS = 15_000;
+
+/** Treffer wird gespeichert, `miss` kürzer gemerkt, `null` (Störung) gar nicht. */
+type Outcome<T> = { hit: T } | 'miss' | null;
+
+let pausedUntil = 0;
+const inflight = new Map<string, Promise<unknown>>();
+
+/** 429 und 5xx bremsen alle MangaUpdates-Abfragen eine Minute lang, statt sie zu wiederholen. */
+async function muPost(path: string, body: unknown): Promise<Response | null> {
+  if (Date.now() < pausedUntil) return null;
+  const res = await backendFetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  if (res.status === 429 || res.status >= 500) {
+    pausedUntil = Date.now() + PAUSE_MS;
+    return null;
+  }
+  return res;
+}
+
+function viaCache<T>(
+  ns: string,
+  key: string,
+  ttl: number,
+  empty: T,
+  load: () => Promise<Outcome<T>>
+): Promise<T> {
+  const hit = cacheGet<T>(ns, key, ttl);
+  if (hit !== undefined) return Promise.resolve(hit);
+  if (cacheGet<true>(`${ns}-miss`, key, MISS_TTL)) return Promise.resolve(empty);
+  const id = `${ns}:${key}`;
+  let pending = inflight.get(id) as Promise<T> | undefined;
+  if (!pending) {
+    pending = load()
+      .catch((): Outcome<T> => null)
+      .then((outcome) => {
+        if (outcome === 'miss') cacheSet(`${ns}-miss`, key, true);
+        else if (outcome) cacheSet(ns, key, outcome.hit);
+        return outcome && outcome !== 'miss' ? outcome.hit : empty;
+      })
+      .finally(() => inflight.delete(id));
+    inflight.set(id, pending);
+  }
+  return pending;
+}
 
 export interface MangaDexInfo {
   mangadexId: string | null;
@@ -42,57 +92,33 @@ export interface MangaDexChapterInfo {
 /**
  * Holt aktuelle Kapitelzahl über MangaUpdates.
  */
-export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
-  const cacheKey = title.toLowerCase().trim();
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-
-  try {
-    // Search via backend proxy
-    const searchRes = await backendFetch('/mangaupdates/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-    });
-    if (!searchRes.ok) return nullResult();
+export function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
+  return viaCache('mu-search', mangaChapterKey(title), CHAPTER_TTL, nullResult(), async () => {
+    const searchRes = await muPost('/mangaupdates/search', { title });
+    if (!searchRes?.ok) return null;
 
     const searchData = await searchRes.json();
-    if (!searchData.seriesId) return nullResult();
+    if (!searchData.seriesId) return 'miss';
 
-    const result: MangaDexInfo = {
-      mangadexId: String(searchData.seriesId),
-      latestChapter: searchData.latestChapter,
-      totalChapters: searchData.latestChapter || 0,
-      status: searchData.completed ? 'completed' : 'ongoing',
+    return {
+      hit: {
+        mangadexId: String(searchData.seriesId),
+        latestChapter: searchData.latestChapter,
+        totalChapters: searchData.latestChapter || 0,
+        status: searchData.completed ? 'completed' : 'ongoing',
+      },
     };
-
-    cache.set(cacheKey, { data: result, timestamp: Date.now() });
-    return result;
-  } catch {
-    return nullResult();
-  }
+  });
 }
 
 /**
  * MangaUpdates-Treffer mit Haupttitel und dem Titel, über den sie gefunden
  * wurden. MangaUpdates kennt Alternativtitel wie die deutschen Webtoon-Namen.
  */
-export async function searchMangaUpdatesTitles(query: string): Promise<MangaUpdatesHit[]> {
-  const cacheKey = query.toLowerCase().trim();
-  const cached = titleCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.hits;
-  }
-
-  try {
-    const res = await backendFetch('/mangaupdates/titles', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ search: query }),
-    });
-    if (!res.ok) return [];
+export function searchMangaUpdatesTitles(query: string): Promise<MangaUpdatesHit[]> {
+  return viaCache('mu-titles', query.toLowerCase().trim(), TITLES_TTL, [], async () => {
+    const res = await muPost('/mangaupdates/titles', { search: query });
+    if (!res?.ok) return null;
 
     const data = await res.json();
     const hits: MangaUpdatesHit[] = (Array.isArray(data.hits) ? data.hits : [])
@@ -109,108 +135,94 @@ export async function searchMangaUpdatesTitles(query: string): Promise<MangaUpda
         year: hit.year ?? null,
         genres: Array.isArray(hit.genres) ? hit.genres : [],
       }));
-    titleCache.set(cacheKey, { hits, timestamp: Date.now() });
-    return hits;
-  } catch {
-    return [];
-  }
+    return hits.length ? { hit: hits } : 'miss';
+  });
 }
 
 export async function getMangaUpdatesSeries(seriesId: number): Promise<MangaUpdatesSeries> {
-  const cached = seriesCache.get(seriesId);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
+  const cached = cacheGet<MangaUpdatesSeries>('mu-series', String(seriesId), SERIES_TTL);
+  if (cached) return cached;
 
-  const res = await backendFetch('/mangaupdates/series', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: seriesId }),
-  });
-  if (!res.ok) throw new Error(`MangaUpdates-Serie ${seriesId}: ${res.status}`);
+  const res = await muPost('/mangaupdates/series', { id: seriesId });
+  if (!res?.ok) throw new Error(`MangaUpdates-Serie ${seriesId}: ${res?.status ?? 'pausiert'}`);
   const data: MangaUpdatesSeries = await res.json();
   if (!data?.id || !data.title) throw new Error(`MangaUpdates-Serie ${seriesId} ohne Daten`);
-  seriesCache.set(seriesId, { data, timestamp: Date.now() });
+  cacheSet('mu-series', String(seriesId), data);
   return data;
 }
 
 /**
  * Holt die letzten Kapitel-Releases und schätzt nächstes Release-Datum.
  */
-export async function getMangaDexChapterDates(title: string): Promise<MangaDexChapterInfo> {
-  const cacheKey = title.toLowerCase().trim();
-  const cached = chapterCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-
-  try {
-    // Get releases via backend proxy
-    const res = await backendFetch('/mangaupdates/releases', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-    });
-    if (!res.ok) return nullChapterResult();
-
-    const data = await res.json();
-    const rawChapters: ChapterRelease[] = (data.releases || []).map(
-      (r: { chapter: number; date: string }) => ({
-        chapter: r.chapter,
-        publishedAt: r.date,
-      })
-    );
-
-    // Renumbering-Anomalien rausfiltern: chronologisch (alt → neu) lesen,
-    // nur Releases akzeptieren deren Chapter-Nr >= bisherigem Max ist. Bei
-    // Vagabond fliegt so der 2020er "Comeback Chapter 2" raus, der sonst
-    // oben in der Liste stehen wuerde.
-    const oldestFirst = [...rawChapters].reverse();
-    let maxSeen = 0;
-    const valid: ChapterRelease[] = [];
-    for (const r of oldestFirst) {
-      if (r.chapter >= maxSeen) {
-        valid.push(r);
-        maxSeen = r.chapter;
-      }
+export function getMangaDexChapterDates(title: string): Promise<MangaDexChapterInfo> {
+  return viaCache(
+    'mu-releases',
+    mangaChapterKey(title),
+    CHAPTER_TTL,
+    nullChapterResult(),
+    async () => {
+      const res = await muPost('/mangaupdates/releases', { title });
+      if (!res?.ok) return null;
+      return { hit: chapterInfoFrom(await res.json()) };
     }
-    const chapters = valid.reverse();
+  );
+}
 
-    // Calculate average days between releases
-    let avgDays: number | null = null;
-    let estimatedNext: string | null = null;
+function chapterInfoFrom(data: {
+  seriesId?: number;
+  releases?: { chapter: number; date: string }[];
+}): MangaDexChapterInfo {
+  const rawChapters: ChapterRelease[] = (data.releases || []).map(
+    (r: { chapter: number; date: string }) => ({
+      chapter: r.chapter,
+      publishedAt: r.date,
+    })
+  );
 
-    if (chapters.length >= 2) {
-      const gaps: number[] = [];
-      for (let i = 0; i < chapters.length - 1; i++) {
-        const d1 = new Date(chapters[i].publishedAt).getTime();
-        const d2 = new Date(chapters[i + 1].publishedAt).getTime();
-        const daysDiff = (d1 - d2) / (1000 * 60 * 60 * 24);
-        if (daysDiff > 0 && daysDiff < 60) {
-          gaps.push(daysDiff);
-        }
-      }
+  // Renumbering-Anomalien rausfiltern: chronologisch (alt → neu) lesen,
+  // nur Releases akzeptieren deren Chapter-Nr >= bisherigem Max ist. Bei
+  // Vagabond fliegt so der 2020er "Comeback Chapter 2" raus, der sonst
+  // oben in der Liste stehen wuerde.
+  const oldestFirst = [...rawChapters].reverse();
+  let maxSeen = 0;
+  const valid: ChapterRelease[] = [];
+  for (const r of oldestFirst) {
+    if (r.chapter >= maxSeen) {
+      valid.push(r);
+      maxSeen = r.chapter;
+    }
+  }
+  const chapters = valid.reverse();
 
-      if (gaps.length > 0) {
-        avgDays = Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length);
-        const latestDate = new Date(chapters[0].publishedAt);
-        const nextDate = new Date(latestDate.getTime() + avgDays * 24 * 60 * 60 * 1000);
-        estimatedNext = nextDate.toISOString().split('T')[0];
+  // Calculate average days between releases
+  let avgDays: number | null = null;
+  let estimatedNext: string | null = null;
+
+  if (chapters.length >= 2) {
+    const gaps: number[] = [];
+    for (let i = 0; i < chapters.length - 1; i++) {
+      const d1 = new Date(chapters[i].publishedAt).getTime();
+      const d2 = new Date(chapters[i + 1].publishedAt).getTime();
+      const daysDiff = (d1 - d2) / (1000 * 60 * 60 * 24);
+      if (daysDiff > 0 && daysDiff < 60) {
+        gaps.push(daysDiff);
       }
     }
 
-    const result: MangaDexChapterInfo = {
-      mangadexId: data.seriesId ? String(data.seriesId) : null,
-      recentChapters: chapters.slice(0, 5),
-      estimatedNextDate: estimatedNext,
-      avgDaysBetweenReleases: avgDays,
-    };
-
-    chapterCache.set(cacheKey, { data: result, timestamp: Date.now() });
-    return result;
-  } catch {
-    return nullChapterResult();
+    if (gaps.length > 0) {
+      avgDays = Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length);
+      const latestDate = new Date(chapters[0].publishedAt);
+      const nextDate = new Date(latestDate.getTime() + avgDays * 24 * 60 * 60 * 1000);
+      estimatedNext = nextDate.toISOString().split('T')[0];
+    }
   }
+
+  return {
+    mangadexId: data.seriesId ? String(data.seriesId) : null,
+    recentChapters: chapters.slice(0, 5),
+    estimatedNextDate: estimatedNext,
+    avgDaysBetweenReleases: avgDays,
+  };
 }
 
 export interface MangaChapterSnapshot {

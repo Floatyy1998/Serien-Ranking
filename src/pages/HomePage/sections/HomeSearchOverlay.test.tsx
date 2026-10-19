@@ -58,8 +58,21 @@ const state = vi.hoisted(() => ({
   user: null as { uid: string } | null,
   series: [] as unknown[],
   movies: [] as unknown[],
+  focus: 'both' as 'watch' | 'read' | 'both',
+  manga: [] as unknown[],
+  books: [] as unknown[],
 }));
 vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
+vi.mock('../../../hooks/ui/useAppFocus', () => ({
+  useAppFocus: () => ({ focus: state.focus, chosen: state.focus, loaded: true }),
+}));
+vi.mock('../../../hooks/ui/useReadingAreas', () => ({ useReadingAreas: () => 'both' }));
+vi.mock('../../../contexts/MangaListContext', () => ({
+  useMangaList: () => ({ allMangaList: state.manga }),
+}));
+vi.mock('../../../contexts/BooksListContext', () => ({
+  useBooksList: () => ({ allBookList: state.books }),
+}));
 vi.mock('../../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: state.series, refetchAfterAdd: vi.fn() }),
 }));
@@ -187,6 +200,9 @@ afterEach(() => {
   state.user = null;
   state.series = [];
   state.movies = [];
+  state.focus = 'both';
+  state.manga = [];
+  state.books = [];
   api.backendFetch.mockReset();
   quick.markMovieWatched.mockClear();
   quick.saveQuickRating.mockClear();
@@ -393,6 +409,23 @@ describe('HomeSearchOverlay Personen und Manga', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Manga' }));
     expect(screen.getByTestId('manga-grid')).toBeTruthy();
     expect(screen.queryByText('Breaking Bad')).toBeNull();
+  });
+
+  it('lässt die Lese-Reihen in „Alle“ weg, wer nur schaut und nichts liest', () => {
+    state.focus = 'watch';
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    expect(screen.queryByTestId('manga-row')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'book-add-row' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Manga' }));
+    expect(screen.getByTestId('manga-grid')).toBeTruthy();
+  });
+
+  it('zeigt die Manga-Reihe trotz Schwerpunkt Serien, wenn eigene Manga da sind', () => {
+    state.focus = 'watch';
+    state.manga = [{ anilistId: 1 }];
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    expect(screen.getByTestId('manga-row')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'book-add-row' })).toBeNull();
   });
 
   it('parkt auch auf einer Manga-Detailseite', () => {
