@@ -237,4 +237,39 @@ describe('useFriendProfileData', () => {
     act(() => result.current.navigateToTasteMatch());
     expect(routing.navigate).toHaveBeenCalledWith('/taste-match/u5');
   });
+
+  it('stellt die Scroll-Position im Bücher-Reiter wieder her, auch ohne Serien', async () => {
+    routing.params = { id: 'u7' };
+    routing.searchParams = new URLSearchParams('tab=books');
+    sessionStorage.setItem('friendProfilePageScroll_u7_books', '500');
+    sessionStorage.setItem('friendProfilePageScrollSource_u7_books', 'parent-0');
+    sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
+    const parent = document.createElement('div');
+    Object.defineProperty(parent, 'scrollTop', { value: 0, writable: true, configurable: true });
+    const page = document.createElement('div');
+    parent.appendChild(page);
+
+    const { result } = renderHook(() => useFriendProfileData());
+    result.current.scrollRef.current = page;
+
+    await waitFor(() => expect(parent.scrollTop).toBe(500));
+    expect(sessionStorage.getItem('shouldRestoreFriendProfileScroll')).toBeNull();
+  });
+
+  it('merkt sich die Scroll-Position je Reiter vor dem Öffnen eines Buchs', async () => {
+    routing.params = { id: 'u8' };
+    routing.searchParams = new URLSearchParams('tab=books');
+    const parent = document.createElement('div');
+    Object.defineProperty(parent, 'scrollTop', { value: 320, writable: true, configurable: true });
+    const page = document.createElement('div');
+    parent.appendChild(page);
+
+    const { result } = renderHook(() => useFriendProfileData());
+    result.current.scrollRef.current = page;
+    act(() => result.current.saveScrollPosition());
+
+    expect(sessionStorage.getItem('friendProfilePageScroll_u8_books')).toBe('320');
+    expect(sessionStorage.getItem('shouldRestoreFriendProfileScroll')).toBe('true');
+    sessionStorage.clear();
+  });
 });

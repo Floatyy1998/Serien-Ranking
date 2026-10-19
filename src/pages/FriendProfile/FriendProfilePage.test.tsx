@@ -30,6 +30,7 @@ const { fpState } = vi.hoisted(() => ({
     itemsWithRatingCount: 3,
     scrollRef: { current: null },
     handleItemClick: vi.fn(),
+    saveScrollPosition: vi.fn(),
     navigateToTasteMatch: vi.fn(),
   },
 }));

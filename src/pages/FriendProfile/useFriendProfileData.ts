@@ -269,6 +269,7 @@ export interface UseFriendProfileDataReturn {
   averageRating: number;
   itemsWithRatingCount: number;
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  saveScrollPosition: () => void;
   handleItemClick: (item: FriendItem, type: 'series' | 'movie') => void;
   navigateToTasteMatch: () => void;
 }
@@ -460,47 +461,37 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
 
   const currentItems = activeTab === 'movies' ? ratedMovies : ratedSeries;
 
+  const listTab = activeTab === 'series' || activeTab === 'movies';
+  const restoreReady = !listTab || currentItems.length > 0;
   useEffect(() => {
-    const shouldRestore = sessionStorage.getItem('shouldRestoreFriendProfileScroll');
+    if (!restoreReady) return;
+    if (sessionStorage.getItem('shouldRestoreFriendProfileScroll') !== 'true') return;
+    sessionStorage.removeItem('shouldRestoreFriendProfileScroll');
 
-    if (shouldRestore === 'true' && currentItems.length > 0) {
-      sessionStorage.removeItem('shouldRestoreFriendProfileScroll');
+    const scrollTop = parseInt(
+      sessionStorage.getItem(`friendProfilePageScroll_${friendId}_${activeTab}`) || '0',
+      10
+    );
+    const scrollSource = sessionStorage.getItem(
+      `friendProfilePageScrollSource_${friendId}_${activeTab}`
+    );
+    if (!(scrollTop > 0) || !scrollSource?.startsWith('parent-')) return;
+    const parentIndex = parseInt(scrollSource.split('-')[1], 10);
 
-      const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
-      const position = sessionStorage.getItem(scrollKey);
-      const scrollSource = sessionStorage.getItem(
-        `friendProfilePageScrollSource_${friendId}_${activeTab}`
-      );
-
-      if (position) {
-        const scrollTop = parseInt(position, 10);
-        if (scrollTop > 0) {
-          const restoreScroll = () => {
-            if (scrollSource && scrollSource.startsWith('parent-')) {
-              const parentIndex = parseInt(scrollSource.split('-')[1], 10);
-              let element = scrollRef.current?.parentElement;
-              for (let i = 0; i < parentIndex && element; i++) {
-                element = element.parentElement;
-              }
-              if (element) {
-                if (element.scrollHeight > element.clientHeight) {
-                  element.scrollTop = scrollTop;
-                  setTimeout(() => {
-                    if (element && element.scrollTop < scrollTop * 0.8) {
-                      element.scrollTop = scrollTop;
-                    }
-                  }, 50);
-                } else {
-                  setTimeout(restoreScroll, 200);
-                }
-              }
-            }
-          };
-          setTimeout(restoreScroll, 500);
-        }
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const restoreScroll = () => {
+      let element = scrollRef.current?.parentElement;
+      for (let i = 0; i < parentIndex && element; i++) element = element.parentElement;
+      if (element) {
+        element.scrollTop = scrollTop;
+        if (Math.abs(element.scrollTop - scrollTop) <= 2 && attempts >= 3) return;
       }
-    }
-  }, [friendId, activeTab, currentItems.length]);
+      if (++attempts < 40) timer = setTimeout(restoreScroll, 100);
+    };
+    timer = setTimeout(restoreScroll, 100);
+    return () => clearTimeout(timer);
+  }, [friendId, activeTab, restoreReady]);
 
   const itemsWithRating = useMemo(
     () =>
@@ -520,50 +511,53 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     [itemsWithRating]
   );
 
+  const saveScrollPosition = useCallback(() => {
+    let position = 0;
+    let scrollSource = '';
+
+    let element = scrollRef.current?.parentElement;
+    let parentIndex = 0;
+    while (element && parentIndex < 5) {
+      if (element.scrollTop > 0) {
+        position = element.scrollTop;
+        scrollSource = `parent-${parentIndex}`;
+        break;
+      }
+      element = element.parentElement;
+      parentIndex++;
+    }
+
+    if (position === 0) {
+      if (scrollRef.current && scrollRef.current.scrollTop > 0) {
+        position = scrollRef.current.scrollTop;
+        scrollSource = 'container';
+      } else if (window.scrollY > 0) {
+        position = window.scrollY;
+        scrollSource = 'window';
+      }
+    }
+
+    if (position > 0) {
+      try {
+        const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
+        sessionStorage.setItem(scrollKey, position.toString());
+        sessionStorage.setItem(
+          `friendProfilePageScrollSource_${friendId}_${activeTab}`,
+          scrollSource
+        );
+        sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
+      } catch (error) {
+        console.error('Error saving scroll position:', error);
+      }
+    }
+  }, [friendId, activeTab]);
+
   const handleItemClick = useCallback(
     (item: FriendItem, type: 'series' | 'movie') => {
-      let position = 0;
-      let scrollSource = '';
-
-      let element = scrollRef.current?.parentElement;
-      let parentIndex = 0;
-      while (element && parentIndex < 5) {
-        if (element.scrollTop > 0) {
-          position = element.scrollTop;
-          scrollSource = `parent-${parentIndex}`;
-          break;
-        }
-        element = element.parentElement;
-        parentIndex++;
-      }
-
-      if (position === 0) {
-        if (scrollRef.current && scrollRef.current.scrollTop > 0) {
-          position = scrollRef.current.scrollTop;
-          scrollSource = 'container';
-        } else if (window.scrollY > 0) {
-          position = window.scrollY;
-          scrollSource = 'window';
-        }
-      }
-
-      if (position > 0) {
-        try {
-          const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
-          sessionStorage.setItem(scrollKey, position.toString());
-          sessionStorage.setItem(
-            `friendProfilePageScrollSource_${friendId}_${activeTab}`,
-            scrollSource
-          );
-          sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
-        } catch (error) {
-          console.error('Error saving scroll position:', error);
-        }
-      }
-
+      saveScrollPosition();
       navigate(type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
     },
-    [friendId, activeTab, navigate]
+    [saveScrollPosition, navigate]
   );
 
   const navigateToTasteMatch = useCallback(() => {
@@ -588,6 +582,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     averageRating,
     itemsWithRatingCount: itemsWithRating.length,
     scrollRef,
+    saveScrollPosition,
     handleItemClick,
     navigateToTasteMatch,
   };

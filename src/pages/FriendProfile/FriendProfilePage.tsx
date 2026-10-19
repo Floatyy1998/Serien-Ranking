@@ -119,6 +119,7 @@ export const FriendProfilePage = memo(() => {
     itemsWithRatingCount,
     scrollRef,
     handleItemClick,
+    saveScrollPosition,
     navigateToTasteMatch,
   } = useFriendProfileData();
 
@@ -785,7 +786,9 @@ export const FriendProfilePage = memo(() => {
             </div>
           )}
           {activeTab === 'books' && !isSelf && !(filters.search || '').trim() && (
-            <FriendBooksInsights friendName={friendName} books={friendBooks.list} />
+            <div style={{ display: 'contents' }} onClickCapture={saveScrollPosition}>
+              <FriendBooksInsights friendName={friendName} books={friendBooks.list} />
+            </div>
           )}
           <AnimatePresence mode="wait">
             {activeTab === 'books' ? (
@@ -846,7 +849,10 @@ export const FriendProfilePage = memo(() => {
                         genres={book.authors?.[0]}
                         index={index}
                         currentTheme={currentTheme}
-                        onClick={() => openBookResult(bookAsResult(book))}
+                        onClick={() => {
+                          saveScrollPosition();
+                          openBookResult(bookAsResult(book));
+                        }}
                         inList={owned}
                         adding={addingBookId === book.id}
                         onAdd={isSelf ? undefined : () => void addBookFromFriend(book)}
@@ -896,7 +902,10 @@ export const FriendProfilePage = memo(() => {
                         genres={manga.genres?.slice(0, 2).join(', ') || undefined}
                         index={index}
                         currentTheme={currentTheme}
-                        onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                        onClick={() => {
+                          saveScrollPosition();
+                          navigate(`/manga/${manga.anilistId}`);
+                        }}
                         inList={ownMangaIds.has(manga.anilistId)}
                         adding={addingMangaId === manga.anilistId}
                         onAdd={isSelf ? undefined : () => void addMangaFromFriend(manga.anilistId)}
