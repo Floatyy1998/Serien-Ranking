@@ -38,10 +38,12 @@ import {
   setStarred,
 } from './chatMessageActions';
 import type { ChatMessage } from './chatService';
+import { queuePush } from '../notifications/pushQueue';
 
 const base: ChatMessage = { id: 'm1', senderId: 'u1', text: 'Hallo', timestamp: 100 };
 
 beforeEach(() => {
+  vi.mocked(queuePush).mockClear();
   fb.updates = [];
   fb.storageDeletes = [];
 });
@@ -131,5 +133,38 @@ describe('editMessage', () => {
     await editMessage('u1', 'u1_u2', { ...fresh, imageUrl: 'https://x' }, 'x');
     await editMessage('u1', 'u1_u2', fresh, 'Hallo');
     expect(fb.updates).toEqual([]);
+  });
+});
+
+describe('Push beim Empfänger austauschen', () => {
+  it('Löschen reiht einen Ersetzen-Push für die Nachricht ein', async () => {
+    await deleteMessageForAll('u1', 'u1_u2', base, null, null);
+    await vi.waitFor(() => expect(queuePush).toHaveBeenCalled());
+    expect(queuePush).toHaveBeenCalledWith(
+      'u2',
+      expect.objectContaining({
+        url: '/chat/u1',
+        mid: 'm1',
+        op: 'delete',
+        body: 'Diese Nachricht wurde gelöscht.',
+      })
+    );
+  });
+
+  it('Bearbeiten schickt den neuen Text, bei Spoilern nur „Spoiler“', async () => {
+    const fresh = { ...base, timestamp: Date.now() - 60_000 };
+    await editMessage('u1', 'u1_u2', fresh, 'Neu');
+    await editMessage('u1', 'u1_u2', { ...fresh, id: 'm2', isSpoiler: true }, 'Er stirbt');
+    await vi.waitFor(() => expect(queuePush).toHaveBeenCalledTimes(2));
+    expect(queuePush).toHaveBeenNthCalledWith(
+      1,
+      'u2',
+      expect.objectContaining({ mid: 'm1', op: 'edit', body: 'Neu' })
+    );
+    expect(queuePush).toHaveBeenNthCalledWith(
+      2,
+      'u2',
+      expect.objectContaining({ mid: 'm2', op: 'edit', body: 'Spoiler' })
+    );
   });
 });

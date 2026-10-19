@@ -13,12 +13,15 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
 import { onValue } from '../db/subscribeValue';
+import { localizedVariants } from '../i18n';
+import { queuePush } from '../notifications/pushQueue';
 import {
   canEditMessage,
   compactReply,
   DELETED_PREVIEW,
   MAX_MESSAGE_LENGTH,
   expandReply,
+  otherUidFromPairId,
   replyFromMessage,
   sendImageMessage,
   sendMessage,
@@ -47,6 +50,33 @@ export function copyableText(m: ChatMessage): string | null {
   return m.text || null;
 }
 
+const DELETED_PUSH = 'Diese Nachricht wurde gelöscht.';
+
+/**
+ * Tauscht den Push, der beim Empfänger zu dieser Nachricht liegt, leise aus —
+ * wie bei WhatsApp. Ältere App-Versionen können das nicht; dort räumt das
+ * Backend den Chat-Push beim Löschen wenigstens ganz weg.
+ */
+async function replaceDeliveredPush(
+  myUid: string,
+  pairId: string,
+  msgId: string,
+  op: 'edit' | 'delete',
+  body: string,
+  translate: boolean
+): Promise<void> {
+  const friendUid = otherUidFromPairId(pairId, myUid);
+  if (!friendUid) return;
+  await queuePush(friendUid, {
+    title: 'TV-Rank',
+    body: body.slice(0, 300),
+    ...(translate && { bodyL: await localizedVariants(body) }),
+    url: `/chat/${myUid}`,
+    mid: msgId,
+    op,
+  });
+}
+
 export async function deleteMessageForAll(
   myUid: string,
   pairId: string,
@@ -64,6 +94,7 @@ export async function deleteMessageForAll(
   }
   if (pinnedId === m.id) updates[`chats/${pairId}/pinned`] = null;
   await dbUpdate(updates);
+  void replaceDeliveredPush(myUid, pairId, m.id, 'delete', DELETED_PUSH, true);
   if (m.imageUrl) {
     await firebase
       .storage()
@@ -94,6 +125,8 @@ export async function editMessage(
     updates[`chats/${pairId}/summary/lastMessage`] = trimmed.slice(0, 300);
   }
   await dbUpdate(updates);
+  const shown = m.isSpoiler ? 'Spoiler' : trimmed;
+  void replaceDeliveredPush(myUid, pairId, m.id, 'edit', shown, m.isSpoiler === true);
 }
 
 export async function hideMessagesForMe(

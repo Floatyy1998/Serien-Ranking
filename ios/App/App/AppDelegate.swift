@@ -56,15 +56,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
-    /// Stiller "dismiss"-Push (content-available): auf einem anderen Geraet
-    /// gelesen — die zugestellte Notification desselben Deep-Links kommt hier
-    /// vom Sperrbildschirm runter. Setzt UIBackgroundModes=remote-notification
-    /// voraus, sonst weckt iOS die App nicht.
+    /// Stille Pushes (content-available), setzen UIBackgroundModes=remote-notification
+    /// voraus, sonst weckt iOS die App nicht:
+    /// - "dismiss": auf einem anderen Geraet gelesen — die zugestellte Notification
+    ///   desselben Deep-Links kommt vom Sperrbildschirm runter.
+    /// - "replace": der Absender hat die Chat-Nachricht bearbeitet oder geloescht —
+    ///   der Text der zugestellten Notification wird leise ausgetauscht (wie WhatsApp).
     func application(
         _ application: UIApplication,
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
+        if userInfo["kind"] as? String == "replace" {
+            replaceDeliveredText(userInfo, completionHandler: completionHandler)
+            return
+        }
         guard userInfo["kind"] as? String == "dismiss",
               let link = userInfo["url"] as? String else {
             completionHandler(.noData)
@@ -79,6 +85,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 center.removeDeliveredNotifications(withIdentifiers: ids)
             }
             completionHandler(ids.isEmpty ? .noData : .newData)
+        }
+    }
+
+    /// Eine Notification mit derselben Kennung neu einreichen ersetzt die zugestellte
+    /// an Ort und Stelle; ohne Ton und als .passive taucht sie nicht erneut als Banner auf.
+    private func replaceDeliveredText(
+        _ userInfo: [AnyHashable: Any],
+        completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        guard let messageId = userInfo["mid"] as? String,
+              let body = userInfo["body"] as? String else {
+            completionHandler(.noData)
+            return
+        }
+        let center = UNUserNotificationCenter.current()
+        center.getDeliveredNotifications { delivered in
+            let matches = delivered.filter {
+                ($0.request.content.userInfo["mid"] as? String) == messageId
+            }
+            if matches.isEmpty {
+                completionHandler(.noData)
+                return
+            }
+            let group = DispatchGroup()
+            for note in matches {
+                guard let content = note.request.content.mutableCopy() as? UNMutableNotificationContent else {
+                    continue
+                }
+                content.body = body
+                content.sound = nil
+                if #available(iOS 15.0, *) {
+                    content.interruptionLevel = .passive
+                }
+                group.enter()
+                let request = UNNotificationRequest(
+                    identifier: note.request.identifier, content: content, trigger: nil)
+                center.add(request) { _ in group.leave() }
+            }
+            group.notify(queue: .main) { completionHandler(.newData) }
         }
     }
 

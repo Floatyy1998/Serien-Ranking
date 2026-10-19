@@ -22,7 +22,10 @@ interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
   getPlatform?: () => string;
   isPluginAvailable?: (name: string) => boolean;
-  Plugins?: { PushNotifications?: PushPlugin };
+  Plugins?: {
+    PushNotifications?: PushPlugin;
+    App?: { getInfo?: () => Promise<{ build?: string }> };
+  };
 }
 
 const ENABLED_KEY = 'nativePushEnabled';
@@ -43,11 +46,24 @@ export const isNativePushAvailable = (): boolean => getPlugin() !== null;
 /** RTDB-Keys dürfen kein `.#$[]/` enthalten — FCM-Tokens theoretisch schon. */
 const tokenKey = (token: string): string => token.replace(/[.#$[\]/]/g, '_');
 
+/** Build-Nummer der nativen Hülle — das Backend erkennt daran, ob das Gerät Chat-Pushes leise ersetzen kann. */
+const nativeBuild = async (): Promise<number | null> => {
+  try {
+    const cap = (window as { Capacitor?: CapacitorGlobal }).Capacitor;
+    const build = Number((await cap?.Plugins?.App?.getInfo?.())?.build);
+    return Number.isFinite(build) && build > 0 ? build : null;
+  } catch {
+    return null;
+  }
+};
+
 const saveToken = async (uid: string, token: string, platform: string): Promise<void> => {
   try {
+    const build = await nativeBuild();
     await dbRef(userPath(uid, 'fcmTokens', tokenKey(token))).set({
       t: token,
       p: platform,
+      ...(build && { b: build }),
       ts: serverTimestamp(),
     });
     localStorage.setItem(TOKEN_KEY, token);

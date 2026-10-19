@@ -16,7 +16,17 @@ const capMap = (map: LocalizedMap | undefined, max: number): LocalizedMap | unde
 
 export const queuePush = async (
   toUid: string,
-  push: { title: string; body: string; url?: string; titleL?: LocalizedMap; bodyL?: LocalizedMap }
+  push: {
+    title: string;
+    body: string;
+    url?: string;
+    titleL?: LocalizedMap;
+    bodyL?: LocalizedMap;
+    /** Chat-Nachricht, zu der der Push gehört — macht ihn später ersetzbar. */
+    mid?: string;
+    /** Ersetzt den zugestellten Push zu mid statt einen neuen zu zeigen. */
+    op?: 'edit' | 'delete';
+  }
 ): Promise<void> => {
   try {
     // Rules verlangen from === auth.uid: macht jeden Eintrag zurechenbar und
@@ -34,6 +44,8 @@ export const queuePush = async (
       ...(titleL && { titleL }),
       ...(bodyL && { bodyL }),
       url: push.url && push.url.startsWith('/') ? push.url.slice(0, 200) : '/',
+      ...(push.mid && { mid: push.mid }),
+      ...(push.op && { op: push.op }),
       ts: serverTimestamp(),
     });
   } catch {

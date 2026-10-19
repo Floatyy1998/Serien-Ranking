@@ -259,6 +259,7 @@ export async function sendMessage(
     title: myName,
     body: preview,
     url: `/chat/${myUid}`,
+    mid: msgId,
   });
 }
 
@@ -314,6 +315,7 @@ export async function sendImageMessage(
     // gehört übersetzt, eine echte Bildunterschrift bleibt wie geschrieben.
     ...(text ? {} : { bodyL: await localizedVariants(preview) }),
     url: `/chat/${myUid}`,
+    mid: msgId,
   });
 }
 
