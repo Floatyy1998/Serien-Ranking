@@ -242,6 +242,22 @@ describe('globale Handler', () => {
     expect(fb.sets).toHaveLength(0);
   });
 
+  it('ignoriert maskierte Fremdfehler ("Script error." ohne Datei und Stack)', async () => {
+    setErrorReporterUser('u1');
+    window.dispatchEvent(new ErrorEvent('error', { message: 'Script error.' }));
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+  });
+
+  it('meldet "Script error." weiterhin, wenn eine eigene Datei dahintersteht', async () => {
+    setErrorReporterUser('u1');
+    window.dispatchEvent(
+      new ErrorEvent('error', { message: 'Script error.', filename: 'https://tv-rank.de/a.js' })
+    );
+    await flush();
+    expect(fb.sets).toHaveLength(1);
+  });
+
   it('meldet Laufzeitfehler mit Quelle', async () => {
     setErrorReporterUser('u1');
     window.dispatchEvent(

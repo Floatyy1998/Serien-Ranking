@@ -159,10 +159,10 @@ export function reportRenderError(error: Error, componentStack?: string): void {
 }
 
 function onWindowError(event: ErrorEvent): void {
-  const target = event.target as Element | null;
+  const target = event.target;
   // Ressourcenfehler haben kein `error`-Objekt. Bilder schlagen im Alltag
   // staendig fehl (Poster) — nur Skripte und Stylesheets sind ein Signal.
-  if (!event.error && target && target !== (window as unknown as EventTarget)) {
+  if (!event.error && target instanceof Element) {
     const tag = String(target.tagName || '').toLowerCase();
     if (tag !== 'script' && tag !== 'link') return;
     // Bei <link> zaehlt nur das Stylesheet. modulepreload/preload/prefetch
@@ -190,6 +190,9 @@ function onWindowError(event: ErrorEvent): void {
   }
 
   const error = event.error as Error | undefined;
+  // Maskierter Fehler aus fremdem Code (andere Origin, vom Browser eingeschleuste
+  // Skripte wie bei Firefox iOS) — eigene Bundles tragen immer Datei und Stack.
+  if (!error && !event.filename && /^script error\.?$/i.test(event.message || '')) return;
   captureError({
     kind: 'error',
     name: error?.name || 'Error',
