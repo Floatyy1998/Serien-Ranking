@@ -32,7 +32,7 @@ vi.mock('../../../contexts/ThemeContext', () => {
 });
 
 const { requestMock } = vi.hoisted(() => ({
-  requestMock: vi.fn<(email: string, password: string) => Promise<void>>(),
+  requestMock: vi.fn<(email: string, password: string | null) => Promise<void>>(),
 }));
 
 vi.mock('../../../services/account/emailChange', () => ({ requestEmailChange: requestMock }));
@@ -92,5 +92,31 @@ describe('ChangeEmailForm', () => {
         'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.'
       )
     ).toBeInTheDocument();
+  });
+
+  it('bestätigt Apple-Konten über die Apple-Anmeldung statt mit Passwort', async () => {
+    render(<ChangeEmailForm currentEmail="x@privaterelay.appleid.com" socialProvider="apple" />);
+    fireEvent.click(screen.getByText('E-Mail-Adresse ändern'));
+    expect(screen.queryByPlaceholderText('Passwort zur Bestätigung')).toBeNull();
+    expect(
+      screen.getByText('Zur Bestätigung meldest du dich gleich noch einmal mit Apple an.')
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Neue E-Mail-Adresse'), {
+      target: { value: 'echt@example.com' },
+    });
+    fireEvent.click(screen.getByText('Bestätigungslink senden'));
+    expect(requestMock).toHaveBeenCalledWith('echt@example.com', null);
+    expect(await screen.findByText(/wie gewohnt mit Apple/)).toBeInTheDocument();
+  });
+
+  it('meldet eine abgebrochene Apple-Anmeldung', async () => {
+    requestMock.mockRejectedValue({ code: 'auth/popup-closed-by-user' });
+    render(<ChangeEmailForm currentEmail="x@privaterelay.appleid.com" socialProvider="apple" />);
+    fireEvent.click(screen.getByText('E-Mail-Adresse ändern'));
+    fireEvent.change(screen.getByPlaceholderText('Neue E-Mail-Adresse'), {
+      target: { value: 'echt@example.com' },
+    });
+    fireEvent.click(screen.getByText('Bestätigungslink senden'));
+    expect(await screen.findByText('Bestätigung abgebrochen.')).toBeInTheDocument();
   });
 });

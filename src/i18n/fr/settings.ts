@@ -117,6 +117,10 @@ const dict: Record<string, string> = {
   'Passwort festlegen': 'Définir un mot de passe',
 
   // ChangeEmailForm
+  'Erst wenn du ihn öffnest, wird die Adresse geändert. Anmelden kannst du dich weiter wie gewohnt mit {provider}.':
+    'L’adresse ne change qu’une fois le lien ouvert. Tu peux continuer à te connecter avec {provider} comme d’habitude.',
+  'Zur Bestätigung meldest du dich gleich noch einmal mit {provider} an.':
+    'Pour confirmer, tu vas te reconnecter avec {provider}.',
   'Aktuelle E-Mail-Adresse:': 'Adresse e-mail actuelle :',
   'E-Mail-Adresse ändern': 'Changer d’adresse e-mail',
   'Neue E-Mail-Adresse': 'Nouvelle adresse e-mail',

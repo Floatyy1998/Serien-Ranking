@@ -4,12 +4,21 @@ import { useState } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../../lib/motion';
 import { requestEmailChange } from '../../../services/account/emailChange';
+import type { SocialProvider } from '../../../services/firebase/socialAuth';
 import { t } from '../../../services/i18n';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** E-Mail-Adresse ändern — nur für Konten mit Passwort-Anmeldung. */
-export const ChangeEmailForm = ({ currentEmail }: { currentEmail: string }) => {
+const PROVIDER_NAME: Record<SocialProvider, string> = { google: 'Google', apple: 'Apple' };
+
+/** socialProvider gesetzt → Social-Only-Konto, Bestätigung über den Provider statt Passwort. */
+export const ChangeEmailForm = ({
+  currentEmail,
+  socialProvider = null,
+}: {
+  currentEmail: string;
+  socialProvider?: SocialProvider | null;
+}) => {
   const { currentTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [newEmail, setNewEmail] = useState('');
@@ -18,7 +27,8 @@ export const ChangeEmailForm = ({ currentEmail }: { currentEmail: string }) => {
   const [error, setError] = useState('');
   const [sentTo, setSentTo] = useState('');
 
-  const canSubmit = !!newEmail.trim() && !!password && !busy;
+  const needsPassword = !socialProvider;
+  const canSubmit = !!newEmail.trim() && (!needsPassword || !!password) && !busy;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -30,13 +40,15 @@ export const ChangeEmailForm = ({ currentEmail }: { currentEmail: string }) => {
     }
     setBusy(true);
     try {
-      await requestEmailChange(target, password);
+      await requestEmailChange(target, needsPassword ? password : null);
       setSentTo(target);
       setPassword('');
     } catch (e) {
       const code = (e as { code?: string }).code || '';
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setError(t('Falsches Passwort.'));
+      } else if (code === 'auth/popup-closed-by-user' || code === 'auth/user-cancelled') {
+        setError(t('Bestätigung abgebrochen.'));
       } else if (code === 'auth/email-already-in-use') {
         setError(t('Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.'));
       } else if (code === 'auth/invalid-email') {
@@ -65,9 +77,14 @@ export const ChangeEmailForm = ({ currentEmail }: { currentEmail: string }) => {
       {sentTo ? (
         <p style={{ color: currentTheme.status.success, margin: 0 }}>
           {t('Wir haben dir einen Bestätigungslink an {email} geschickt.', { email: sentTo })}{' '}
-          {t(
-            'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.'
-          )}
+          {socialProvider
+            ? t(
+                'Erst wenn du ihn öffnest, wird die Adresse geändert. Anmelden kannst du dich weiter wie gewohnt mit {provider}.',
+                { provider: PROVIDER_NAME[socialProvider] }
+              )
+            : t(
+                'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.'
+              )}
         </p>
       ) : (
         <>
@@ -103,14 +120,22 @@ export const ChangeEmailForm = ({ currentEmail }: { currentEmail: string }) => {
                   autoCapitalize="none"
                   spellCheck={false}
                 />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('Passwort zur Bestätigung')}
-                  className="glass-input"
-                  autoComplete="current-password"
-                />
+                {needsPassword ? (
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('Passwort zur Bestätigung')}
+                    className="glass-input"
+                    autoComplete="current-password"
+                  />
+                ) : (
+                  <p style={{ color: currentTheme.text.muted, margin: 0 }}>
+                    {t('Zur Bestätigung meldest du dich gleich noch einmal mit {provider} an.', {
+                      provider: PROVIDER_NAME[socialProvider],
+                    })}
+                  </p>
+                )}
 
                 {error && <p style={{ color: currentTheme.status.error, margin: 0 }}>{error}</p>}
 

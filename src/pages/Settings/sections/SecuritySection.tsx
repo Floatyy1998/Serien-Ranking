@@ -1,7 +1,7 @@
 /**
- * SecuritySection — Konten mit Passwort können ihre E-Mail-Adresse ändern.
- * Social-Only-Konten (Google/Apple ohne Passwort) können ein Passwort
- * nachrüsten, z. B. für den Login der Browser-Extension.
+ * SecuritySection — E-Mail-Adresse ändern (alle Konten). Social-Only-Konten
+ * (Google/Apple ohne Passwort) können zusätzlich ein Passwort nachrüsten,
+ * z. B. für den Login der Browser-Extension.
  */
 
 import { Key } from '@mui/icons-material';
@@ -10,7 +10,11 @@ import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../../lib/motion';
-import { hasPasswordProvider, linkPasswordToAccount } from '../../../services/firebase/socialAuth';
+import {
+  getSocialProvider,
+  hasPasswordProvider,
+  linkPasswordToAccount,
+} from '../../../services/firebase/socialAuth';
 import { t } from '../../../services/i18n';
 import { ChangeEmailForm } from './ChangeEmailForm';
 
@@ -25,6 +29,7 @@ export const SecuritySection = () => {
 
   if (!user) return null;
   const hasPassword = hasPasswordProvider(user);
+  const socialProvider = getSocialProvider(user);
   if (hasPassword && !user.email) return null;
 
   const handleSave = async () => {
@@ -77,6 +82,12 @@ export const SecuritySection = () => {
         <ChangeEmailForm currentEmail={user.email ?? ''} />
       ) : (
         <>
+          {user.email && socialProvider && (
+            <div style={{ marginBottom: 24 }}>
+              <ChangeEmailForm currentEmail={user.email} socialProvider={socialProvider} />
+            </div>
+          )}
+
           <p style={{ color: currentTheme.text.muted, marginTop: 0 }}>
             {t(
               'Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.'

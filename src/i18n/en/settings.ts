@@ -131,6 +131,10 @@ const settings: Record<string, string> = {
   'Passwort festlegen': 'Set password',
 
   // ChangeEmailForm
+  'Erst wenn du ihn öffnest, wird die Adresse geändert. Anmelden kannst du dich weiter wie gewohnt mit {provider}.':
+    'The address only changes once you open it. You can keep signing in with {provider} as usual.',
+  'Zur Bestätigung meldest du dich gleich noch einmal mit {provider} an.':
+    "To confirm, you'll sign in once more with {provider}.",
   'Aktuelle E-Mail-Adresse:': 'Current email address:',
   'E-Mail-Adresse ändern': 'Change email address',
   'Neue E-Mail-Adresse': 'New email address',
