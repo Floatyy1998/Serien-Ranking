@@ -340,6 +340,10 @@ const dict: Record<string, string> = {
   'hat {title} fertig gelesen': 'a fini de lire {title}',
   '{title} fertig gelesen': '{title} fini de lire',
   '{who} hat „{title}" fertig gelesen': '{who} a fini de lire « {title} »',
+  'TV-Rank weiterempfehlen': 'Recommander TV-Rank',
+  'Link per WhatsApp, Mail oder SMS verschicken': 'Envoyer le lien par WhatsApp, e-mail ou SMS',
+  'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Kostenlos für iPhone, Android und im Browser:':
+    'Je suis mes séries, films et livres avec TV-Rank. Gratuit sur iPhone, Android et dans le navigateur :',
 };
 
 export default dict;

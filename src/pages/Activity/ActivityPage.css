@@ -230,6 +230,15 @@
   transition: opacity 0.15s ease;
 }
 
+.activity-banner--inline {
+  width: 100%;
+  margin: 0 0 16px;
+  max-width: 720px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
 .activity-banner:active {
   opacity: 0.85;
 }

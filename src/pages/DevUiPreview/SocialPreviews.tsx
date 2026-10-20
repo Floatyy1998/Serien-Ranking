@@ -73,3 +73,15 @@ export const FriendsListPreview = () => {
     </div>
   );
 };
+
+export const FriendsEmptyPreview = () => (
+  <div style={{ padding: 16 }}>
+    <FriendsTab
+      friends={[]}
+      friendProfiles={{}}
+      saveScrollPosition={() => {}}
+      onAddFriend={() => {}}
+      onRemoveFriend={() => {}}
+    />
+  </div>
+);

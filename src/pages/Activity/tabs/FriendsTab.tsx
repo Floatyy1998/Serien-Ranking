@@ -18,6 +18,7 @@ import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
 import { PublicProfilesList } from './PublicProfilesList';
+import { InviteAppBanner } from '../InviteAppBanner';
 import { libraryCountLabel } from '../libraryCountLabel';
 import { useFriendLibraryCounts } from '../../../hooks/social/useFriendLibraryCounts';
 
@@ -285,6 +286,7 @@ export const FriendsTab = ({
         exit={{ opacity: 0, x: -16 }}
       >
         {viewSwitch}
+        <InviteAppBanner />
         <EmptyState
           icon={<GroupRounded style={{ fontSize: 'inherit' }} />}
           title={t('Noch keine Freunde')}
@@ -305,6 +307,7 @@ export const FriendsTab = ({
       exit={{ opacity: 0, x: -16 }}
     >
       {viewSwitch}
+      <InviteAppBanner />
       {/* Search */}
       <div
         style={{

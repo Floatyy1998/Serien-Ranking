@@ -106,6 +106,10 @@ vi.mock('../../../hooks/social/useFriendLibraryCounts', () => ({
   useFriendLibraryCounts: () => counts.map,
 }));
 
+vi.mock('../InviteAppBanner', () => ({
+  InviteAppBanner: () => <div>INVITE_BANNER</div>,
+}));
+
 vi.mock('./PublicProfilesList', () => ({
   PublicProfilesList: () => <div>PUBLIC_PROFILES</div>,
 }));
@@ -155,6 +159,7 @@ describe('FriendsTab', () => {
       />
     );
     expect(screen.getByText('Noch keine Freunde')).toBeInTheDocument();
+    expect(screen.getByText('INVITE_BANNER')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Freund hinzufügen'));
     expect(onAddFriend).toHaveBeenCalledTimes(1);
   });
@@ -171,6 +176,7 @@ describe('FriendsTab', () => {
     );
     expect(screen.getByText('Frank')).toBeInTheDocument();
     expect(screen.getByText('Berta')).toBeInTheDocument();
+    expect(screen.getByText('INVITE_BANNER')).toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText('2 Freunde durchsuchen'), {
       target: { value: 'fra' },
@@ -265,6 +271,7 @@ describe('FriendsTab – Öffentliche Profile', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Öffentliche Profile' }));
 
     expect(screen.getByText('PUBLIC_PROFILES')).toBeInTheDocument();
+    expect(screen.queryByText('INVITE_BANNER')).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Öffentliche Profile' })).toHaveAttribute(
       'aria-selected',
       'true'
