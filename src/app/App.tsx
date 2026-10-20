@@ -222,8 +222,8 @@ function AppContent() {
                         } else if (auth?.authStateResolved) {
                           return <GuestRouteSwitch />;
                         } else {
-                          // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                          return null;
+                          // Auth lädt noch — nach dem 8-s-Splash-Fallback lieber Spinner als Leere
+                          return <PageLoader />;
                         }
                       }}
                     </AuthContext.Consumer>

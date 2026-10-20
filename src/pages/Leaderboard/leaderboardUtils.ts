@@ -1,28 +1,9 @@
 import type { RankingCategory } from '../../types/Leaderboard';
-import { t } from '../../services/i18n';
+import { formatMinutesToString } from '../../lib/date';
 
-/** Kompakte Gesamt-Watchtime („25 T 4 Std") — Monatswerte bleiben bei h/m,
- *  aber ueber Jahre gesammelte Minuten sind als „604h" unlesbar. */
+/** Gesamt-Watchtime im selben Format wie das eigene Profil („2M 7T 3S"). */
 export function formatTotalWatchtime(minutes: number): string {
-  if (minutes < 60) return `${minutes} ${t('Min')}`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) {
-    const restMinutes = minutes % 60;
-    return restMinutes > 0
-      ? `${hours} ${t('Std')} ${restMinutes} ${t('Min')}`
-      : `${hours} ${t('Std')}`;
-  }
-
-  const days = Math.floor(hours / 24);
-  if (days < 365) {
-    const restHours = hours % 24;
-    return restHours > 0 ? `${days} ${t('T')} ${restHours} ${t('Std')}` : `${days} ${t('T')}`;
-  }
-
-  const years = Math.floor(days / 365);
-  const restDays = days % 365;
-  return restDays > 0 ? `${years} ${t('J')} ${restDays} ${t('T')}` : `${years} ${t('J')}`;
+  return formatMinutesToString(minutes, 3);
 }
 
 export function formatValue(value: number, category: RankingCategory): string {

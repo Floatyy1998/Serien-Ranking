@@ -40,6 +40,7 @@ import { useBadges } from '../../features/badges/BadgeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/data/useEnhancedFirebaseCache';
 import { useReadingAreas } from '../../hooks/ui/useReadingAreas';
 import { bookTotals } from '../../lib/books/bookStats';
+import { formatMinutesToString } from '../../lib/date';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { usesArea } from '../../lib/reading/readingMedium';
 import { t } from '../../services/i18n';
@@ -143,28 +144,12 @@ function computeStats(
     }
   });
 
-  const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
-  const remainingAfterYears = totalMinutesWatched % (365 * 24 * 60);
-  const months = Math.floor(remainingAfterYears / (30 * 24 * 60));
-  const remainingAfterMonths = remainingAfterYears % (30 * 24 * 60);
-  const days = Math.floor(remainingAfterMonths / 1440);
-  const hours = Math.floor((remainingAfterMonths % 1440) / 60);
-  const minutes = remainingAfterMonths % 60;
-
-  const timeParts: string[] = [];
-  if (years > 0) timeParts.push(t('{n}J', { n: years }));
-  if (months > 0) timeParts.push(t('{n}M', { n: months }));
-  if (days > 0) timeParts.push(t('{n}T', { n: days }));
-  if (hours > 0) timeParts.push(t('{n}S', { n: hours }));
-  if (minutes > 0) timeParts.push(t('{n}Min', { n: Math.floor(minutes) }));
-  const timeString = timeParts.length > 0 ? timeParts.join(' ') : t('0Min');
-
   return {
     totalSeries,
     totalMovies,
     watchedEpisodes,
     totalMinutes: totalMinutesWatched,
-    timeString: timeString.trim(),
+    timeString: formatMinutesToString(totalMinutesWatched),
   };
 }
 

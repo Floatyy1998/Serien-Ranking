@@ -60,8 +60,8 @@ describe('FriendComparisonCard', () => {
 
     expect(screen.getByText('Ihr im Vergleich')).toBeInTheDocument();
     expect(screen.getByText('VIC')).toBeInTheDocument();
-    expect(screen.getByText('25 T 4 Std')).toBeInTheDocument();
-    expect(screen.getByText('31 T 12 Std')).toBeInTheDocument();
+    expect(screen.getByText('25T 4S 5Min')).toBeInTheDocument();
+    expect(screen.getByText('1M 1T 12S')).toBeInTheDocument();
     expect(screen.getByText('63')).toBeInTheDocument();
     expect(screen.getByText('104')).toBeInTheDocument();
   });
@@ -123,6 +123,6 @@ describe('FriendComparisonCard', () => {
     };
     render(<FriendComparisonCard friendName="VIC" own={empty} friend={empty} loading={false} />);
 
-    expect(screen.getAllByText('0 Min')).toHaveLength(2);
+    expect(screen.getAllByText('0Min')).toHaveLength(2);
   });
 });
