@@ -69,7 +69,7 @@ describe('initFirebase', () => {
     setCapacitor({ FirebaseAuthentication: {} });
     initFirebase();
     expect(sdk.initializeAuth).toHaveBeenCalledWith('modular-app', {
-      persistence: ['idb', 'local', 'session', 'memory'],
+      persistence: ['local', 'idb', 'session', 'memory'],
       errorMap: 'debug-map',
     });
   });

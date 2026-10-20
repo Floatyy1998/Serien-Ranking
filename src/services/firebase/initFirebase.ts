@@ -34,12 +34,13 @@ export const initFirebase = () => {
   if (!Firebase.apps.length) {
     Firebase.initializeApp(config);
     // Ohne Resolver wartet Auth auf Mobilgeräten nicht auf Googles Iframe (apis.google.com).
+    // localStorage zuerst: Android-WebViews räumen IndexedDB, localStorage bleibt; Firebase zieht Alt-Logins um.
     if (hasNativeSocialLogin()) {
       try {
         initializeAuth(getApp(), {
           persistence: [
-            indexedDBLocalPersistence,
             browserLocalPersistence,
+            indexedDBLocalPersistence,
             browserSessionPersistence,
             inMemoryPersistence,
           ],
