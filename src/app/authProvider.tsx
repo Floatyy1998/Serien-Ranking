@@ -2,6 +2,11 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initAnalyticsIfConsented, setAnalyticsUser } from '../services/firebase/analytics';
 import { setErrorReporterUser } from '../services/errorReporting/errorReporter';
+import {
+  beginAuthDiagnostics,
+  requestPersistentStorage,
+  trackAuthEvent,
+} from '../services/errorReporting/authDiagnostics';
 import { offlineFirebaseService } from '../services/offline/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from '../contexts/AuthContext';
@@ -77,8 +82,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }, authTimeoutMs);
 
+      beginAuthDiagnostics(hasSavedSession);
+
       unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
         if (authTimeout) clearTimeout(authTimeout);
+        trackAuthEvent(user);
         setUser(user);
         setAuthStateResolved(true);
         setAnalyticsUser(user?.uid ?? null);
@@ -90,6 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // User für Offline-Zugriff speichern
         if (user) {
+          requestPersistentStorage();
           localStorage.setItem(
             'cachedUser',
             JSON.stringify({
