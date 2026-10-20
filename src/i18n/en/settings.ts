@@ -130,6 +130,22 @@ const settings: Record<string, string> = {
   'Wird gespeichert…': 'Saving…',
   'Passwort festlegen': 'Set password',
 
+  // ChangeEmailForm
+  'Aktuelle E-Mail-Adresse:': 'Current email address:',
+  'E-Mail-Adresse ändern': 'Change email address',
+  'Neue E-Mail-Adresse': 'New email address',
+  'Bestätigungslink senden': 'Send confirmation link',
+  'Bitte gib eine gültige E-Mail-Adresse ein.': 'Please enter a valid email address.',
+  'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.':
+    'This email address is already used by another account.',
+  'Das ist bereits deine aktuelle E-Mail-Adresse.': 'That is already your current email address.',
+  'E-Mail-Adresse konnte nicht geändert werden. Bitte erneut versuchen.':
+    'Could not change the email address. Please try again.',
+  'Wir haben dir einen Bestätigungslink an {email} geschickt.':
+    'We sent a confirmation link to {email}.',
+  'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.':
+    'The address only changes once you open it. After that, sign in with the new address and your existing password.',
+
   // AppearanceSection
   'Farben und Aussehen anpassen': 'Customize colors and appearance',
   'Homepage Layout': 'Homepage layout',

@@ -50,26 +50,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Service Worker Manager ist bereits als Singleton initialisiert
       }
 
-      authTimeout = setTimeout(
-        () => {
-          setAuthStateResolved(true);
-          window.setAppReady?.('emailVerification', true); // No verification check on timeout
+      let hasSavedSession = false;
+      try {
+        hasSavedSession = !!localStorage.getItem('cachedUser');
+      } catch {
+        // localStorage gesperrt — wie ohne Sitzung behandeln
+      }
+      // Firebase prüft eine gespeicherte Sitzung erst online — auf langsamem Netz dauert das > 5 s.
+      const authTimeoutMs = !navigator.onLine ? 2000 : hasSavedSession ? 30000 : 5000;
 
-          // Wenn offline, versuche gespeicherten User zu laden
-          if (!navigator.onLine) {
-            const savedUser = localStorage.getItem('cachedUser');
-            if (savedUser) {
-              try {
-                const parsedUser = JSON.parse(savedUser);
-                setUser(parsedUser);
-              } catch {
-                // ignore — corrupted cached user is non-fatal, auth will re-resolve
-              }
+      authTimeout = setTimeout(() => {
+        setAuthStateResolved(true);
+        window.setAppReady?.('emailVerification', true); // No verification check on timeout
+
+        // Wenn offline, versuche gespeicherten User zu laden
+        if (!navigator.onLine) {
+          const savedUser = localStorage.getItem('cachedUser');
+          if (savedUser) {
+            try {
+              const parsedUser = JSON.parse(savedUser);
+              setUser(parsedUser);
+            } catch {
+              // ignore — corrupted cached user is non-fatal, auth will re-resolve
             }
           }
-        },
-        !navigator.onLine ? 2000 : 5000
-      ); // Kürzerer Timeout wenn offline
+        }
+      }, authTimeoutMs);
 
       unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
         if (authTimeout) clearTimeout(authTimeout);
@@ -184,7 +190,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // einem grossen Konto rund 3 MB, bei JEDEM Login, um sechs
           // Strings zu pruefen. Gemessen war das der groesste Einzelposten
           // im Startvorgang.
-          const [uidField, onboardingComplete, username, displayName, photoURL, bio] =
+          const [uidField, onboardingComplete, username, displayName, photoURL, bio, storedEmail] =
             await Promise.all([
               dbGet<string>(userPath(user.uid, 'uid')),
               dbGet<boolean>(userPath(user.uid, 'onboardingComplete')),
@@ -192,6 +198,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               dbGet<string>(userPath(user.uid, 'displayName')),
               dbGet<string>(userPath(user.uid, 'photoURL')),
               dbGet<string>(userPath(user.uid, 'bio')),
+              dbGet<string>(userPath(user.uid, 'email')),
             ]);
 
           // Neuling auch dann erkennen, wenn der Knoten schon als RUMPF
@@ -242,7 +249,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               isOnline: true,
             };
 
-            await userRef.update(updateData);
+            // Nach einer E-Mail-Änderung zieht der Knoten beim nächsten Login nach.
+            const emailUpdate =
+              user.email && storedEmail !== user.email ? { email: user.email } : {};
+
+            await userRef.update({ ...updateData, ...emailUpdate });
 
             // Self-Heal: Such-Index aus dem frischen Profil-Stand spiegeln
             // (best-effort, wirft nie) — hält userSearchIndex für Bestands-

@@ -115,6 +115,22 @@ const dict: Record<string, string> = {
   'Passwort wiederholen': 'Confirmer le mot de passe',
   'Wird gespeichert…': 'Enregistrement…',
   'Passwort festlegen': 'Définir un mot de passe',
+
+  // ChangeEmailForm
+  'Aktuelle E-Mail-Adresse:': 'Adresse e-mail actuelle :',
+  'E-Mail-Adresse ändern': 'Changer d’adresse e-mail',
+  'Neue E-Mail-Adresse': 'Nouvelle adresse e-mail',
+  'Bestätigungslink senden': 'Envoyer le lien de confirmation',
+  'Bitte gib eine gültige E-Mail-Adresse ein.': 'Saisis une adresse e-mail valide.',
+  'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.':
+    'Cette adresse e-mail est déjà utilisée par un autre compte.',
+  'Das ist bereits deine aktuelle E-Mail-Adresse.': 'C’est déjà ton adresse e-mail actuelle.',
+  'E-Mail-Adresse konnte nicht geändert werden. Bitte erneut versuchen.':
+    'Impossible de changer l’adresse e-mail. Réessaie.',
+  'Wir haben dir einen Bestätigungslink an {email} geschickt.':
+    'Nous t’avons envoyé un lien de confirmation à {email}.',
+  'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.':
+    'L’adresse ne change qu’une fois le lien ouvert. Ensuite, connecte-toi avec la nouvelle adresse et ton mot de passe habituel.',
   'Farben und Aussehen anpassen': "Personnalise les couleurs et l'apparence",
   'Homepage Layout': "Disposition de l'accueil",
   'Sektionen sortieren & ausblenden': 'Trier et masquer les sections',

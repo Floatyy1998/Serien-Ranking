@@ -1,7 +1,7 @@
 /**
- * SecuritySection — nur für Social-Only-Konten (Google/Apple ohne Passwort).
- * Die Browser-Extension meldet sich per E-Mail/Passwort an; hier kann so ein
- * Konto ein Passwort nachrüsten.
+ * SecuritySection — Konten mit Passwort können ihre E-Mail-Adresse ändern.
+ * Social-Only-Konten (Google/Apple ohne Passwort) können ein Passwort
+ * nachrüsten, z. B. für den Login der Browser-Extension.
  */
 
 import { Key } from '@mui/icons-material';
@@ -12,6 +12,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../../lib/motion';
 import { hasPasswordProvider, linkPasswordToAccount } from '../../../services/firebase/socialAuth';
 import { t } from '../../../services/i18n';
+import { ChangeEmailForm } from './ChangeEmailForm';
 
 export const SecuritySection = () => {
   const { currentTheme } = useTheme();
@@ -22,7 +23,9 @@ export const SecuritySection = () => {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
-  if (!user || hasPasswordProvider(user)) return null;
+  if (!user) return null;
+  const hasPassword = hasPasswordProvider(user);
+  if (hasPassword && !user.email) return null;
 
   const handleSave = async () => {
     if (busy) return;
@@ -70,6 +73,8 @@ export const SecuritySection = () => {
             'Passwort gesetzt — du kannst dich jetzt zusätzlich mit E-Mail & Passwort anmelden (z. B. in der Browser-Extension).'
           )}
         </p>
+      ) : hasPassword ? (
+        <ChangeEmailForm currentEmail={user.email ?? ''} />
       ) : (
         <>
           <p style={{ color: currentTheme.text.muted, marginTop: 0 }}>

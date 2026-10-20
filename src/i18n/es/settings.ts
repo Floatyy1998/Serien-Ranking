@@ -115,6 +115,22 @@ const dict: Record<string, string> = {
   'Passwort wiederholen': 'Repetir contraseña',
   'Wird gespeichert…': 'Guardando…',
   'Passwort festlegen': 'Establecer contraseña',
+
+  // ChangeEmailForm
+  'Aktuelle E-Mail-Adresse:': 'Correo electrónico actual:',
+  'E-Mail-Adresse ändern': 'Cambiar correo electrónico',
+  'Neue E-Mail-Adresse': 'Nuevo correo electrónico',
+  'Bestätigungslink senden': 'Enviar enlace de confirmación',
+  'Bitte gib eine gültige E-Mail-Adresse ein.': 'Introduce un correo electrónico válido.',
+  'Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.':
+    'Este correo electrónico ya lo usa otra cuenta.',
+  'Das ist bereits deine aktuelle E-Mail-Adresse.': 'Ese ya es tu correo electrónico actual.',
+  'E-Mail-Adresse konnte nicht geändert werden. Bitte erneut versuchen.':
+    'No se pudo cambiar el correo electrónico. Inténtalo de nuevo.',
+  'Wir haben dir einen Bestätigungslink an {email} geschickt.':
+    'Te hemos enviado un enlace de confirmación a {email}.',
+  'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.':
+    'La dirección solo cambiará cuando lo abras. Después, inicia sesión con la nueva dirección y tu contraseña de siempre.',
   'Homepage Layout': 'Diseño de la pantalla de inicio',
   'Sektionen sortieren & ausblenden': 'Ordenar y ocultar secciones',
   Anzeigegröße: 'Tamaño de visualización',
