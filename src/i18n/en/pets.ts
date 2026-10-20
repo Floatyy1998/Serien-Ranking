@@ -468,6 +468,11 @@ const dict: Record<string, string> = {
   'Dein Pet läuft frei über die Navigationsleiste.':
     'Your pet roams freely across the navigation bar.',
   'Dein Pet bleibt an seinem Platz sitzen.': 'Your pet stays put in its spot.',
+  'Töne bei Kisten & Glücksrad': 'Sounds for boxes & prize wheel',
+  'Beim Öffnen und Drehen spielen Effekt-Töne.': 'Sound effects play when opening and spinning.',
+  'Kisten und Glücksrad bleiben stumm.': 'Boxes and the prize wheel stay silent.',
+  'Ton ausschalten': 'Mute sound',
+  'Ton einschalten': 'Turn sound on',
   Tricks: 'Tricks',
   '{n} von {total} freigeschaltet': '{n} of {total} unlocked',
   'ab Lv {level}': 'from Lv. {level}',

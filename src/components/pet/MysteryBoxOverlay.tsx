@@ -14,6 +14,8 @@ import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { playRevealSound } from '../../services/settings/effectSounds';
+import { SoundToggleButton } from './SoundToggleButton';
 
 function getRewardIcon(reward: MysteryBoxReward) {
   switch (reward.type) {
@@ -57,16 +59,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
         setReward(result);
         setTimeout(() => {
           setPhase('reveal');
-          try {
-            const revealAudio = new Audio('/sounds/reveal.mp3');
-            revealAudio.volume = 0.6;
-            revealAudio.playbackRate = 2.0;
-            // bewusst still: Autoplay kann vom Browser blockiert werden
-            revealAudio.play().catch(() => {});
-            setTimeout(() => revealAudio.pause(), 3000);
-          } catch {
-            // ignore
-          }
+          playRevealSound(0.6, 3000);
         }, 800);
       } else {
         // Transaktion verloren (Box parallel schon geöffnet) — sonst hängt das Overlay in 'opening' fest
@@ -100,7 +93,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           aria-label={t('Schließen')}
           style={{
             position: 'absolute',
-            top: 16,
+            top: 'calc(16px + env(safe-area-inset-top, 0px))',
             right: 16,
             background: 'none',
             border: 'none',
@@ -113,6 +106,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
         >
           <Close style={{ fontSize: 28 }} />
         </button>
+        <SoundToggleButton />
 
         <motion.h2
           initial={{ y: -20, opacity: 0 }}

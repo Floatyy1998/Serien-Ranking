@@ -12,6 +12,12 @@ import './CaseOpeningOverlay.css';
 import { tapScale } from '../../lib/motion';
 import { dbRef, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
+import {
+  applyAmbientAudioSession,
+  playRevealSound,
+  readEffectSounds,
+} from '../../services/settings/effectSounds';
+import { SoundToggleButton } from './SoundToggleButton';
 
 interface CaseOpeningOverlayProps {
   dropData: { dropId: string; accessoryId: string; rarity: string } | null;
@@ -91,11 +97,13 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
   // Play tick on each card change
   useEffect(() => {
     const unsubscribe = currentCardIndex.on('change', (idx) => {
-      if (phase !== 'spinning' || !audioCtxRef.current) return;
+      if (phase !== 'spinning') return;
       const cardIdx = Math.round(idx);
       if (cardIdx !== lastTickCardRef.current && cardIdx >= 0 && cardIdx < STRIP_LENGTH) {
         lastTickCardRef.current = cardIdx;
+        hapticTap();
         const ctx = audioCtxRef.current;
+        if (!ctx || !readEffectSounds()) return;
         const progress = cardIdx / TARGET_INDEX;
         const vol = Math.min(1, 0.3 + progress * 0.7);
 
@@ -129,22 +137,13 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
         tickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
         noise.start(t);
         noise.stop(t + 0.02);
-        hapticTap();
       }
     });
     return unsubscribe;
   }, [currentCardIndex, phase]);
 
   const handleAnimationComplete = useCallback(() => {
-    // Reveal — play epic reveal sound (2x speed, 5 seconds)
-    const revealAudio = new Audio('/sounds/reveal.mp3');
-    revealAudio.volume = 0.8;
-    revealAudio.playbackRate = 2.0;
-    // bewusst still: Autoplay kann vom Browser blockiert werden
-    revealAudio.play().catch(() => {});
-    setTimeout(() => {
-      revealAudio.pause();
-    }, 5000);
+    playRevealSound(0.8, 5000);
     setPhase('reveal');
     hapticCelebrate();
 
@@ -162,6 +161,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
     lastTickCardRef.current = -1;
 
     if (!audioCtxRef.current) {
+      applyAmbientAudioSession();
       audioCtxRef.current = new AudioContext();
     }
 
@@ -211,6 +211,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
+          <SoundToggleButton />
           {/* Spark / fire explosion — scales with rarity */}
           {phase === 'reveal' &&
             (() => {

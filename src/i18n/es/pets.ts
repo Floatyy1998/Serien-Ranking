@@ -433,6 +433,12 @@ const dict: Record<string, string> = {
   'Dein Pet läuft frei über die Navigationsleiste.':
     'Tu mascota pasea libremente por la barra de navegación.',
   'Dein Pet bleibt an seinem Platz sitzen.': 'Tu mascota se queda sentada en su sitio.',
+  'Töne bei Kisten & Glücksrad': 'Sonidos de cajas y ruleta',
+  'Beim Öffnen und Drehen spielen Effekt-Töne.':
+    'Se reproducen efectos de sonido al abrir y girar.',
+  'Kisten und Glücksrad bleiben stumm.': 'Las cajas y la ruleta quedan en silencio.',
+  'Ton ausschalten': 'Silenciar sonido',
+  'Ton einschalten': 'Activar sonido',
   Tricks: 'Trucos',
   '{n} von {total} freigeschaltet': '{n} de {total} desbloqueados',
   'ab Lv {level}': 'desde nv. {level}',

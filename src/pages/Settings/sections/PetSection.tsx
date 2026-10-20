@@ -1,20 +1,23 @@
 /** Pet-Begleiter an/aus — ausgeschaltet steht die Zeit für die Pets still. */
 
-import { DirectionsWalk, Pets } from '@mui/icons-material';
+import { DirectionsWalk, Pets, VolumeUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { usePetEnabled } from '../../../hooks/pet/usePetEnabled';
+import { useEffectSounds } from '../../../hooks/platform/useEffectSounds';
 import { setPetRoam, usePetRoam } from '../../../hooks/pet/usePetRoam';
 import { t } from '../../../services/i18n';
 import { setPetEnabled } from '../../../services/pet/petPreferences';
+import { setEffectSounds } from '../../../services/settings/effectSounds';
 
 export const PetSection = memo(() => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const enabled = usePetEnabled();
   const roam = usePetRoam();
+  const sounds = useEffectSounds();
   const [busy, setBusy] = useState(false);
 
   const handleToggle = async (next: boolean) => {
@@ -124,6 +127,45 @@ export const PetSection = memo(() => {
           </label>
         </div>
       )}
+      <div
+        className="settings-toggle-row"
+        style={{
+          background: currentTheme.background.default,
+          borderColor: currentTheme.border.default,
+          marginTop: 10,
+        }}
+      >
+        <div className="settings-toggle-info">
+          <VolumeUp style={{ fontSize: '22px', color: currentTheme.primary }} />
+          <div>
+            <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
+              {t('Töne bei Kisten & Glücksrad')}
+            </h3>
+            <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
+              {sounds
+                ? t('Beim Öffnen und Drehen spielen Effekt-Töne.')
+                : t('Kisten und Glücksrad bleiben stumm.')}
+            </p>
+          </div>
+        </div>
+        <label className="settings-toggle-switch">
+          <input
+            type="checkbox"
+            checked={sounds}
+            onChange={(e) => setEffectSounds(e.target.checked)}
+            aria-label={t('Töne bei Kisten & Glücksrad')}
+            className="settings-toggle-input"
+          />
+          <span
+            className="settings-toggle-track"
+            style={{
+              backgroundColor: sounds ? currentTheme.primary : `${currentTheme.text.muted}30`,
+            }}
+          >
+            <span className="settings-toggle-thumb" style={{ left: sounds ? '26px' : '4px' }} />
+          </span>
+        </label>
+      </div>
     </motion.div>
   );
 });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { backendFetch } from '../../services/api/backendApi';
+import { applyPlaybackAudioSession } from '../../services/settings/effectSounds';
 
 type TtsState = 'idle' | 'loading' | 'speaking';
 
@@ -59,6 +60,7 @@ export function useTextToSpeech() {
           audioRef.current = null;
           setState('idle');
         };
+        applyPlaybackAudioSession();
         await audio.play();
         return;
       }
@@ -97,6 +99,7 @@ export function useTextToSpeech() {
           setState('idle');
         };
 
+        applyPlaybackAudioSession();
         await audio.play();
       } catch {
         setState('idle');

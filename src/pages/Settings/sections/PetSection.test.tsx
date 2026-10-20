@@ -2,7 +2,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 
-vi.mock('@mui/icons-material', () => ({ Pets: () => null, DirectionsWalk: () => null }));
+vi.mock('@mui/icons-material', () => ({
+  Pets: () => null,
+  DirectionsWalk: () => null,
+  VolumeUp: () => null,
+}));
 vi.mock('framer-motion', async () => {
   const React = await import('react');
   const skip = new Set(['initial', 'animate', 'exit', 'transition']);
@@ -62,6 +66,19 @@ describe('PetSection', () => {
       fireEvent.click(toggle);
     });
     expect(setPetEnabled).toHaveBeenCalledWith('u1', true);
+  });
+
+  it('schaltet die Effekt-Töne aus und wieder an', () => {
+    localStorage.removeItem('effectSounds');
+    render(<PetSection />);
+    const toggle = screen.getByLabelText('Töne bei Kisten & Glücksrad') as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+    fireEvent.click(toggle);
+    expect(toggle.checked).toBe(false);
+    expect(screen.getByText('Kisten und Glücksrad bleiben stumm.')).toBeInTheDocument();
+    expect(localStorage.getItem('effectSounds')).toBe('0');
+    fireEvent.click(toggle);
+    expect(toggle.checked).toBe(true);
   });
 
   it('stays inert without a user', () => {

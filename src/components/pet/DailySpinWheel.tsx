@@ -18,6 +18,12 @@ import {
 } from '../../services/pet/dailySpinService';
 import type { SpinReward } from '../../services/pet/dailySpinService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
+import {
+  applyAmbientAudioSession,
+  playRevealSound,
+  readEffectSounds,
+} from '../../services/settings/effectSounds';
+import { SoundToggleButton } from './SoundToggleButton';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
 
@@ -112,6 +118,8 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
 
   /** Procedural tick sound — same style as CaseOpeningOverlay */
   const playTickSound = useCallback((volume: number) => {
+    if (!readEffectSounds()) return;
+    applyAmbientAudioSession();
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext();
     }
@@ -160,7 +168,8 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
     setPhase('spinning');
     lastTickAngleRef.current = -1;
 
-    if (!audioCtxRef.current) {
+    if (!audioCtxRef.current && readEffectSounds()) {
+      applyAmbientAudioSession();
       audioCtxRef.current = new AudioContext();
     }
 
@@ -212,13 +221,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       setCanSpin(false);
       hapticCelebrate();
 
-      // Same reveal sound as CaseOpeningOverlay
-      const revealAudio = new Audio('/sounds/reveal.mp3');
-      revealAudio.volume = 0.8;
-      revealAudio.playbackRate = 2.0;
-      // bewusst still: Autoplay kann vom Browser blockiert werden
-      revealAudio.play().catch(() => {});
-      setTimeout(() => revealAudio.pause(), 5000);
+      playRevealSound(0.8, 5000);
     }, 5500);
   };
 
@@ -261,6 +264,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       >
         <Close style={{ fontSize: 28 }} />
       </button>
+      <SoundToggleButton />
 
       {/* Title */}
       <motion.h2
