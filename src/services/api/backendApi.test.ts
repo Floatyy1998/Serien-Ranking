@@ -210,6 +210,32 @@ describe('backendFetch', () => {
     }
   });
 
+  it('wiederholt den Kapitel-Abgleich bei einem einzelnen Verbindungsabbruch', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce({ ok: true, status: 200 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/mangaupdates/batch', { method: 'POST' });
+      await vi.advanceTimersByTimeAsync(2000);
+      await expect(pending).resolves.toEqual({ ok: true, status: 200 });
+      expect(captureError).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('meldet Status, die der Aufrufer selbst abfängt, nicht', async () => {
+    const backendFetch = await loadBackendFetch();
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });
+    await backendFetch('/hc/search', { method: 'POST' }, { quietStatuses: [429, 503] });
+    expect(captureError).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 500 });
+    await backendFetch('/hc/search', { method: 'POST' }, { quietStatuses: [429, 503] });
+    expect(captureError).toHaveBeenCalledTimes(1);
+  });
+
   it('wiederholt andere Pfade bei Verbindungsfehlern nicht', async () => {
     fetchMock.mockRejectedValue(new TypeError('Load failed'));
     const backendFetch = await loadBackendFetch();

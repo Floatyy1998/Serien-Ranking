@@ -67,12 +67,13 @@ async function getToken(): Promise<string | null> {
 }
 
 /**
- * Nur das Hinzufügen wird bei Verbindungsabbruch oder 502/503/504 wiederholt:
- * Das Backend prüft zuerst auf „bereits vorhanden", ein Doppelversand schadet
- * also nicht. Der Prozess startet gelegentlich neu (pm2) und ist dann einige
- * Sekunden nicht erreichbar bzw. reißt die laufende Anfrage ab.
+ * Nur das Hinzufügen und der reine Lese-Abgleich der Kapitelstände werden bei
+ * Verbindungsabbruch oder 502/503/504 wiederholt: Das Backend prüft zuerst auf
+ * „bereits vorhanden", ein Doppelversand schadet also nicht. Der Prozess startet
+ * gelegentlich neu (pm2) und ist dann einige Sekunden nicht erreichbar bzw.
+ * reißt die laufende Anfrage ab; im Mobilfunk bricht auch mal eine einzelne ab.
  */
-const RETRY_PATHS = new Set(['/add', '/addMovie']);
+const RETRY_PATHS = new Set(['/add', '/addMovie', '/mangaupdates/batch']);
 const CONNECTION_RETRY_DELAYS_MS = [1500, 4000];
 const TRANSIENT_STATUS = new Set([502, 503, 504]);
 
@@ -122,9 +123,14 @@ async function sendWithRetry(
  * Antwortet das Backend mit 401, wird einmal mit frisch erzwungenem Token
  * wiederholt (abgelaufene oder nicht erneuerte Sitzung). Scheitert ein
  * Aufruf endgültig (401/403/429/5xx oder Verbindungsfehler), geht eine
- * Meldung an die Client-Fehlerberichte, damit der Grund sichtbar wird.
+ * Meldung an die Client-Fehlerberichte, damit der Grund sichtbar wird —
+ * außer bei `quietStatuses`, die der Aufrufer bewusst selbst abfängt.
  */
-export async function backendFetch(path: string, init: RequestInit = {}): Promise<Response> {
+export async function backendFetch(
+  path: string,
+  init: RequestInit = {},
+  { quietStatuses = [] }: { quietStatuses?: readonly number[] } = {}
+): Promise<Response> {
   const token = await getToken();
   let response = await sendWithRetry(path, init, token);
 
@@ -134,7 +140,8 @@ export async function backendFetch(path: string, init: RequestInit = {}): Promis
     if (fresh && fresh !== token) response = await sendWithRetry(path, init, fresh);
   }
 
-  if ([401, 403, 429].includes(response.status) || response.status >= 500) {
+  const failed = [401, 403, 429].includes(response.status) || response.status >= 500;
+  if (failed && !quietStatuses.includes(response.status)) {
     reportFailure(path, init, `-> ${response.status} (${token ? 'mit' : 'ohne'} Token)`);
   }
   return response;

@@ -56,6 +56,10 @@ const pause = (ms: number) => {
 /** Falsch, solange Hardcover nicht erreichbar oder das Tageskontingent leer ist — dann greifen Google/Open Library. */
 export const hardcoverReady = (): boolean => Date.now() >= pausedUntil;
 
+let failureCount = 0;
+/** Zählt endgültig gescheiterte Abfragen — ein „nicht gefunden" zählt nur, wenn Hardcover dabei auch geantwortet hat. */
+export const hardcoverFailureCount = (): number => failureCount;
+
 /** Harte Fehler (Kontingent, Konfiguration) pausieren sofort; weiche (busy, upstream, network) erst, wenn sie sich häufen. */
 const HARD_PAUSE_BY_CODE: Record<string, number> = {
   budget: 15 * 60_000,
@@ -97,12 +101,17 @@ async function attempt<T>(
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort);
   try {
-    const res = await backendFetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lang: appLocale, ...(background ? { bg: true } : {}), ...body }),
-      signal: controller.signal,
-    });
+    // Hintergrund-Abfragen weist der Server bei Andrang absichtlich ab (503/429) — das ist kein Befund.
+    const res = await backendFetch(
+      path,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang: appLocale, ...(background ? { bg: true } : {}), ...body }),
+        signal: controller.signal,
+      },
+      background ? { quietStatuses: [429, 503] } : undefined
+    );
     if (!res.ok) {
       const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
       // Nur bekannte Codes zählen; ein 429 anderer Herkunft (allgemeine Bremse) ist nur kurz „busy“, nie eine Stundenpause.
@@ -144,6 +153,7 @@ async function post<T>(
       const hard = HARD_PAUSE_BY_CODE[err.code];
       if (hard) {
         pause(hard);
+        failureCount++;
         throw err;
       }
       // Weiche Fehler einmal nach kurzer Pause wiederholen — meist war nur die Warteschlange beim Server voll.
@@ -154,6 +164,7 @@ async function post<T>(
   }
   // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
   if (last && !(background && last.code === 'busy')) noteSoftFailure(last.code);
+  failureCount++;
   throw last as HardcoverError;
 }
 

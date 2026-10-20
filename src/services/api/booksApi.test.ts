@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const hc = vi.hoisted(() => ({ ready: false, failures: 0, search: vi.fn() }));
+
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
 vi.mock('./hardcoverApi', () => ({
-  hardcoverReady: () => false,
-  hardcoverSearch: vi.fn(),
+  hardcoverReady: () => hc.ready,
+  hardcoverFailureCount: () => hc.failures,
+  hardcoverSearch: hc.search,
   hardcoverIsbn: vi.fn(),
   hardcoverDetails: vi.fn(),
   hardcoverBrowse: vi.fn(),
@@ -97,6 +100,45 @@ describe('findBook', () => {
     expect(await findBook('Shrek!', 'William Steig')).toBeNull();
     docs = [doc('Shrek!', 'William Steig')];
     expect((await findBook('Shrek!', 'William Steig'))?.title).toBe('Shrek!');
+  });
+
+  describe('mit erreichbarem Hardcover', () => {
+    beforeEach(() => {
+      hc.ready = true;
+      hc.failures = 0;
+      hc.search.mockReset();
+    });
+
+    afterEach(() => {
+      hc.ready = false;
+    });
+
+    it('merkt sich ein „nicht gefunden", wenn Hardcover geantwortet hat', async () => {
+      hc.search.mockResolvedValue([]);
+      let docs: unknown[] = [];
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => respond(docs))
+      );
+      expect(await findBook('Momo', 'Michael Ende')).toBeNull();
+      docs = [doc('Momo', 'Michael Ende')];
+      expect(await findBook('Momo', 'Michael Ende')).toBeNull();
+    });
+
+    it('merkt sich kein „nicht gefunden", wenn der Server Hardcover-Abfragen abgewiesen hat', async () => {
+      hc.search.mockImplementation(async () => {
+        hc.failures++;
+        throw new Error('busy');
+      });
+      let docs: unknown[] = [];
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => respond(docs))
+      );
+      expect(await findBook('Krabat', 'Otfried Preußler')).toBeNull();
+      docs = [doc('Krabat', 'Otfried Preußler')];
+      expect((await findBook('Krabat', 'Otfried Preußler'))?.title).toBe('Krabat');
+    });
   });
 });
 

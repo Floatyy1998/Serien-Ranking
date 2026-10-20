@@ -15,7 +15,13 @@ import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { pickWorkHit } from '../../lib/books/workHit';
 import { cacheGet, cacheSet, cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
-import { hardcoverDetails, hardcoverIsbn, hardcoverReady, hardcoverSearch } from './hardcoverApi';
+import {
+  hardcoverDetails,
+  hardcoverFailureCount,
+  hardcoverIsbn,
+  hardcoverReady,
+  hardcoverSearch,
+} from './hardcoverApi';
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -368,7 +374,7 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
   return null;
 }
 
-/** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge gelten 6 Stunden, solange Hardcover erreichbar war. */
+/** Erster brauchbarer Treffer für Titel + Autor (Verfilmungs-Brücke, „Bücher zu deinen Serien"). Fehlschläge gelten 6 Stunden, wenn Hardcover dabei geantwortet hat. */
 export function findBook(title: string, author?: string): Promise<BookSearchResult | null> {
   // h3: Treffer von vor der Band-1-Wahl (h2: vor der Hardcover-Umstellung) fliegen raus.
   const key = `h3:${appLocale}:${title}|${author ?? ''}`.toLowerCase();
@@ -378,9 +384,11 @@ export function findBook(title: string, author?: string): Promise<BookSearchResu
     key,
     14 * DAY,
     async () => {
+      const failuresBefore = hardcoverFailureCount();
       const hit = await lookupBook(title, author);
       if (!hit) {
-        if (hardcoverReady()) cacheSet('find-miss', key, true, 200);
+        if (hardcoverReady() && hardcoverFailureCount() === failuresBefore)
+          cacheSet('find-miss', key, true, 200);
         throw new Error('not found');
       }
       return hit;

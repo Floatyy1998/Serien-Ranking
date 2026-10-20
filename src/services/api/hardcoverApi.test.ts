@@ -47,6 +47,20 @@ describe('hardcoverApi', () => {
     const [path, init] = backendFetch.mock.calls[0];
     expect(path).toBe('/hc/search');
     expect(JSON.parse(init.body)).toEqual({ lang: 'de', q: 'harry potter' });
+    expect(backendFetch.mock.calls[0][2]).toBeUndefined();
+  });
+
+  it('meldet abgewiesene Hintergrund-Abfragen nicht als Fehler und zählt sie als gescheitert', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockImplementation(async () => json({ error: 'busy' }, 503));
+    const { hardcoverSearch, hardcoverFailureCount } = await import('./hardcoverApi');
+    const before = hardcoverFailureCount();
+    const pending = hardcoverSearch('harry potter', undefined, true);
+    const assertion = expect(pending).rejects.toMatchObject({ code: 'busy' });
+    await vi.advanceTimersByTimeAsync(2000);
+    await assertion;
+    expect(backendFetch.mock.calls[0][2]).toEqual({ quietStatuses: [429, 503] });
+    expect(hardcoverFailureCount()).toBe(before + 1);
   });
 
   it('nimmt ohne eigenes Cover das ISBN-Cover der Sprache', async () => {
