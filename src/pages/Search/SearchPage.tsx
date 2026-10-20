@@ -17,7 +17,6 @@ import {
   PageState,
   SkeletonRatingsGrid,
   PageHeader,
-  ScrollToTopButton,
   Snackbar,
 } from '../../components/ui';
 import { QuickRatingSheet } from '../../components/ui/overlay/QuickRatingSheet';
@@ -397,8 +396,6 @@ export const SearchPage = memo(() => {
         initialGenreRatings={quickRating.genreRatings}
         onRate={saveQuickRating}
       />
-
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </div>
   );
 });

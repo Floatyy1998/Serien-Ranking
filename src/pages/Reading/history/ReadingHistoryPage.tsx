@@ -2,7 +2,7 @@ import { CheckCircle, Description, History, MenuBook, Replay } from '@mui/icons-
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader, PageLayout, ScrollToTopButton, SkeletonListRow } from '../../../components/ui';
+import { PageHeader, PageLayout, SkeletonListRow } from '../../../components/ui';
 import { EmptyState } from '../../../components/ui/feedback/EmptyState';
 import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
@@ -470,7 +470,6 @@ export const ReadingHistoryPage = () => {
           </AnimatePresence>
         </div>
       </div>
-      <ScrollToTopButton scrollContainerSelector='[data-scrollable="reading-history"]' />
     </PageLayout>
   );
 };

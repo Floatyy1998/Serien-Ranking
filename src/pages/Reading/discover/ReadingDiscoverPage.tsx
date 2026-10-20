@@ -1,13 +1,7 @@
 import { AutoStories, NewReleases, Search, Star, TrendingUp, Whatshot } from '@mui/icons-material';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  EmptyState,
-  PageHeader,
-  PageLayout,
-  ScrollToTopButton,
-  SectionHeader,
-} from '../../../components/ui';
+import { EmptyState, PageHeader, PageLayout, SectionHeader } from '../../../components/ui';
 import { LoadingSpinner } from '../../../components/ui/feedback/LoadingSpinner';
 import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
@@ -435,7 +429,6 @@ export const ReadingDiscoverPage = () => {
       )}
 
       <div style={{ height: 'var(--page-bottom-gap)' }} />
-      {full && <ScrollToTopButton />}
       {addSheet}
       {books.sheets}
     </PageLayout>

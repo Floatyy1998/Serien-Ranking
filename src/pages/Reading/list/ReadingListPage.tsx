@@ -15,7 +15,6 @@ import {
   GradientText,
   LoadingSpinner,
   PageLayout,
-  ScrollToTopButton,
   SwipeableEpisodeRow,
 } from '../../../components/ui';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -588,7 +587,6 @@ export const ReadingListPage = () => {
           )}
         </div>
       </div>
-      <ScrollToTopButton scrollContainerSelector=".episodes-scroll-container" />
     </PageLayout>
   );
 };

@@ -18,6 +18,7 @@ vi.mock('../components/ErrorBoundary', () => ({
 vi.mock('../components/layout', () => ({
   Layout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ScrollToTop: () => <div data-testid="scroll-top" />,
+  ScrollEscapeHost: () => null,
 }));
 vi.mock('../components/ui/feedback/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
 vi.mock('../contexts/AuthContext', () => ({ useAuth: () => authValue }));

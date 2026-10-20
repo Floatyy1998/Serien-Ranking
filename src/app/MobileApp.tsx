@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { Layout, ScrollToTop } from '../components/layout';
+import { Layout, ScrollEscapeHost, ScrollToTop } from '../components/layout';
 import { MainTabs } from '../components/layout/MainTabs';
 import { MAIN_TAB_PATHS } from '../config/navItems';
 import { useAuth } from '../contexts/AuthContext';
@@ -264,6 +264,7 @@ export const MobileApp = () => {
       <PageTourHost />
       <AvatarViewerHost />
       <SeasonalHost />
+      <ScrollEscapeHost />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

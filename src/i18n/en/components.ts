@@ -18,6 +18,7 @@ const dict: Record<string, string> = {
   // BackButton
   Zurück: 'Back',
   'Zur Startseite': 'Back to home',
+  'Zum Seitenanfang': 'Back to top',
 
   // CarouselNotification
   'Staffel {staffel}': 'Season {staffel}',

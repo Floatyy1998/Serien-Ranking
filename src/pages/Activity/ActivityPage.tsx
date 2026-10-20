@@ -15,7 +15,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { subscribeUnreadChats } from '../../services/chat/chatUnread';
 import { useTheme } from '../../contexts/ThemeContext';
-import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
+import { IconContainer, PageHeader } from '../../components/ui';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { AddFriendDialog } from './AddFriendDialog';
@@ -399,7 +399,6 @@ export const ActivityPage = () => {
         onClose={() => setFriendToRemove(null)}
         isRemoving={removing}
       />
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </div>
   );
 };

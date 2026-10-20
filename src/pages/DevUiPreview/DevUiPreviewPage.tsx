@@ -24,6 +24,7 @@ import {
   SignatureStripPreview,
 } from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
+import { ScrollEscapeDetailPreview, ScrollEscapeHeaderPreview } from './ScrollEscapePreviews';
 import { FriendsEmptyPreview, FriendsListPreview, PublicProfilesPreview } from './SocialPreviews';
 import {
   OnboardingFocusPreview,
@@ -190,6 +191,16 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  {
+    id: 'scroll-escape-detail',
+    label: 'Mitwandernde Leiste: Detailseite',
+    render: () => <ScrollEscapeDetailPreview />,
+  },
+  {
+    id: 'scroll-escape-header',
+    label: 'Mitwandernde Leiste: Kopfzeile',
+    render: () => <ScrollEscapeHeaderPreview />,
+  },
   {
     id: 'taste-match-reading',
     label: 'Taste Match: Lesen',

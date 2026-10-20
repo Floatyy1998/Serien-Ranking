@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-import { SkeletonListRow, PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { SkeletonListRow, PageHeader, PageLayout } from '../../components/ui';
 import { useRecentlyWatched, TIME_RANGES } from './useRecentlyWatched';
 import {
   DateGroupHeader,
@@ -178,7 +178,6 @@ export const RecentlyWatchedPage = memo(() => {
           </AnimatePresence>
         </div>
       </div>
-      <ScrollToTopButton scrollContainerSelector='[data-scrollable="episodes"]' />
     </PageLayout>
   );
 });

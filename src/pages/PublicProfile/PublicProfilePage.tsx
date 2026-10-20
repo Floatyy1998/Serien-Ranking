@@ -16,7 +16,6 @@ import {
   EmptyState,
   PageLayout,
   QuickFilter,
-  ScrollToTopButton,
   SearchInput,
   Skeleton,
   SkeletonPosterRow,
@@ -476,7 +475,6 @@ export const PublicProfilePage: React.FC = () => {
           )}
         </div>
       </div>
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };

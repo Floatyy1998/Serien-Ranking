@@ -26,7 +26,6 @@ import {
   LoadingSpinner,
   PageLayout,
   PageState,
-  ScrollToTopButton,
   Snackbar,
   TabSwitcher,
 } from '../../components/ui';
@@ -564,7 +563,6 @@ export const DiscoverPage = memo(() => {
         message={dialog.message}
         type={dialog.type}
       />
-      <ScrollToTopButton scrollContainerSelector=".mobile-discover-container" />
     </PageLayout>
   );
 });

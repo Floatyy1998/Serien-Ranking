@@ -6,7 +6,7 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-import { PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { PageHeader, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpData } from './useCatchUpData';
 import { HeroStats } from './HeroStats';
@@ -89,8 +89,6 @@ export const CatchUpPage: React.FC = () => {
           ))}
         </motion.div>
       </div>
-
-      <ScrollToTopButton scrollContainerRef={scrollContainerRef} />
     </PageLayout>
   );
 };

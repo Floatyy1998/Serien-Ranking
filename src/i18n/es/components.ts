@@ -15,6 +15,7 @@ const dict: Record<string, string> = {
   'weitere Anschlüsse': 'otras continuaciones',
   Zurück: 'Atrás',
   'Zur Startseite': 'Ir al inicio',
+  'Zum Seitenanfang': 'Volver arriba',
   'Staffel {staffel}': 'Temporada {staffel}',
   'Starttermin noch offen': 'fecha de estreno por confirmar',
   'ab {datum}': 'desde el {datum}',

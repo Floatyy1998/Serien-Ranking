@@ -30,7 +30,6 @@ import {
   PageHeader,
   PageLayout,
   PageState,
-  ScrollToTopButton,
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
@@ -572,8 +571,6 @@ export const SerienKalenderPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };

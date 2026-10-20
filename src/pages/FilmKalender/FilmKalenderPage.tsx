@@ -18,7 +18,6 @@ import {
   PageHeader,
   PageLayout,
   PageState,
-  ScrollToTopButton,
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
@@ -385,8 +384,6 @@ export const FilmKalenderPage: React.FC = () => {
           </section>
         )}
       </div>
-
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };

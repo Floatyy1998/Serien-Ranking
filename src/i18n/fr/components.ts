@@ -2,6 +2,7 @@
 
 const dict: Record<string, string> = {
   'Zur Startseite': "Retour à l'accueil",
+  'Zum Seitenanfang': 'Retour en haut',
   'Starttermin noch offen': 'date de sortie à confirmer',
   'Manga-Anschluss': 'Suite du manga',
   'Benachrichtigung schließen': 'Fermer la notification',

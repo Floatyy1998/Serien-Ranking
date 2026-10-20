@@ -28,6 +28,7 @@ import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
 import { withCoinEgg } from '../reading/coinEasterEgg';
 import { NAV_SLOT_ICONS } from './navSlotIcons';
+import { scrollPageToTop } from './pageScroller';
 import './BottomNavigation.css';
 
 interface NavItem {
@@ -197,8 +198,7 @@ export const BottomNavigation = () => {
   const handleNavigation = (item: NavItem, index: number) => {
     hapticTap();
     if (isActive(item.path, item.aliases)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollPageToTop();
     } else {
       setPendingIndex(index);
       const go = () => navigate(item.id === 'manga' && !reader ? '/reading' : item.path);

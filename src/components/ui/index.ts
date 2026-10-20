@@ -31,7 +31,6 @@ export { PageLayout } from './layout/PageLayout';
 export { PageHeader } from './layout/PageHeader';
 export { TabSwitcher } from './layout/TabSwitcher';
 export { ProgressBar } from './feedback/ProgressBar';
-export { ScrollToTopButton } from './layout/ScrollToTopButton';
 export { VisuallyHidden } from './layout/VisuallyHidden';
 export { CatchUpDialog } from './overlay/CatchUpDialog';
 export { IconContainer } from './display/IconContainer';

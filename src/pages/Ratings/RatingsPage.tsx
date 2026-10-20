@@ -22,7 +22,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/data/usePersistedState';
 import { bookRatingStats, rankBooksByRating } from '../../lib/books/bookRanking';
 import { t } from '../../services/i18n';
-import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';
+import { QuickFilter, SkeletonRatingsGrid } from '../../components/ui';
 import { RatingBooksGrid } from './RatingBooksGrid';
 import { RatingCompactRow } from './RatingCompactRow';
 import { RatingFolderActionsSheet, RatingFolderBar, RatingFolderGrid } from './RatingFolderGrid';
@@ -329,8 +329,6 @@ export const RatingsPage: React.FC = () => {
         onClose={closeFolderSheet}
         onDeleted={handleFolderDeleted}
       />
-
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" bottomOffset={72} />
     </div>
   );
 };

@@ -41,7 +41,6 @@ import {
   PageLayout,
   ProfileItemCard,
   QuickFilter,
-  ScrollToTopButton,
   SearchInput,
   TabSwitcher,
   UserAvatar,
@@ -1017,7 +1016,6 @@ export const FriendProfilePage = memo(() => {
           </AnimatePresence>
         </div>
       </div>
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 });

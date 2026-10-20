@@ -159,6 +159,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       {/* Filter Button */}
       <Tooltip title={t('Filter & Sortierung')} arrow>
         <button
+          data-fab
           onClick={() => setIsOpen(true)}
           style={{
             position: 'fixed',

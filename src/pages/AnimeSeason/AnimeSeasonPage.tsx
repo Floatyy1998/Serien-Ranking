@@ -58,7 +58,6 @@ import {
   PageHeader,
   PageLayout,
   PageState,
-  ScrollToTopButton,
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
@@ -1282,7 +1281,6 @@ export const AnimeSeasonPage: React.FC = () => {
       </div>
 
       {/* Scroll-to-top wie auf WatchNext/Ratings — Shell-Container scrollt. */}
-      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };
