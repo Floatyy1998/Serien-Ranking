@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 interface FakeUser {
   emailVerified: boolean;
   metadata?: { creationTime?: string };
+  providerData: { providerId: string }[];
   reload: () => Promise<void>;
   sendEmailVerification: () => Promise<void>;
 }
@@ -53,6 +54,7 @@ import { EmailVerificationBanner } from './EmailVerificationBanner';
 function makeUser(emailVerified: boolean): FakeUser {
   return {
     emailVerified,
+    providerData: [{ providerId: 'password' }],
     reload: vi.fn<() => Promise<void>>(async () => {}),
     sendEmailVerification: vi.fn<() => Promise<void>>(async () => {}),
   };
@@ -107,6 +109,22 @@ describe('EmailVerificationBanner', () => {
     );
 
     expect(screen.getByText('Email-Verifizierung erforderlich')).toBeInTheDocument();
+  });
+
+  it('sperrt Apple-Konten mit nachgerüstetem Passwort nicht aus', () => {
+    const user = makeUser(false);
+    user.metadata = { creationTime: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() };
+    user.providerData = [{ providerId: 'apple.com' }, { providerId: 'password' }];
+    authState.user = user;
+    render(
+      <EmailVerificationBanner>
+        <div>protected area</div>
+      </EmailVerificationBanner>
+    );
+
+    expect(screen.queryByText('Email-Verifizierung erforderlich')).toBeNull();
+    expect(screen.queryByText(/Email nicht verifiziert/)).toBeNull();
+    expect(screen.getByText('protected area')).toBeInTheDocument();
   });
 
   it('verschluckt Fehler des 5s-Polls (identitytoolkit 503)', async () => {

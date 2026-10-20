@@ -101,6 +101,14 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   const createdAt = Date.parse(user?.metadata?.creationTime || '') || mountNow;
   const graceExpired = mountNow - createdAt > GRACE_MS;
 
+  // Apple/Google haben die Adresse bestätigt; ein verknüpftes Passwort setzt emailVerified zurück.
+  const providerVerified = !!user?.providerData.some(
+    (p) => p?.providerId === 'apple.com' || p?.providerId === 'google.com'
+  );
+  if (providerVerified) {
+    return <>{children}</>;
+  }
+
   if (!isVerified && graceExpired) {
     return (
       <>
