@@ -15,6 +15,7 @@ import {
   NewReleases,
   Refresh,
   ReportProblem,
+  Security,
   Settings,
   Speed,
   SwapHoriz,
@@ -47,6 +48,7 @@ import { CrossoversTab } from './tabs/CrossoversTab';
 import { TmdbAheadTab } from './tabs/TmdbAheadTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
 import { ModerationTab } from './tabs/ModerationTab';
+import { SecurityTab } from './tabs/SecurityTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -138,6 +140,12 @@ const TABS = [
     label: 'Backend',
     group: 'Betrieb',
     icon: <BugReport style={{ fontSize: 16 }} />,
+  },
+  {
+    id: 'security',
+    label: 'Sicherheit',
+    group: 'Betrieb',
+    icon: <Security style={{ fontSize: 16 }} />,
   },
   { id: 'config', label: 'Config', group: 'Inhalte', icon: <Settings style={{ fontSize: 16 }} /> },
 ] as const;
@@ -292,6 +300,7 @@ export function AdminDashboardPage() {
               {activeTab === 'client-errors' && <ClientErrorsTab />}
               {activeTab === 'suspicious' && <SuspiciousAccountsTab />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
+              {activeTab === 'security' && <SecurityTab />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>
           </AnimatePresence>

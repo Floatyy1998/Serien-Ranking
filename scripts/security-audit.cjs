@@ -92,9 +92,16 @@ async function openState() {
   });
   const db = getDatabase(app);
   const stateRef = db.ref('admin/securityAudit');
-  const known = new Set(((await stateRef.child('known').get()).val() || []).filter(Boolean));
-  return { db, stateRef, known, ServerValue };
+  const state = (await stateRef.get()).val() || {};
+  const known = new Set((state.known || []).filter(Boolean));
+  const firstSeen = Object.fromEntries((state.items || []).map((i) => [i.key, i.firstSeen]));
+  return { db, stateRef, known, firstSeen, ServerValue };
 }
+
+const RUN_URL = process.env.GITHUB_RUN_ID
+  ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+  : null;
+const TAB_URL = '/admin?tab=security';
 
 function report(findings, fresh) {
   const text = summary(findings, fresh);
@@ -116,7 +123,7 @@ async function main() {
   }, 90_000).unref();
 
   if (hasDb) {
-    const { db, stateRef, known, ServerValue } = await openState();
+    const { db, stateRef, known, firstSeen, ServerValue } = await openState();
     fresh = new Set(findings.filter((f) => !known.has(f.key)).map((f) => f.key));
     const neu = findings.filter((f) => fresh.has(f.key));
     const test = process.env.AUDIT_TEST === '1';
@@ -142,7 +149,7 @@ async function main() {
         type: 'security_alert',
         title,
         message,
-        data: { navigateTo: '/admin' },
+        data: { navigateTo: TAB_URL },
         timestamp: Date.now(),
         read: false,
       });
@@ -154,14 +161,17 @@ async function main() {
           ? neu.map((f) => `${f.pkg} (${LABEL[f.severity]})`).join(', ')
           : 'Testmeldung: Die tägliche Prüfung läuft.'
         ).slice(0, 300),
-        url: '/admin',
+        url: TAB_URL,
         ts: ServerValue.TIMESTAMP,
       });
     }
-    await stateRef.update({
+    const now = Date.now();
+    await stateRef.set({
       known: findings.map((f) => f.key),
+      items: findings.map((f) => ({ ...f, firstSeen: firstSeen[f.key] || now })),
       lastRun: ServerValue.TIMESTAMP,
       open: findings.length,
+      ...(RUN_URL && { runUrl: RUN_URL }),
     });
     console.log(`${findings.length} offen, ${neu.length} neu gemeldet`);
   } else {
