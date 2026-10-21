@@ -1,0 +1,28 @@
+# Nur Sicherheits-PRs: open-pull-requests-limit 0 schaltet die normalen
+# Versions-Updates ab, die Gruppen bündeln alle Fixes je Ordner in einen PR.
+# Merge auf master = Deploy.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      sicherheit-app:
+        applies-to: security-updates
+        patterns: ['*']
+    commit-message:
+      prefix: 'Sicherheitsupdate'
+
+  - package-ecosystem: npm
+    directory: /functions
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      sicherheit-cloud-function:
+        applies-to: security-updates
+        patterns: ['*']
+    commit-message:
+      prefix: 'Sicherheitsupdate'
