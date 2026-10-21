@@ -480,7 +480,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         icon:
           isPet || isPendingDrop
             ? 'pet'
-            : isModeration || n.type === 'moderation_ban'
+            : isModeration || n.type === 'moderation_ban' || n.type === 'crossover_submitted'
               ? 'flag'
               : isBugTicket
                 ? n.data?.ticketType === 'feature'

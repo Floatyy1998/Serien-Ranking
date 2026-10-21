@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { Check, DeleteOutlined, EditOutlined, SwapHoriz, UploadFile } from '@mui/icons-material';
+import {
+  Check,
+  ContentCopy,
+  DeleteOutlined,
+  EditOutlined,
+  SwapHoriz,
+  UploadFile,
+} from '@mui/icons-material';
 import { CrossoverEditorSheet } from '../../../components/crossover/CrossoverEditorSheet';
 import { kindLabel, partLabel } from '../../../components/crossover/crossoverLabels';
 import { ADMIN_UID } from '../../../config/admin';
@@ -12,9 +19,11 @@ import {
   deleteCrossover,
   importCrossovers,
 } from '../../../services/crossover/crossoverService';
+import { buildCrossoverReviewJson } from '../../../services/crossover/crossoverReview';
 import { dbRef } from '../../../services/db/ref';
 import { onValue } from '../../../services/db/subscribeValue';
 import type { CrossoverEntry, CrossoverMap } from '../../../types/Crossover';
+import { copyTextToClipboard } from '../../../utils/clipboard';
 
 type Filter = 'pruefen' | 'alle' | 'community' | 'seed';
 
@@ -56,6 +65,7 @@ export function CrossoversTab() {
   const [editOpen, setEditOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [copyingId, setCopyingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -112,6 +122,18 @@ export function CrossoversTab() {
       showToast(`Freigabe fehlgeschlagen: ${(e as Error)?.message || 'unbekannt'}`, 5000, 'error');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const copyJson = async (id: string, entry: CrossoverEntry) => {
+    setCopyingId(id);
+    try {
+      const ok = await copyTextToClipboard(await buildCrossoverReviewJson(id, entry));
+      showToast(ok ? 'JSON kopiert' : 'Kopieren fehlgeschlagen', 3000, ok ? undefined : 'error');
+    } catch (e) {
+      showToast(`JSON fehlgeschlagen: ${(e as Error)?.message || 'unbekannt'}`, 5000, 'error');
+    } finally {
+      setCopyingId(null);
     }
   };
 
@@ -298,6 +320,15 @@ export function CrossoversTab() {
                       <Check style={{ fontSize: 16 }} />
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className="adm-icon-btn"
+                    title="Als JSON kopieren (mit Katalogabgleich)"
+                    disabled={copyingId === id}
+                    onClick={() => void copyJson(id, entry)}
+                  >
+                    <ContentCopy style={{ fontSize: 16 }} />
+                  </button>
                   <button
                     type="button"
                     className="adm-icon-btn"

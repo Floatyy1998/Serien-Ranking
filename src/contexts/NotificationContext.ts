@@ -21,6 +21,7 @@ export interface AppNotification {
     | 'admin_message'
     | 'moderation_flag'
     | 'moderation_ban'
+    | 'crossover_submitted'
     | 'data_heal'
     | 'movie_available'
     | 'watch_plan_reminder'

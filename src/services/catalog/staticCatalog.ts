@@ -724,6 +724,20 @@ async function withEnEpisodeBulk(
   return out;
 }
 
+/** Folgennamen einer Sprache unabhängig von der App-Sprache (seriesId → Staffel-Key+1 → Name je Index). */
+export async function fetchCatalogEpisodeNames(
+  locale: string
+): Promise<NonNullable<LangEpisodeNames['series']> | null> {
+  if (locale === appLocale && memoryLangEpisodes) return memoryLangEpisodes.series ?? null;
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<LangEpisodeNames>(`${locale}/episodes.json`, { version });
+    return data?.series ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Provider-Dedup-Expansion
 
 interface ProviderEntry {

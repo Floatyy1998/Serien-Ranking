@@ -15,6 +15,7 @@ import {
   type PickerSeason,
   type PickerSeries,
 } from '../../services/crossover/crossoverPicker';
+import { notifyAdminCrossoverSubmitted } from '../../services/crossover/crossoverReview';
 import { saveCrossover } from '../../services/crossover/crossoverService';
 import { t } from '../../services/i18n';
 import type { CrossoverEntry, CrossoverKind, CrossoverPart } from '../../types/Crossover';
@@ -277,6 +278,12 @@ export function CrossoverEditorSheet({
         onSaved?.(savedId);
       } else {
         showToast(t('Danke! Wir prüfen den Eintrag, danach sehen ihn alle.'), 4000);
+        void notifyAdminCrossoverSubmitted(
+          savedId,
+          entry,
+          user.displayName || user.uid.slice(0, 8),
+          !id
+        );
       }
       onClose();
     } catch {
