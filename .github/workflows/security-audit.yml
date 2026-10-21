@@ -1,0 +1,39 @@
+name: CVE-Prüfung
+
+# Täglich npm audit für App und Cloud Function. Neue kritische/hohe Funde
+# meldet scripts/security-audit.cjs per Glocke + Push an den Admin.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      testmeldung:
+        description: 'Testmeldung an den Admin schicken (auch ohne Funde)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: firebase-admin für die Meldung
+        working-directory: functions
+        run: npm ci --omit=dev --ignore-scripts --loglevel=error
+
+      - name: Prüfen und melden
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.VITE_FIREBASE_DATABASE_URL }}
+          SA_KEY: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          AUDIT_TEST: ${{ inputs.testmeldung && '1' || '' }}
+        run: |
+          printf '%s' "$SA_KEY" > /tmp/sa-key.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json node scripts/security-audit.cjs
