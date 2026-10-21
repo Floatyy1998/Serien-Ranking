@@ -27,7 +27,10 @@ jobs:
 
       - name: firebase-admin für die Meldung
         working-directory: functions
-        run: npm ci --omit=dev --ignore-scripts --loglevel=error
+        # @firebase/app ist ein optionaler Peer von firebase-admin/database und fehlt sonst.
+        run: |
+          npm ci --omit=dev --ignore-scripts --loglevel=error
+          npm install --no-save --ignore-scripts --loglevel=error @firebase/app
 
       - name: Prüfen und melden
         env:
