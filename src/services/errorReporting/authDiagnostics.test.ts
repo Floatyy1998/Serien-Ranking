@@ -83,6 +83,17 @@ describe('authDiagnostics', () => {
     );
   });
 
+  it('meldet keinen langsamen Start, wenn die App zwischendurch im Hintergrund war', () => {
+    beginAuthDiagnostics(true);
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(7000);
+    trackAuthEvent(user(OLD));
+    expect(captureErrorMock).not.toHaveBeenCalled();
+  });
+
   it('bleibt bei schnellem Start mit Sitzung still', () => {
     beginAuthDiagnostics(true);
     vi.advanceTimersByTime(800);

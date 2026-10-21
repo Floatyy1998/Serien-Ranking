@@ -22,6 +22,7 @@ interface StartSnapshot {
 let snapshot: StartSnapshot | null = null;
 let firstEventSeen = false;
 let startedLoggedOut = false;
+let hiddenDuringStart = false;
 
 /** Liegt Firebases Login noch in IndexedDB, obwohl Firebase „abgemeldet“ meldet? */
 export function probeFirebaseIdb(): Promise<IdbProbe> {
@@ -107,6 +108,12 @@ export function beginAuthDiagnostics(hadSession: boolean): void {
   snapshot = { hadSession, storageKeys, startedAt: Date.now() };
   firstEventSeen = false;
   startedLoggedOut = false;
+  hiddenDuringStart = document.visibilityState === 'hidden';
+  document.addEventListener('visibilitychange', markHidden);
+}
+
+function markHidden(): void {
+  if (document.visibilityState === 'hidden') hiddenDuringStart = true;
 }
 
 async function describeStorage(): Promise<string> {
@@ -126,6 +133,7 @@ export function trackAuthEvent(user: firebase.User | null): void {
   if (!snapshot) return;
   if (!firstEventSeen) {
     firstEventSeen = true;
+    document.removeEventListener('visibilitychange', markHidden);
     const waitedMs = Date.now() - snapshot.startedAt;
     if (!user) {
       startedLoggedOut = true;
@@ -140,7 +148,8 @@ export function trackAuthEvent(user: firebase.User | null): void {
         message: 'Login war unlesbar, nach Neuladen wiederhergestellt',
       });
     }
-    if (waitedMs > SLOW_AUTH_MS) {
+    // Im Hintergrund friert die WebView ein — die Wartezeit sagt dann nichts über Firebase.
+    if (waitedMs > SLOW_AUTH_MS && !hiddenDuringStart) {
       captureError({
         kind: 'error',
         name: 'AuthSlowStart',
