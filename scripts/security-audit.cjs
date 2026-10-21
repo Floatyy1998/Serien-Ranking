@@ -96,10 +96,24 @@ async function openState() {
   return { db, stateRef, known, ServerValue };
 }
 
+function report(findings, fresh) {
+  const text = summary(findings, fresh);
+  console.log(text);
+  if (process.env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
+}
+
 async function main() {
   const findings = collect();
   const hasDb = !!(process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.FIREBASE_DATABASE_URL);
   let fresh = new Set(findings.map((f) => f.key));
+
+  // Ohne gültigen Zugang wiederholt firebase-admin endlos — dann lieber laut scheitern.
+  setTimeout(() => {
+    console.error('Firebase nicht erreichbar oder Dienstkonto ohne Datenbank-Recht (90 s).');
+    report(findings, fresh);
+    process.exit(1);
+  }, 90_000).unref();
 
   if (hasDb) {
     const { db, stateRef, known, ServerValue } = await openState();
@@ -154,10 +168,7 @@ async function main() {
     console.log('Ohne Firebase-Zugang: nur Bericht, keine Meldung.');
   }
 
-  const text = summary(findings, fresh);
-  console.log(text);
-  if (process.env.GITHUB_STEP_SUMMARY)
-    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
+  report(findings, fresh);
   process.exit(0);
 }
 

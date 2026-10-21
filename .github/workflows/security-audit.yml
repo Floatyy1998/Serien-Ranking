@@ -18,6 +18,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 
@@ -35,7 +36,8 @@ jobs:
       - name: Prüfen und melden
         env:
           FIREBASE_DATABASE_URL: ${{ secrets.VITE_FIREBASE_DATABASE_URL }}
-          SA_KEY: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          # Admin-SDK-Dienstkonto (Datenbank-Recht); das Deploy-Konto darf nur Hosting.
+          SA_KEY: ${{ secrets.FIREBASE_ADMIN_SA }}
           AUDIT_TEST: ${{ inputs.testmeldung && '1' || '' }}
         run: |
           printf '%s' "$SA_KEY" > /tmp/sa-key.json
