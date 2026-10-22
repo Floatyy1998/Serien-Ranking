@@ -201,6 +201,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
 
 .profile-featured-icon-wrap {
@@ -221,6 +224,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
 /* Grouped Menu Items (secondary, settings) */
@@ -259,6 +264,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
 
 .profile-menu-icon-wrap {
@@ -279,6 +287,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
 /* Badge */
@@ -335,11 +345,6 @@
 .profile-page .profile-featured-item,
 .profile-page .profile-menu-item {
   justify-content: space-between;
-}
-
-/* Watermark ist ein reines Desktop-Detail */
-.profile-tile-ghost {
-  display: none;
 }
 
 /* Hero-Wrapper: mobil neutral (Collage aus), Desktop Kino-Band */

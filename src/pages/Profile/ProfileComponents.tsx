@@ -306,8 +306,6 @@ export const ProfileFeaturedNav = memo(
               )}
               <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
             </div>
-            {/* Desktop-Watermark (mobil per CSS ausgeblendet) */}
-            <item.icon className="profile-tile-ghost" style={{ color: item.color }} />
           </motion.button>
         ))}
       </div>
@@ -376,8 +374,6 @@ export const ProfileMenuGroup = memo(
               )}
               <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
             </div>
-            {/* Desktop-Watermark (mobil per CSS ausgeblendet) */}
-            <item.icon className="profile-tile-ghost" style={{ color: item.color }} />
           </motion.button>
         ))}
       </div>
