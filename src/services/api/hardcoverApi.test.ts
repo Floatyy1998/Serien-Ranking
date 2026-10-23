@@ -35,13 +35,20 @@ describe('hardcoverApi', () => {
     vi.useRealTimers();
   });
 
-  it('fragt ohne Anmeldung nicht beim Proxy an (Onboarding vor der Registrierung)', async () => {
+  it('sucht auch ohne Anmeldung bei Hardcover (Onboarding vor der Registrierung)', async () => {
     session.active = false;
+    backendFetch.mockResolvedValue(json({ results: [item] }));
     const { hardcoverReady, hardcoverSearch } = await import('./hardcoverApi');
-    expect(hardcoverReady()).toBe(false);
-    await expect(hardcoverSearch('harry')).rejects.toMatchObject({ code: 'paused' });
+    expect(hardcoverReady()).toBe(true);
+    expect(await hardcoverSearch('harry')).toHaveLength(1);
+    expect(backendFetch.mock.calls[0][0]).toBe('/hc/search');
+  });
+
+  it('schickt Login-Routen ohne Anmeldung gar nicht erst ab und pausiert nicht', async () => {
+    session.active = false;
+    const { hardcoverReady, hardcoverAuthorBooks } = await import('./hardcoverApi');
+    await expect(hardcoverAuthorBooks('Rowling')).rejects.toMatchObject({ code: 'guest' });
     expect(backendFetch).not.toHaveBeenCalled();
-    session.active = true;
     expect(hardcoverReady()).toBe(true);
   });
 

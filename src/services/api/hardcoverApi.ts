@@ -53,11 +53,11 @@ const pause = (ms: number) => {
   pausedUntil = Math.max(pausedUntil, Date.now() + ms);
 };
 
-/**
- * Falsch, solange Hardcover nicht erreichbar, das Tageskontingent leer oder niemand angemeldet ist
- * (Onboarding vor der Registrierung: der Proxy verlangt Login) — dann greifen Google/Open Library.
- */
-export const hardcoverReady = (): boolean => Date.now() >= pausedUntil && hasBackendSession();
+/** Falsch, solange Hardcover nicht erreichbar oder das Tageskontingent leer ist — dann greifen Google/Open Library. */
+export const hardcoverReady = (): boolean => Date.now() >= pausedUntil;
+
+/** Diese Routen gibt der Proxy auch Gästen frei (Onboarding vor der Registrierung), alle anderen verlangen Login. */
+const GUEST_PATHS = new Set(['/hc/search', '/hc/isbn', '/hc/browse']);
 
 let failureCount = 0;
 /** Zählt endgültig gescheiterte Abfragen — ein „nicht gefunden" zählt nur, wenn Hardcover dabei auch geantwortet hat. */
@@ -146,6 +146,7 @@ async function post<T>(
   background = false
 ): Promise<T> {
   if (!hardcoverReady()) throw new HardcoverError('paused');
+  if (!GUEST_PATHS.has(path) && !hasBackendSession()) throw new HardcoverError('guest');
   let last: HardcoverError | null = null;
   for (let round = 0; round < 2; round++) {
     try {
