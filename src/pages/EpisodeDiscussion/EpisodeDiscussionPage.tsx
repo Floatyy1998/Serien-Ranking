@@ -378,6 +378,7 @@ export const EpisodeDiscussionPage = memo(() => {
             currentTheme={currentTheme}
             guestStars={guestStars}
             getProfileUrl={getProfileUrl}
+            onPersonClick={(personId) => navigate(`/person/${personId}`)}
           />
 
           <DiscussionSection

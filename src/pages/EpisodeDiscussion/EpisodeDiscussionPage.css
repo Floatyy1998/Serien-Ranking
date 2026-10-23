@@ -531,10 +531,20 @@
   padding: 0 20px 8px 20px;
 }
 
-.ed-guest-star-card {
+.ed-guest-star-card,
+.mobile-app button.ed-guest-star-card {
   flex-shrink: 0;
   width: 95px;
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
   text-align: center;
+  cursor: pointer;
 }
 
 .ed-guest-star-avatar {

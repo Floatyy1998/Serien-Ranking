@@ -250,10 +250,11 @@ interface GuestStarsSectionProps {
   currentTheme: Theme;
   guestStars: { id: number; name: string; character: string; profile_path: string | null }[];
   getProfileUrl: (path: string | null) => string;
+  onPersonClick: (personId: number) => void;
 }
 
 export const GuestStarsSection = memo(
-  ({ currentTheme, guestStars, getProfileUrl }: GuestStarsSectionProps) => {
+  ({ currentTheme, guestStars, getProfileUrl, onPersonClick }: GuestStarsSectionProps) => {
     if (guestStars.length === 0) return null;
 
     return (
@@ -281,11 +282,14 @@ export const GuestStarsSection = memo(
         </h3>
         <div className="ed-guest-stars-scroll">
           {guestStars.slice(0, 15).map((star, index) => (
-            <motion.div
+            <motion.button
               key={star.id}
+              type="button"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.03 }}
+              whileTap={{ opacity: 0.7 }}
+              onClick={() => onPersonClick(star.id)}
               className="ed-guest-star-card"
             >
               <div
@@ -321,7 +325,7 @@ export const GuestStarsSection = memo(
               <p className="ed-guest-star-character" style={{ color: currentTheme.primary }}>
                 {star.character}
               </p>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </motion.div>

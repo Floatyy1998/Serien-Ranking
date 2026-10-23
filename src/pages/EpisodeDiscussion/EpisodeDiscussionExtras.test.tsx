@@ -124,11 +124,26 @@ describe('GuestStarsSection', () => {
         currentTheme={theme}
         guestStars={[{ id: 1, name: 'Bob', character: 'Hero', profile_path: null }]}
         getProfileUrl={() => ''}
+        onPersonClick={vi.fn()}
       />
     );
     expect(screen.getByText('Gaststars')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
     expect(screen.getByText('Hero')).toBeInTheDocument();
+  });
+
+  it('opens the person page on click', () => {
+    const onPersonClick = vi.fn();
+    render(
+      <GuestStarsSection
+        currentTheme={theme}
+        guestStars={[{ id: 42, name: 'Bob', character: 'Hero', profile_path: null }]}
+        getProfileUrl={() => ''}
+        onPersonClick={onPersonClick}
+      />
+    );
+    fireEvent.click(screen.getByText('Bob'));
+    expect(onPersonClick).toHaveBeenCalledWith(42);
   });
 });
 
