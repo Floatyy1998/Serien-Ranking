@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { requestVerificationMail } from '../../services/account/authMails';
+import { markManualSignOut } from '../../services/errorReporting/authDiagnostics';
 import { commonStyles } from '../../theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
@@ -80,6 +81,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   };
 
   const handleLogout = () => {
+    markManualSignOut();
     firebase
       .auth()
       .signOut()

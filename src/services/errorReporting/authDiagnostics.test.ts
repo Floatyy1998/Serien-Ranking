@@ -4,7 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const { captureErrorMock } = vi.hoisted(() => ({ captureErrorMock: vi.fn() }));
 vi.mock('./errorReporter', () => ({ captureError: captureErrorMock }));
 
-import { beginAuthDiagnostics, probeFirebaseIdb, trackAuthEvent } from './authDiagnostics';
+import {
+  beginAuthDiagnostics,
+  markManualSignOut,
+  probeFirebaseIdb,
+  trackAuthEvent,
+} from './authDiagnostics';
 
 function stubFirebaseIdb(keys: string[] | 'ohne-store' | 'fehlt') {
   vi.stubGlobal('indexedDB', {
@@ -50,6 +55,44 @@ describe('authDiagnostics', () => {
     vi.unstubAllGlobals();
     captureErrorMock.mockClear();
     sessionStorage.clear();
+    localStorage.clear();
+  });
+
+  it('meldet keinen Neu-Login nach bewusstem Abmelden', async () => {
+    beginAuthDiagnostics(true);
+    trackAuthEvent(user(OLD));
+    markManualSignOut();
+    trackAuthEvent(null);
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(captureErrorMock).not.toHaveBeenCalled();
+    expect(localStorage.getItem('authLastExit')).toBeNull();
+  });
+
+  it('nennt den Sitzungsverlust aus einem früheren Start', async () => {
+    beginAuthDiagnostics(true);
+    trackAuthEvent(null);
+    vi.advanceTimersByTime(3 * 3_600_000);
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.waitFor(() =>
+      expect(captureErrorMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'AuthRelogin',
+          message: expect.stringContaining('zuvor: beim Start vor 3 h'),
+        })
+      )
+    );
+  });
+
+  it('merkt sich ein Abmelden mitten in der Sitzung', () => {
+    beginAuthDiagnostics(true);
+    trackAuthEvent(user(OLD));
+    trackAuthEvent(null);
+    expect(JSON.parse(localStorage.getItem('authLastExit') || '{}').how).toBe('in Sitzung');
   });
 
   it('meldet den Neu-Login eines Bestandskontos nach abgemeldetem Start', async () => {

@@ -30,12 +30,17 @@ const inflight = new Map<string, Promise<unknown>>();
 /** 429 und 5xx bremsen alle MangaUpdates-Abfragen eine Minute lang, statt sie zu wiederholen. */
 async function muPost(path: string, body: unknown): Promise<Response | null> {
   if (Date.now() < pausedUntil) return null;
-  const res = await backendFetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
+  // 502 = MangaUpdates selbst gestört (Backend: `upstream`) — kein Befund bei uns.
+  const res = await backendFetch(
+    path,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    },
+    { quietStatuses: [502] }
+  );
   if (res.status === 429 || res.status >= 500) {
     pausedUntil = Date.now() + PAUSE_MS;
     return null;

@@ -11,7 +11,7 @@ import type {
 } from '../../types/Book';
 import { cacheGet, cacheSet, cached } from '../books/bookCache';
 import { appLocale } from '../i18n';
-import { backendFetch } from './backendApi';
+import { backendFetch, hasBackendSession } from './backendApi';
 
 const DAY = 86_400_000;
 const TIMEOUT_MS = 20_000;
@@ -53,8 +53,11 @@ const pause = (ms: number) => {
   pausedUntil = Math.max(pausedUntil, Date.now() + ms);
 };
 
-/** Falsch, solange Hardcover nicht erreichbar oder das Tageskontingent leer ist — dann greifen Google/Open Library. */
-export const hardcoverReady = (): boolean => Date.now() >= pausedUntil;
+/**
+ * Falsch, solange Hardcover nicht erreichbar, das Tageskontingent leer oder niemand angemeldet ist
+ * (Onboarding vor der Registrierung: der Proxy verlangt Login) — dann greifen Google/Open Library.
+ */
+export const hardcoverReady = (): boolean => Date.now() >= pausedUntil && hasBackendSession();
 
 let failureCount = 0;
 /** Zählt endgültig gescheiterte Abfragen — ein „nicht gefunden" zählt nur, wenn Hardcover dabei auch geantwortet hat. */

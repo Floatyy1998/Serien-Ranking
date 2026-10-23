@@ -19,6 +19,16 @@ function hasCachedUser(): boolean {
   }
 }
 
+/** Gibt es eine (ggf. noch wiederherzustellende) Anmeldung? Ohne sie lehnt das Backend Routen mit Pflicht-Login ab. */
+export function hasBackendSession(): boolean {
+  try {
+    if (firebase.auth().currentUser) return true;
+  } catch {
+    // Firebase noch nicht initialisiert
+  }
+  return hasCachedUser();
+}
+
 /**
  * Der eingeloggte User. Direkt nach dem App-Start ist `currentUser` kurz noch
  * leer, obwohl die Sitzung gespeichert ist — dann (und nur dann) kurz warten.

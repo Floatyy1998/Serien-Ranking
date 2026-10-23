@@ -2,9 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const backendFetch = vi.hoisted(() => vi.fn());
+const session = vi.hoisted(() => ({ active: true }));
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
-vi.mock('./backendApi', () => ({ backendFetch }));
+vi.mock('./backendApi', () => ({ backendFetch, hasBackendSession: () => session.active }));
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -27,10 +28,21 @@ describe('hardcoverApi', () => {
     vi.resetModules();
     backendFetch.mockReset();
     localStorage.clear();
+    session.active = true;
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('fragt ohne Anmeldung nicht beim Proxy an (Onboarding vor der Registrierung)', async () => {
+    session.active = false;
+    const { hardcoverReady, hardcoverSearch } = await import('./hardcoverApi');
+    expect(hardcoverReady()).toBe(false);
+    await expect(hardcoverSearch('harry')).rejects.toMatchObject({ code: 'paused' });
+    expect(backendFetch).not.toHaveBeenCalled();
+    session.active = true;
+    expect(hardcoverReady()).toBe(true);
   });
 
   it('bildet Treffer im App-Format ab, mit Reihe im Schlüsselfeld der Wikidata-ID', async () => {

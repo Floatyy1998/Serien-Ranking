@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { trackLogout } from '../../services/firebase/analytics';
+import { markManualSignOut } from '../../services/errorReporting/authDiagnostics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { useAvatarUpload } from '../../hooks/profile/useAvatarUpload';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/interaction/haptics';
@@ -67,6 +68,7 @@ export const useSettingsData = () => {
     if (window.confirm(t('Möchtest du dich wirklich abmelden?'))) {
       try {
         trackLogout();
+        markManualSignOut();
         await firebase.auth().signOut();
         navigate('/');
       } catch {

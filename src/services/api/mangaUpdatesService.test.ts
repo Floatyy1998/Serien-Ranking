@@ -39,7 +39,8 @@ describe('getMangaDexInfo', () => {
     });
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/search',
-      expect.objectContaining({ method: 'POST' })
+      expect.objectContaining({ method: 'POST' }),
+      { quietStatuses: [502] }
     );
   });
 
@@ -268,7 +269,8 @@ describe('searchMangaUpdatesTitles', () => {
     ]);
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/titles',
-      expect.objectContaining({ body: JSON.stringify({ search: 'Suche nicht nach mir' }) })
+      expect.objectContaining({ body: JSON.stringify({ search: 'Suche nicht nach mir' }) }),
+      { quietStatuses: [502] }
     );
   });
 
@@ -329,7 +331,8 @@ describe('getMangaUpdatesSeries', () => {
     expect(backendFetchMock).toHaveBeenCalledTimes(1);
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/series',
-      expect.objectContaining({ body: JSON.stringify({ id: 48132338279 }) })
+      expect.objectContaining({ body: JSON.stringify({ id: 48132338279 }) }),
+      { quietStatuses: [502] }
     );
   });
 

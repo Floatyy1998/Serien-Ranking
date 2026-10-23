@@ -28,6 +28,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useMemo } from 'react';
+import { markManualSignOut } from '../../services/errorReporting/authDiagnostics';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBooksList } from '../../contexts/BooksListContext';
@@ -203,6 +204,7 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const handleLogout = async () => {
     try {
+      markManualSignOut();
       await firebase.auth().signOut();
       navigate('/');
     } catch {
