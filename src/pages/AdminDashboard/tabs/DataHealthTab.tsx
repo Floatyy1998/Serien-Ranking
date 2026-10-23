@@ -161,12 +161,21 @@ export function DataHealthTab({
    * (migrate-to-hybrid.js) und stellt nur um, wenn jeder Haken jedes Nutzers
    * eine eindeutige Zielfolge hat — sonst bleibt alles, wie es ist.
    */
-  const umstellungAnfragen = async (id: string, titel: string) => {
+  const umstellungAnfragen = async (id: string, titel: string, nachtragen = false) => {
+    if (
+      nachtragen &&
+      !window.confirm(
+        `${titel} trotzdem umstellen? Haken ohne eindeutige Folge werden entfernt, die betroffenen Nutzer bekommen je eine Push- und In-App-Meldung mit Link zur Folgenübersicht, um sie nachzutragen.`
+      )
+    ) {
+      return;
+    }
     setAnfragend(id);
     try {
       await dbRef(`admin/config/hybridRequests/${id}`).set({
         requestedAt: serverTimestamp(),
         title: titel,
+        ...(nachtragen && { modus: 'nachtragen' }),
       });
     } catch (e) {
       console.error('[hybrid] Anfrage fehlgeschlagen:', e);
@@ -384,6 +393,15 @@ export function DataHealthTab({
                     >
                       {anfragen[u.id]?.status === 'abgelehnt' ? 'Erneut prüfen' : 'Umstellen'}
                     </button>
+                    {anfragen[u.id]?.status === 'abgelehnt' && (
+                      <button
+                        onClick={() => umstellungAnfragen(u.id, u.title, true)}
+                        disabled={anfragend === u.id}
+                        style={knopfStil(anfragend === u.id)}
+                      >
+                        Umstellen + Nutzer bitten nachzutragen
+                      </button>
+                    )}
                     <button
                       onClick={() => konfigSetzen('admin/config/ergaenzenSeries', u.id, u.title)}
                       disabled={anfragend === u.id}
