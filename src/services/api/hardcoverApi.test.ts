@@ -66,7 +66,21 @@ describe('hardcoverApi', () => {
     const [path, init] = backendFetch.mock.calls[0];
     expect(path).toBe('/hc/search');
     expect(JSON.parse(init.body)).toEqual({ lang: 'de', q: 'harry potter' });
-    expect(backendFetch.mock.calls[0][2]).toBeUndefined();
+    expect(backendFetch.mock.calls[0][2]).toEqual({ quietStatuses: [503] });
+  });
+
+  it('meldet einen 503 im Vordergrund erst, wenn auch die Wiederholung scheitert', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockImplementation(async () => json({ error: 'upstream' }, 503));
+    const { hardcoverSearch } = await import('./hardcoverApi');
+    const pending = hardcoverSearch('harry potter');
+    const assertion = expect(pending).rejects.toMatchObject({ code: 'upstream' });
+    await vi.advanceTimersByTimeAsync(2000);
+    await assertion;
+    expect(backendFetch.mock.calls.map((call) => call[2])).toEqual([
+      { quietStatuses: [503] },
+      undefined,
+    ]);
   });
 
   it('meldet abgewiesene Hintergrund-Abfragen nicht als Fehler und zählt sie als gescheitert', async () => {

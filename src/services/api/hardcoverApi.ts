@@ -97,7 +97,8 @@ async function attempt<T>(
   path: string,
   body: Record<string, unknown>,
   signal: AbortSignal | undefined,
-  background: boolean
+  background: boolean,
+  firstTry: boolean
 ): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -105,6 +106,7 @@ async function attempt<T>(
   signal?.addEventListener('abort', abort);
   try {
     // Hintergrund-Abfragen weist der Server bei Andrang absichtlich ab (503/429) — das ist kein Befund.
+    // Ein 503 beim ersten Versuch auch nicht: post() wiederholt ihn, gemeldet wird erst das endgültige Scheitern.
     const res = await backendFetch(
       path,
       {
@@ -113,7 +115,7 @@ async function attempt<T>(
         body: JSON.stringify({ lang: appLocale, ...(background ? { bg: true } : {}), ...body }),
         signal: controller.signal,
       },
-      background ? { quietStatuses: [429, 503] } : undefined
+      background ? { quietStatuses: [429, 503] } : firstTry ? { quietStatuses: [503] } : undefined
     );
     if (!res.ok) {
       const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
@@ -150,7 +152,7 @@ async function post<T>(
   let last: HardcoverError | null = null;
   for (let round = 0; round < 2; round++) {
     try {
-      return await attempt<T>(path, body, signal, background);
+      return await attempt<T>(path, body, signal, background, round === 0);
     } catch (err) {
       if (!(err instanceof HardcoverError)) throw err;
       last = err;
