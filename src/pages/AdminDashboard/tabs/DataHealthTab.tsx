@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef, serverTimestamp } from '../../../services/db/ref';
 import { showToast } from '../../../lib/interaction/toast';
@@ -97,6 +98,10 @@ export function DataHealthTab({
     Record<string, { status?: 'offen' | 'erledigt' | 'abgelehnt'; grund?: string }>
   >({});
   const [anfragend, setAnfragend] = useState<string | null>(null);
+  /** Serien im Modus "Ergaenzen" (admin/config/ergaenzenSeries) samt Stichtag. */
+  const [ergaenzt, setErgaenzt] = useState<Record<string, { ab?: string }>>({});
+  /** Bewusst hingenommene Befunde (admin/config/dataHealthIgnore). */
+  const [ignoriert, setIgnoriert] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     const ref = dbRef('admin/dataIntegrityIssues');
@@ -122,6 +127,34 @@ export function DataHealthTab({
     return () => ref.off('value', handler);
   }, []);
 
+  useEffect(() => {
+    const ref = dbRef('admin/config/ergaenzenSeries');
+    const handler = onValue(ref, (snap) => setErgaenzt(snap.val() || {}));
+    return () => ref.off('value', handler);
+  }, []);
+
+  useEffect(() => {
+    const ref = dbRef('admin/config/dataHealthIgnore');
+    const handler = onValue(ref, (snap) => setIgnoriert(snap.val() || {}));
+    return () => ref.off('value', handler);
+  }, []);
+
+  /**
+   * Schaltet "Ergaenzen" (TVMaze bis zum heutigen Katalogende, danach TMDB-
+   * Folgen angehaengt — keine bestehende Episoden-ID aendert sich) oder
+   * "Ignorieren" (Datenpruefung laesst die Serie aus) fuer eine Serie ein.
+   */
+  const konfigSetzen = async (pfad: string, id: string, titel: string) => {
+    setAnfragend(id);
+    try {
+      await dbRef(`${pfad}/${id}`).set({ addedAt: serverTimestamp(), title: titel });
+    } catch (e) {
+      console.error(`[${pfad}] Schreiben fehlgeschlagen:`, e);
+    } finally {
+      setAnfragend(null);
+    }
+  };
+
   /**
    * Fragt die Umstellung auf den Hybrid-Katalog an (TMDB-Folgen, TVMaze-
    * Sendezeiten). Das Backend arbeitet sie nach dem naechsten Katalog-Lauf ab
@@ -141,6 +174,18 @@ export function DataHealthTab({
       setAnfragend(null);
     }
   };
+
+  const knopfStil = (beschaeftigt: boolean): CSSProperties => ({
+    background: 'transparent',
+    border: `1px solid ${theme.primary}55`,
+    color: theme.primary,
+    padding: '2px 10px',
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: beschaeftigt ? 'default' : 'pointer',
+    whiteSpace: 'nowrap',
+  });
 
   const totalIssues = Object.values(issuesByUser).reduce(
     (sum, u) => sum + (u.issues?.length || 0),
@@ -285,69 +330,78 @@ export function DataHealthTab({
           <div style={{ color: theme.text.muted, marginBottom: 8 }}>
             TMDB kennt bereits ausgestrahlte Folgen, die im Katalog fehlen — TVMaze endet früher,
             beginnt später oder lässt eine Staffel aus. „Umstellen" baut die Serie nach dem nächsten
-            Katalog-Lauf aus TMDB auf, Sendezeiten bleiben von TVMaze. Die Haken der Nutzer ziehen
-            mit; findet ein Haken keine eindeutige Folge, wird nicht umgestellt.
+            Katalog-Lauf aus TMDB auf, Sendezeiten bleiben von TVMaze; die Haken ziehen mit, sonst
+            wird nicht umgestellt. „Ergänzen" lässt alles Bestehende unangetastet und hängt nur die
+            Folgen nach dem heutigen Katalogende von TMDB an. „Ignorieren" nimmt den Befund hin.
           </div>
-          {summary?.catalog?.unvollstaendigeSerien?.map((u) => (
-            <div
-              key={u.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '3px 0',
-                fontVariantNumeric: 'tabular-nums',
-                color: theme.text.primary,
-              }}
-            >
-              <span style={{ minWidth: 62, color: theme.text.muted }}>{u.id}</span>
-              <span style={{ flex: 1 }}>
-                {u.title}
-                {u.grund && (
-                  <span style={{ display: 'block', color: theme.text.muted, fontSize: 11 }}>
-                    {u.grund}
-                  </span>
-                )}
-              </span>
-              <span style={{ color: '#ff4d6d' }}>
-                {u.katalog} von {u.tmdb} — {u.fehlen} fehlen
-              </span>
-              {anfragen[u.id]?.status === 'erledigt' ? (
-                <span style={{ color: '#06d6a0', whiteSpace: 'nowrap' }}>umgestellt</span>
-              ) : anfragen[u.id] && anfragen[u.id].status !== 'abgelehnt' ? (
-                <span style={{ color: theme.text.muted, whiteSpace: 'nowrap' }}>
-                  {anfragen[u.id].grund || 'angefragt — nach dem nächsten Katalog-Lauf'}
-                </span>
-              ) : (
-                <>
-                  {anfragen[u.id]?.status === 'abgelehnt' && (
-                    <span style={{ color: '#ff4d6d', maxWidth: 260 }}>{anfragen[u.id].grund}</span>
+          {summary?.catalog?.unvollstaendigeSerien
+            ?.filter((u) => !ignoriert[u.id])
+            .map((u) => (
+              <div
+                key={u.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '3px 0',
+                  fontVariantNumeric: 'tabular-nums',
+                  color: theme.text.primary,
+                }}
+              >
+                <span style={{ minWidth: 62, color: theme.text.muted }}>{u.id}</span>
+                <span style={{ flex: 1 }}>
+                  {u.title}
+                  {u.grund && (
+                    <span style={{ display: 'block', color: theme.text.muted, fontSize: 11 }}>
+                      {u.grund}
+                    </span>
                   )}
-                  <button
-                    onClick={() => umstellungAnfragen(u.id, u.title)}
-                    disabled={anfragend === u.id}
-                    style={{
-                      background: 'transparent',
-                      border: `1px solid ${theme.primary}55`,
-                      color: theme.primary,
-                      padding: '2px 10px',
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: anfragend === u.id ? 'default' : 'pointer',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {anfragend === u.id
-                      ? '…'
-                      : anfragen[u.id]?.status === 'abgelehnt'
-                        ? 'Erneut prüfen'
-                        : 'Umstellen'}
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
+                </span>
+                <span style={{ color: '#ff4d6d' }}>
+                  {u.katalog} von {u.tmdb} — {u.fehlen} fehlen
+                </span>
+                {ergaenzt[u.id] ? (
+                  <span style={{ color: '#06d6a0', whiteSpace: 'nowrap' }}>
+                    {ergaenzt[u.id].ab ? `ergänzt ab ${ergaenzt[u.id].ab}` : 'wird ergänzt'}
+                  </span>
+                ) : anfragen[u.id]?.status === 'erledigt' ? (
+                  <span style={{ color: '#06d6a0', whiteSpace: 'nowrap' }}>umgestellt</span>
+                ) : anfragen[u.id] && anfragen[u.id].status !== 'abgelehnt' ? (
+                  <span style={{ color: theme.text.muted, whiteSpace: 'nowrap' }}>
+                    {anfragen[u.id].grund || 'angefragt — nach dem nächsten Katalog-Lauf'}
+                  </span>
+                ) : (
+                  <>
+                    {anfragen[u.id]?.status === 'abgelehnt' && (
+                      <span style={{ color: '#ff4d6d', maxWidth: 260 }}>
+                        {anfragen[u.id].grund}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => umstellungAnfragen(u.id, u.title)}
+                      disabled={anfragend === u.id}
+                      style={knopfStil(anfragend === u.id)}
+                    >
+                      {anfragen[u.id]?.status === 'abgelehnt' ? 'Erneut prüfen' : 'Umstellen'}
+                    </button>
+                    <button
+                      onClick={() => konfigSetzen('admin/config/ergaenzenSeries', u.id, u.title)}
+                      disabled={anfragend === u.id}
+                      style={knopfStil(anfragend === u.id)}
+                    >
+                      Ergänzen
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => konfigSetzen('admin/config/dataHealthIgnore', u.id, u.title)}
+                  disabled={anfragend === u.id}
+                  style={{ ...knopfStil(anfragend === u.id), color: theme.text.muted }}
+                >
+                  Ignorieren
+                </button>
+              </div>
+            ))}
         </div>
       )}
 
