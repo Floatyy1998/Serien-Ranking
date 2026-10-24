@@ -210,21 +210,24 @@ describe('backendFetch', () => {
     }
   });
 
-  it('wiederholt den Kapitel-Abgleich bei einem einzelnen Verbindungsabbruch', async () => {
-    vi.useFakeTimers();
-    try {
-      fetchMock
-        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-        .mockResolvedValueOnce({ ok: true, status: 200 });
-      const backendFetch = await loadBackendFetch();
-      const pending = backendFetch('/mangaupdates/batch', { method: 'POST' });
-      await vi.advanceTimersByTimeAsync(2000);
-      await expect(pending).resolves.toEqual({ ok: true, status: 200 });
-      expect(captureError).not.toHaveBeenCalled();
-    } finally {
-      vi.useRealTimers();
+  it.each(['/mangaupdates/batch', '/mangaupdates/titles'])(
+    'wiederholt den Lesezugriff %s bei einem einzelnen Verbindungsabbruch',
+    async (path) => {
+      vi.useFakeTimers();
+      try {
+        fetchMock
+          .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+          .mockResolvedValueOnce({ ok: true, status: 200 });
+        const backendFetch = await loadBackendFetch();
+        const pending = backendFetch(path, { method: 'POST' });
+        await vi.advanceTimersByTimeAsync(2000);
+        await expect(pending).resolves.toEqual({ ok: true, status: 200 });
+        expect(captureError).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
     }
-  });
+  );
 
   it('meldet Status, die der Aufrufer selbst abfängt, nicht', async () => {
     const backendFetch = await loadBackendFetch();

@@ -77,13 +77,19 @@ async function getToken(): Promise<string | null> {
 }
 
 /**
- * Nur das Hinzufügen und der reine Lese-Abgleich der Kapitelstände werden bei
+ * Nur das Hinzufügen und reine MangaUpdates-Lesezugriffe werden bei
  * Verbindungsabbruch oder 502/503/504 wiederholt: Das Backend prüft zuerst auf
  * „bereits vorhanden", ein Doppelversand schadet also nicht. Der Prozess startet
  * gelegentlich neu (pm2) und ist dann einige Sekunden nicht erreichbar bzw.
  * reißt die laufende Anfrage ab; im Mobilfunk bricht auch mal eine einzelne ab.
  */
-const RETRY_PATHS = new Set(['/add', '/addMovie', '/mangaupdates/batch']);
+const RETRY_PATHS = new Set([
+  '/add',
+  '/addMovie',
+  '/mangaupdates/batch',
+  '/mangaupdates/search',
+  '/mangaupdates/titles',
+]);
 const CONNECTION_RETRY_DELAYS_MS = [1500, 4000];
 const TRANSIENT_STATUS = new Set([502, 503, 504]);
 
