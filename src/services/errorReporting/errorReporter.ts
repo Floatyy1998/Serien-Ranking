@@ -229,6 +229,11 @@ export function installErrorReporting(): void {
   window.addEventListener(PAGE_REPLACING_EVENT, markLeaving);
 }
 
+/** Wird die Seite gerade verlassen oder für ein Update neu geladen? Dann reißt der Browser laufende Anfragen ab. */
+export function isPageLeaving(): boolean {
+  return pageLeaving;
+}
+
 /** Nur für Tests. */
 export function resetErrorReporter(): void {
   currentUid = null;

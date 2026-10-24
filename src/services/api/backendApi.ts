@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { captureError } from '../errorReporting/errorReporter';
+import { captureError, isPageLeaving } from '../errorReporting/errorReporter';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL as string;
 
@@ -120,8 +120,9 @@ async function sendWithRetry(
       if (!TRANSIENT_STATUS.has(response.status) || attempt >= delays.length) return response;
     } catch (error) {
       if (attempt >= delays.length) {
-        // Im Hintergrund kappen Android-WebView und iOS das Netz — ein Abbruch dort ist kein Befund.
-        if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+        // Im Hintergrund kappen Android-WebView und iOS das Netz, beim Update-Reload der Browser selbst — kein Befund.
+        const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+        if (!hidden && !isPageLeaving()) {
           reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
         }
         throw error;

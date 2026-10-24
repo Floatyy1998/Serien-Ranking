@@ -25,7 +25,8 @@ vi.mock('firebase/compat/app', () => ({ default: { auth: fb.authMock } }));
 vi.mock('firebase/compat/auth', () => ({}));
 
 const captureError = vi.hoisted(() => vi.fn());
-vi.mock('../errorReporting/errorReporter', () => ({ captureError }));
+const isPageLeaving = vi.hoisted(() => vi.fn(() => false));
+vi.mock('../errorReporting/errorReporter', () => ({ captureError, isPageLeaving }));
 
 let fetchMock: ReturnType<typeof vi.fn>;
 const sentinel = { ok: true, status: 200 };
@@ -208,6 +209,16 @@ describe('backendFetch', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('meldet Verbindungsfehler beim Update-Reload nicht, wirft sie aber weiter', async () => {
+    isPageLeaving.mockReturnValueOnce(true);
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+    const backendFetch = await loadBackendFetch();
+    await expect(backendFetch('/hc/similar', { method: 'POST' })).rejects.toThrow(
+      'Failed to fetch'
+    );
+    expect(captureError).not.toHaveBeenCalled();
   });
 
   it.each(['/mangaupdates/batch', '/mangaupdates/titles'])(
