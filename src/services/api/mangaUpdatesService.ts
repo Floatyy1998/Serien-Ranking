@@ -11,7 +11,7 @@ import {
   type MangaUpdatesSeries,
 } from '../../lib/manga/mangaUpdatesAdapter';
 import { cacheGet, cacheSet } from '../books/bookCache';
-import { backendFetch } from './backendApi';
+import { backendFetch, hasBackendSession } from './backendApi';
 
 const HOUR = 3_600_000;
 const CHAPTER_TTL = 6 * HOUR;
@@ -20,6 +20,8 @@ const TITLES_TTL = 24 * HOUR;
 const MISS_TTL = 12 * HOUR;
 const PAUSE_MS = 60_000;
 const TIMEOUT_MS = 15_000;
+/** Der Proxy verlangt sonst eine Anmeldung; Gäste (Onboarding vor der Registrierung) dürfen nur die Titelsuche. */
+const GUEST_PATHS = new Set(['/mangaupdates/titles']);
 
 /** Treffer wird gespeichert, `miss` kürzer gemerkt, `null` (Störung) gar nicht. */
 type Outcome<T> = { hit: T } | 'miss' | null;
@@ -30,6 +32,7 @@ const inflight = new Map<string, Promise<unknown>>();
 /** 429 und 5xx bremsen alle MangaUpdates-Abfragen eine Minute lang, statt sie zu wiederholen. */
 async function muPost(path: string, body: unknown): Promise<Response | null> {
   if (Date.now() < pausedUntil) return null;
+  if (!GUEST_PATHS.has(path) && !hasBackendSession()) return null;
   // 502 = MangaUpdates selbst gestört (Backend: `upstream`) — kein Befund bei uns.
   const res = await backendFetch(
     path,

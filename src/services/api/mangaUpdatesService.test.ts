@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // backendFetch (MangaUpdates-Proxy) mocken.
 const backendFetchMock = vi.hoisted(() => vi.fn());
-vi.mock('./backendApi', () => ({ backendFetch: backendFetchMock }));
+const hasBackendSession = vi.hoisted(() => vi.fn(() => true));
+vi.mock('./backendApi', () => ({ backendFetch: backendFetchMock, hasBackendSession }));
 
 // Frisches Modul je Test → In-Memory-Caches leer.
 async function load() {
@@ -286,6 +287,28 @@ describe('searchMangaUpdatesTitles', () => {
     backendFetchMock.mockRejectedValueOnce(new Error('down'));
     const { searchMangaUpdatesTitles } = await load();
     expect(await searchMangaUpdatesTitles('X')).toEqual([]);
+  });
+
+  it('sucht auch ohne Anmeldung (Onboarding vor der Registrierung)', async () => {
+    hasBackendSession.mockReturnValue(false);
+    try {
+      backendFetchMock.mockResolvedValueOnce(
+        res({ hits: [{ id: 1, title: 'Solo Leveling', hitTitle: 'Solo Leveling' }] })
+      );
+      const { searchMangaUpdatesTitles } = await load();
+      expect(await searchMangaUpdatesTitles('Solo Leveling')).toHaveLength(1);
+    } finally {
+      hasBackendSession.mockReturnValue(true);
+    }
+  });
+
+  it('schickt Login-Routen ohne Anmeldung gar nicht erst ab und merkt sich nichts', async () => {
+    hasBackendSession.mockReturnValueOnce(false);
+    backendFetchMock.mockResolvedValue(res({ seriesId: 7, latestChapter: 3, completed: false }));
+    const { getMangaDexInfo } = await load();
+    expect((await getMangaDexInfo('Berserk')).mangadexId).toBeNull();
+    expect(backendFetchMock).not.toHaveBeenCalled();
+    expect((await getMangaDexInfo('Berserk')).mangadexId).toBe('7');
   });
 });
 

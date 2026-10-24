@@ -23,7 +23,8 @@ export default defineConfig({
     // ACHTUNG: dieses execArgv ueberschreibt NODE_OPTIONS — der CI-Wert kommt
     // sonst nie bei den Fork-Workern an (Voll-Suite starb weiter exakt bei 6 GB,
     // obwohl der Workflow 8 GB setzte). Historie: 4096 -> 6144 -> 8192.
-    execArgv: ['--max-old-space-size=8192'],
+    // Ab Node 25 verdeckt Nodes eigenes localStorage (ohne --localstorage-file kaputt) das von jsdom.
+    execArgv: ['--max-old-space-size=8192', '--no-experimental-webstorage'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary'],
