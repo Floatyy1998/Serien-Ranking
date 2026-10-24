@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { OpenInNew, Security } from '@mui/icons-material';
+import { Check, ContentCopy, OpenInNew, Security } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
 import { onValue } from '../../../services/db/subscribeValue';
+import { copyTextToClipboard } from '../../../utils/clipboard';
+import { findingToText, findingsToText, formatDateTime } from './securityFindingText';
 
 /** Ein Fund aus scripts/security-audit.cjs (täglicher GitHub-Lauf „CVE-Prüfung“). */
 export interface SecurityFinding {
@@ -37,16 +39,25 @@ const LINKS = [
 const TONE_CRITICAL = '#ff5c7a';
 const TONE_HIGH = '#f2a648';
 
-const formatDateTime = (ts?: number) => (ts ? new Date(ts).toLocaleString('de-DE') : '—');
-
 export function SecurityTab() {
   const [payload, setPayload] = useState<Payload | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     const ref = dbRef('admin/securityAudit');
     const handler = onValue(ref, (snap) => setPayload((snap.val() as Payload) || {}));
     return () => ref.off('value', handler);
   }, []);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(null), 1500);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const copy = async (key: string, text: string) => {
+    if (await copyTextToClipboard(text)) setCopied(key);
+  };
 
   if (payload === null) return <div className="adm-empty">Lade CVE-Prüfung…</div>;
 
@@ -62,6 +73,20 @@ export function SecurityTab() {
             <Security style={{ fontSize: 18 }} /> CVE-Prüfung
           </div>
           <div className="adm-card__meta" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {items.length > 0 && (
+              <button
+                type="button"
+                className="adm-chip"
+                onClick={() => void copy('all', findingsToText(items, payload.lastRun))}
+              >
+                {copied === 'all' ? 'Kopiert' : 'Alle kopieren'}{' '}
+                {copied === 'all' ? (
+                  <Check style={{ fontSize: 14 }} />
+                ) : (
+                  <ContentCopy style={{ fontSize: 14 }} />
+                )}
+              </button>
+            )}
             {payload.runUrl && (
               <a className="adm-chip" href={payload.runUrl} target="_blank" rel="noreferrer">
                 Letzter Lauf <OpenInNew style={{ fontSize: 14 }} />
@@ -139,6 +164,21 @@ export function SecurityTab() {
                     ))}
                   </div>
                 )}
+              </div>
+              <div className="adm-row__acts">
+                <button
+                  type="button"
+                  className="adm-icon-btn"
+                  title="Fund kopieren"
+                  aria-label={`${item.pkg} kopieren`}
+                  onClick={() => void copy(item.key, findingToText(item))}
+                >
+                  {copied === item.key ? (
+                    <Check style={{ fontSize: 16 }} />
+                  ) : (
+                    <ContentCopy style={{ fontSize: 16 }} />
+                  )}
+                </button>
               </div>
             </div>
           </div>
