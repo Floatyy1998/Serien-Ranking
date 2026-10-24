@@ -6,8 +6,8 @@
 
 .pp-topbar {
   position: absolute;
-  top: calc(10px + env(safe-area-inset-top));
-  left: 10px;
+  top: var(--nav-top);
+  left: var(--nav-x);
   z-index: 5;
 }
 
@@ -455,10 +455,6 @@
 }
 
 @media (min-width: 900px) {
-  .pp-topbar {
-    top: calc(20px + env(safe-area-inset-top));
-    left: 20px;
-  }
   .pp-hero {
     min-height: 460px;
     padding: calc(110px + env(safe-area-inset-top)) 32px 8px;

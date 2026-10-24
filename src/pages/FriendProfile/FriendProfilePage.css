@@ -832,7 +832,7 @@
 /* ── Profil-Kopf (Identitätskarte) ─────────────────────── */
 .fp-hero {
   position: relative;
-  padding: calc(12px + env(safe-area-inset-top)) var(--fp-x) 18px;
+  padding: var(--nav-top) var(--fp-x) 18px;
   overflow: hidden;
 }
 

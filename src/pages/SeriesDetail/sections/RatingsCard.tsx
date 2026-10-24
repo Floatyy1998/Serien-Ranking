@@ -11,6 +11,8 @@ interface RatingsCardProps {
   seriesId: string;
   isMobile: boolean;
   noMargin?: boolean;
+  /** Schlichte Kennzahlen ohne farbige Pillen (mobile Faktenleiste). */
+  plain?: boolean;
 }
 
 interface RatingBadge {
@@ -30,7 +32,7 @@ interface RatingBadge {
 }
 
 export const RatingsCard = memo<RatingsCardProps>(
-  ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile, noMargin }) => {
+  ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile, noMargin, plain }) => {
     const { currentTheme } = useTheme();
     const tmdbValue = (
       tmdbRating?.vote_average ||
@@ -93,7 +95,7 @@ export const RatingsCard = memo<RatingsCardProps>(
 
     return (
       <div
-        className="detail-ratings-card"
+        className={`detail-ratings-card${plain ? ' detail-ratings-card--plain' : ''}`}
         style={{
           gap: isMobile ? '8px' : '12px',
           marginBottom: noMargin ? 0 : isMobile ? '12px' : '12px',
@@ -111,8 +113,7 @@ export const RatingsCard = memo<RatingsCardProps>(
             className="detail-ratings-card__badge"
             style={{
               padding: isMobile ? '4px 8px' : '4px 10px',
-              background: badge.pillBg,
-              borderColor: badge.pillBorder,
+              ...(plain ? {} : { background: badge.pillBg, borderColor: badge.pillBorder }),
               fontSize: isMobile ? '12px' : '13px',
               opacity: badge.dim ? 0.5 : 1,
               pointerEvents: badge.disabled ? 'none' : 'auto',
@@ -124,7 +125,9 @@ export const RatingsCard = memo<RatingsCardProps>(
             >
               {badge.label}
             </span>
-            <span style={{ fontWeight: 600 }}>{badge.value}</span>
+            <span className="detail-ratings-card__value" style={{ fontWeight: 600 }}>
+              {badge.value}
+            </span>
             <span className="detail-ratings-card__votes" style={{ fontSize: '12px', opacity: 0.7 }}>
               {badge.votes}
             </span>

@@ -205,19 +205,20 @@ export const ActivityPage = () => {
               <motion.button
                 whileTap={tapScaleTight}
                 onClick={() => navigate('/chats')}
-                className="activity-add-btn"
+                className="activity-add-btn activity-add-btn--chat"
                 aria-label={t('Chats')}
                 style={{
                   position: 'relative',
-                  background: 'var(--glass-light)',
-                  border: `1px solid ${currentTheme.primary}55`,
-                  boxShadow: currentTheme.shadow.card,
+                  background: `${currentTheme.primary}2e`,
+                  border: `1.5px solid ${currentTheme.primary}`,
+                  boxShadow: `0 4px 16px ${currentTheme.primary}33`,
                   color: currentTheme.primary,
                 }}
               >
                 <SendRounded
                   style={{ fontSize: '19px', transform: 'rotate(-45deg) translate(1px, 1px)' }}
                 />
+                <span className="activity-add-btn__label">{t('Chats')}</span>
                 {unreadChatsCount > 0 && (
                   <span
                     className="activity-btn-badge"
@@ -232,14 +233,16 @@ export const ActivityPage = () => {
               <motion.button
                 whileTap={tapScaleTight}
                 onClick={() => setShowAddFriend(true)}
-                className="activity-add-btn"
+                className="activity-add-btn activity-add-btn--add"
+                aria-label={t('Freund hinzufügen')}
                 style={{
                   background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                  boxShadow: currentTheme.shadow.card,
+                  boxShadow: `0 6px 20px ${currentTheme.primary}55`,
                   color: onPrimary,
                 }}
               >
                 <PersonAddRounded style={{ fontSize: '22px' }} />
+                <span className="activity-add-btn__label">{t('Freund hinzufügen')}</span>
               </motion.button>
             </Tooltip>
           </div>

@@ -4,6 +4,8 @@ import { primePublicDirectory } from '../../services/social/publicDirectoryServi
 import type { PublicDirectoryEntry } from '../../types/PublicDirectory';
 import { PublicProfilesList } from '../Activity/tabs/PublicProfilesList';
 import { FriendsTab } from '../Activity/tabs/FriendsTab';
+import { ActivityPage } from '../Activity/ActivityPage';
+import '../../components/layout/Layout.css';
 import { primeFriendLibraryCounts } from '../../hooks/social/useFriendLibraryCounts';
 import type { Friend } from '../../types/Friend';
 
@@ -83,5 +85,14 @@ export const FriendsEmptyPreview = () => (
       onAddFriend={() => {}}
       onRemoveFriend={() => {}}
     />
+  </div>
+);
+
+/** Activity-Kopf mit Zurück/Home + Chat/Freund-hinzufügen — `?solo=activity-header`. */
+export const ActivityHeaderPreview = () => (
+  <div className="mobile-layout">
+    <div className="mobile-content no-nav">
+      <ActivityPage />
+    </div>
   </div>
 );

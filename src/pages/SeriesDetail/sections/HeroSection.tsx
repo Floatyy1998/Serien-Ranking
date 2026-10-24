@@ -1,4 +1,5 @@
 import {
+  Add,
   BookmarkAdd,
   BookmarkRemove,
   Delete,
@@ -422,10 +423,8 @@ export const HeroSection = memo<HeroSectionProps>(
         <div
           className="hero-section__back-btn"
           style={{
-            top: isMobile
-              ? 'calc(10px + env(safe-area-inset-top))'
-              : 'calc(20px + env(safe-area-inset-top))',
-            left: isMobile ? '10px' : '20px',
+            top: 'var(--nav-top)',
+            left: 'var(--nav-x)',
           }}
         >
           <BackButton
@@ -435,27 +434,25 @@ export const HeroSection = memo<HeroSectionProps>(
 
         {/* Add button for TMDB-only series */}
         {isReadOnlyTmdbSeries && (
-          <Tooltip title={t('Zur Sammlung hinzufügen')} arrow>
-            <button
-              onClick={onAddSeries}
-              disabled={isAdding}
-              aria-label={t('Zur Sammlung hinzufügen')}
-              className="hero-section__add-btn"
-              style={{
-                top: isMobile
-                  ? 'calc(10px + env(safe-area-inset-top))'
-                  : 'calc(20px + env(safe-area-inset-top))',
-                right: isMobile ? '10px' : '20px',
-                background: isAdding
-                  ? `${currentTheme.status.success}88`
-                  : `${currentTheme.status.success}CC`,
-                color: getOptimalTextColor(currentTheme.status.success),
-                cursor: isAdding ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {isAdding ? '...' : '+'}
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            onClick={onAddSeries}
+            disabled={isAdding}
+            aria-label={t('Zur Sammlung hinzufügen')}
+            className="hero-section__add-btn hero-add-pill"
+            style={{
+              top: 'var(--nav-top)',
+              right: 'var(--nav-x)',
+              background: `linear-gradient(135deg, ${fullTheme.primary}, ${fullTheme.accent})`,
+              boxShadow: `0 6px 22px ${fullTheme.primary}66`,
+              color: getOptimalTextColor(fullTheme.primary),
+            }}
+          >
+            <Add style={{ fontSize: 22 }} />
+            <span className="hero-add-pill__label">
+              {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
+            </span>
+          </button>
         )}
 
         {/* Content: Poster + Info */}
@@ -468,7 +465,7 @@ export const HeroSection = memo<HeroSectionProps>(
                   alignItems: 'center',
                   gap: 0,
                   maxWidth: 'none',
-                  padding: 'calc(64px + env(safe-area-inset-top)) 0 20px',
+                  padding: 'var(--nav-clear) 0 20px',
                 }
               : undefined
           }
@@ -669,7 +666,7 @@ export const HeroSection = memo<HeroSectionProps>(
                     hasProviders={displayProviders.length > 0}
                     onChange={setProviderOverride}
                   />
-                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
+                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="chip" />
                 </div>
 
                 {/* Zeile 2 — Fremd-Wertungen, teilen sich die Breite */}
@@ -682,6 +679,7 @@ export const HeroSection = memo<HeroSectionProps>(
                     seriesId={String(seriesId)}
                     isMobile
                     noMargin
+                    plain
                   />
                 </div>
               </div>

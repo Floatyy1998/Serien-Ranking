@@ -126,7 +126,7 @@ describe('MovieHeroSection', () => {
 
   it('shows the add button for a read-only tmdb movie and invokes onAddMovie', () => {
     render(<MovieHeroSection {...baseProps} isReadOnlyTmdbMovie={true} />);
-    fireEvent.click(screen.getByText('+'));
+    fireEvent.click(screen.getByRole('button', { name: 'Zur Sammlung hinzufügen' }));
     expect(baseProps.onAddMovie).toHaveBeenCalled();
   });
 

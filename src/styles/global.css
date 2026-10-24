@@ -78,6 +78,11 @@
   /* Einheitlicher Seitenrand. Jede Seite benutzt diesen Wert, damit Titel,
      Karten und Listen auf allen Seiten auf derselben Kante stehen. */
   --page-x: 20px;
+  /* Zurück/Home-Knöpfe sitzen auf jeder Seite an derselben Stelle */
+  --nav-gap: 20px;
+  --nav-top: calc(var(--nav-gap) + var(--safe-top));
+  --nav-x: var(--page-x);
+  --nav-clear: calc(var(--nav-top) + 44px + var(--space-4));
 
   /* Hoehen-Skala fuer Bedienelemente. Segment-Umschalter, Filter-Pillen und
      Chips greifen hier zu, statt sich ihre Hoehe aus Polstern zu ergeben —
@@ -1174,6 +1179,42 @@ button:active:not(:disabled),
 .page-header__actions {
   display: flex;
   flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* „Hinzufügen" im Hero von Serien/Filmen, die noch nicht in der Sammlung sind */
+.hero-add-pill,
+.mobile-app button.hero-add-pill {
+  height: 44px;
+  min-width: 44px;
+  padding: 0 18px 0 13px;
+  gap: 7px;
+  border: none;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.hero-add-pill[disabled] {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* Zu wenig Platz: nur noch das Plus */
+:root[data-width='xs'] .hero-add-pill {
+  width: 44px;
+  padding: 0;
+}
+
+:root[data-width='xs'] .hero-add-pill__label {
+  display: none;
 }
 
 /* Titel, Untertitel und Aktionen passen auf schmalen Geräten nicht nebeneinander —

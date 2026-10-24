@@ -36,8 +36,8 @@
 
 .mdh-back {
   position: absolute;
-  top: calc(12px + env(safe-area-inset-top));
-  left: 16px;
+  top: var(--nav-top);
+  left: var(--nav-x);
   z-index: 5;
 }
 
@@ -435,7 +435,7 @@
   text-align: center;
   gap: 18px;
   min-height: 0;
-  padding: calc(64px + env(safe-area-inset-top)) 18px 18px;
+  padding: var(--nav-clear) 18px 18px;
 }
 
 .mdh--mobile .mdh-poster {

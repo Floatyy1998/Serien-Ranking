@@ -25,7 +25,12 @@ import {
 } from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
 import { ScrollEscapeDetailPreview, ScrollEscapeHeaderPreview } from './ScrollEscapePreviews';
-import { FriendsEmptyPreview, FriendsListPreview, PublicProfilesPreview } from './SocialPreviews';
+import {
+  ActivityHeaderPreview,
+  FriendsEmptyPreview,
+  FriendsListPreview,
+  PublicProfilesPreview,
+} from './SocialPreviews';
 import {
   OnboardingFocusPreview,
   OnboardingReadingPreview,
@@ -80,7 +85,13 @@ import { ProfileStatsPreview } from './ProfilePreviews';
 import { RatingsBooksPreview } from './RatingsPreviews';
 import { TasteMatchOverviewPreview, TasteMatchReadingPreview } from './TasteMatchPreviews';
 import { NotificationHubPreview } from './NotificationPreviews';
-import { BookOverlaySearchPreview, PeopleSearchPreview, PersonPagePreview } from './PersonPreviews';
+import {
+  BookOverlaySearchPreview,
+  MovieHeroAddPreview,
+  SeriesHeroPreview,
+  PeopleSearchPreview,
+  PersonPagePreview,
+} from './PersonPreviews';
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
@@ -214,6 +225,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'profile', label: 'Profil: Watch + Lesen', render: () => <ProfileStatsPreview /> },
   { id: 'public-profiles', label: 'Öffentliche Profile', render: () => <PublicProfilesPreview /> },
   { id: 'friends-list', label: 'Freundesliste', render: () => <FriendsListPreview /> },
+  { id: 'activity-header', label: 'Aktivität: Kopf', render: () => <ActivityHeaderPreview /> },
   { id: 'friends-empty', label: 'Freundesliste leer', render: () => <FriendsEmptyPreview /> },
   { id: 'reading-home', label: 'Startseite: Lesen', render: () => <ReadingHomePreview /> },
   {
@@ -337,6 +349,8 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <BookOverlaySearchPreview />,
   },
   { id: 'person', label: 'Personen: Seite', render: () => <PersonPagePreview /> },
+  { id: 'movie-hero-add', label: 'Film: Hinzufügen', render: () => <MovieHeroAddPreview /> },
+  { id: 'series-hero', label: 'Serie: Kopf', render: () => <SeriesHeroPreview /> },
   { id: 'people-search', label: 'Suche: Personen + Manga', render: () => <PeopleSearchPreview /> },
   { id: 'book-shelf', label: 'Bücher: Regal', render: () => <BookShelfPreview /> },
   { id: 'book-stats', label: 'Bücher: Statistik', render: () => <BookStatsPreview /> },

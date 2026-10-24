@@ -66,7 +66,7 @@ export const CatalogGenreView: React.FC<{ genre?: string; mood?: string }> = ({ 
         style={{
           position: 'relative',
           overflow: 'hidden',
-          padding: 'calc(14px + env(safe-area-inset-top)) 20px 26px',
+          padding: 'var(--nav-top) var(--nav-x) 26px',
           marginBottom: 18,
           background: `linear-gradient(160deg, ${colors[0]}, ${colors[1]}aa 60%, ${currentTheme.background.default})`,
         }}
@@ -187,7 +187,7 @@ export const AllGenresView: React.FC = () => {
 
   return (
     <div className="bk-page" style={{ background: currentTheme.background.default }}>
-      <header style={{ padding: 'calc(14px + env(safe-area-inset-top)) 20px 8px' }}>
+      <header style={{ padding: 'var(--nav-top) var(--nav-x) 8px' }}>
         <BackButton />
         <h1
           style={{

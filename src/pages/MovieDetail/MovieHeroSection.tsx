@@ -1,3 +1,4 @@
+import AddRounded from '@mui/icons-material/AddRounded';
 import Check from '@mui/icons-material/Check';
 import Delete from '@mui/icons-material/Delete';
 import Star from '@mui/icons-material/Star';
@@ -71,14 +72,18 @@ export const MovieHeroSection = memo(
     const { currentTheme } = useTheme();
     // Anonymer Community-Durchschnitt der TV-Rank-Nutzer (ab 5 Bewertungen).
     const community = useCommunityRating('movies', id);
-    const renderCommunityBadge = (showCount: boolean) =>
+    const renderCommunityBadge = (showCount: boolean, plain = false) =>
       community ? (
         <span
-          className="md-rating-badge"
-          style={{
-            background: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
-            borderColor: `color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
-          }}
+          className={`md-rating-badge${plain ? ' md-rating-badge--plain' : ''}`}
+          style={
+            plain
+              ? undefined
+              : {
+                  background: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
+                  borderColor: `color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
+                }
+          }
         >
           <span
             className="md-rating-label"
@@ -188,9 +193,7 @@ export const MovieHeroSection = memo(
           {!isMobile && <div className="md-hero__vignette" />}
 
           {/* Header Buttons */}
-          <div
-            className={`md-hero__header-buttons ${isMobile ? 'md-hero__header-buttons--mobile' : ''}`}
-          >
+          <div className="md-hero__header-buttons">
             <BackButton
               style={{
                 backdropFilter: 'var(--blur-sm)',
@@ -204,16 +207,17 @@ export const MovieHeroSection = memo(
                 onClick={onAddMovie}
                 disabled={isAdding}
                 aria-label={t('Zur Sammlung hinzufügen')}
-                title={t('Zur Sammlung hinzufügen')}
-                className="md-hero__action-btn md-hero__action-btn--add"
+                className="hero-add-pill"
                 style={{
-                  background: isAdding
-                    ? `${currentTheme.status.success}88`
-                    : `${currentTheme.status.success}CC`,
-                  color: getOptimalTextColor(currentTheme.status.success),
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  boxShadow: `0 6px 22px ${currentTheme.primary}66`,
+                  color: getOptimalTextColor(currentTheme.primary),
                 }}
               >
-                <span aria-hidden>{isAdding ? '...' : '+'}</span>
+                <AddRounded style={{ fontSize: 22 }} />
+                <span className="hero-add-pill__label">
+                  {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
+                </span>
               </button>
             )}
           </div>
@@ -228,7 +232,7 @@ export const MovieHeroSection = memo(
                     alignItems: 'center',
                     gap: 0,
                     maxWidth: 'none',
-                    padding: 'calc(64px + env(safe-area-inset-top)) 0 20px',
+                    padding: 'var(--nav-clear) 0 20px',
                   }
                 : undefined
             }
@@ -346,55 +350,60 @@ export const MovieHeroSection = memo(
 
               {/* Ratings + Provider */}
               {isMobile ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginTop: 12,
-                    padding: '0 20px',
-                    justifyContent: 'center',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <a
-                    href={`https://www.themoviedb.org/movie/${id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="md-rating-badge md-rating-badge--tmdb"
-                  >
-                    <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
-                    <span className="md-rating-value">
-                      {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
-                    </span>
-                  </a>
-                  <a
-                    href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="md-rating-badge md-rating-badge--imdb"
-                    style={{
-                      opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
-                      pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
-                    }}
-                  >
-                    <span className="md-rating-label md-rating-label--imdb">IMDb</span>
-                    <span className="md-rating-value">
-                      {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-                    </span>
-                  </a>
-                  {renderCommunityBadge(false)}
-                  {mergedDisplayProviders.length > 0 && (
-                    <ProviderBadges
-                      providers={mergedDisplayProviders}
-                      size="medium"
-                      maxDisplay={3}
-                      showNames={false}
-                      searchTitle={movie.title}
-                      tmdbId={movie.id}
-                      mediaType="movie"
-                    />
-                  )}
+                <div className="md-factbar">
+                  <div className="md-factbar__row">
+                    {mergedDisplayProviders.length > 0 && (
+                      <ProviderBadges
+                        providers={mergedDisplayProviders}
+                        size="medium"
+                        maxDisplay={4}
+                        showNames={false}
+                        searchTitle={movie.title}
+                        tmdbId={movie.id}
+                        mediaType="movie"
+                      />
+                    )}
+                    <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="chip" />
+                  </div>
+                  <div className="md-factbar__row md-factbar__row--ratings">
+                    <a
+                      href={`https://www.themoviedb.org/movie/${id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="md-rating-badge md-rating-badge--plain"
+                    >
+                      <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
+                      <span className="md-rating-value">
+                        {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
+                      </span>
+                      {tmdbRating?.vote_count ? (
+                        <span className="md-rating-count">
+                          ({(tmdbRating.vote_count / 1000).toFixed(1)}k)
+                        </span>
+                      ) : null}
+                    </a>
+                    <a
+                      href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="md-rating-badge md-rating-badge--plain"
+                      style={{
+                        opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
+                        pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
+                      }}
+                    >
+                      <span className="md-rating-label md-rating-label--imdb">IMDb</span>
+                      <span className="md-rating-value">
+                        {imdbRating?.rating?.toFixed(1) || '0.0'}/10
+                      </span>
+                      {imdbRating ? (
+                        <span className="md-rating-count">
+                          ({(parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)}k)
+                        </span>
+                      ) : null}
+                    </a>
+                    {renderCommunityBadge(true, true)}
+                  </div>
                 </div>
               ) : null}
 
@@ -600,13 +609,6 @@ export const MovieHeroSection = memo(
             )}
           </div>
         </div>
-
-        {/* Mobile Video Gallery Button */}
-        {isMobile && (
-          <div className="md-video-mobile">
-            <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="mobile" />
-          </div>
-        )}
       </>
     );
   }

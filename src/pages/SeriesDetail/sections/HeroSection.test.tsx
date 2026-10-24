@@ -44,6 +44,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('@mui/icons-material', () => ({
+  Add: () => null,
   BookmarkAdd: () => null,
   BookmarkRemove: () => null,
   Delete: () => null,

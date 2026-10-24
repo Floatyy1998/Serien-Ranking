@@ -57,7 +57,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       style={{
         position: 'relative',
         padding: 'var(--space-5) var(--page-x)',
-        paddingTop: 'calc(var(--space-5) + var(--safe-top))',
+        paddingTop: 'var(--nav-top)',
         ...(sticky
           ? {
               position: 'sticky',

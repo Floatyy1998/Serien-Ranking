@@ -81,8 +81,10 @@
 }
 
 .activity-add-btn {
-  width: 44px;
   height: 44px;
+  min-width: 44px;
+  padding: 0 16px 0 13px;
+  gap: 8px;
   border-radius: var(--radius-lg);
   border: none;
   color: white;
@@ -91,6 +93,22 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Beschriftung, solange Platz ist: auf dem Handy nur „Chats", ganz eng nur Symbole. */
+:root[data-width='sm'] .activity-add-btn--add,
+:root[data-width='xs'] .activity-add-btn {
+  width: 44px;
+  padding: 0;
+}
+
+:root[data-width='sm'] .activity-add-btn--add .activity-add-btn__label,
+:root[data-width='xs'] .activity-add-btn__label {
+  display: none;
 }
 
 /* Nav: expanding pill tabs */

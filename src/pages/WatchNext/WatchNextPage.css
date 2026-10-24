@@ -1,7 +1,7 @@
 /* WatchNextPage Layout */
 .watch-next-header {
   padding: 16px 20px;
-  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-top: var(--nav-top);
   -webkit-backdrop-filter: var(--blur-lg);
   backdrop-filter: var(--blur-lg);
   border-bottom: 1px solid var(--glass-border-subtle);

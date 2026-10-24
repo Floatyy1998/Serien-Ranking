@@ -115,9 +115,9 @@
 /* Top Navigation Bar */
 .ed-hero-topbar {
   position: absolute;
-  top: calc(16px + env(safe-area-inset-top));
-  left: 16px;
-  right: 16px;
+  top: var(--nav-top);
+  left: var(--nav-x);
+  right: var(--nav-x);
   display: flex;
   justify-content: space-between;
   align-items: center;

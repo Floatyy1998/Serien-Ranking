@@ -139,26 +139,6 @@
 .hero-section__add-btn {
   position: absolute;
   z-index: 10;
-  -webkit-backdrop-filter: var(--blur-md);
-  backdrop-filter: var(--blur-md);
-  border: 1px solid var(--glass-border-light);
-  color: white;
-  font-size: 24px;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.hero-section__add-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .hero-section__add-btn:active {
@@ -1041,9 +1021,10 @@ button.episode-list-number:focus-visible {
 :root[data-layout='mobile'] .hero-section__factbar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  /* Schlägt das padding-inline:0 von .hero-section__span */
+  padding: var(--space-3) !important;
   border-radius: var(--radius-lg);
   background: var(--glass-light);
   border: 1px solid var(--glass-border-subtle);
@@ -1063,11 +1044,57 @@ button.episode-list-number:focus-visible {
   row-gap: var(--space-2);
 }
 
-/* Der Trailer-Knopf FUELLT den Rest der Zeile. Ans rechte Ende geschoben
-   riss er bei nur einem Anbieter eine grosse Luecke in die Mitte. */
+/* Videos sitzen rechts als ruhiger Glas-Chip — links „wo läuft es", rechts „was gibt es zu sehen". */
 :root[data-layout='mobile'] .hero-section__factbar-row > button:last-child {
-  flex: 1 1 auto;
-  justify-content: center;
+  margin-left: auto;
+}
+
+/* Wertungen: schlichte Kennzahlen, durch Haarlinien getrennt, statt bunter Pillen. */
+:root[data-layout='mobile'] .hero-section__factbar-row--ratings {
+  border-top: 1px solid var(--glass-border-subtle);
+  padding-top: var(--space-3);
+}
+
+:root[data-layout='mobile'] .hero-section__factbar .detail-ratings-card--plain {
+  gap: 0;
+  row-gap: var(--space-2);
+}
+
+:root[data-layout='mobile']
+  .hero-section__factbar
+  .detail-ratings-card--plain
+  .detail-ratings-card__badge {
+  border: none;
+  border-radius: 0;
+  background: none;
+  padding: 2px 6px !important;
+  gap: 6px;
+  font-size: 14px;
+}
+
+:root[data-layout='mobile']
+  .hero-section__factbar
+  .detail-ratings-card--plain
+  .detail-ratings-card__badge
+  + .detail-ratings-card__badge {
+  border-left: 1px solid var(--glass-border-subtle);
+}
+
+:root[data-layout='mobile']
+  .hero-section__factbar
+  .detail-ratings-card--plain
+  .detail-ratings-card__value {
+  font-size: 14px;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-layout='mobile']
+  .hero-section__factbar
+  .detail-ratings-card--plain
+  .detail-ratings-card__votes {
+  font-size: 11.5px !important;
+  opacity: 0.55 !important;
 }
 
 /* Die beiden Wertungen teilen sich die volle Breite. */

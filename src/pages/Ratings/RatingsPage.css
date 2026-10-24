@@ -37,12 +37,13 @@
 
 .ratings-header-inner {
   padding: var(--space-4) var(--page-x);
-  padding-top: calc(var(--space-4) + var(--safe-top));
+  padding-top: var(--nav-top);
 }
 
 :root[data-width='xs'] .ratings-header-inner {
   padding: var(--space-3) var(--space-3);
-  padding-top: calc(var(--space-3) + var(--safe-top));
+  padding-top: var(--nav-top);
+  padding-left: var(--nav-x);
 }
 
 .ratings-header-row {

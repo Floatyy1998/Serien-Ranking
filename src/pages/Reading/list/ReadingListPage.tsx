@@ -298,7 +298,7 @@ export const ReadingListPage = () => {
           animate={{ y: 0, opacity: 1 }}
           style={{
             padding: '20px',
-            paddingTop: 'calc(20px + env(safe-area-inset-top))',
+            paddingTop: 'var(--nav-top)',
             background: `${currentTheme.background.default}90`,
             backdropFilter: 'var(--glass-filter-lg)',
             WebkitBackdropFilter: 'var(--glass-filter-lg)',

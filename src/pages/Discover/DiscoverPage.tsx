@@ -172,7 +172,7 @@ export const DiscoverPage = memo(() => {
           <header
             style={{
               padding: 'var(--space-3) var(--page-x)',
-              paddingTop: 'calc(var(--space-3) + var(--safe-top))',
+              paddingTop: 'var(--nav-top)',
             }}
           >
             <div

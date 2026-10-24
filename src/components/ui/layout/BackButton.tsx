@@ -33,7 +33,10 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
 
   return (
     // data-back-button: die mitwandernde Leiste blendet Zurück/Home nur ein, solange keiner davon sichtbar ist
-    <div data-back-button style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <div
+      data-back-button
+      style={{ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '6px' }}
+    >
       <IconButton
         icon={<ArrowBack style={{ fontSize: '20px' }} />}
         onClick={goBack}

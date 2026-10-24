@@ -267,7 +267,7 @@ const BookSearchView = () => {
           style={{
             background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
             padding: '16px 20px',
-            paddingTop: 'calc(16px + env(safe-area-inset-top))',
+            paddingTop: 'var(--nav-top)',
             display: 'flex',
             alignItems: 'center',
             gap: 10,
