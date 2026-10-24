@@ -1,5 +1,5 @@
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
@@ -7,6 +7,7 @@ import { useEpisodeDragDrop } from '../../hooks/watch/useEpisodeDragDrop';
 import { usePersistedState } from '../../hooks/data/usePersistedState';
 import { useScrollRestore } from '../../hooks/ui/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/watch/useWatchNextEpisodes';
+import { openSeasonTools } from '../../hooks/watch/bulkMarkNudge';
 import { PageLayout } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
@@ -64,7 +65,12 @@ export const WatchNextPage = () => {
   const [onlyMySubs, setOnlyMySubs] = usePersistedState('watchNextOnlyMySubs', false);
   const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
-  const swipe = useWatchNextSwipe({ user, seriesList });
+  const navigate = useNavigate();
+  const handleOpenSeasonTools = useCallback(
+    (seriesId: number, seasonIndex: number) => openSeasonTools(navigate, seriesId, seasonIndex),
+    [navigate]
+  );
+  const swipe = useWatchNextSwipe({ user, seriesList, onOpenSeasonTools: handleOpenSeasonTools });
 
   const availableProviders = useMemo(() => {
     const providerSet = new Map<string, string>();

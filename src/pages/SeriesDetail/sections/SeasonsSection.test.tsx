@@ -151,4 +151,31 @@ describe('SeasonsSection', () => {
     fireEvent.click(screen.getByText('Alle verwalten'));
     expect(baseProps.navigate).toHaveBeenCalledWith('/episodes/42');
   });
+
+  it('bietet das Staffel-Abhaken direkt über der Folgenliste an', () => {
+    const onMarkSeasonWatched = vi.fn();
+    const fresh = {
+      ...series,
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [
+            { id: 1, watched: false, air_date: '2020-01-01' },
+            { id: 2, watched: false, air_date: '2020-01-08' },
+            { id: 3, watched: false, air_date: '2999-01-01' },
+          ],
+        },
+      ],
+    } as unknown as Series;
+    render(
+      <SeasonsSection {...baseProps} series={fresh} onMarkSeasonWatched={onMarkSeasonWatched} />
+    );
+    fireEvent.click(screen.getByText('Alle 2 Folgen abhaken'));
+    expect(onMarkSeasonWatched).toHaveBeenCalledWith(0);
+  });
+
+  it('blendet das Staffel-Abhaken aus, wenn nur noch eine Folge offen ist', () => {
+    render(<SeasonsSection {...baseProps} onMarkSeasonWatched={vi.fn()} />);
+    expect(screen.queryByText(/Folgen abhaken/)).not.toBeInTheDocument();
+  });
 });

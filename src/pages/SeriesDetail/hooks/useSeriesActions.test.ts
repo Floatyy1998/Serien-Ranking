@@ -52,6 +52,7 @@ vi.mock('../../../services/firebase/analytics', () => ({
   trackEpisodeWatched: vi.fn(),
   trackSeriesAdded: vi.fn(),
   trackSeriesDeleted: vi.fn(),
+  trackEpisodesBulkMarked: vi.fn(),
 }));
 const backendFetch = vi.hoisted(() => vi.fn());
 vi.mock('../../../services/api/backendApi', () => ({ backendFetch }));

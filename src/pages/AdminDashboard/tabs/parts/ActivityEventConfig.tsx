@@ -3,6 +3,7 @@ import {
   AutoStories,
   Delete,
   Devices,
+  DoneAll,
   LocalLibrary,
   Movie,
   PhoneAndroid,
@@ -50,6 +51,23 @@ export const EVENT_CONFIG: Record<
       const s = p?.season || '?';
       const e = p?.episode || '?';
       return `${name} — S${s}E${e}`;
+    },
+  },
+  episodes_bulk_marked: {
+    icon: <DoneAll style={{ fontSize: 16 }} />,
+    color: '#00cec9',
+    label: 'Folgen gesammelt abgehakt',
+    getDetail: (p) => {
+      const name = p?.series_name || '';
+      const s = p?.season || '?';
+      const modes: Record<string, string> = {
+        watch: 'Staffel',
+        rewatch: 'Staffel-Rewatch',
+        unwatch: 'Staffel entfernt',
+        catch_up: 'Bis hier',
+      };
+      const mode = modes[String(p?.mode)] || String(p?.mode || '');
+      return `${name} — S${s} · ${mode} · ${p?.count || '?'} Folgen · ${p?.source || ''}`;
     },
   },
   ext_episode_marked: {
@@ -194,7 +212,11 @@ export function getSourceBadge(ev: RawEvent): { label: string; color: string } |
     return { label: platform ? `Extension · ${platform}` : 'Extension', color: '#e17055' };
   }
 
-  if (ev.e === 'episode_watched' || ev.e === 'episode_unwatched') {
+  if (
+    ev.e === 'episode_watched' ||
+    ev.e === 'episode_unwatched' ||
+    ev.e === 'episodes_bulk_marked'
+  ) {
     return { label: 'App', color: '#0984e3' };
   }
 
@@ -208,7 +230,7 @@ export const FILTERS: Array<{ id: FilterType; label: string; events: string[] }>
   {
     id: 'watched',
     label: 'Geschaut',
-    events: ['episode_watched', 'episode_unwatched', 'ext_episode_marked'],
+    events: ['episode_watched', 'episode_unwatched', 'episodes_bulk_marked', 'ext_episode_marked'],
   },
   {
     id: 'library',

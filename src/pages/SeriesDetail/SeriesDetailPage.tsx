@@ -79,7 +79,8 @@ export const SeriesDetailPage = memo(() => {
     if (!user || !series || markingNext) return;
     setMarkingNext(true);
     try {
-      await markNextEpisodeWatched(user.uid, series);
+      const marked = await markNextEpisodeWatched(user.uid, series);
+      if (marked && nextEpisode) showBulkMarkNudge(nextEpisode.seasonIndex, nextEpisode.episodeId);
     } finally {
       setMarkingNext(false);
     }
@@ -101,6 +102,8 @@ export const SeriesDetailPage = memo(() => {
     handleEpisodeUnwatch,
     handleEpisodeRate,
     handleEpisodeQuickToggle,
+    handleSeasonMarkWatched,
+    showBulkMarkNudge,
     handleStartRewatch,
     handleStopRewatch,
   } = useSeriesActions(series, user?.uid, tmdbSeries ?? undefined);
@@ -634,6 +637,7 @@ export const SeriesDetailPage = memo(() => {
                   handleStopRewatch={handleStopRewatch}
                   handleStartRewatch={handleStartRewatch}
                   handleEpisodeQuickToggle={handleEpisodeQuickToggle}
+                  onMarkSeasonWatched={(idx) => void handleSeasonMarkWatched(idx)}
                   navigate={navigate}
                   fillerByKey={animeFiller.fillerByKey}
                   crossoverByKey={crossovers.byEpisodeKey}

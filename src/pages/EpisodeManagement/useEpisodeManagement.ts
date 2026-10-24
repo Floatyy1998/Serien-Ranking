@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchTmdbSeriesFallback } from '../SeriesDetail/hooks/fetchTmdbSeriesFallback';
 import { dbUpdate, paths, serverTimestamp, updateWithSeriesVersion } from '../../services/db/ref';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/social/discussionCountHooks';
@@ -9,6 +9,13 @@ import {
   shouldTriggerQuickRate,
   useQuickSeasonRating,
 } from '../../hooks/rating/useQuickSeasonRating';
+import { markSeasonWatched, type SeasonMarkMode } from '../../hooks/watch/markSeasonWatched';
+import {
+  countRemainingMarkable,
+  maybeShowBulkMarkNudge,
+  noteBulkMarkUsed,
+  type BulkHintState,
+} from '../../hooks/watch/bulkMarkNudge';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
@@ -16,12 +23,12 @@ import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics
 import { filterBulkMarkable } from '../../lib/episode/releaseState';
 import type { Series } from '../../types/Series';
 import {
+  trackEpisodesBulkMarked,
   trackEpisodeWatched,
   trackEpisodeUnwatched,
   trackSeriesAdded,
 } from '../../services/firebase/analytics';
 import { backendFetch } from '../../services/api/backendApi';
-import { autoUnhideUpdates, shouldAutoUnhide } from '../../lib/series/autoUnhide';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
@@ -50,6 +57,7 @@ export interface SeasonProgress {
 
 export const useEpisodeManagement = () => {
   const { id } = useParams();
+  const bulkHintSeason = (useLocation().state as BulkHintState | null)?.bulkHintSeason;
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
 
@@ -103,6 +111,10 @@ export const useEpisodeManagement = () => {
   }, [localSeries, id]);
 
   const series = localSeries ?? fallbackSeries ?? undefined;
+  const seriesRef = useRef(series);
+  useEffect(() => {
+    seriesRef.current = series;
+  }, [series]);
 
   // „Erst hinzufügen"-Prompt: Schreibaktionen auf nicht getrackten Serien
   // öffnen den Dialog statt zu schreiben; Bestätigen ruft /add (wie der
@@ -176,9 +188,14 @@ export const useEpisodeManagement = () => {
 
   // Effects
 
-  // Auto-select first unwatched season
+  // Auto-select: Staffel aus dem Abhak-Tipp, sonst die erste ungesehene
   useEffect(() => {
     if (series) {
+      const hinted = bulkHintSeason != null ? series.seasons?.[bulkHintSeason] : undefined;
+      if (bulkHintSeason != null && hinted?.episodes?.some((ep) => !ep.watched)) {
+        setSelectedSeason(bulkHintSeason);
+        return;
+      }
       const firstUnwatchedSeason = series.seasons?.findIndex((season) =>
         season.episodes?.some((ep) => !ep.watched)
       );
@@ -186,7 +203,7 @@ export const useEpisodeManagement = () => {
         setSelectedSeason(firstUnwatchedSeason);
       }
     }
-  }, [series]);
+  }, [series, bulkHintSeason]);
 
   // Pull-to-refresh handlers
 
@@ -222,6 +239,22 @@ export const useEpisodeManagement = () => {
     if (selectedSeason > 0) {
       setSelectedSeason(selectedSeason - 1);
     }
+  };
+
+  // Season bulk toggle
+
+  const handleSeasonToggle = async (
+    seasonIndex: number,
+    mode: SeasonMarkMode = 'watch',
+    source = 'episode_management'
+  ) => {
+    const current = seriesRef.current;
+    if (!current || !user) return;
+    if (!requireTracked()) return;
+    await markSeasonWatched(user.uid, current, seasonIndex, mode, {
+      source,
+      onQuickRate: showQuickRating,
+    });
   };
 
   // Episode toggle logic
@@ -309,6 +342,14 @@ export const useEpisodeManagement = () => {
         }
         await applyUserUpdate(user.uid, updates, queueLabel);
         hapticSuccess();
+        if (!isWatched) {
+          maybeShowBulkMarkNudge({
+            seriesId: series.id,
+            seasonIndex,
+            remaining: countRemainingMarkable(season, epId),
+            onMarkRest: () => void handleSeasonToggle(seasonIndex, 'watch', 'bulk_nudge'),
+          });
+        }
       } else {
         // Komplett loeschen statt Nullen schreiben
         await applyUserUpdate(
@@ -510,6 +551,13 @@ export const useEpisodeManagement = () => {
       );
       // Catch-Up ist Massen-Abhaken → zählt nicht für Mystery-Boxen.
       if (markedEpPaths.length > 0) void adjustBulkExcludedEpisodes(user.uid, markedEpPaths.length);
+      trackEpisodesBulkMarked(series.title, targetSeasonIndex + 1, {
+        tmdbId: series.id,
+        count: markedEpPaths.length,
+        mode: 'catch_up',
+        source: 'episode_management',
+      });
+      noteBulkMarkUsed();
       setSelectedSeason(targetSeasonIndex);
 
       showUndoToast(
@@ -532,173 +580,6 @@ export const useEpisodeManagement = () => {
       );
     } catch (error) {
       console.error('Failed to catch up episodes:', error);
-      showToast(t('Fehler beim Speichern'), 3000, 'error');
-    }
-  };
-
-  // Season bulk toggle
-
-  const handleSeasonToggle = async (
-    seasonIndex: number,
-    mode: 'watch' | 'unwatch' | 'rewatch' = 'watch'
-  ) => {
-    if (!series || !user) return;
-    if (!requireTracked()) return;
-
-    const season = series.seasons?.[seasonIndex];
-    if (!season) {
-      showToast(t('Folgen werden noch geladen'), 2500, 'info');
-      return;
-    }
-    const allEps = season.episodes ?? [];
-    // Bulk markiert nie unveröffentlichte Folgen — einzeln bleibt das erlaubt.
-    // Ausnahme: bereits markierte Folgen bleiben in Rewatch/Unwatch drin.
-    const seasonEps = mode === 'unwatch' ? allEps : filterBulkMarkable(allEps);
-    const allWatched = seasonEps.length > 0 && seasonEps.every((ep) => ep.watched);
-    if (seasonEps.length === 0) {
-      showToast(t('Noch keine Folgen dieser Staffel veröffentlicht'), 2500, 'info');
-      return;
-    }
-    const willAutoAddToWatchlist = mode !== 'unwatch' && shouldAutoEnableWatchlist(series);
-    const willAutoUnhide = mode !== 'unwatch' && shouldAutoUnhide(series);
-
-    // Massen-Abhaken zählt nicht für Mystery-Boxen (kein Box-Schwall beim
-    // Eintragen bereits geschauter Serien). Delta = Änderung der Unique-Watched.
-    let bulkDelta = 0;
-    if (mode === 'watch') {
-      bulkDelta = allWatched
-        ? -seasonEps.filter((ep) => ep.id && ep.watched).length
-        : seasonEps.filter((ep) => ep.id && !ep.watched).length;
-    } else if (mode === 'unwatch') {
-      bulkDelta = -seasonEps.filter((ep) => ep.id && ep.watched).length;
-    }
-
-    try {
-      const nowUnix = Math.floor(Date.now() / 1000);
-      const seasonPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${seasonIndex}`;
-      const updates: Record<string, unknown> = {
-        ...(willAutoAddToWatchlist ? autoWatchlistUpdates(user.uid, series) : {}),
-        ...(willAutoUnhide ? autoUnhideUpdates(user.uid, series) : {}),
-      };
-
-      seasonEps.forEach((ep) => {
-        if (!ep.id) return;
-        const epBase = `${seasonPath}/eps/${ep.id}`;
-        // Folgennummer mitschreiben, ausser beim Entfernen des Eintrags.
-        if (mode !== 'unwatch') {
-          if (ep.episode_number != null) updates[`${epBase}/n`] = ep.episode_number;
-          if (ep.absoluteNumber != null) updates[`${epBase}/a`] = ep.absoluteNumber;
-        }
-        if (mode === 'unwatch') {
-          updates[epBase] = null;
-        } else if (mode === 'rewatch') {
-          updates[`${epBase}/w`] = 1;
-          updates[`${epBase}/c`] = (ep.watchCount || 1) + 1;
-          updates[`${epBase}/f`] = ep.firstWatchedAt
-            ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
-            : nowUnix;
-          updates[`${epBase}/l`] = nowUnix;
-        } else {
-          if (!allWatched) {
-            updates[`${epBase}/w`] = 1;
-            updates[`${epBase}/c`] = 1;
-            updates[`${epBase}/f`] = ep.firstWatchedAt
-              ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
-              : nowUnix;
-            updates[`${epBase}/l`] = nowUnix;
-          } else {
-            updates[epBase] = null;
-          }
-        }
-      });
-
-      // Fuer Undo: Zustand pro Episode snapshotten (inkl. ep.id)
-      type PrevEpisodeState = {
-        epId: number;
-        watched: boolean;
-        watchCount: number;
-        firstUnix: number;
-        lastUnix: number;
-      };
-      const prevEpisodes: PrevEpisodeState[] = seasonEps
-        .filter((ep) => ep.id)
-        .map((ep) => ({
-          epId: ep.id as number,
-          watched: ep.watched ?? false,
-          watchCount: ep.watchCount || 0,
-          firstUnix: ep.firstWatchedAt
-            ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
-            : 0,
-          lastUnix: ep.lastWatchedAt ? Math.floor(new Date(ep.lastWatchedAt).getTime() / 1000) : 0,
-        }));
-
-      updates[paths.serienVersion(user.uid)] = serverTimestamp();
-      // Staffel-Bulk-Mark als EIN Queue-Eintrag über die persistente
-      // Offline-Queue; Undo bleibt direkt.
-      await applyUserUpdate(
-        user.uid,
-        updates,
-        `${series.title} Staffel ${season.seasonNumber + 1} (${mode})`
-      );
-
-      if (bulkDelta !== 0) void adjustBulkExcludedEpisodes(user.uid, bulkDelta);
-
-      // Quick-Rate: letzte Staffel komplett markiert.
-      // F4 — nicht blockierend (siehe handleEpisodeToggle): wegwischbarer
-      // Hinweis statt Auto-Modal; öffnet die Schnellbewertung erst auf Tap.
-      if (mode !== 'unwatch' && seasonEps.length === allEps.length) {
-        const lastSeasonIndex = (series.seasons?.length ?? 0) - 1;
-        if (seasonIndex === lastSeasonIndex) {
-          const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
-          if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {
-            const quickRateSeasonNumber = season.seasonNumber + 1;
-            showActionToast(t('{title} fertig — jetzt bewerten?', { title: series.title }), {
-              actionLabel: t('Bewerten'),
-              onAction: () => showQuickRating(series, quickRateSeasonNumber),
-            });
-          }
-        }
-      }
-
-      const seasonLabel = t('Staffel {n}', { n: season.seasonNumber + 1 });
-      const modeLabel =
-        mode === 'unwatch'
-          ? t('als nicht gesehen markiert')
-          : mode === 'rewatch'
-            ? t('Rewatch markiert')
-            : t('als gesehen markiert');
-      showUndoToast(`${series.title} ${seasonLabel} ${modeLabel}`, async () => {
-        try {
-          const undoUpdates: Record<string, unknown> = {};
-          prevEpisodes.forEach((ep) => {
-            const epBase = `${seasonPath}/eps/${ep.epId}`;
-            if (!ep.watched && ep.watchCount === 0) {
-              undoUpdates[epBase] = null;
-            } else {
-              undoUpdates[`${epBase}/w`] = ep.watched ? 1 : 0;
-              undoUpdates[`${epBase}/c`] = ep.watchCount;
-              undoUpdates[`${epBase}/f`] = ep.firstUnix;
-              undoUpdates[`${epBase}/l`] = ep.lastUnix;
-            }
-          });
-          // Bump mitschreiben — sonst überspringt ein zweites Gerät den
-          // Delta-Reload (versionMatch) und zeigt den zurückgenommenen Stand weiter.
-          await updateWithSeriesVersion(user.uid, undoUpdates);
-          if (bulkDelta !== 0) void adjustBulkExcludedEpisodes(user.uid, -bulkDelta);
-        } catch {
-          showToast(t('Undo fehlgeschlagen'), 2000, 'error');
-        }
-      });
-
-      if (willAutoAddToWatchlist) {
-        const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
-        await logWatchlistAdded(user.uid, series.title, series.id);
-      }
-      if (willAutoUnhide) {
-        showToast(t('„{title}" wird wieder angezeigt', { title: series.title }), 2500, 'info');
-      }
-    } catch (error) {
-      console.error('Failed to toggle season watch status:', error);
       showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
@@ -761,6 +642,7 @@ export const useEpisodeManagement = () => {
     handleEpisodeToggle,
 
     // Bulk actions
+    highlightBulkActions: bulkHintSeason != null,
     handleSeasonToggle,
     handleCatchUp,
 

@@ -15,6 +15,7 @@ const { state } = vi.hoisted(() => ({
 
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams(''), vi.fn()],
+  useNavigate: () => vi.fn(),
 }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({

@@ -220,7 +220,7 @@ export const PAGE_TOURS: readonly PageTour[] = [
       {
         icon: 'check',
         title: 'Folgen abhaken',
-        text: 'Einzelne Folgen antippen oder über Alle verwalten eine ganze Staffel setzen.',
+        text: 'Einzelne Folgen antippen oder eine ganze Staffel auf einmal abhaken – der Button sitzt direkt über der Folgenliste.',
       },
       {
         icon: 'star',

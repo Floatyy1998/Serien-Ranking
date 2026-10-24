@@ -6,7 +6,7 @@
  * - login / logout / sign_up
  * - series_added / series_deleted / movie_added / movie_deleted
  * - manga_added / manga_deleted / book_added / book_deleted
- * - episode_watched / episode_unwatched
+ * - episode_watched / episode_unwatched / episodes_bulk_marked
  * - rating_saved / rating_deleted
  */
 import firebase from 'firebase/compat/app';
@@ -30,6 +30,7 @@ type AllowedAnalyticsEvent =
   | 'book_deleted'
   | 'episode_watched'
   | 'episode_unwatched'
+  | 'episodes_bulk_marked'
   | 'rating_saved'
   | 'rating_deleted';
 
@@ -56,6 +57,7 @@ const ALLOWED_EVENTS = new Set<AllowedAnalyticsEvent>([
   'book_deleted',
   'episode_watched',
   'episode_unwatched',
+  'episodes_bulk_marked',
   'rating_saved',
   'rating_deleted',
 ]);

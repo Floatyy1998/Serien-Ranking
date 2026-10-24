@@ -106,8 +106,8 @@ const tour: Record<string, string> = {
   'Nur Serien auf der Watchlist erscheinen unter Weiterschauen. Beim ersten Abhaken landet eine Serie automatisch dort.':
     'Only shows on your watchlist appear under Continue watching. The first episode you check off puts a show there automatically.',
   'Folgen abhaken': 'Check off episodes',
-  'Einzelne Folgen antippen oder über Alle verwalten eine ganze Staffel setzen.':
-    'Tap single episodes, or set a whole season through Manage all.',
+  'Einzelne Folgen antippen oder eine ganze Staffel auf einmal abhaken – der Button sitzt direkt über der Folgenliste.':
+    'Tap single episodes, or mark a whole season at once with the button right above the episode list.',
   'Die Serie und jede einzelne Folge lassen sich bewerten.':
     'You can rate the show and every single episode.',
   'Starte einen Durchlauf von vorn, ohne deine bisherige Historie zu verlieren.':

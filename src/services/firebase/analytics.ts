@@ -2,7 +2,7 @@
  * Analytics module - lightweight tracking.
  *
  * Only essential events are stored via Firebase RTDB (whitelist in analyticsService).
- * Events: page_view, login, logout, sign_up, series/movie added/deleted, episode watched/unwatched, rating saved/deleted.
+ * Events: page_view, login, logout, sign_up, series/movie added/deleted, episode watched/unwatched/bulk-marked, rating saved/deleted.
  */
 import { analyticsService } from './analyticsService';
 
@@ -89,6 +89,25 @@ export const trackEpisodeWatched = (
 };
 export const trackEpisodeUnwatched = (seriesName: string, season: number, episode: number) =>
   analyticsService.track('episode_unwatched', { series_name: seriesName, season, episode });
+
+export const trackEpisodesBulkMarked = (
+  seriesName: string,
+  season: number,
+  extra: {
+    tmdbId?: string | number;
+    count: number;
+    mode: 'watch' | 'unwatch' | 'rewatch' | 'catch_up';
+    source: string;
+  }
+) =>
+  analyticsService.track('episodes_bulk_marked', {
+    series_name: seriesName,
+    season: String(season),
+    tmdb_id: extra.tmdbId ? String(extra.tmdbId) : '',
+    count: String(extra.count),
+    mode: extra.mode,
+    source: extra.source,
+  });
 
 // Ratings
 export const trackRatingSaved = (id: string, type: string, rating: number) =>

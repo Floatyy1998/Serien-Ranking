@@ -4,8 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 
 // react-router-dom
-const rr = vi.hoisted(() => ({ id: '5' }));
-vi.mock('react-router-dom', () => ({ useParams: () => ({ id: rr.id }) }));
+const rr = vi.hoisted(() => ({ id: '5', state: null as unknown }));
+vi.mock('react-router-dom', () => ({
+  useParams: () => ({ id: rr.id }),
+  useLocation: () => ({ state: rr.state }),
+}));
 
 // firebase compat
 const fb = vi.hoisted(() => {
@@ -56,6 +59,7 @@ vi.mock('../../lib/episode/episodeWatchFanout', () => ({
 vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeWatched: vi.fn(),
   trackEpisodeUnwatched: vi.fn(),
+  trackEpisodesBulkMarked: vi.fn(),
 }));
 vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
@@ -113,6 +117,7 @@ const twoSeasons = (): Series['seasons'] => [
 
 beforeEach(() => {
   rr.id = '5';
+  rr.state = null;
   ctx.allSeriesList = [];
   ctx.user = { uid: 'u1' };
   ctx.shouldTriggerQuickRate.mockReturnValue(false);
@@ -300,6 +305,14 @@ describe('useEpisodeManagement', () => {
     expect(result.current.selectedSeason).toBe(1);
   });
 
+  it('wählt die Staffel aus dem Abhak-Tipp vor und hebt die Sammelaktionen hervor', () => {
+    rr.state = { bulkHintSeason: 1 };
+    ctx.allSeriesList = [makeSeries({ seasons: twoSeasons() })];
+    const { result } = renderHook(() => useEpisodeManagement());
+    expect(result.current.selectedSeason).toBe(1);
+    expect(result.current.highlightBulkActions).toBe(true);
+  });
+
   it('handleSeasonToggle (watch): marks every episode of the season', async () => {
     ctx.allSeriesList = [makeSeries({ seasons: twoSeasons() })];
     const { result } = renderHook(() => useEpisodeManagement());
@@ -315,6 +328,31 @@ describe('useEpisodeManagement', () => {
     expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11/w']).toBe(1);
     expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12/w']).toBe(1);
     expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
+  });
+
+  it('handleSeasonToggle (watch): lässt Zähler schon gesehener Folgen unangetastet', async () => {
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [ep({ id: 11, watched: true, watchCount: 3 }), ep({ id: 12 })],
+          },
+        ],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0, 'watch');
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/11/c']).toBeUndefined();
+    expect(updates['users/u1/seriesWatch/5/seasons/0/eps/12/c']).toBe(1);
   });
 
   it('handleSeasonToggle (unwatch): nulls every episode of the season', async () => {

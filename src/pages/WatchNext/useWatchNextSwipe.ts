@@ -11,13 +11,19 @@ import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { hapticSuccess } from '../../lib/interaction/haptics';
+import { countRemainingMarkable, maybeShowBulkMarkNudge } from '../../hooks/watch/bulkMarkNudge';
 
 interface UseWatchNextSwipeOptions {
   user: { uid: string } | null;
   seriesList: Series[];
+  onOpenSeasonTools?: (seriesId: number, seasonIndex: number) => void;
 }
 
-export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions) => {
+export const useWatchNextSwipe = ({
+  user,
+  seriesList,
+  onOpenSeasonTools,
+}: UseWatchNextSwipeOptions) => {
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
   const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
@@ -121,6 +127,15 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       await applyUserUpdate(uid, updates, `${episode.seriesTitle} ${label} (Watch-Next-Swipe)`);
 
       hapticSuccess();
+
+      if (onOpenSeasonTools && !episode.isRewatch && !prevWatched) {
+        maybeShowBulkMarkNudge({
+          seriesId: series.id,
+          seasonIndex: episode.seasonIndex,
+          remaining: countRemainingMarkable(series.seasons?.[episode.seasonIndex], epId),
+          onOpenSeasonTools: () => onOpenSeasonTools(series.id, episode.seasonIndex),
+        });
+      }
 
       showUndoToast(
         t('{title} {episode} als gesehen markiert', { title: episode.seriesTitle, episode: label }),

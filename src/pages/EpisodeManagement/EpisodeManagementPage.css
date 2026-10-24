@@ -225,6 +225,24 @@
   z-index: var(--z-base);
 }
 
+.season-progress.em-bulk-highlight {
+  animation: em-bulk-highlight 1.4s ease-in-out 3;
+}
+
+@keyframes em-bulk-highlight {
+  0%,
+  100% {
+    border-color: var(--glass-border-light);
+    box-shadow: none;
+  }
+  50% {
+    border-color: var(--theme-primary);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--theme-primary) 35%, transparent),
+      0 0 28px color-mix(in srgb, var(--theme-primary) 35%, transparent);
+  }
+}
+
 .progress-header {
   display: flex;
   justify-content: space-between;

@@ -10,6 +10,7 @@ interface BulkActionBarProps {
   onSeasonToggle: (seasonIndex: number, mode: 'watch' | 'unwatch' | 'rewatch') => void;
   onMarkAll: (seasonIndex: number) => void;
   onCatchUp: () => void;
+  highlight?: boolean;
 }
 
 export const BulkActionBar = memo(
@@ -20,11 +21,12 @@ export const BulkActionBar = memo(
     onSeasonToggle,
     onMarkAll,
     onCatchUp,
+    highlight,
   }: BulkActionBarProps) => {
     const { allWatched, seasonMinWatchCount, progress } = seasonProgress;
 
     return (
-      <div className="season-progress">
+      <div className={`season-progress${highlight ? ' em-bulk-highlight' : ''}`}>
         <div className="progress-header">
           <h2>{t('Staffel {n}', { n: seasonNumber })}</h2>
           <span className="progress-text">{Math.round(progress)}%</span>

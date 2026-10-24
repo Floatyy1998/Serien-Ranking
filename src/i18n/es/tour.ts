@@ -108,8 +108,8 @@ const tour: Record<string, string> = {
   'Nur Serien auf der Watchlist erscheinen unter Weiterschauen. Beim ersten Abhaken landet eine Serie automatisch dort.':
     'Solo las series de tu watchlist aparecen en Continuar viendo. Al marcar el primer episodio, la serie entra ahí automáticamente.',
   'Folgen abhaken': 'Marcar episodios',
-  'Einzelne Folgen antippen oder über Alle verwalten eine ganze Staffel setzen.':
-    'Toca episodios sueltos o marca una temporada entera desde Gestionar todo.',
+  'Einzelne Folgen antippen oder eine ganze Staffel auf einmal abhaken – der Button sitzt direkt über der Folgenliste.':
+    'Toca episodios sueltos o marca una temporada entera de una vez con el botón justo encima de la lista de episodios.',
   'Die Serie und jede einzelne Folge lassen sich bewerten.':
     'Puedes valorar la serie y cada episodio por separado.',
   'Starte einen Durchlauf von vorn, ohne deine bisherige Historie zu verlieren.':

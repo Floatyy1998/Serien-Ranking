@@ -206,6 +206,15 @@ const dict: Record<string, string> = {
     'De quem chega ao episódio {n}, {p} termina a série.',
   'Anonym aus dem Sehverhalten aller Nutzer, die diese Serie begonnen haben.':
     'Anónimo, a partir do comportamento de todos os que começaram esta série.',
+  'Alle {n} Folgen abhaken': 'Marcar os {n} episódios como assistidos',
+  'Restliche {n} Folgen abhaken': 'Marcar os {n} episódios restantes',
+  'Geht auch schneller': 'Tem um jeito mais rápido',
+  'Zur Übersicht': 'Ir para a visão geral',
+  'In der Episodenübersicht hakst du ganze Staffeln auf einmal ab.':
+    'Na visão geral de episódios você marca temporadas inteiras de uma vez.',
+  'Den Rest dieser Staffel kannst du auf einmal abhaken.':
+    'Você pode marcar o resto desta temporada de uma vez.',
+  'Rest abhaken': 'Marcar o resto',
 };
 
 export default dict;

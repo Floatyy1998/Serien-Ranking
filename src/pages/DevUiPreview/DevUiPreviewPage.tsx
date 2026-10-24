@@ -5,6 +5,11 @@ import { ReadingRatingsPage } from '../Reading/ratings/ReadingRatingsPage';
 import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
 import { ReadingHistoryPage } from '../Reading/history/ReadingHistoryPage';
 import { ReadingCatchUpPage } from '../Reading/list/ReadingCatchUpPage';
+import {
+  BulkHighlightPreview,
+  HomeNudgePreview,
+  SeasonMarkNudgePreview,
+} from './SeasonMarkPreviews';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
@@ -463,6 +468,21 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <RatingsYearFilterPreview />,
   },
   { id: 'watchnextbadge', label: 'Weiter: Filter aktiv', render: () => <WatchNextBadgePreview /> },
+  {
+    id: 'season-mark-nudge',
+    label: 'Staffel abhaken + Tipp',
+    render: () => <SeasonMarkNudgePreview />,
+  },
+  {
+    id: 'season-mark-home',
+    label: 'Startseite: Weiterschauen + Tipp',
+    render: () => <HomeNudgePreview />,
+  },
+  {
+    id: 'season-mark-overview',
+    label: 'Übersicht nach dem Tipp',
+    render: () => <BulkHighlightPreview />,
+  },
 ];
 
 export const DevUiPreviewPage = () => {

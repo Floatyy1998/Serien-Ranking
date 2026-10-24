@@ -34,6 +34,7 @@ export const EpisodeManagementPage = () => {
     handleTouchEnd,
     handleEpisodeClick,
     handleSeasonToggle,
+    highlightBulkActions,
     handleCatchUp,
     showCatchUpDialog,
     setShowCatchUpDialog,
@@ -97,6 +98,7 @@ export const EpisodeManagementPage = () => {
             onSeasonToggle={handleSeasonToggle}
             onMarkAll={(idx) => handleSeasonToggle(idx)}
             onCatchUp={() => setShowCatchUpDialog(true)}
+            highlight={highlightBulkActions}
           />
         </>
       )}

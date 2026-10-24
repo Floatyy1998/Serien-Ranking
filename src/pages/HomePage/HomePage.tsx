@@ -12,6 +12,7 @@ import { QuickRatingSheet } from '../../components/ui/overlay/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeSwipeHandlers } from '../../hooks/watch/useEpisodeSwipeHandlers';
+import { openSeasonTools } from '../../hooks/watch/bulkMarkNudge';
 import { useProactiveRecaps } from '../../hooks/watch/useProactiveRecaps';
 import { useSeasonalRecommendations } from '../../hooks/discover/useSeasonalRecommendations';
 import { useSeriesCountdowns } from '../../hooks/watch/useSeriesCountdowns';
@@ -57,6 +58,10 @@ const PET_FOR_YOU_CARDS = new Set(['daily-spin', 'milestone-box']);
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const handleOpenSeasonTools = useCallback(
+    (seriesId: number, seasonIndex: number) => openSeasonTools(navigate, seriesId, seasonIndex),
+    [navigate]
+  );
   const authContext = useAuth();
   const user = authContext?.user ?? null;
 
@@ -130,7 +135,7 @@ export const HomePage: React.FC = () => {
     quickRatingSeasonNumber,
     closeQuickRating,
     saveQuickRating,
-  } = useEpisodeSwipeHandlers();
+  } = useEpisodeSwipeHandlers({ onOpenSeasonTools: handleOpenSeasonTools });
 
   const {
     rewatchEpisodes,

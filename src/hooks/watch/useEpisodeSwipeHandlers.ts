@@ -11,6 +11,7 @@ import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
+import { countRemainingMarkable, maybeShowBulkMarkNudge } from './bulkMarkNudge';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from '../rating/useQuickSeasonRating';
 import type { Series } from '../../types/Series';
 import type { TodayEpisode } from '../data/useWebWorkerTodayEpisodes';
@@ -154,7 +155,13 @@ function scheduleEpisodeHide(
   }, 300);
 }
 
-export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
+interface EpisodeSwipeHandlersOptions {
+  onOpenSeasonTools?: (seriesId: number, seasonIndex: number) => void;
+}
+
+export const useEpisodeSwipeHandlers = ({
+  onOpenSeasonTools,
+}: EpisodeSwipeHandlersOptions = {}): EpisodeSwipeHandlersReturn => {
   const authContext = useAuth();
   const user = authContext?.user ?? null;
   const { seriesList } = useSeriesList();
@@ -269,6 +276,18 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
 
         // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel
         const fullSeries = seriesList.find((s) => s.id === item.id);
+        if (fullSeries && onOpenSeasonTools && snap.previousCount === 0) {
+          const seasonIndex = item.nextEpisode.seasonIndex;
+          maybeShowBulkMarkNudge({
+            seriesId: item.id,
+            seasonIndex,
+            remaining: countRemainingMarkable(
+              fullSeries.seasons?.[seasonIndex],
+              item.nextEpisode.episodeId
+            ),
+            onOpenSeasonTools: () => onOpenSeasonTools(item.id, seasonIndex),
+          });
+        }
         if (fullSeries?.seasons) {
           if (
             shouldTriggerQuickRate(
@@ -287,7 +306,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
-    [user, showQuickRating, seriesList]
+    [user, showQuickRating, seriesList, onOpenSeasonTools]
   );
 
   const handleEpisodeComplete = useCallback(

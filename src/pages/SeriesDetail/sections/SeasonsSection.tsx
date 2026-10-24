@@ -1,5 +1,6 @@
 import SmsOutlined from '@mui/icons-material/SmsOutlined';
 import Check from '@mui/icons-material/Check';
+import DoneAll from '@mui/icons-material/DoneAll';
 import GridView from '@mui/icons-material/GridView';
 import List from '@mui/icons-material/List';
 import Repeat from '@mui/icons-material/Repeat';
@@ -10,6 +11,7 @@ import type { useNavigate } from 'react-router-dom';
 import { CrossoverChip } from '../../../components/ui/display/CrossoverChip';
 import { FillerChip } from '../../../components/ui/display/FillerChip';
 import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
+import { countRemainingMarkable } from '../../../hooks/watch/bulkMarkNudge';
 import { crossoverSeasonKey, type CrossoverRef } from '../../../lib/crossover/crossoverIndex';
 import {
   getImplicitRewatchRound,
@@ -49,6 +51,7 @@ interface SeasonsSectionProps {
   handleStopRewatch: () => void;
   handleStartRewatch: (continueExisting?: boolean) => void;
   handleEpisodeQuickToggle: (seasonIndex: number, episodeIndex: number) => Promise<void>;
+  onMarkSeasonWatched?: (seasonIndex: number) => void;
   navigate: ReturnType<typeof useNavigate>;
   fillerByKey?: Map<string, FillerEpisode>;
   crossoverByKey?: Map<string, CrossoverRef[]>;
@@ -98,6 +101,7 @@ export function SeasonsSection({
   handleStopRewatch,
   handleStartRewatch,
   handleEpisodeQuickToggle,
+  onMarkSeasonWatched,
   navigate,
   fillerByKey,
   crossoverByKey,
@@ -137,6 +141,7 @@ export function SeasonsSection({
   const totalEpisodes = selectedSeason?.episodes?.length || 0;
   const seasonProgress =
     totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
+  const remainingMarkable = countRemainingMarkable(selectedSeason);
 
   return (
     // Kein eigenes Seiten-Padding — das liefert der Wrapper in SeriesDetailPage
@@ -359,6 +364,36 @@ export function SeasonsSection({
               </div>
             </div>
           </div>
+
+          {onMarkSeasonWatched && remainingMarkable >= 2 && (
+            <motion.button
+              type="button"
+              whileTap={{ opacity: 0.7 }}
+              onClick={() => onMarkSeasonWatched(safeSeasonIndex)}
+              style={{
+                width: '100%',
+                minHeight: 44,
+                padding: '10px 16px',
+                marginBottom: '12px',
+                background: `${currentTheme.primary}1f`,
+                border: `1px solid ${currentTheme.primary}55`,
+                borderRadius: '10px',
+                color: currentTheme.primary,
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              <DoneAll style={{ fontSize: '18px' }} />
+              {watchedEpisodes === 0
+                ? t('Alle {n} Folgen abhaken', { n: remainingMarkable })
+                : t('Restliche {n} Folgen abhaken', { n: remainingMarkable })}
+            </motion.button>
+          )}
 
           {/* Episode List View (default) */}
           {episodeView === 'list' && (

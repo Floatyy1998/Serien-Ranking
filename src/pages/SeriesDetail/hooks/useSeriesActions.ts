@@ -2,7 +2,7 @@
  * useSeriesActions - Extracts all Firebase action handlers from SeriesDetailPage
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, serverTimestamp } from '../../../services/db/ref';
 import { logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
@@ -25,6 +25,12 @@ import { cleanupSeriesDetectionState } from '../../../services/detection/detecti
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../../lib/interaction/toast';
+import { markSeasonWatched } from '../../../hooks/watch/markSeasonWatched';
+import {
+  countRemainingMarkable,
+  maybeShowBulkMarkNudge,
+  openSeasonTools,
+} from '../../../hooks/watch/bulkMarkNudge';
 import { hapticSuccess } from '../../../lib/interaction/haptics';
 import { t } from '../../../services/i18n';
 
@@ -59,6 +65,11 @@ export function useSeriesActions(
     seasonNumber?: number;
     episodeNumber?: number;
   }>({ show: false, type: 'episode', item: null });
+
+  const seriesRef = useRef(series);
+  useEffect(() => {
+    seriesRef.current = series;
+  }, [series]);
 
   const showSnackbar = useCallback((message: string) => {
     setSnackbar({ open: true, message });
@@ -426,6 +437,43 @@ export function useSeriesActions(
     [series, userId]
   );
 
+  const promptAddFirst = useCallback(() => {
+    setDialog({
+      open: true,
+      message: t(
+        'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.'
+      ),
+      type: 'info',
+      onConfirm: () => void handleAddSeries(),
+    });
+  }, [handleAddSeries]);
+
+  const handleSeasonMarkWatched = useCallback(
+    async (seasonIndex: number) => {
+      const current = seriesRef.current;
+      if (!current || !userId) return;
+      if (current === tmdbSeries) {
+        promptAddFirst();
+        return;
+      }
+      await markSeasonWatched(userId, current, seasonIndex, 'watch', { source: 'series_detail' });
+    },
+    [userId, tmdbSeries, promptAddFirst]
+  );
+
+  const showBulkMarkNudge = useCallback(
+    (seasonIndex: number, justMarkedEpisodeId: number) => {
+      if (!series) return;
+      maybeShowBulkMarkNudge({
+        seriesId: series.id,
+        seasonIndex,
+        remaining: countRemainingMarkable(series.seasons?.[seasonIndex], justMarkedEpisodeId),
+        onOpenSeasonTools: () => openSeasonTools(navigate, series.id, seasonIndex),
+      });
+    },
+    [series, navigate]
+  );
+
   const handleEpisodeQuickToggle = useCallback(
     async (seasonIndex: number, episodeIndex: number) => {
       if (!series || !userId) return;
@@ -433,14 +481,7 @@ export function useSeriesActions(
       // hinzufügen — der TMDB-Staffelaufbau kann vom Katalog abweichen
       // (z. B. One Piece), direkte Watch-Writes würden falsch landen.
       if (series === tmdbSeries) {
-        setDialog({
-          open: true,
-          message: t(
-            'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.'
-          ),
-          type: 'info',
-          onConfirm: () => void handleAddSeries(),
-        });
+        promptAddFirst();
         return;
       }
       const season = series.seasons?.[seasonIndex];
@@ -492,7 +533,10 @@ export function useSeriesActions(
         }
 
         const newWatched = !prevWatched;
-        if (newWatched) hapticSuccess();
+        if (newWatched) {
+          hapticSuccess();
+          showBulkMarkNudge(seasonIndex, epId);
+        }
         const label = `S${seasonNumber}E${epNumber}`;
         const actionLabel = newWatched
           ? t('als gesehen markiert')
@@ -570,7 +614,7 @@ export function useSeriesActions(
         setDialog({ open: true, message: t('Fehler beim Speichern.'), type: 'error' });
       }
     },
-    [series, userId, tmdbSeries, handleAddSeries]
+    [series, userId, tmdbSeries, promptAddFirst, showBulkMarkNudge]
   );
 
   const handleStartRewatch = useCallback(
@@ -638,6 +682,8 @@ export function useSeriesActions(
     handleEpisodeUnwatch,
     handleEpisodeRate,
     handleEpisodeQuickToggle,
+    handleSeasonMarkWatched,
+    showBulkMarkNudge,
     handleStartRewatch,
     handleStopRewatch,
   };
