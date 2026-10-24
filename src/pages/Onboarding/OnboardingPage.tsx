@@ -50,7 +50,7 @@ const stepsFor = (focus: AppFocus | null): Step[] =>
   focus === 'read'
     ? ['focus', 'welcome', 'reading', 'pet', 'done']
     : ['focus', 'welcome', 'series', 'movies', 'reading', 'subscriptions', 'pet', 'done'];
-/** Das Backend deckelt /add + /addMovie bei 30 Requests pro Minute. */
+/** Das 60/min-Limit von /add + /addMovie hält backendFetch ein; das hier schont das Handy. */
 const ADD_CONCURRENCY = 4;
 const STEP_LABELS: Record<Step, string> = {
   focus: 'Auftakt',
@@ -320,7 +320,7 @@ export const OnboardingPage: React.FC = () => {
       setPendingId(null);
       // Begrenzte Parallelität + EIN Katalog-Refetch am Ende: seasonsAll.json
       // ist ~9 MB, pro Titel neu geladen legt das ein Handy lahm — und das
-      // Backend deckelt /add + /addMovie bei 30 Requests pro Minute.
+      // Backend deckelt /add + /addMovie bei 60 Requests pro Minute.
       await mapLimit(items, ADD_CONCURRENCY, async (item) => {
         setPendingId(`${item.type}-${item.id}`);
         const ok = await addToList(item, { skipCatalogRefetch: true });

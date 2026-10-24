@@ -34,7 +34,7 @@ import '../Onboarding/onboarding.css';
 
 type Phase = 'applying' | 'progress' | 'failed';
 
-/** Das Backend deckelt /add + /addMovie bei 30 Requests pro Minute. */
+/** Das 60/min-Limit von /add + /addMovie hält backendFetch ein; das hier schont das Handy. */
 const ADD_CONCURRENCY = 4;
 
 function summaryLabel(target: WatchTarget | undefined): string | null {
@@ -165,7 +165,7 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
 
       // Was schon im Konto liegt (abgebrochener erster Anlauf), nicht erneut
       // ans Backend schicken: /add antwortet darauf mit 400 und die Requests
-      // fressen das 30/min-Limit auf.
+      // fressen das 60/min-Limit auf.
       const [haveSeries, haveMovies] = await Promise.all([
         dbGet(userPath(uid, 'series')).catch(() => null),
         dbGet(userPath(uid, 'movies')).catch(() => null),

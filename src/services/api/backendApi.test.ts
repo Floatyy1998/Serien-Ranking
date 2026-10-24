@@ -268,6 +268,66 @@ describe('backendFetch', () => {
     expect(captureError.mock.calls[0][0].message).toContain('/mangaupdates/search -> 500');
   });
 
+  it('hält das Minutenlimit für /add + /addMovie ein, statt in 429 zu laufen', async () => {
+    vi.useFakeTimers();
+    try {
+      const backendFetch = await loadBackendFetch();
+      const pending = Array.from({ length: 60 }, (_, i) =>
+        backendFetch(i % 2 ? '/add' : '/addMovie', { method: 'POST' })
+      );
+      await vi.advanceTimersByTimeAsync(59_000);
+      expect(fetchMock).toHaveBeenCalledTimes(58);
+      await vi.advanceTimersByTimeAsync(1_500);
+      await Promise.all(pending);
+      expect(fetchMock).toHaveBeenCalledTimes(60);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('bremst andere Pfade nicht', async () => {
+    const backendFetch = await loadBackendFetch();
+    await Promise.all(Array.from({ length: 40 }, () => backendFetch('/hc/search')));
+    expect(fetchMock).toHaveBeenCalledTimes(40);
+  });
+
+  it('wiederholt /addMovie nach einem 429 einmal nach Retry-After', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          headers: new Headers({ 'Retry-After': '12' }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 201 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/addMovie', { method: 'POST' });
+      await vi.advanceTimersByTimeAsync(11_000);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1_500);
+      await expect(pending).resolves.toEqual({ ok: true, status: 201 });
+      expect(captureError).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('meldet ein 429, das auch die Wiederholung trifft', async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock.mockResolvedValue({ ok: false, status: 429 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/add', { method: 'POST' });
+      await vi.advanceTimersByTimeAsync(31_000);
+      await expect(pending).resolves.toEqual({ ok: false, status: 429 });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(captureError.mock.calls[0][0].message).toContain('POST /add -> 429');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('401 ohne eingeloggten User wird nicht wiederholt', async () => {
     fb.state.token = undefined;
     fetchMock.mockResolvedValue({ ok: false, status: 401 });

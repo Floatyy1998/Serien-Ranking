@@ -93,7 +93,33 @@ const RETRY_PATHS = new Set([
 const CONNECTION_RETRY_DELAYS_MS = [1500, 4000];
 const TRANSIENT_STATUS = new Set([502, 503, 504]);
 
-function send(path: string, init: RequestInit, token: string | null): Promise<Response> {
+/** Teilen sich im Backend einen Topf von 60 Anfragen pro Minute und Konto — wir bleiben knapp darunter. */
+const ADD_LIMIT_PATHS = new Set(['/add', '/addMovie', '/refreshAnimeFiller']);
+const ADD_LIMIT = 58;
+const ADD_WINDOW_MS = 60_000;
+const RATE_LIMIT_FALLBACK_WAIT_MS = 30_000;
+const addSendTimes: number[] = [];
+
+async function awaitAddSlot(): Promise<void> {
+  for (;;) {
+    const now = Date.now();
+    while (addSendTimes.length && now - addSendTimes[0] >= ADD_WINDOW_MS) addSendTimes.shift();
+    if (addSendTimes.length < ADD_LIMIT) {
+      addSendTimes.push(now);
+      return;
+    }
+    await sleep(addSendTimes[0] + ADD_WINDOW_MS - now);
+  }
+}
+
+function retryAfterMs(response: Response): number {
+  const seconds = Number(response.headers?.get('Retry-After'));
+  if (!Number.isFinite(seconds) || seconds <= 0) return RATE_LIMIT_FALLBACK_WAIT_MS;
+  return Math.min(seconds * 1000, ADD_WINDOW_MS);
+}
+
+async function send(path: string, init: RequestInit, token: string | null): Promise<Response> {
+  if (ADD_LIMIT_PATHS.has(path)) await awaitAddSlot();
   const headers = new Headers(init.headers);
   if (token) headers.set('Authorization', `Bearer ${token}`);
   return fetch(`${BACKEND_URL}${path}`, { ...init, headers });
@@ -138,7 +164,8 @@ async function sendWithRetry(
  * das Backend nutzt es als vertrauenswuerdige Identitaet, faellt aber noch
  * auf die im Body gesendete uid/uuid zurueck). `path` beginnt mit '/'.
  * Antwortet das Backend mit 401, wird einmal mit frisch erzwungenem Token
- * wiederholt (abgelaufene oder nicht erneuerte Sitzung). Scheitert ein
+ * wiederholt (abgelaufene oder nicht erneuerte Sitzung). Hinzufügen-Pfade
+ * halten das Minutenlimit des Backends selbst ein. Scheitert ein
  * Aufruf endgültig (401/403/429/5xx oder Verbindungsfehler), geht eine
  * Meldung an die Client-Fehlerberichte, damit der Grund sichtbar wird —
  * außer bei `quietStatuses`, die der Aufrufer bewusst selbst abfängt.
@@ -148,13 +175,22 @@ export async function backendFetch(
   init: RequestInit = {},
   { quietStatuses = [] }: { quietStatuses?: readonly number[] } = {}
 ): Promise<Response> {
-  const token = await getToken();
+  let token = await getToken();
   let response = await sendWithRetry(path, init, token);
 
   const user = response.status === 401 ? firebase.auth().currentUser : null;
   if (user) {
     const fresh = await fetchToken(user, true);
-    if (fresh && fresh !== token) response = await sendWithRetry(path, init, fresh);
+    if (fresh && fresh !== token) {
+      token = fresh;
+      response = await sendWithRetry(path, init, fresh);
+    }
+  }
+
+  // Andere Geräte, die Extension oder ein zweiter Tab desselben Kontos zählen mit.
+  if (response.status === 429 && ADD_LIMIT_PATHS.has(path)) {
+    await sleep(retryAfterMs(response));
+    response = await sendWithRetry(path, init, token);
   }
 
   const failed = [401, 403, 429].includes(response.status) || response.status >= 500;
