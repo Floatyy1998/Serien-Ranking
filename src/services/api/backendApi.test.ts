@@ -4,6 +4,7 @@ const fb = vi.hoisted(() => {
   const state = {
     token: 'idtoken-abc' as string | undefined,
     throws: false,
+    errorCode: undefined as string | undefined,
     failFirst: 0,
     refreshedToken: undefined as string | undefined,
   };
@@ -12,7 +13,7 @@ const fb = vi.hoisted(() => {
       state.failFirst--;
       throw new Error('network-request-failed');
     }
-    if (state.throws) throw new Error('token error');
+    if (state.throws) throw Object.assign(new Error('token error'), { code: state.errorCode });
     return forceRefresh && state.refreshedToken ? state.refreshedToken : state.token;
   });
   const authMock = vi.fn(() => ({
@@ -40,6 +41,7 @@ async function loadBackendFetch() {
 beforeEach(() => {
   fb.state.token = 'idtoken-abc';
   fb.state.throws = false;
+  fb.state.errorCode = undefined;
   fb.state.failFirst = 0;
   fb.state.refreshedToken = undefined;
   fb.getIdToken.mockClear();
@@ -335,5 +337,23 @@ describe('backendFetch', () => {
     const res = await backendFetch('/public');
     expect(res.status).toBe(401);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('nennt im 401-Bericht den Grund, wenn das Token nicht erneuert werden konnte', async () => {
+    vi.useFakeTimers();
+    try {
+      fb.state.throws = true;
+      fb.state.errorCode = 'auth/network-request-failed';
+      fetchMock.mockResolvedValue({ ok: false, status: 401 });
+      const backendFetch = await loadBackendFetch();
+      const pending = backendFetch('/add', { method: 'POST' });
+      await vi.advanceTimersByTimeAsync(2000);
+      await pending;
+      expect(captureError.mock.calls[0][0].message).toContain(
+        'POST /add -> 401 (ohne Token, Erneuerung gescheitert: auth/network-request-failed)'
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -50,10 +50,16 @@ async function resolveUser(): Promise<firebase.User | null> {
   });
 }
 
+/** Fehlercode des letzten gescheiterten Token-Abrufs, für den Fehlerbericht. */
+let lastTokenError: string | null = null;
+
 async function fetchToken(user: firebase.User, forceRefresh: boolean): Promise<string | null> {
   try {
-    return (await user.getIdToken(forceRefresh)) || null;
-  } catch {
+    const token = (await user.getIdToken(forceRefresh)) || null;
+    if (token) lastTokenError = null;
+    return token;
+  } catch (error) {
+    lastTokenError = (error as { code?: string })?.code ?? (error as Error)?.name ?? 'unbekannt';
     return null;
   }
 }
@@ -175,6 +181,7 @@ export async function backendFetch(
   init: RequestInit = {},
   { quietStatuses = [] }: { quietStatuses?: readonly number[] } = {}
 ): Promise<Response> {
+  lastTokenError = null;
   let token = await getToken();
   let response = await sendWithRetry(path, init, token);
 
@@ -195,7 +202,12 @@ export async function backendFetch(
 
   const failed = [401, 403, 429].includes(response.status) || response.status >= 500;
   if (failed && !quietStatuses.includes(response.status)) {
-    reportFailure(path, init, `-> ${response.status} (${token ? 'mit' : 'ohne'} Token)`);
+    const tokenState = token
+      ? 'mit Token'
+      : lastTokenError
+        ? `ohne Token, Erneuerung gescheitert: ${lastTokenError}`
+        : 'ohne Token';
+    reportFailure(path, init, `-> ${response.status} (${tokenState})`);
   }
   return response;
 }
