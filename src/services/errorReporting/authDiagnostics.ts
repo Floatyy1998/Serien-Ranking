@@ -236,6 +236,8 @@ export function trackAuthEvent(user: firebase.User | null): void {
   writeRetryFlag(false);
   // Nach einem bewussten Abmelden ist der Neu-Login kein Befund.
   if (lastExit?.how === 'manuell') return;
+  // Völlig leerer Speicher ohne Spuren = neues Gerät oder Neuinstallation, kein Sitzungsverlust.
+  if (!hadSession && storageKeys === 0 && !lastExit) return;
   void describeStorage().then((storage) =>
     captureError({
       kind: 'error',

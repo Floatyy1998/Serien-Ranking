@@ -109,6 +109,15 @@ describe('authDiagnostics', () => {
     );
   });
 
+  it('meldet den Login eines Bestandskontos auf einem neuen Gerät nicht', async () => {
+    localStorage.clear();
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(captureErrorMock).not.toHaveBeenCalled();
+  });
+
   it('meldet den ersten Login eines neuen Kontos nicht', async () => {
     beginAuthDiagnostics(false);
     trackAuthEvent(null);

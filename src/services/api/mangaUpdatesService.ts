@@ -33,7 +33,7 @@ const inflight = new Map<string, Promise<unknown>>();
 async function muPost(path: string, body: unknown): Promise<Response | null> {
   if (Date.now() < pausedUntil) return null;
   if (!GUEST_PATHS.has(path) && !hasBackendSession()) return null;
-  // 502 = MangaUpdates selbst gestört (Backend: `upstream`) — kein Befund bei uns.
+  // 502 = MangaUpdates selbst gestört (Backend: `upstream`), 429 bremst unten die Pause aus — beides kein Befund.
   const res = await backendFetch(
     path,
     {
@@ -42,7 +42,7 @@ async function muPost(path: string, body: unknown): Promise<Response | null> {
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     },
-    { quietStatuses: [502] }
+    { quietStatuses: [429, 502] }
   );
   if (res.status === 429 || res.status >= 500) {
     pausedUntil = Date.now() + PAUSE_MS;
