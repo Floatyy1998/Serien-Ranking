@@ -83,10 +83,9 @@ export const useEpisodeManagement = () => {
   const startY = useRef(0);
 
   // Derived data — wie die Detail-Seite: erst die eigene Liste, sonst
-  // TMDB-Fallback zur Ansicht (Serie noch nicht getrackt). Schreibaktionen
-  // sind dann gesperrt, bis die Serie regulär via /add hinzugefügt wurde —
-  // der TMDB-Staffelaufbau kann vom Katalog abweichen (z. B. One Piece),
-  // direkte Watch-Writes würden also auf falsche Plätze zeigen.
+  // Katalog-/TMDB-Fallback zur Ansicht (Serie noch nicht getrackt).
+  // Schreibaktionen sind dann gesperrt, bis die Serie regulär via /add
+  // hinzugefügt wurde — ohne Watch-Knoten gäbe es keinen gültigen Zielplatz.
   const localSeries = seriesList.find((s: Series) => s.id === Number(id));
   const [fallbackSeries, setFallbackSeries] = useState<Series | null>(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);

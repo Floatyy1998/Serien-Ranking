@@ -122,7 +122,8 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     };
   }, [id]);
 
-  // Serie nicht in der eigenen Liste: Vollabruf von TMDB. Frueher stand hier
+  // Serie nicht in der eigenen Liste: Vollabruf aus dem Katalog, sonst TMDB.
+  // Frueher stand hier
   // `!tmdbSeries` als Sperre gegen Mehrfachabrufe — beim Sprung von einer
   // fremden Serie zur naechsten (Empfehlungen!) war die aber noch mit der
   // ALTEN gefuellt, der Abruf unterblieb und die Seite zeigte weiter die alte

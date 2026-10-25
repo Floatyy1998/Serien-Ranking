@@ -1,16 +1,35 @@
 /**
- * TMDB-Voll-Fallback für Serien, die nicht in der eigenen Liste sind:
- * lädt Details + alle Staffeln und baut daraus ein Series-Objekt im
- * App-Format (watched=false überall). Genutzt von der Detail-Seite
- * (useSeriesData) und der Episoden-Verwaltung, damit beide Seiten
- * dieselben Serien auflösen können.
+ * Voll-Fallback für Serien, die nicht in der eigenen Liste sind: zuerst der
+ * geteilte Katalog (gleicher Staffelaufbau wie nach dem Hinzufügen und wie
+ * bei den Freunden), sonst TMDB-Details + alle Staffeln. Genutzt von der
+ * Detail-Seite (useSeriesData) und der Episoden-Verwaltung.
  */
 import type { Series } from '../../../types/Series';
 import type { TMDBGenre, SeriesSeason } from '../types';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import type { TmdbMediaDetail, TmdbSeasonDetail } from '../../../services/api/tmdb.types';
+import { mergeToSeriesView } from '../../../lib/series/seriesAdapter';
+import {
+  fetchStaticCatalogSeasons,
+  fetchStaticCatalogSeries,
+} from '../../../services/catalog/staticCatalog';
+
+async function fetchCatalogSeriesView(id: string): Promise<Series | null> {
+  try {
+    const meta = (await fetchStaticCatalogSeries())?.[id];
+    if (!meta) return null;
+    const seasons = await fetchStaticCatalogSeasons(id);
+    if (!seasons || Object.keys(seasons).length === 0) return null;
+    return mergeToSeriesView(Number(id), { ...meta, seasons }, { rating: {} });
+  } catch {
+    return null;
+  }
+}
 
 export async function fetchTmdbSeriesFallback(id: string): Promise<Series | null> {
+  const fromCatalog = await fetchCatalogSeriesView(id);
+  if (fromCatalog) return fromCatalog;
+
   const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
   try {
     const [data, dataEN] = await Promise.all([

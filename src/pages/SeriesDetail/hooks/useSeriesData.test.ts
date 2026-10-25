@@ -16,6 +16,12 @@ vi.mock('../../../contexts/SeriesListContext', () => ({
   }),
 }));
 
+// Katalog-Weg des Fallbacks stilllegen — diese Tests prüfen den TMDB-Weg.
+vi.mock('../../../services/catalog/staticCatalog', () => ({
+  fetchStaticCatalogSeries: async () => null,
+  fetchStaticCatalogSeasons: async () => null,
+}));
+
 import { useSeriesData } from './useSeriesData';
 
 const makeSeries = (o: Partial<Series> = {}): Series =>
