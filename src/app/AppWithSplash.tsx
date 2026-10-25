@@ -96,6 +96,12 @@ export const AppWithSplash: React.FC = () => {
   // Ausgeloggte Besucher (kein gecachter User) bekommen KEINEN Splash:
   // initialData/homeConfig werden ohne Login nie ready → sie säßen sonst
   // bis zum 8s-Fallback vor dem Splash. Die Landing rendert sofort.
+  // Ohne Splash gilt der Start sofort als abgeschlossen (die Such-Anforderung der Huelle wartet darauf).
+  const noSplash = isAuthPage || !hasCachedUser;
+  useEffect(() => {
+    if (noSplash) window.splashScreenComplete = true;
+  }, [noSplash]);
+
   if (isAuthPage || !hasCachedUser) {
     return <App />;
   }

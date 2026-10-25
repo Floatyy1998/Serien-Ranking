@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { GreetingSection } from './GreetingSection';
 import { OPEN_HOME_SEARCH_EVENT, requestHomeSearch } from '../../../services/app/nativeShell';
@@ -110,17 +110,40 @@ describe('GreetingSection', () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
-  it('öffnet das Such-Overlay auf Anforderung der App-Hülle (Icon-Schnellzugriff)', () => {
-    renderT();
-    expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
-    fireEvent(window, new Event(OPEN_HOME_SEARCH_EVENT));
-    expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+  it('öffnet das Such-Overlay auf Anforderung der App-Hülle erst nach den Start-Redirects', () => {
+    vi.useFakeTimers();
+    try {
+      renderT();
+      fireEvent(window, new Event(OPEN_HOME_SEARCH_EVENT));
+      expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
-  it('öffnet das Such-Overlay beim Mount, wenn die Hülle es vor dem Start angefordert hat', () => {
-    requestHomeSearch();
-    renderT();
-    expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
-    expect(sessionStorage.getItem('tvrank.openHomeSearch')).toBeNull();
+  it('wartet mit der angeforderten Suche, bis der Splash durch ist', () => {
+    vi.useFakeTimers();
+    try {
+      window.splashScreenComplete = false;
+      requestHomeSearch();
+      renderT();
+      expect(sessionStorage.getItem('tvrank.openHomeSearch')).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
+      window.splashScreenComplete = true;
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+      window.splashScreenComplete = true;
+    }
   });
 });

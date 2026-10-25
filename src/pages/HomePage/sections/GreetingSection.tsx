@@ -70,15 +70,25 @@ export const GreetingSection = React.memo(function GreetingSection({
   const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   // Icon-Schnellzugriff "Suche" der App-Huelle: beim Kaltstart liegt die Anforderung als Flag vor.
+  // Erst nach Splash und Start-Redirects oeffnen, sonst schliesst der Routenwechsel das Overlay wieder.
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const open = () => (onSearch ? onSearch() : setSearchOpen(true));
+    const settle = (since: number) => {
+      clearTimeout(timer);
+      const splashPending = window.splashScreenComplete === false && Date.now() - since < 6000;
+      timer = setTimeout(() => (splashPending ? settle(since) : open()), splashPending ? 150 : 250);
+    };
     const openFromShell = () => {
       consumeHomeSearchRequest();
-      if (onSearch) onSearch();
-      else setSearchOpen(true);
+      settle(Date.now());
     };
-    if (consumeHomeSearchRequest()) openFromShell();
+    if (consumeHomeSearchRequest()) settle(Date.now());
     window.addEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
-    return () => window.removeEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+    };
   }, [onSearch]);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
