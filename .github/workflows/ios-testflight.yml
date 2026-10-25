@@ -7,9 +7,15 @@ name: iOS TestFlight
 # fuellt das iPhone-Duo-Innendisplay statt Letterboxing; Capacitor 8.5 verlangt dafuer UIScene.
 on:
   workflow_dispatch:
+    inputs:
+      duo_only:
+        description: 'Nur Duo-Simulator-Screenshots, kein TestFlight-Upload'
+        type: boolean
+        default: false
 
 jobs:
   build-upload:
+    if: ${{ !inputs.duo_only }}
     runs-on: xcode-27
 
     steps:
@@ -116,7 +122,11 @@ jobs:
           mkdir -p build/duo-shots
           xcrun simctl launch "$udid" de.tvrank.app
           sleep 45
-          xcrun simctl io "$udid" screenshot build/duo-shots/duo-01-start.png
+          # Das Duo hat zwei Displays (innen + aussen), ohne --display verweigert simctl.
+          for d in 1 2 3 4; do
+            xcrun simctl io "$udid" screenshot --display="$d" "build/duo-shots/duo-display-$d.png" 2>/dev/null || true
+          done
+          ls -la build/duo-shots
           xcrun simctl help 2>&1 | grep -i -E "fold|pose|hinge|display" || true
 
       - name: Duo-Screenshots als Artifact sichern
