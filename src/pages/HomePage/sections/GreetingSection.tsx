@@ -70,7 +70,7 @@ export const GreetingSection = React.memo(function GreetingSection({
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const shellOpenedAt = useRef(0);
-  const closeSearch = useCallback(() => {
+  const closeSearch = useCallback((reason?: string) => {
     setSearchOpen(false);
     const sinceOpen = Date.now() - shellOpenedAt.current;
     if (sinceOpen > 1500) return;
@@ -79,7 +79,7 @@ export const GreetingSection = React.memo(function GreetingSection({
     captureError({
       kind: 'error',
       name: 'HomeSearchAutoClosed',
-      message: `nach ${sinceOpen} ms, pathname=${window.location.pathname}, sichtbar=${document.visibilityState}`,
+      message: `${reason ?? 'ohne Grund'} nach ${sinceOpen} ms, pathname=${window.location.pathname}, sichtbar=${document.visibilityState}`,
     });
     setTimeout(() => {
       if (window.location.pathname === '/') setSearchOpen(true);

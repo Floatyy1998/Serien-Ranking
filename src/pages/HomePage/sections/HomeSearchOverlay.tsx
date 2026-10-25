@@ -75,7 +75,7 @@ const foundAt = (path: string): RecentSearchScope =>
 
 interface HomeSearchOverlayProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (reason?: string) => void;
   /** Seite, auf der das Overlay lebt (Home oder Lesen). */
   homePath?: string;
   initialFilter?: Filter;
@@ -109,16 +109,25 @@ export const HomeSearchOverlay = memo(
     // geoeffnet wurde, bekommt sie zurueck — sonst landet man ueber Home wieder
     // ungewollt in der Suche.
     const homeKey = useRef<string | null>(null);
+    // Solange die Suche nie geparkt war, darf der History-Eintrag auf Home wechseln
+    // (Umbauten beim Start) — erst nach einem Detail-Ausflug zaehlt der Eintrag.
+    const everParked = useRef(false);
     const visible =
-      open && pathname === homePath && (homeKey.current === null || homeKey.current === key);
+      open &&
+      pathname === homePath &&
+      (homeKey.current === null || homeKey.current === key || !everParked.current);
 
     useEffect(() => {
       if (!open) {
         homeKey.current = null;
+        everParked.current = false;
         return;
       }
-      if (pathname === homePath && homeKey.current === null) homeKey.current = key;
-    }, [open, pathname, key, homePath]);
+      if (parked) everParked.current = true;
+      if (pathname === homePath && (homeKey.current === null || !everParked.current)) {
+        homeKey.current = key;
+      }
+    }, [open, parked, pathname, key, homePath]);
     const { currentTheme } = useTheme();
     const communityMap = useCommunityRatingsMap();
     const { query, setQuery, results, people, peopleFirst, loading, popular, popularItems } =
@@ -197,10 +206,12 @@ export const HomeSearchOverlay = memo(
     } = useQuickMediaActions({ source: 'search', notify: showSnack });
 
     useEffect(() => {
-      if (open && !visible && !parked) onClose();
-    }, [open, visible, parked, onClose]);
+      if (open && !visible && !parked) {
+        onClose(`route ${pathname} key=${key} home=${homeKey.current ?? '-'}`);
+      }
+    }, [open, visible, parked, onClose, pathname, key]);
 
-    useAndroidBack(visible, onClose);
+    useAndroidBack(visible, () => onClose('back'));
 
     // Scrollposition des Ergebnis-Grids über den Detail-Ausflug retten:
     // display:none verwirft scrollTop.
@@ -216,7 +227,7 @@ export const HomeSearchOverlay = memo(
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       const onKey = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && !quickRating.open) onClose();
+        if (e.key === 'Escape' && !quickRating.open) onClose('escape');
       };
       document.addEventListener('keydown', onKey);
       return () => {
@@ -299,7 +310,7 @@ export const HomeSearchOverlay = memo(
       (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         if (target.closest('button, input, [role="button"], .hso__field')) return;
-        onClose();
+        onClose('backdrop');
       },
       [onClose]
     );
@@ -610,7 +621,7 @@ export const HomeSearchOverlay = memo(
                   <button
                     type="button"
                     className="hso__done"
-                    onClick={onClose}
+                    onClick={() => onClose('button')}
                     aria-label={t('Suche schließen')}
                     style={{ color: currentTheme.text.secondary }}
                   >
