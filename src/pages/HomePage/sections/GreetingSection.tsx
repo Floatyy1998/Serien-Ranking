@@ -1,6 +1,6 @@
 import { Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HeaderActions } from '../../../components/ui';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
@@ -12,7 +12,9 @@ import { t } from '../../../services/i18n';
 import {
   OPEN_HOME_SEARCH_EVENT,
   consumeHomeSearchRequest,
+  rearmHomeSearch,
 } from '../../../services/app/nativeShell';
+import { captureError } from '../../../services/errorReporting/errorReporter';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { LiveClock } from '../cards/LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -67,13 +69,32 @@ export const GreetingSection = React.memo(function GreetingSection({
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  const shellOpenedAt = useRef(0);
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    const sinceOpen = Date.now() - shellOpenedAt.current;
+    if (sinceOpen > 1500) return;
+    // Vom Schnellzugriff geoeffnet und sofort wieder zu (Start-Redirect dazwischen): einmal neu oeffnen.
+    shellOpenedAt.current = 0;
+    captureError({
+      kind: 'error',
+      name: 'HomeSearchAutoClosed',
+      message: `nach ${sinceOpen} ms, pathname=${window.location.pathname}, sichtbar=${document.visibilityState}`,
+    });
+    setTimeout(() => {
+      if (window.location.pathname === '/') setSearchOpen(true);
+    }, 400);
+  }, []);
 
   // Icon-Schnellzugriff "Suche" der App-Huelle: beim Kaltstart liegt die Anforderung als Flag vor.
   // Erst nach Splash und Start-Redirects oeffnen, sonst schliesst der Routenwechsel das Overlay wieder.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const open = () => (onSearch ? onSearch() : setSearchOpen(true));
+    const open = () => {
+      shellOpenedAt.current = Date.now();
+      if (onSearch) onSearch();
+      else setSearchOpen(true);
+    };
     const settle = (since: number) => {
       clearTimeout(timer);
       const splashPending = window.splashScreenComplete === false && Date.now() - since < 6000;
@@ -83,11 +104,17 @@ export const GreetingSection = React.memo(function GreetingSection({
       consumeHomeSearchRequest();
       settle(Date.now());
     };
+    const rearm = () => {
+      if (Date.now() - shellOpenedAt.current < 5000) rearmHomeSearch();
+    };
     if (consumeHomeSearchRequest()) settle(Date.now());
     window.addEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+    window.addEventListener('pagehide', rearm);
     return () => {
       clearTimeout(timer);
       window.removeEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+      window.removeEventListener('pagehide', rearm);
+      rearm();
     };
   }, [onSearch]);
 

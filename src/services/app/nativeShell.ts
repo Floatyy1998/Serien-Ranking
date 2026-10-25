@@ -115,6 +115,15 @@ export const requestHomeSearch = (): void => {
   window.dispatchEvent(new Event(OPEN_HOME_SEARCH_EVENT));
 };
 
+// Neuladen oder Neuaufbau der Startseite kurz nach dem Schnellzugriff: Anforderung erneut hinterlegen.
+export const rearmHomeSearch = (): void => {
+  try {
+    sessionStorage.setItem(OPEN_HOME_SEARCH_FLAG, '1');
+  } catch {
+    /* Speicher gesperrt */
+  }
+};
+
 export const consumeHomeSearchRequest = (): boolean => {
   try {
     if (sessionStorage.getItem(OPEN_HOME_SEARCH_FLAG) !== '1') return false;

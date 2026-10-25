@@ -22,9 +22,16 @@ vi.mock('../../../lib/text/greetings', () => ({
 }));
 vi.mock('../cards/LiveClock', () => ({ LiveClock: () => <span data-testid="clock" /> }));
 vi.mock('./HomeSearchOverlay', () => ({
-  HomeSearchOverlay: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="home-search-overlay" /> : null,
+  HomeSearchOverlay: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? (
+      <div data-testid="home-search-overlay">
+        <button type="button" onClick={onClose}>
+          close-overlay
+        </button>
+      </div>
+    ) : null,
 }));
+vi.mock('../../../services/errorReporting/errorReporter', () => ({ captureError: vi.fn() }));
 vi.mock('../../../components/ui', () => ({
   GradientText: ({ children }: { children?: React.ReactNode }) => <h1>{children}</h1>,
   HeaderActions: () => <div data-testid="header-actions" />,
@@ -120,6 +127,43 @@ describe('GreetingSection', () => {
         vi.advanceTimersByTime(300);
       });
       expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('öffnet nach einem sofortigen Zuklappen (Start-Redirect) einmal erneut', () => {
+    vi.useFakeTimers();
+    try {
+      renderT();
+      fireEvent(window, new Event(OPEN_HOME_SEARCH_EVENT));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      fireEvent.click(screen.getByText('close-overlay'));
+      expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('lässt ein späteres Schließen durch den Nutzer in Ruhe', () => {
+    vi.useFakeTimers();
+    try {
+      renderT();
+      fireEvent(window, new Event(OPEN_HOME_SEARCH_EVENT));
+      act(() => {
+        vi.advanceTimersByTime(2500);
+      });
+      fireEvent.click(screen.getByText('close-overlay'));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
