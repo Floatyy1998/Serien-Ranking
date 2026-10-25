@@ -122,12 +122,22 @@ jobs:
           mkdir -p build/duo-shots
           xcrun simctl launch "$udid" de.tvrank.app
           sleep 45
-          # Das Duo hat zwei Displays (innen + aussen), ohne --display verweigert simctl.
-          for d in 1 2 3 4; do
-            xcrun simctl io "$udid" screenshot --display="$d" "build/duo-shots/duo-display-$d.png" 2>/dev/null || true
-          done
+          # Zwei Displays (1 = aussen, 3 = innen); ohne --display verweigert simctl. Das abgeschaltete liefert Schwarz.
+          shot() { xcrun simctl io "$udid" screenshot --display="$2" "build/duo-shots/$1-display-$2.png" 2>/dev/null || true; }
+          for d in 1 2 3 4; do shot closed "$d"; done
+          # Aufklappen kennt simctl nicht; hinge (Community-Tool, privates Protokoll) setzt den Scharnierwinkel.
+          if brew install artemnovichkov/tap/hinge >/dev/null 2>&1 && hinge open -d "$udid"; then
+            sleep 6
+            hinge posture -d "$udid" || true
+            for d in 1 2 3 4; do shot open "$d"; done
+            if hinge rotate left -d "$udid"; then
+              sleep 6
+              for d in 1 2 3 4; do shot open-landscape "$d"; done
+            fi
+          else
+            echo "hinge nicht verfuegbar, nur zugeklappte Screenshots"
+          fi
           ls -la build/duo-shots
-          xcrun simctl help 2>&1 | grep -i -E "fold|pose|hinge|display" || true
 
       - name: Duo-Screenshots als Artifact sichern
         if: always()
