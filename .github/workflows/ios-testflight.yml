@@ -108,6 +108,10 @@ jobs:
           -quiet build
 
       - name: iPhone Duo starten und fotografieren
+        timeout-minutes: 15
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
         run: |
           udid=$(xcrun simctl list devices available -j | jq -r '.devices | to_entries[] | .value[] | select(.name | test("Duo")) | .udid' | head -1)
           if [ -z "$udid" ]; then
