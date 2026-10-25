@@ -130,11 +130,11 @@ jobs:
           shot() { xcrun simctl io "$udid" screenshot --display="$2" "build/duo-shots/$1-display-$2.png" 2>/dev/null || true; }
           for d in 1 2 3 4; do shot closed "$d"; done
           # Aufklappen kennt simctl nicht; hinge (Community-Tool, privates Protokoll) setzt den Scharnierwinkel.
-          if brew install artemnovichkov/tap/hinge >/dev/null 2>&1 && hinge open -d "$udid"; then
+          if brew install artemnovichkov/tap/hinge >/dev/null 2>&1 && hinge open; then
             sleep 6
-            hinge posture -d "$udid" || true
+            hinge posture || true
             for d in 1 2 3 4; do shot open "$d"; done
-            if hinge rotate left -d "$udid"; then
+            if hinge rotate left; then
               sleep 6
               for d in 1 2 3 4; do shot open-landscape "$d"; done
             fi
