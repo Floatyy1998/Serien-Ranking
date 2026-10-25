@@ -9,6 +9,10 @@ import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
 import { pickGreetingMatch, type GreetingSearchHit } from '../../../lib/text/greetingMatch';
 import { t } from '../../../services/i18n';
+import {
+  OPEN_HOME_SEARCH_EVENT,
+  consumeHomeSearchRequest,
+} from '../../../services/app/nativeShell';
 import { tmdbFetch } from '../../../services/api/tmdbClient';
 import { LiveClock } from '../cards/LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -64,6 +68,18 @@ export const GreetingSection = React.memo(function GreetingSection({
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
+
+  // Icon-Schnellzugriff "Suche" der App-Huelle: beim Kaltstart liegt die Anforderung als Flag vor.
+  useEffect(() => {
+    const openFromShell = () => {
+      consumeHomeSearchRequest();
+      if (onSearch) onSearch();
+      else setSearchOpen(true);
+    };
+    if (consumeHomeSearchRequest()) openFromShell();
+    window.addEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+    return () => window.removeEventListener(OPEN_HOME_SEARCH_EVENT, openFromShell);
+  }, [onSearch]);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 

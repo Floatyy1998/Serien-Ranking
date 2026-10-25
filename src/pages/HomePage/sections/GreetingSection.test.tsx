@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { GreetingSection } from './GreetingSection';
+import { OPEN_HOME_SEARCH_EVENT, requestHomeSearch } from '../../../services/app/nativeShell';
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
@@ -107,5 +108,19 @@ describe('GreetingSection', () => {
     fireEvent.click(screen.getByText('Titel oder Schauspieler'));
     expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('öffnet das Such-Overlay auf Anforderung der App-Hülle (Icon-Schnellzugriff)', () => {
+    renderT();
+    expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
+    fireEvent(window, new Event(OPEN_HOME_SEARCH_EVENT));
+    expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+  });
+
+  it('öffnet das Such-Overlay beim Mount, wenn die Hülle es vor dem Start angefordert hat', () => {
+    requestHomeSearch();
+    renderT();
+    expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    expect(sessionStorage.getItem('tvrank.openHomeSearch')).toBeNull();
   });
 });

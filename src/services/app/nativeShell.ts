@@ -97,8 +97,32 @@ export const setWidgetData = (data: unknown): void => {
 
 const SHORTCUT_ROUTES: Record<string, string> = {
   'watch-next': '/watchlist',
-  search: '/search',
   calendar: '/calendar',
+};
+
+// Der Owner sucht nur ueber das Overlay der Startseite, nie ueber /search.
+export const OPEN_HOME_SEARCH_EVENT = 'tvrank:open-home-search';
+const OPEN_HOME_SEARCH_FLAG = 'tvrank.openHomeSearch';
+
+// Flag ueberlebt Splash/Login beim Kaltstart; das Event trifft eine bereits gemountete Startseite.
+export const requestHomeSearch = (): void => {
+  try {
+    sessionStorage.setItem(OPEN_HOME_SEARCH_FLAG, '1');
+  } catch {
+    /* Speicher gesperrt */
+  }
+  if (window.location.pathname !== '/') routerNavigate('/');
+  window.dispatchEvent(new Event(OPEN_HOME_SEARCH_EVENT));
+};
+
+export const consumeHomeSearchRequest = (): boolean => {
+  try {
+    if (sessionStorage.getItem(OPEN_HOME_SEARCH_FLAG) !== '1') return false;
+    sessionStorage.removeItem(OPEN_HOME_SEARCH_FLAG);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 // Rohes pushState({}) zerstört React Routers history.state.idx (NaN-Kette →
@@ -142,6 +166,10 @@ const initAppShortcuts = (cap: CapacitorGlobal): void => {
     })
     .catch(() => {});
   shortcuts.addListener?.('click', ({ shortcutId }) => {
+    if (shortcutId === 'search') {
+      requestHomeSearch();
+      return;
+    }
     const route = SHORTCUT_ROUTES[shortcutId];
     if (route) routerNavigate(route);
   });
