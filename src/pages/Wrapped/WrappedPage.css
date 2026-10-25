@@ -273,7 +273,7 @@
 .wrapped-close-btn {
   position: fixed;
   top: calc(16px + env(safe-area-inset-top));
-  right: 16px;
+  right: calc(var(--safe-right) + 16px);
   width: 44px;
   height: 44px;
   border-radius: 50%;

@@ -18,6 +18,7 @@
 		AA10000000000000000000A3 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = AA10000000000000000000A2 /* FirebaseMessaging */; };
 		AA10000000000000000000A8 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A7 /* MainViewController.swift */; };
 		AA10000000000000000000A5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A4 /* GoogleService-Info.plist */; };
+		B541C4DB1909464580AA5FE0 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2764BB81A3144335AFA29145 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		AA10000000000000000000A4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AA10000000000000000000A7 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		AA10000000000000000000A6 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		2764BB81A3144335AFA29145 /* SceneDelegate.swift */ = {isa = PBXFileReference; name = "SceneDelegate.swift"; path = "SceneDelegate.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				2764BB81A3144335AFA29145 /* SceneDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -170,6 +173,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				AA10000000000000000000A8 /* MainViewController.swift in Sources */,
+				B541C4DB1909464580AA5FE0 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -4,9 +4,10 @@
   /* iOS Home-Indicator: Safe-Area berücksichtigen, damit die Dock nicht hinter
      der System-Gesten-Leiste sitzt und Touch-Targets überlagert werden. */
   bottom: calc(var(--dock-gap) + var(--safe-bottom));
-  left: 50%;
+  /* Mittig im sicheren Bereich, nicht in der Viewport-Mitte (Duo-Tastenleiste nur an einer Seite). */
+  left: calc(50% + (var(--safe-left) - var(--safe-right)) / 2);
   transform: translateX(-50%);
-  width: 90%;
+  width: calc(90% - var(--safe-left) - var(--safe-right));
   z-index: var(--z-nav);
 
   /* Liquid Glass: sehr transparent, chromatisch mit der Theme-Primary getönt */
@@ -178,7 +179,7 @@
 /* Tablet/Desktop - still 90% but cap at a reasonable max */
 @media (min-width: 768px) {
   .mobile-bottom-navigation {
-    width: 90%;
+    width: calc(90% - var(--safe-left) - var(--safe-right));
     max-width: 1200px;
   }
 }

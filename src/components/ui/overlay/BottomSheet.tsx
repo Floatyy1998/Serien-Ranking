@@ -131,6 +131,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
+            paddingLeft: 'var(--safe-left)',
+            paddingRight: 'var(--safe-right)',
             // Gemessen: jede ganzflaechige backdrop-filter-Ebene kostet ~25 ms
             // pro Frame (Sheet 13 fps statt 60). Der Scrim traegt die Trennung
             // deshalb allein ueber Deckkraft statt ueber Unschaerfe.

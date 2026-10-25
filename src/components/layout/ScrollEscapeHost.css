@@ -1,6 +1,6 @@
 .scroll-escape {
   position: fixed;
-  right: 16px;
+  right: calc(var(--safe-right) + 16px);
   bottom: calc(var(--safe-bottom) + 20px);
   z-index: var(--z-overlay);
   display: flex;

@@ -63,6 +63,9 @@
      Platz nicht wieder auseinanderlaufen. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Seitlich asymmetrisch: Kameraloch im Querformat, Tastenleiste des iPhone Duo. */
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   --dock-height: 66px;
   --dock-gap: 12px;
   --dock-reserve: calc(var(--dock-height) + var(--dock-gap) * 2 + var(--safe-bottom));

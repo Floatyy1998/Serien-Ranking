@@ -83,7 +83,7 @@ export const Dialog = memo(
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px',
+              padding: '16px calc(var(--safe-right) + 16px) 16px calc(var(--safe-left) + 16px)',
               // Deckkraft statt Unschaerfe — siehe --overlay-backdrop-strong.
               background: 'var(--overlay-backdrop-strong)',
               zIndex: 'var(--z-modal)' as string,

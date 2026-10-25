@@ -86,6 +86,7 @@ import {
   ReadingHubPreview,
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
+import { DuoShellPreview } from './DuoShellPreview';
 import { ProfileStatsPreview } from './ProfilePreviews';
 import { RatingsBooksPreview } from './RatingsPreviews';
 import { TasteMatchOverviewPreview, TasteMatchReadingPreview } from './TasteMatchPreviews';
@@ -468,6 +469,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <RatingsYearFilterPreview />,
   },
   { id: 'watchnextbadge', label: 'Weiter: Filter aktiv', render: () => <WatchNextBadgePreview /> },
+  { id: 'duo-shell', label: 'Shell: Safe-Areas / iPhone Duo', render: () => <DuoShellPreview /> },
   {
     id: 'season-mark-nudge',
     label: 'Staffel abhaken + Tipp',

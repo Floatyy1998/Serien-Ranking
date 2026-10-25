@@ -909,7 +909,7 @@
 .lb-celebration-close {
   position: fixed;
   top: calc(16px + env(safe-area-inset-top, 0px));
-  right: 16px;
+  right: calc(var(--safe-right) + 16px);
   background: var(--glass-heavy);
   border: none;
   border-radius: 50%;
