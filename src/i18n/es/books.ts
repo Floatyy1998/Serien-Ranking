@@ -138,6 +138,7 @@ const dict: Record<string, string> = {
   '„{title}" ausgelesen': '“{title}” terminado',
   'Buch ausgelesen!': '¡Libro terminado!',
   'Zu deinen Büchern hinzugefügt': 'Añadido a tus libros',
+  'Auf die Leseliste': 'A la lista de lectura',
   'Schon in deinen Büchern': 'Ya está en tus libros',
   '„{title}" steht schon bei deinen Manga': '“{title}” ya está en tus mangas',
   'Bei deinen Manga': 'En tus mangas',

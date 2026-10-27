@@ -291,6 +291,15 @@ describe('Mapping und Text', () => {
     expect(coverAtSize(undefined, 'M')).toBeUndefined();
   });
 
+  it('wechselt bei Katalog-Covern nur die Größe und behält den Versionsstempel', () => {
+    const own = 'https://serienapi.konrad-dinges.de/bookcover/book/hc-123-L.jpg?v=1793117589';
+    expect(coverAtSize(own, 'M')).toBe(
+      'https://serienapi.konrad-dinges.de/bookcover/book/hc-123-M.jpg?v=1793117589'
+    );
+    expect(coverAtSize(own, 'L')).toBe(own);
+    expect(directCoverAtSize(own, 'M')).toBe(own);
+  });
+
   it('macht aus HTML lesbaren Text und erkennt die Sprache grob', () => {
     expect(htmlToPlainText('<p>Ein <b>großes</b> Buch&nbsp;&amp; mehr</p><p>Zweiter</p>')).toBe(
       'Ein großes Buch & mehr\n\nZweiter'

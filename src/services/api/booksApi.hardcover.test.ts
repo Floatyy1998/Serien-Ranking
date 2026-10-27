@@ -10,6 +10,7 @@ const hc = vi.hoisted(() => ({
 }));
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
+vi.mock('../catalog/bookCatalog', () => ({ searchBookCatalog: async () => [] }));
 vi.mock('./hardcoverApi', () => ({
   hardcoverReady: () => hc.ready,
   hardcoverSearch: hc.search,

@@ -20,6 +20,7 @@ import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Book, BookSearchResult } from '../../types/Book';
 import { useAddManga } from '../Manga/useAddManga';
 import { AddBookSheet, type AddChoice } from './components/AddBookSheet';
+import { useBookAddPrompt } from '../../hooks/ui/useBookAddPrompt';
 import { BookCover } from './components/BookCover';
 import './components/books.css';
 import { bookPath, STATUS_LABELS } from './helpers';
@@ -234,6 +235,8 @@ const BookSearchView = () => {
 
   const remember = (q: string) => addRecentSearch('books', q);
 
+  const askOnAdd = useBookAddPrompt();
+
   const openResult = (result: BookSearchResult) => {
     remember(query);
     const owned = ownedFor(result);
@@ -247,6 +250,16 @@ const BookSearchView = () => {
     await actions.add(pending, choice.status, { finishedEarlier: choice.finishedEarlier });
     setBusy(false);
     setPending(null);
+  };
+
+  // Ohne Nachfrage landet das Buch wie eine Serie erst einmal auf der Leseliste.
+  const startAdd = (result: BookSearchResult) => {
+    if (askOnAdd) {
+      setPending(result);
+      return;
+    }
+    remember(query);
+    void actions.add(result, 'planned');
   };
 
   const showIdle = query.trim().length < 2;
@@ -385,7 +398,7 @@ const BookSearchView = () => {
               result={r}
               owned={owned}
               onOpen={() => openResult(r)}
-              onAdd={() => setPending(r)}
+              onAdd={() => startAdd(r)}
             />
           );
         })}

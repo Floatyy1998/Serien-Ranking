@@ -43,6 +43,9 @@ const liveState = vi.hoisted(() => ({
 vi.mock('./detail/useMangaLiveData', () => ({ useMangaLiveData: () => liveState.data }));
 
 vi.mock('./addMangaToList', () => ({ addMangaToList: vi.fn() }));
+vi.mock('../../services/catalog/mangaCatalog', () => ({
+  describeMangaFromCatalog: vi.fn(async () => ({ text: null, capped: false, translated: false })),
+}));
 
 const findVolumeBook = vi.hoisted(() => vi.fn());
 vi.mock('../../services/books/volumeBook', () => ({ findVolumeBook }));

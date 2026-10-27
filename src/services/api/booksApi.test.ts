@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const hc = vi.hoisted(() => ({ ready: false, failures: 0, search: vi.fn() }));
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
+vi.mock('../catalog/bookCatalog', () => ({ searchBookCatalog: async () => [] }));
 vi.mock('./hardcoverApi', () => ({
   hardcoverReady: () => hc.ready,
   hardcoverFailureCount: () => hc.failures,

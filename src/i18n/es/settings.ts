@@ -327,6 +327,12 @@ const dict: Record<string, string> = {
   'Bücher und Manga auf einer Lesen-Seite': 'Libros y manga en una sola página de lectura',
   'Lesen zeigt nur Bücher': 'Lectura muestra solo libros',
   'Lesen zeigt nur Manga': 'Lectura muestra solo manga',
+  'Bücher aufnehmen': 'Añadir libros',
+  'Direkt auf die Leseliste': 'Directo a la lista de lectura',
+  'Erst fragen': 'Preguntar primero',
+  'Neue Bücher landen erst einmal auf der Leseliste, wie Serien auf der Watchlist':
+    'Los libros nuevos van primero a tu lista de lectura, como las series a la watchlist',
+  'Beim Hinzufügen wählst du den Lesestand': 'Al añadir eliges el estado de lectura',
 };
 
 export default dict;

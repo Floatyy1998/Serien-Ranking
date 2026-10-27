@@ -7,6 +7,7 @@ import {
 } from '../../lib/books/bookProgress';
 import { searchResultToBook, stripUndefined } from '../../lib/books/bookSearchMapping';
 import { resolveCover } from '../api/booksApi';
+import { keepInCatalog } from '../catalog/bookCatalog';
 import { dbRef, dbUpdate, paths } from '../db/ref';
 
 const nowIso = () => new Date().toISOString();
@@ -55,6 +56,7 @@ export async function addBook(
     delete book.startedAt;
   }
   await dbRef(paths.bookItem(uid, book.id)).set(book);
+  keepInCatalog({ ...book, coverFallback: result.coverFallback, description: result.description });
   if (status === 'completed' && !options.finishedEarlier) {
     await pushEvent(uid, baseEvent(book, 'fin'));
   }
@@ -85,6 +87,7 @@ export async function addBookCopy(uid: string, source: Book): Promise<void> {
     addedAt: nowIso(),
   });
   await dbRef(paths.bookItem(uid, book.id)).set(book);
+  keepInCatalog(book);
 }
 
 export async function updateBookProgress(

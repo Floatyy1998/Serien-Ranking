@@ -35,6 +35,8 @@ vi.mock('../../services/api/mangaDetails', () => ({
   getMangaDetails: vi.fn<() => Promise<AniListMangaSearchResult>>(),
 }));
 
+vi.mock('../../services/catalog/mangaCatalog', () => ({ keepMangaInCatalog: vi.fn() }));
+
 import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
 import { addMangaToList } from './addMangaToList';

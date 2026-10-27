@@ -17,6 +17,7 @@ vi.mock('../db/ref', () => ({
 }));
 
 vi.mock('../api/booksApi', () => ({ resolveCover: async () => 'https://cover.test/x.jpg' }));
+vi.mock('../catalog/bookCatalog', () => ({ keepInCatalog: vi.fn() }));
 
 import { addBook, setBookStatus, setBookWish, updateBookProgress } from './bookService';
 

@@ -13,6 +13,7 @@ import { filterCollection, mangaProgressPercent } from '../../lib/manga/overview
 import { mangaStandLabel } from '../../lib/manga/progress';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 import { searchMangaWithTitleFallback } from '../../services/api/mangaSearch';
+import { searchMangaCatalog } from '../../services/catalog/mangaCatalog';
 import { t } from '../../services/i18n';
 import type { BookSearchResult } from '../../types/Book';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
@@ -76,9 +77,14 @@ export const MangaSearchPage = () => {
     setSearching(true);
     timeoutRef.current = setTimeout(async () => {
       try {
-        const outcome = await searchMangaWithTitleFallback(query.trim(), 30);
+        // Eigener Katalog zuerst: was irgendwer schon hinzugefügt hat, kommt sofort und mit eigenem Cover.
+        const [outcome, own] = await Promise.all([
+          searchMangaWithTitleFallback(query.trim(), 30),
+          searchMangaCatalog(query.trim()).catch(() => [] as AniListMangaSearchResult[]),
+        ]);
         if (cancelled) return;
-        setResults(outcome.results);
+        const ownIds = new Set(own.map((r) => r.id));
+        setResults([...own, ...outcome.results.filter((r) => !ownIds.has(r.id))]);
         setAliases(outcome.aliases);
         setVolumes(outcome.volumes ?? {});
         setVolumeBooks(outcome.books ?? {});

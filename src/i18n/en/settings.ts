@@ -362,6 +362,12 @@ const settings: Record<string, string> = {
   'Bücher und Manga auf einer Lesen-Seite': 'Books and manga on one reading page',
   'Lesen zeigt nur Bücher': 'Reading shows books only',
   'Lesen zeigt nur Manga': 'Reading shows manga only',
+  'Bücher aufnehmen': 'Adding books',
+  'Direkt auf die Leseliste': 'Straight to the reading list',
+  'Erst fragen': 'Ask first',
+  'Neue Bücher landen erst einmal auf der Leseliste, wie Serien auf der Watchlist':
+    'New books go to your reading list first, like series go to the watchlist',
+  'Beim Hinzufügen wählst du den Lesestand': 'You pick the reading status when adding',
 };
 
 export default settings;

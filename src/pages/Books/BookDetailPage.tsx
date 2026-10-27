@@ -26,6 +26,7 @@ import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
+import { loadBookCatalogItem } from '../../services/catalog/bookCatalog';
 import { BookMoodPanel, SimilarBooksPanel, WhenNearViewport } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
@@ -62,6 +63,7 @@ import { WishToggle } from './detail/WishToggle';
 import { FriendsOwningPanel } from './detail/FriendsOwningPanel';
 import { DiscoverCard, SkeletonCards } from './discover/DiscoverParts';
 import { useAddFlow } from './discover/useAddFlow';
+import { useBookAddPrompt } from '../../hooks/ui/useBookAddPrompt';
 import { useAdaptationMeta } from './hooks/useAdaptationMeta';
 import { useBookActions } from './hooks/useBookActions';
 import { useBookDescription } from './hooks/useBookDescription';
@@ -137,6 +139,7 @@ export const BookDetailPage = () => {
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  const askOnAdd = useBookAddPrompt();
 
   const owned = useMemo(
     () => allBookList.find((b) => b.id === decodeURIComponent(bookId)) ?? null,
@@ -147,22 +150,25 @@ export const BookDetailPage = () => {
   const hardcoverFromId = /^hc-(\d+)$/.exec(decodedId)?.[1];
   const [fetched, setFetched] = useState<BookSearchResult | null>(null);
   const [fetchSettled, setFetchSettled] = useState(false);
-  // Link, Neuladen oder fehlender Navigationszustand: Hardcover-Bücher lassen sich über ihre ID wieder laden.
+  // Link, Neuladen oder fehlender Navigationszustand: erst der eigene Katalog, dann Hardcover über die ID.
   useEffect(() => {
-    if (owned || stateResult || !hardcoverFromId || !hardcoverReady()) return;
+    if (owned || stateResult) return;
     let alive = true;
-    void hardcoverBook(Number(hardcoverFromId))
-      .then((hit) => alive && setFetched(hit?.result ?? null))
-      .catch(() => undefined)
-      .finally(() => alive && setFetchSettled(true));
+    (async () => {
+      const own = await loadBookCatalogItem(decodedId).catch(() => null);
+      if (!alive) return;
+      if (own) return setFetched(own);
+      if (!hardcoverFromId || !hardcoverReady()) return;
+      const hit = await hardcoverBook(Number(hardcoverFromId)).catch(() => null);
+      if (alive) setFetched(hit?.result ?? null);
+    })().finally(() => alive && setFetchSettled(true));
     return () => {
       alive = false;
     };
-  }, [owned, stateResult, hardcoverFromId]);
+  }, [owned, stateResult, hardcoverFromId, decodedId]);
   const preview = stateResult ?? (fetched?.id === decodedId ? fetched : null);
   const view: (Book | BookSearchResult) | null = owned ?? preview;
-  const fetchingPreview =
-    !view && !!hardcoverFromId && !stateResult && hardcoverReady() && !fetchSettled;
+  const fetchingPreview = !view && !stateResult && !fetchSettled;
 
   const [notes, setNotes] = useState(owned?.notes ?? '');
   useEffect(() => {
@@ -597,6 +603,28 @@ export const BookDetailPage = () => {
               <h2 className="bd-panel-title" style={{ color: currentTheme.text.secondary }}>
                 {t('In deine Bücher')}
               </h2>
+              {!askOnAdd && (
+                <button
+                  type="button"
+                  className="bd-quick-add"
+                  disabled={busy}
+                  onClick={() => void pickAdd({ status: 'planned' })}
+                  style={{
+                    width: '100%',
+                    marginBottom: 10,
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    border: `1px solid ${currentTheme.accent}66`,
+                    background: `linear-gradient(140deg, ${currentTheme.accent}33, rgba(255,255,255,0.04) 70%)`,
+                    color: currentTheme.text.primary,
+                    fontWeight: 600,
+                    fontSize: 15,
+                    opacity: busy ? 0.5 : 1,
+                  }}
+                >
+                  {t('Auf die Leseliste')}
+                </button>
+              )}
               <AddOptions busy={busy} onPick={(c) => void pickAdd(c)} />
             </div>
           ) : null}

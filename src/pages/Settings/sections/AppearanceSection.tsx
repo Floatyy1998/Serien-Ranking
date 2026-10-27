@@ -32,6 +32,8 @@ import { setAppFocus, type AppFocus } from '../../../services/settings/appFocus'
 import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
 import type { ReadingAreas } from '../../../lib/reading/readingMedium';
 import { setReadingAreas } from '../../../services/settings/readingAreas';
+import { useBookAddPrompt } from '../../../hooks/ui/useBookAddPrompt';
+import { setBookAddPrompt } from '../../../services/settings/bookAddPrompt';
 import { showToast } from '../../../lib/interaction/toast';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
@@ -272,6 +274,88 @@ const ReadingAreasControl = memo(() => {
 
 ReadingAreasControl.displayName = 'ReadingAreasControl';
 
+const bookAddOptions = (): { ask: boolean; label: string; hint: string }[] => [
+  {
+    ask: false,
+    label: t('Direkt auf die Leseliste'),
+    hint: t('Neue Bücher landen erst einmal auf der Leseliste, wie Serien auf der Watchlist'),
+  },
+  { ask: true, label: t('Erst fragen'), hint: t('Beim Hinzufügen wählst du den Lesestand') },
+];
+
+/** Bücher wie Serien ohne Nachfrage aufnehmen — oder beim Hinzufügen den Lesestand wählen. */
+const BookAddPromptControl = memo(() => {
+  const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const ask = useBookAddPrompt();
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
+  const options = bookAddOptions();
+  const current = options.find((o) => o.ask === ask);
+
+  const choose = (next: boolean) => {
+    if (!user || next === ask) return;
+    setBookAddPrompt(user.uid, next).catch(() =>
+      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.19 }}
+      className="settings-nav-btn settings-size-card"
+      style={{ color: currentTheme.text.primary }}
+    >
+      <div className="settings-size-head">
+        <div
+          className="settings-nav-btn-icon"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          }}
+        >
+          <LibraryBooks style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+        </div>
+        <div className="settings-nav-btn-text">
+          <h2 className="settings-nav-btn-title">{t('Bücher aufnehmen')}</h2>
+          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+            {current?.hint}
+          </p>
+        </div>
+      </div>
+      <div className="settings-size-seg">
+        {options.map((o) => {
+          const active = ask === o.ask;
+          return (
+            <button
+              key={String(o.ask)}
+              type="button"
+              onClick={() => choose(o.ask)}
+              aria-pressed={active}
+              className={active ? 'is-active' : ''}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                      color: onPrimary,
+                      borderColor: 'transparent',
+                    }
+                  : { color: currentTheme.text.muted }
+              }
+            >
+              <span className="sz-lbl" style={{ fontSize: 13 }}>
+                {o.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+});
+
+BookAddPromptControl.displayName = 'BookAddPromptControl';
+
 const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = [
   { level: 0, label: t('Aus'), hint: t('Alles sichtbar') },
   { level: 1, label: t('Bilder'), hint: t('Bilder ungesehener Folgen blurren') },
@@ -383,6 +467,7 @@ export const AppearanceSection = memo(
         <FocusControl />
 
         <ReadingAreasControl />
+        <BookAddPromptControl />
 
         {/* Homepage Layout */}
         <motion.button

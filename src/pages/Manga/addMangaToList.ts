@@ -3,6 +3,7 @@ import type { AniListMangaSearchResult } from '../../types/Manga';
 import { isMangaUpdatesId } from '../../lib/manga/mangaSource';
 import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
+import { keepMangaInCatalog } from '../../services/catalog/mangaCatalog';
 import { getDisplayFormatKey } from './mangaUtils';
 import { dbRef, paths } from '../../services/db/ref';
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
@@ -94,6 +95,7 @@ export async function addMangaToList(
   }
 
   await dbRef(paths.mangaItem(userId, result.id)).set(manga);
+  keepMangaInCatalog(result);
   trackMangaAdded(
     String(result.id),
     String(manga.title),

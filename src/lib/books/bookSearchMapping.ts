@@ -338,13 +338,16 @@ export function directCoverAtSize(url: string | undefined, size: 'M' | 'L'): str
 }
 
 const HARDCOVER_MIRROR = /(\/bookcover\/hc\/[A-Za-z0-9_-]+)(?:\.[ML])?\.jpg/;
+const LIBRARY_COVER = /(\/bookcover\/book\/[A-Za-z0-9_-]+)-[ML](\.jpg(?:\?v=\d+)?)/;
 
 /**
  * Open-Library-Cover kommen über den Backend-Spiegel — direkt leitet jedes Bild ~2 s über archive.org um.
  * Hardcover-Cover liegen ebenfalls dort und werden serverseitig auf M (360 px) bzw. L (720 px) verkleinert.
  * DNB-Cover nur über den Spiegel: das Portal stellt Browsern eine Bot-Prüfseite statt des Bildes zu.
+ * Katalog-Cover (/bookcover/book/) liegen dauerhaft in M und L bei uns.
  */
 export function coverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
+  if (url && LIBRARY_COVER.test(url)) return url.replace(LIBRARY_COVER, `$1-${size}$2`);
   if (url && HARDCOVER_MIRROR.test(url)) return url.replace(HARDCOVER_MIRROR, `$1.${size}.jpg`);
   const dnb = url?.match(/portal\.dnb\.de\/opac\/mvb\/cover\?isbn=(97[89]\d{10})/)?.[1];
   if (dnb) return `${BOOKCOVER_BASE}/dnb/${dnb}-${size}.jpg`;

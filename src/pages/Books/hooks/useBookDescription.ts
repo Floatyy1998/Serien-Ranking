@@ -3,6 +3,7 @@ import { guessLanguage, htmlToPlainText } from '../../../lib/books/bookText';
 import { fetchWikipediaSummary } from '../../../services/api/bookDiscovery';
 import { hardcoverDescription } from '../../../services/api/hardcoverApi';
 import { translateBookDescription } from '../../../services/books/bookTranslation';
+import { describeFromCatalog } from '../../../services/catalog/bookCatalog';
 import { appLocale } from '../../../services/i18n';
 import type { BookLinks } from '../../../types/Book';
 
@@ -54,8 +55,15 @@ export function useBookDescription(
     const finish = (next: BookDescription) => {
       if (alive) setState(next);
     };
+    const catalogKey = bookKey && !bookKey.startsWith('manga:') ? bookKey : null;
     const translate = async (foreign: string) => {
       setState({ text: '', source: 'translated', loading: true });
+      // Eigener Katalog zuerst: der Server übersetzt je Sprache einmal und behält den Text für alle.
+      if (catalogKey && foreign === raw) {
+        const own = await describeFromCatalog(catalogKey, appLocale, raw);
+        if (own.text) return own.text;
+        if (own.capped) return null;
+      }
       // Hardcover-Bücher: der Server übersetzt einmal für alle. Ist sein Tageslimit leer, bleibt es beim Original.
       if (hardcoverId && foreign === raw) {
         const shared = await hardcoverDescription(hardcoverId);
@@ -79,6 +87,17 @@ export function useBookDescription(
         if (translated)
           return finish({ text: translated, original: raw, source: 'translated', loading: false });
         return finish({ text: raw, source: 'foreign', loading: false });
+      }
+      // Ohne eigenen Klappentext hat ihn vielleicht der Katalog (von wem auch immer das Buch zuerst kam).
+      if (catalogKey) {
+        const own = await describeFromCatalog(catalogKey, appLocale);
+        if (own.text) {
+          return finish({
+            text: own.text,
+            source: own.translated ? 'translated' : 'publisher',
+            loading: false,
+          });
+        }
       }
       if (waiting && !impatient) {
         finish({ text: '', source: 'publisher', loading: true });

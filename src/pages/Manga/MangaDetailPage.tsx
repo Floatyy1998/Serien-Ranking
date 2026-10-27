@@ -24,6 +24,7 @@ import { MangaDetailHero } from './detail/MangaDetailHero';
 import { MangaDetailPreview } from './detail/MangaDetailPreview';
 import { VolumeHint } from './detail/VolumeHint';
 import { buildHeroData } from './detail/mangaDetailData';
+import { useMangaDescription } from './detail/useMangaDescription';
 import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
@@ -359,9 +360,17 @@ export const MangaDetailPage = () => {
     navigate('/reading');
   }, [user, anilistId, mangaTitle, navigate]);
 
-  const heroData = useMemo(
+  const baseHeroData = useMemo(
     () => buildHeroData(anilistId, manga, anilistData),
     [anilistId, manga, anilistData]
+  );
+  const localized = useMangaDescription(anilistId, baseHeroData.description);
+  const heroData = useMemo(
+    () =>
+      localized.text === baseHeroData.description
+        ? baseHeroData
+        : { ...baseHeroData, description: localized.text },
+    [baseHeroData, localized.text]
   );
 
   // Noch nicht in der Sammlung → AniList-Vorschau mit Hinzufügen-Knopf

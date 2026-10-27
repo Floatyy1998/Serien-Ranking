@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useOwnsResult } from '../../../hooks/books/useOwnedBooks';
+import { useBookAddPrompt } from '../../../hooks/ui/useBookAddPrompt';
 import type { BookSearchResult } from '../../../types/Book';
 import { AddBookSheet, type AddChoice } from '../components/AddBookSheet';
 import { useBookActions } from '../hooks/useBookActions';
@@ -12,9 +13,13 @@ export function useHideOwned() {
   return useCallback((r: BookSearchResult) => owns(r) && !addedHere.has(r.id), [owns]);
 }
 
-/** Hinzufügen-Sheet für beliebige Treffer: openAdd(result) öffnet, sheet wird einmal gerendert. */
+/**
+ * Hinzufügen für beliebige Treffer: openAdd(result) legt das Buch wie eine Serie direkt auf die Leseliste —
+ * oder öffnet das Sheet mit der Lesestand-Wahl, wenn das Konto das so eingestellt hat. sheet wird einmal gerendert.
+ */
 export function useAddFlow(zIndex?: number, onAdded?: () => void) {
   const actions = useBookActions();
+  const askOnAdd = useBookAddPrompt();
   const [pending, setPending] = useState<BookSearchResult | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -31,6 +36,19 @@ export function useAddFlow(zIndex?: number, onAdded?: () => void) {
     [pending, actions, onAdded]
   );
 
+  const openAdd = useCallback(
+    (result: BookSearchResult) => {
+      if (askOnAdd) {
+        setPending(result);
+        return;
+      }
+      addedHere.add(result.id);
+      onAdded?.();
+      void actions.add(result, 'planned');
+    },
+    [askOnAdd, actions, onAdded]
+  );
+
   const sheet = (
     <AddBookSheet
       result={pending}
@@ -41,5 +59,5 @@ export function useAddFlow(zIndex?: number, onAdded?: () => void) {
     />
   );
 
-  return { openAdd: setPending, sheet };
+  return { openAdd, sheet };
 }
