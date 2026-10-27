@@ -5,28 +5,24 @@
  * the Activity feed.
  */
 
-import { memo, useEffect, useMemo, useRef } from 'react';
-import { motion, useMotionValue } from 'framer-motion';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
 import { useReducedMotion } from '../../../hooks/ui/useReducedMotion';
 import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import type { FriendActivity } from '../../../types/Friend';
 import { t } from '../../../services/i18n';
+import './ActivityMarquee.css';
 
 // Leisurely reading pace – px per second. Lower = slower.
 const MARQUEE_PIXELS_PER_SECOND = 48;
 
 const MAX_ENTRIES = 14;
 
-/**
- * Naechste Position des Bandes. Eine volle Runde wird zurueckgesetzt, damit die
- * zweite Kopie nahtlos uebernimmt — per Modulo, weil nach einer kuerzeren
- * Liste mehrere Runden auf einmal aufzuholen sein koennen.
- */
-export function naechstePosition(aktuell: number, deltaMs: number, lap: number): number {
-  const next = aktuell - (deltaMs / 1000) * MARQUEE_PIXELS_PER_SECOND;
-  return next <= -lap ? -(-next % lap) : next;
+/** Dauer einer Runde in Sekunden — die CSS-Animation schiebt das Band um genau eine Rundenbreite. */
+export function marqueeDuration(lapPx: number): number {
+  return lapPx > 0 ? lapPx / MARQUEE_PIXELS_PER_SECOND : 0;
 }
 
 /** Lesen-Seite: nur Bücher und Manga; Serien-Startseite: nur Serien und Filme. */
@@ -92,50 +88,10 @@ export const ActivityMarquee = memo(function ActivityMarquee({
   // regardless of font fallback or label content. The track holds two laps
   // (#0 = visible, #1 = pre-rendered tail), so scrollWidth/2 is one lap.
   const lapRef = useRef<HTMLSpanElement | null>(null);
-  // Die Breite liegt im Ref, nicht im State: sie ist nur fuer die Schleife da,
-  // und eine 0 darf sie nie anhalten (siehe unten).
-  const lapWidthRef = useRef(0);
-
-  // Drive the scroll via a MotionValue + rAF loop. This lets us pause
-  // *at the current x* on hover instead of animating back to 0.
-  const x = useMotionValue(0);
-  const isPausedRef = useRef(false);
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      x.set(0);
-      return;
-    }
-    let rafId = 0;
-    let lastT = 0;
-    const tick = (t: number) => {
-      rafId = requestAnimationFrame(tick);
-      if (lastT === 0) {
-        lastT = t;
-        return;
-      }
-      // Nach einem Tab-Wechsel liegen Sekunden zwischen zwei Frames — ohne
-      // Deckel springt das Band beim Zurueckkommen weit nach vorn.
-      const delta = Math.min(t - lastT, 100);
-      lastT = t;
-      if (isPausedRef.current) return;
-
-      // Die Breite kommt aus dem DOM statt aus dem Render: beim Wechsel auf die
-      // Startseite (View Transition) steht das frisch eingehaengte Band beim
-      // ersten Messen noch ohne Layout da. Frueher hielt diese eine 0 das Band
-      // dauerhaft an — jetzt versucht es die Schleife im naechsten Frame erneut.
-      let lap = lapWidthRef.current;
-      if (lap === 0) {
-        lap = lapRef.current?.scrollWidth ?? 0;
-        if (lap === 0) return;
-        lapWidthRef.current = lap;
-      }
-
-      x.set(naechstePosition(x.get(), delta, lap));
-    };
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, [prefersReducedMotion, x]);
+  // Die Rundenbreite bestimmt die Dauer der CSS-Animation; 0 heißt noch nicht gemessen (Band steht).
+  const [lap, setLap] = useState(0);
+  // Eine echte Maus hält das Band an Ort und Stelle an (animation-play-state), kein Zurückspringen.
+  const [paused, setPaused] = useState(false);
 
   const entries = useMemo(() => {
     const sorted = friendActivities
@@ -153,12 +109,12 @@ export const ActivityMarquee = memo(function ActivityMarquee({
   useEffect(() => {
     const el = lapRef.current;
     if (!el) {
-      lapWidthRef.current = 0;
+      setLap(0);
       return;
     }
     const messen = () => {
       const breite = el.scrollWidth;
-      if (breite > 0) lapWidthRef.current = breite;
+      if (breite > 0) setLap((prev) => (Math.abs(prev - breite) > 1 ? breite : prev));
     };
     messen();
     const beobachter = new ResizeObserver(messen);
@@ -218,16 +174,16 @@ export const ActivityMarquee = memo(function ActivityMarquee({
       // Nur eine echte Maus haelt an: ein Tipp auf dem Handy loest in manchen
       // Browsern ein Enter ohne Leave aus und liesse das Band stehen.
       onPointerEnter={(event) => {
-        if (event.pointerType === 'mouse') isPausedRef.current = true;
+        if (event.pointerType === 'mouse') setPaused(true);
       }}
       onPointerLeave={() => {
-        isPausedRef.current = false;
+        setPaused(false);
       }}
       onFocus={() => {
-        isPausedRef.current = true;
+        setPaused(true);
       }}
       onBlur={() => {
-        isPausedRef.current = false;
+        setPaused(false);
       }}
       aria-label={t('Aktivitäten deiner Freunde anzeigen')}
       style={{
@@ -274,17 +230,21 @@ export const ActivityMarquee = memo(function ActivityMarquee({
           zIndex: 2,
         }}
       />
-      <motion.div
-        style={{
-          display: 'flex',
-          width: 'max-content',
-          willChange: 'transform',
-          x,
-        }}
+      <div
+        className={`activity-marquee__track${
+          prefersReducedMotion || lap === 0 ? ' activity-marquee__track--still' : ''
+        }`}
+        style={
+          {
+            '--marquee-lap': `${lap}px`,
+            animationDuration: `${marqueeDuration(lap)}s`,
+            animationPlayState: paused ? 'paused' : 'running',
+          } as React.CSSProperties
+        }
       >
         {renderLap(true)}
         {renderLap(false)}
-      </motion.div>
+      </div>
     </motion.button>
   );
 });

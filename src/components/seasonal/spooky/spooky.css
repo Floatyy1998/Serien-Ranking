@@ -370,6 +370,12 @@
   width: 100%;
   fill: #0a070d;
   overflow: visible;
+}
+
+/* Der Schatten liegt auf den Einzelteilen, nicht auf dem Rahmen: ein Filter auf dem Rahmen müsste bei
+   jedem Flügelschlag (4-6 Mal pro Sekunde) auf dem Hauptthread neu gerechnet werden. */
+.spooky-bat__svg:not(.bat-layered),
+.bat-layered > svg {
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-primary) 45%, transparent));
 }
 
@@ -463,11 +469,36 @@
 .spk-layered > .spk-legs {
   transform-box: border-box;
   transform-origin: 50% 43.75%;
+  will-change: transform;
 }
 
 .bat-layered > .bat-wings {
   transform-box: border-box;
   transform-origin: 50% 46.875%;
+  will-change: transform;
+}
+
+/* Spinnenschatten ebenfalls auf den Teilen statt auf dem Rahmen (siehe Fledermaus). */
+.spooky-spider.spk-layered {
+  filter: none;
+}
+
+.spooky-spider.spk-layered > svg {
+  filter: drop-shadow(0 0 2px rgba(255, 196, 140, 0.45)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7));
+}
+
+.spooky-bat,
+.spooky-dangler,
+.spooky-dangler__bob,
+.spooky-peek,
+.web-glint,
+.web-glint__web {
+  will-change: transform;
+}
+
+.spk-dew,
+.skl-glow {
+  will-change: opacity;
 }
 
 /* Netz-Schimmer ohne SVG-Animation: ein helles Netz-Duplikat hinter einer kreisförmigen Maske,

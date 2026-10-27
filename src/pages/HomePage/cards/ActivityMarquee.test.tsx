@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ActivityMarquee, naechstePosition } from './ActivityMarquee';
+import { ActivityMarquee, marqueeDuration } from './ActivityMarquee';
 import type { FriendActivity } from '../../../types/Friend';
 
 const { navigateMock, actsRef } = vi.hoisted(() => ({
@@ -82,18 +82,12 @@ describe('ActivityMarquee', () => {
   });
 });
 
-describe('naechstePosition', () => {
-  it('schiebt das Band nach links', () => {
-    // 48 px/s, also 4.8 px in 100 ms
-    expect(naechstePosition(0, 100, 1000)).toBeCloseTo(-4.8, 5);
+describe('marqueeDuration', () => {
+  it('leitet die Rundendauer aus der Breite ab: 48 px pro Sekunde', () => {
+    expect(marqueeDuration(480)).toBe(10);
   });
 
-  it('setzt nach einer vollen Runde zurueck, ohne einen Sprung zu hinterlassen', () => {
-    expect(naechstePosition(-999.9, 100, 1000)).toBeCloseTo(-4.7, 5);
-  });
-
-  it('holt mehrere Runden auf einmal auf, wenn die Liste kuerzer geworden ist', () => {
-    // Stand aus einer langen Liste (-3000) trifft auf eine kurze Runde (1000)
-    expect(naechstePosition(-3000, 100, 1000)).toBeCloseTo(-4.8, 5);
+  it('steht still, solange die Breite nicht gemessen ist', () => {
+    expect(marqueeDuration(0)).toBe(0);
   });
 });

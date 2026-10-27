@@ -1,0 +1,18 @@
+/* Laufband als CSS-Animation auf der Grafikkarte — vorher tickte eine rAF-Schleife 60-mal pro Sekunde
+   im JavaScript (dauerhafte Hauptthread-Last auf Start- und Lesen-Seite, Handy wurde warm). */
+.activity-marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: activity-marquee-scroll linear infinite;
+}
+
+.activity-marquee__track--still {
+  animation: none;
+}
+
+@keyframes activity-marquee-scroll {
+  to {
+    transform: translateX(calc(-1 * var(--marquee-lap, 0px)));
+  }
+}
