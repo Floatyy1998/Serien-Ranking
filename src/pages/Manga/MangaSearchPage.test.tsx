@@ -29,6 +29,7 @@ vi.mock('../../hooks/platform/useDeviceType', () => ({
 
 const searchMangaWithTitleFallback = vi.hoisted(() => vi.fn());
 vi.mock('../../services/api/mangaSearch', () => ({ searchMangaWithTitleFallback }));
+vi.mock('../../services/catalog/mangaCatalog', () => ({ searchMangaCatalog: async () => [] }));
 
 const addMangaToList = vi.hoisted(() => vi.fn());
 vi.mock('./addMangaToList', () => ({ addMangaToList }));
