@@ -72,6 +72,26 @@ describe('captureError', () => {
     expect(fb.sets[0].value).toMatchObject({ uid: 'u1', kind: 'error', name: 'TypeError' });
   });
 
+  it('hebt den Puffer ueber ein Neuladen auf und reicht ihn beim naechsten Login nach', async () => {
+    captureError({
+      kind: 'error',
+      name: 'BackendFetch',
+      message: 'POST /books/add -> 401 (ohne Token)',
+    });
+    const stored = JSON.parse(localStorage.getItem('errorReportQueue') ?? '[]');
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ name: 'BackendFetch' });
+
+    // Neuladen: Arbeitsspeicher weg, localStorage bleibt.
+    resetErrorReporter();
+    setErrorReporterUser('u1');
+    await flush();
+
+    expect(fb.sets).toHaveLength(1);
+    expect(fb.sets[0].value).toMatchObject({ uid: 'u1', name: 'BackendFetch' });
+    expect(localStorage.getItem('errorReportQueue')).toBeNull();
+  });
+
   it('schreibt sofort, wenn der Nutzer bekannt ist', async () => {
     setErrorReporterUser('u1');
     captureError({ kind: 'error', name: 'Error', message: 'x' });

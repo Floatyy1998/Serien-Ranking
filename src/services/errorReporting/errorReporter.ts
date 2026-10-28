@@ -6,8 +6,8 @@
  * Fehler in einer Render-Schleife würde sonst die Datenbank fluten.
  *
  * Fehler vor dem Login lassen sich nicht schreiben: die Rules verlangen ein
- * `auth`-Objekt. Sie werden gepuffert und gehen raus, sobald der Nutzer
- * bekannt ist; ohne Anmeldung gehen sie verloren.
+ * `auth`-Objekt. Sie werden gepuffert (auch über ein Neuladen hinweg, im
+ * localStorage) und gehen raus, sobald der Nutzer bekannt ist.
  */
 import { buildFingerprint } from '../../lib/errorReport/fingerprint';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
@@ -20,6 +20,7 @@ import { collectEnvironment, primeErrorContext } from './context';
 import type { ErrorKind, ErrorReport } from '../../types/ErrorReport';
 
 const STORAGE_KEY = 'errorReportThrottle';
+const QUEUE_KEY = 'errorReportQueue';
 const QUEUE_MAX = 10;
 
 type ReportDraft = Omit<ErrorReport, 'id' | 'uid' | 'ts' | 'status'>;
@@ -36,7 +37,7 @@ interface CaptureInput {
 let currentUid: string | null = null;
 let installed = false;
 let sessionErrorCount = 0;
-let queued: ReportDraft[] = [];
+let queued: ReportDraft[] = loadQueue();
 let pageLeaving = false;
 
 function loadState(): ThrottleState | null {
@@ -56,6 +57,32 @@ function saveState(state: ThrottleState): void {
   }
 }
 
+function loadQueue(): ReportDraft[] {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    const list = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(list) ? (list as ReportDraft[]).slice(0, QUEUE_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveQueue(list: ReportDraft[]): void {
+  try {
+    if (list.length) localStorage.setItem(QUEUE_KEY, JSON.stringify(list));
+    else localStorage.removeItem(QUEUE_KEY);
+  } catch {
+    // ohne Storage bleibt der Puffer nur im Arbeitsspeicher
+  }
+}
+
+/** Ohne Sitzung (etwa Start ohne Netz mit gespeichertem Nutzer) wartet der Bericht auf den nächsten Login. */
+function enqueue(draft: ReportDraft): void {
+  if (queued.length >= QUEUE_MAX) return;
+  queued.push(draft);
+  saveQueue(queued);
+}
+
 async function persist(draft: ReportDraft, uid: string): Promise<void> {
   try {
     const ref = dbRef('clientErrors').push();
@@ -69,9 +96,10 @@ async function persist(draft: ReportDraft, uid: string): Promise<void> {
 /** Sobald der Nutzer bekannt ist, geht der Puffer raus. */
 export function setErrorReporterUser(uid: string | null): void {
   currentUid = uid;
-  if (!uid || queued.length === 0) return;
-  const flush = queued;
+  if (!uid) return;
+  const flush = queued.length ? queued : loadQueue();
   queued = [];
+  saveQueue(queued);
   for (const draft of flush) void persist(draft, uid);
 }
 
@@ -141,7 +169,7 @@ export function captureError(input: CaptureInput): void {
     addBreadcrumb('error', `${draft.name}: ${draft.message}`, input.kind);
 
     if (currentUid) void persist(draft, currentUid);
-    else if (queued.length < QUEUE_MAX) queued.push(draft);
+    else enqueue(draft);
   } catch {
     // Die Fehlererfassung darf unter keinen Umstaenden selbst werfen
   }
