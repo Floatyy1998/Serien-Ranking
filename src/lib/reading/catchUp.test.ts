@@ -6,6 +6,7 @@ import {
   bookCatchUp,
   catchUpTotals,
   CHAPTER_MINUTES,
+  groupCatchUp,
   mangaCatchUp,
   seriesCatchUp,
   sortCatchUp,
@@ -116,6 +117,35 @@ describe('sortCatchUp', () => {
   it('sortiert nach Fortschritt und nach längster Pause', () => {
     expect(keys(sortCatchUp(entries, 'progress'))).toEqual(['b-b1', 's-Q1', 'm-1']);
     expect(keys(sortCatchUp(entries, 'recent'))).toEqual(['s-Q1', 'b-b1', 'm-1']);
+  });
+});
+
+describe('groupCatchUp', () => {
+  const entries = [
+    ...mangaCatchUp([manga({ lastReadAt: '2026-01-01T00:00:00Z' })]),
+    ...bookCatchUp([book({ lastReadAt: '2026-09-01T00:00:00Z' })]),
+    ...seriesCatchUp([series()]),
+  ];
+  const shape = (groups: { medium: string; entries: { key: string }[] }[]) =>
+    groups.map((g) => [g.medium, g.entries.map((e) => e.key)]);
+
+  it('hält die Sortierung und ordnet die Gruppen nach ihrem ersten Treffer', () => {
+    expect(shape(groupCatchUp(sortCatchUp(entries, 'open')))).toEqual([
+      ['books', ['b-b1', 's-Q1']],
+      ['manga', ['m-1']],
+    ]);
+    expect(shape(groupCatchUp(sortCatchUp(entries, 'recent')))).toEqual([
+      ['manga', ['m-1']],
+      ['books', ['s-Q1', 'b-b1']],
+    ]);
+  });
+
+  it('zählt nächste Bände zu den Büchern und liefert ohne Einträge keine Gruppe', () => {
+    expect(shape(groupCatchUp(entries))).toEqual([
+      ['manga', ['m-1']],
+      ['books', ['b-b1', 's-Q1']],
+    ]);
+    expect(groupCatchUp([])).toEqual([]);
   });
 });
 

@@ -1,8 +1,14 @@
 import { Celebration, Schedule } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EmptyState, LoadingSpinner, PageHeader, PageLayout } from '../../../components/ui';
+import {
+  EmptyState,
+  FilterPill,
+  LoadingSpinner,
+  PageHeader,
+  PageLayout,
+} from '../../../components/ui';
 import { useBooksList } from '../../../contexts/BooksListContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -11,11 +17,14 @@ import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
 import { tapScaleSmall } from '../../../lib/motion';
 import {
   bookCatchUp,
+  catchUpMedium,
   catchUpTotals,
+  groupCatchUp,
   mangaCatchUp,
   seriesCatchUp,
   sortCatchUp,
   type CatchUpEntry,
+  type CatchUpMedium,
   type CatchUpSort,
 } from '../../../lib/reading/catchUp';
 import { usesArea } from '../../../lib/reading/readingMedium';
@@ -46,6 +55,7 @@ export const ReadingCatchUpPage = () => {
   const navigate = useNavigate();
   const { isDesktop } = useDeviceType();
   const [sortBy, setSortBy] = useState<CatchUpSort>('open');
+  const [medium, setMedium] = useState<CatchUpMedium | 'all'>('all');
   const [now] = useState(() => Date.now());
 
   const booksOn = usesArea(areas, 'books');
@@ -61,8 +71,20 @@ export const ReadingCatchUpPage = () => {
     ],
     [mangaList, bookList, series, booksOn, mangaOn]
   );
-  const sorted = useMemo(() => sortCatchUp(entries, sortBy), [entries, sortBy]);
-  const totals = useMemo(() => catchUpTotals(entries), [entries]);
+  const mangaCount = useMemo(
+    () => entries.filter((e) => catchUpMedium(e) === 'manga').length,
+    [entries]
+  );
+  const bothMedia = mangaCount > 0 && mangaCount < entries.length;
+  const activeMedium = bothMedia ? medium : 'all';
+  const visible = useMemo(
+    () =>
+      activeMedium === 'all' ? entries : entries.filter((e) => catchUpMedium(e) === activeMedium),
+    [entries, activeMedium]
+  );
+  const sorted = useMemo(() => sortCatchUp(visible, sortBy), [visible, sortBy]);
+  const groups = useMemo(() => groupCatchUp(sorted), [sorted]);
+  const totals = useMemo(() => catchUpTotals(visible), [visible]);
 
   const lookups = useMemo(
     () =>
@@ -76,10 +98,10 @@ export const ReadingCatchUpPage = () => {
   const openResult = useOpenResult();
 
   const loading = (booksOn && booksLoading) || (mangaOn && mangaLoading);
-  const hasMangaEntries = entries.some((e) => e.kind === 'manga');
-  const hasBookEntries = entries.some((e) => e.kind !== 'manga');
+  const hasMangaEntries = visible.some((e) => e.kind === 'manga');
+  const hasBookEntries = visible.some((e) => e.kind !== 'manga');
 
-  const subtitle = !entries.length
+  const subtitle = !visible.length
     ? undefined
     : hasMangaEntries && hasBookEntries
       ? t('{n} Titel · {m} Kapitel · {p} Seiten offen', {
@@ -184,14 +206,14 @@ export const ReadingCatchUpPage = () => {
               label={t('Titel offen')}
               color={currentTheme.text.primary}
             />
-            {mangaOn && (
+            {mangaOn && activeMedium !== 'books' && (
               <StatTile
                 value={totals.chapters.toLocaleString()}
                 label={t('Kapitel offen')}
                 color={currentTheme.text.primary}
               />
             )}
-            {booksOn && (
+            {booksOn && activeMedium !== 'manga' && (
               <StatTile
                 value={totals.pages.toLocaleString()}
                 label={t('Seiten offen')}
@@ -202,6 +224,29 @@ export const ReadingCatchUpPage = () => {
               value={`${Math.round(totals.avgProgress)}%`}
               label={t('Ø Fortschritt')}
               color={currentTheme.accent}
+            />
+          </div>
+        )}
+
+        {bothMedia && (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <FilterPill
+              label={t('Alle')}
+              active={activeMedium === 'all'}
+              onClick={() => setMedium('all')}
+              badge={entries.length}
+            />
+            <FilterPill
+              label={t('Manga')}
+              active={activeMedium === 'manga'}
+              onClick={() => setMedium('manga')}
+              badge={mangaCount}
+            />
+            <FilterPill
+              label={t('Bücher')}
+              active={activeMedium === 'books'}
+              onClick={() => setMedium('books')}
+              badge={entries.length - mangaCount}
             />
           </div>
         )}
@@ -244,106 +289,140 @@ export const ReadingCatchUpPage = () => {
             paddingBottom: 'var(--page-bottom-gap)',
           }}
         >
-          {sorted.map((entry) => {
-            const { meta, sub, side } = textOf(entry);
-            return (
-              <motion.div
-                key={entry.key}
-                role="button"
-                tabIndex={0}
-                aria-label={t('{title} öffnen', { title: entry.title })}
-                onClick={() => openEntry(entry)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openEntry(entry);
-                  }
-                }}
-                style={{
-                  display: 'flex',
-                  gap: 14,
-                  padding: 12,
-                  borderRadius: 14,
-                  background: `${currentTheme.text.primary}06`,
-                  cursor: 'pointer',
-                  alignItems: 'center',
-                  minWidth: 0,
-                }}
-                whileTap={tapScaleSmall}
-              >
-                <div style={{ flexShrink: 0 }}>{posterOf(entry)}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 600,
-                      color: currentTheme.text.primary,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {entry.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: currentTheme.text.secondary,
-                      marginTop: 2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {meta}
-                  </div>
-                  {sub && (
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color:
-                          entry.kind === 'series' ? currentTheme.accent : currentTheme.text.muted,
-                        marginTop: 2,
-                      }}
-                    >
-                      {sub}
-                    </div>
-                  )}
-                  {entry.kind !== 'series' && (
-                    <div
-                      style={{
-                        height: 4,
-                        borderRadius: 2,
-                        background: `${currentTheme.text.primary}10`,
-                        marginTop: 6,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${entry.progress}%`,
-                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                          borderRadius: 2,
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+          {groups.map((group, gi) => (
+            <Fragment key={group.medium}>
+              {groups.length > 1 && (
                 <div
                   style={{
-                    fontSize: entry.kind === 'series' ? 13 : 18,
-                    fontWeight: 800,
-                    color: currentTheme.accent,
-                    fontFamily: 'var(--font-display)',
-                    flexShrink: 0,
+                    gridColumn: '1 / -1',
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 8,
+                    marginTop: gi ? 14 : 0,
+                    padding: '0 4px',
                   }}
                 >
-                  {side}
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: 18,
+                      fontWeight: 800,
+                      letterSpacing: '-0.01em',
+                      color: currentTheme.text.primary,
+                      fontFamily: 'var(--font-display)',
+                    }}
+                  >
+                    {group.medium === 'manga' ? t('Manga') : t('Bücher')}
+                  </h2>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: currentTheme.text.muted }}>
+                    {group.entries.length}
+                  </span>
                 </div>
-              </motion.div>
-            );
-          })}
+              )}
+              {group.entries.map((entry) => {
+                const { meta, sub, side } = textOf(entry);
+                return (
+                  <motion.div
+                    key={entry.key}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('{title} öffnen', { title: entry.title })}
+                    onClick={() => openEntry(entry)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openEntry(entry);
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      gap: 14,
+                      padding: 12,
+                      borderRadius: 14,
+                      background: `${currentTheme.text.primary}06`,
+                      cursor: 'pointer',
+                      alignItems: 'center',
+                      minWidth: 0,
+                    }}
+                    whileTap={tapScaleSmall}
+                  >
+                    <div style={{ flexShrink: 0 }}>{posterOf(entry)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 600,
+                          color: currentTheme.text.primary,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {entry.title}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: currentTheme.text.secondary,
+                          marginTop: 2,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {meta}
+                      </div>
+                      {sub && (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color:
+                              entry.kind === 'series'
+                                ? currentTheme.accent
+                                : currentTheme.text.muted,
+                            marginTop: 2,
+                          }}
+                        >
+                          {sub}
+                        </div>
+                      )}
+                      {entry.kind !== 'series' && (
+                        <div
+                          style={{
+                            height: 4,
+                            borderRadius: 2,
+                            background: `${currentTheme.text.primary}10`,
+                            marginTop: 6,
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${entry.progress}%`,
+                              background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                              borderRadius: 2,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: entry.kind === 'series' ? 13 : 18,
+                        fontWeight: 800,
+                        color: currentTheme.accent,
+                        fontFamily: 'var(--font-display)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {side}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </Fragment>
+          ))}
         </div>
 
         {entries.length === 0 &&

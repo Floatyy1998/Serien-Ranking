@@ -72,6 +72,19 @@ vi.mock('../../Books/sections/BookStatsSection', () => ({
   ),
 }));
 vi.mock('../../../components/ui', () => ({
+  FilterPill: ({
+    label,
+    active,
+    onClick,
+  }: {
+    label: string;
+    active: boolean;
+    onClick: () => void;
+  }) => (
+    <button type="button" aria-pressed={active} onClick={onClick}>
+      {label}
+    </button>
+  ),
   LoadingSpinner: ({ text }: { text?: string }) => <p>{text}</p>,
   PageLayout: ({ children }: { children?: ReactNode }) => <main>{children}</main>,
   PageHeader: ({ title, subtitle }: { title: string; subtitle?: string }) => (
@@ -191,6 +204,45 @@ describe('ReadingCatchUpPage', () => {
     expect(titles()).toEqual(['Der Hobbit']);
     expect(stats()).not.toContain('Kapitel offen: 50');
     expect(stats().some((s) => s?.startsWith('Kapitel offen'))).toBe(false);
+  });
+
+  it('gruppiert beide Medien in der Reihenfolge der Sortierung', () => {
+    state.books = [book()];
+    state.manga = [manga({ lastReadAt: '2026-01-01T00:00:00Z' })];
+    state.volumes = [volume];
+    render(<ReadingCatchUpPage />);
+    const headings = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(headings()).toEqual(['Bücher', 'Manga']);
+    expect(titles()).toEqual(['Der Hobbit', 'Die Gefährten', 'Berserk']);
+    fireEvent.click(screen.getByRole('button', { name: 'Am längsten nicht gelesen' }));
+    expect(headings()).toEqual(['Manga', 'Bücher']);
+    expect(titles()).toEqual(['Berserk', 'Der Hobbit', 'Die Gefährten']);
+  });
+
+  it('filtert nach Medium und zieht Kacheln und Untertitel mit', () => {
+    state.books = [book()];
+    state.manga = [manga()];
+    state.volumes = [volume];
+    render(<ReadingCatchUpPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Manga' }));
+    expect(titles()).toEqual(['Berserk']);
+    expect(stats()).toEqual(['Titel offen: 1', 'Kapitel offen: 50', 'Ø Fortschritt: 50%']);
+    expect(screen.getByText('1 Manga · 50 Kapitel offen')).toBeInTheDocument();
+    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Bücher' }));
+    expect(titles()).toEqual(['Der Hobbit', 'Die Gefährten']);
+    expect(stats()).toEqual(['Titel offen: 2', 'Seiten offen: 300', 'Ø Fortschritt: 25%']);
+    expect(screen.getByText('2 Titel · 300 Seiten offen')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Alle' }));
+    expect(titles()).toEqual(['Der Hobbit', 'Die Gefährten', 'Berserk']);
+    expect(stats()).toHaveLength(4);
+  });
+
+  it('bietet den Medium-Filter nur an, wenn beide Medien offen sind', () => {
+    state.manga = [manga()];
+    render(<ReadingCatchUpPage />);
+    expect(screen.queryByRole('button', { name: 'Alle' })).toBeNull();
+    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
   });
 
   it('feiert, wenn alles aufgeholt ist', () => {

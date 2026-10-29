@@ -26,6 +26,7 @@ export const FilterPill: React.FC<FilterPillProps> = ({
     <motion.button
       whileTap={tapScaleSmall}
       onClick={onClick}
+      aria-pressed={active}
       style={{
         padding: icon ? '8px 14px' : '8px 16px',
         borderRadius: 'var(--radius-xl)',

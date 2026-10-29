@@ -125,6 +125,28 @@ export function sortCatchUp(entries: CatchUpEntry[], sort: CatchUpSort): CatchUp
   }
 }
 
+export type CatchUpMedium = 'manga' | 'books';
+
+export const catchUpMedium = (entry: CatchUpEntry): CatchUpMedium =>
+  entry.kind === 'manga' ? 'manga' : 'books';
+
+export interface CatchUpGroup {
+  medium: CatchUpMedium;
+  entries: CatchUpEntry[];
+}
+
+/** Gruppiert eine sortierte Liste nach Medium; die Gruppen folgen ihrem jeweils ersten Treffer. */
+export function groupCatchUp(sorted: CatchUpEntry[]): CatchUpGroup[] {
+  const groups: CatchUpGroup[] = [];
+  for (const entry of sorted) {
+    const medium = catchUpMedium(entry);
+    const group = groups.find((g) => g.medium === medium);
+    if (group) group.entries.push(entry);
+    else groups.push({ medium, entries: [entry] });
+  }
+  return groups;
+}
+
 export interface CatchUpTotals {
   titles: number;
   chapters: number;
