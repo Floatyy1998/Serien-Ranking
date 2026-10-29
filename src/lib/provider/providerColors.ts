@@ -22,6 +22,7 @@ export const PROVIDER_COLORS: Record<string, string> = {
   'Animation Digital Network': '#0099ff',
   MagentaTV: '#e20074',
   'RTL+': '#ff3350',
+  YouTube: '#ff0000',
 };
 
 /**

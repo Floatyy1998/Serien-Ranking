@@ -94,6 +94,7 @@ export const providerMenuItems = [
   { value: 'Paramount Plus', label: 'Paramount+' },
   { value: 'RTL+', label: 'RTL+' },
   { value: 'WOW', label: 'WOW' },
+  { value: 'YouTube', label: 'YouTube' },
 ];
 
 /** Set of supported provider names (excludes 'All') */

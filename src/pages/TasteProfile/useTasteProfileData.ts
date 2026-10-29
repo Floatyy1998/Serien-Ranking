@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
+import { normalizeProviderName } from '../../lib/provider/providerName';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -14,7 +15,7 @@ import type { WatchJourneyData } from '../../services/watchJourney/watchJourneyT
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { t } from '../../services/i18n';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderTiers, watchRegion } from '../../services/settings/region';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 const MIN_RATED_ITEMS = 5;
@@ -274,15 +275,18 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
             `${mediaType}/${tmdbId}/watch/providers`,
             { language: undefined }
           );
-          const regionEntry = pickProviderRegion(provData.results);
-          const flatrate = regionEntry?.flatrate || [];
-          providers = flatrate
-            .filter((p) => watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name))
-            .slice(0, 3)
+          const seen = new Set<string>();
+          providers = pickProviderTiers(provData.results)
             .map((p) => ({
-              name: p.provider_name,
+              name: normalizeProviderName(p.provider_name) ?? p.provider_name,
               logo: p.logo_path ? `https://image.tmdb.org/t/p/w45${p.logo_path}` : '',
-            }));
+            }))
+            .filter((p) => {
+              if (seen.has(p.name)) return false;
+              seen.add(p.name);
+              return watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.name);
+            })
+            .slice(0, 3);
         } catch {
           // Provider optional (auch HTTP-Fehler — tmdbFetch wirft bei !ok)
         }

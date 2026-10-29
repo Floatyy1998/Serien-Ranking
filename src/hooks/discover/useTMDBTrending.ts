@@ -5,7 +5,7 @@ import { isSupportedProvider } from '../../config/menuItems';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderTiers, watchRegion } from '../../services/settings/region';
 import { appLocale } from '../../services/i18n';
 import type { TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 import { mapGenreIds } from '../../utils/genreMap';
@@ -106,7 +106,7 @@ async function fetchProviders(type: 'series' | 'movie', id: number): Promise<Tre
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
       language: undefined,
     });
-    return resolveProviders(pickProviderRegion(data?.results)?.flatrate);
+    return resolveProviders(pickProviderTiers(data?.results));
   } catch {
     // HTTP- wie Netzwerkfehler → wie bisher leere Provider-Liste.
     return [];

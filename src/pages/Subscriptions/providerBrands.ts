@@ -27,6 +27,7 @@ export const PROVIDER_BRANDS: Record<string, ProviderBrand> = {
   'RTL+': { color: '#FF0000', accent: '#9C0000', abbr: 'RTL' },
   'Animation Digital Network': { color: '#1A4FBC', accent: '#0E2D6E', abbr: 'ADN' },
   MagentaTV: { color: '#E20074', accent: '#8C0049', abbr: 'M' },
+  YouTube: { color: '#FF0000', accent: '#B20000', abbr: 'YT' },
 };
 
 export function getProviderBrand(name: string): ProviderBrand {

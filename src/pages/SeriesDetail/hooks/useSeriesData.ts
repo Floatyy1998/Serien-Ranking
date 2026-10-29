@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SUPPORTED_PROVIDERS } from '../../../config/menuItems';
+import { normalizeProviderName } from '../../../lib/provider/providerName';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 
 import type { Series } from '../../../types/Series';
 import type { TMDBWatchProvider } from '../types';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/api/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../../services/settings/region';
+import { pickProviderTiers, watchRegion } from '../../../services/settings/region';
 import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../../services/api/tmdb.types';
 import { fetchTmdbSeriesFallback } from './fetchTmdbSeriesFallback';
 
@@ -103,14 +104,12 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     tmdbFetch<TmdbWatchProvidersResponse>(`tv/${id}/watch/providers`, { language: undefined })
       .then((data) => {
         if (abgebrochen) return;
-        const flatrate = pickProviderRegion(data.results)?.flatrate;
         setProviders(
-          Array.isArray(flatrate)
-            ? flatrate.filter(
-                (p: { provider_name: string }) =>
-                  watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
-              )
-            : []
+          pickProviderTiers(data.results).filter((p: { provider_name: string }) => {
+            if (watchRegion !== 'DE') return true;
+            const name = normalizeProviderName(p.provider_name);
+            return name !== null && SUPPORTED_PROVIDERS.has(name);
+          })
         );
       })
       .catch(() => {

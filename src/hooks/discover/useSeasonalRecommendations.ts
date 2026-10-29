@@ -5,7 +5,7 @@ import { isSupportedProvider } from '../../config/menuItems';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderTiers, watchRegion } from '../../services/settings/region';
 import type { TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 import { mapGenreIds } from '../../utils/genreMap';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -194,12 +194,9 @@ async function fetchSeasonalProviders(
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
       language: undefined,
     });
-    const flatrate = pickProviderRegion(data?.results)?.flatrate;
-    if (!Array.isArray(flatrate)) return [];
-
     const seen = new Set<string>();
     const out: SeasonalProvider[] = [];
-    for (const raw of flatrate as RawWatchProvider[]) {
+    for (const raw of pickProviderTiers(data?.results) as RawWatchProvider[]) {
       const normalized = normalizeProviderName(raw.provider_name);
       if (!normalized || seen.has(normalized)) continue;
       if (watchRegion === 'DE' && !isSupportedProvider(normalized)) continue;

@@ -51,5 +51,5 @@ export interface TmdbSeasonDetail {
 
 /** `.../watch/providers`. */
 export interface TmdbWatchProvidersResponse {
-  results?: Record<string, { flatrate?: TmdbProvider[] } | undefined>;
+  results?: Record<string, { flatrate?: TmdbProvider[]; ads?: TmdbProvider[] } | undefined>;
 }

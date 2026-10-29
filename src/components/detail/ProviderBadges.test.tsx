@@ -38,6 +38,21 @@ describe('ProviderBadges', () => {
     expect(screen.queryByAltText('CompletelyUnknownProvider')).not.toBeInTheDocument();
   });
 
+  it('nimmt in DE auch die werbefinanzierte Stufe (YouTube Free)', () => {
+    render(
+      <ProviderBadges
+        providers={{
+          results: {
+            DE: {
+              ads: [{ provider_name: 'YouTube Free', logo_path: '/y.png' }],
+            },
+          },
+        }}
+      />
+    );
+    expect(screen.getByAltText('YouTube Free')).toBeInTheDocument();
+  });
+
   it('shows a +N overflow badge when providers exceed maxDisplay', () => {
     render(
       <ProviderBadges

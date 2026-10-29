@@ -6,7 +6,7 @@
  */
 
 import { tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderTiers, watchRegion } from '../../services/settings/region';
 import { isSupportedProvider } from '../../config/menuItems';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../lib/provider/providerName';
@@ -77,8 +77,13 @@ function pickRegionalDate(data: ReleaseDatesResponse, region: string, types: num
   return dates[0] || '';
 }
 
+interface WatchProviderEntry {
+  provider_name?: string;
+  logo_path?: string | null;
+}
+
 interface WatchProvidersResponse {
-  results?: Record<string, { flatrate?: { provider_name?: string; logo_path?: string | null }[] }>;
+  results?: Record<string, { flatrate?: WatchProviderEntry[]; ads?: WatchProviderEntry[] }>;
 }
 
 /** Flatrate-Anbieter der Watch-Region (normalisiert, mit Logo). */
@@ -87,10 +92,9 @@ async function resolveProviders(movieId: number): Promise<{ name: string; logo: 
     const data = await tmdbFetch<WatchProvidersResponse>(`movie/${movieId}/watch/providers`, {
       language: undefined,
     });
-    const regional = pickProviderRegion(data.results);
     const seen = new Set<string>();
     const out: { name: string; logo: string }[] = [];
-    for (const raw of regional?.flatrate || []) {
+    for (const raw of pickProviderTiers(data.results)) {
       const normalized = normalizeProviderName(raw.provider_name ?? '');
       if (!normalized || seen.has(normalized)) continue;
       if (watchRegion === 'DE' && !isSupportedProvider(normalized)) continue;

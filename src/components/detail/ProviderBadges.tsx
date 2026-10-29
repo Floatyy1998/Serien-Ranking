@@ -8,7 +8,7 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/provider/providerLinks';
 import { t } from '../../services/i18n';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderRegion, providerTiers, watchRegion } from '../../services/settings/region';
 
 interface Provider {
   provider_id?: number;
@@ -21,6 +21,7 @@ interface Provider {
 
 interface ProviderRegionEntry {
   flatrate?: Provider[];
+  ads?: Provider[];
 }
 
 interface ProviderBadgesProps {
@@ -68,6 +69,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     'Paramount Plus',
     'RTL+',
     'WOW',
+    'YouTube',
   ];
 
   // Handle different provider data structures
@@ -84,6 +86,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     if (lowerName.includes('apple tv')) return 'Apple TV Plus';
     if (lowerName.includes('joyn')) return 'Joyn Plus';
     if (lowerName.includes('hbo') || lowerName === 'max') return 'HBO Max';
+    if (lowerName.includes('youtube')) return 'YouTube';
     return name;
   };
 
@@ -122,7 +125,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     const regionEntry =
       pickProviderRegion(providers.results) ??
       pickProviderRegion(providers as Record<string, ProviderRegionEntry | undefined>);
-    const flat = regionEntry?.flatrate ?? providers.flatrate;
+    const tiers = providerTiers(regionEntry);
+    const flat = tiers.length > 0 ? tiers : providers.flatrate;
     if (flat) providerList = flat.filter(filterAndDedupe);
   }
 

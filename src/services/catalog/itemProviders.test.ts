@@ -15,6 +15,11 @@ vi.mock('../settings/region', () => ({
     return catalog.region;
   },
   pickProviderRegion: (results?: Record<string, unknown>) => results?.[catalog.region],
+  pickProviderTiers: (results?: Record<string, { flatrate?: unknown[]; ads?: unknown[] }>) => {
+    const entry = results?.[catalog.region];
+    const flatrate = entry?.flatrate ?? [];
+    return catalog.region === 'DE' ? [...flatrate, ...(entry?.ads ?? [])] : flatrate;
+  },
 }));
 
 import {

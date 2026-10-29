@@ -28,7 +28,7 @@
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion } from '../../services/settings/region';
+import { pickProviderTiers } from '../../services/settings/region';
 import { tmdbLogoUrl } from '../../hooks/provider/useProviderLogos';
 import { anilistLinkCountsForDe } from '../../services/api/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
@@ -164,11 +164,14 @@ interface TmdbDetailsResponse {
   vote_average?: number;
   genres?: { id: number; name?: string }[];
   'watch/providers'?: {
-    results?: {
-      DE?: {
-        flatrate?: { provider_name?: string; logo_path?: string }[];
-      };
-    };
+    results?: Record<
+      string,
+      | {
+          flatrate?: { provider_name?: string; logo_path?: string }[];
+          ads?: { provider_name?: string; logo_path?: string }[];
+        }
+      | undefined
+    >;
   };
 }
 
@@ -206,10 +209,9 @@ async function fetchGermanDetails(
   const genres = (json.genres ?? [])
     .map((genre) => idMap.find((entry) => entry.id === genre.id)?.name)
     .filter((name): name is string => !!name && name !== 'Animation');
-  const flatrate = pickProviderRegion(json['watch/providers']?.results)?.flatrate ?? [];
   const providers: TmdbProviderInfo[] = [];
   const seen = new Set<string>();
-  for (const entry of flatrate) {
+  for (const entry of pickProviderTiers(json['watch/providers']?.results)) {
     if (!entry.provider_name) continue;
     const normalized = normalizeProviderName(entry.provider_name);
     if (!normalized || seen.has(normalized)) continue;

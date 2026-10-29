@@ -19,7 +19,7 @@
 
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion } from '../../services/settings/region';
+import { pickProviderTiers } from '../../services/settings/region';
 import type { TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 
 /** Minimal-Typ, den sowohl `DiscoverItem` als auch `SearchResult` erfüllen. */
@@ -49,6 +49,7 @@ export function normalizeProviderName(name: string): string | null {
   if (lower.includes('apple tv')) return 'Apple TV Plus';
   if (lower.includes('joyn')) return 'Joyn Plus';
   if (lower.includes('hbo') || lower === 'max') return 'HBO Max';
+  if (lower.includes('youtube')) return 'YouTube';
   if (SUPPORTED_PROVIDERS.has(name)) return name;
   return null;
 }
@@ -79,14 +80,9 @@ export async function fetchItemProviders(type: 'series' | 'movie', id: number): 
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${mediaType}/${id}/watch/providers`, {
       language: undefined,
     });
-    const flatrate = pickProviderRegion(data?.results)?.flatrate;
-    if (!Array.isArray(flatrate)) {
-      providerCache.set(key, []);
-      return [];
-    }
     const seen = new Set<string>();
     const names: string[] = [];
-    for (const p of flatrate) {
+    for (const p of pickProviderTiers(data?.results)) {
       const normalized = normalizeProviderName(
         (p as { provider_name?: string })?.provider_name ?? ''
       );

@@ -190,6 +190,7 @@ export const PROVIDER_COLORS: Record<string, string> = {
   Hulu: '#1ce783',
   'Animation Digital Network': '#0096ff',
   ADN: '#0096ff',
+  YouTube: '#ff0000',
   default: '#78909c',
 };
 

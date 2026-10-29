@@ -66,6 +66,9 @@ describe('getProviderSearchUrl', () => {
       'https://animationdigitalnetwork.de/search/X'
     );
     expect(getProviderSearchUrl('HBO Max', 'X')).toBe('https://play.hbomax.com/search/result?q=X');
+    expect(getProviderSearchUrl('YouTube', 'X')).toBe(
+      'https://www.youtube.com/results?search_query=X'
+    );
   });
 
   it('unbekannter Provider → null', () => {

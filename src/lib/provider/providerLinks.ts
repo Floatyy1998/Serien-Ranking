@@ -87,6 +87,8 @@ export function getProviderSearchUrl(normalizedName: string, title: string): str
       return `https://animationdigitalnetwork.de/search/${enc}`;
     case 'HBO Max':
       return `https://play.hbomax.com/search/result?q=${enc}`;
+    case 'YouTube':
+      return `https://www.youtube.com/results?search_query=${enc}`;
     default:
       return null;
   }

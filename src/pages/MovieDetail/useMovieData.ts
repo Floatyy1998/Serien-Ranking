@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
+import { normalizeProviderName } from '../../lib/provider/providerName';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
@@ -10,7 +11,7 @@ import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/anal
 import { cleanupMovieDetectionState } from '../../services/detection/detectionCleanup';
 import { getImageUrl } from '../../utils/imageUrl';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
-import { pickProviderRegion, watchRegion } from '../../services/settings/region';
+import { pickProviderRegion, providerTiers, watchRegion } from '../../services/settings/region';
 import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/api/tmdb.types';
 import { backendFetch } from '../../services/api/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
@@ -167,13 +168,14 @@ export const useMovieData = () => {
     tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
       .then((data) => {
         if (abgebrochen) return;
-        const flatrate = pickProviderRegion(data.results)?.flatrate;
-        if (flatrate) {
+        const regionEntry = pickProviderRegion(data.results);
+        if (regionEntry) {
           setProviders(
-            flatrate.filter(
-              (p: { provider_name: string }) =>
-                watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
-            )
+            providerTiers(regionEntry).filter((p: { provider_name: string }) => {
+              if (watchRegion !== 'DE') return true;
+              const name = normalizeProviderName(p.provider_name);
+              return name !== null && SUPPORTED_PROVIDERS.has(name);
+            })
           );
         }
       })

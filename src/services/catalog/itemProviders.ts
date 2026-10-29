@@ -5,7 +5,7 @@
  */
 
 import { normalizeProviderName } from '../../lib/provider/providerName';
-import { pickProviderRegion, watchRegion } from '../settings/region';
+import { pickProviderTiers, watchRegion } from '../settings/region';
 import { fetchStaticCatalogMovies, fetchStaticCatalogSeries } from './staticCatalog';
 import { tmdbFetch } from '../api/tmdbClient';
 import type { TmdbWatchProvidersResponse } from '../api/tmdb.types';
@@ -90,10 +90,8 @@ async function fromTmdb(type: ProviderItemType, id: number): Promise<ItemProvide
         language: undefined,
       })
     );
-    const flatrate = pickProviderRegion(data?.results)?.flatrate;
-    if (!Array.isArray(flatrate)) return [];
     return toProviders(
-      flatrate.map((p) => ({
+      pickProviderTiers(data?.results).map((p) => ({
         name: p?.provider_name,
         logo: p?.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '',
       }))

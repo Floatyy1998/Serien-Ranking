@@ -27,6 +27,7 @@ const PROVIDER_LOGOS: Record<string, string> = {
   'RTL+': 'https://image.tmdb.org/t/p/original/3hI22hp7YDZXyrmXVqDGnVivNTI.jpg',
   'Joyn Plus+': 'https://image.tmdb.org/t/p/original/2joD3S2goOB6lmepX2IqRpCRe6a.jpg',
   MagentaTV: 'https://image.tmdb.org/t/p/original/t2P3qlP2sYT3b91hnRMKMSX8XmH.jpg',
+  YouTube: 'https://image.tmdb.org/t/p/original/5Maob4o5w8oZnNeYpCDyVFD3M7X.png',
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -42,6 +43,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   Sky: '#0072CE',
   WOW: '#FF6B00',
   'RTL+': '#E3001B',
+  YouTube: '#FF0000',
 };
 
 function formatMinutes(minutes: number): string {

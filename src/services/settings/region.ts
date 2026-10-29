@@ -81,3 +81,17 @@ export function pickProviderRegion<T>(
   if (!results) return undefined;
   return results[watchRegion] ?? results.DE;
 }
+
+// ads nur in DE: dort siebt die Whitelist Gratis-Dienste aus, wie getProviders im Katalog-Builder
+export function providerTiers<T>(entry: { flatrate?: T[]; ads?: T[] } | undefined | null): T[] {
+  if (!entry) return [];
+  const flatrate = entry.flatrate ?? [];
+  if (watchRegion !== 'DE' || !entry.ads) return flatrate;
+  return [...flatrate, ...entry.ads];
+}
+
+export function pickProviderTiers<T>(
+  results: Record<string, { flatrate?: T[]; ads?: T[] } | undefined> | undefined | null
+): T[] {
+  return providerTiers(pickProviderRegion(results));
+}
