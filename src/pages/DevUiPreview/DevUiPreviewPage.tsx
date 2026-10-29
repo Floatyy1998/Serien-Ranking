@@ -41,6 +41,7 @@ import {
   OnboardingReadingPreview,
   OnboardingWelcomeReadingPreview,
   ReadingHomePreview,
+  ReadingCatchUpMangaPreview,
   ReadingSubpagePreview,
   SettingsFocusPreview,
 } from './FocusPreviews';
@@ -410,6 +411,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'reading-catch-up',
     label: 'Lesen: Aufholen',
     render: () => <ReadingSubpagePreview page={<ReadingCatchUpPage />} />,
+  },
+  {
+    id: 'reading-catch-up-manga',
+    label: 'Lesen: Aufholen (Manga, lange Titel)',
+    render: () => <ReadingCatchUpMangaPreview page={<ReadingCatchUpPage />} />,
   },
   { id: 'coin-egg', label: 'Lesen: Flos Münze', render: () => <CoinEggPreview /> },
   {

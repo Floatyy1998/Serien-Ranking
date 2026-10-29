@@ -235,9 +235,10 @@ export const ReadingCatchUpPage = () => {
         <div
           style={{
             display: 'grid',
+            // minmax(0, …): das Auto-Minimum von 1fr ist die min-content-Breite der Zeile und sprengt den Viewport.
             gridTemplateColumns: isDesktop
               ? 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))'
-              : '1fr',
+              : 'minmax(0, 1fr)',
             gap: 10,
             alignItems: 'start',
             paddingBottom: 'var(--page-bottom-gap)',
@@ -266,6 +267,7 @@ export const ReadingCatchUpPage = () => {
                   background: `${currentTheme.text.primary}06`,
                   cursor: 'pointer',
                   alignItems: 'center',
+                  minWidth: 0,
                 }}
                 whileTap={tapScaleSmall}
               >

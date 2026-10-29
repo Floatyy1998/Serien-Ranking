@@ -40,6 +40,26 @@ const MANGA: Manga[] = [
 
 const NO_MANGA: Manga[] = [];
 
+const CATCHUP_MANGA: Manga[] = [
+  ['Omniscient Reader', 0, 311],
+  ['The Lone Necromancer', 25, 223],
+  ['Not Your Typical Reincarnation Story', 9, 115],
+  ['The Perfect Hybrid', 51, 153],
+  ['The Northern Warrior’s Beloved Bride', 4, 64],
+  ['How to Put Your Savior on the Throne', 12, 98],
+  ['The Villainess is a Marionette', 45, 112],
+].map(([title, chapter, total], i) => ({
+  nmr: i + 1,
+  anilistId: 9100 + i,
+  title: String(title),
+  poster: PLACEHOLDER_SVG,
+  rating: {},
+  chapters: Number(total),
+  currentChapter: Number(chapter),
+  readStatus: 'reading' as const,
+  lastReadAt: new Date(Date.now() - i * 86_400_000).toISOString(),
+}));
+
 const ReadingHomePreviewSections = () => {
   const bookYear = useBookYear();
   return <ReadingHomeSections areas="both" bookYear={bookYear} onSearch={() => {}} />;
@@ -163,11 +183,17 @@ export const SettingsFocusPreview = () => (
 );
 
 /** Lese-Unterseite mit Beispiel-Büchern und -Manga. */
-export const ReadingSubpagePreview = ({ page }: { page: React.ReactNode }) => {
+export const ReadingSubpagePreview = ({
+  page,
+  manga = MANGA,
+}: {
+  page: React.ReactNode;
+  manga?: Manga[];
+}) => {
   const ctx = useMemo(
     () => ({
-      mangaList: MANGA,
-      allMangaList: MANGA,
+      mangaList: manga,
+      allMangaList: manga,
       hiddenMangaList: [],
       loading: false,
       refetchManga: () => {},
@@ -175,7 +201,7 @@ export const ReadingSubpagePreview = ({ page }: { page: React.ReactNode }) => {
       isOffline: false,
       isStale: false,
     }),
-    []
+    [manga]
   );
   return (
     <BooksPreviewShell>
@@ -183,3 +209,8 @@ export const ReadingSubpagePreview = ({ page }: { page: React.ReactNode }) => {
     </BooksPreviewShell>
   );
 };
+
+/** Aufholen mit langen Manga-Titeln — die Prozentzahl lief rechts aus dem Bild. */
+export const ReadingCatchUpMangaPreview = ({ page }: { page: React.ReactNode }) => (
+  <ReadingSubpagePreview page={page} manga={CATCHUP_MANGA} />
+);
