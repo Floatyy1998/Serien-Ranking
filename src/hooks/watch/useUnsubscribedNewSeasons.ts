@@ -10,6 +10,7 @@
 import { dbRef, dbUpdate, userPath } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { withFreeProviders } from '../../lib/provider/freeProviders';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import type { ProviderSubscription } from '../../types/Subscription';
 import type { Series } from '../../types/Series';
@@ -44,7 +45,7 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
         for (const [name, sub] of Object.entries(providers)) {
           if (sub?.active) active.add(name);
         }
-        setActiveProviders(active);
+        setActiveProviders(withFreeProviders(active));
         setHasAnySubscription(Object.keys(providers).length > 0);
         setDismissed((dismissSnap.val() ?? {}) as Record<string, number>);
       })

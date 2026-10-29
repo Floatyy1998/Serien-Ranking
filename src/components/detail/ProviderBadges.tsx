@@ -70,6 +70,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     'RTL+',
     'WOW',
     'YouTube',
+    'YouTube Premium',
   ];
 
   // Handle different provider data structures
@@ -86,7 +87,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     if (lowerName.includes('apple tv')) return 'Apple TV Plus';
     if (lowerName.includes('joyn')) return 'Joyn Plus';
     if (lowerName.includes('hbo') || lowerName === 'max') return 'HBO Max';
-    if (lowerName.includes('youtube')) return 'YouTube';
+    if (lowerName.includes('youtube'))
+      return lowerName.includes('premium') ? 'YouTube Premium' : 'YouTube';
     return name;
   };
 

@@ -26,7 +26,7 @@ export const normalizeProviderName = (name: string): string | null => {
   if (lower.includes('apple tv')) return 'Apple TV Plus';
   if (lower.includes('joyn')) return 'Joyn Plus';
   if (lower.includes('hbo') || lower === 'max') return 'HBO Max';
-  if (lower.includes('youtube')) return 'YouTube';
+  if (lower.includes('youtube')) return lower.includes('premium') ? 'YouTube Premium' : 'YouTube';
   // Internationale Marken: TMDB fuehrt Tarif-Varianten als eigene Provider
   // ("Peacock Premium Plus", "Netflix Standard with Ads") — auf die Marke kollabieren.
   if (lower.includes('peacock')) return 'Peacock';

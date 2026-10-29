@@ -49,7 +49,7 @@ export function normalizeProviderName(name: string): string | null {
   if (lower.includes('apple tv')) return 'Apple TV Plus';
   if (lower.includes('joyn')) return 'Joyn Plus';
   if (lower.includes('hbo') || lower === 'max') return 'HBO Max';
-  if (lower.includes('youtube')) return 'YouTube';
+  if (lower.includes('youtube')) return lower.includes('premium') ? 'YouTube Premium' : 'YouTube';
   if (SUPPORTED_PROVIDERS.has(name)) return name;
   return null;
 }

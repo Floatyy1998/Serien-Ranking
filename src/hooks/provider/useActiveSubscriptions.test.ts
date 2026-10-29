@@ -70,7 +70,7 @@ describe('useActiveSubscriptions', () => {
     const { result } = renderHook(() => useActiveSubscriptions());
 
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(Array.from(result.current.activeProviders)).toEqual(['Netflix']);
+    expect(Array.from(result.current.activeProviders)).toEqual(['Netflix', 'YouTube']);
     expect(result.current.seriesOverrides).toEqual({ '5': 'HBO Max' });
     expect(result.current.hasAnySubscription).toBe(true);
   });

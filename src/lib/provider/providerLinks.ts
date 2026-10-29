@@ -88,6 +88,7 @@ export function getProviderSearchUrl(normalizedName: string, title: string): str
     case 'HBO Max':
       return `https://play.hbomax.com/search/result?q=${enc}`;
     case 'YouTube':
+    case 'YouTube Premium':
       return `https://www.youtube.com/results?search_query=${enc}`;
     default:
       return null;

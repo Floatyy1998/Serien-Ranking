@@ -30,6 +30,7 @@ const PROVIDER_LOGOS: Record<string, string> = {
   'Animation Digital Network': 'https://image.tmdb.org/t/p/w342/w86FOwg0bbgUSHWWnjOTuEjsUvq.jpg',
   'HBO Max': 'https://image.tmdb.org/t/p/w342/aS2zvJWn9mwiCOeaaCkIh4wleZS.jpg',
   YouTube: 'https://image.tmdb.org/t/p/w342/5Maob4o5w8oZnNeYpCDyVFD3M7X.png',
+  'YouTube Premium': 'https://image.tmdb.org/t/p/w342/eWHpKZihdiY617s5LipWJWvN28U.png',
 };
 
 export function getProviderLogoUrl(name: string): string | undefined {

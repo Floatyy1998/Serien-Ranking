@@ -10,6 +10,7 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { withFreeProviders } from '../../lib/provider/freeProviders';
 import { mergeProviderNames } from '../../lib/provider/providerMerge';
 import type { ProviderSubscription } from '../../types/Subscription';
 import type { Series } from '../../types/Series';
@@ -59,7 +60,7 @@ async function loadSubs(uid: string): Promise<SubsSnapshot> {
         }
       }
       const snapshot: SubsSnapshot = {
-        active,
+        active: withFreeProviders(active),
         overrides: raw.seriesOverrides ?? {},
         known,
       };

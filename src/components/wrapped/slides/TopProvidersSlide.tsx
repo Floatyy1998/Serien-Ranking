@@ -28,6 +28,7 @@ const PROVIDER_LOGOS: Record<string, string> = {
   'Joyn Plus+': 'https://image.tmdb.org/t/p/original/2joD3S2goOB6lmepX2IqRpCRe6a.jpg',
   MagentaTV: 'https://image.tmdb.org/t/p/original/t2P3qlP2sYT3b91hnRMKMSX8XmH.jpg',
   YouTube: 'https://image.tmdb.org/t/p/original/5Maob4o5w8oZnNeYpCDyVFD3M7X.png',
+  'YouTube Premium': 'https://image.tmdb.org/t/p/original/eWHpKZihdiY617s5LipWJWvN28U.png',
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -44,6 +45,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   WOW: '#FF6B00',
   'RTL+': '#E3001B',
   YouTube: '#FF0000',
+  'YouTube Premium': '#FF0000',
 };
 
 function formatMinutes(minutes: number): string {

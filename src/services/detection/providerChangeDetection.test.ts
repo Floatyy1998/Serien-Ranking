@@ -68,7 +68,7 @@ describe('normalizeProviderName — exakte Supported-Fallbacks', () => {
     expect(normalizeProviderName('WOW')).toBe('WOW');
     expect(normalizeProviderName('Animation Digital Network')).toBe('Animation Digital Network');
     expect(normalizeProviderName('YouTube Free')).toBe('YouTube');
-    expect(normalizeProviderName('YouTube Premium')).toBe('YouTube');
+    expect(normalizeProviderName('YouTube Premium')).toBe('YouTube Premium');
   });
 
   it('Whitespace wird getrimmt durchgereicht', () => {

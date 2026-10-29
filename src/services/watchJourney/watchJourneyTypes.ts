@@ -191,6 +191,7 @@ export const PROVIDER_COLORS: Record<string, string> = {
   'Animation Digital Network': '#0096ff',
   ADN: '#0096ff',
   YouTube: '#ff0000',
+  'YouTube Premium': '#ff0000',
   default: '#78909c',
 };
 

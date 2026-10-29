@@ -69,6 +69,9 @@ describe('getProviderSearchUrl', () => {
     expect(getProviderSearchUrl('YouTube', 'X')).toBe(
       'https://www.youtube.com/results?search_query=X'
     );
+    expect(getProviderSearchUrl('YouTube Premium', 'X')).toBe(
+      'https://www.youtube.com/results?search_query=X'
+    );
   });
 
   it('unbekannter Provider → null', () => {

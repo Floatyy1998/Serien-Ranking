@@ -23,6 +23,7 @@ export const PROVIDER_COLORS: Record<string, string> = {
   MagentaTV: '#e20074',
   'RTL+': '#ff3350',
   YouTube: '#ff0000',
+  'YouTube Premium': '#ff0000',
 };
 
 /**

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { SUPPORTED_PROVIDERS } from '../../../config/menuItems';
+import { FREE_PROVIDERS, SUBSCRIPTION_PROVIDERS } from '../../../config/menuItems';
 import { getProviderBrand } from '../../Subscriptions/providerBrands';
 import { getProviderLogoUrl } from '../../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../../lib/provider/providerName';
@@ -54,7 +54,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
           (a, b) => (a.display_priority ?? 999) - (b.display_priority ?? 999)
         )) {
           const name = normalizeProviderName(p.provider_name);
-          if (!name || seen.has(name)) continue;
+          if (!name || seen.has(name) || FREE_PROVIDERS.has(name)) continue;
           seen.add(name);
           tiles.push({
             name,
@@ -72,7 +72,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
 
   const tiles = useMemo<ProviderTile[]>(() => {
     if (watchRegion !== 'DE') return regionTiles ?? [];
-    return Array.from(SUPPORTED_PROVIDERS)
+    return Array.from(SUBSCRIPTION_PROVIDERS)
       .sort()
       .map((name) => ({ name, logo: getProviderLogoUrl(name) }));
   }, [regionTiles]);

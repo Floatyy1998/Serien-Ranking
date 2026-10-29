@@ -95,11 +95,19 @@ export const providerMenuItems = [
   { value: 'RTL+', label: 'RTL+' },
   { value: 'WOW', label: 'WOW' },
   { value: 'YouTube', label: 'YouTube' },
+  { value: 'YouTube Premium', label: 'YouTube Premium' },
 ];
 
 /** Set of supported provider names (excludes 'All') */
 export const SUPPORTED_PROVIDERS = new Set(
   providerMenuItems.filter((p) => p.value !== 'All').map((p) => p.value)
+);
+
+/** Kostenlose Dienste: gelten für jeden als vorhanden und sind kein Abo. */
+export const FREE_PROVIDERS = new Set(['YouTube']);
+
+export const SUBSCRIPTION_PROVIDERS = new Set(
+  Array.from(SUPPORTED_PROVIDERS).filter((name) => !FREE_PROVIDERS.has(name))
 );
 
 /** Check if a provider name is supported */
