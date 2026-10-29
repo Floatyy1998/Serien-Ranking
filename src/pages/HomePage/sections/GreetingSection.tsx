@@ -7,6 +7,7 @@ import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
+import { greetingWithName } from '../../../lib/text/greetingName';
 import { pickGreetingMatch, type GreetingSearchHit } from '../../../lib/text/greetingMatch';
 import { t } from '../../../services/i18n';
 import {
@@ -119,6 +120,11 @@ export const GreetingSection = React.memo(function GreetingSection({
   }, [onSearch]);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
+  const shown = greetingWithName(
+    greeting.text,
+    displayName?.split(' ')[0] || 'User',
+    greeting.noName
+  );
 
   // Daten-Pods im Deck: einheitliches Glas statt vierfarbiger Chips.
   const statPods = useMemo<GreetingPod[]>(
@@ -369,9 +375,9 @@ export const GreetingSection = React.memo(function GreetingSection({
                       WebkitUserSelect: 'none',
                     }}
                   >
-                    {greeting.text}
+                    {shown.text}
                   </span>
-                  <span style={{ flexShrink: 0 }}>, {displayName?.split(' ')[0] || 'User'}!</span>
+                  <span style={{ flexShrink: 0 }}>{shown.tail}</span>
                 </GradientText>
               )}
               <p

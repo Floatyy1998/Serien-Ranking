@@ -10,6 +10,8 @@ export interface Greeting {
   deOnly?: boolean;
   /** Nur auf Englisch zeigen (kolloquiale EN-Grüße als Gegenstück). */
   enOnly?: boolean;
+  /** Spricht schon jemanden an („Yes, Chef") — kein Name dahinter; sonst `{name}` im Text. */
+  noName?: boolean;
 }
 
 const morningGreetings: Greeting[] = [
@@ -21,7 +23,7 @@ const morningGreetings: Greeting[] = [
   { text: 'Grüß Gott', lang: 'Süddeutsch', deOnly: true },
   // Key „Morgen" ist im en-Wörterbuch als „Tomorrow" (Countdown) belegt
   { text: 'Schönen guten Morgen', lang: 'Deutsch' },
-  { text: 'Guten Morgen, Sonnenschein', lang: 'Deutsch' },
+  { text: 'Guten Morgen, Sonnenschein', noName: true, lang: 'Deutsch' },
   { text: 'Na, schon wach', lang: 'Deutsch' },
   { text: 'Gut geschlafen', lang: 'Deutsch' },
   { text: 'Aufgestanden', lang: 'Deutsch' },
@@ -37,7 +39,7 @@ const morningGreetings: Greeting[] = [
 
   // Film/Serien-Zitate die als Morgen-Gruß funktionieren
   {
-    text: 'Lauf, Forrest, lauf',
+    text: 'Lauf, {name}, lauf',
     lang: 'Forrest Gump',
     title: 'Forrest Gump',
     type: 'movie',
@@ -56,6 +58,7 @@ const morningGreetings: Greeting[] = [
   },
   {
     text: 'Guten Morgen, Vietnam',
+    noName: true,
     lang: 'Film',
     title: 'Good Morning, Vietnam',
     type: 'movie',
@@ -98,6 +101,7 @@ const morningGreetings: Greeting[] = [
   },
   {
     text: 'Zu mir, mein Schatz',
+    noName: true,
     lang: 'Der Herr der Ringe',
     title: 'The Lord of the Rings',
     type: 'movie',
@@ -120,7 +124,7 @@ const morningGreetings: Greeting[] = [
   },
 
   // Weitere Morgen-Grüße
-  { text: 'Na, Schlafmütze', lang: 'Deutsch' },
+  { text: 'Na, Schlafmütze', noName: true, lang: 'Deutsch' },
   { text: 'Erstmal Kaffee', lang: 'Deutsch' },
   { text: 'Einen wunderschönen guten Morgen', lang: 'Deutsch' },
   { text: 'Frühstück schon gehabt', lang: 'Deutsch' },
@@ -150,6 +154,7 @@ const morningGreetings: Greeting[] = [
   },
   {
     text: 'Guten Morgen, Sternenschein',
+    noName: true,
     lang: 'Charlie und die Schokoladenfabrik',
     title: 'Charlie and the Chocolate Factory',
     type: 'movie',
@@ -241,7 +246,7 @@ const afternoonGreetings: Greeting[] = [
     type: 'movie',
   },
   {
-    text: 'Schau mir in die Augen, Kleines',
+    text: 'Schau mir in die Augen, {name}',
     lang: 'Casablanca',
     title: 'Casablanca',
     type: 'movie',
@@ -278,6 +283,7 @@ const afternoonGreetings: Greeting[] = [
   },
   {
     text: 'Surprise, Motherfucker',
+    noName: true,
     lang: 'Dexter',
     title: 'Dexter',
     type: 'tv',
@@ -296,6 +302,7 @@ const afternoonGreetings: Greeting[] = [
   },
   {
     text: 'Yippie-Ya-Yeah, Schweinebacke',
+    noName: true,
     lang: 'Stirb Langsam',
     title: 'Die Hard',
     type: 'movie',
@@ -307,7 +314,7 @@ const afternoonGreetings: Greeting[] = [
     type: 'movie',
   },
   {
-    text: 'Houston, wir haben ein Problem',
+    text: '{name}, wir haben ein Problem',
     lang: 'Apollo 13',
     title: 'Apollo 13',
     type: 'movie',
@@ -405,7 +412,7 @@ const afternoonGreetings: Greeting[] = [
     title: 'Parks and Recreation',
     type: 'tv',
   },
-  { text: 'Good news, everyone', lang: 'Futurama', title: 'Futurama', type: 'tv' },
+  { text: 'Good news, everyone', noName: true, lang: 'Futurama', title: 'Futurama', type: 'tv' },
   { text: 'Wubba lubba dub dub', lang: 'Rick and Morty', title: 'Rick and Morty', type: 'tv' },
   { text: 'D’oh', lang: 'Die Simpsons', title: 'The Simpsons', type: 'tv' },
   { text: 'Ay, caramba', lang: 'Die Simpsons', title: 'The Simpsons', type: 'tv' },
@@ -458,7 +465,7 @@ const eveningGreetings: Greeting[] = [
   { text: 'Grüß dich', lang: 'Deutsch' },
   { text: 'Servus', lang: 'Süddeutsch', deOnly: true },
   { text: 'Hey', lang: 'Deutsch' },
-  { text: 'Alright, mate', lang: 'Britisch', enOnly: true },
+  { text: 'Alright, {name}', lang: 'Britisch', enOnly: true },
   { text: 'Na du', lang: 'Deutsch' },
   { text: 'Schönen Abend noch', lang: 'Deutsch' },
   { text: 'Feierabend', lang: 'Deutsch' },
@@ -473,7 +480,7 @@ const eveningGreetings: Greeting[] = [
   // Film/Serien-Zitate
   { text: 'Ich komme wieder', lang: 'Terminator', title: 'The Terminator', type: 'movie' },
   {
-    text: 'Hasta la vista, Baby',
+    text: 'Hasta la vista, {name}',
     lang: 'Terminator 2',
     title: 'Terminator 2: Judgment Day',
     type: 'movie',
@@ -485,7 +492,7 @@ const eveningGreetings: Greeting[] = [
     type: 'tv',
   },
   {
-    text: 'Beam mich hoch, Scotty',
+    text: 'Beam mich hoch, {name}',
     lang: 'Star Trek',
     title: 'Star Trek',
     type: 'tv',
@@ -522,12 +529,14 @@ const eveningGreetings: Greeting[] = [
   },
   {
     text: 'Domo arigato, Mr. Roboto',
+    noName: true,
     lang: 'Mr. Robot',
     title: 'Mr. Robot',
     type: 'tv',
   },
   {
     text: 'Hello, friend',
+    noName: true,
     lang: 'Mr. Robot',
     title: 'Mr. Robot',
     type: 'tv',
@@ -540,6 +549,7 @@ const eveningGreetings: Greeting[] = [
   },
   {
     text: 'Science, bitch',
+    noName: true,
     lang: 'Breaking Bad',
     title: 'Breaking Bad',
     type: 'tv',
@@ -597,7 +607,7 @@ const eveningGreetings: Greeting[] = [
   { text: 'Endlich Feierabend', lang: 'Deutsch' },
   { text: 'Popcorn bereit', lang: 'Deutsch' },
   { text: 'Licht aus, Serie an', lang: 'Deutsch' },
-  { text: 'Decke, Tee, Serie', lang: 'Deutsch' },
+  { text: 'Decke, Tee, Serie', noName: true, lang: 'Deutsch' },
   { text: 'Was läuft heute', lang: 'Deutsch' },
   { text: 'Serienabend', lang: 'Deutsch' },
   { text: 'Filmabend', lang: 'Deutsch' },
@@ -614,8 +624,8 @@ const eveningGreetings: Greeting[] = [
   { text: 'Goedenavond', lang: 'Niederländisch' },
   { text: 'God kväll', lang: 'Schwedisch' },
   { text: 'Dobrý večer', lang: 'Tschechisch' },
-  { text: 'Evenin’, all', lang: 'Britisch', enOnly: true },
-  { text: 'Cheers, love', lang: 'Britisch', enOnly: true },
+  { text: 'Evenin’, all', noName: true, lang: 'Britisch', enOnly: true },
+  { text: 'Cheers, {name}', lang: 'Britisch', enOnly: true },
   {
     text: 'Mein Name ist Bond. James Bond',
     lang: 'James Bond',
@@ -658,6 +668,7 @@ const eveningGreetings: Greeting[] = [
   { text: 'The game is on', lang: 'Sherlock', title: 'Sherlock', type: 'tv' },
   {
     text: 'Elementar, mein lieber Watson',
+    noName: true,
     lang: 'Sherlock Holmes',
     title: 'Sherlock Holmes',
     type: 'movie',
@@ -684,6 +695,7 @@ const eveningGreetings: Greeting[] = [
   { text: 'Ich liebe dich 3000', lang: 'Avengers', title: 'Avengers: Endgame', type: 'movie' },
   {
     text: 'Behalt das Wechselgeld, du dreckiges Tier',
+    noName: true,
     lang: 'Kevin – Allein zu Haus',
     title: 'Home Alone',
     type: 'movie',
@@ -849,7 +861,7 @@ const nightGreetings: Greeting[] = [
   { text: 'Laila tov', lang: 'Hebräisch' },
   { text: 'Nighty night', lang: 'Englisch', enOnly: true },
   { text: 'Up past your bedtime', lang: 'Englisch', enOnly: true },
-  { text: 'Hallo Dunkelheit, mein alter Freund', lang: 'Simon & Garfunkel' },
+  { text: 'Hallo Dunkelheit, mein alter Freund', noName: true, lang: 'Simon & Garfunkel' },
   {
     text: 'Morgen ist auch noch ein Tag',
     lang: 'Vom Winde verweht',
@@ -939,21 +951,6 @@ function seededShuffle<T>(arr: readonly T[], seed: number): T[] {
   return out;
 }
 
-function gcd(a: number, b: number): number {
-  while (b) [a, b] = [b, a % b];
-  return a;
-}
-
-// Tages-Schrittweite nahe dem goldenen Schnitt und teilerfremd zur Poolgröße:
-// so wandert die Auswahl über die Tage gleichmäßig durch den ganzen Pool
-// (Fibonacci-Hashing) und kommt erst nach n Tagen wieder beim selben
-// Eintrag an.
-function dayStride(n: number): number {
-  let s = Math.max(7, Math.round(n * 0.6180339887));
-  while (gcd(s, n) !== 1) s++;
-  return s;
-}
-
 /** Lokaler Tageszähler (Tage seit Epoche in der Zeitzone des Geräts). */
 function localDayNumber(d: Date): number {
   return Math.floor((d.getTime() - d.getTimezoneOffset() * 60_000) / 86_400_000);
@@ -961,12 +958,15 @@ function localDayNumber(d: Date): number {
 
 export type Slot = 'morning' | 'afternoon' | 'evening' | 'night';
 
-const SLOTS: Record<Slot, { list: Greeting[]; start: number; seed: number }> = {
-  morning: { list: morningGreetings, start: 5, seed: 1 },
-  afternoon: { list: afternoonGreetings, start: 12, seed: 2 },
-  evening: { list: eveningGreetings, start: 17, seed: 3 },
-  night: { list: nightGreetings, start: 22, seed: 4 },
+/** Der Gruß-Tag beginnt um 5 Uhr; `start`/`hours` zählen in seinen Stunden (0 = 5 Uhr). */
+const DAY_START = 5;
+const SLOTS: Record<Slot, { list: Greeting[]; start: number; hours: number; seed: number }> = {
+  morning: { list: morningGreetings, start: 0, hours: 7, seed: 1 },
+  afternoon: { list: afternoonGreetings, start: 7, hours: 5, seed: 2 },
+  evening: { list: eveningGreetings, start: 12, hours: 5, seed: 3 },
+  night: { list: nightGreetings, start: 17, hours: 7, seed: 4 },
 };
+const SHARED_SEED = 5;
 
 export function slotFor(hour: number): Slot {
   if (hour >= 5 && hour < 12) return 'morning';
@@ -975,44 +975,91 @@ export function slotFor(hour: number): Slot {
   return 'night';
 }
 
+/** `own`: Grüße nur dieses Slots; `shared`: zeitneutrale Zitate aller Slots. */
+export interface GreetingPools<T> {
+  own: readonly T[];
+  shared: readonly T[];
+}
+
+// Dialekt-Grüße bringen nur Lesern der jeweiligen Sprache etwas — „Moin"
+// nur auf Deutsch, „Howdy" nur auf Englisch.
+function forLocale(g: Greeting): boolean {
+  if (g.deOnly) return appLocale === 'de';
+  if (g.enOnly) return appLocale === 'en';
+  return true;
+}
+
+export function greetingPools(slot: Slot): GreetingPools<Greeting> {
+  return {
+    own: [...SLOTS[slot].list, ...slotQuoteGreetings[slot]].filter(forLocale),
+    shared: quoteGreetings.filter(forLocale),
+  };
+}
+
 /** Vollständiger, sprachgefilterter Pool eines Slots (Slot-Grüße + Zitate). */
 export function greetingPool(slot: Slot): Greeting[] {
-  const all = [...SLOTS[slot].list, ...slotQuoteGreetings[slot], ...quoteGreetings];
-  // Dialekt-Grüße bringen nur Lesern der jeweiligen Sprache etwas — „Moin"
-  // nur auf Deutsch, „Howdy" nur auf Englisch.
-  return all.filter((g) => {
-    if (g.deOnly) return appLocale === 'de';
-    if (g.enOnly) return appLocale === 'en';
-    return true;
-  });
+  const { own, shared } = greetingPools(slot);
+  return [...own, ...shared];
+}
+
+/** Ganze Zahlen x in [from, to) mit x % 2 === parity. */
+function countParity(from: number, to: number, parity: number): number {
+  const first = from + ((((parity - from) % 2) + 2) % 2);
+  return first >= to ? 0 : Math.floor((to - 1 - first) / 2) + 1;
+}
+
+function gcd(a: number, b: number): number {
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+
+// Position c zeigt Eintrag c mod n. Teilen Tagesschritt `step` und Poolgröße einen
+// Faktor, rückt die Reihe je Durchlauf um eins weiter (sonst Teilmenge zur selben Stunde).
+function walk<T>(pool: readonly T[], seed: number, position: number, step: number): T {
+  const perm = seededShuffle(pool, seed);
+  const n = perm.length;
+  const drift = gcd(step, n) === 1 ? 0 : Math.floor(position / n);
+  return perm[(position + drift) % n];
 }
 
 /**
- * Eintrag des Pools für diese Stunde. `seedOffset` trennt weitere Pools (Lese-Grüße)
- * von der Serien-Permutation, damit beide nicht im Gleichschritt laufen.
+ * Stunden wechseln (täglich versetzt) zwischen Slot-Grüßen und Zitaten; jede Sorte läuft als
+ * eine Reihe durch, Zitate über alle Slots hinweg. `seedOffset` trennt weitere Pools (Lese-Grüße).
  */
-export function pickForHour<T>(pool: readonly T[], hour: number, seedOffset = 0): T {
+export function pickForHour<T>(pools: GreetingPools<T>, hour: number, seedOffset = 0): T {
   const slot = slotFor(hour);
-  const { start, seed: slotSeed } = SLOTS[slot];
-  const seed = slotSeed + seedOffset;
+  const { start, hours, seed } = SLOTS[slot];
   const now = new Date();
   // 0–4 Uhr zählt zur Nacht des Vortags, damit die Nacht durchgehend bleibt.
-  const day = localDayNumber(now) - (hour < 5 ? 1 : 0);
-  const offsetHour = hour < 5 ? hour + 2 : hour - start;
+  const day = localDayNumber(now) - (hour < DAY_START ? 1 : 0);
+  const dayHour = (hour - DAY_START + 24) % 24;
   const year = new Date(day * 86_400_000).getUTCFullYear();
+  const yearSeed = year * 7919 + seedOffset * 104_729;
+  const ownSeed = yearSeed + seed * 104_729;
 
-  // Pro Jahr und Slot eine frische Permutation des gesamten Pools. Innerhalb
-  // des Jahres wird sie sequenziell abgelaufen: Tag × Schrittweite + Stunde.
-  // Aufeinanderfolgende Stunden sind dadurch immer verschieden, und wer
-  // täglich zur selben Zeit reinschaut, sieht erst nach „Poolgröße" Tagen
-  // einen Gruß zum zweiten Mal.
-  const shuffled = seededShuffle(pool, year * 7919 + seed * 104_729);
-  const n = shuffled.length;
-  const index = (((day * dayStride(n) + offsetHour) % n) + n) % n;
-  return shuffled[index];
+  if (pools.own.length === 0 || pools.shared.length === 0) {
+    const pool = pools.own.length > 0 ? pools.own : pools.shared;
+    return walk(pool, ownSeed, day * 24 + dayHour, 24);
+  }
+
+  const parity = day % 2;
+  if (dayHour % 2 === parity) {
+    // Zwei Tage zusammen belegen genau `hours` Positionen.
+    const evenDayCount = countParity(start, start + hours, 0);
+    const inBlock = (parity === 1 ? evenDayCount : 0) + countParity(start, dayHour, parity);
+    return walk(pools.own, ownSeed, Math.floor(day / 2) * hours + inBlock, hours);
+  }
+  // Zitat-Stunden: je Tag genau zwölf, Zählung über alle Slots hinweg.
+  const sharedParity = 1 - parity;
+  return walk(
+    pools.shared,
+    yearSeed + SHARED_SEED * 104_729,
+    day * 12 + countParity(0, dayHour, sharedParity),
+    24
+  );
 }
 
 export function getGreeting(hour: number): Greeting {
-  const g = pickForHour(greetingPool(slotFor(hour)), hour);
+  const g = pickForHour(greetingPools(slotFor(hour)), hour);
   return { ...g, text: t(g.text), lang: t(g.lang) };
 }

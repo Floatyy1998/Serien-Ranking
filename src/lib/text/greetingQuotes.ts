@@ -9,7 +9,13 @@ export const quoteGreetings: Greeting[] = [
     title: 'The Empire Strikes Back',
     type: 'movie',
   },
-  { text: 'Hilf mir, Obi-Wan Kenobi', lang: 'Star Wars', title: 'Star Wars', type: 'movie' },
+  {
+    text: 'Hilf mir, Obi-Wan Kenobi',
+    noName: true,
+    lang: 'Star Wars',
+    title: 'Star Wars',
+    type: 'movie',
+  },
   { text: 'Das ist kein Mond', lang: 'Star Wars', title: 'Star Wars', type: 'movie' },
   {
     text: 'Rebellionen bauen auf Hoffnung',
@@ -56,6 +62,7 @@ export const quoteGreetings: Greeting[] = [
   },
   {
     text: 'Mein Schatz',
+    noName: true,
     lang: 'Der Herr der Ringe',
     title: 'The Lord of the Rings',
     type: 'movie',
@@ -87,6 +94,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'Ich gehe auf ein Abenteuer', lang: 'Der Hobbit', title: 'The Hobbit', type: 'movie' },
   {
     text: 'Du bist ein Zauberer, Harry',
+    noName: true,
     lang: 'Harry Potter',
     title: 'Harry Potter',
     type: 'movie',
@@ -185,6 +193,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'Puny god', lang: 'Avengers', title: 'The Avengers', type: 'movie' },
   {
     text: 'Mr. Stark, mir ist nicht gut',
+    noName: true,
     lang: 'Avengers',
     title: 'Avengers: Infinity War',
     type: 'movie',
@@ -257,7 +266,7 @@ export const quoteGreetings: Greeting[] = [
     title: 'Edge of Tomorrow',
     type: 'movie',
   },
-  { text: 'Grüße, Programme', lang: 'Tron', title: 'Tron', type: 'movie' },
+  { text: 'Grüße, Programme', noName: true, lang: 'Tron', title: 'Tron', type: 'movie' },
   { text: 'Wollen wir ein Spiel spielen', lang: 'WarGames', title: 'WarGames', type: 'movie' },
   { text: 'Tot oder lebendig, du kommst mit', lang: 'RoboCop', title: 'RoboCop', type: 'movie' },
   {
@@ -297,7 +306,7 @@ export const quoteGreetings: Greeting[] = [
     title: 'Pacific Rim',
     type: 'movie',
   },
-  { text: 'Game over, man', lang: 'Aliens', title: 'Aliens', type: 'movie' },
+  { text: 'Game over, {name}', lang: 'Aliens', title: 'Aliens', type: 'movie' },
   { text: 'Get to the choppa', lang: 'Predator', title: 'Predator', type: 'movie' },
   {
     text: 'Willkommen auf der Erde',
@@ -393,6 +402,7 @@ export const quoteGreetings: Greeting[] = [
   },
   {
     text: 'O Captain, mein Captain',
+    noName: true,
     lang: 'Der Club der toten Dichter',
     title: 'Dead Poets Society',
     type: 'movie',
@@ -451,7 +461,13 @@ export const quoteGreetings: Greeting[] = [
   },
   { text: 'Ja, ich denke, ich bin zurück', lang: 'John Wick', title: 'John Wick', type: 'movie' },
   { text: 'Ich werde dich finden', lang: '96 Hours', title: 'Taken', type: 'movie' },
-  { text: 'Willkommen zur Party, Kumpel', lang: 'Stirb Langsam', title: 'Die Hard', type: 'movie' },
+  {
+    text: 'Willkommen zur Party, Kumpel',
+    noName: true,
+    lang: 'Stirb Langsam',
+    title: 'Die Hard',
+    type: 'movie',
+  },
   {
     text: 'Ich spüre das Bedürfnis nach Geschwindigkeit',
     lang: 'Top Gun',
@@ -479,7 +495,7 @@ export const quoteGreetings: Greeting[] = [
     type: 'movie',
   },
   { text: 'Ein Royale mit Käse', lang: 'Pulp Fiction', title: 'Pulp Fiction', type: 'movie' },
-  { text: 'Zed ist tot, Baby', lang: 'Pulp Fiction', title: 'Pulp Fiction', type: 'movie' },
+  { text: 'Zed ist tot, {name}', lang: 'Pulp Fiction', title: 'Pulp Fiction', type: 'movie' },
   { text: 'Beweg deinen großen Zeh', lang: 'Kill Bill', title: 'Kill Bill: Vol. 1', type: 'movie' },
   { text: 'Nicht ganz mein Tempo', lang: 'Whiplash', title: 'Whiplash', type: 'movie' },
   { text: 'Auf die Narren, die träumen', lang: 'La La Land', title: 'La La Land', type: 'movie' },
@@ -506,6 +522,7 @@ export const quoteGreetings: Greeting[] = [
   },
   {
     text: 'Bleibt stilvoll, San Diego',
+    noName: true,
     lang: 'Anchorman',
     title: 'Anchorman: The Legend of Ron Burgundy',
     type: 'movie',
@@ -514,6 +531,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'The Dude abides', lang: 'The Big Lebowski', title: 'The Big Lebowski', type: 'movie' },
   {
     text: 'Yeah, baby',
+    noName: true,
     lang: 'Austin Powers',
     title: 'Austin Powers: International Man of Mystery',
     type: 'movie',
@@ -622,6 +640,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'Das Wohl der Allgemeinheit', lang: 'Hot Fuzz', title: 'Hot Fuzz', type: 'movie' },
   {
     text: 'Beetlejuice, Beetlejuice, Beetlejuice',
+    noName: true,
     lang: 'Beetlejuice',
     title: 'Beetlejuice',
     type: 'movie',
@@ -705,6 +724,7 @@ export const quoteGreetings: Greeting[] = [
   },
   {
     text: 'P. Sherman, 42 Wallaby Way, Sydney',
+    noName: true,
     lang: 'Findet Nemo',
     title: 'Finding Nemo',
     type: 'movie',
@@ -718,6 +738,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'Skadoosh', lang: 'Kung Fu Panda', title: 'Kung Fu Panda', type: 'movie' },
   {
     text: 'Einfach lächeln und winken, Jungs',
+    noName: true,
     lang: 'Madagascar',
     title: 'Madagascar',
     type: 'movie',
@@ -744,7 +765,13 @@ export const quoteGreetings: Greeting[] = [
     title: 'The Nightmare Before Christmas',
     type: 'movie',
   },
-  { text: 'Käse, Gromit', lang: 'Wallace & Gromit', title: 'Wallace & Gromit', type: 'movie' },
+  {
+    text: 'Käse, Gromit',
+    noName: true,
+    lang: 'Wallace & Gromit',
+    title: 'Wallace & Gromit',
+    type: 'movie',
+  },
   {
     text: 'Wenn wir freundlich und höflich sind, wird die Welt in Ordnung sein',
     lang: 'Paddington',
@@ -800,7 +827,13 @@ export const quoteGreetings: Greeting[] = [
     type: 'tv',
   },
   { text: 'Genau nach Plan', lang: 'Death Note', title: 'Death Note', type: 'tv' },
-  { text: 'See you, space cowboy', lang: 'Cowboy Bebop', title: 'Cowboy Bebop', type: 'tv' },
+  {
+    text: 'See you, space cowboy',
+    noName: true,
+    lang: 'Cowboy Bebop',
+    title: 'Cowboy Bebop',
+    type: 'tv',
+  },
   {
     text: 'Ich darf nicht weglaufen',
     lang: 'Neon Genesis Evangelion',
@@ -861,7 +894,7 @@ export const quoteGreetings: Greeting[] = [
     type: 'tv',
   },
   {
-    text: 'Ferb, ich weiß, was wir heute machen',
+    text: '{name}, ich weiß, was wir heute machen',
     lang: 'Phineas und Ferb',
     title: 'Phineas and Ferb',
     type: 'tv',
@@ -901,7 +934,13 @@ export const quoteGreetings: Greeting[] = [
     type: 'tv',
   },
   { text: 'Mmm … Donuts', lang: 'Die Simpsons', title: 'The Simpsons', type: 'tv' },
-  { text: 'Hi-diddly-ho, neighborino', lang: 'Die Simpsons', title: 'The Simpsons', type: 'tv' },
+  {
+    text: 'Hi-diddly-ho, neighborino',
+    noName: true,
+    lang: 'Die Simpsons',
+    title: 'The Simpsons',
+    type: 'tv',
+  },
   { text: 'Warum nicht Zoidberg', lang: 'Futurama', title: 'Futurama', type: 'tv' },
   {
     text: 'Oh mein Gott, sie haben Kenny getötet',
@@ -935,7 +974,13 @@ export const quoteGreetings: Greeting[] = [
     type: 'tv',
   },
   { text: 'Assistent des Regionalleiters', lang: 'The Office', title: 'The Office', type: 'tv' },
-  { text: 'Dunder Mifflin, hier ist Pam', lang: 'The Office', title: 'The Office', type: 'tv' },
+  {
+    text: 'Dunder Mifflin, hier ist Pam',
+    noName: true,
+    lang: 'The Office',
+    title: 'The Office',
+    type: 'tv',
+  },
   {
     text: 'Bears. Beets. Battlestar Galactica',
     lang: 'The Office',
@@ -1038,7 +1083,13 @@ export const quoteGreetings: Greeting[] = [
     title: 'Married... with Children',
     type: 'tv',
   },
-  { text: 'Hello, Wisconsin', lang: 'Die wilden Siebziger', title: 'That ’70s Show', type: 'tv' },
+  {
+    text: 'Hello, Wisconsin',
+    noName: true,
+    lang: 'Die wilden Siebziger',
+    title: 'That ’70s Show',
+    type: 'tv',
+  },
   {
     text: 'Hast du versucht, es aus- und wieder einzuschalten',
     lang: 'The IT Crowd',
@@ -1052,18 +1103,24 @@ export const quoteGreetings: Greeting[] = [
     title: 'Sex and the City',
     type: 'tv',
   },
-  { text: 'XOXO, Gossip Girl', lang: 'Gossip Girl', title: 'Gossip Girl', type: 'tv' },
+  {
+    text: 'XOXO, Gossip Girl',
+    noName: true,
+    lang: 'Gossip Girl',
+    title: 'Gossip Girl',
+    type: 'tv',
+  },
   { text: 'Du weißt, du liebst mich', lang: 'Gossip Girl', title: 'Gossip Girl', type: 'tv' },
   { text: 'Ich brenne für dich', lang: 'Bridgerton', title: 'Bridgerton', type: 'tv' },
   { text: 'Ich bin die Gefahr', lang: 'Breaking Bad', title: 'Breaking Bad', type: 'tv' },
-  { text: 'Jesse, wir müssen kochen', lang: 'Breaking Bad', title: 'Breaking Bad', type: 'tv' },
+  { text: '{name}, wir müssen kochen', lang: 'Breaking Bad', title: 'Breaking Bad', type: 'tv' },
   { text: 'Keine halben Sachen', lang: 'Breaking Bad', title: 'Breaking Bad', type: 'tv' },
   { text: 'Ich hab es für mich getan', lang: 'Breaking Bad', title: 'Breaking Bad', type: 'tv' },
-  { text: 'S’all good, man', lang: 'Better Call Saul', title: 'Better Call Saul', type: 'tv' },
+  { text: 'S’all good, {name}', lang: 'Better Call Saul', title: 'Better Call Saul', type: 'tv' },
   { text: 'Whaddya gonna do', lang: 'Die Sopranos', title: 'The Sopranos', type: 'tv' },
   { text: 'Gabagool', lang: 'Die Sopranos', title: 'The Sopranos', type: 'tv' },
   { text: 'It’s all in the game', lang: 'The Wire', title: 'The Wire', type: 'tv' },
-  { text: 'Not great, Bob', lang: 'Mad Men', title: 'Mad Men', type: 'tv' },
+  { text: 'Not great, {name}', lang: 'Mad Men', title: 'Mad Men', type: 'tv' },
   { text: 'Boar on the floor', lang: 'Succession', title: 'Succession', type: 'tv' },
   { text: 'Chaos ist eine Leiter', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
   {
@@ -1092,7 +1149,7 @@ export const quoteGreetings: Greeting[] = [
     title: 'Westworld',
     type: 'tv',
   },
-  { text: 'See you in another life, brother', lang: 'Lost', title: 'Lost', type: 'tv' },
+  { text: 'See you in another life, {name}', lang: 'Lost', title: 'Lost', type: 'tv' },
   { text: 'Ich will glauben', lang: 'Akte X', title: 'The X-Files', type: 'tv' },
   { text: 'Trau niemandem', lang: 'Akte X', title: 'The X-Files', type: 'tv' },
   { text: 'Bored now', lang: 'Buffy', title: 'Buffy the Vampire Slayer', type: 'tv' },
@@ -1150,7 +1207,7 @@ export const quoteGreetings: Greeting[] = [
     title: 'Severance',
     type: 'tv',
   },
-  { text: 'Yes, Chef', lang: 'The Bear', title: 'The Bear', type: 'tv' },
+  { text: 'Yes, Chef', noName: true, lang: 'The Bear', title: 'The Bear', type: 'tv' },
   { text: 'Jede Sekunde zählt', lang: 'The Bear', title: 'The Bear', type: 'tv' },
   { text: 'Ertragen und überleben', lang: 'The Last of Us', title: 'The Last of Us', type: 'tv' },
   { text: 'Krieg. Krieg bleibt immer gleich', lang: 'Fallout', title: 'Fallout', type: 'tv' },
@@ -1175,7 +1232,7 @@ export const quoteGreetings: Greeting[] = [
   { text: 'Zu Asche, zu Staub', lang: 'Babylon Berlin', title: 'Babylon Berlin', type: 'tv' },
   { text: 'Demogorgon', lang: 'Stranger Things', title: 'Stranger Things', type: 'tv' },
   { text: 'Frak', lang: 'Battlestar Galactica', title: 'Battlestar Galactica', type: 'tv' },
-  { text: 'Jaffa, kree', lang: 'Stargate SG-1', title: 'Stargate SG-1', type: 'tv' },
+  { text: 'Jaffa, kree', noName: true, lang: 'Stargate SG-1', title: 'Stargate SG-1', type: 'tv' },
   {
     text: 'Klingt komisch, ist aber so',
     lang: 'Die Sendung mit der Maus',
@@ -1219,6 +1276,7 @@ export const quoteGreetings: Greeting[] = [
   },
   {
     text: 'Chantal, heul leise',
+    noName: true,
     lang: 'Fack ju Göhte',
     title: 'Fack ju Göhte',
     type: 'movie',
@@ -1233,7 +1291,7 @@ export const quoteGreetings: Greeting[] = [
     deOnly: true,
   },
   {
-    text: 'Es gibt Reis, Baby',
+    text: 'Es gibt Reis, {name}',
     lang: 'Helge Schneider',
     title: 'Helge Schneider',
     type: 'tv',
@@ -1265,7 +1323,13 @@ export const slotQuoteGreetings: Record<'morning' | 'afternoon' | 'evening' | 'n
     morning: [
       { text: 'Troy and Abed in the morning', lang: 'Community', title: 'Community', type: 'tv' },
       { text: 'Verdammt guter Kaffee', lang: 'Twin Peaks', title: 'Twin Peaks', type: 'tv' },
-      { text: 'Kaffee, Kaffee, Kaffee', lang: 'Gilmore Girls', title: 'Gilmore Girls', type: 'tv' },
+      {
+        text: 'Kaffee, Kaffee, Kaffee',
+        noName: true,
+        lang: 'Gilmore Girls',
+        title: 'Gilmore Girls',
+        type: 'tv',
+      },
       {
         text: 'Der Morgen ist für Kaffee und Nachdenken da',
         lang: 'Stranger Things',
@@ -1288,6 +1352,7 @@ export const slotQuoteGreetings: Record<'morning' | 'afternoon' | 'evening' | 'n
     afternoon: [
       {
         text: 'Mahlzeit, Kollegen',
+        noName: true,
         lang: 'Stromberg',
         title: 'Stromberg',
         type: 'tv',

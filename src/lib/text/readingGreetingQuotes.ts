@@ -233,6 +233,7 @@ export const moreSlotQuotes: Partial<Record<Slot, ReadingGreetingEntry[]>> = {
     },
     {
       text: 'Bitte, Sir, ich möchte noch etwas',
+      noName: true,
       work: 'Oliver Twist',
       author: 'Charles Dickens',
       medium: 'books',
@@ -481,7 +482,7 @@ export const moreSlotQuotes: Partial<Record<Slot, ReadingGreetingEntry[]>> = {
       medium: 'manga',
     },
     { text: 'Ich bin Held aus Hobby', work: 'One-Punch Man', author: 'ONE', medium: 'manga' },
-    { text: 'Aye Sir', work: 'Fairy Tail', author: 'Hiro Mashima', medium: 'manga' },
+    { text: 'Aye Sir', noName: true, work: 'Fairy Tail', author: 'Hiro Mashima', medium: 'manga' },
     {
       text: 'O kawaii koto',
       work: 'Kaguya-sama: Love is War',

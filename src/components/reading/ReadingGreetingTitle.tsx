@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useCurrentHour } from '../../hooks/ui/useCurrentHour';
 import { suggestionScope, type ReadingAreas } from '../../lib/reading/readingMedium';
+import { greetingWithName } from '../../lib/text/greetingName';
 import { getReadingGreeting } from '../../lib/text/readingGreetings';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -33,6 +34,7 @@ export const ReadingGreetingTitle = ({
   const greeting = useMemo(() => getReadingGreeting(hour, scope), [hour, scope]);
   const [infoOpen, setInfoOpen] = useState(false);
   const name = displayName?.split(' ')[0] || 'User';
+  const shown = greetingWithName(greeting.text, name, greeting.noName);
 
   useEffect(() => {
     if (!infoOpen) return;
@@ -135,9 +137,9 @@ export const ReadingGreetingTitle = ({
             WebkitUserSelect: 'none',
           }}
         >
-          {greeting.text}
+          {shown.text}
         </span>
-        <span>, {name}!</span>
+        <span>{shown.tail}</span>
       </GradientText>
     </>
   );

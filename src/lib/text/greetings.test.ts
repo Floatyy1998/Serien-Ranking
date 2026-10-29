@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getGreeting, greetingPool } from './greetings';
+import { getGreeting, greetingPools } from './greetings';
 
 // getGreeting waehlt den Slot ueber den `hour`-Parameter, den Tages-Seed aber
 // aus `new Date()`. Fake-Timers fixieren das Datum, damit die Auswahl
@@ -141,28 +141,59 @@ describe('getGreeting — Determinismus & Rotation', () => {
   });
 });
 
-describe('getGreeting — Jahres-Permutation ohne frühe Wiederholung', () => {
+describe('getGreeting — Reihen ohne frühe Wiederholung', () => {
   const DAY = 86_400_000;
+  const ALL_HOURS = Array.from({ length: 24 }, (_, i) => i);
+  const SLOT_HOURS = [
+    [5, 6, 7, 8, 9, 10, 11],
+    [12, 13, 14, 15, 16],
+    [17, 18, 19, 20, 21],
+    [22, 23, 0, 1, 2, 3, 4],
+  ];
+  const quotes = new Set(greetingPools('morning').shared.map((g) => g.text));
 
-  it('zur selben Stunde wiederholt sich innerhalb eines Jahres kein Gruß', () => {
-    expect(greetingPool('evening').length).toBeGreaterThan(365);
-    const base = Date.UTC(2027, 0, 1, 12, 0, 0);
-    const texts: string[] = [];
-    for (let i = 0; i < 365; i++) {
-      vi.setSystemTime(new Date(base + i * DAY));
-      texts.push(getGreeting(19).text);
+  function shown(hours: number[], days: number, from = Date.UTC(2027, 2, 1, 12)): string[] {
+    const out: string[] = [];
+    for (let i = 0; i < days; i++) {
+      vi.setSystemTime(new Date(from + i * DAY));
+      for (const h of hours) out.push(getGreeting(h).text);
     }
-    expect(new Set(texts).size).toBe(365);
+    return out;
+  }
+
+  it('Zitate wiederholen sich 30 Tage lang zu keiner Stunde — auch nicht über Slots hinweg', () => {
+    const seen = shown(ALL_HOURS, 30).filter((t) => quotes.has(t));
+    expect(seen.length).toBeGreaterThan(350);
+    expect(new Set(seen).size).toBe(seen.length);
   });
 
-  it('über alle Stunden eines Slots gibt es 40 Tage lang keine Wiederholung', () => {
-    const base = Date.UTC(2027, 2, 1, 12, 0, 0);
-    const texts: string[] = [];
-    for (let i = 0; i < 40; i++) {
-      vi.setSystemTime(new Date(base + i * DAY));
-      for (const h of [5, 6, 7, 8, 9, 10, 11]) texts.push(getGreeting(h).text);
+  it('Stunden wechseln zwischen Slot-Gruß und Zitat, am Folgetag versetzt', () => {
+    vi.setSystemTime(new Date('2027-03-01T12:00:00'));
+    const dayA = SLOT_HOURS[2].map((h) => quotes.has(getGreeting(h).text));
+    vi.setSystemTime(new Date('2027-03-02T12:00:00'));
+    const dayB = SLOT_HOURS[2].map((h) => quotes.has(getGreeting(h).text));
+    const a = dayA[0];
+    expect(dayA).toEqual([a, !a, a, !a, a]);
+    expect(dayB).toEqual([!a, a, !a, a, !a]);
+  });
+
+  it('Slot-Grüße wiederholen sich im eigenen Slot 14 Tage lang nicht', () => {
+    for (const hours of SLOT_HOURS) {
+      const seen = shown(hours, 14).filter((t) => !quotes.has(t));
+      expect(seen.length).toBeGreaterThan(20);
+      expect(new Set(seen).size).toBe(seen.length);
     }
-    expect(new Set(texts).size).toBe(texts.length);
+  });
+
+  it('zur selben Stunde: 200 Tage kein Zitat, 100 Tage kein Slot-Gruß doppelt', () => {
+    for (const h of [8, 14, 19, 23]) {
+      const q = shown([h], 200).filter((t) => quotes.has(t));
+      expect(q.length).toBe(100);
+      expect(new Set(q).size).toBe(q.length);
+      const own = shown([h], 100).filter((t) => !quotes.has(t));
+      expect(own.length).toBe(50);
+      expect(new Set(own).size).toBe(own.length);
+    }
   });
 
   it('jedes Jahr mischt den Pool neu', () => {
@@ -183,5 +214,20 @@ describe('getGreeting — Jahres-Permutation ohne frühe Wiederholung', () => {
     expect(morning.has('Es gibt keinen Löffel')).toBe(true);
     expect(morning.has('Verdammt guter Kaffee')).toBe(true);
     expect(morning.has('Heute Abend ist die Nacht')).toBe(false);
+  });
+});
+
+describe('Grüße ohne doppelte Anrede', () => {
+  it('kein Gruß endet auf eine Anrede, wenn der Nutzername noch dahinter kommt', () => {
+    const texts = new Set<string>();
+    for (const slot of ['morning', 'afternoon', 'evening', 'night'] as const) {
+      const { own, shared } = greetingPools(slot);
+      for (const g of [...own, ...shared]) {
+        if (!g.noName && !g.text.includes('{name}')) texts.add(g.text);
+      }
+    }
+    const vocative =
+      /, (?:[A-ZÄÖÜ][a-zäöüß]+|mate|love|man|friend|all|everyone|brother|baby|bitch|kree|neighborino|cowboy|pal|dude|kid)$/;
+    expect([...texts].filter((t) => vocative.test(t))).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import { t } from '../../services/i18n';
 import { usesArea, type ReadingAreas } from '../reading/readingMedium';
-import { pickForHour, slotFor, type Slot } from './greetings';
+import { pickForHour, slotFor, type GreetingPools, type Slot } from './greetings';
 import { moreQuotes, moreSlotGreetings, moreSlotQuotes } from './readingGreetingQuotes';
 
 export interface ReadingGreetingEntry {
@@ -10,6 +10,8 @@ export interface ReadingGreetingEntry {
   author?: string;
   /** `any`: passt zu jedem Lesebereich. */
   medium: 'any' | 'books' | 'manga';
+  /** Spricht schon jemanden an — kein Nutzername dahinter. */
+  noName?: boolean;
 }
 
 export interface ReadingGreeting {
@@ -18,6 +20,7 @@ export interface ReadingGreeting {
   source: string | null;
   /** Welches Werk ein Tipp auf den Gruß öffnet. */
   search: { query: string; medium: 'books' | 'manga'; author?: string } | null;
+  noName?: boolean;
 }
 
 const SLOT_GREETINGS: Record<Slot, ReadingGreetingEntry[]> = {
@@ -194,27 +197,39 @@ const QUOTES: ReadingGreetingEntry[] = [
   { text: 'Genau nach Plan', work: 'Death Note', author: 'Tsugumi Ohba', medium: 'manga' },
 ];
 
+/** Slot-Grüße und zeitneutrale Zitate, die zu den genutzten Lesebereichen passen. */
+export function readingGreetingPools(
+  slot: Slot,
+  areas: ReadingAreas
+): GreetingPools<ReadingGreetingEntry> {
+  const fits = (g: ReadingGreetingEntry) => g.medium === 'any' || usesArea(areas, g.medium);
+  return {
+    own: [
+      ...SLOT_GREETINGS[slot],
+      ...moreSlotGreetings[slot],
+      ...(SLOT_QUOTES[slot] ?? []),
+      ...(moreSlotQuotes[slot] ?? []),
+    ].filter(fits),
+    shared: [...QUOTES, ...moreQuotes].filter(fits),
+  };
+}
+
 /** Alle Grüße eines Slots, die zu den genutzten Lesebereichen passen. */
 export function readingGreetingPool(slot: Slot, areas: ReadingAreas): ReadingGreetingEntry[] {
-  return [
-    ...SLOT_GREETINGS[slot],
-    ...moreSlotGreetings[slot],
-    ...(SLOT_QUOTES[slot] ?? []),
-    ...(moreSlotQuotes[slot] ?? []),
-    ...QUOTES,
-    ...moreQuotes,
-  ].filter((g) => g.medium === 'any' || usesArea(areas, g.medium));
+  const { own, shared } = readingGreetingPools(slot, areas);
+  return [...own, ...shared];
 }
 
 // Eigene Permutation, damit Lese- und Serien-Grüße nicht im Gleichschritt wechseln.
 const SEED_OFFSET = 40;
 
 export function getReadingGreeting(hour: number, areas: ReadingAreas = 'both'): ReadingGreeting {
-  const g = pickForHour(readingGreetingPool(slotFor(hour), areas), hour, SEED_OFFSET);
+  const g = pickForHour(readingGreetingPools(slotFor(hour), areas), hour, SEED_OFFSET);
   const work = g.work ? t(g.work) : null;
   return {
     text: t(g.text),
     source: work || g.author ? [work, g.author].filter(Boolean).join(' · ') : null,
     search: work && g.medium !== 'any' ? { query: work, medium: g.medium, author: g.author } : null,
+    noName: g.noName,
   };
 }
