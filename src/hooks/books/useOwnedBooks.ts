@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { bookMatchKey, bookTitleKey, findMangaForBook } from '../../lib/books/bookIdentity';
+import { createBookIndex, findMangaForBook } from '../../lib/books/bookIdentity';
 import type { Book } from '../../types/Book';
 
 interface OwnedLookup {
@@ -12,37 +12,11 @@ interface OwnedLookup {
   isbn13?: string;
 }
 
-/** Findet zu einem Treffer das eigene Buch — über ID, ISBN oder Titel + Autor. */
+/** Findet zu einem Treffer das eigene Buch — über ID, Hardcover-ID, ISBN oder Titel samt Band/Beteiligten. */
 export function useOwnedBooks() {
   const { allBookList } = useBooksList();
-  const index = useMemo(() => {
-    const map = new Map<string, Book>();
-    const byTitle = new Map<string, Book>();
-    for (const b of allBookList) {
-      map.set(b.id, b);
-      if (b.hardcoverId) map.set(`hc#${b.hardcoverId}`, b);
-      map.set(bookMatchKey(b.title, b.authors), b);
-      if (b.isbn13) map.set(b.isbn13, b);
-      if (!byTitle.has(bookTitleKey(b.title))) byTitle.set(bookTitleKey(b.title), b);
-    }
-    return { map, byTitle };
-  }, [allBookList]);
-
-  return useCallback(
-    (item: OwnedLookup): Book | undefined => {
-      const owned =
-        index.map.get(item.id) ??
-        (item.hardcoverId ? index.map.get(`hc#${item.hardcoverId}`) : undefined) ??
-        (item.isbn13 ? index.map.get(item.isbn13) : undefined) ??
-        index.map.get(bookMatchKey(item.title, item.authors));
-      if (owned) return owned;
-      const sameTitle = index.byTitle.get(bookTitleKey(item.title));
-      return sameTitle && (!item.authors?.length || !sameTitle.authors?.length)
-        ? sameTitle
-        : undefined;
-    },
-    [index]
-  );
+  const index = useMemo(() => createBookIndex(allBookList), [allBookList]);
+  return useCallback((item: OwnedLookup): Book | undefined => index.find(item), [index]);
 }
 
 /** Manga-Band als Buchtreffer, dessen Reihe schon in den eigenen Manga steht. */

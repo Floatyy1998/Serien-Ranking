@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
-import { bookMatchKey } from '../../../lib/books/bookIdentity';
+import { isSameBookIdentity } from '../../../lib/books/bookIdentity';
 import { dbRef, paths } from '../../../services/db/ref';
 import type { Book } from '../../../types/Book';
 
@@ -69,7 +69,7 @@ export const useFriendsOwnedBooks = (enabled = true): FriendOwnedBook[] => {
   return list;
 };
 
-/** Freunde, die genau dieses Buch besitzen (gleiche ID oder gleicher Titel + Autor). */
+/** Freunde, die genau dieses Buch besitzen (gleiche ID oder gleicher Titel samt Band/Beteiligten). */
 export const useFriendsOwningBook = (
   id: string | undefined,
   title: string | undefined,
@@ -78,9 +78,8 @@ export const useFriendsOwningBook = (
   const all = useFriendsOwnedBooks(!!id);
   return useMemo(() => {
     if (!id) return [];
-    const key = title ? bookMatchKey(title, authors) : '';
     return all.filter(
-      (e) => e.book.id === id || (key && bookMatchKey(e.book.title, e.book.authors) === key)
+      (e) => e.book.id === id || (!!title && isSameBookIdentity({ id, title, authors }, e.book))
     );
   }, [all, id, title, authors]);
 };

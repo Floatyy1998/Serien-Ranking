@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notifyBookEventsChanged } from '../../hooks/books/useBookEvents';
-import { bookMatchKey } from '../../lib/books/bookIdentity';
+import { createBookIndex } from '../../lib/books/bookIdentity';
 import { buildImportPreview, type ImportPreview } from '../../lib/books/goodreadsCsv';
 import { hapticCelebrate } from '../../lib/interaction/haptics';
 import { importBooks } from '../../services/books/bookService';
@@ -32,24 +32,10 @@ export const BookImportPage = () => {
   const [progress, setProgress] = useState(0);
   const [imported, setImported] = useState(0);
 
-  const existing = useMemo(() => {
-    const keys = new Set<string>();
-    for (const b of allBookList) {
-      keys.add(b.id);
-      keys.add(bookMatchKey(b.title, b.authors));
-      if (b.isbn13) keys.add(b.isbn13);
-    }
-    return keys;
-  }, [allBookList]);
+  const existing = useMemo(() => createBookIndex(allBookList), [allBookList]);
 
   const fresh = useMemo(
-    () =>
-      preview?.books.filter(
-        (b) =>
-          !existing.has(b.id) &&
-          !(b.isbn13 && existing.has(b.isbn13)) &&
-          !existing.has(bookMatchKey(b.title, b.authors))
-      ) ?? [],
+    () => preview?.books.filter((b) => !existing.has(b)) ?? [],
     [preview, existing]
   );
 

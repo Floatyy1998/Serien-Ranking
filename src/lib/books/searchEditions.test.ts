@@ -41,10 +41,25 @@ describe('isSameBook', () => {
   it('hält gleichnamige Bücher verschiedener Autoren auseinander', () => {
     expect(
       isSameBook(
-        hit({ title: 'Dune', authors: ['Frank Herbert'] }),
-        hit({ title: 'Dune', authors: ['Brian Herbert Smith'] })
+        hit({ id: 'dune-herbert', title: 'Dune', authors: ['Frank Herbert'] }),
+        hit({ id: 'dune-howey', title: 'Dune', authors: ['Hugh Howey'] })
       )
     ).toBe(false);
+  });
+
+  it('fasst einen Reihenband zusammen, auch wenn die Quellen verschiedene Beteiligte nennen', () => {
+    expect(
+      isSameBook(
+        hit({ id: 'dnb', title: 'Marry my husband 7', authors: ['Studio LICO'] }),
+        hit({ id: 'gb', title: 'Marry My Husband 7', authors: ['Sojak Sung'] })
+      )
+    ).toBe(true);
+    expect(
+      isSameBook(
+        hit({ id: 'a', title: 'Irgendein Titel', isbn13: '9783551630315' }),
+        hit({ id: 'b', title: 'Marry My Husband 7', isbn13: '9783551630315' })
+      )
+    ).toBe(true);
   });
 });
 

@@ -2,7 +2,7 @@ import { AutoAwesome, Redeem } from '@mui/icons-material';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../../components/ui';
-import { bookMatchKey } from '../../lib/books/bookIdentity';
+import { bookMatchKey, createBookIndex } from '../../lib/books/bookIdentity';
 import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { capPerAuthor } from '../../lib/books/discoverMix';
 import { hasReadingTaste, tasteGenres } from '../../lib/books/readingTaste';
@@ -68,11 +68,7 @@ export const FriendBooksInsights = memo(function FriendBooksInsights({
   }, [topGenre]);
 
   const ideas = useMemo(() => {
-    const has = new Set<string>();
-    for (const b of books) {
-      has.add(b.id);
-      has.add(bookMatchKey(b.title, b.authors));
-    }
+    const mine = createBookIndex(books);
     const out: GiftIdea[] = [];
     const seen = new Set<string>();
     const push = (idea: GiftIdea, matchKey: string) => {
@@ -132,7 +128,7 @@ export const FriendBooksInsights = memo(function FriendBooksInsights({
     for (const result of genrePicks) {
       if (picks >= MAX_TASTE_PICKS || !genre) break;
       const key = bookMatchKey(result.title, result.authors);
-      if (has.has(result.id) || has.has(key)) continue;
+      if (mine.has(result)) continue;
       picks += 1;
       push(
         {

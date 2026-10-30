@@ -1,13 +1,10 @@
 import type { BookSearchResult } from '../../types/Book';
-import { bookAuthorKey, bookTitleKey } from './bookIdentity';
+import { bookTitleKey, isSameBookIdentity, splitVolumeKey } from './bookIdentity';
 import { stripResult } from './bookSearchMapping';
 
-/** Gleicher Titel samt Band und gleicher Autor — fehlt einer Ausgabe der Autor, reicht der Titel. */
+/** Gleiche ISBN oder gleicher Titel samt Band — Beteiligte müssen sich nur ohne Bandnummer treffen. */
 export function isSameBook(a: BookSearchResult, b: BookSearchResult): boolean {
-  if (bookTitleKey(a.title) !== bookTitleKey(b.title)) return false;
-  const left = bookAuthorKey(a.authors);
-  const right = bookAuthorKey(b.authors);
-  return !left || !right || left === right;
+  return isSameBookIdentity(a, b);
 }
 
 const richness = (r: BookSearchResult) =>
@@ -40,10 +37,7 @@ export function mergeEditions(results: BookSearchResult[], language: string): Bo
   return merged;
 }
 
-const volumeOf = (r: BookSearchResult) => {
-  const match = /^(.+) (\d{1,4})$/.exec(bookTitleKey(r.title));
-  return match ? { series: match[1], number: Number(match[2]) } : null;
-};
+const volumeOf = (r: BookSearchResult) => splitVolumeKey(bookTitleKey(r.title));
 
 /** Bände einer Reihe stehen zusammen und aufsteigend — dort, wo der bestplatzierte Band stand. */
 export function orderSeriesVolumes(results: BookSearchResult[]): BookSearchResult[] {

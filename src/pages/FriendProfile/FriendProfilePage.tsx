@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useBooksList } from '../../contexts/BooksListContext';
-import { bookMatchKey } from '../../lib/books/bookIdentity';
+import { createBookIndex, type BookIdentityLike } from '../../lib/books/bookIdentity';
 import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
 import { progressPercent as bookProgressPercent, pagesReadOf } from '../../lib/books/bookProgress';
 import { addBookCopy } from '../../services/books/bookService';
@@ -255,16 +255,8 @@ export const FriendProfilePage = memo(() => {
   }, [friendManga.list, filters.search, friendId]);
   const friendBooks = useFriendBooks(restricted || !darfSehen ? undefined : friendId);
   const { allBookList: ownBooks, bookList: ownVisibleBooks } = useBooksList();
-  const ownBookKeys = useMemo(() => {
-    const keys = new Set<string>();
-    for (const b of ownBooks) {
-      keys.add(b.id);
-      keys.add(bookMatchKey(b.title, b.authors));
-    }
-    return keys;
-  }, [ownBooks]);
-  const ownsBook = (b: { id: string; title: string; authors?: string[] }) =>
-    ownBookKeys.has(b.id) || ownBookKeys.has(bookMatchKey(b.title, b.authors));
+  const ownBookIndex = useMemo(() => createBookIndex(ownBooks), [ownBooks]);
+  const ownsBook = (b: BookIdentityLike) => ownBookIndex.has(b);
   const openBookResult = useOpenResult();
   const [addingBookId, setAddingBookId] = useState<string | null>(null);
   const addBookFromFriend = async (book: (typeof friendBooks.list)[number]) => {

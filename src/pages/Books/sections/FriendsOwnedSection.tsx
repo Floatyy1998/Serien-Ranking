@@ -2,7 +2,7 @@ import { PeopleAlt } from '@mui/icons-material';
 import React, { useMemo } from 'react';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { bookMatchKey } from '../../../lib/books/bookIdentity';
+import { bookMatchKey, createBookIndex } from '../../../lib/books/bookIdentity';
 import { bookAsResult } from '../../../lib/books/bookSearchMapping';
 import { t } from '../../../services/i18n';
 import type { Book } from '../../../types/Book';
@@ -17,15 +17,11 @@ export const FriendsOwnedSection: React.FC<{ ownBooks: Book[] }> = ({ ownBooks }
   const all = useFriendsOwnedBooks();
 
   const groups = useMemo(() => {
-    const mine = new Set<string>();
-    for (const b of ownBooks) {
-      mine.add(b.id);
-      mine.add(bookMatchKey(b.title, b.authors));
-    }
+    const mine = createBookIndex(ownBooks);
     const byKey = new Map<string, { book: Book; owners: string[] }>();
     for (const { book, friendName } of all) {
       const key = bookMatchKey(book.title, book.authors);
-      if (mine.has(book.id) || mine.has(key)) continue;
+      if (mine.has(book)) continue;
       const hit = byKey.get(key);
       if (hit) hit.owners.push(friendName);
       else byKey.set(key, { book, owners: [friendName] });

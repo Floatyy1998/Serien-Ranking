@@ -75,6 +75,93 @@ export function bookMatchKey(title: string, authors: string[] | undefined): stri
   return `${bookTitleKey(title)}|${bookAuthorKey(authors)}`;
 }
 
+/** Bandnummer am Ende des Titelschlüssels: „marry my husband 7" → Reihe + Band, sonst null. */
+export function splitVolumeKey(titleKey: string): { series: string; number: number } | null {
+  const match = /^(.+) (\d{1,4})$/.exec(titleKey);
+  return match ? { series: match[1], number: Number(match[2]) } : null;
+}
+
+// Wörter, die keine Person bezeichnen — „Studio LICO" und „Studio Pierrot" treffen sich nicht über „studio".
+const GENERIC_AUTHOR_WORDS = new Set([
+  'studio',
+  'team',
+  'comics',
+  'verlag',
+  'various',
+  'diverse',
+  'anonym',
+  'anonymous',
+  'unknown',
+  'unbekannt',
+]);
+
+/** Alle Namensteile aller Beteiligten — Reihenfolge („Sung Sojak"/„Sojak Sung") und Mitwirkende sind egal. */
+export function bookAuthorTokens(authors: string[] | undefined): Set<string> {
+  const tokens = new Set<string>();
+  for (const author of authors ?? []) {
+    for (const token of compactWords(normalizeBookText(author)).split(' ')) {
+      if (token.length >= 2 && !GENERIC_AUTHOR_WORDS.has(token)) tokens.add(token);
+    }
+  }
+  return tokens;
+}
+
+/** Beteiligte verträglich: eine Seite nennt niemanden, oder beide teilen einen Namensteil. */
+export function sameBookAuthors(a: string[] | undefined, b: string[] | undefined): boolean {
+  const left = bookAuthorTokens(a);
+  const right = bookAuthorTokens(b);
+  if (left.size === 0 || right.size === 0) return true;
+  for (const token of left) if (right.has(token)) return true;
+  return false;
+}
+
+export interface BookIdentityLike {
+  id?: string;
+  title: string;
+  authors?: string[];
+  isbn13?: string;
+  hardcoverId?: number;
+}
+
+/**
+ * Dasselbe Buch über Quellen und Ausgaben hinweg: gleiche ID, Hardcover-ID oder ISBN, sonst gleicher Titel.
+ * Bei Reihenbänden („Marry my husband 7") entscheidet der Titel samt Band allein — die Quellen nennen mal
+ * die Autorin, mal das Zeichenstudio; ohne Band müssen sich die Beteiligten in einem Namensteil treffen.
+ */
+export function isSameBookIdentity(a: BookIdentityLike, b: BookIdentityLike): boolean {
+  if (a.id && a.id === b.id) return true;
+  if (a.hardcoverId && a.hardcoverId === b.hardcoverId) return true;
+  if (a.isbn13 && a.isbn13 === b.isbn13) return true;
+  const key = bookTitleKey(a.title);
+  if (key !== bookTitleKey(b.title)) return false;
+  return !!splitVolumeKey(key) || sameBookAuthors(a.authors, b.authors);
+}
+
+/** Nachschlagewerk über eine Buchliste: findet zu einem Treffer das passende eigene Buch. */
+export function createBookIndex<T extends BookIdentityLike>(books: T[]) {
+  const byId = new Map<string, T>();
+  const byIsbn = new Map<string, T>();
+  const byHardcover = new Map<number, T>();
+  const byTitle = new Map<string, T[]>();
+  for (const book of books) {
+    if (book.id) byId.set(book.id, book);
+    if (book.isbn13 && !byIsbn.has(book.isbn13)) byIsbn.set(book.isbn13, book);
+    if (book.hardcoverId && !byHardcover.has(book.hardcoverId)) {
+      byHardcover.set(book.hardcoverId, book);
+    }
+    const key = bookTitleKey(book.title);
+    const list = byTitle.get(key);
+    if (list) list.push(book);
+    else byTitle.set(key, [book]);
+  }
+  const find = (item: BookIdentityLike): T | undefined =>
+    (item.id ? byId.get(item.id) : undefined) ??
+    (item.hardcoverId ? byHardcover.get(item.hardcoverId) : undefined) ??
+    (item.isbn13 ? byIsbn.get(item.isbn13) : undefined) ??
+    byTitle.get(bookTitleKey(item.title))?.find((book) => isSameBookIdentity(book, item));
+  return { find, has: (item: BookIdentityLike): boolean => !!find(item) };
+}
+
 type MangaTitles = Pick<Manga, 'title' | 'titleEnglish' | 'titleRomaji'>;
 
 /** Ein Manga-Band als Buchtreffer: Reihentitel plus höchstens eine Bandnummer, kein Roman. */

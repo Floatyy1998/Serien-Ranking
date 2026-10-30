@@ -4,9 +4,12 @@ import { eventPages, readingStreak, type CompactBookEvent } from './bookEvents';
 import {
   bookMatchKey,
   bookTitleKey,
+  createBookIndex,
   findMangaForBook,
+  isSameBookIdentity,
   looksLikeIsbn,
   pickIsbn13,
+  sameBookAuthors,
   toIsbn13,
 } from './bookIdentity';
 import { applyPageUpdate, applyStatusChange, pagesReadOf, progressPercent } from './bookProgress';
@@ -66,6 +69,62 @@ describe('bookIdentity', () => {
     expect(bookTitleKey(band2)).toBe(bookTitleKey('Requiem of the Rose King, Vol. 2'));
     expect(bookMatchKey(band2, ['Aya Kanno'])).not.toBe(bookMatchKey(band1, ['Aya Kanno']));
     expect(bookTitleKey('Chernobyl: Die Katastrophe 1986')).toBe('chernobyl');
+  });
+});
+
+describe('isSameBookIdentity', () => {
+  // Gemeldete Dublette (Ticket 30.10.2026): DNB nennt das Zeichenstudio, Google die Autorin in anderer Reihenfolge
+  const dnb = {
+    id: 'dnb-9783551630315',
+    title: 'Marry my husband 7',
+    authors: ['Studio LICO'],
+    isbn13: '9783551630315',
+  };
+  const google = { id: 'gb-abc', title: 'Marry My Husband 7', authors: ['Sojak Sung'] };
+
+  it('gleicht Beteiligte über Namensreihenfolge und Mitwirkende ab', () => {
+    expect(sameBookAuthors(['Sung Sojak'], ['Sojak Sung'])).toBe(true);
+    expect(sameBookAuthors(['Studio LICO', 'Sung Sojak'], ['Sojak Sung'])).toBe(true);
+    expect(sameBookAuthors(['Frank Herbert'], ['Brian Herbert'])).toBe(true);
+    expect(sameBookAuthors(['Studio LICO'], ['Studio Pierrot'])).toBe(false);
+    expect(sameBookAuthors([], ['Irgendwer'])).toBe(true);
+  });
+
+  it('erkennt einen Reihenband auch mit anders genannten Beteiligten', () => {
+    expect(isSameBookIdentity(dnb, google)).toBe(true);
+    expect(isSameBookIdentity(dnb, { ...google, title: 'Marry My Husband 6' })).toBe(false);
+    expect(isSameBookIdentity(dnb, { ...google, title: 'Marry My Husband, Vol. 7' })).toBe(true);
+  });
+
+  it('hält gleichnamige Bücher ohne Band und ohne gemeinsamen Beteiligten auseinander', () => {
+    const dune = { id: 'a', title: 'Dune', authors: ['Frank Herbert'] };
+    expect(isSameBookIdentity(dune, { id: 'b', title: 'Dune', authors: ['Hugh Howey'] })).toBe(
+      false
+    );
+    expect(isSameBookIdentity(dune, { id: 'b', title: 'Dune: Roman', authors: [] })).toBe(true);
+    expect(isSameBookIdentity(dune, { id: 'b', title: 'Dune', authors: ['F. Herbert'] })).toBe(
+      true
+    );
+  });
+
+  it('nimmt gleiche ISBN oder Hardcover-ID unabhängig vom Titel', () => {
+    expect(isSameBookIdentity(dnb, { title: 'Ganz anders', isbn13: '9783551630315' })).toBe(true);
+    expect(isSameBookIdentity({ title: 'A', hardcoverId: 7 }, { title: 'B', hardcoverId: 7 })).toBe(
+      true
+    );
+    expect(isSameBookIdentity({ title: 'A', hardcoverId: 7 }, { title: 'B', hardcoverId: 8 })).toBe(
+      false
+    );
+  });
+
+  it('createBookIndex findet das eigene Buch über ID, ISBN und Titel samt Band', () => {
+    const index = createBookIndex([dnb, { id: 'x', title: 'Dune', authors: ['Frank Herbert'] }]);
+    expect(index.find(google)?.id).toBe('dnb-9783551630315');
+    expect(index.find({ title: 'Egal', isbn13: '9783551630315' })?.id).toBe('dnb-9783551630315');
+    expect(index.find({ id: 'x', title: '' })?.id).toBe('x');
+    expect(index.has({ title: 'Dune', authors: ['Hugh Howey'] })).toBe(false);
+    expect(index.has({ title: 'Dune', authors: ['Herbert, Frank'] })).toBe(true);
+    expect(index.has({ title: 'Marry My Husband 8', authors: ['Sojak Sung'] })).toBe(false);
   });
 });
 
