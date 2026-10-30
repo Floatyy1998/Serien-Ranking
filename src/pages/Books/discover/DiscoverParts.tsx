@@ -10,6 +10,9 @@ import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
 import { sanitizeBookKey } from '../../../lib/books/bookIdentity';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { curateShelf, daySeed, mixShelves, resultKeys } from '../../../lib/books/discoverMix';
+import { volumeBookState } from '../../../lib/books/mangaBooks';
+import { splitVolume } from '../../../lib/books/mangaVolume';
+import { mangaPath } from '../../../lib/manga/mangaSource';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
 import { findBook } from '../../../services/api/booksApi';
 import { t } from '../../../services/i18n';
@@ -30,7 +33,7 @@ const MIN_RATINGS = 5;
 const ratingLabel = (r: BookSearchResult) =>
   r.avgRating && (r.ratingCount ?? 0) >= MIN_RATINGS ? (r.avgRating * 2).toFixed(1) : null;
 
-/** Öffnet eigene Bücher direkt, fremde als Vorschau mit den Treffer-Daten. */
+/** Öffnet eigene Bücher direkt, fremde als Vorschau mit den Treffer-Daten; Bände eigener Manga die Reihe samt Band. */
 export function useOpenResult() {
   const navigate = useNavigate();
   const ownedFor = useOwnedBooks();
@@ -39,7 +42,10 @@ export function useOpenResult() {
     const owned = ownedFor(result);
     const manga = owned ? undefined : mangaFor(result);
     if (manga) {
-      navigate(`/manga/${manga.anilistId}`);
+      navigate(
+        mangaPath(manga.anilistId, splitVolume(result.title).volume),
+        volumeBookState(result)
+      );
       return;
     }
     navigate(bookPath(owned?.id ?? result.id), { state: { result } });

@@ -41,12 +41,23 @@ const compactWords = (value: string): string =>
     .replace(/[^a-z0-9ß]+/g, ' ')
     .trim();
 
-/** Titel ohne Untertitel, aber mit Bandnummer („X, Band 5", „X: Bd. 5" und „X 5" sind gleich). */
+const SUBTITLE_SPLIT = /[:–—]| - /;
+
+/**
+ * Haupttitel und Bandnummer aus dem Untertitel: „X: Bd. 5" und „X: Untertitel 5" tragen Band 5
+ * (eine Zahl am Ende des Untertitels ist der Band — bis drei Stellen, damit Jahre nicht zählen).
+ */
+function titleParts(title: string): { head: string; volume?: string } {
+  const [head, ...rest] = normalizeBookText(title).split(SUBTITLE_SPLIT);
+  const subtitle = compactWords(rest.join(' '));
+  const volume = subtitle.match(/^(\d{1,4})$/)?.[1] ?? subtitle.match(/\s(\d{1,3})$/)?.[1];
+  return { head: compactWords(head), volume };
+}
+
+/** Titel ohne Untertitel, aber mit Bandnummer („X, Band 5", „X: Bd. 5", „X 5", „X: Untertitel 5" sind gleich). */
 export function bookTitleKey(title: string): string {
-  const [head, ...rest] = normalizeBookText(title).split(/[:–—]| - /);
-  const volume = compactWords(rest.join(' ')).match(/^(\d{1,4})$/)?.[1];
-  const base = compactWords(head);
-  return volume ? `${base} ${volume}` : base;
+  const { head, volume } = titleParts(title);
+  return volume ? `${head} ${volume}` : head;
 }
 
 /** Nachname des Erstautors als Vergleichsschlüssel, leer ohne Autor. */
@@ -74,11 +85,16 @@ export function findMangaForBook<T extends MangaTitles>(
   const full = compactWords(normalizeBookText(`${item.title} ${item.subtitle ?? ''}`));
   if (!full || /\b(?:light ?novel|roman)\b/.test(full)) return undefined;
   const title = compactWords(normalizeBookText(item.title));
+  // Deutsche Ausgaben hängen den Band an den Untertitel („X: Untertitel 2") — zählt wie „X 2".
+  const { head, volume } = titleParts(
+    item.subtitle ? `${item.title}: ${item.subtitle}` : item.title
+  );
+  const candidates = volume ? [title, full, `${head} ${volume}`] : [title, full];
   return mangas.find((manga) =>
     [manga.title, manga.titleEnglish, manga.titleRomaji].some((name) => {
       const series = name ? compactWords(normalizeBookText(name)) : '';
       if (!series) return false;
-      return [title, full].some(
+      return candidates.some(
         (candidate) =>
           candidate === series ||
           (candidate.startsWith(`${series} `) &&

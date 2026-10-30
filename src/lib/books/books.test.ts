@@ -57,6 +57,16 @@ describe('bookIdentity', () => {
     expect(bookTitleKey('One Piece: Band 104')).not.toBe(bookTitleKey('One Piece 105'));
     expect(bookTitleKey('Der Schwarm: Roman')).toBe('der schwarm');
   });
+
+  it('nimmt die Bandnummer auch vom Ende des Untertitels (deutsche Manga-Ausgaben)', () => {
+    const band2 = 'Requiem of the rose king: die Königin und der Ritter der Rose 2';
+    const band1 = 'Requiem of the rose king: die Königin und der Ritter der Rose 1';
+    expect(bookTitleKey(band2)).toBe('requiem of the rose king 2');
+    expect(bookTitleKey(band2)).not.toBe(bookTitleKey(band1));
+    expect(bookTitleKey(band2)).toBe(bookTitleKey('Requiem of the Rose King, Vol. 2'));
+    expect(bookMatchKey(band2, ['Aya Kanno'])).not.toBe(bookMatchKey(band1, ['Aya Kanno']));
+    expect(bookTitleKey('Chernobyl: Die Katastrophe 1986')).toBe('chernobyl');
+  });
 });
 
 describe('findMangaForBook', () => {
@@ -72,6 +82,25 @@ describe('findMangaForBook', () => {
     expect(findMangaForBook({ title: 'One Piece', subtitle: 'Band 3' }, library)).toBe(library[0]);
     expect(findMangaForBook({ title: 'Spy × Family, Vol. 12' }, library)).toBe(library[1]);
     expect(findMangaForBook({ title: 'Kaiju No. 8 – Band 10' }, library)).toBe(library[2]);
+  });
+
+  it('erkennt Bände mit deutschem Untertitel und Nummer am Ende', () => {
+    const library = [{ title: 'Requiem of the Rose King', titleRomaji: 'Baraou no Souretsu' }];
+    expect(
+      findMangaForBook(
+        { title: 'Requiem of the rose king: die Königin und der Ritter der Rose 2' },
+        library
+      )
+    ).toBe(library[0]);
+    expect(
+      findMangaForBook(
+        { title: 'Requiem of the rose king', subtitle: 'die Königin und der Ritter der Rose 2' },
+        library
+      )
+    ).toBe(library[0]);
+    expect(
+      findMangaForBook({ title: 'Requiem of the rose king: Das offizielle Artbook' }, library)
+    ).toBeUndefined();
   });
 
   it('lässt Romane, Spin-offs und fremde Reihen in Ruhe', () => {

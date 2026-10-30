@@ -27,6 +27,17 @@ describe('isSameBook', () => {
     expect(isSameBook(german(8), english(7))).toBe(false);
   });
 
+  it('hält Bände auseinander, deren Nummer hinter dem Untertitel steht', () => {
+    const volume = (n: number) =>
+      hit({
+        id: `rk-${n}`,
+        title: `Requiem of the rose king: die Königin und der Ritter der Rose ${n}`,
+        authors: ['Aya Kanno'],
+      });
+    expect(isSameBook(volume(1), volume(2))).toBe(false);
+    expect(isSameBook(volume(2), hit({ title: 'Requiem of the Rose King, Vol. 2' }))).toBe(true);
+  });
+
   it('hält gleichnamige Bücher verschiedener Autoren auseinander', () => {
     expect(
       isSameBook(
