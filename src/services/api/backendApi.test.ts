@@ -223,6 +223,35 @@ describe('backendFetch', () => {
     expect(captureError).not.toHaveBeenCalled();
   });
 
+  it('meldet einen vom Aufrufer abgebrochenen Fetch nicht (nächster Buchstabe in der Suche)', async () => {
+    const controller = new AbortController();
+    fetchMock.mockImplementation(async () => {
+      controller.abort();
+      throw new DOMException('Fetch is aborted', 'AbortError');
+    });
+    const backendFetch = await loadBackendFetch();
+    await expect(
+      backendFetch('/hc/search', { method: 'POST', signal: controller.signal })
+    ).rejects.toThrow('Fetch is aborted');
+    expect(captureError).not.toHaveBeenCalled();
+  });
+
+  it('meldet eine abgelaufene Frist des Aufrufers weiterhin', async () => {
+    const controller = new AbortController();
+    fetchMock.mockImplementation(async () => {
+      controller.abort(new DOMException('Zeitüberschreitung nach 20 s', 'TimeoutError'));
+      throw controller.signal.reason;
+    });
+    const backendFetch = await loadBackendFetch();
+    await expect(
+      backendFetch('/hc/search', { method: 'POST', signal: controller.signal })
+    ).rejects.toThrow('Zeitüberschreitung');
+    expect(captureError).toHaveBeenCalledTimes(1);
+    expect(captureError.mock.calls[0][0].message).toContain(
+      'Verbindungsfehler: Zeitüberschreitung'
+    );
+  });
+
   it.each(['/mangaupdates/batch', '/mangaupdates/titles'])(
     'wiederholt den Lesezugriff %s bei einem einzelnen Verbindungsabbruch',
     async (path) => {

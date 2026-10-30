@@ -2,10 +2,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const backendFetch = vi.hoisted(() => vi.fn());
+const captureError = vi.hoisted(() => vi.fn());
 const session = vi.hoisted(() => ({ active: true }));
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
 vi.mock('./backendApi', () => ({ backendFetch, hasBackendSession: () => session.active }));
+vi.mock('../errorReporting/errorReporter', () => ({ captureError }));
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -27,6 +29,7 @@ describe('hardcoverApi', () => {
   beforeEach(() => {
     vi.resetModules();
     backendFetch.mockReset();
+    captureError.mockReset();
     localStorage.clear();
     session.active = true;
   });
@@ -81,6 +84,52 @@ describe('hardcoverApi', () => {
       { quietStatuses: [503] },
       undefined,
     ]);
+  });
+
+  it('wiederholt nicht, wenn der Aufrufer inzwischen abgebrochen hat, und zählt das nicht als Hardcover-Fehler', async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    backendFetch.mockImplementation(async () => json({ error: 'upstream' }, 503));
+    const { hardcoverSearch, hardcoverFailureCount, hardcoverReady } =
+      await import('./hardcoverApi');
+    const pending = hardcoverSearch('harry', controller.signal);
+    const assertion = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    await vi.advanceTimersByTimeAsync(500);
+    controller.abort();
+    await vi.advanceTimersByTimeAsync(2000);
+    await assertion;
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+    expect(hardcoverFailureCount()).toBe(0);
+    expect(hardcoverReady()).toBe(true);
+    expect(captureError).not.toHaveBeenCalled();
+  });
+
+  it('fragt nach einem Abbruch gar nicht erst an', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const { hardcoverSearch } = await import('./hardcoverApi');
+    await expect(hardcoverSearch('harry', controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(backendFetch).not.toHaveBeenCalled();
+  });
+
+  it('wiederholt einen 503 nicht, auf den der Server schon lange gewartet hat, und meldet ihn selbst', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
+      return json({ error: 'upstream' }, 503);
+    });
+    const { hardcoverSearch } = await import('./hardcoverApi');
+    const pending = hardcoverSearch('harry');
+    const assertion = expect(pending).rejects.toMatchObject({ code: 'upstream' });
+    await vi.advanceTimersByTimeAsync(20_000);
+    await assertion;
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+    expect(captureError).toHaveBeenCalledTimes(1);
+    expect(captureError.mock.calls[0][0].message).toContain(
+      'POST /hc/search -> 503 upstream nach 15 s, keine Wiederholung'
+    );
   });
 
   it('meldet abgewiesene Hintergrund-Abfragen nicht als Fehler und zählt sie als gescheitert', async () => {

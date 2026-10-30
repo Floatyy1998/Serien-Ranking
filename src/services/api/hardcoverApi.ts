@@ -10,11 +10,14 @@ import type {
   BookSeriesPart,
 } from '../../types/Book';
 import { cacheGet, cacheSet, cached } from '../books/bookCache';
+import { captureError } from '../errorReporting/errorReporter';
 import { appLocale } from '../i18n';
 import { backendFetch, hasBackendSession } from './backendApi';
 
 const DAY = 86_400_000;
 const TIMEOUT_MS = 20_000;
+/** Scheitert ein Versuch erst nach so langer Zeit, hat der Server vergeblich auf Hardcover gewartet — eine Wiederholung hinge genauso. */
+const SLOW_FAILURE_MS = 5_000;
 
 /** Antwort des Backend-Proxys (/hc/*) — Hardcover-Token und Kontingent bleiben auf dem Server. */
 export interface HcItem {
@@ -83,6 +86,10 @@ const SOFT_WINDOW_MS = 60_000;
 const RETRY_DELAY_MS = 1200;
 let softFailures: number[] = [];
 
+/** Der Abbruchgrund des Aufrufers (nächster Buchstabe, Seitenwechsel) — nie eine Hardcover-Störung. */
+const abortedBy = (signal: AbortSignal): unknown =>
+  signal.reason ?? new DOMException('aborted', 'AbortError');
+
 /** Einzelne Ausreißer (Warteschlange beim Server, Funkloch) sollen nicht gleich alle Hardcover-Daten für Minuten abschalten. */
 function noteSoftFailure(code: string) {
   const now = Date.now();
@@ -100,8 +107,15 @@ async function attempt<T>(
   background: boolean,
   firstTry: boolean
 ): Promise<T> {
+  if (signal?.aborted) throw abortedBy(signal);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(
+    () =>
+      controller.abort(
+        new DOMException(`Zeitüberschreitung nach ${TIMEOUT_MS / 1000} s`, 'TimeoutError')
+      ),
+    TIMEOUT_MS
+  );
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort);
   try {
@@ -151,6 +165,7 @@ async function post<T>(
   if (!GUEST_PATHS.has(path) && !hasBackendSession()) throw new HardcoverError('guest');
   let last: HardcoverError | null = null;
   for (let round = 0; round < 2; round++) {
+    const startedAt = Date.now();
     try {
       return await attempt<T>(path, body, signal, background, round === 0);
     } catch (err) {
@@ -164,14 +179,33 @@ async function post<T>(
       }
       // Weiche Fehler einmal nach kurzer Pause wiederholen — meist war nur die Warteschlange beim Server voll.
       // Ein 429 der Ratenbremse würde durch die Wiederholung nur doppelt zählen.
-      if (err.status === 429 || signal?.aborted) break;
+      if (err.status === 429) break;
+      // Kam der Fehler erst nach Sekunden, hat der Server vergeblich auf Hardcover gewartet: Die Wiederholung
+      // hinge genauso lange — lieber sofort die Ersatzquellen. Der erste Versuch war still, deshalb hier melden.
+      if (round === 0 && Date.now() - startedAt >= SLOW_FAILURE_MS) {
+        if (!background) reportSlowFailure(path, err, Date.now() - startedAt);
+        break;
+      }
       if (round === 0) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      // Hat der Aufrufer inzwischen abgebrochen (nächster Buchstabe), ist die Wiederholung sinnlos.
+      if (signal?.aborted) break;
     }
   }
   // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
   if (last && !(background && last.code === 'busy')) noteSoftFailure(last.code);
+  // Der Abbruch des Aufrufers ist kein endgültiges Scheitern von Hardcover — und kein Befund.
+  if (signal?.aborted) throw abortedBy(signal);
   failureCount++;
   throw last as HardcoverError;
+}
+
+function reportSlowFailure(path: string, err: HardcoverError, afterMs: number): void {
+  captureError({
+    kind: 'error',
+    name: 'BackendFetch',
+    message: `POST ${path} -> ${err.status ?? '?'} ${err.code} nach ${Math.round(afterMs / 1000)} s, keine Wiederholung`,
+    source: path,
+  });
 }
 
 /** Reihen aus Hardcover tragen den Schlüssel `hc:<Name>` im Feld der Wikidata-ID — so laufen sie durch die vorhandene Reihenlogik. */

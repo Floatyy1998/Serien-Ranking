@@ -140,6 +140,16 @@ function reportFailure(path: string, init: RequestInit, outcome: string): void {
   });
 }
 
+/**
+ * Hat der Aufrufer die Anfrage selbst abgebrochen (nächster Buchstabe in der Suche, Seitenwechsel),
+ * ist das kein Verbindungsfehler. Eine abgelaufene Frist (`AbortSignal.timeout`, TimeoutError) bleibt ein Befund.
+ */
+function cancelledByCaller(init: RequestInit): boolean {
+  const signal = init.signal;
+  if (!signal?.aborted) return false;
+  return (signal.reason as { name?: string } | undefined)?.name !== 'TimeoutError';
+}
+
 async function sendWithRetry(
   path: string,
   init: RequestInit,
@@ -154,7 +164,7 @@ async function sendWithRetry(
       if (attempt >= delays.length) {
         // Im Hintergrund kappen Android-WebView und iOS das Netz, beim Update-Reload der Browser selbst — kein Befund.
         const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
-        if (!hidden && !isPageLeaving()) {
+        if (!hidden && !isPageLeaving() && !cancelledByCaller(init)) {
           reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
         }
         throw error;

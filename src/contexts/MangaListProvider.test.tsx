@@ -112,6 +112,71 @@ describe('MangaListProvider', () => {
     expect(updateIfExists).toHaveBeenCalledWith('users/u1/manga/1', { format: 'MANHWA' });
   });
 
+  const releasing = (id: number) => ({
+    nmr: id,
+    anilistId: id,
+    title: `Manga ${id}`,
+    status: 'RELEASING',
+    rating: {},
+    currentChapter: 0,
+    readStatus: 'reading',
+  });
+
+  it('bricht den täglichen AniList-Refresh nach einem Netzfehler ab und gibt den Tag wieder frei', async () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    cacheResult.data = Object.fromEntries([1, 2, 3].map((id) => [id, releasing(id)]));
+    getMangaDetails.mockReset();
+    getMangaDetails.mockRejectedValue(new TypeError('Load failed'));
+
+    render(
+      <MangaListProvider>
+        <Consumer />
+      </MangaListProvider>
+    );
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(getMangaDetails).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('mangaAniListRefreshLastRun:u1')).toBeNull();
+  });
+
+  it('lässt nach einem 429 die übrigen Titel heute aus, ohne den Tag zurückzusetzen', async () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    cacheResult.data = Object.fromEntries([1, 2, 3].map((id) => [id, releasing(id)]));
+    getMangaDetails.mockReset();
+    getMangaDetails.mockRejectedValue(new Error('AniList API error: 429'));
+
+    render(
+      <MangaListProvider>
+        <Consumer />
+      </MangaListProvider>
+    );
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(getMangaDetails).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('mangaAniListRefreshLastRun:u1')).not.toBeNull();
+  });
+
+  it('gleicht die übrigen Titel weiter ab, wenn nur ein einzelner scheitert', async () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    cacheResult.data = Object.fromEntries([1, 2, 3].map((id) => [id, releasing(id)]));
+    getMangaDetails.mockReset();
+    getMangaDetails
+      .mockRejectedValueOnce(new Error('AniList API error: 404'))
+      .mockResolvedValue({ status: 'RELEASING', genres: [] });
+
+    render(
+      <MangaListProvider>
+        <Consumer />
+      </MangaListProvider>
+    );
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(getMangaDetails).toHaveBeenCalledTimes(3);
+  });
+
   describe('Kapitel-Refresh über das Backend', () => {
     const releasing = (id: number, title: string) => ({
       nmr: id,

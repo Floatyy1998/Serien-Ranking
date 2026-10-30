@@ -139,14 +139,18 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     if (toRefresh.length === 0) return;
 
     localStorage.setItem(storageKey, String(Date.now()));
+    // Alle sofort als „dran" merken: Unsere eigenen Schreibzugriffe ändern die Liste und starten den Effekt neu.
+    toRefresh.forEach((manga) => anilistRefreshedIdsRef.current.add(manga.anilistId));
 
-    toRefresh.forEach((manga, i) => {
-      anilistRefreshedIdsRef.current.add(manga.anilistId);
-      // 1s Delay zwischen Anfragen — AniList rate-limit ist ~90/min
-      setTimeout(async () => {
+    // Nacheinander mit 1 s Abstand — das AniList-Limit liegt bei ~90/min. Ist AniList nicht erreichbar
+    // (Netzfehler), bricht die Reihe nach dem ersten Fehlschlag ab, statt für jeden Titel ins Leere zu
+    // funken; der Tag gilt dann nicht als erledigt. Bei 429 ist das Limit erreicht: Rest heute auslassen.
+    void (async () => {
+      for (const [i, manga] of toRefresh.entries()) {
+        if (i > 0) await new Promise((resolve) => setTimeout(resolve, 1000));
         try {
           const data = await getMangaDetails(manga.anilistId);
-          if (!data) return;
+          if (!data) continue;
 
           const updates: Record<string, unknown> = {};
           if (data.status && data.status !== manga.status) updates.status = data.status;
@@ -189,11 +193,17 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           if (Object.keys(updates).length > 0) {
             await updateIfExists(paths.mangaItem(user.uid, manga.anilistId), updates);
           }
-        } catch {
-          // Silent fail per manga
+        } catch (err) {
+          if (err instanceof TypeError) {
+            localStorage.removeItem(storageKey);
+            toRefresh.slice(i).forEach((m) => anilistRefreshedIdsRef.current.delete(m.anilistId));
+            return;
+          }
+          if (/\b429\b/.test((err as Error)?.message ?? '')) return;
+          // Einzelner Titel gescheitert (gelöscht, Serverfehler) — die übrigen trotzdem abgleichen.
         }
-      }, i * 1000);
-    });
+      }
+    })();
   }, [user, loading, allMangaList]);
 
   const toggleHideManga = useCallback(
