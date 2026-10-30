@@ -9,6 +9,7 @@ import {
   stripResult,
   type GoogleVolume,
   type OpenLibraryDoc,
+  fillBookGaps,
 } from '../../lib/books/bookSearchMapping';
 import { mergeEditions, orderSeriesVolumes } from '../../lib/books/searchEditions';
 import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
@@ -245,13 +246,18 @@ export async function searchBooks(
   // Bücher aus dem eigenen Katalog zuerst — sie haben Cover und Daten schon bei uns liegen.
   const own = await searchBookCatalog(trimmed).catch(() => [] as BookSearchResult[]);
   if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
-  const merged = own.length ? rankResults(uniqueById([...own, ...results]), trimmed) : results;
+  const merged = own.length ? rankResults(mergeById([...own, ...results]), trimmed) : results;
   return merged.map((r) => (r.authors ? r : { ...r, authors: [] }));
 }
 
-function uniqueById(results: BookSearchResult[]): BookSearchResult[] {
-  const seen = new Set<string>();
-  return results.filter((r) => !seen.has(r.id) && seen.add(r.id));
+/** Derselbe Titel aus Katalog und Quelle: der Katalog-Eintrag bleibt (sein Cover liegt bei uns), seine Lücken füllt die Quelle. */
+function mergeById(results: BookSearchResult[]): BookSearchResult[] {
+  const byId = new Map<string, BookSearchResult>();
+  for (const result of results) {
+    const known = byId.get(result.id);
+    byId.set(result.id, known ? fillBookGaps(known, result) : result);
+  }
+  return [...byId.values()];
 }
 
 /**

@@ -25,11 +25,12 @@ import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
+import { searchBooks } from '../../services/api/booksApi';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
 import { loadBookCatalogItem } from '../../services/catalog/bookCatalog';
 import { BookMoodPanel, SimilarBooksPanel, WhenNearViewport } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
-import { bookAsResult, coverAtSize } from '../../lib/books/bookSearchMapping';
+import { bookAsResult, coverAtSize, fillBookGaps } from '../../lib/books/bookSearchMapping';
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { removeBook, setBookHidden } from '../../services/books/bookService';
 import {
@@ -167,7 +168,64 @@ export const BookDetailPage = () => {
     };
   }, [owned, stateResult, hardcoverFromId, decodedId]);
   const preview = stateResult ?? (fetched?.id === decodedId ? fetched : null);
-  const view: (Book | BookSearchResult) | null = owned ?? preview;
+  const base: (Book | BookSearchResult) | null = owned ?? preview;
+  // Vorschauen aus dem Feed kennen nur Titel und Cover, eigene Kopien sind oft dünn: Lücken füllt zuerst der
+  // gemeinsame Katalog, danach die ISBN-Quellen (die DNB kennt Autoren, Seiten und Verlag jeder deutschen Ausgabe).
+  const fillFromCatalog = !!(owned || stateResult);
+  const [catalogFill, setCatalogFill] = useState<BookSearchResult | null>(null);
+  useEffect(() => {
+    if (!fillFromCatalog) return;
+    let alive = true;
+    loadBookCatalogItem(decodedId)
+      .then((own) => alive && setCatalogFill(own))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+      setCatalogFill(null);
+    };
+  }, [fillFromCatalog, decodedId]);
+  const withCatalog = useMemo(
+    () => (base ? fillBookGaps(base, catalogFill?.id === decodedId ? catalogFill : null) : null),
+    [base, catalogFill, decodedId]
+  );
+  const isbnToLookup =
+    withCatalog?.isbn13 &&
+    !withCatalog.hardcoverId &&
+    !withCatalog.googleId &&
+    !withCatalog.olWorkId &&
+    (!withCatalog.authors?.length || !withCatalog.pageCount || !withCatalog.categories?.length)
+      ? withCatalog.isbn13
+      : undefined;
+  const [isbnFill, setIsbnFill] = useState<{ isbn: string; hit: BookSearchResult | null } | null>(
+    null
+  );
+  useEffect(() => {
+    if (!isbnToLookup) return;
+    let alive = true;
+    searchBooks(isbnToLookup)
+      .then(
+        (hits) =>
+          alive &&
+          setIsbnFill({
+            isbn: isbnToLookup,
+            hit: hits.find((hit) => hit.isbn13 === isbnToLookup) ?? hits[0] ?? null,
+          })
+      )
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [isbnToLookup]);
+  const view = useMemo(
+    () =>
+      withCatalog
+        ? fillBookGaps(
+            withCatalog,
+            isbnFill && isbnFill.isbn === withCatalog.isbn13 ? isbnFill.hit : null
+          )
+        : null,
+    [withCatalog, isbnFill]
+  );
   const fetchingPreview = !view && !stateResult && !fetchSettled;
 
   const [notes, setNotes] = useState(owned?.notes ?? '');
@@ -205,7 +263,8 @@ export const BookDetailPage = () => {
     (view && 'coverFallback' in view ? view.coverFallback : undefined) ??
     mangaLink?.manga.coverImage.large ??
     undefined;
-  const ownDescription = details?.description ?? preview?.description;
+  const viewDescription = view && 'description' in view ? view.description : undefined;
+  const ownDescription = details?.description ?? viewDescription;
   const seriesDescription =
     !ownDescription && !detailsLoading ? (mangaLink?.manga.description ?? undefined) : undefined;
   const description = useBookDescription(

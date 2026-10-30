@@ -178,6 +178,31 @@ const trimMarc = (value: string | undefined) =>
     .replace(/\s*[/:;,.=]\s*$/, '')
     .trim() || undefined;
 
+/**
+ * Verantwortlichkeitsangabe (245$c) als Ersatz, wenn die DNB keine Personen-Felder (100/700) anlegt — bei Comics
+ * die Regel: „Artwork: Studio LICO ; Original: Sung Sojak ; aus dem Koreanischen von Jessica Walther" → Studio LICO, Sung Sojak.
+ */
+function namesFromStatement(statement: string | undefined): string[] {
+  if (!statement) return [];
+  return statement
+    .split(/\s*;\s*/)
+    .map((part) =>
+      part
+        .replace(
+          /[.,]?\s*(?:aus dem|übersetz|übertragen|ins Deutsche|translated|traduit|traducción|tradução).*$/i,
+          ''
+        )
+        .replace(/^[^:]{1,30}:\s*/, '')
+        .replace(/^(?:hrsg\.?|herausgegeben|edited|ed\.)\s+(?:von|by)\s+/i, '')
+        .replace(/^(?:von|by|par)\s+/i, '')
+        .replace(/\s*[([].*$/, '')
+        .replace(/[\s.,;:]+$/, '')
+        .trim()
+    )
+    .filter((name) => name.length >= 2 && name.length <= 60 && !/\d{4}/.test(name))
+    .slice(0, 3);
+}
+
 /** MARC21-Datensatz der Deutschen Nationalbibliothek (SRU) — kennt fast jede deutsche ISBN. */
 export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | null {
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
@@ -209,7 +234,8 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const writers = names((tag, roles) =>
     tag === '100' ? !roles.length || roles.includes('aut') : tag === '700' && roles.includes('aut')
   );
-  const authors = writers.length ? writers : names((tag) => tag === '100');
+  const persons = writers.length ? writers : names((tag) => tag === '100');
+  const authors = persons.length ? persons : namesFromStatement(first(['245'], 'c'));
   const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
   const lang = first(['041'], 'a');
   const seriesField = fields.find((f) => f.getAttribute('tag') === '490');
@@ -222,6 +248,12 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
       ['082', '083'].includes(f.getAttribute('tag') ?? '') &&
       subfields(f, 'a').some((ddc) => ddc.startsWith('741.5'))
   );
+  // Formschlagwörter (655, GND): „Comic", „Fantasy", „Jugendbuch" — zusammen mit der Sachgruppe 741.5 das Genre.
+  const genreTerms = fields
+    .filter((f) => f.getAttribute('tag') === '655')
+    .flatMap((f) => subfields(f, 'a'))
+    .map((term) => (/^comics?$/i.test(term) ? 'Comics' : term));
+  const categories = [...new Set([...(comic ? ['Comics'] : []), ...genreTerms])].slice(0, 6);
 
   return stripResult({
     id: sanitizeBookKey(`dnb-${isbn13}`),
@@ -235,7 +267,7 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
     publishedYear: parseYear(first(['264', '260'], 'c')),
     publisher: trimMarc(first(['264', '260'], 'b')),
     language: lang ? (LANG_3_TO_2[lang] ?? lang) : undefined,
-    categories: comic ? ['Comics'] : undefined,
+    categories: categories.length ? categories : undefined,
     isbn13,
     series: seriesName
       ? stripUndefined({
@@ -320,6 +352,29 @@ export function stripUndefined<T extends object>(obj: T): T {
 /** stripUndefined für Treffer: authors bleibt auch leer ein Array, die Karten lesen authors[0]. */
 export function stripResult(result: BookSearchResult): BookSearchResult {
   return { ...stripUndefined(result), authors: result.authors ?? [] };
+}
+
+/**
+ * Lücken (fehlend oder leer) aus einer zweiten Quelle füllen — der erste Datensatz behält Vorrang, nichts wird
+ * überschrieben. Für Feed-Vorschauen und dünne Katalog-Einträge, die nur Titel und Cover kennen.
+ */
+export function fillBookGaps<T extends object>(
+  base: T,
+  extra: Partial<BookSearchResult> | null | undefined
+): T {
+  if (!extra) return base;
+  const out = { ...base } as Record<string, unknown>;
+  for (const [key, value] of Object.entries(extra)) {
+    if (value === undefined || value === null) continue;
+    const current = out[key];
+    const empty =
+      current === undefined ||
+      current === null ||
+      current === '' ||
+      (Array.isArray(current) && current.length === 0);
+    if (empty) out[key] = value;
+  }
+  return out as T;
 }
 
 const BOOKCOVER_BASE = `${import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de'}/bookcover`;

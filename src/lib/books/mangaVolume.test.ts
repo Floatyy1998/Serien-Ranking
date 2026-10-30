@@ -213,3 +213,11 @@ describe('mangaAsSearchResult', () => {
     expect(result.startDate).toEqual({ year: 1997, month: 7, day: 22 });
   });
 });
+
+describe('Manga-Verlage', () => {
+  it('erkennt Carlsens Webtoon-Reihe C Lines als Comic-Merkmal', () => {
+    expect(
+      mangaVolumeGuess({ id: 'f', title: 'Marry my husband 5', publisher: 'C Lines' })
+    ).toEqual({ series: 'Marry my husband', full: 'Marry my husband 5', volume: 5 });
+  });
+});

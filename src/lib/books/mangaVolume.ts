@@ -30,7 +30,7 @@ export interface MangaLink {
 const COMIC_HINT =
   /\b(?:c[oó]mics?|manga|manhwa|manhua|graphic novels?|bandes? dessin[ée]es?|fumetti|historietas?|quadrinhos|webtoons?)\b/i;
 const MANGA_PUBLISHER =
-  /\b(?:manga|tokyopop|kaz[ée]|crunchyroll|altraverse|viz|yen press|kodansha|seven seas|shueisha|square enix|ki-oon|kurokawa|pika|gl[ée]nat|dokico|j-pop|star comics|ivrea|panini|waneko|shonen jump|jump comics|planeta c[oó]mic|norma editorial|jbc|newpop|kana|hayabusa)\b/i;
+  /\b(?:manga|c lines|tokyopop|kaz[ée]|crunchyroll|altraverse|viz|yen press|kodansha|seven seas|shueisha|square enix|ki-oon|kurokawa|pika|gl[ée]nat|dokico|j-pop|star comics|ivrea|panini|waneko|shonen jump|jump comics|planeta c[oó]mic|norma editorial|jbc|newpop|kana|hayabusa)\b/i;
 const NOVEL_HINT = /\b(?:light ?novels?|novels?|roman|romanzo|novela)\b/i;
 const VOLUME_TAIL =
   /^(.+?)[\s,.:;–—-]*(?:\b(?:band|bd|vol|volume|tome|tomo|tom|teil|nr|book|buch)\.?\s*|#\s*)?(\d{1,4})$/i;

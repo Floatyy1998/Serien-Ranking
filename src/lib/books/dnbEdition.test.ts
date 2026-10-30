@@ -50,3 +50,48 @@ describe('DNB-Reihe', () => {
     expect(mapDnbRecord(record(''), '9783453319677')).not.toHaveProperty('series');
   });
 });
+
+describe('DNB-Autoren und Genres', () => {
+  const marc = (fields: string) => `<?xml version="1.0"?>
+<record xmlns="http://www.loc.gov/MARC21/slim">
+  ${fields}
+</record>`;
+  const comicVolume = marc(`
+  <datafield tag="041" ind1=" " ind2=" "><subfield code="a">ger</subfield><subfield code="h">kor</subfield></datafield>
+  <datafield tag="082" ind1="7" ind2="4"><subfield code="a">741.5</subfield><subfield code="q">DE-101</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Marry my husband</subfield><subfield code="n">5</subfield><subfield code="c">Artwork: Studio LICO ; Original: Sung Sojak ; aus dem Koreanischen von Jessica Walther</subfield></datafield>
+  <datafield tag="264" ind1=" " ind2="1"><subfield code="a">Hamburg</subfield><subfield code="b">C Lines</subfield><subfield code="c">2025</subfield></datafield>
+  <datafield tag="300" ind1=" " ind2=" "><subfield code="a">258 Seiten</subfield></datafield>
+  <datafield tag="655" ind1=" " ind2="7"><subfield code="a">Comic</subfield><subfield code="2">gnd-content</subfield></datafield>`);
+
+  it('nimmt die Verantwortlichkeitsangabe, wenn die DNB keine Personen-Felder anlegt (Comics)', () => {
+    const hit = mapDnbRecord(comicVolume, '9783551630292');
+    expect(hit).toMatchObject({
+      title: 'Marry my husband 5',
+      authors: ['Studio LICO', 'Sung Sojak'],
+      publisher: 'C Lines',
+      publishedYear: 2025,
+      pageCount: 258,
+      categories: ['Comics'],
+    });
+  });
+
+  it('schneidet Übersetzer und Rollen ab und lässt die Personen-Felder vorgehen', () => {
+    const novel = marc(`
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Nevernight</subfield><subfield code="c">Jay Kristoff. Aus dem Englischen von Kirsten Borchardt</subfield></datafield>`);
+    expect(mapDnbRecord(novel, '9783596297290')?.authors).toEqual(['Jay Kristoff']);
+    const withPerson = marc(`
+  <datafield tag="100" ind1="1" ind2=" "><subfield code="a">Rowling, J. K.</subfield><subfield code="4">aut</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Harry Potter</subfield><subfield code="c">Text: Jemand anderes</subfield></datafield>`);
+    expect(mapDnbRecord(withPerson, '9783551354013')?.authors).toEqual(['J. K. Rowling']);
+  });
+
+  it('übernimmt Formschlagwörter als Genres, ohne Comics doppelt zu nennen', () => {
+    const fantasy = marc(`
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Terra</subfield></datafield>
+  <datafield tag="655" ind1=" " ind2="7"><subfield code="a">Fantasy</subfield><subfield code="2">gnd-content</subfield></datafield>
+  <datafield tag="655" ind1=" " ind2="7"><subfield code="a">Jugendbuch</subfield><subfield code="2">gnd-content</subfield></datafield>`);
+    expect(mapDnbRecord(fantasy, '9783453319677')?.categories).toEqual(['Fantasy', 'Jugendbuch']);
+    expect(mapDnbRecord(comicVolume, '9783551630292')?.categories).toEqual(['Comics']);
+  });
+});

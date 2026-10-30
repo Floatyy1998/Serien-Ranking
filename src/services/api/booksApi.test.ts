@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const hc = vi.hoisted(() => ({ ready: false, failures: 0, search: vi.fn() }));
 
 vi.mock('../i18n', () => ({ appLocale: 'de' }));
-vi.mock('../catalog/bookCatalog', () => ({ searchBookCatalog: async () => [] }));
+const catalog = vi.hoisted(() => ({ hits: [] as unknown[] }));
+vi.mock('../catalog/bookCatalog', () => ({ searchBookCatalog: async () => catalog.hits }));
 vi.mock('./hardcoverApi', () => ({
   hardcoverReady: () => hc.ready,
   hardcoverFailureCount: () => hc.failures,
@@ -209,14 +210,42 @@ describe('searchBooks per ISBN', () => {
     });
   });
 
-  it('behält authors als leeres Array, wenn die DNB gar keine Person kennt', async () => {
+  it('liest ohne Personen-Felder die Namen aus der Verantwortlichkeitsangabe', async () => {
     vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     vi.stubGlobal(
       'fetch',
       route({ dnb: MANHWA_RECORD.replace(/<datafield tag="100"[\s\S]*?<\/datafield>/, '') })
     );
     const [hit] = await searchBooks('9783963588853');
-    expect(hit.authors).toEqual([]);
+    expect(hit.authors).toEqual(['Wookjakga', 'Usonan']);
+  });
+
+  it('füllt einen dünnen Katalog-Eintrag mit den Daten der ISBN-Quellen auf, statt sie zu verwerfen', async () => {
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
+    catalog.hits = [
+      {
+        id: 'dnb-9783551358165',
+        title: 'Artemis Fowl - die Rache',
+        authors: [],
+        cover: 'https://serienapi.konrad-dinges.de/bookcover/book/dnb-9783551358165-L.jpg',
+        isbn13: '9783551358165',
+        source: 'dnb',
+      },
+    ];
+    try {
+      vi.stubGlobal('fetch', route({ dnb: DNB_RECORD }));
+      const hits = await searchBooks('9783551358165');
+      expect(hits).toHaveLength(1);
+      expect(hits[0]).toMatchObject({
+        id: 'dnb-9783551358165',
+        authors: ['Eoin Colfer'],
+        pageCount: 334,
+        publisher: 'Carlsen',
+      });
+      expect(hits[0].cover).toContain('/bookcover/book/');
+    } finally {
+      catalog.hits = [];
+    }
   });
 
   it('repariert gecachte Treffer ohne authors', async () => {
