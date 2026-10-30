@@ -320,13 +320,17 @@ export function NewTicketForm({
                   decoding="async"
                 />
                 <button
+                  type="button"
+                  aria-label={t('Bild entfernen')}
                   onClick={() => setScreenshots((prev) => prev.filter((_, j) => j !== i))}
                   style={{
                     position: 'absolute',
-                    top: '-6px',
-                    right: '-6px',
-                    width: '20px',
-                    height: '20px',
+                    top: '-8px',
+                    right: '-8px',
+                    width: '26px',
+                    height: '26px',
+                    minWidth: 0,
+                    minHeight: 0,
                     borderRadius: '50%',
                     background: theme.status.error,
                     border: 'none',

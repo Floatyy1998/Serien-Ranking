@@ -23,6 +23,8 @@ export const BugReportPage = memo(() => {
     createTicket,
     addComment,
     updateTicket,
+    addScreenshots,
+    removeScreenshot,
     closeTicket,
   } = useBugReportData();
   const ban = useModerationBan();
@@ -214,6 +216,9 @@ export const BugReportPage = memo(() => {
                 onAddComment={(text) => addComment(ticket.id, text)}
                 onUpdate={(updates) => updateTicket(ticket.id, updates)}
                 onClose={() => closeTicket(ticket.id)}
+                onUpload={uploadScreenshot}
+                onAddScreenshots={(urls) => addScreenshots(ticket.id, urls)}
+                onRemoveScreenshot={(url) => removeScreenshot(ticket.id, url)}
               />
             ))}
           </AnimatePresence>

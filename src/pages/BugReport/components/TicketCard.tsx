@@ -1,7 +1,8 @@
-import { ChatBubbleOutlined, ExpandMore, Send } from '@mui/icons-material';
+import { ChatBubbleOutlined, ExpandMore, PhotoCamera, Send } from '@mui/icons-material';
 import { LinkifiedText } from '../../../components/ui/display/LinkifiedText';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import type { ChangeEvent, ClipboardEvent } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
@@ -23,6 +24,9 @@ interface TicketCardProps {
   onAddComment: (text: string) => Promise<boolean>;
   onUpdate: (updates: { title?: string; description?: string }) => Promise<boolean>;
   onClose?: () => Promise<boolean>;
+  onUpload?: (file: File) => Promise<string | null>;
+  onAddScreenshots?: (urls: string[]) => Promise<boolean>;
+  onRemoveScreenshot?: (url: string) => Promise<boolean>;
 }
 
 export function TicketCard({
@@ -33,9 +37,15 @@ export function TicketCard({
   onAddComment,
   onUpdate,
   onClose,
+  onUpload,
+  onAddScreenshots,
+  onRemoveScreenshot,
 }: TicketCardProps) {
   const [commentText, setCommentText] = useState('');
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(ticket.title);
   const [editDesc, setEditDesc] = useState(ticket.description);
@@ -60,6 +70,45 @@ export function TicketCard({
     const success = await onAddComment(commentText.trim());
     if (success) setCommentText('');
     setSending(false);
+  };
+
+  // Nachträgliches Anhängen nur, solange das Ticket noch bearbeitbar ist
+  const canAttach = canEdit && !!onUpload && !!onAddScreenshots;
+
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      if (!onUpload || !onAddScreenshots) return;
+      const images = files.filter((f) => f.type.startsWith('image/'));
+      if (images.length === 0) return;
+      setUploading(true);
+      const urls: string[] = [];
+      for (const file of images) {
+        const url = await onUpload(file);
+        if (url) urls.push(url);
+      }
+      if (urls.length > 0) await onAddScreenshots(urls);
+      setUploading(false);
+    },
+    [onUpload, onAddScreenshots]
+  );
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    e.target.value = '';
+    await uploadFiles(files);
+  };
+
+  const handlePaste = (e: ClipboardEvent) => {
+    if (!canAttach) return;
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files = Array.from(items)
+      .filter((item) => item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter((f): f is File => !!f);
+    if (files.length === 0) return;
+    e.preventDefault();
+    void uploadFiles(files);
   };
 
   return (
@@ -181,6 +230,7 @@ export function TicketCard({
             transition={{ duration: 0.15 }}
           >
             <div
+              onPaste={handlePaste}
               style={{
                 padding: '0 16px 16px',
                 borderTop: `1px solid rgba(255,255,255,0.04)`,
@@ -368,7 +418,7 @@ export function TicketCard({
                 </div>
               )}
 
-              {ticket.screenshots?.length > 0 && (
+              {(ticket.screenshots?.length > 0 || canAttach) && (
                 <div style={{ marginTop: '12px' }}>
                   <div
                     style={{
@@ -380,24 +430,107 @@ export function TicketCard({
                   >
                     Screenshots
                   </div>
+                  {canAttach && (
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                      data-testid="ticket-screenshot-input"
+                    />
+                  )}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {ticket.screenshots.filter(storageUrlOrNull).map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                        <img
-                          src={url}
-                          alt={`Screenshot ${i + 1}`}
-                          loading="lazy"
-                          style={{
-                            width: '120px',
-                            height: '90px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            border: `1px solid rgba(255,255,255,0.08)`,
-                          }}
-                          decoding="async"
-                        />
-                      </a>
+                    {(ticket.screenshots ?? []).filter(storageUrlOrNull).map((url, i) => (
+                      <div key={url} style={{ position: 'relative' }}>
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <img
+                            src={url}
+                            alt={`Screenshot ${i + 1}`}
+                            loading="lazy"
+                            style={{
+                              width: '120px',
+                              height: '90px',
+                              objectFit: 'cover',
+                              borderRadius: '8px',
+                              border: `1px solid rgba(255,255,255,0.08)`,
+                              display: 'block',
+                            }}
+                            decoding="async"
+                          />
+                        </a>
+                        {canAttach && onRemoveScreenshot && (
+                          <button
+                            type="button"
+                            aria-label={t('Bild entfernen')}
+                            disabled={removingUrl === url}
+                            onClick={async () => {
+                              setRemovingUrl(url);
+                              await onRemoveScreenshot(url);
+                              setRemovingUrl(null);
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: '-8px',
+                              right: '-8px',
+                              width: '26px',
+                              height: '26px',
+                              minWidth: 0,
+                              minHeight: 0,
+                              borderRadius: '50%',
+                              background: theme.status.error,
+                              border: 'none',
+                              color: '#fff',
+                              fontSize: '14px',
+                              lineHeight: 1,
+                              cursor: removingUrl === url ? 'default' : 'pointer',
+                              opacity: removingUrl === url ? 0.5 : 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: 0,
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
                     ))}
+                    {canAttach && (
+                      <motion.button
+                        type="button"
+                        whileTap={tapScale}
+                        aria-label={t('Bild hinzufügen')}
+                        onClick={() => fileRef.current?.click()}
+                        disabled={uploading}
+                        style={{
+                          width: '120px',
+                          height: '90px',
+                          borderRadius: '8px',
+                          border: `2px dashed ${theme.primary}30`,
+                          background: `${theme.primary}08`,
+                          color: uploading ? theme.text.muted : theme.primary,
+                          cursor: uploading ? 'default' : 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          fontSize: '10px',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {uploading ? (
+                          '...'
+                        ) : (
+                          <>
+                            <PhotoCamera style={{ fontSize: 20 }} />
+                            {t('Bild')}
+                          </>
+                        )}
+                      </motion.button>
+                    )}
                   </div>
                 </div>
               )}

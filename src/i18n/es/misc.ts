@@ -100,6 +100,10 @@ const dict: Record<string, string> = {
   'Keine archivierten Tickets.': 'No hay tickets archivados.',
   'Ticket geschlossen': 'Ticket cerrado',
   '{name} hat das Ticket "{title}" geschlossen': '{name} ha cerrado el ticket "{title}"',
+  'Bild hinzufügen': 'Añadir imagen',
+  'Bild entfernen': 'Quitar imagen',
+  'Neue Screenshots': 'Nuevas capturas',
+  '{name} hat Screenshots zu "{title}" ergänzt': '{name} ha añadido capturas a "{title}"',
   'Kontakt:': 'Contacto:',
   'E-Mail:': 'Email:',
   'Rechtliche Informationen konnten nicht geladen werden.':

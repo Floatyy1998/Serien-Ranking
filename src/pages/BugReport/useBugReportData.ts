@@ -193,6 +193,68 @@ export function useBugReportData() {
     [user]
   );
 
+  // Ersteller hängt nachträglich Screenshots an; Admin wird informiert
+  const addScreenshots = useCallback(
+    async (ticketId: string, urls: string[]): Promise<boolean> => {
+      if (!user || urls.length === 0) return false;
+      try {
+        const ticket = tickets.find((tk) => tk.id === ticketId);
+        if (!ticket || ticket.createdBy !== user.uid) return false;
+
+        const snap = await dbRef(`bugTickets/${ticketId}/screenshots`).once('value');
+        const raw = snap.val() as string[] | Record<string, string> | null;
+        const current = Array.isArray(raw) ? raw : raw ? Object.values(raw) : [];
+        await dbRef(`bugTickets/${ticketId}`).update({
+          screenshots: [...current, ...urls],
+          updatedAt: new Date().toISOString(),
+        });
+
+        const displayName =
+          user.displayName || (await getUserDisplayName(user.uid)) || t('Unbekannt');
+        const vars = { name: displayName, title: ticket.title };
+        await sendNotificationToUser(ADMIN_UID, {
+          type: 'bug_ticket_reply',
+          title: 'Neue Screenshots',
+          titleL: await localizedVariants('Neue Screenshots'),
+          message: tLocale('de', '{name} hat Screenshots zu "{title}" ergänzt', vars),
+          messageL: await localizedVariants('{name} hat Screenshots zu "{title}" ergänzt', vars),
+          data: { ticketId, ticketType: ticket.ticketType || 'bug' },
+        });
+        return true;
+      } catch (error) {
+        console.error('Screenshot append failed:', error);
+        return false;
+      }
+    },
+    [user, tickets]
+  );
+
+  // Ersteller entfernt einen eigenen Screenshot (Datei wird direkt gelöscht)
+  const removeScreenshot = useCallback(
+    async (ticketId: string, url: string): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        const ticket = tickets.find((tk) => tk.id === ticketId);
+        if (!ticket || ticket.createdBy !== user.uid) return false;
+
+        try {
+          await firebase.storage().refFromURL(url).delete();
+        } catch {
+          // ignorieren — Datei fehlt ggf. schon
+        }
+        await dbRef(`bugTickets/${ticketId}`).update({
+          screenshots: (ticket.screenshots ?? []).filter((s) => s !== url),
+          updatedAt: new Date().toISOString(),
+        });
+        return true;
+      } catch (error) {
+        console.error('Screenshot removal failed:', error);
+        return false;
+      }
+    },
+    [user, tickets]
+  );
+
   // Ersteller schließt sein eigenes Ticket (Screenshots werden direkt aufgeräumt)
   const closeTicket = useCallback(
     async (ticketId: string): Promise<boolean> => {
@@ -243,6 +305,8 @@ export function useBugReportData() {
     createTicket,
     addComment,
     updateTicket,
+    addScreenshots,
+    removeScreenshot,
     closeTicket,
   };
 }

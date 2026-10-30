@@ -13,6 +13,7 @@ const fb = vi.hoisted(() => {
     updateCalls: [] as Array<{ path: string; value: unknown }>,
     removeCalls: [] as string[],
     putFiles: [] as string[],
+    deletedUrls: [] as string[],
   };
   const snap = (path: string) => ({ val: () => state.dataByPath[path] ?? null });
   const makeRef = (path: string) => {
@@ -48,7 +49,11 @@ const fb = vi.hoisted(() => {
   };
   const storage = () => ({
     ref: () => storageRef,
-    refFromURL: () => ({ delete: async () => {} }),
+    refFromURL: (url: string) => ({
+      delete: async () => {
+        state.deletedUrls.push(url);
+      },
+    }),
   });
   return { state, ref, database, storage };
 });
@@ -76,6 +81,7 @@ beforeEach(() => {
   fb.state.updateCalls = [];
   fb.state.removeCalls = [];
   fb.state.putFiles = [];
+  fb.state.deletedUrls = [];
   notify.sendNotificationToUser.mockClear();
   authState.user = { uid: 'u1', displayName: 'Tester' };
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -181,5 +187,99 @@ describe('useBugReportData – mutations', () => {
     });
     expect(url).toBe('https://cdn/screenshot.png');
     expect(fb.state.putFiles).toContain('shot.png');
+  });
+});
+
+describe('useBugReportData – Screenshots nachträglich', () => {
+  const ownTicket = {
+    id: 't1',
+    createdBy: 'u1',
+    title: 'Bug T',
+    ticketType: 'bug',
+    status: 'open',
+    createdAt: '2026-01-01T00:00:00Z',
+    screenshots: ['https://cdn/alt.png'],
+  };
+  const foreignTicket = { ...ownTicket, id: 't2', createdBy: 'other' };
+
+  const loadTickets = async (
+    result: { current: ReturnType<typeof useBugReportData> },
+    list: Array<typeof ownTicket>
+  ) => {
+    const cb = fb.state.listeners[0]?.cb;
+    act(() => cb?.({ val: () => Object.fromEntries(list.map((tk) => [tk.id, tk])) }));
+    await waitFor(() => expect(result.current.tickets).toHaveLength(list.length));
+  };
+
+  it('addScreenshots hängt URLs an den Serverstand an und benachrichtigt den Admin', async () => {
+    // Serverstand ist aktueller als der lokale Listener-Stand (zweites Gerät)
+    fb.state.dataByPath['bugTickets/t1/screenshots'] = [
+      'https://cdn/alt.png',
+      'https://cdn/zweites-geraet.png',
+    ];
+    const { result } = renderHook(() => useBugReportData());
+    await loadTickets(result, [ownTicket]);
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.addScreenshots('t1', ['https://cdn/neu.png']);
+    });
+    expect(ok).toBe(true);
+    const upd = fb.state.updateCalls.find((c) => c.path === 'bugTickets/t1');
+    const value = upd?.value as { screenshots: string[]; updatedAt: string };
+    expect(value.screenshots).toEqual([
+      'https://cdn/alt.png',
+      'https://cdn/zweites-geraet.png',
+      'https://cdn/neu.png',
+    ]);
+    expect(value.updatedAt).toBeTypeOf('string');
+    expect(notify.sendNotificationToUser).toHaveBeenCalledTimes(1);
+    const calls = notify.sendNotificationToUser.mock.calls as unknown as Array<
+      [string, { title: string; data: { ticketId: string } }]
+    >;
+    expect(calls[0]?.[1].title).toBe('Neue Screenshots');
+    expect(calls[0]?.[1].data.ticketId).toBe('t1');
+  });
+
+  it('addScreenshots verweigert fremde Tickets und leere Listen', async () => {
+    const { result } = renderHook(() => useBugReportData());
+    await loadTickets(result, [ownTicket, foreignTicket]);
+    let okForeign = true;
+    let okEmpty = true;
+    await act(async () => {
+      okForeign = await result.current.addScreenshots('t2', ['https://cdn/neu.png']);
+      okEmpty = await result.current.addScreenshots('t1', []);
+    });
+    expect(okForeign).toBe(false);
+    expect(okEmpty).toBe(false);
+    expect(fb.state.updateCalls).toHaveLength(0);
+    expect(notify.sendNotificationToUser).not.toHaveBeenCalled();
+  });
+
+  it('removeScreenshot löscht die Datei und schreibt die gefilterte Liste', async () => {
+    const { result } = renderHook(() => useBugReportData());
+    await loadTickets(result, [
+      { ...ownTicket, screenshots: ['https://cdn/alt.png', 'https://cdn/weg.png'] },
+    ]);
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.removeScreenshot('t1', 'https://cdn/weg.png');
+    });
+    expect(ok).toBe(true);
+    expect(fb.state.deletedUrls).toEqual(['https://cdn/weg.png']);
+    const upd = fb.state.updateCalls.find((c) => c.path === 'bugTickets/t1');
+    expect((upd?.value as { screenshots: string[] }).screenshots).toEqual(['https://cdn/alt.png']);
+    expect(notify.sendNotificationToUser).not.toHaveBeenCalled();
+  });
+
+  it('removeScreenshot verweigert fremde Tickets', async () => {
+    const { result } = renderHook(() => useBugReportData());
+    await loadTickets(result, [foreignTicket]);
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.removeScreenshot('t2', 'https://cdn/alt.png');
+    });
+    expect(ok).toBe(false);
+    expect(fb.state.deletedUrls).toHaveLength(0);
+    expect(fb.state.updateCalls).toHaveLength(0);
   });
 });

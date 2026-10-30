@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 
@@ -137,5 +137,68 @@ describe('TicketCard', () => {
     const sendBtn = screen.getAllByRole('button').find((b) => b.textContent === '');
     fireEvent.click(sendBtn as HTMLElement);
     expect(onAddComment).toHaveBeenCalledWith('Any update?');
+  });
+});
+
+describe('TicketCard – Screenshots nachträglich anhängen', () => {
+  const STORAGE = 'https://firebasestorage.googleapis.com/v0/b/serien-ranking/o';
+  const uploadProps = {
+    onUpload: vi.fn(async (f: File) => `${STORAGE}/${f.name}`),
+    onAddScreenshots: vi.fn(async () => true),
+    onRemoveScreenshot: vi.fn(async () => true),
+  };
+  const renderCard = (ticket: BugTicket, props = uploadProps) =>
+    render(
+      <TicketCard
+        ticket={ticket}
+        theme={theme}
+        expanded
+        onToggle={vi.fn()}
+        onAddComment={vi.fn(async () => true)}
+        onUpdate={vi.fn(async () => true)}
+        {...props}
+      />
+    );
+
+  it('zeigt die Bild-Kachel bei offenen Tickets, nicht bei erledigten', () => {
+    const { unmount } = renderCard(baseTicket);
+    expect(screen.getByLabelText('Bild hinzufügen')).toBeInTheDocument();
+    unmount();
+    renderCard({ ...baseTicket, status: 'done' });
+    expect(screen.queryByLabelText('Bild hinzufügen')).not.toBeInTheDocument();
+  });
+
+  it('zeigt keine Kachel ohne Upload-Handler', () => {
+    render(
+      <TicketCard
+        ticket={baseTicket}
+        theme={theme}
+        expanded
+        onToggle={vi.fn()}
+        onAddComment={vi.fn(async () => true)}
+        onUpdate={vi.fn(async () => true)}
+      />
+    );
+    expect(screen.queryByLabelText('Bild hinzufügen')).not.toBeInTheDocument();
+  });
+
+  it('lädt nur Bilder hoch und hängt deren URLs ans Ticket', async () => {
+    const onUpload = vi.fn(async (f: File) => `${STORAGE}/${f.name}`);
+    const onAddScreenshots = vi.fn(async () => true);
+    renderCard(baseTicket, { ...uploadProps, onUpload, onAddScreenshots });
+    const input = screen.getByTestId('ticket-screenshot-input');
+    const image = new File(['x'], 'shot.png', { type: 'image/png' });
+    const text = new File(['x'], 'notiz.txt', { type: 'text/plain' });
+    fireEvent.change(input, { target: { files: [image, text] } });
+    await waitFor(() => expect(onAddScreenshots).toHaveBeenCalledWith([`${STORAGE}/shot.png`]));
+    expect(onUpload).toHaveBeenCalledTimes(1);
+  });
+
+  it('entfernt ein Bild über den Entfernen-Knopf', async () => {
+    const url = `${STORAGE}/alt.png`;
+    const onRemoveScreenshot = vi.fn(async () => true);
+    renderCard({ ...baseTicket, screenshots: [url] }, { ...uploadProps, onRemoveScreenshot });
+    fireEvent.click(screen.getByLabelText('Bild entfernen'));
+    await waitFor(() => expect(onRemoveScreenshot).toHaveBeenCalledWith(url));
   });
 });
