@@ -16,6 +16,13 @@ describe('DNB-Auflage', () => {
     expect(mapDnbRecord(xml, '9783453319677')?.edition).toBe('3. Auflage');
   });
 
+  it('gibt abgekürzten Auflagen ihren Punkt zurück', () => {
+    const xml = record(
+      '<datafield tag="250" ind1=" " ind2=" "><subfield code="a">1. Aufl.</subfield></datafield>'
+    );
+    expect(mapDnbRecord(xml, '9783551630292')?.edition).toBe('1. Aufl.');
+  });
+
   it('lässt die Auflage ohne Feld 250 weg', () => {
     expect(mapDnbRecord(record(''), '9783453319677')).not.toHaveProperty('edition');
   });
@@ -44,6 +51,22 @@ describe('DNB-Reihe', () => {
     const hit = mapDnbRecord(record(series('Marry my husband', '')), '9783551630254');
     expect(hit?.series?.name).toBe('Marry my husband');
     expect(hit?.series).not.toHaveProperty('position');
+  });
+
+  it('hält die Verlagsnummer („Carlsen ; 815") nicht für eine Reihe', () => {
+    const publisher =
+      '<datafield tag="264" ind1="3" ind2="1"><subfield code="a">Hamburg</subfield><subfield code="b">Carlsen</subfield><subfield code="c">2009</subfield></datafield>';
+    const hit = mapDnbRecord(record(series('Carlsen', '815') + publisher), '9783551358158');
+    expect(hit?.publisher).toBe('Carlsen');
+    expect(hit).not.toHaveProperty('series');
+    const imprint = mapDnbRecord(
+      record(
+        series('Fischer Taschenbuch', '1234') +
+          publisher.replace('Carlsen', 'Fischer Taschenbuch Verlag')
+      ),
+      '9783596297290'
+    );
+    expect(imprint).not.toHaveProperty('series');
   });
 
   it('lässt die Reihe ohne Feld 490 weg', () => {

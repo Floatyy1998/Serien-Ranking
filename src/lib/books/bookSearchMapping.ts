@@ -178,6 +178,23 @@ const trimMarc = (value: string | undefined) =>
     .replace(/\s*[/:;,.=]\s*$/, '')
     .trim() || undefined;
 
+/** „1. Aufl." verliert durch trimMarc den Punkt der Abkürzung — bei bekannten Kürzeln kommt er zurück. */
+const fixAbbreviation = (value: string | undefined) =>
+  value && /(?:^|\s)(?:Aufl|Ausg|Nachdr|erw|überarb|aktual|Jh)$/i.test(value) ? `${value}.` : value;
+
+const normalizeName = (value: string | undefined) =>
+  (value ?? '')
+    .toLowerCase()
+    .replace(/(?:verlag|gmbh|kg|ag|taschenbuch)/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+
+/** Verlagsnummern („Carlsen ; 815", „Heyne ; 12345") stehen auch in Feld 490 — das ist keine Buchreihe. */
+const samePublisher = (series: string, publisher: string | undefined) => {
+  const a = normalizeName(series);
+  const b = normalizeName(publisher);
+  return !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a));
+};
+
 /**
  * Verantwortlichkeitsangabe (245$c) als Ersatz, wenn die DNB keine Personen-Felder (100/700) anlegt — bei Comics
  * die Regel: „Artwork: Studio LICO ; Original: Sung Sojak ; aus dem Koreanischen von Jessica Walther" → Studio LICO, Sung Sojak.
@@ -238,8 +255,10 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const authors = persons.length ? persons : namesFromStatement(first(['245'], 'c'));
   const pages = first(['300'], 'a')?.match(/(\d+)\s*(?:S\.|Seiten)/)?.[1];
   const lang = first(['041'], 'a');
+  const publisher = trimMarc(first(['264', '260'], 'b'));
   const seriesField = fields.find((f) => f.getAttribute('tag') === '490');
-  const seriesName = seriesField ? trimMarc(subfields(seriesField, 'a')[0]) : undefined;
+  const seriesRaw = seriesField ? trimMarc(subfields(seriesField, 'a')[0]) : undefined;
+  const seriesName = seriesRaw && !samePublisher(seriesRaw, publisher) ? seriesRaw : undefined;
   const seriesVolume = seriesField
     ? Number(subfields(seriesField, 'v')[0]?.match(/\d+/)?.[0])
     : undefined;
@@ -259,13 +278,13 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
     id: sanitizeBookKey(`dnb-${isbn13}`),
     title: partNumber ? `${mainTitle} ${partNumber}` : mainTitle,
     subtitle: trimMarc(first(['245'], 'b')) ?? trimMarc(first(['245'], 'p')),
-    edition: trimMarc(first(['250'], 'a')),
+    edition: fixAbbreviation(trimMarc(first(['250'], 'a'))),
     authors,
     cover: dnbCoverUrl(isbn13),
     coverFallback: openLibraryCoverByIsbn(isbn13),
     pageCount: pages ? Number(pages) : undefined,
     publishedYear: parseYear(first(['264', '260'], 'c')),
-    publisher: trimMarc(first(['264', '260'], 'b')),
+    publisher,
     language: lang ? (LANG_3_TO_2[lang] ?? lang) : undefined,
     categories: categories.length ? categories : undefined,
     isbn13,
