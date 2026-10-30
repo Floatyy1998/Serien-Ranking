@@ -25,6 +25,7 @@ import { notePositiveMoment } from '../../services/app/appReview';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/watch/markNextEpisode';
+import { findNextEpisodePosition } from '../../lib/episode/nextEpisode';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { CrossoverEditorSheet } from '../../components/crossover/CrossoverEditorSheet';
@@ -143,17 +144,8 @@ export const SeriesDetailPage = memo(() => {
       }
     }
 
-    for (let i = 0; i < series.seasons.length; i++) {
-      const eps = series.seasons[i]?.episodes;
-      if (!eps) continue;
-      for (const ep of eps) {
-        if (!ep.watched && hasEpisodeAired(ep)) {
-          setSelectedSeasonIndex(i);
-          return;
-        }
-      }
-    }
-    setSelectedSeasonIndex(0);
+    // Staffel der nächsten offenen Folge (ab der zuletzt gesehenen vorwärts, sonst von vorn)
+    setSelectedSeasonIndex(findNextEpisodePosition(series)?.seasonIndex ?? 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series?.id]);
 

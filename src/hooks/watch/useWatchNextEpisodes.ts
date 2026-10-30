@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import type { Series } from '../../types/Series';
-import { hasEpisodeAired, getEpisodeAirDateStr } from '../../utils/episodeDate';
+import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { detectEpisodeChip, type EpisodeChipType } from '../../utils/episodeChips';
+import { findNextEpisodePosition } from '../../lib/episode/nextEpisode';
 import {
   getNextRewatchEpisode,
   getRewatchProgress,
@@ -13,7 +14,6 @@ import {
   DEFAULT_EPISODE_RUNTIME_MINUTES,
   calculateSeriesMetrics,
   normalizeSeasons,
-  normalizeEpisodes,
 } from '../../lib/episode/seriesMetrics';
 
 export interface NextEpisode {
@@ -150,56 +150,43 @@ export const useWatchNextEpisodes = (
         }
       }
 
-      // Always collect normal next unwatched episodes
-      {
-        let foundUnwatched = false;
-
-        for (const [seasonIndex, season] of seasonsArray.entries()) {
-          const episodesList = normalizeEpisodes(season.episodes);
-
-          if (!episodesList.length) continue;
-
-          for (const [episodeIndex, episode] of episodesList.entries()) {
-            if (episode.watched) continue;
-
-            if (!hasEpisodeAired(episode)) continue;
-            episodes.push({
-              seriesId: series.id,
-              seriesTitle: series.title || '',
-              poster: getImageUrl(series.poster),
-              seasonIndex,
-              episodeIndex,
-              seasonNumber: season.seasonNumber,
-              episodeNumber: episodeIndex + 1,
-              episodeName: episode.name || `Episode ${episodeIndex + 1}`,
-              airDate: getEpisodeAirDateStr(episode) || episode.air_date,
-              runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              totalAiredEpisodes,
-              watchedEpisodes,
-              remainingEpisodes,
-              progress,
-              currentSeasonOf: t('S{a} von S{b}', {
-                a: season.seasonNumber + 1,
-                b: series.seasonCount ?? 1,
-              }),
-              estimatedMinutesLeft:
-                remainingEpisodes *
-                (episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
-              providerNames,
-              providerLogo: firstProvider?.logo,
-              providerName: firstProvider?.name,
-              chipType: detectEpisodeChip(
-                season.episodes || [],
-                episodeIndex,
-                series.production?.production !== false
-              ),
-            });
-            foundUnwatched = true;
-            break;
-          }
-
-          if (foundUnwatched) break;
-        }
+      // Nächste offene Folge – ab der zuletzt gesehenen vorwärts, sonst von vorn.
+      const pos = findNextEpisodePosition(series);
+      const season = pos ? series.seasons[pos.seasonIndex] : undefined;
+      const episode = pos ? season?.episodes?.[pos.episodeIndex] : undefined;
+      if (pos && season && episode) {
+        const { seasonIndex, episodeIndex } = pos;
+        episodes.push({
+          seriesId: series.id,
+          seriesTitle: series.title || '',
+          poster: getImageUrl(series.poster),
+          seasonIndex,
+          episodeIndex,
+          seasonNumber: season.seasonNumber,
+          episodeNumber: episodeIndex + 1,
+          episodeName: episode.name || `Episode ${episodeIndex + 1}`,
+          airDate: getEpisodeAirDateStr(episode) || episode.air_date,
+          runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+          totalAiredEpisodes,
+          watchedEpisodes,
+          remainingEpisodes,
+          progress,
+          currentSeasonOf: t('S{a} von S{b}', {
+            a: season.seasonNumber + 1,
+            b: series.seasonCount ?? 1,
+          }),
+          estimatedMinutesLeft:
+            remainingEpisodes *
+            (episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
+          providerNames,
+          providerLogo: firstProvider?.logo,
+          providerName: firstProvider?.name,
+          chipType: detectEpisodeChip(
+            season.episodes || [],
+            episodeIndex,
+            series.production?.production !== false
+          ),
+        });
       }
     });
 

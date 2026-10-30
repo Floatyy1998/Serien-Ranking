@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { advanceSeriesNextEpisodes, findNextEpisodePosition } from '../../lib/episode/nextEpisode';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
@@ -116,17 +117,14 @@ export const useCatchUpData = () => {
 
       let totalEpisodes = 0;
       let watchedEpisodes = 0;
-      let currentSeason = 1;
-      let currentEpisode = 1;
       let lastWatchedDate: string | undefined;
-      let foundUnwatched = false;
       let remainingMinutes = 0;
       const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
 
-        season.episodes.forEach((episode, epIndex) => {
+        season.episodes.forEach((episode) => {
           if (!hasEpisodeAired(episode)) return;
           totalEpisodes++;
           if (episode.watched) {
@@ -139,11 +137,6 @@ export const useCatchUpData = () => {
             }
           } else {
             remainingMinutes += episode.runtime || seriesRuntime;
-            if (!foundUnwatched) {
-              currentSeason = (season.seasonNumber ?? 0) + 1;
-              currentEpisode = episode.episode_number || epIndex + 1;
-              foundUnwatched = true;
-            }
           }
         });
       });
@@ -160,8 +153,7 @@ export const useCatchUpData = () => {
           remainingEpisodes,
           remainingMinutes,
           progress,
-          currentSeason,
-          currentEpisode,
+          ...(nextEpisodePosition(series) ?? { currentSeason: 1, currentEpisode: 1 }),
           lastWatchedDate,
         });
       }
@@ -253,30 +245,18 @@ export const advanceCatchUpView = (item: CatchUpSeries, advance: number): CatchU
   const series = item.series;
   const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
-  let skipped = 0;
-  let skippedMinutes = 0;
-  let nextSeason: number | null = null;
-  let nextEpisode = item.currentEpisode;
-
-  const seasons = series.seasons ?? [];
-  for (let s = 0; s < seasons.length && nextSeason === null; s++) {
-    const episodes = seasons[s].episodes ?? [];
-    for (let k = 0; k < episodes.length; k++) {
-      const episode = episodes[k];
-      if (episode?.watched || !hasEpisodeAired(episode)) continue;
-      if (skipped < advance) {
-        skipped++;
-        skippedMinutes += episode.runtime || seriesRuntime;
-        continue;
-      }
-      nextSeason = (seasons[s].seasonNumber ?? 0) + 1;
-      nextEpisode = episode.episode_number || k + 1;
-      break;
-    }
-  }
+  // Dieselbe Anker-Logik wie der echte Mark-Write: die nächsten `advance`
+  // offenen Folgen gelten als gesehen, die Karte zeigt die darauf folgende.
+  const advanced = advanceSeriesNextEpisodes(series, advance);
+  const skipped = advanced.marked.length;
+  const skippedMinutes = advanced.marked.reduce((sum, pos) => {
+    const episode = series.seasons[pos.seasonIndex]?.episodes?.[pos.episodeIndex];
+    return sum + (episode?.runtime || seriesRuntime);
+  }, 0);
 
   // Keine nächste ungesehene Folge mehr übrig → Serie aufgeholt → Karte weg.
-  if (nextSeason === null) return null;
+  const next = nextEpisodePosition(advanced.series);
+  if (!next) return null;
 
   const watchedEpisodes = item.watchedEpisodes + skipped;
   const remainingEpisodes = item.totalEpisodes - watchedEpisodes;
@@ -288,10 +268,23 @@ export const advanceCatchUpView = (item: CatchUpSeries, advance: number): CatchU
     remainingEpisodes,
     remainingMinutes: Math.max(0, item.remainingMinutes - skippedMinutes),
     progress: (watchedEpisodes / item.totalEpisodes) * 100,
-    currentSeason: nextSeason,
-    currentEpisode: nextEpisode,
+    ...next,
   };
 };
+
+/** 1-basierte Anzeige-Position der nächsten offenen Folge; null, wenn nichts offen ist. */
+function nextEpisodePosition(
+  series: Series
+): { currentSeason: number; currentEpisode: number } | null {
+  const pos = findNextEpisodePosition(series);
+  if (!pos) return null;
+  const season = series.seasons[pos.seasonIndex];
+  const episode = season.episodes[pos.episodeIndex];
+  return {
+    currentSeason: (season.seasonNumber ?? 0) + 1,
+    currentEpisode: episode.episode_number || pos.episodeIndex + 1,
+  };
+}
 
 export const formatTime = (minutes: number): { value: number; unit: string } => {
   if (minutes < 60) return { value: minutes, unit: t('Min') };

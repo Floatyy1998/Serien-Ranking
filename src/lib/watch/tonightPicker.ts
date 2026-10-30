@@ -1,6 +1,6 @@
 import { calculateOverallRating } from '../rating/rating';
+import { findNextEpisodePosition } from '../episode/nextEpisode';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../episode/seriesMetrics';
-import { hasEpisodeAired } from '../../utils/episodeDate';
 import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 
@@ -121,29 +121,22 @@ export function buildTonightCandidates(
   for (const s of seriesList || []) {
     if (!s || s.hidden || blocked.has(s.id)) continue;
     let watchedCount = 0;
-    let next: {
-      seasonNumber: number;
-      episodeNumber: number;
-      name?: string;
-      runtime: number;
-    } | null = null;
     for (const season of s.seasons || []) {
-      for (let k = 0; k < (season.episodes || []).length; k++) {
-        const ep = season.episodes[k];
-        if (!ep) continue;
-        if (ep.watched) {
-          watchedCount += 1;
-        } else if (!next && hasEpisodeAired(ep)) {
-          next = {
-            seasonNumber: (season.seasonNumber ?? 0) + 1,
-            episodeNumber: ep.episode_number || k + 1,
-            name: ep.name,
-            runtime: ep.runtime || s.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-          };
-        }
+      for (const ep of season?.episodes || []) {
+        if (ep?.watched) watchedCount += 1;
       }
     }
-    if (!next) continue;
+    // Nächste offene Folge – ab der zuletzt gesehenen vorwärts, sonst von vorn.
+    const pos = findNextEpisodePosition(s);
+    if (!pos) continue;
+    const nextSeason = s.seasons[pos.seasonIndex];
+    const nextEp = nextSeason.episodes[pos.episodeIndex];
+    const next = {
+      seasonNumber: (nextSeason.seasonNumber ?? 0) + 1,
+      episodeNumber: nextEp.episode_number || pos.episodeIndex + 1,
+      name: nextEp.name,
+      runtime: nextEp.runtime || s.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+    };
     out.push({
       kind: 'series-next',
       id: s.id,

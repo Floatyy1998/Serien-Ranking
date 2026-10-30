@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { getEpisodeAirDate, hasEpisodeAired } from '../../../utils/episodeDate';
+import { findNextEpisodePosition } from '../../../lib/episode/nextEpisode';
+import { getEpisodeAirDate } from '../../../utils/episodeDate';
 import { dateLocale, t } from '../../../services/i18n';
 import type { Series } from '../../../types/Series';
 
@@ -107,18 +108,16 @@ function getNextEpisodeInfo(
     };
   }
 
-  // Fallback: next unwatched aired episode
-  for (const season of series.seasons) {
-    if (!season?.episodes) continue;
-    for (let eIdx = 0; eIdx < season.episodes.length; eIdx++) {
-      const ep = season.episodes[eIdx];
-      if (!ep.watched && hasEpisodeAired(ep)) {
-        return {
-          label: `S${(season.seasonNumber ?? 0) + 1}E${eIdx + 1} · ${ep.name || t('Episode {n}', { n: eIdx + 1 })}`,
-          color: 'unwatched',
-        };
-      }
-    }
+  // Fallback: nächste offene Folge (ab der zuletzt gesehenen vorwärts, sonst von vorn)
+  const pos = findNextEpisodePosition(series);
+  if (pos) {
+    const season = series.seasons[pos.seasonIndex];
+    const ep = season.episodes[pos.episodeIndex];
+    const eIdx = pos.episodeIndex;
+    return {
+      label: `S${(season.seasonNumber ?? 0) + 1}E${eIdx + 1} · ${ep.name || t('Episode {n}', { n: eIdx + 1 })}`,
+      color: 'unwatched',
+    };
   }
 
   return null;

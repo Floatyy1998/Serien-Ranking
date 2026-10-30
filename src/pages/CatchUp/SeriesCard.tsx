@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUrl';
 import { markNextEpisodeWatched } from '../../hooks/watch/markNextEpisode';
-import { hasEpisodeAired } from '../../utils/episodeDate';
+import { advanceSeriesNextEpisodes } from '../../lib/episode/nextEpisode';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { GradientRing } from './GradientRing';
@@ -16,26 +16,14 @@ interface SeriesCardProps {
 }
 
 /**
- * Klont eine Serie und markiert ihre ersten `advance` ungesehenen, bereits
- * ausgestrahlten Folgen als gesehen. Dadurch wählt `findNextEpisode()` in
- * {@link markNextEpisodeWatched} beim optimistischen Binge die NÄCHSTE Folge –
- * nicht dieselbe (Doppel-Mark-Schutz), ohne die Mark-Pipeline selbst zu ändern.
+ * Klont eine Serie und markiert ihre nächsten `advance` offenen Folgen als
+ * gesehen (der Anker „zuletzt gesehen" wandert mit). Dadurch wählt
+ * `findNextEpisode()` in {@link markNextEpisodeWatched} beim optimistischen
+ * Binge die NÄCHSTE Folge – nicht dieselbe (Doppel-Mark-Schutz), ohne die
+ * Mark-Pipeline selbst zu ändern.
  */
 function cloneSeriesWithAdvance(series: Series, advance: number): Series {
-  if (advance <= 0) return series;
-  let remaining = advance;
-  const seasons = series.seasons?.map((season) => {
-    if (remaining <= 0 || !season.episodes) return season;
-    const episodes = season.episodes.map((ep) => {
-      if (remaining > 0 && !ep?.watched && hasEpisodeAired(ep)) {
-        remaining--;
-        return { ...ep, watched: true };
-      }
-      return ep;
-    });
-    return { ...season, episodes };
-  });
-  return { ...series, seasons };
+  return advanceSeriesNextEpisodes(series, advance).series;
 }
 
 export const SeriesCard = memo<SeriesCardProps>(({ item }) => {

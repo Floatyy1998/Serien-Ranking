@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { HOME_CAROUSEL_MAX_ITEMS } from '../../lib/episode/constants';
+import { findNextEpisodePosition } from '../../lib/episode/nextEpisode';
 import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
 import { detectEpisodeChip, type EpisodeChipType } from '../../utils/episodeChips';
-import { getEpisodeAirDateStr, hasEpisodeAired } from '../../utils/episodeDate';
+import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { getBackdropSize, getImageUrl } from '../../utils/imageUrl';
 
 export const useContinueWatching = () => {
@@ -51,57 +52,45 @@ export const useContinueWatching = () => {
       const lastWatchedAt = getSeriesLastWatchedAt(series);
       const { progress, watchedEpisodes, remainingEpisodes } = calculateSeriesMetrics(series);
       // Angefangen (mind. eine aired Episode gesehen) UND nicht komplett fertig
-      // (noch aired-Episoden offen). Die konkrete nächste ungesehene aired
-      // Episode ermittelt die Schleife unten; ohne sie wird nichts gepusht.
+      // (noch aired-Episoden offen). Die konkrete nächste offene Folge liefert
+      // findNextEpisodePosition (ab der zuletzt gesehenen Folge vorwärts, sonst
+      // von vorn); ohne sie wird nichts gepusht.
       if (watchedEpisodes === 0 || remainingEpisodes === 0) continue;
 
-      const seasons = series.seasons;
+      const pos = findNextEpisodePosition(series);
+      if (pos) {
+        const season = series.seasons[pos.seasonIndex];
+        const episodes2 = season.episodes;
+        const k = pos.episodeIndex;
+        const episode = episodes2[k];
+        const isInProduction = series.production?.production !== false;
+        const chipType = detectEpisodeChip(episodes2, k, isInProduction);
 
-      if (seasons) {
-        let foundNext = false;
-        for (let j = 0; j < seasons.length && !foundNext; j++) {
-          const season = seasons[j];
-          const episodes2 = season.episodes;
-          if (!episodes2) continue;
-
-          for (let k = 0; k < episodes2.length; k++) {
-            const episode = episodes2[k];
-            if (!episode?.watched && hasEpisodeAired(episode)) {
-              const isInProduction = series.production?.production !== false;
-              const chipType = detectEpisodeChip(episodes2, k, isInProduction);
-
-              items.push({
-                type: 'series',
-                id: series.id,
-                title: series.title,
-                poster: getImageUrl(series.poster),
-                backdrop: series.backdrop
-                  ? getImageUrl(series.backdrop, getBackdropSize())
-                  : undefined,
-                progress,
-                nextEpisode: {
-                  seasonNumber: (season.seasonNumber ?? 0) + 1,
-                  episodeNumber: k + 1,
-                  name: episode.name,
-                  seasonIndex: j,
-                  episodeIndex: k,
-                  episodeId: episode.id ?? 0,
-                  absoluteNumber: episode.absoluteNumber,
-                },
-                airDate: getEpisodeAirDateStr(episode) || episode.air_date,
-                lastWatchedAt,
-                genre: series.genre,
-                seasons: series.seasons,
-                provider: series.provider,
-                episodeRuntime: episode.runtime || series.episodeRuntime,
-                chipType,
-                watchlist: !!series.watchlist,
-              });
-              foundNext = true;
-              break;
-            }
-          }
-        }
+        items.push({
+          type: 'series',
+          id: series.id,
+          title: series.title,
+          poster: getImageUrl(series.poster),
+          backdrop: series.backdrop ? getImageUrl(series.backdrop, getBackdropSize()) : undefined,
+          progress,
+          nextEpisode: {
+            seasonNumber: (season.seasonNumber ?? 0) + 1,
+            episodeNumber: k + 1,
+            name: episode.name,
+            seasonIndex: pos.seasonIndex,
+            episodeIndex: k,
+            episodeId: episode.id ?? 0,
+            absoluteNumber: episode.absoluteNumber,
+          },
+          airDate: getEpisodeAirDateStr(episode) || episode.air_date,
+          lastWatchedAt,
+          genre: series.genre,
+          seasons: series.seasons,
+          provider: series.provider,
+          episodeRuntime: episode.runtime || series.episodeRuntime,
+          chipType,
+          watchlist: !!series.watchlist,
+        });
       }
     }
 

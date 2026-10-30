@@ -6,12 +6,14 @@
  * Direkt-Markieren aus mehreren Screens (CatchUp-Karte, Serien-Detail-Hero)
  * konsistent und ohne Season-Index-Off-by-one funktioniert.
  *
- * Die Season/Episode-Ermittlung spiegelt useContinueWatching (Ground Truth):
- *   seasonIndex = Array-Index in series.seasons, episodeId = episode.id.
+ * Die Season/Episode-Ermittlung läuft über lib/episode/nextEpisode (Anker =
+ * zuletzt gesehene Folge): seasonIndex = Array-Index in series.seasons,
+ * episodeId = episode.id.
  */
 
 import type { Series } from '../../types/Series';
 import { dbRef, dbUpdate, paths } from '../../services/db/ref';
+import { findNextEpisodePosition } from '../../lib/episode/nextEpisode';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import {
   buildEpisodeWatchedUpdates,
@@ -23,7 +25,7 @@ import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../lib/prompt/episodeRatingPrompt';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
-import { getEpisodeAirDateStr, hasEpisodeAired } from '../../utils/episodeDate';
+import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { t } from '../../services/i18n';
 
 interface NextEpisodeInfo {
@@ -39,36 +41,26 @@ interface NextEpisodeInfo {
 }
 
 /**
- * Findet die erste ungesehene, bereits ausgestrahlte Episode einer Serie.
+ * Findet die nächste offene (ungesehene, ausgestrahlte) Folge einer Serie –
+ * ab der zuletzt gesehenen Folge vorwärts, sonst von vorn.
  * Gibt null zurück, wenn die Serie durchgeschaut ist.
  */
 export function findNextEpisode(series: Series): NextEpisodeInfo | null {
-  const seasons = series.seasons;
-  if (!seasons) return null;
-
-  for (let j = 0; j < seasons.length; j++) {
-    const season = seasons[j];
-    const episodes = season.episodes;
-    if (!episodes) continue;
-
-    for (let k = 0; k < episodes.length; k++) {
-      const episode = episodes[k];
-      if (!episode?.watched && hasEpisodeAired(episode)) {
-        return {
-          seasonIndex: j,
-          episodeIndex: k,
-          seasonNumber: (season.seasonNumber ?? 0) + 1,
-          episodeNumber: episode.episode_number || k + 1,
-          absoluteNumber: episode.absoluteNumber,
-          episodeId: episode.id ?? 0,
-          episodeName: episode.name,
-          runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-          airDate: getEpisodeAirDateStr(episode) || episode.air_date || '',
-        };
-      }
-    }
-  }
-  return null;
+  const pos = findNextEpisodePosition(series);
+  if (!pos) return null;
+  const season = series.seasons[pos.seasonIndex];
+  const episode = season.episodes[pos.episodeIndex];
+  return {
+    seasonIndex: pos.seasonIndex,
+    episodeIndex: pos.episodeIndex,
+    seasonNumber: (season.seasonNumber ?? 0) + 1,
+    episodeNumber: episode.episode_number || pos.episodeIndex + 1,
+    absoluteNumber: episode.absoluteNumber,
+    episodeId: episode.id ?? 0,
+    episodeName: episode.name,
+    runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+    airDate: getEpisodeAirDateStr(episode) || episode.air_date || '',
+  };
 }
 
 /** Positionsdaten einer bestimmten Folge (per TMDB-Id), unabhängig vom Gesehen-Status. */
