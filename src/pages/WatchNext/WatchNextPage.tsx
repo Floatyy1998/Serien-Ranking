@@ -17,7 +17,7 @@ import {
 } from '../../services/catalog/animeFillerService';
 import { useAnimeFillerCatalog } from '../../hooks/manga/useAnimeFillerCatalog';
 import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
-import { folderItemKey } from '../../lib/rating/ratingFolders';
+import { folderDisplayName, folderItemKey } from '../../lib/rating/ratingFolders';
 import { RewatchToggle } from './components/RewatchToggle';
 import { WatchNextEmptyState } from './components/WatchNextEmptyState';
 import { WatchNextEpisodeList } from './components/WatchNextEpisodeList';
@@ -51,7 +51,10 @@ export const WatchNextPage = () => {
   );
   const [listFilter, setListFilter] = usePersistedState<string | null>('watchNextList', null);
   const { folders } = useRatingFolders();
-  const availableLists = useMemo(() => folders.map((f) => ({ id: f.id, name: f.name })), [folders]);
+  const availableLists = useMemo(
+    () => folders.map((f) => ({ id: f.id, name: folderDisplayName(f) })),
+    [folders]
+  );
   const activeList = folders.find((f) => f.id === listFilter) ?? null;
   const listedSeries = useMemo(
     () =>

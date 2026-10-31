@@ -9,13 +9,16 @@ import { hapticTap } from '../../lib/interaction/haptics';
 import { readMediaTarget, type MediaTarget } from '../../lib/interaction/mediaTarget';
 import { showToast } from '../../lib/interaction/toast';
 import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
-import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders';
+import { folderItemKey, isRewatchFolder, type RatingFolder } from '../../lib/rating/ratingFolders';
 import {
   RatingFolderSheet,
   type RatingFolderSheetState,
 } from '../../pages/Ratings/RatingFolderSheet';
 import { t } from '../../services/i18n';
-import { setRatingFolderItem } from '../../services/rating/ratingFoldersService';
+import {
+  setRatingFolderItem,
+  setRewatchListItem,
+} from '../../services/rating/ratingFoldersService';
 import { markMovieWatched } from '../../services/rating/quickRating';
 import { addToLibrary } from '../../services/series/addToLibrary';
 import type { Movie } from '../../types/Movie';
@@ -220,14 +223,28 @@ export const MediaActionsHost = () => {
       if (!user || !state || !(await ensureOwned())) return;
       hapticTap();
       const key = folderItemKey(state.target.type, state.target.id);
+      const included = !folder.items.has(key);
       try {
-        await setRatingFolderItem(user.uid, folder.id, key, !folder.items.has(key));
+        if (isRewatchFolder(folder)) await setRewatchListItem(user.uid, key, included);
+        else await setRatingFolderItem(user.uid, folder.id, key, included);
       } catch {
         showToast(t('Speichern fehlgeschlagen'), 2500, 'error');
       }
     },
     [user, state, ensureOwned]
   );
+
+  const handleToggleRewatch = useCallback(async () => {
+    if (!user || !state || !(await ensureOwned())) return;
+    hapticTap();
+    const key = folderItemKey(state.target.type, state.target.id);
+    const included = !folders.find(isRewatchFolder)?.items.has(key);
+    try {
+      await setRewatchListItem(user.uid, key, included);
+    } catch {
+      showToast(t('Speichern fehlgeschlagen'), 2500, 'error');
+    }
+  }, [user, state, folders, ensureOwned]);
 
   const handleCreateFolder = useCallback(async () => {
     if (!state || !(await ensureOwned())) return;
@@ -249,6 +266,7 @@ export const MediaActionsHost = () => {
         onAdd={() => void handleAdd()}
         onRate={() => void handleRate()}
         onMarkWatched={() => void handleMarkWatched()}
+        onToggleRewatch={() => void handleToggleRewatch()}
         onToggleFolder={(folder) => void handleToggleFolder(folder)}
         onCreateFolder={() => void handleCreateFolder()}
       />

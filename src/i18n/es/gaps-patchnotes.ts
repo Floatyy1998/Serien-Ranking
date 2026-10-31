@@ -411,6 +411,11 @@ const dict: Record<string, string> = {
   'Frühere Updates': 'Actualizaciones anteriores',
   'Eine Neuerung': 'Una novedad',
   '{n} Neuerungen': '{n} novedades',
+  'November 2026 – Nochmal schauen': 'Noviembre de 2026 – Volver a ver',
+  'Deine Rewatch-Liste': 'Tu lista para volver a ver',
+  'Dir fällt ein Film ein, den du schon lange mal wieder sehen wolltest? Halt ihn gedrückt und wähl „Nochmal schauen“, schon steht er auf deiner Rewatch-Liste. Du findest sie bei den Bewertungen unter Listen und als eigene Reihe auf der Startseite, solange etwas drauf steht. Startest du bei einer Serie den Rewatch, verschwindet sie von selbst wieder von der Liste.':
+    '¿Te acuerdas de una película que llevabas tiempo queriendo volver a ver? Mantenla pulsada, elige «Volver a ver» y ya está en tu lista. La encontrarás en Listas, dentro de tus valoraciones, y como fila propia en la pantalla de inicio mientras tenga algo. Si empiezas a volver a ver una serie, desaparece sola de la lista.',
+  'Zur Rewatch-Liste': 'Ir a la lista',
 };
 
 export default dict;

@@ -1,6 +1,10 @@
+import { t } from '../../services/i18n';
+
 export type FolderItemKind = 'series' | 'movie';
 
 export const RATING_FOLDER_NAME_MAX = 40;
+export const REWATCH_FOLDER_ID = 'rewatch';
+export const REWATCH_FOLDER_NAME = 'Nochmal schauen';
 
 export interface StoredRatingFolder {
   name?: string;
@@ -23,6 +27,17 @@ export const folderItemKey = (kind: FolderItemKind, id: number | string): string
 export const normalizeFolderName = (name: string): string =>
   name.replace(/\s+/g, ' ').trim().slice(0, RATING_FOLDER_NAME_MAX);
 
+export const isRewatchFolder = (folder: { id: string } | string): boolean =>
+  (typeof folder === 'string' ? folder : folder.id) === REWATCH_FOLDER_ID;
+
+export const folderDisplayName = (folder: RatingFolder): string =>
+  isRewatchFolder(folder) ? t('Nochmal schauen') : folder.name;
+
+const compareFolders = (a: RatingFolder, b: RatingFolder): number =>
+  Number(isRewatchFolder(b)) - Number(isRewatchFolder(a)) ||
+  a.createdAt - b.createdAt ||
+  a.name.localeCompare(b.name);
+
 export function expandRatingFolders(
   raw: Record<string, StoredRatingFolder> | null | undefined
 ): RatingFolder[] {
@@ -43,7 +58,16 @@ export function expandRatingFolders(
       shared: value.shared === true,
     });
   }
-  return folders.sort((a, b) => a.createdAt - b.createdAt || a.name.localeCompare(b.name));
+  return folders.sort(compareFolders);
+}
+
+/** Stellt die eingebaute Rewatch-Liste voran, auch wenn sie noch nie gespeichert wurde. */
+export function withRewatchFolder(folders: RatingFolder[]): RatingFolder[] {
+  if (folders.some(isRewatchFolder)) return folders;
+  return [
+    { id: REWATCH_FOLDER_ID, name: REWATCH_FOLDER_NAME, createdAt: 0, items: new Set() },
+    ...folders,
+  ];
 }
 
 export function compactRatingFolder(

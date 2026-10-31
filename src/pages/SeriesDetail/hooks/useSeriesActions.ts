@@ -9,6 +9,8 @@ import { logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { runEpisodeWatchFanout } from '../../../lib/episode/episodeWatchFanout';
 import { requestEpisodeRating } from '../../../lib/prompt/episodeRatingPrompt';
 import { getMaxWatchCount } from '../../../lib/validation/rewatch.utils';
+import { folderItemKey } from '../../../lib/rating/ratingFolders';
+import { setRewatchListItem } from '../../../services/rating/ratingFoldersService';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import type { Series } from '../../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from '../types';
@@ -638,6 +640,7 @@ export function useSeriesActions(
         if (!series.watchlist) {
           await dbRef(`${seriesPath}/watchlist`).set(true);
         }
+        void setRewatchListItem(userId, folderItemKey('series', series.id), false).catch(() => {});
 
         showSnackbar(
           continueExisting

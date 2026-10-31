@@ -172,6 +172,12 @@ const dict: Record<string, string> = {
   'Liste „{name}" angelegt': 'Lista «{name}» creada',
   Anbieter: 'Plataformas',
   'Filter ({n} aktiv)': 'Filtros ({n} activos)',
+  'Nochmal schauen': 'Volver a ver',
+  vorgemerkt: 'en tu lista',
+  'Liste leeren': 'Vaciar lista',
+  'Liste geleert': 'Lista vaciada',
+  'Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal schauen“.':
+    'Aún no has guardado nada. Mantén pulsada una serie o película y elige «Volver a ver».',
 };
 
 export default dict;

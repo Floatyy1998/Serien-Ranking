@@ -3,11 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const fb = vi.hoisted(() => {
   const calls = {
     set: [] as { path?: string; val: unknown }[],
+    update: [] as { path?: string; val: unknown }[],
     remove: [] as (string | undefined)[],
   };
   const makeRef = (path?: string) => ({
     set: async (val: unknown) => {
       calls.set.push({ path, val });
+    },
+    update: async (val: unknown) => {
+      calls.update.push({ path, val });
     },
     remove: async () => {
       calls.remove.push(path);
@@ -33,6 +37,7 @@ import {
   createRatingFolder,
   deleteRatingFolder,
   setRatingFolderItem,
+  setRewatchListItem,
   restoreRatingFolder,
   saveRatingFolder,
   subscribeRatingFolders,
@@ -40,10 +45,22 @@ import {
 
 beforeEach(() => {
   fb.calls.set.length = 0;
+  fb.calls.update.length = 0;
   fb.calls.remove.length = 0;
 });
 
 describe('ratingFoldersService', () => {
+  it('writes the rewatch list with its name so a fresh node stays visible', async () => {
+    await setRewatchListItem('u1', 'm_7', true);
+    expect(fb.calls.update[0]).toEqual({
+      path: 'users/u1/ratingFolders/rewatch',
+      val: { name: 'Nochmal schauen', 'items/m_7': true },
+    });
+    await setRewatchListItem('u1', 'm_7', false);
+    expect(fb.calls.remove).toEqual(['users/u1/ratingFolders/rewatch/items/m_7']);
+    expect(fb.calls.update).toHaveLength(1);
+  });
+
   it('creates a folder under users/$uid/ratingFolders', async () => {
     const id = await createRatingFolder('u1', 'Marvel', ['m_1']);
     expect(id).toBe('k1');

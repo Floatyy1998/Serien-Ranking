@@ -5,13 +5,18 @@ import {
   IosShare,
   ListAlt,
   PlaylistAdd,
+  Replay,
 } from '@mui/icons-material';
 import React from 'react';
 import { BottomSheet } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { useLongPress } from '../../hooks/ui/useLongPress';
 import { hapticTap } from '../../lib/interaction/haptics';
-import type { RatingFolder } from '../../lib/rating/ratingFolders';
+import {
+  folderDisplayName,
+  isRewatchFolder,
+  type RatingFolder,
+} from '../../lib/rating/ratingFolders';
 import { t } from '../../services/i18n';
 import type { FolderPreview } from './useRatingsData';
 import './RatingFolders.css';
@@ -20,11 +25,19 @@ type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
 const EMPTY_PREVIEW: FolderPreview = { count: 0, posters: [] };
 
-const FolderCollage = ({ posters, theme }: { posters: string[]; theme: Theme }) => {
+const FolderCollage = ({
+  posters,
+  theme,
+  rewatch,
+}: {
+  posters: string[];
+  theme: Theme;
+  rewatch?: boolean;
+}) => {
   if (posters.length === 0) {
     return (
       <div className="rf-collage rf-collage--empty" style={{ color: theme.text.muted }}>
-        <ListAlt style={{ fontSize: 44 }} />
+        {rewatch ? <Replay style={{ fontSize: 44 }} /> : <ListAlt style={{ fontSize: 44 }} />}
       </div>
     );
   }
@@ -63,20 +76,29 @@ export const RatingFolderGrid = React.memo(
       <div className="rf-grid">
         {folders.map((folder) => {
           const preview = previews[folder.id] ?? EMPTY_PREVIEW;
+          const rewatch = isRewatchFolder(folder);
           return (
             <button
               key={folder.id}
               type="button"
               className="rf-card"
               onClick={() => onOpen(folder.id)}
-              aria-label={folder.name}
+              aria-label={folderDisplayName(folder)}
               {...(onLongPress ? longPress(folder) : {})}
             >
               <div className="rf-card__art" style={{ borderColor: theme.border.default }}>
-                <FolderCollage posters={preview.posters} theme={theme} />
+                <FolderCollage posters={preview.posters} theme={theme} rewatch={rewatch} />
+                {rewatch && preview.posters.length > 0 && (
+                  <span
+                    className="rf-card__badge"
+                    style={{ background: theme.primary, color: theme.background.default }}
+                  >
+                    <Replay />
+                  </span>
+                )}
               </div>
               <span className="rf-card__name" style={{ color: theme.text.primary }}>
-                {folder.name}
+                {folderDisplayName(folder)}
               </span>
               <span className="rf-card__count" style={{ color: theme.text.muted }}>
                 {preview.count === 1 ? t('1 Titel') : t('{n} Titel', { n: preview.count })}
@@ -134,24 +156,26 @@ export const RatingFolderBar = ({
     </button>
     <div className="rf-bar__text">
       <span className="rf-bar__name" style={{ color: theme.text.primary }}>
-        {folder.name}
+        {folderDisplayName(folder)}
       </span>
       <span className="rf-bar__count" style={{ color: theme.text.muted }}>
         {count === 1 ? t('1 Titel') : t('{n} Titel', { n: count })}
       </span>
     </div>
-    <button
-      type="button"
-      className={`rf-icon-btn${folder.shared ? ' rf-icon-btn--active' : ''}`}
-      onClick={onShare}
-      aria-label={t('Liste teilen')}
-      style={{
-        borderColor: folder.shared ? theme.primary : theme.border.default,
-        color: folder.shared ? theme.primary : theme.text.secondary,
-      }}
-    >
-      <IosShare style={{ fontSize: 19 }} />
-    </button>
+    {!isRewatchFolder(folder) && (
+      <button
+        type="button"
+        className={`rf-icon-btn${folder.shared ? ' rf-icon-btn--active' : ''}`}
+        onClick={onShare}
+        aria-label={t('Liste teilen')}
+        style={{
+          borderColor: folder.shared ? theme.primary : theme.border.default,
+          color: folder.shared ? theme.primary : theme.text.secondary,
+        }}
+      >
+        <IosShare style={{ fontSize: 19 }} />
+      </button>
+    )}
     <button
       type="button"
       className="rf-chip"
@@ -179,11 +203,15 @@ export const RatingFolderActionsSheet = ({
   onShare: (folder: RatingFolder) => void;
   onDelete: (folder: RatingFolder) => void;
 }) => (
-  <BottomSheet isOpen={!!folder} onClose={onClose} ariaLabel={folder?.name ?? t('Listen')}>
+  <BottomSheet
+    isOpen={!!folder}
+    onClose={onClose}
+    ariaLabel={folder ? folderDisplayName(folder) : t('Listen')}
+  >
     {folder && (
       <div className="rf-sheet rf-actions-sheet">
         <h3 className="rf-sheet__title" style={{ color: theme.text.secondary }}>
-          {folder.name}
+          {folderDisplayName(folder)}
         </h3>
         <button
           type="button"
@@ -197,23 +225,25 @@ export const RatingFolderActionsSheet = ({
           <EditOutlined style={{ fontSize: 22 }} />
           {t('Bearbeiten')}
         </button>
-        <button
-          type="button"
-          className="rf-action"
-          onClick={() => {
-            onClose();
-            onShare(folder);
-          }}
-          style={{ borderColor: theme.border.default, color: theme.text.primary }}
-        >
-          <IosShare style={{ fontSize: 22 }} />
-          <span className="rf-action__label">{t('Teilen')}</span>
-          {folder.shared && (
-            <span className="rf-action__meta" style={{ color: theme.primary }}>
-              {t('Geteilt')}
-            </span>
-          )}
-        </button>
+        {!isRewatchFolder(folder) && (
+          <button
+            type="button"
+            className="rf-action"
+            onClick={() => {
+              onClose();
+              onShare(folder);
+            }}
+            style={{ borderColor: theme.border.default, color: theme.text.primary }}
+          >
+            <IosShare style={{ fontSize: 22 }} />
+            <span className="rf-action__label">{t('Teilen')}</span>
+            {folder.shared && (
+              <span className="rf-action__meta" style={{ color: theme.primary }}>
+                {t('Geteilt')}
+              </span>
+            )}
+          </button>
+        )}
         <button
           type="button"
           className="rf-action"
@@ -224,7 +254,7 @@ export const RatingFolderActionsSheet = ({
           style={{ borderColor: theme.border.default, color: theme.status.error }}
         >
           <DeleteOutlined style={{ fontSize: 22 }} />
-          {t('Liste löschen')}
+          {isRewatchFolder(folder) ? t('Liste leeren') : t('Liste löschen')}
         </button>
       </div>
     )}

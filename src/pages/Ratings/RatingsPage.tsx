@@ -29,6 +29,7 @@ import { RatingFolderActionsSheet, RatingFolderBar, RatingFolderGrid } from './R
 import { RatingFolderSheet, type RatingFolderSheetState } from './RatingFolderSheet';
 import { ShareFolderSheet } from './ShareFolderSheet';
 import { deleteFolderWithUndo } from './deleteFolderWithUndo';
+import { folderDisplayName, isRewatchFolder } from '../../lib/rating/ratingFolders';
 import { RatingItemCard } from './RatingItemCard';
 import { RatingsEmptyState } from './RatingsEmptyState';
 import { RatingsHeader } from './RatingsHeader';
@@ -76,7 +77,9 @@ export const RatingsPage: React.FC = () => {
   const folderSearch = (filters.search || '').trim().toLowerCase();
   const visibleFolders = useMemo(
     () =>
-      folderSearch ? folders.filter((f) => f.name.toLowerCase().includes(folderSearch)) : folders,
+      folderSearch
+        ? folders.filter((f) => folderDisplayName(f).toLowerCase().includes(folderSearch))
+        : folders,
     [folders, folderSearch]
   );
 
@@ -107,7 +110,7 @@ export const RatingsPage: React.FC = () => {
   const closeFolderSheet = useCallback(() => setFolderSheet({ open: false }), []);
   const handleFolderDeleted = useCallback(
     (id: string) => {
-      if (activeFolder?.id === id) handleFolderChange(null);
+      if (activeFolder?.id === id && !isRewatchFolder(id)) handleFolderChange(null);
     },
     [activeFolder, handleFolderChange]
   );
@@ -276,9 +279,13 @@ export const RatingsPage: React.FC = () => {
           )
         ) : activeFolder ? (
           <div className="rf-empty" style={{ color: currentTheme.text.muted }}>
-            {(folderPreviews[activeFolder.id]?.count ?? 0) === 0
-              ? t('Diese Liste ist noch leer')
-              : t('Keine Treffer in dieser Liste')}
+            {(folderPreviews[activeFolder.id]?.count ?? 0) > 0
+              ? t('Keine Treffer in dieser Liste')
+              : isRewatchFolder(activeFolder)
+                ? t(
+                    'Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal schauen“.'
+                  )
+                : t('Diese Liste ist noch leer')}
             <button
               type="button"
               className="rf-chip"

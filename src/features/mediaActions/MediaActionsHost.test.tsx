@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   open: vi.fn(),
   markWatched: vi.fn(async () => undefined),
   setFolderItem: vi.fn(async () => undefined),
+  setRewatchItem: vi.fn(async () => undefined),
   add: vi.fn(async () => 'added' as const),
   series: [] as unknown[],
   movies: [] as unknown[],
@@ -47,6 +48,7 @@ vi.mock('../../hooks/rating/useQuickRatingSheet', () => ({
 vi.mock('../../services/rating/quickRating', () => ({ markMovieWatched: mocks.markWatched }));
 vi.mock('../../services/rating/ratingFoldersService', () => ({
   setRatingFolderItem: mocks.setFolderItem,
+  setRewatchListItem: mocks.setRewatchItem,
 }));
 vi.mock('../../services/series/addToLibrary', () => ({ addToLibrary: mocks.add }));
 vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
@@ -176,6 +178,47 @@ describe('MediaActionsHost', () => {
     longPress(card);
     fireEvent.click(card);
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('merkt einen Titel per Menüknopf zum Nochmal-Schauen vor und nimmt ihn wieder raus', async () => {
+    mocks.movies = [{ id: 7, title: 'Iron Man', rating: {} }];
+    render(
+      <>
+        <Card type="movie" id={7} title="Iron Man" />
+        <MediaActionsHost />
+      </>
+    );
+    longPress(screen.getByText('Iron Man'));
+    const toggle = screen.getByRole('button', { name: 'Nochmal schauen' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(toggle);
+    await waitFor(() => expect(mocks.setRewatchItem).toHaveBeenCalledWith('me', 'm_7', true));
+    expect(mocks.setFolderItem).not.toHaveBeenCalled();
+
+    cleanup();
+    mocks.folders = [
+      { id: 'rewatch', name: 'Nochmal schauen', createdAt: 0, items: new Set(['m_7']) },
+    ];
+    render(
+      <>
+        <Card type="movie" id={7} title="Iron Man" />
+        <MediaActionsHost />
+      </>
+    );
+    longPress(screen.getByText('Iron Man'));
+    const pressed = screen.getByRole('button', { name: /Nochmal schauen/ });
+    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('vorgemerkt')).toBeInTheDocument();
+    fireEvent.click(pressed);
+    await waitFor(() => expect(mocks.setRewatchItem).toHaveBeenCalledWith('me', 'm_7', false));
+  });
+
+  it('zeigt die Rewatch-Liste in der Listenauswahl auch ohne gespeicherte Listen', async () => {
+    mocks.series = [{ id: 1, title: 'Dark', rating: {} }];
+    render(<MediaActionsHost />);
+    act(() => openMediaActions({ type: 'series', id: 1, title: 'Dark' }, 'folders'));
+    fireEvent.click(screen.getByText('Nochmal schauen'));
+    await waitFor(() => expect(mocks.setRewatchItem).toHaveBeenCalledWith('me', 's_1', true));
   });
 
   it('öffnet per Knopf direkt die Listenauswahl', () => {

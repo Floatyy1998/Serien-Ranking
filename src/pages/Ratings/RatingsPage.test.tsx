@@ -189,6 +189,40 @@ describe('RatingsPage', () => {
     expect(screen.getByTestId('folder-sheet')).toBeInTheDocument();
   });
 
+  it('zeigt die Rewatch-Liste mit Replay-Marke und bietet Leeren statt Löschen an', () => {
+    const rewatch = {
+      id: 'rewatch',
+      name: 'Nochmal schauen',
+      createdAt: 0,
+      items: new Set(['m_1']),
+    };
+    dataRef.current.activeTab = 'folders';
+    dataRef.current.folders = [rewatch];
+    dataRef.current.folderPreviews = { rewatch: { count: 1, posters: ['/a.jpg'] } };
+    const { container } = render(<RatingsPage />);
+    expect(container.querySelector('.rf-card__badge')).not.toBeNull();
+    fireEvent.pointerDown(screen.getByLabelText('Nochmal schauen'), { button: 2 });
+    fireEvent.contextMenu(screen.getByLabelText('Nochmal schauen'));
+    expect(screen.getByText('Liste leeren')).toBeInTheDocument();
+    expect(screen.queryByText('Liste löschen')).toBeNull();
+    expect(screen.queryByText('Teilen')).toBeNull();
+  });
+
+  it('erklärt in der leeren Rewatch-Liste den langen Druck', () => {
+    const rewatch = {
+      id: 'rewatch',
+      name: 'Nochmal schauen',
+      createdAt: 0,
+      items: new Set<string>(),
+    };
+    dataRef.current.activeTab = 'folders';
+    dataRef.current.folders = [rewatch];
+    dataRef.current.activeFolder = rewatch;
+    render(<RatingsPage />);
+    expect(screen.getByText(/Noch nichts vorgemerkt/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Liste teilen')).toBeNull();
+  });
+
   it('long press on a folder offers edit and delete', () => {
     const folder = { id: 'f1', name: 'Marvel', createdAt: 1, items: new Set<string>() };
     dataRef.current.activeTab = 'folders';

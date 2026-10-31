@@ -2,6 +2,8 @@ import { dbGet, dbRef, userPath } from '../db/ref';
 import { sharedListPath } from './sharedListService';
 import { subscribeValue } from '../db/subscribeValue';
 import {
+  REWATCH_FOLDER_ID,
+  REWATCH_FOLDER_NAME,
   compactRatingFolder,
   expandRatingFolders,
   type RatingFolder,
@@ -67,4 +69,17 @@ export async function setRatingFolderItem(
 ): Promise<void> {
   const ref = dbRef(userPath(uid, 'ratingFolders', folderId, 'items', itemKey));
   await (included ? ref.set(true) : ref.remove());
+}
+
+export async function setRewatchListItem(
+  uid: string,
+  itemKey: string,
+  included: boolean
+): Promise<void> {
+  const base = folderPath(uid, REWATCH_FOLDER_ID);
+  if (included) {
+    await dbRef(base).update({ name: REWATCH_FOLDER_NAME, [`items/${itemKey}`]: true });
+  } else {
+    await dbRef(`${base}/items/${itemKey}`).remove();
+  }
 }

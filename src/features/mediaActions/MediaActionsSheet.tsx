@@ -4,6 +4,7 @@ import {
   CheckCircle,
   PlaylistAdd,
   RadioButtonUnchecked,
+  Replay,
   Star,
   Visibility,
 } from '@mui/icons-material';
@@ -11,7 +12,13 @@ import { useEffect, useState } from 'react';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { MediaTarget } from '../../lib/interaction/mediaTarget';
-import { folderItemKey, type RatingFolder } from '../../lib/rating/ratingFolders';
+import {
+  folderDisplayName,
+  folderItemKey,
+  isRewatchFolder,
+  withRewatchFolder,
+  type RatingFolder,
+} from '../../lib/rating/ratingFolders';
 import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import '../../pages/Ratings/RatingFolders.css';
@@ -36,6 +43,7 @@ export const MediaActionsSheet = ({
   onAdd,
   onRate,
   onMarkWatched,
+  onToggleRewatch,
   onToggleFolder,
   onCreateFolder,
 }: {
@@ -47,6 +55,7 @@ export const MediaActionsSheet = ({
   onAdd: () => void;
   onRate: () => void;
   onMarkWatched: () => void;
+  onToggleRewatch: () => void;
   onToggleFolder: (folder: RatingFolder) => void;
   onCreateFolder: () => void;
 }) => {
@@ -59,9 +68,16 @@ export const MediaActionsSheet = ({
   }, [targetKey, initialView]);
 
   const key = state ? folderItemKey(state.target.type, state.target.id) : '';
+  const pickable = withRewatchFolder(folders);
   const memberCount = state ? folders.filter((f) => f.items.has(key)).length : 0;
+  const inRewatchList = !!state && !!folders.find(isRewatchFolder)?.items.has(key);
   const isMovie = state?.target.type === 'movie';
   const actionStyle = { borderColor: theme.border.default, color: theme.text.primary };
+  const activeStyle = {
+    borderColor: theme.primary,
+    background: `${theme.primary}1f`,
+    color: theme.text.primary,
+  };
   const poster = state?.poster ? getImageUrl(state.poster, 'w154', '') : '';
 
   return (
@@ -126,6 +142,22 @@ export const MediaActionsSheet = ({
               <button
                 type="button"
                 className="rf-action"
+                aria-pressed={inRewatchList}
+                disabled={busy}
+                onClick={onToggleRewatch}
+                style={inRewatchList ? activeStyle : actionStyle}
+              >
+                <Replay style={{ fontSize: 22, color: theme.primary }} />
+                <span className="rf-action__label">{t('Nochmal schauen')}</span>
+                {inRewatchList && (
+                  <span className="rf-action__meta" style={{ color: theme.primary }}>
+                    {t('vorgemerkt')}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                className="rf-action"
                 disabled={busy}
                 onClick={() => setView('folders')}
                 style={actionStyle}
@@ -155,7 +187,7 @@ export const MediaActionsSheet = ({
                 <ArrowBack style={{ fontSize: 20 }} />
                 {t('Zurück')}
               </button>
-              {folders.map((folder) => {
+              {pickable.map((folder) => {
                 const isIn = folder.items.has(key);
                 return (
                   <button
@@ -165,18 +197,17 @@ export const MediaActionsSheet = ({
                     aria-pressed={isIn}
                     disabled={busy}
                     onClick={() => onToggleFolder(folder)}
-                    style={{
-                      borderColor: isIn ? theme.primary : theme.border.default,
-                      background: isIn ? `${theme.primary}1f` : undefined,
-                      color: theme.text.primary,
-                    }}
+                    style={isIn ? activeStyle : actionStyle}
                   >
                     {isIn ? (
                       <CheckCircle style={{ fontSize: 22, color: theme.primary }} />
                     ) : (
                       <RadioButtonUnchecked style={{ fontSize: 22, color: theme.text.muted }} />
                     )}
-                    <span className="rf-action__label">{folder.name}</span>
+                    <span className="rf-action__label">{folderDisplayName(folder)}</span>
+                    {isRewatchFolder(folder) && (
+                      <Replay style={{ fontSize: 18, color: theme.text.muted }} />
+                    )}
                   </button>
                 );
               })}

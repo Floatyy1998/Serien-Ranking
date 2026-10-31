@@ -108,6 +108,21 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('November 2026 – Nochmal schauen'),
+      date: '2026-11-01',
+      features: [
+        {
+          icon: <Replay />,
+          color: currentTheme.primary,
+          title: t('Deine Rewatch-Liste'),
+          description: t(
+            'Dir fällt ein Film ein, den du schon lange mal wieder sehen wolltest? Halt ihn gedrückt und wähl „Nochmal schauen“, schon steht er auf deiner Rewatch-Liste. Du findest sie bei den Bewertungen unter Listen und als eigene Reihe auf der Startseite, solange etwas drauf steht. Startest du bei einer Serie den Rewatch, verschwindet sie von selbst wieder von der Liste.'
+          ),
+          link: { label: t('Zur Rewatch-Liste'), path: '/ratings?tab=folders&folder=rewatch' },
+        },
+      ],
+    },
+    {
       version: t('Oktober 2026 – Crossover, Schauspieler-Suche und Schwerpunkt Lesen'),
       date: '2026-10-18',
       features: [

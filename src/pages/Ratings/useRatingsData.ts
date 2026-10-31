@@ -10,7 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
-import { folderItemKey } from '../../lib/rating/ratingFolders';
+import { folderItemKey, withRewatchFolder } from '../../lib/rating/ratingFolders';
 import { preloadImage } from '../../lib/image/preloadImage';
 import { isMovieWatched } from '../../lib/rating/rating';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
@@ -51,7 +51,8 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const user = authContext?.user;
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { folders } = useRatingFolders();
+  const { folders: storedFolders } = useRatingFolders();
+  const folders = useMemo(() => withRewatchFolder(storedFolders), [storedFolders]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // State (initialized from URL)

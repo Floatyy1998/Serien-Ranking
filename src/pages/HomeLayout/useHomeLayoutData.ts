@@ -40,6 +40,7 @@ export const SECTION_LABELS: Record<string, string> = {
   countdown: t('Countdown'),
   'continue-watching': t('Weiterschauen'),
   rewatches: t('Rewatches'),
+  'rewatch-list': t('Nochmal schauen'),
   'today-episodes': t('Heute Neu'),
   'new-on-subs': t('Neu auf deinen Streaming-Anbietern'),
   seasonal: t('Saisonale Empfehlungen'),

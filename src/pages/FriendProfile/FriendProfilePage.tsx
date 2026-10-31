@@ -74,7 +74,7 @@ import { FriendBooksInsights } from './FriendBooksInsights';
 import { useOpenResult } from '../Books/discover/DiscoverParts';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
-import { folderItemKey } from '../../lib/rating/ratingFolders';
+import { folderDisplayName, folderItemKey } from '../../lib/rating/ratingFolders';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
 
@@ -766,7 +766,7 @@ export const FriendProfilePage = memo(() => {
               </button>
               <div className="rf-bar__text">
                 <span className="rf-bar__name" style={{ color: currentTheme.text.primary }}>
-                  {openFolder.name}
+                  {folderDisplayName(openFolder)}
                 </span>
                 <span className="rf-bar__count" style={{ color: currentTheme.text.muted }}>
                   {folderItems.length === 1

@@ -22,6 +22,7 @@ const SECTION_SHAPES: Record<string, SkeletonShape> = {
   countdown: 'banner',
   'continue-watching': 'banners',
   rewatches: 'banners',
+  'rewatch-list': 'posters',
   'today-episodes': 'banners',
   seasonal: 'posters',
   trending: 'posters',

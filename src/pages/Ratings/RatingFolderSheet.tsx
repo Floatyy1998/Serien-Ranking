@@ -16,7 +16,9 @@ import { hapticSuccess, hapticTap } from '../../lib/interaction/haptics';
 import { showToast } from '../../lib/interaction/toast';
 import {
   RATING_FOLDER_NAME_MAX,
+  REWATCH_FOLDER_NAME,
   folderItemKey,
+  isRewatchFolder,
   normalizeFolderName,
   type FolderItemKind,
   type RatingFolder,
@@ -115,7 +117,8 @@ export const RatingFolderSheet = ({
     });
   };
 
-  const trimmedName = normalizeFolderName(name);
+  const isRewatch = !!folder && isRewatchFolder(folder);
+  const trimmedName = isRewatch ? REWATCH_FOLDER_NAME : normalizeFolderName(name);
   const canSave = !!user && !!trimmedName && !saving;
 
   const handleSave = async () => {
@@ -151,7 +154,7 @@ export const RatingFolderSheet = ({
     { id: 'selected', label: t('Ausgewählt ({n})', { n: selected.size }) },
   ];
 
-  const title = folder ? t('Liste bearbeiten') : t('Neue Liste');
+  const title = isRewatch ? t('Nochmal schauen') : folder ? t('Liste bearbeiten') : t('Neue Liste');
 
   return (
     <BottomSheet isOpen={state.open} onClose={onClose} ariaLabel={title} maxHeight="90vh">
@@ -160,19 +163,21 @@ export const RatingFolderSheet = ({
           {title}
         </h3>
 
-        <label className="rf-field">
-          <span className="rf-label" style={{ color: currentTheme.text.muted }}>
-            {t('Name')}
-          </span>
-          <input
-            className="rf-input"
-            value={name}
-            maxLength={RATING_FOLDER_NAME_MAX}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('z. B. Marvel oder Lieblingsfilme')}
-            style={{ borderColor: currentTheme.border.default, color: currentTheme.text.primary }}
-          />
-        </label>
+        {!isRewatch && (
+          <label className="rf-field">
+            <span className="rf-label" style={{ color: currentTheme.text.muted }}>
+              {t('Name')}
+            </span>
+            <input
+              className="rf-input"
+              value={name}
+              maxLength={RATING_FOLDER_NAME_MAX}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('z. B. Marvel oder Lieblingsfilme')}
+              style={{ borderColor: currentTheme.border.default, color: currentTheme.text.primary }}
+            />
+          </label>
+        )}
 
         <div className="rf-kinds" role="group" aria-label={t('Filter')}>
           {kindChips.map((chip) => {
@@ -269,7 +274,7 @@ export const RatingFolderSheet = ({
         </div>
 
         <div className="rf-actions" style={{ background: currentTheme.background.surface }}>
-          {folder && (
+          {folder && !isRewatch && (
             <motion.button
               type="button"
               whileTap={{ opacity: 0.7 }}

@@ -45,6 +45,7 @@ import '../Ratings/RatingsPage.css';
 import { WatchNextHeader } from '../WatchNext/components/WatchNextHeader';
 import '../WatchNext/WatchNextPage.css';
 import { MediaActionsSheet } from '../../features/mediaActions/MediaActionsSheet';
+import { MediaCarouselSection } from '../HomePage/sections/MediaCarouselSection';
 import { PodiumSection } from '../Leaderboard/PodiumSection';
 import { RankingList } from '../Leaderboard/RankingList';
 import { SelfStandBand } from '../Leaderboard/SelfStandBand';
@@ -885,6 +886,7 @@ export const RatingItemActionsPreview = () => {
         onAdd={() => {}}
         onRate={() => {}}
         onMarkWatched={() => {}}
+        onToggleRewatch={() => {}}
         onToggleFolder={() => {}}
         onCreateFolder={() => {}}
       />
@@ -1332,6 +1334,140 @@ export const IncomingRequestPreview = () => {
           <IncomingRequestActions name="Bärbel" responding={false} onRespond={() => {}} />
         </div>
       </Case>
+    </div>
+  );
+};
+
+const rewatchPreviewFolder = {
+  id: 'rewatch',
+  name: 'Nochmal schauen',
+  createdAt: 0,
+  items: new Set(['m_1', 'm_2', 's_5']),
+};
+const rewatchPreviewData = {
+  ...previewFolderData,
+  rewatch: {
+    count: 3,
+    posters: [
+      TMDB('/or06FN3Dka5tukK1e9sl16pB3iy.jpg'),
+      TMDB('/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg'),
+      TMDB('/78lPtwv72eTNqFW9COBYI0dWDJa.jpg'),
+    ],
+  },
+};
+
+export const RewatchListPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <div className="ratings-content">
+        <RatingFolderGrid
+          theme={currentTheme}
+          folders={[rewatchPreviewFolder, ...previewFolders]}
+          previews={rewatchPreviewData}
+          onOpen={() => {}}
+          onCreate={() => {}}
+          onLongPress={() => {}}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const RewatchEmptyPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <div className="ratings-content">
+        <RatingFolderBar
+          theme={currentTheme}
+          folder={{ ...rewatchPreviewFolder, items: new Set<string>() }}
+          count={0}
+          onBack={() => {}}
+          onEdit={() => {}}
+          onShare={() => {}}
+        />
+        <div className="rf-empty" style={{ color: currentTheme.text.muted }}>
+          Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal
+          schauen“.
+          <button
+            type="button"
+            className="rf-chip"
+            style={{ borderColor: currentTheme.primary, color: currentTheme.primary }}
+          >
+            Titel hinzufügen
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const RewatchActionsPreview = () => {
+  const { currentTheme } = useTheme();
+  return (
+    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+      <MediaActionsSheet
+        state={{
+          target: { type: 'movie', id: 1, title: 'Guardians of the Galaxy' },
+          title: 'Guardians of the Galaxy',
+          poster: '/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg',
+          owned: true,
+          rating: 8.5,
+          watched: true,
+        }}
+        folders={[rewatchPreviewFolder, ...previewFolders]}
+        busy={false}
+        onClose={() => {}}
+        onAdd={() => {}}
+        onRate={() => {}}
+        onMarkWatched={() => {}}
+        onToggleRewatch={() => {}}
+        onToggleFolder={() => {}}
+        onCreateFolder={() => {}}
+      />
+    </div>
+  );
+};
+
+export const RewatchHomeRowPreview = () => {
+  const { currentTheme } = useTheme();
+  const items = [
+    {
+      id: 1,
+      type: 'movie' as const,
+      title: 'Guardians of the Galaxy',
+      poster: TMDB('/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg'),
+      rating: 8.5,
+      genres: 'Action, Abenteuer',
+      year: '2014',
+    },
+    {
+      id: 2,
+      type: 'movie' as const,
+      title: 'Iron Man',
+      poster: TMDB('/78lPtwv72eTNqFW9COBYI0dWDJa.jpg'),
+      rating: 7.9,
+      genres: 'Action, Science-Fiction',
+      year: '2008',
+    },
+    {
+      id: 5,
+      type: 'series' as const,
+      title: 'Loki',
+      poster: TMDB('/or06FN3Dka5tukK1e9sl16pB3iy.jpg'),
+      genres: 'Drama, Science-Fiction',
+      year: '2021',
+    },
+  ];
+  return (
+    <div style={{ padding: '16px 0', background: currentTheme.background.default }}>
+      <MediaCarouselSection
+        variant="rewatch-list"
+        items={items}
+        title="Nochmal schauen"
+        onSeeAll={() => {}}
+      />
     </div>
   );
 };

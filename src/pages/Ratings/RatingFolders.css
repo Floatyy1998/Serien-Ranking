@@ -578,3 +578,20 @@
 .mobile-app button.rf-icon-btn--active {
   background: var(--theme-primary-12);
 }
+
+.rf-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.rf-card__badge svg {
+  font-size: 18px;
+}

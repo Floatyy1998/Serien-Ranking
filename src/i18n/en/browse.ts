@@ -182,6 +182,12 @@ const dict: Record<string, string> = {
   'Liste „{name}" angelegt': 'List "{name}" created',
   Anbieter: 'Streaming services',
   'Filter ({n} aktiv)': 'Filters ({n} active)',
+  'Nochmal schauen': 'Watch again',
+  vorgemerkt: 'on your list',
+  'Liste leeren': 'Clear list',
+  'Liste geleert': 'List cleared',
+  'Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal schauen“.':
+    'Nothing saved yet. Press and hold a show or movie and pick “Watch again”.',
 };
 
 export default dict;

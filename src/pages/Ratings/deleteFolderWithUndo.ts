@@ -1,5 +1,5 @@
 import { showToast, showUndoToast } from '../../lib/interaction/toast';
-import type { RatingFolder } from '../../lib/rating/ratingFolders';
+import { isRewatchFolder, type RatingFolder } from '../../lib/rating/ratingFolders';
 import { t } from '../../services/i18n';
 import {
   deleteRatingFolder,
@@ -14,7 +14,10 @@ export async function deleteFolderWithUndo(
   try {
     await deleteRatingFolder(uid, folder.id);
     onDeleted(folder.id);
-    showUndoToast(t('Liste gelöscht'), () => void restoreRatingFolder(uid, folder));
+    showUndoToast(
+      isRewatchFolder(folder) ? t('Liste geleert') : t('Liste gelöscht'),
+      () => void restoreRatingFolder(uid, folder)
+    );
   } catch {
     showToast(t('Löschen fehlgeschlagen'), 2500, 'error');
   }

@@ -1,4 +1,4 @@
-import { AutoAwesome, LocalFireDepartment, Star } from '@mui/icons-material';
+import { AutoAwesome, LocalFireDepartment, Replay, Star } from '@mui/icons-material';
 import React from 'react';
 import {
   HorizontalScrollContainer,
@@ -11,8 +11,23 @@ import { CinematicPosterCard } from './CinematicPosterCard';
 import { TrendingRankCard } from './TrendingRankCard';
 import type { MediaItem } from './mediaCarouselTypes';
 
+type CarouselVariant = 'seasonal' | 'trending' | 'top-rated' | 'rewatch-list';
+
+const iconFor = (variant: CarouselVariant) => {
+  switch (variant) {
+    case 'seasonal':
+      return <AutoAwesome />;
+    case 'trending':
+      return <LocalFireDepartment />;
+    case 'rewatch-list':
+      return <Replay />;
+    default:
+      return <Star />;
+  }
+};
+
 interface MediaCarouselSectionProps {
-  variant: 'seasonal' | 'trending' | 'top-rated';
+  variant: CarouselVariant;
   items: MediaItem[];
   title: string;
   onSeeAll?: () => void;
@@ -33,15 +48,9 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   const { isMobile } = useDeviceType();
   const cardWidth = isMobile ? '155px' : '280px';
 
+  const sectionIcon = iconFor(variant);
+
   if (loading && items.length === 0) {
-    const sectionIcon =
-      variant === 'seasonal' ? (
-        <AutoAwesome />
-      ) : variant === 'trending' ? (
-        <LocalFireDepartment />
-      ) : (
-        <Star />
-      );
     return (
       <section style={{ marginBottom: '32px' }}>
         <SectionHeader
@@ -55,15 +64,6 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   }
 
   if (items.length === 0) return null;
-
-  const sectionIcon =
-    variant === 'seasonal' ? (
-      <AutoAwesome />
-    ) : variant === 'trending' ? (
-      <LocalFireDepartment />
-    ) : (
-      <Star />
-    );
 
   const sectionIconColor = iconColor || currentTheme.accent;
 

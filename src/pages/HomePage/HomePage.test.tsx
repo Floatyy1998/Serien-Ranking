@@ -108,6 +108,7 @@ vi.mock('../../hooks/discover/useTMDBTrending', () => ({
   useTMDBTrending: () => ({ trending: [], loading: false }),
 }));
 vi.mock('../../hooks/discover/useTopRated', () => ({ useTopRated: () => [] }));
+vi.mock('./hooks/useRewatchListItems', () => ({ useRewatchListItems: () => [] }));
 vi.mock('../../hooks/data/useWebWorkerStatsOptimized', () => ({
   useWebWorkerStatsOptimized: () => ({
     watchedEpisodes: 0,

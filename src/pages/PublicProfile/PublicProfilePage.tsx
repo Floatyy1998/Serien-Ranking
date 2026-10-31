@@ -30,7 +30,7 @@ import { RatingItemCard } from '../Ratings/RatingItemCard';
 import type { PreparedItem } from '../Ratings/ratingsHelpers';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
-import { folderItemKey } from '../../lib/rating/ratingFolders';
+import { folderDisplayName, folderItemKey } from '../../lib/rating/ratingFolders';
 import { rankBooksByRating } from '../../lib/books/bookRanking';
 import { useFriendBooks } from '../FriendProfile/useFriendBooks';
 import { useFriendFolders } from '../FriendProfile/useFriendFolders';
@@ -385,7 +385,7 @@ export const PublicProfilePage: React.FC = () => {
                   </button>
                   <div className="rf-bar__text">
                     <span className="rf-bar__name" style={{ color: currentTheme.text.primary }}>
-                      {openFolder.name}
+                      {folderDisplayName(openFolder)}
                     </span>
                   </div>
                 </div>

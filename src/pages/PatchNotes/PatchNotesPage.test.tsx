@@ -112,9 +112,7 @@ describe('PatchNotesPage', () => {
   it('zeigt das neueste Update offen und ältere als Zeitleiste', () => {
     render(<PatchNotesPage />);
     expect(screen.getByText('Patch Notes')).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Crossover, Schauspieler-Suche und Schwerpunkt Lesen' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Nochmal schauen' })).toBeInTheDocument();
     const older = screen.getByRole('button', { name: /Anime-Season-Kalender/ });
     expect(older).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('Neue Seite: Anime-Season-Kalender')).toBeNull();

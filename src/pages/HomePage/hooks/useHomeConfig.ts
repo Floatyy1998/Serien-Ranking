@@ -8,6 +8,7 @@ export const DEFAULT_SECTION_ORDER = [
   'countdown',
   'continue-watching',
   'rewatches',
+  'rewatch-list',
   'today-episodes',
   'new-on-subs',
   'seasonal',

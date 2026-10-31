@@ -19,6 +19,7 @@ import { useSeriesCountdowns } from '../../hooks/watch/useSeriesCountdowns';
 import { useUnsubscribedNewSeasons } from '../../hooks/watch/useUnsubscribedNewSeasons';
 import { useTMDBTrending } from '../../hooks/discover/useTMDBTrending';
 import { useTopRated } from '../../hooks/discover/useTopRated';
+import { useRewatchListItems } from './hooks/useRewatchListItems';
 import { useWebWorkerStatsOptimized } from '../../hooks/data/useWebWorkerStatsOptimized';
 import { CatchUpCard } from './cards/CatchUpCard';
 import { RatingQueueCard } from './cards/RatingQueueCard';
@@ -168,6 +169,7 @@ export const HomePage: React.FC = () => {
   const { trending, loading: trendingLoading } = useTMDBTrending();
   const seasonal = useSeasonalRecommendations();
   const topRated = useTopRated();
+  const rewatchListItems = useRewatchListItems();
 
   // React 19: defer the heavy below-the-fold lists so they don't block the
   // above-the-fold paint. When trending/topRated arrive, the render is
@@ -343,6 +345,17 @@ export const HomePage: React.FC = () => {
             onSwipeEnd={handleTodaySwipeEnd}
             onComplete={handleEpisodeComplete}
             onPosterClick={handlePosterClick}
+          />
+        );
+
+      case 'rewatch-list':
+        return (
+          <MediaCarouselSection
+            key="rewatch-list"
+            variant="rewatch-list"
+            items={rewatchListItems}
+            title={t('Nochmal schauen')}
+            onSeeAll={() => navigate('/ratings?tab=folders&folder=rewatch')}
           />
         );
 
