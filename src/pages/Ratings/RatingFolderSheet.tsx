@@ -3,6 +3,7 @@ import {
   DeleteOutlined,
   Movie as MovieIcon,
   RadioButtonUnchecked,
+  Replay,
   Tv,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -16,6 +17,7 @@ import { hapticSuccess, hapticTap } from '../../lib/interaction/haptics';
 import { showToast } from '../../lib/interaction/toast';
 import {
   RATING_FOLDER_NAME_MAX,
+  REWATCH_FOLDER_ID,
   REWATCH_FOLDER_NAME,
   folderItemKey,
   isRewatchFolder,
@@ -24,7 +26,11 @@ import {
   type RatingFolder,
 } from '../../lib/rating/ratingFolders';
 import { t } from '../../services/i18n';
-import { createRatingFolder, saveRatingFolder } from '../../services/rating/ratingFoldersService';
+import {
+  createRatingFolder,
+  createRewatchFolder,
+  saveRatingFolder,
+} from '../../services/rating/ratingFoldersService';
 import { deleteFolderWithUndo } from './deleteFolderWithUndo';
 import { getImageUrl } from '../../utils/imageUrl';
 import './RatingFolders.css';
@@ -46,11 +52,13 @@ export const RatingFolderSheet = ({
   onClose,
   onSaved,
   onDeleted,
+  offerRewatch = false,
 }: {
   state: RatingFolderSheetState;
   onClose: () => void;
   onSaved?: (id: string) => void;
   onDeleted: (id: string) => void;
+  offerRewatch?: boolean;
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -64,6 +72,7 @@ export const RatingFolderSheet = ({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pinned, setPinned] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [asRewatch, setAsRewatch] = useState(false);
 
   useEffect(() => {
     if (!state.open) return;
@@ -74,6 +83,7 @@ export const RatingFolderSheet = ({
     setSelected(initial);
     setPinned(initial);
     setSaving(false);
+    setAsRewatch(false);
   }, [state]);
 
   const candidates = useMemo<Candidate[]>(() => {
@@ -117,17 +127,22 @@ export const RatingFolderSheet = ({
     });
   };
 
-  const isRewatch = !!folder && isRewatchFolder(folder);
+  const newRewatch = !folder && offerRewatch && asRewatch;
+  const isRewatch = newRewatch || (!!folder && isRewatchFolder(folder));
   const trimmedName = isRewatch ? REWATCH_FOLDER_NAME : normalizeFolderName(name);
-  const canSave = !!user && !!trimmedName && !saving;
+  const canSave = !!user && !!trimmedName && !saving && (!newRewatch || selected.size > 0);
 
   const handleSave = async () => {
-    if (!user || !trimmedName) return;
+    if (!user || !trimmedName || (newRewatch && selected.size === 0)) return;
     setSaving(true);
     try {
       if (folder) {
         await saveRatingFolder(user.uid, folder, trimmedName, selected);
         onSaved?.(folder.id);
+      } else if (newRewatch) {
+        await createRewatchFolder(user.uid, selected);
+        onSaved?.(REWATCH_FOLDER_ID);
+        showToast(t('Liste „{name}" angelegt', { name: t('Nochmal schauen') }), 2000);
       } else {
         const id = await createRatingFolder(user.uid, trimmedName, selected);
         onSaved?.(id);
@@ -154,14 +169,65 @@ export const RatingFolderSheet = ({
     { id: 'selected', label: t('Ausgewählt ({n})', { n: selected.size }) },
   ];
 
-  const title = isRewatch ? t('Nochmal schauen') : folder ? t('Liste bearbeiten') : t('Neue Liste');
+  const title = folder
+    ? isRewatch
+      ? t('Nochmal schauen')
+      : t('Liste bearbeiten')
+    : t('Neue Liste');
+  const listKinds = [
+    { rewatch: false, label: t('Eigene Liste') },
+    { rewatch: true, label: t('Nochmal schauen') },
+  ];
 
   return (
     <BottomSheet isOpen={state.open} onClose={onClose} ariaLabel={title} maxHeight="90vh">
-      <div className="rf-sheet">
+      <div className="rf-sheet rf-sheet--picker">
         <h3 className="rf-sheet__title" style={{ color: currentTheme.text.secondary }}>
           {title}
         </h3>
+
+        {!folder && offerRewatch && (
+          <div className="rf-field">
+            <span className="rf-label" style={{ color: currentTheme.text.muted }}>
+              {t('Art der Liste')}
+            </span>
+            <div className="rf-kinds" role="group" aria-label={t('Art der Liste')}>
+              {listKinds.map((option) => {
+                const active = asRewatch === option.rewatch;
+                return (
+                  <button
+                    key={String(option.rewatch)}
+                    type="button"
+                    className="rf-chip rf-chip--small"
+                    aria-pressed={active}
+                    onClick={() => setAsRewatch(option.rewatch)}
+                    style={
+                      active
+                        ? {
+                            background: currentTheme.primary,
+                            borderColor: currentTheme.primary,
+                            color: currentTheme.background.default,
+                          }
+                        : {
+                            borderColor: currentTheme.border.default,
+                            color: currentTheme.text.secondary,
+                          }
+                    }
+                  >
+                    {option.rewatch && <Replay style={{ fontSize: 16 }} />}
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {newRewatch && (
+          <p className="rf-muted" style={{ margin: 0, color: currentTheme.text.muted }}>
+            {t('Deine eingebaute Rewatch-Liste. Wähl mindestens einen Titel aus.')}
+          </p>
+        )}
 
         {!isRewatch && (
           <label className="rf-field">
@@ -273,8 +339,8 @@ export const RatingFolderSheet = ({
           )}
         </div>
 
-        <div className="rf-actions" style={{ background: currentTheme.background.surface }}>
-          {folder && !isRewatch && (
+        <div className="rf-actions">
+          {folder && (
             <motion.button
               type="button"
               whileTap={{ opacity: 0.7 }}

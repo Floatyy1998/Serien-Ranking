@@ -254,7 +254,7 @@ export const RatingFolderActionsSheet = ({
           style={{ borderColor: theme.border.default, color: theme.status.error }}
         >
           <DeleteOutlined style={{ fontSize: 22 }} />
-          {isRewatchFolder(folder) ? t('Liste leeren') : t('Liste löschen')}
+          {t('Liste löschen')}
         </button>
       </div>
     )}

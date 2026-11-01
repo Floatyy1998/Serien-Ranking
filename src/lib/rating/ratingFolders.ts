@@ -50,6 +50,7 @@ export function expandRatingFolders(
         .filter(([, on]) => on === true)
         .map(([key]) => key)
     );
+    if (isRewatchFolder(id) && items.size === 0) continue;
     folders.push({
       id,
       name: value.name,

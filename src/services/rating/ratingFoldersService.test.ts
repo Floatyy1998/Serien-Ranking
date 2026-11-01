@@ -35,6 +35,7 @@ vi.mock('../db/subscribeValue', () => ({
 
 import {
   createRatingFolder,
+  createRewatchFolder,
   deleteRatingFolder,
   setRatingFolderItem,
   setRewatchListItem,
@@ -59,6 +60,16 @@ describe('ratingFoldersService', () => {
     await setRewatchListItem('u1', 'm_7', false);
     expect(fb.calls.remove).toEqual(['users/u1/ratingFolders/rewatch/items/m_7']);
     expect(fb.calls.update).toHaveLength(1);
+  });
+
+  it('creates the rewatch list with all picked titles in one write', async () => {
+    await createRewatchFolder('u1', ['m_7', 's_1']);
+    expect(fb.calls.update[0]?.path).toBe('users/u1/ratingFolders/rewatch');
+    expect(fb.calls.update[0]?.val).toMatchObject({
+      name: 'Nochmal schauen',
+      'items/m_7': true,
+      'items/s_1': true,
+    });
   });
 
   it('creates a folder under users/$uid/ratingFolders', async () => {

@@ -4,8 +4,10 @@
  * bzw. das Backend das Abbruch-Aggregat schreibt.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type ContextType } from 'react';
 import type { Series } from '../../types/Series';
+import { AuthContext } from '../../contexts/AuthContext';
+import { RatingFolderSheet } from '../Ratings/RatingFolderSheet';
 import {
   BookmarkAdd,
   Delete as DeleteIcon,
@@ -1374,35 +1376,6 @@ export const RewatchListPreview = () => {
   );
 };
 
-export const RewatchEmptyPreview = () => {
-  const { currentTheme } = useTheme();
-  return (
-    <div className="ratings-page" style={{ background: currentTheme.background.default }}>
-      <div className="ratings-content">
-        <RatingFolderBar
-          theme={currentTheme}
-          folder={{ ...rewatchPreviewFolder, items: new Set<string>() }}
-          count={0}
-          onBack={() => {}}
-          onEdit={() => {}}
-          onShare={() => {}}
-        />
-        <div className="rf-empty" style={{ color: currentTheme.text.muted }}>
-          Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal
-          schauen“.
-          <button
-            type="button"
-            className="rf-chip"
-            style={{ borderColor: currentTheme.primary, color: currentTheme.primary }}
-          >
-            Titel hinzufügen
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const RewatchActionsPreview = () => {
   const { currentTheme } = useTheme();
   return (
@@ -1469,5 +1442,96 @@ export const RewatchHomeRowPreview = () => {
         onSeeAll={() => {}}
       />
     </div>
+  );
+};
+
+const previewPosters = [
+  '/or06FN3Dka5tukK1e9sl16pB3iy.jpg',
+  '/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg',
+  '/78lPtwv72eTNqFW9COBYI0dWDJa.jpg',
+  '/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg',
+];
+const previewTitles = [
+  'A Certain Magical Index',
+  'Andor',
+  'Arcane',
+  'Better Call Saul',
+  'Breaking Bad',
+  'Chernobyl',
+  'Dark',
+  'Fargo',
+  'Fleabag',
+  'Guardians of the Galaxy',
+  'Heat',
+  'Inception',
+  'Loki',
+  'Mad Men',
+  'Mr. Robot',
+  'Ozark',
+  'Severance',
+  'Succession',
+  'The Bear',
+  'The Expanse',
+  'The Leftovers',
+  'The Wire',
+  'True Detective',
+  'Twin Peaks',
+  'Whiplash',
+];
+
+export const RewatchEditSheetPreview = ({ fresh = false }: { fresh?: boolean }) => {
+  const { currentTheme } = useTheme();
+  const auth = useMemo(
+    () =>
+      ({
+        user: { uid: 'preview-user', displayName: 'Bärbel', photoURL: null },
+        setUser: () => {},
+        authStateResolved: true,
+        onboardingComplete: true,
+        setOnboardingComplete: () => {},
+      }) as unknown as ContextType<typeof AuthContext>,
+    []
+  );
+  const seriesCtx = useMemo(
+    () =>
+      ({
+        allSeriesList: previewTitles.map((title, i) => ({
+          id: i + 1,
+          title,
+          poster: { poster: previewPosters[i % previewPosters.length] },
+        })),
+      }) as unknown as ContextType<typeof SeriesListContext>,
+    []
+  );
+  const movieCtx = useMemo(
+    () =>
+      ({
+        movieList: previewTitles.map((title, i) => ({
+          id: i + 1,
+          title: `${title} (Film)`,
+          poster: { poster: previewPosters[(i + 2) % previewPosters.length] },
+        })),
+        loading: false,
+        refetchMovies: () => {},
+        isOffline: false,
+        isStale: false,
+      }) as unknown as ContextType<typeof MovieListContext>,
+    []
+  );
+  return (
+    <AuthContext.Provider value={auth}>
+      <SeriesListContext.Provider value={seriesCtx}>
+        <MovieListContext.Provider value={movieCtx}>
+          <div className="ratings-page" style={{ background: currentTheme.background.default }}>
+            <RatingFolderSheet
+              state={{ open: true, folder: fresh ? null : rewatchPreviewFolder }}
+              offerRewatch={fresh}
+              onClose={() => {}}
+              onDeleted={() => {}}
+            />
+          </div>
+        </MovieListContext.Provider>
+      </SeriesListContext.Provider>
+    </AuthContext.Provider>
   );
 };

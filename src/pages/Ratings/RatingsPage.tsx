@@ -110,7 +110,7 @@ export const RatingsPage: React.FC = () => {
   const closeFolderSheet = useCallback(() => setFolderSheet({ open: false }), []);
   const handleFolderDeleted = useCallback(
     (id: string) => {
-      if (activeFolder?.id === id && !isRewatchFolder(id)) handleFolderChange(null);
+      if (activeFolder?.id === id) handleFolderChange(null);
     },
     [activeFolder, handleFolderChange]
   );
@@ -281,11 +281,7 @@ export const RatingsPage: React.FC = () => {
           <div className="rf-empty" style={{ color: currentTheme.text.muted }}>
             {(folderPreviews[activeFolder.id]?.count ?? 0) > 0
               ? t('Keine Treffer in dieser Liste')
-              : isRewatchFolder(activeFolder)
-                ? t(
-                    'Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal schauen“.'
-                  )
-                : t('Diese Liste ist noch leer')}
+              : t('Diese Liste ist noch leer')}
             <button
               type="button"
               className="rf-chip"
@@ -335,6 +331,7 @@ export const RatingsPage: React.FC = () => {
         state={folderSheet}
         onClose={closeFolderSheet}
         onDeleted={handleFolderDeleted}
+        offerRewatch={!folders.some(isRewatchFolder)}
       />
     </div>
   );

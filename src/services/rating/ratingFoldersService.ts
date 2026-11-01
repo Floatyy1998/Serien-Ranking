@@ -83,3 +83,9 @@ export async function setRewatchListItem(
     await dbRef(`${base}/items/${itemKey}`).remove();
   }
 }
+
+export async function createRewatchFolder(uid: string, items: Iterable<string>): Promise<void> {
+  const update: Record<string, unknown> = { name: REWATCH_FOLDER_NAME, createdAt: Date.now() };
+  for (const key of items) update[`items/${key}`] = true;
+  await dbRef(folderPath(uid, REWATCH_FOLDER_ID)).update(update);
+}

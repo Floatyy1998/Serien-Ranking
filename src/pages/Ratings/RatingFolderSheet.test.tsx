@@ -11,6 +11,7 @@ const h = vi.hoisted(() => ({
     { id: 11, title: 'Avengers', poster: { poster: '/a.jpg' } },
   ],
   create: vi.fn(async () => 'new-id'),
+  createRewatch: vi.fn(async () => undefined),
   save: vi.fn(async () => undefined),
   remove: vi.fn(async () => undefined),
   restore: vi.fn(async () => undefined),
@@ -19,7 +20,7 @@ const h = vi.hoisted(() => ({
 
 vi.mock('@mui/icons-material', () =>
   Object.fromEntries(
-    ['CheckCircle', 'DeleteOutlined', 'Movie', 'RadioButtonUnchecked', 'Tv'].map((n) => [
+    ['CheckCircle', 'DeleteOutlined', 'Movie', 'RadioButtonUnchecked', 'Replay', 'Tv'].map((n) => [
       n,
       () => null,
     ])
@@ -64,6 +65,7 @@ vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn(), hapticSucc
 vi.mock('../../lib/interaction/toast', () => ({ showToast: vi.fn(), showUndoToast: h.undoToast }));
 vi.mock('../../services/rating/ratingFoldersService', () => ({
   createRatingFolder: h.create,
+  createRewatchFolder: h.createRewatch,
   saveRatingFolder: h.save,
   deleteRatingFolder: h.remove,
   restoreRatingFolder: h.restore,
@@ -148,5 +150,70 @@ describe('RatingFolderSheet', () => {
     await waitFor(() => expect(onDeleted).toHaveBeenCalledWith('f1'));
     expect(h.remove).toHaveBeenCalledWith('u1', 'f1');
     expect(h.undoToast).toHaveBeenCalled();
+  });
+
+  it('edits the rewatch list without a name field and deletes it like any list', async () => {
+    const folder = {
+      id: 'rewatch',
+      name: 'Nochmal schauen',
+      createdAt: 0,
+      items: new Set(['m_10']),
+    };
+    const onDeleted = vi.fn();
+    render(
+      <RatingFolderSheet
+        state={{ open: true, folder }}
+        onClose={vi.fn()}
+        onSaved={vi.fn()}
+        onDeleted={onDeleted}
+      />
+    );
+    expect(screen.getByText('Nochmal schauen')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('z. B. Marvel oder Lieblingsfilme')).toBeNull();
+
+    fireEvent.click(screen.getByText('Loki'));
+    fireEvent.click(screen.getByText('Speichern (2)'));
+    await waitFor(() =>
+      expect(h.save).toHaveBeenCalledWith('u1', folder, 'Nochmal schauen', new Set(['m_10', 's_1']))
+    );
+
+    fireEvent.click(screen.getByLabelText('Liste löschen'));
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledWith('rewatch'));
+    expect(h.remove).toHaveBeenCalledWith('u1', 'rewatch');
+  });
+
+  it('offers to create the rewatch list when none exists yet', async () => {
+    const onSaved = vi.fn();
+    render(
+      <RatingFolderSheet
+        state={{ open: true, folder: null }}
+        onClose={vi.fn()}
+        onSaved={onSaved}
+        onDeleted={vi.fn()}
+        offerRewatch
+      />
+    );
+    expect(nameInput()).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Nochmal schauen'));
+    expect(screen.queryByPlaceholderText('z. B. Marvel oder Lieblingsfilme')).toBeNull();
+    expect(screen.getByText('Liste anlegen (0)')).toBeDisabled();
+
+    fireEvent.click(screen.getByText('Loki'));
+    fireEvent.click(screen.getByText('Liste anlegen (1)'));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith('rewatch'));
+    expect(h.createRewatch).toHaveBeenCalledWith('u1', new Set(['s_1']));
+    expect(h.create).not.toHaveBeenCalled();
+  });
+
+  it('hides the rewatch option once the list exists', () => {
+    render(
+      <RatingFolderSheet
+        state={{ open: true, folder: null }}
+        onClose={vi.fn()}
+        onSaved={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+    expect(screen.queryByText('Nochmal schauen')).toBeNull();
   });
 });

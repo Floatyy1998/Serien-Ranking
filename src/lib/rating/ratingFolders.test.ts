@@ -46,6 +46,14 @@ describe('ratingFolders', () => {
     expect(folderDisplayName(folders[1])).toBe('Marvel');
   });
 
+  it('leaves an emptied rewatch list out until something is on it again', () => {
+    const folders = expandRatingFolders({
+      a: { name: 'Marvel', createdAt: 1 },
+      [REWATCH_FOLDER_ID]: { name: 'Nochmal schauen', items: { m_5: false } },
+    });
+    expect(folders.map((f) => f.id)).toEqual(['a']);
+  });
+
   it('adds a virtual rewatch list only when none is stored', () => {
     const marvel = { id: 'a', name: 'Marvel', createdAt: 1, items: new Set<string>() };
     const added = withRewatchFolder([marvel]);

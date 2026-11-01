@@ -234,6 +234,10 @@
   padding: 4px 20px 0;
 }
 
+.rf-sheet--picker {
+  min-height: 0;
+}
+
 .rf-sheet__title {
   margin: 0 0 2px;
   font-size: 19px;
@@ -283,6 +287,10 @@
 }
 
 .rf-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -295,6 +303,7 @@
   justify-content: flex-start;
   gap: 12px;
   width: 100%;
+  flex: none;
   min-height: 0;
   padding: 6px 12px 6px 6px;
   border: 1px solid;
@@ -345,12 +354,10 @@
 }
 
 .rf-actions {
-  position: sticky;
-  bottom: 0;
+  flex: none;
   display: flex;
   gap: 10px;
-  margin: 4px -20px 0;
-  padding: 12px 20px calc(16px + var(--safe-bottom, 0px));
+  padding: 8px 0 calc(16px + var(--safe-bottom, 0px));
 }
 
 .rf-btn,

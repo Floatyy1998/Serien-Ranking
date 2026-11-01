@@ -172,12 +172,12 @@ const dict: Record<string, string> = {
   'Liste „{name}" angelegt': 'Lista "{name}" criada',
   Anbieter: 'Plataformas',
   'Filter ({n} aktiv)': 'Filtros ({n} ativos)',
+  'Art der Liste': 'Tipo de lista',
+  'Eigene Liste': 'Lista própria',
+  'Deine eingebaute Rewatch-Liste. Wähl mindestens einen Titel aus.':
+    'A tua lista integrada para rever. Escolhe pelo menos um título.',
   'Nochmal schauen': 'Rever',
   vorgemerkt: 'na sua lista',
-  'Liste leeren': 'Esvaziar lista',
-  'Liste geleert': 'Lista esvaziada',
-  'Noch nichts vorgemerkt. Halt eine Serie oder einen Film gedrückt und wähl „Nochmal schauen“.':
-    'Nada anotado ainda. Segure uma série ou um filme e escolha “Rever”.',
 };
 
 export default dict;
