@@ -55,6 +55,34 @@ describe('ActivityBundleItem', () => {
     expect(onOpen).toHaveBeenCalledWith('/movie/346698', undefined);
   });
 
+  it('zeigt Buch-Cover über den DNB-Spiegel und fällt bei Fehlern auf die ISBN zurück', () => {
+    const { container } = render(
+      <ActivityBundleItem
+        item={itemFor([
+          act({
+            type: 'book_added',
+            itemType: 'book',
+            itemId: 'dnb-9783842068742',
+            itemTitle: 'Verlobt mit Atsumori-kun 01',
+            poster: 'https://portal.dnb.de/opac/mvb/cover?isbn=9783842068742',
+            bookRef: { source: 'dnb', isbn13: '9783842068742' },
+          }),
+        ])}
+        posterFor={(title) => title.poster}
+        onOpen={vi.fn()}
+      />
+    );
+    const img = () => container.querySelector('img') as HTMLImageElement;
+    expect(img().getAttribute('src')).toBe(
+      'https://serienapi.konrad-dinges.de/bookcover/dnb/9783842068742-M.jpg'
+    );
+    fireEvent.error(img());
+    fireEvent.error(img());
+    expect(img().getAttribute('src')).toBe(
+      'https://covers.openlibrary.org/b/isbn/9783842068742-M.jpg?default=false'
+    );
+  });
+
   it('klappt lange Sitzungen hinter +N zusammen', () => {
     const titles = Array.from({ length: 12 }, (_, i) =>
       act({ tmdbId: 100 + i, itemTitle: `Serie ${i}`, timestamp: 1_000_000 - i * 60_000 })

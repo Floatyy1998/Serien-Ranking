@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { bookCoverSources } from '../../lib/books/bookSearchMapping';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
 import { dateLocale, t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -212,6 +213,9 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
   }, [friendActivities.length]);
 
   const getPosterUrl = (activity: FriendActivity): string | undefined => {
+    if (activity.itemType === 'book') {
+      return bookCoverSources(activity.poster, activity.bookRef?.isbn13, 'M')[0];
+    }
     const tmdbId = activity.tmdbId || activity.itemId;
     const itemType = activity.itemType;
     const cacheKey = `${itemType}_${tmdbId}`;

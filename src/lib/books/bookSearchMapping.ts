@@ -428,3 +428,20 @@ export function coverAtSize(url: string | undefined, size: 'M' | 'L'): string | 
   const id = url?.match(/covers\.openlibrary\.org\/b\/id\/(\d+)-[SML]\.jpg/)?.[1];
   return id ? `${COVER_MIRROR}/${id}-${size}.jpg` : directCoverAtSize(url, size);
 }
+
+/** Cover-Kette für Stellen ohne Buchdaten (Aktivitäten): gespeichertes Cover, dann per ISBN. */
+export function bookCoverSources(
+  cover: string | undefined,
+  isbn13: string | undefined,
+  size: 'M' | 'L'
+): string[] {
+  const byIsbn = isbn13
+    ? [
+        isbn13.startsWith('9783') ? coverAtSize(dnbCoverUrl(isbn13), size) : undefined,
+        directCoverAtSize(openLibraryCoverByIsbn(isbn13), size),
+      ]
+    : [];
+  return [...new Set([coverAtSize(cover, size), directCoverAtSize(cover, size), ...byIsbn])].filter(
+    (s): s is string => !!s
+  );
+}

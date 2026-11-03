@@ -8,6 +8,7 @@ import Schedule from '@mui/icons-material/Schedule';
 import Star from '@mui/icons-material/Star';
 import Tv from '@mui/icons-material/Tv';
 import React, { useEffect, useRef, useState } from 'react';
+import { bookCoverSources } from '../../../lib/books/bookSearchMapping';
 import {
   activityPath,
   bookPreviewFromActivity,
@@ -37,11 +38,25 @@ const MEDIA_ICON: Record<ActivityMedia, typeof Tv> = {
 };
 
 const PosterImage = ({ title, src }: { title: BundledTitle; src: string | undefined }) => {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string[]>([]);
   const Icon = MEDIA_ICON[title.media];
-  const url = src && !failed ? getImageUrl(src, 'w185', '') : '';
+  const sources =
+    title.media === 'book'
+      ? bookCoverSources(src, title.activity.bookRef?.isbn13, 'M')
+      : [getImageUrl(src, 'w185', '')];
+  const url = sources.find((s) => s && !failed.includes(s));
+  const fail = (bad: string) => setFailed((prev) => [...prev, bad]);
   return url ? (
-    <img src={url} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+    <img
+      key={url}
+      src={url}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => fail(url)}
+      onLoad={(e) => e.currentTarget.naturalWidth < 20 && fail(url)}
+    />
   ) : (
     <Icon className="nh-poster-fallback" />
   );

@@ -13,7 +13,12 @@ import {
   toIsbn13,
 } from './bookIdentity';
 import { applyPageUpdate, applyStatusChange, pagesReadOf, progressPercent } from './bookProgress';
-import { coverAtSize, directCoverAtSize, mapOpenLibraryDoc } from './bookSearchMapping';
+import {
+  bookCoverSources,
+  coverAtSize,
+  directCoverAtSize,
+  mapOpenLibraryDoc,
+} from './bookSearchMapping';
 import { alignSeriesKey, findNextVolume, normalizeSeriesParts, partPositionOf } from './bookSeries';
 import { bookTotals, computeBookYearStats, goalPace } from './bookStats';
 import { guessLanguage, htmlToPlainText } from './bookText';
@@ -377,6 +382,19 @@ describe('Mapping und Text', () => {
       'https://books.google.com/books/content?id=x&zoom=1&fife=w480-h720'
     );
     expect(coverAtSize(undefined, 'M')).toBeUndefined();
+  });
+
+  it('baut für Aktivitäten eine Cover-Kette: DNB über den Spiegel, ohne Cover per ISBN', () => {
+    const dnb = 'https://portal.dnb.de/opac/mvb/cover?isbn=9783842068742';
+    expect(bookCoverSources(dnb, '9783842068742', 'M')).toEqual([
+      'https://serienapi.konrad-dinges.de/bookcover/dnb/9783842068742-M.jpg',
+      dnb,
+      'https://covers.openlibrary.org/b/isbn/9783842068742-M.jpg?default=false',
+    ]);
+    expect(bookCoverSources(undefined, '9781974700000', 'M')).toEqual([
+      'https://covers.openlibrary.org/b/isbn/9781974700000-M.jpg?default=false',
+    ]);
+    expect(bookCoverSources(undefined, undefined, 'M')).toEqual([]);
   });
 
   it('wechselt bei Katalog-Covern nur die Größe und behält den Versionsstempel', () => {
