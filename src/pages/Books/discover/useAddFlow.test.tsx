@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render, renderHook, screen } from '@testing-library/react';
+import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BookSearchResult } from '../../../types/Book';
 
@@ -9,8 +9,18 @@ vi.mock('../hooks/useBookActions', () => ({ useBookActions: () => ({ add: state.
 vi.mock('../../../hooks/ui/useBookAddPrompt', () => ({ useBookAddPrompt: () => state.ask }));
 vi.mock('../../../hooks/books/useOwnedBooks', () => ({ useOwnsResult: () => () => false }));
 vi.mock('../components/AddBookSheet', () => ({
-  AddBookSheet: ({ result }: { result: BookSearchResult | null }) =>
-    result ? <div>Sheet: {result.title}</div> : null,
+  AddBookSheet: ({
+    result,
+    onPick,
+  }: {
+    result: BookSearchResult | null;
+    onPick: (choice: { status: string }) => void;
+  }) =>
+    result ? (
+      <button type="button" onClick={() => onPick({ status: 'reading' })}>
+        Sheet: {result.title}
+      </button>
+    ) : null,
 }));
 
 import { useAddFlow } from './useAddFlow';
@@ -24,6 +34,7 @@ const book: BookSearchResult = {
 
 describe('useAddFlow', () => {
   beforeEach(() => {
+    cleanup();
     state.add.mockClear();
   });
 
@@ -34,7 +45,7 @@ describe('useAddFlow', () => {
     await act(async () => {
       result.current.openAdd(book);
     });
-    expect(state.add).toHaveBeenCalledWith(book, 'planned');
+    expect(state.add).toHaveBeenCalledWith(book, 'planned', undefined);
     expect(onAdded).toHaveBeenCalledTimes(1);
     render(<>{result.current.sheet}</>);
     expect(screen.queryByText(/Sheet:/)).toBeNull();
@@ -49,5 +60,21 @@ describe('useAddFlow', () => {
     expect(state.add).not.toHaveBeenCalled();
     render(<>{result.current.sheet}</>);
     expect(screen.getByText('Sheet: Onyx Storm')).toBeTruthy();
+  });
+
+  it('behält die Wahl „als Buch“ für Manga-Bände auch über das Sheet', async () => {
+    state.ask = true;
+    const { result } = renderHook(() => useAddFlow());
+    await act(async () => {
+      result.current.openAdd(book, { asBookOf: 105398 });
+    });
+    render(<>{result.current.sheet}</>);
+    await act(async () => {
+      screen.getByText('Sheet: Onyx Storm').click();
+    });
+    expect(state.add).toHaveBeenCalledWith(book, 'reading', {
+      finishedEarlier: undefined,
+      asBookOf: 105398,
+    });
   });
 });

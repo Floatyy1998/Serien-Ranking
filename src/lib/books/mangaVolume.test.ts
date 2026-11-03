@@ -7,6 +7,7 @@ import {
   mangaAsSearchResult,
   mangaVolumeGuess,
   matchSeries,
+  offerVolumesAsBooks,
   pickSeriesMatch,
   splitVolume,
   type MangaLink,
@@ -164,6 +165,26 @@ describe('groupMangaVolumes', () => {
       'op18',
       'op45',
     ]);
+  });
+});
+
+describe('offerVolumesAsBooks', () => {
+  const atsumori: MangaLink = { manga: anilist(105398, "Atsumori-kun's Bride-to-be") };
+  const single = { id: 'dnb-9783842068742', title: 'Verlobt mit Atsumori-kun 01' };
+
+  it('stellt einen einzelnen Band zusätzlich als Buch zur Wahl', () => {
+    const entries = offerVolumesAsBooks(groupMangaVolumes([single], () => atsumori));
+    expect(entries).toEqual([
+      { kind: 'manga', link: atsumori, volumes: [single] },
+      { kind: 'book', result: single, asBookOf: 105398 },
+    ]);
+  });
+
+  it('lässt geführte Reihen und ganze Bandlisten bei der Manga-Karte', () => {
+    const owned: MangaLink = { ...atsumori, owned: { anilistId: 105398 } as Manga };
+    expect(offerVolumesAsBooks(groupMangaVolumes([single], () => owned))).toHaveLength(1);
+    const two = [single, { id: 'dnb-2', title: 'Verlobt mit Atsumori-kun 02' }];
+    expect(offerVolumesAsBooks(groupMangaVolumes(two, () => atsumori))).toHaveLength(1);
   });
 });
 

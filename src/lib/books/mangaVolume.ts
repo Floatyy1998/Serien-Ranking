@@ -170,7 +170,7 @@ export function linkSeriesSiblings(
 }
 
 export type MangaVolumeEntry<T> =
-  { kind: 'book'; result: T } | { kind: 'manga'; link: MangaLink; volumes: T[] };
+  { kind: 'book'; result: T; asBookOf?: number } | { kind: 'manga'; link: MangaLink; volumes: T[] };
 
 /** Bände derselben Reihe werden zu einem Manga-Eintrag an der Stelle des ersten Bandes. */
 export function groupMangaVolumes<T extends { id: string }>(
@@ -195,4 +195,13 @@ export function groupMangaVolumes<T extends { id: string }>(
     entries.push(entry);
   }
   return entries;
+}
+
+/** Ein einzelner Band einer noch nicht geführten Reihe steht zusätzlich als Buch zur Wahl. */
+export function offerVolumesAsBooks<T>(entries: MangaVolumeEntry<T>[]): MangaVolumeEntry<T>[] {
+  return entries.flatMap((entry) =>
+    entry.kind === 'manga' && entry.volumes.length === 1 && !entry.link.owned
+      ? [entry, { kind: 'book' as const, result: entry.volumes[0], asBookOf: entry.link.manga.id }]
+      : [entry]
+  );
 }

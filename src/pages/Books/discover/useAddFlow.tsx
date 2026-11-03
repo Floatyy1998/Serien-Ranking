@@ -3,7 +3,7 @@ import { useOwnsResult } from '../../../hooks/books/useOwnedBooks';
 import { useBookAddPrompt } from '../../../hooks/ui/useBookAddPrompt';
 import type { BookSearchResult } from '../../../types/Book';
 import { AddBookSheet, type AddChoice } from '../components/AddBookSheet';
-import { useBookActions } from '../hooks/useBookActions';
+import { useBookActions, type AddOptions } from '../hooks/useBookActions';
 
 const addedHere = new Set<string>();
 
@@ -20,16 +20,21 @@ export function useHideOwned() {
 export function useAddFlow(zIndex?: number, onAdded?: () => void) {
   const actions = useBookActions();
   const askOnAdd = useBookAddPrompt();
-  const [pending, setPending] = useState<BookSearchResult | null>(null);
+  const [pending, setPending] = useState<{ result: BookSearchResult; asBookOf?: number } | null>(
+    null
+  );
   const [busy, setBusy] = useState(false);
 
   const pick = useCallback(
     async (choice: AddChoice) => {
       if (!pending) return;
       setBusy(true);
-      addedHere.add(pending.id);
+      addedHere.add(pending.result.id);
       onAdded?.();
-      await actions.add(pending, choice.status, { finishedEarlier: choice.finishedEarlier });
+      await actions.add(pending.result, choice.status, {
+        finishedEarlier: choice.finishedEarlier,
+        asBookOf: pending.asBookOf,
+      });
       setBusy(false);
       setPending(null);
     },
@@ -37,21 +42,21 @@ export function useAddFlow(zIndex?: number, onAdded?: () => void) {
   );
 
   const openAdd = useCallback(
-    (result: BookSearchResult) => {
+    (result: BookSearchResult, options?: Pick<AddOptions, 'asBookOf'>) => {
       if (askOnAdd) {
-        setPending(result);
+        setPending({ result, asBookOf: options?.asBookOf });
         return;
       }
       addedHere.add(result.id);
       onAdded?.();
-      void actions.add(result, 'planned');
+      void actions.add(result, 'planned', options);
     },
     [askOnAdd, actions, onAdded]
   );
 
   const sheet = (
     <AddBookSheet
-      result={pending}
+      result={pending?.result ?? null}
       busy={busy}
       zIndex={zIndex}
       onClose={() => setPending(null)}

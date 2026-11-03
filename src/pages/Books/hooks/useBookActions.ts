@@ -23,6 +23,7 @@ import {
   setBookStatus,
   setBookOwned,
   setBookWish,
+  setSeriesAsBooks,
   updateBookFields,
   updateBookProgress,
   type AddBookOptions,
@@ -32,6 +33,9 @@ import { trackBookAdded, trackBookDeleted } from '../../../services/firebase/ana
 import { t } from '../../../services/i18n';
 import type { Book, BookSearchResult, BookStatus } from '../../../types/Book';
 import { useAddManga } from '../../Manga/useAddManga';
+
+/** asBookOf: ein Manga-Band bleibt auf ausdrücklichen Wunsch Buch, seine Reihe künftig auch. */
+export type AddOptions = AddBookOptions & { asBookOf?: number };
 
 const logBook = (uid: string, book: Book, type: ReadingActivity['type'], rating?: number) =>
   void logReadingActivity(uid, {
@@ -95,7 +99,7 @@ export function useBookActions() {
   );
 
   const add = useCallback(
-    async (result: BookSearchResult, status: BookStatus, options?: AddBookOptions) => {
+    async (result: BookSearchResult, status: BookStatus, options: AddOptions = {}) => {
       if (!uid) return null;
       const manga = mangaFor(result);
       if (manga) {
@@ -107,9 +111,11 @@ export function useBookActions() {
         showToast(t('Schon in deinen Büchern'));
         return owned;
       }
-      if (await addVolumeAsManga(result)) return null;
+      const { asBookOf, ...bookOptions } = options;
+      if (asBookOf === undefined && (await addVolumeAsManga(result))) return null;
       try {
-        const book = await addBook(uid, alignSeriesKey(result, allBookList), status, options);
+        const book = await addBook(uid, alignSeriesKey(result, allBookList), status, bookOptions);
+        if (asBookOf !== undefined) void setSeriesAsBooks(uid, asBookOf).catch(() => {});
         trackBookAdded(book.id, book.title, status);
         logBook(uid, book, 'book_added');
         hapticSuccess();

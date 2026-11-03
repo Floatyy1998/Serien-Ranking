@@ -16,6 +16,7 @@ const svc = vi.hoisted(() => ({
     status: 'planned',
   })),
   showToast: vi.fn(),
+  setSeriesAsBooks: vi.fn(async () => {}),
 }));
 vi.mock('../../../services/books/bookService', () => ({
   addBook: svc.addBook,
@@ -24,6 +25,7 @@ vi.mock('../../../services/books/bookService', () => ({
   setBookRating: vi.fn(),
   setBookStatus: vi.fn(),
   setBookWish: vi.fn(),
+  setSeriesAsBooks: svc.setSeriesAsBooks,
   updateBookFields: vi.fn(),
   updateBookProgress: vi.fn(),
 }));
@@ -99,6 +101,7 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 beforeEach(() => {
   svc.addBook.mockClear();
   svc.showToast.mockClear();
+  svc.setSeriesAsBooks.mockClear();
   manga.resolveMangaVolumes.mockClear();
   manga.addMangaToList.mockClear();
 });
@@ -173,6 +176,24 @@ describe('useBookActions.add', () => {
     asBooks.ids.clear();
     expect(manga.addMangaToList).not.toHaveBeenCalled();
     expect(svc.addBook).toHaveBeenCalledOnce();
+  });
+
+  it('legt einen als Buch gewählten Manga-Band als Buch an und merkt sich die Reihe', async () => {
+    const { result } = renderHook(() => useBookActions(), { wrapper });
+    const added = await result.current.add(
+      hit({
+        id: 'dnb-9783842068742',
+        title: 'Verlobt mit Atsumori-kun 01',
+        categories: ['Comics'],
+      }),
+      'planned',
+      { asBookOf: 105398 }
+    );
+    expect(added?.id).toBe('dnb-9783842068742');
+    expect(manga.resolveMangaVolumes).not.toHaveBeenCalled();
+    expect(manga.addMangaToList).not.toHaveBeenCalled();
+    expect(svc.addBook).toHaveBeenCalledWith('u1', expect.anything(), 'planned', {});
+    expect(svc.setSeriesAsBooks).toHaveBeenCalledWith('u1', 105398);
   });
 
   it('fragt AniList bei Romanen ohne Comic-Merkmal gar nicht erst', async () => {

@@ -89,11 +89,22 @@ export const PeopleSearchPreview = () => (
   </PersonPreviewShell>
 );
 
-export const BookOverlaySearchPreview = () => (
-  <PersonPreviewShell>
-    <HomeSearchOverlay open onClose={() => {}} homePath="/dev/ui-preview" initialFilter="books" />
-  </PersonPreviewShell>
-);
+export const BookOverlaySearchPreview = () => {
+  const params = new URLSearchParams(window.location.search);
+  const reading = params.get('scope') === 'reading';
+  return (
+    <PersonPreviewShell>
+      <HomeSearchOverlay
+        open
+        onClose={() => {}}
+        homePath="/dev/ui-preview"
+        scope={reading ? 'reading' : undefined}
+        initialFilter={reading ? undefined : 'books'}
+        initialQuery={params.get('q') ?? undefined}
+      />
+    </PersonPreviewShell>
+  );
+};
 
 const noop = () => {};
 

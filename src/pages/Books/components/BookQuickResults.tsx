@@ -6,7 +6,7 @@ import { useBookSearch } from '../../../hooks/books/useBookSearch';
 import { useBookShelf } from '../../../hooks/books/useBookShelf';
 import { useMangaVolumes } from '../../../hooks/books/useMangaVolumes';
 import { useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
-import { groupMangaVolumes } from '../../../lib/books/mangaVolume';
+import { groupMangaVolumes, offerVolumesAsBooks } from '../../../lib/books/mangaVolume';
 import { mangaPath } from '../../../lib/manga/mangaSource';
 import { volumeBookState, volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { t } from '../../../services/i18n';
@@ -50,9 +50,11 @@ export const BookQuickResults: React.FC<Props> = ({
   const { add: addManga, addingId } = useAddManga();
   const loading = searching || pending;
 
-  const entries = groupMangaVolumes(
-    results.filter((r) => !isPending(r)),
-    (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
+  const entries = offerVolumesAsBooks(
+    groupMangaVolumes(
+      results.filter((r) => !isPending(r)),
+      (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
+    )
   ).filter((e) => e.kind === 'book' || !hideMangaIds?.includes(e.link.manga.id));
 
   useEffect(() => {
@@ -95,7 +97,11 @@ export const BookQuickResults: React.FC<Props> = ({
           ) : (
             list.map((entry) =>
               entry.kind === 'book' ? (
-                <DiscoverCard key={entry.result.id} result={entry.result} onAdd={openAdd} />
+                <DiscoverCard
+                  key={entry.result.id}
+                  result={entry.result}
+                  onAdd={(r) => openAdd(r, { asBookOf: entry.asBookOf })}
+                />
               ) : (
                 <div key={`manga-${entry.link.manga.id}`} className="dsc-card">
                   <MangaResultCard

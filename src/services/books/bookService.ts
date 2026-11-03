@@ -175,6 +175,10 @@ export async function removeBook(uid: string, bookId: string): Promise<void> {
   await dbRef(paths.bookItem(uid, bookId)).remove();
 }
 
+export async function setSeriesAsBooks(uid: string, anilistId: number): Promise<void> {
+  await dbRef(`${paths.mangaAsBooks(uid)}/${anilistId}`).set(true);
+}
+
 export async function setBookHidden(uid: string, bookId: string, hidden: boolean): Promise<void> {
   await dbRef(paths.bookItem(uid, bookId)).update({ hidden: hidden || null });
 }

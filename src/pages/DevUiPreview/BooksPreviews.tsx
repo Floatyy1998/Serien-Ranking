@@ -9,7 +9,7 @@ import { MovieListContext } from '../../contexts/MovieListContext';
 import { SeriesListContext } from '../../contexts/SeriesListContext';
 import { tmdbFetch } from '../../services/api/tmdbClient';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
-import type { Book, BookStatus } from '../../types/Book';
+import type { Book, BookSearchResult, BookStatus } from '../../types/Book';
 import { BookDetailPage } from '../Books/BookDetailPage';
 import { BookImportPage } from '../Books/BookImportPage';
 import { BookSearchPage } from '../Books/BookSearchPage';
@@ -390,6 +390,32 @@ const BARE_MANGA_VOLUME_LIST = [BARE_MANGA_VOLUME];
 export const BookDetailBareMangaPreview = () => (
   <BooksPreviewShell extra={BARE_MANGA_VOLUME_LIST}>
     <Routes location={`/dev/ui-preview/books/${BARE_MANGA_VOLUME.id}`}>
+      <Route path="books/:bookId" element={<BookDetailPage />} />
+    </Routes>
+  </BooksPreviewShell>
+);
+
+const MANGA_VOLUME_OFFER: BookSearchResult = {
+  id: 'dnb-9783842068742',
+  title: 'Verlobt mit Atsumori-kun 01',
+  authors: ['Taamo'],
+  publisher: 'Tokyopop',
+  categories: ['Comics'],
+  isbn13: '9783842068742',
+  pageCount: 192,
+  publishedYear: 2021,
+  language: 'de',
+  source: 'dnb',
+};
+
+export const BookDetailMangaOfferPreview = () => (
+  <BooksPreviewShell>
+    <Routes
+      location={{
+        pathname: `/dev/ui-preview/books/${MANGA_VOLUME_OFFER.id}`,
+        state: { result: MANGA_VOLUME_OFFER },
+      }}
+    >
       <Route path="books/:bookId" element={<BookDetailPage />} />
     </Routes>
   </BooksPreviewShell>

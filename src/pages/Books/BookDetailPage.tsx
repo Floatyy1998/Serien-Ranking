@@ -277,6 +277,8 @@ export const BookDetailPage = () => {
   );
   // Reihe soll als Bücher laufen: fremde Bände zeigen wieder „In deine Bücher".
   const mangaOffer = mangaLink && !mangaLink.asBooks ? mangaLink : undefined;
+  const bookAddable = !mangaOffer?.owned;
+  const asBookOf = mangaOffer?.manga.id;
   const uid = useAuth()?.user?.uid;
   const { add: addManga, addingId } = useAddManga();
 
@@ -425,6 +427,7 @@ export const BookDetailPage = () => {
     setBusy(true);
     const book = await actions.add(preview, choice.status, {
       finishedEarlier: choice.finishedEarlier,
+      asBookOf,
     });
     setBusy(false);
     if (book && book.id !== bookId) {
@@ -439,7 +442,7 @@ export const BookDetailPage = () => {
     }
     if (!preview) return;
     setBusy(true);
-    const book = await actions.add(preview, 'planned', { wish: true });
+    const book = await actions.add(preview, 'planned', { wish: true, asBookOf });
     setBusy(false);
     if (book && book.id !== bookId) {
       navigate(`/books/${encodeURIComponent(book.id)}`, { replace: true });
@@ -651,7 +654,7 @@ export const BookDetailPage = () => {
               onOpenProgress={() => setProgressOpen(true)}
               onRate={(rating) => void actions.rate(owned, rating)}
             />
-          ) : preview && !mangaOffer ? (
+          ) : preview && bookAddable ? (
             <div
               className="bd-panel"
               style={{
@@ -687,7 +690,7 @@ export const BookDetailPage = () => {
               <AddOptions busy={busy} onPick={(c) => void pickAdd(c)} />
             </div>
           ) : null}
-          {(owned || (preview && !mangaOffer)) && (
+          {(owned || (preview && bookAddable)) && (
             <WishToggle wished={!!owned?.wishedAt} busy={busy} onToggle={() => void toggleWish()} />
           )}
           {owned && (

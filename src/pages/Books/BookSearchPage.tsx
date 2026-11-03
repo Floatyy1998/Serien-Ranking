@@ -10,7 +10,11 @@ import { useBookSearch } from '../../hooks/books/useBookSearch';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { useOwnedBooks } from '../../hooks/books/useOwnedBooks';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
-import { groupMangaVolumes, type MangaLink } from '../../lib/books/mangaVolume';
+import {
+  groupMangaVolumes,
+  offerVolumesAsBooks,
+  type MangaLink,
+} from '../../lib/books/mangaVolume';
 import { mangaPath } from '../../lib/manga/mangaSource';
 import { volumeBookState, volumeSnapshot } from '../../lib/books/mangaBooks';
 import { hasGoogleBooks } from '../../services/api/booksApi';
@@ -187,7 +191,9 @@ const BookSearchView = () => {
     setQuery((current) => (current.trim() === qParam ? current : qParam));
   }, [qParam]);
   const recent = useRecentSearches('books');
-  const [pending, setPending] = useState<BookSearchResult | null>(null);
+  const [pending, setPending] = useState<{ result: BookSearchResult; asBookOf?: number } | null>(
+    null
+  );
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { allBookList } = useBooksList();
@@ -215,9 +221,11 @@ const BookSearchView = () => {
   const { links, pending: resolving, isPending } = useMangaVolumes(results, { query, deep: true });
   const { add: addManga, addingId } = useAddManga();
   const loading = searching || resolving;
-  const entries = groupMangaVolumes(
-    results.filter((r) => !isPending(r)),
-    (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
+  const entries = offerVolumesAsBooks(
+    groupMangaVolumes(
+      results.filter((r) => !isPending(r)),
+      (r) => (ownedFor(r) || links.get(r.id)?.asBooks ? undefined : links.get(r.id))
+    )
   );
 
   const libraryMatches = useMemo(() => {
@@ -247,19 +255,22 @@ const BookSearchView = () => {
     if (!pending) return;
     setBusy(true);
     remember(query);
-    await actions.add(pending, choice.status, { finishedEarlier: choice.finishedEarlier });
+    await actions.add(pending.result, choice.status, {
+      finishedEarlier: choice.finishedEarlier,
+      asBookOf: pending.asBookOf,
+    });
     setBusy(false);
     setPending(null);
   };
 
   // Ohne Nachfrage landet das Buch wie eine Serie erst einmal auf der Leseliste.
-  const startAdd = (result: BookSearchResult) => {
+  const startAdd = (result: BookSearchResult, asBookOf?: number) => {
     if (askOnAdd) {
-      setPending(result);
+      setPending({ result, asBookOf });
       return;
     }
     remember(query);
-    void actions.add(result, 'planned');
+    void actions.add(result, 'planned', { asBookOf });
   };
 
   const showIdle = query.trim().length < 2;
@@ -398,7 +409,7 @@ const BookSearchView = () => {
               result={r}
               owned={owned}
               onOpen={() => openResult(r)}
-              onAdd={() => startAdd(r)}
+              onAdd={() => startAdd(r, entry.asBookOf)}
             />
           );
         })}
@@ -436,7 +447,7 @@ const BookSearchView = () => {
       </div>
 
       <AddBookSheet
-        result={pending}
+        result={pending?.result ?? null}
         busy={busy}
         onClose={() => setPending(null)}
         onPick={(c) => void pick(c)}

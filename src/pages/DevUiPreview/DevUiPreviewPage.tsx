@@ -83,6 +83,7 @@ import {
   BookShelfPreview,
   BookDetailMangaPreview,
   BookDetailBareMangaPreview,
+  BookDetailMangaOfferPreview,
   BooksEmptyPreview,
   BooksOverviewPreview,
   BookStatsPreview,
@@ -346,6 +347,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'book-detail-manga',
     label: 'Bücher: Manga-Band',
     render: () => <BookDetailMangaPreview />,
+  },
+  {
+    id: 'book-detail-manga-offer',
+    label: 'Bücher: Manga-Band zur Wahl',
+    render: () => <BookDetailMangaOfferPreview />,
   },
   {
     id: 'book-detail-manga-bare',
