@@ -132,6 +132,37 @@ describe('hardcoverApi', () => {
     );
   });
 
+  it('lässt Hardcover nach einem Server-Timeout für die Schonfrist aus, statt jeden Tastendruck abzuschicken', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
+      return json({ error: 'upstream' }, 503);
+    });
+    const { hardcoverSearch, hardcoverReady } = await import('./hardcoverApi');
+    const first = expect(hardcoverSearch('harry')).rejects.toMatchObject({ code: 'upstream' });
+    await vi.advanceTimersByTimeAsync(15_000);
+    await first;
+    expect(hardcoverReady()).toBe(false);
+    await expect(hardcoverSearch('harry p')).rejects.toMatchObject({ code: 'paused' });
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(hardcoverReady()).toBe(true);
+    expect(captureError).toHaveBeenCalledTimes(1);
+  });
+
+  it('wiederholt einen 503 mit genannter Schonfrist nicht, meldet ihn nicht und pausiert so lange', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockResolvedValue(json({ error: 'upstream', retryAfter: 12 }, 503));
+    const { hardcoverSearch, hardcoverReady } = await import('./hardcoverApi');
+    await expect(hardcoverSearch('harry')).rejects.toMatchObject({ code: 'upstream' });
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+    expect(backendFetch.mock.calls[0][2]).toEqual({ quietStatuses: [503] });
+    expect(captureError).not.toHaveBeenCalled();
+    expect(hardcoverReady()).toBe(false);
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(hardcoverReady()).toBe(true);
+  });
+
   it('meldet abgewiesene Hintergrund-Abfragen nicht als Fehler und zählt sie als gescheitert', async () => {
     vi.useFakeTimers();
     backendFetch.mockImplementation(async () => json({ error: 'busy' }, 503));

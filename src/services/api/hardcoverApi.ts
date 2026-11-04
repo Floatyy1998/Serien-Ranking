@@ -18,6 +18,9 @@ const DAY = 86_400_000;
 const TIMEOUT_MS = 20_000;
 /** Scheitert ein Versuch erst nach so langer Zeit, hat der Server vergeblich auf Hardcover gewartet — eine Wiederholung hinge genauso. */
 const SLOW_FAILURE_MS = 5_000;
+/** So lange weist der Server nach einem Hardcover-Timeout jede Abfrage sofort ab (Schonfrist im Proxy). */
+const UPSTREAM_DOWN_PAUSE_MS = 20_000;
+const MAX_RETRY_AFTER_MS = 5 * 60_000;
 
 /** Antwort des Backend-Proxys (/hc/*) — Hardcover-Token und Kontingent bleiben auf dem Server. */
 export interface HcItem {
@@ -45,7 +48,8 @@ export class HardcoverError extends Error {
   constructor(
     readonly code: string,
     message?: string,
-    readonly status?: number
+    readonly status?: number,
+    readonly retryAfterMs?: number
   ) {
     super(message ?? code);
   }
@@ -132,7 +136,16 @@ async function attempt<T>(
       background ? { quietStatuses: [429, 503] } : firstTry ? { quietStatuses: [503] } : undefined
     );
     if (!res.ok) {
-      const code = ((await res.json().catch(() => null)) as { error?: string } | null)?.error;
+      const payload = (await res.json().catch(() => null)) as {
+        error?: string;
+        retryAfter?: number;
+      } | null;
+      const code = payload?.error;
+      const retryAfter = Number(payload?.retryAfter);
+      const retryAfterMs =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, MAX_RETRY_AFTER_MS)
+          : undefined;
       // Nur bekannte Codes zählen; ein 429 anderer Herkunft (allgemeine Bremse) ist nur kurz „busy“, nie eine Stundenpause.
       const known =
         code && KNOWN_CODES.has(code)
@@ -142,7 +155,7 @@ async function attempt<T>(
             : res.status === 404 || res.status === 401
               ? 'config'
               : 'upstream';
-      throw new HardcoverError(known, `HTTP ${res.status}`, res.status);
+      throw new HardcoverError(known, `HTTP ${res.status}`, res.status, retryAfterMs);
     }
     return (await res.json()) as T;
   } catch (err) {
@@ -164,6 +177,7 @@ async function post<T>(
   if (!hardcoverReady()) throw new HardcoverError('paused');
   if (!GUEST_PATHS.has(path) && !hasBackendSession()) throw new HardcoverError('guest');
   let last: HardcoverError | null = null;
+  let pausedForDowntime = false;
   for (let round = 0; round < 2; round++) {
     const startedAt = Date.now();
     try {
@@ -182,8 +196,17 @@ async function post<T>(
       if (err.status === 429) break;
       // Kam der Fehler erst nach Sekunden, hat der Server vergeblich auf Hardcover gewartet: Die Wiederholung
       // hinge genauso lange — lieber sofort die Ersatzquellen. Der erste Versuch war still, deshalb hier melden.
+      // Danach weist der Server jede Abfrage für die Dauer der Schonfrist sofort ab: so lange gar nicht erst fragen.
       if (round === 0 && Date.now() - startedAt >= SLOW_FAILURE_MS) {
         if (!background) reportSlowFailure(path, err, Date.now() - startedAt);
+        pause(err.retryAfterMs ?? UPSTREAM_DOWN_PAUSE_MS);
+        pausedForDowntime = true;
+        break;
+      }
+      // Nennt der Server selbst eine Schonfrist, hilft auch eine schnelle Wiederholung nicht.
+      if (err.retryAfterMs) {
+        pause(err.retryAfterMs);
+        pausedForDowntime = true;
         break;
       }
       if (round === 0) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
@@ -192,7 +215,9 @@ async function post<T>(
     }
   }
   // Hintergrund-Abfragen, die der Server abweist, dürfen die Suche im Vordergrund nicht pausieren.
-  if (last && !(background && last.code === 'busy')) noteSoftFailure(last.code);
+  if (last && !pausedForDowntime && !(background && last.code === 'busy')) {
+    noteSoftFailure(last.code);
+  }
   // Der Abbruch des Aufrufers ist kein endgültiges Scheitern von Hardcover — und kein Befund.
   if (signal?.aborted) throw abortedBy(signal);
   failureCount++;
