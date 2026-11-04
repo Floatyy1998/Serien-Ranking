@@ -233,6 +233,7 @@ const dict: Record<string, string> = {
     'A barra inferior é você quem monta: até {n} destinos',
   '{name} einblenden': 'Mostrar {name}',
   '{name} ausblenden': 'Ocultar {name}',
+  '{name} verschieben': 'Mover {name}',
   Mehr: 'Mais',
   'Antippen legt ein Ziel in die untere Leiste — Tippen in der Leiste entfernt es wieder, Ziehen sortiert.':
     'Toque para colocar um destino na barra inferior; toque nele na barra para removê-lo e arraste para ordenar.',

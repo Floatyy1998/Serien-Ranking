@@ -1,198 +1,41 @@
 import { dbRef, paths } from '../../../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { sanitizeHomeConfig, type HomeConfig } from '../../../lib/layout/homeLayout';
+import { subscribeHomeConfig } from '../../../services/settings/homeConfigSync';
 
-export const DEFAULT_SECTION_ORDER = [
-  'activity-marquee',
-  'quick-actions',
-  'secondary-actions',
-  'countdown',
-  'continue-watching',
-  'rewatches',
-  'rewatch-list',
-  'today-episodes',
-  'new-on-subs',
-  'seasonal',
-  'trending',
-  'top-rated',
-  'for-you',
-  'stats',
-];
-export const DEFAULT_FOR_YOU_ORDER = [
-  'tonight',
-  'watch-streak',
-  'daily-spin',
-  'milestone-box',
-  'taste-profile',
-  'taste-match',
-  'watch-journey',
-  'rating-queue',
-  'catch-up',
-  'streaming-reminder',
-  'hidden-series',
-];
-export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
-export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
-
-export interface HomeConfig {
-  sectionOrder: string[];
-  hiddenSections: string[];
-  forYouOrder: string[];
-  hiddenForYou: string[];
-  quickActionsOrder: string[];
-  hiddenQuickActions: string[];
-  secondaryActionsOrder: string[];
-  hiddenSecondaryActions: string[];
-}
+export {
+  DEFAULT_FOR_YOU_ORDER,
+  DEFAULT_QUICK_ACTIONS_ORDER,
+  DEFAULT_SECONDARY_ACTIONS_ORDER,
+  DEFAULT_SECTION_ORDER,
+} from '../../../config/homeSections';
+export type { HomeConfig };
 
 export interface UseHomeConfigReturn extends HomeConfig {
   visibleSections: string[];
 }
 
-function readCachedConfig(): Partial<HomeConfig> | null {
+function readCachedConfig(): unknown {
   try {
-    const cached = JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
-    if (!cached) return null;
-
-    // Merge missing default items into cached lists so new features appear
-    // at their intended position (not just appended at the end).
-    const merge = (cached: string[] | undefined, defaults: string[]) => {
-      if (!cached) return undefined;
-      const out = [...cached];
-      for (let i = 0; i < defaults.length; i += 1) {
-        const id = defaults[i];
-        if (out.includes(id)) continue;
-        let insertAt = out.length;
-        for (let j = i + 1; j < defaults.length; j += 1) {
-          const idx = out.indexOf(defaults[j]);
-          if (idx !== -1) {
-            insertAt = idx;
-            break;
-          }
-        }
-        out.splice(insertAt, 0, id);
-      }
-      return out;
-    };
-
-    cached.forYouOrder = merge(cached.forYouOrder, DEFAULT_FOR_YOU_ORDER);
-    cached.sectionOrder = merge(cached.sectionOrder, DEFAULT_SECTION_ORDER);
-
-    return cached;
+    return JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
   } catch {
     return null;
   }
 }
 
 export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
-  const cachedConfig = readCachedConfig();
-
-  const [sectionOrder, setSectionOrder] = useState<string[]>(
-    cachedConfig?.sectionOrder || DEFAULT_SECTION_ORDER
-  );
-  const [hiddenSections, setHiddenSections] = useState<string[]>(
-    cachedConfig?.hiddenSections || []
-  );
-  const [forYouOrder, setForYouOrder] = useState<string[]>(
-    cachedConfig?.forYouOrder || DEFAULT_FOR_YOU_ORDER
-  );
-  const [hiddenForYou, setHiddenForYou] = useState<string[]>(cachedConfig?.hiddenForYou || []);
-  const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(
-    cachedConfig?.quickActionsOrder || DEFAULT_QUICK_ACTIONS_ORDER
-  );
-  const [hiddenQuickActions, setHiddenQuickActions] = useState<string[]>(
-    cachedConfig?.hiddenQuickActions || []
-  );
-  const [secondaryActionsOrder, setSecondaryActionsOrder] = useState<string[]>(
-    cachedConfig?.secondaryActionsOrder || DEFAULT_SECONDARY_ACTIONS_ORDER
-  );
-  const [hiddenSecondaryActions, setHiddenSecondaryActions] = useState<string[]>(
-    cachedConfig?.hiddenSecondaryActions || []
-  );
+  const [config, setConfig] = useState<HomeConfig>(() => sanitizeHomeConfig(readCachedConfig()));
 
   const applyConfigData = useCallback((data: Record<string, unknown>) => {
-    const applyList = (
-      key: string,
-      defaults: string[],
-      validLabels: Set<string>,
-      setter: (v: string[]) => void,
-      addMissing: boolean
-    ) => {
-      if (data?.[key]) {
-        const valid = (data[key] as string[]).filter((id) => validLabels.has(id));
-        if (addMissing) {
-          // Insert each missing default before the next default that's
-          // already present, so new sections land at their intended slot
-          // rather than at the bottom of every existing user's layout.
-          for (let i = 0; i < defaults.length; i += 1) {
-            const id = defaults[i];
-            if (valid.includes(id)) continue;
-            let insertAt = valid.length;
-            for (let j = i + 1; j < defaults.length; j += 1) {
-              const idx = valid.indexOf(defaults[j]);
-              if (idx !== -1) {
-                insertAt = idx;
-                break;
-              }
-            }
-            valid.splice(insertAt, 0, id);
-          }
-        }
-        setter(valid);
-      }
-    };
-    const sectionSet = new Set(DEFAULT_SECTION_ORDER);
-    applyList('sectionOrder', DEFAULT_SECTION_ORDER, sectionSet, setSectionOrder, true);
-    applyList('hiddenSections', DEFAULT_SECTION_ORDER, sectionSet, setHiddenSections, false);
-    applyList(
-      'forYouOrder',
-      DEFAULT_FOR_YOU_ORDER,
-      new Set(DEFAULT_FOR_YOU_ORDER),
-      setForYouOrder,
-      true
-    );
-    applyList(
-      'hiddenForYou',
-      DEFAULT_FOR_YOU_ORDER,
-      new Set(DEFAULT_FOR_YOU_ORDER),
-      setHiddenForYou,
-      false
-    );
-    applyList(
-      'quickActionsOrder',
-      DEFAULT_QUICK_ACTIONS_ORDER,
-      new Set(DEFAULT_QUICK_ACTIONS_ORDER),
-      setQuickActionsOrder,
-      true
-    );
-    applyList(
-      'hiddenQuickActions',
-      DEFAULT_QUICK_ACTIONS_ORDER,
-      new Set(DEFAULT_QUICK_ACTIONS_ORDER),
-      setHiddenQuickActions,
-      false
-    );
-    applyList(
-      'secondaryActionsOrder',
-      DEFAULT_SECONDARY_ACTIONS_ORDER,
-      new Set(DEFAULT_SECONDARY_ACTIONS_ORDER),
-      setSecondaryActionsOrder,
-      true
-    );
-    applyList(
-      'hiddenSecondaryActions',
-      DEFAULT_SECONDARY_ACTIONS_ORDER,
-      new Set(DEFAULT_SECONDARY_ACTIONS_ORDER),
-      setHiddenSecondaryActions,
-      false
-    );
-
-    // Cache to localStorage for instant loading next time
+    setConfig(sanitizeHomeConfig(data));
     try {
       localStorage.setItem('homeConfig_cache', JSON.stringify(data));
     } catch {
       /* ignore */
     }
-  }, []); // setter-Funktionen sind stabil, daher leeres Dependency-Array
+  }, []);
+
+  useEffect(() => subscribeHomeConfig((next) => setConfig(sanitizeHomeConfig(next))), []);
 
   // Load homeConfig from Firebase (background sync).
   // setAppReady('homeConfig') wird in mehreren Faellen gefeuert, damit der
@@ -261,19 +104,9 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
   }, [uid, applyConfigData]);
 
   const visibleSections = useMemo(
-    () => sectionOrder.filter((id) => !hiddenSections.includes(id)),
-    [sectionOrder, hiddenSections]
+    () => config.sectionOrder.filter((id) => !config.hiddenSections.includes(id)),
+    [config.sectionOrder, config.hiddenSections]
   );
 
-  return {
-    sectionOrder,
-    hiddenSections,
-    forYouOrder,
-    hiddenForYou,
-    quickActionsOrder,
-    hiddenQuickActions,
-    secondaryActionsOrder,
-    hiddenSecondaryActions,
-    visibleSections,
-  };
+  return useMemo(() => ({ ...config, visibleSections }), [config, visibleSections]);
 }

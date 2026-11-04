@@ -26,6 +26,8 @@ import {
   DEFAULT_SECTION_ORDER,
   DEFAULT_FOR_YOU_ORDER,
 } from './useHomeLayoutData';
+import { defaultHomeConfig } from '../../lib/layout/homeLayout';
+import { HOME_LAYOUT_VERSION } from '../../config/homeSections';
 
 beforeEach(() => {
   fb.state.data = null;
@@ -47,12 +49,14 @@ describe('useHomeLayoutData', () => {
   it('startet mit Default-Section-Order', () => {
     const { result } = renderHook(() => useHomeLayoutData());
     expect(result.current.sectionOrder).toEqual(DEFAULT_SECTION_ORDER);
-    expect(result.current.hiddenSections).toEqual([]);
+    expect(result.current.hiddenSections).toEqual(defaultHomeConfig().hiddenSections);
+    expect(result.current.hiddenHeader).toEqual(['stat-pods']);
   });
 
   it('lädt gespeicherte Config aus Firebase und merged fehlende Defaults', async () => {
     authState.user = { uid: 'u1' };
     fb.state.data = {
+      layoutVersion: HOME_LAYOUT_VERSION,
       sectionOrder: ['stats', 'trending'],
       hiddenSections: ['countdown', 'bogus'],
     };
@@ -72,9 +76,9 @@ describe('useHomeLayoutData', () => {
     authState.user = { uid: 'u1' };
     const { result } = renderHook(() => useHomeLayoutData());
     act(() => {
-      result.current.handleSectionToggle('stats');
+      result.current.handleSectionToggle('countdown');
     });
-    expect(result.current.hiddenSections).toContain('stats');
+    expect(result.current.hiddenSections).toContain('countdown');
     expect(haptics.hapticSelect).toHaveBeenCalledTimes(1);
     // Save ist debounced (500ms) → noch nicht geschrieben
     expect(fb.set).not.toHaveBeenCalled();
@@ -82,8 +86,18 @@ describe('useHomeLayoutData', () => {
       vi.advanceTimersByTime(500);
     });
     expect(fb.set).toHaveBeenCalledTimes(1);
-    const saved = fb.set.mock.calls[0][0] as { hiddenSections: string[] };
-    expect(saved.hiddenSections).toContain('stats');
+    const saved = fb.set.mock.calls[0][0] as { hiddenSections: string[]; layoutVersion: number };
+    expect(saved.hiddenSections).toContain('countdown');
+    expect(saved.layoutVersion).toBe(HOME_LAYOUT_VERSION);
+  });
+
+  it('handleHeaderToggle schaltet die Kennzahlen im Kopf ein', () => {
+    authState.user = { uid: 'u1' };
+    const { result } = renderHook(() => useHomeLayoutData());
+    act(() => {
+      result.current.handleHeaderToggle('stat-pods');
+    });
+    expect(result.current.hiddenHeader).not.toContain('stat-pods');
   });
 
   it('handleSectionReorder aktualisiert die Reihenfolge', () => {
@@ -100,13 +114,13 @@ describe('useHomeLayoutData', () => {
     authState.user = { uid: 'u1' };
     const { result } = renderHook(() => useHomeLayoutData());
     act(() => {
-      result.current.handleSectionToggle('stats');
+      result.current.handleSectionToggle('countdown');
     });
     act(() => {
       result.current.handleReset();
     });
     expect(result.current.sectionOrder).toEqual(DEFAULT_SECTION_ORDER);
-    expect(result.current.hiddenSections).toEqual([]);
+    expect(result.current.hiddenSections).toEqual(defaultHomeConfig().hiddenSections);
     expect(haptics.hapticWarning).toHaveBeenCalledTimes(1);
   });
 

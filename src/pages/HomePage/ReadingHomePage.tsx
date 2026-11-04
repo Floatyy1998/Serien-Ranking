@@ -11,7 +11,6 @@ import { usesArea } from '../../lib/reading/readingMedium';
 import { t } from '../../services/i18n';
 import { useBookYear } from '../Books/hooks/useBookYear';
 import { AdminMessageBanner } from './cards/AdminMessageBanner';
-import { PlayTestBanner } from './cards/PlayTestBanner';
 import { useGreetingIdentity } from './hooks/useGreetingIdentity';
 import { useHomeConfig } from './hooks/useHomeConfig';
 import { useUnifiedNotifications } from './hooks/useUnifiedNotifications';
@@ -32,8 +31,8 @@ export const ReadingHomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const identity = useGreetingIdentity(user ?? null);
-  // Meldet dem Splash „homeConfig bereit“, auch wenn die Lese-Startseite die Werte nicht braucht.
-  useHomeConfig(user?.uid ?? '');
+  // Meldet dem Splash „homeConfig bereit“.
+  const { hiddenHeader } = useHomeConfig(user?.uid ?? '');
   const petEnabled = usePetEnabled();
   const notifs = useUnifiedNotifications();
   const areas = useReadingAreas();
@@ -86,16 +85,13 @@ export const ReadingHomePage = () => {
 
   return (
     <div style={{ overflowY: 'auto', position: 'relative' }}>
-      <WrappedNotification />
-      <AdminMessageBanner />
-      <PlayTestBanner />
-
       <GreetingSection
         displayName={identity.displayName}
         photoURL={identity.photoURL}
         totalUnreadBadge={notifs.totalUnreadBadge}
         onNotificationsOpen={() => setShowNotifications(true)}
         pods={pods}
+        showStatPods={!hiddenHeader.includes('stat-pods')}
         searchHint={
           areas === 'books'
             ? t('Titel, Autor oder ISBN suchen...')
@@ -112,6 +108,9 @@ export const ReadingHomePage = () => {
           />
         }
       />
+
+      <WrappedNotification />
+      <AdminMessageBanner />
 
       <ReadingHomeSections
         areas={areas}

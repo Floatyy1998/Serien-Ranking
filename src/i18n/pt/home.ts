@@ -147,8 +147,6 @@ const dict: Record<string, string> = {
     'Novo calendário, barras de progresso, filtro por plataforma e marcação rápida.',
   'Neu: KI-Empfehlungen': 'Novo: recomendações com IA',
   '{who} bingt gerade „{title}"': '{who} está maratonando "{title}"',
-  'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.':
-    'Quer testar o app de Android? Abra um ticket de sugestão com o e-mail da sua conta na Play Store e nós te convidamos pessoalmente para o teste.',
   'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!':
     'Sugestões personalizadas de séries e filmes com base no seu gosto. Experimente agora em "Para você", na tela inicial!',
   'Neues Design: Trending & Co.': 'Novo visual: Em alta e cia.',
@@ -179,9 +177,6 @@ const dict: Record<string, string> = {
   '{who} hat „{title}" mit {rating} bewertet': '{who} avaliou "{title}" com {rating}',
   '{who} hat „{title}" bewertet': '{who} avaliou "{title}"',
   'Aktivitäten deiner Freunde anzeigen': 'Mostrar a atividade dos seus amigos',
-  'Hol TV-Rank in den Play Store!': 'Baixe o TV-Rank na Play Store!',
-  'Hinweis ausblenden': 'Ocultar aviso',
-  'Feature-Ticket öffnen': 'Abrir pedido de função',
   'KI Geschmacksprofil: Dein Seriengeschmack analysiert':
     'Perfil de gosto com IA: o seu gosto por séries analisado',
   '1 Hinweis zu deinen Serien': '1 novidade sobre as suas séries',
@@ -1506,6 +1501,9 @@ const dict: Record<string, string> = {
   'Nur noch ein Band': 'Só mais um volume',
   'Warten auf den Mitternachts-Release': 'Esperando o lançamento da meia-noite',
   'Noch ein Arc, dann Schlaf': 'Mais um arco e cama',
+  'Startseite anpassen': 'Personalizar início',
+  Kopfbereich: 'Cabeçalho',
+  Kennzahlen: 'Números',
 };
 
 export default dict;

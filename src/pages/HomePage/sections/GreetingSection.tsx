@@ -40,6 +40,7 @@ interface GreetingSectionProps {
   todayEpisodes?: number;
   /** Ersetzt die Serien-/Film-Pods (Lese-Startseite). */
   pods?: GreetingPod[];
+  showStatPods?: boolean;
   searchHint?: string;
   /** Steht im Kopf über dem Deck — wie der Lesen-Umschalter auf Manga/Bücher. */
   above?: React.ReactNode;
@@ -59,6 +60,7 @@ export const GreetingSection = React.memo(function GreetingSection({
   progress = 0,
   todayEpisodes = 0,
   pods,
+  showStatPods = true,
   searchHint,
   above,
   title,
@@ -277,7 +279,7 @@ export const GreetingSection = React.memo(function GreetingSection({
       <header
         style={{
           padding: `calc(${isMobile ? '10px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '14px' : '20px'} 0`,
-          marginBottom: isMobile ? '16px' : '24px',
+          marginBottom: isMobile ? 'var(--home-row-gap)' : '24px',
         }}
       >
         {above}
@@ -449,7 +451,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               </span>
             </motion.button>
 
-            {statPods.map((pod) => (
+            {(showStatPods ? statPods : []).map((pod) => (
               <motion.button
                 key={pod.key}
                 type="button"

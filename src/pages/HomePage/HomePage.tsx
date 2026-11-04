@@ -47,7 +47,7 @@ import { GreetingSection } from './sections/GreetingSection';
 import { AdminMessageBanner } from './cards/AdminMessageBanner';
 import { useGreetingIdentity } from './hooks/useGreetingIdentity';
 import { FocusSuggestionCard } from './cards/FocusSuggestionCard';
-import { PlayTestBanner } from './cards/PlayTestBanner';
+import { CustomizeHomeLink } from './cards/CustomizeHomeLink';
 import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
@@ -265,7 +265,7 @@ export const HomePage: React.FC = () => {
         );
         if (visible.length === 0) return null;
         return (
-          <section key="for-you" style={{ marginBottom: '32px' }}>
+          <section key="for-you" style={{ marginBottom: 'var(--home-section-gap)' }}>
             <SectionHeader
               icon={<AutoAwesome />}
               iconColor={currentTheme.primary}
@@ -403,6 +403,18 @@ export const HomePage: React.FC = () => {
 
   return (
     <div style={{ overflowY: 'auto', position: 'relative' }}>
+      <GreetingSection
+        displayName={identity.displayName}
+        photoURL={identity.photoURL}
+        totalUnreadBadge={notifs.totalUnreadBadge}
+        onNotificationsOpen={() => setShowNotifications(true)}
+        watchedEpisodes={stats.watchedEpisodes}
+        totalMovies={stats.totalMovies}
+        progress={stats.progress}
+        todayEpisodes={stats.todayEpisodes}
+        showStatPods={!config.hiddenHeader.includes('stat-pods')}
+      />
+
       <WrappedNotification />
 
       <AdminMessageBanner />
@@ -431,19 +443,6 @@ export const HomePage: React.FC = () => {
         onDismissAnimeManga={clearAnimeMangaHandoffs}
       />
 
-      <PlayTestBanner />
-
-      <GreetingSection
-        displayName={identity.displayName}
-        photoURL={identity.photoURL}
-        totalUnreadBadge={notifs.totalUnreadBadge}
-        onNotificationsOpen={() => setShowNotifications(true)}
-        watchedEpisodes={stats.watchedEpisodes}
-        totalMovies={stats.totalMovies}
-        progress={stats.progress}
-        todayEpisodes={stats.todayEpisodes}
-      />
-
       <FocusSuggestionCard />
 
       <AnimatePresence initial={false}>
@@ -463,6 +462,8 @@ export const HomePage: React.FC = () => {
           );
         })}
       </AnimatePresence>
+
+      <CustomizeHomeLink />
 
       <PosterNavSheet
         posterNav={posterNav}

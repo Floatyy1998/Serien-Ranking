@@ -8,30 +8,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
-import { DEFAULT_FOR_YOU_ORDER } from '../HomePage/hooks/useHomeConfig';
+import {
+  defaultHomeConfig,
+  sanitizeHomeConfig,
+  type HomeConfig,
+} from '../../lib/layout/homeLayout';
+import type { HomeHiddenKey } from '../../config/homeSections';
+import { publishHomeConfig } from '../../services/settings/homeConfigSync';
 
-export const DEFAULT_SECTION_ORDER = [
-  'activity-marquee',
-  'quick-actions',
-  'secondary-actions',
-  'countdown',
-  'continue-watching',
-  'rewatches',
-  'today-episodes',
-  'new-on-subs',
-  'seasonal',
-  'trending',
-  'top-rated',
-  'for-you',
-  'stats',
-];
-
-// Gleiche Liste wie die Startseite — sonst fehlen neue Karten im Editor.
-export { DEFAULT_FOR_YOU_ORDER };
-
-export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
-
-export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
+export {
+  DEFAULT_FOR_YOU_ORDER,
+  DEFAULT_QUICK_ACTIONS_ORDER,
+  DEFAULT_SECONDARY_ACTIONS_ORDER,
+  DEFAULT_SECTION_ORDER,
+  HEADER_ITEMS,
+} from '../../config/homeSections';
+export type { HomeConfig };
 
 export const SECTION_LABELS: Record<string, string> = {
   'activity-marquee': t('Freunde-Aktivitäten'),
@@ -77,16 +69,9 @@ export const SECONDARY_ACTIONS_LABELS: Record<string, string> = {
   pets: t('Pets'),
 };
 
-export interface HomeConfig {
-  sectionOrder: string[];
-  hiddenSections: string[];
-  forYouOrder: string[];
-  hiddenForYou: string[];
-  quickActionsOrder: string[];
-  hiddenQuickActions: string[];
-  secondaryActionsOrder: string[];
-  hiddenSecondaryActions: string[];
-}
+export const HEADER_LABELS: Record<string, string> = {
+  'stat-pods': t('Kennzahlen'),
+};
 
 export interface ExpandableConfig {
   expanded: boolean;
@@ -101,54 +86,21 @@ export interface ExpandableConfig {
 export interface UseHomeLayoutDataResult {
   sectionOrder: string[];
   hiddenSections: string[];
+  hiddenHeader: string[];
   handleSectionReorder: (newOrder: string[]) => void;
   handleSectionToggle: (id: string) => void;
+  handleHeaderToggle: (id: string) => void;
   handleReset: () => void;
   getExpandableConfig: (sectionId: string) => ExpandableConfig | null;
 }
 
-/** Merge saved order with defaults, ensuring no items are lost */
-function mergeOrder(saved: string[], defaults: string[], labels: Record<string, string>): string[] {
-  const valid = saved.filter((id: string) => labels[id]);
-  // For each missing default, insert it before the next existing default,
-  // not at the very end. That way new sections show up where the product
-  // intended them to live, rather than getting buried below user-customized
-  // order for everyone with a saved layout.
-  for (let i = 0; i < defaults.length; i += 1) {
-    const id = defaults[i];
-    if (valid.includes(id)) continue;
-    let insertAt = valid.length;
-    for (let j = i + 1; j < defaults.length; j += 1) {
-      const next = defaults[j];
-      const idx = valid.indexOf(next);
-      if (idx !== -1) {
-        insertAt = idx;
-        break;
-      }
-    }
-    valid.splice(insertAt, 0, id);
-  }
-  return valid;
-}
-
-function filterValid(arr: string[], labels: Record<string, string>): string[] {
-  return arr.filter((id: string) => labels[id]);
-}
+type OrderKey = 'sectionOrder' | 'forYouOrder' | 'quickActionsOrder' | 'secondaryActionsOrder';
 
 export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   const authContext = useAuth();
   const user = authContext?.user;
 
-  const [sectionOrder, setSectionOrder] = useState<string[]>(DEFAULT_SECTION_ORDER);
-  const [hiddenSections, setHiddenSections] = useState<string[]>([]);
-  const [forYouOrder, setForYouOrder] = useState<string[]>(DEFAULT_FOR_YOU_ORDER);
-  const [hiddenForYou, setHiddenForYou] = useState<string[]>([]);
-  const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(DEFAULT_QUICK_ACTIONS_ORDER);
-  const [hiddenQuickActions, setHiddenQuickActions] = useState<string[]>([]);
-  const [secondaryActionsOrder, setSecondaryActionsOrder] = useState<string[]>(
-    DEFAULT_SECONDARY_ACTIONS_ORDER
-  );
-  const [hiddenSecondaryActions, setHiddenSecondaryActions] = useState<string[]>([]);
+  const [config, setConfig] = useState<HomeConfig>(defaultHomeConfig);
 
   const [forYouExpanded, setForYouExpanded] = useState(false);
   const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
@@ -159,38 +111,22 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   // Firebase save (debounced)
 
   const saveConfig = useCallback(
-    (config: HomeConfig) => {
+    (next: HomeConfig) => {
       if (!user) return;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        dbRef(paths.homeConfig(user.uid)).set(config);
+        dbRef(paths.homeConfig(user.uid)).set(next);
       }, 500);
     },
     [user]
   );
 
-  const currentConfig = useCallback(
-    (): HomeConfig => ({
-      sectionOrder,
-      hiddenSections,
-      forYouOrder,
-      hiddenForYou,
-      quickActionsOrder,
-      hiddenQuickActions,
-      secondaryActionsOrder,
-      hiddenSecondaryActions,
-    }),
-    [
-      sectionOrder,
-      hiddenSections,
-      forYouOrder,
-      hiddenForYou,
-      quickActionsOrder,
-      hiddenQuickActions,
-      secondaryActionsOrder,
-      hiddenSecondaryActions,
-    ]
-  );
+  const update = (patch: Partial<HomeConfig>) => {
+    const next = { ...config, ...patch };
+    setConfig(next);
+    publishHomeConfig(next);
+    saveConfig(next);
+  };
 
   // Firebase load
 
@@ -200,104 +136,44 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       .once('value')
       .then((snap) => {
         const data = snap.val();
-        if (data?.sectionOrder)
-          setSectionOrder(mergeOrder(data.sectionOrder, DEFAULT_SECTION_ORDER, SECTION_LABELS));
-        if (data?.hiddenSections)
-          setHiddenSections(filterValid(data.hiddenSections, SECTION_LABELS));
-        if (data?.forYouOrder)
-          setForYouOrder(mergeOrder(data.forYouOrder, DEFAULT_FOR_YOU_ORDER, FOR_YOU_LABELS));
-        if (data?.hiddenForYou) setHiddenForYou(filterValid(data.hiddenForYou, FOR_YOU_LABELS));
-        if (data?.quickActionsOrder)
-          setQuickActionsOrder(
-            mergeOrder(data.quickActionsOrder, DEFAULT_QUICK_ACTIONS_ORDER, QUICK_ACTIONS_LABELS)
-          );
-        if (data?.hiddenQuickActions)
-          setHiddenQuickActions(filterValid(data.hiddenQuickActions, QUICK_ACTIONS_LABELS));
-        if (data?.secondaryActionsOrder)
-          setSecondaryActionsOrder(
-            mergeOrder(
-              data.secondaryActionsOrder,
-              DEFAULT_SECONDARY_ACTIONS_ORDER,
-              SECONDARY_ACTIONS_LABELS
-            )
-          );
-        if (data?.hiddenSecondaryActions)
-          setHiddenSecondaryActions(
-            filterValid(data.hiddenSecondaryActions, SECONDARY_ACTIONS_LABELS)
-          );
+        if (data) setConfig(sanitizeHomeConfig(data));
       })
       .catch(() => {
         // Best effort: schlaegt der Read fehl, bleibt die Standardanordnung.
       });
   }, [user]);
 
-  const makeToggle = (
-    hidden: string[],
-    setHidden: React.Dispatch<React.SetStateAction<string[]>>,
-    configKey: keyof HomeConfig
-  ) => {
-    return (id: string) => {
-      const newHidden = hidden.includes(id) ? hidden.filter((s) => s !== id) : [...hidden, id];
-      setHidden(newHidden);
-      saveConfig({ ...currentConfig(), [configKey]: newHidden });
-      hapticSelect();
-    };
+  const makeToggle = (key: HomeHiddenKey) => (id: string) => {
+    const hidden = config[key];
+    update({ [key]: hidden.includes(id) ? hidden.filter((s) => s !== id) : [...hidden, id] });
+    hapticSelect();
   };
 
-  const handleSectionReorder = (newOrder: string[]) => {
-    setSectionOrder(newOrder);
-    saveConfig({ ...currentConfig(), sectionOrder: newOrder });
-  };
+  const makeReorder = (key: OrderKey) => (newOrder: string[]) => update({ [key]: newOrder });
 
-  const handleSectionToggle = makeToggle(hiddenSections, setHiddenSections, 'hiddenSections');
-
-  const handleForYouReorder = (newOrder: string[]) => {
-    setForYouOrder(newOrder);
-    saveConfig({ ...currentConfig(), forYouOrder: newOrder });
-  };
-  const handleForYouToggle = makeToggle(hiddenForYou, setHiddenForYou, 'hiddenForYou');
-
-  const handleQuickActionsReorder = (newOrder: string[]) => {
-    setQuickActionsOrder(newOrder);
-    saveConfig({ ...currentConfig(), quickActionsOrder: newOrder });
-  };
-  const handleQuickActionsToggle = makeToggle(
-    hiddenQuickActions,
-    setHiddenQuickActions,
-    'hiddenQuickActions'
-  );
-
-  const handleSecondaryActionsReorder = (newOrder: string[]) => {
-    setSecondaryActionsOrder(newOrder);
-    saveConfig({ ...currentConfig(), secondaryActionsOrder: newOrder });
-  };
-  const handleSecondaryActionsToggle = makeToggle(
-    hiddenSecondaryActions,
-    setHiddenSecondaryActions,
-    'hiddenSecondaryActions'
-  );
+  const handleSectionReorder = makeReorder('sectionOrder');
+  const handleSectionToggle = makeToggle('hiddenSections');
+  const handleForYouReorder = makeReorder('forYouOrder');
+  const handleForYouToggle = makeToggle('hiddenForYou');
+  const handleQuickActionsReorder = makeReorder('quickActionsOrder');
+  const handleQuickActionsToggle = makeToggle('hiddenQuickActions');
+  const handleSecondaryActionsReorder = makeReorder('secondaryActionsOrder');
+  const handleSecondaryActionsToggle = makeToggle('hiddenSecondaryActions');
+  const handleHeaderToggle = makeToggle('hiddenHeader');
 
   const handleReset = () => {
-    setSectionOrder(DEFAULT_SECTION_ORDER);
-    setHiddenSections([]);
-    setForYouOrder(DEFAULT_FOR_YOU_ORDER);
-    setHiddenForYou([]);
-    setQuickActionsOrder(DEFAULT_QUICK_ACTIONS_ORDER);
-    setHiddenQuickActions([]);
-    setSecondaryActionsOrder(DEFAULT_SECONDARY_ACTIONS_ORDER);
-    setHiddenSecondaryActions([]);
-    saveConfig({
-      sectionOrder: DEFAULT_SECTION_ORDER,
-      hiddenSections: [],
-      forYouOrder: DEFAULT_FOR_YOU_ORDER,
-      hiddenForYou: [],
-      quickActionsOrder: DEFAULT_QUICK_ACTIONS_ORDER,
-      hiddenQuickActions: [],
-      secondaryActionsOrder: DEFAULT_SECONDARY_ACTIONS_ORDER,
-      hiddenSecondaryActions: [],
-    });
+    update(defaultHomeConfig());
     hapticWarning();
   };
+
+  const {
+    forYouOrder,
+    hiddenForYou,
+    quickActionsOrder,
+    hiddenQuickActions,
+    secondaryActionsOrder,
+    hiddenSecondaryActions,
+  } = config;
 
   const getExpandableConfig = (sectionId: string): ExpandableConfig | null => {
     switch (sectionId) {
@@ -337,10 +213,12 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   };
 
   return {
-    sectionOrder,
-    hiddenSections,
+    sectionOrder: config.sectionOrder,
+    hiddenSections: config.hiddenSections,
+    hiddenHeader: config.hiddenHeader,
     handleSectionReorder,
     handleSectionToggle,
+    handleHeaderToggle,
     handleReset,
     getExpandableConfig,
   };

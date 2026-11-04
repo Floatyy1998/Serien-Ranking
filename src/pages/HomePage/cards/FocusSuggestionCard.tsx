@@ -46,7 +46,11 @@ export const FocusSuggestionCard = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className="liquid-glass"
-      style={{ margin: '0 16px 20px', borderRadius: 'var(--radius-xl)', padding: '14px 16px' }}
+      style={{
+        margin: '0 16px var(--home-row-gap)',
+        borderRadius: 'var(--radius-xl)',
+        padding: '14px 16px',
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div

@@ -99,7 +99,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   if (episodes.length === 0) return null;
 
   return (
-    <section style={{ marginBottom: '32px' }}>
+    <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={<NewReleases />}
         iconColor={currentTheme.accent}

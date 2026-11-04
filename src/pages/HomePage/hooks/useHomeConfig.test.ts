@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook, waitFor, cleanup } from '@testing-library/react';
+import { renderHook, waitFor, cleanup, act } from '@testing-library/react';
 
 // Firebase compat mock
 const fb = vi.hoisted(() => {
@@ -20,6 +20,8 @@ import {
   DEFAULT_FOR_YOU_ORDER,
   DEFAULT_QUICK_ACTIONS_ORDER,
 } from './useHomeConfig';
+import { defaultHomeConfig } from '../../../lib/layout/homeLayout';
+import { publishHomeConfig } from '../../../services/settings/homeConfigSync';
 
 const setAppReady = vi.fn<(key: keyof Window['appReadyStatus'], value: boolean) => void>();
 
@@ -44,7 +46,8 @@ describe('useHomeConfig', () => {
     expect(result.current.sectionOrder).toEqual(DEFAULT_SECTION_ORDER);
     expect(result.current.forYouOrder).toEqual(DEFAULT_FOR_YOU_ORDER);
     expect(result.current.quickActionsOrder).toEqual(DEFAULT_QUICK_ACTIONS_ORDER);
-    expect(result.current.hiddenSections).toEqual([]);
+    expect(result.current.hiddenSections).toEqual(defaultHomeConfig().hiddenSections);
+    expect(result.current.visibleSections).not.toContain('stats');
   });
 
   it('setzt homeConfig sofort ready wenn keine uid vorhanden ist', () => {
@@ -56,7 +59,7 @@ describe('useHomeConfig', () => {
   it('visibleSections filtert versteckte Sektionen heraus', async () => {
     fb.state.data = { hiddenSections: ['stats', 'trending'] };
     const { result } = renderHook(() => useHomeConfig('u1'));
-    await waitFor(() => expect(result.current.hiddenSections).toContain('stats'));
+    await waitFor(() => expect(result.current.hiddenSections).toContain('trending'));
     expect(result.current.visibleSections).not.toContain('stats');
     expect(result.current.visibleSections).not.toContain('trending');
     expect(result.current.visibleSections).toContain('quick-actions');
@@ -105,5 +108,14 @@ describe('useHomeConfig', () => {
     fb.state.data = { sectionOrder: ['stats'] };
     renderHook(() => useHomeConfig('u1'));
     await waitFor(() => expect(setAppReady).toHaveBeenCalledWith('homeConfig', true));
+  });
+
+  it('übernimmt Änderungen aus dem Layout-Editor ohne Neuladen', () => {
+    const { result } = renderHook(() => useHomeConfig(undefined));
+    expect(result.current.hiddenHeader).toContain('stat-pods');
+    act(() => {
+      publishHomeConfig({ ...defaultHomeConfig(), hiddenHeader: [] });
+    });
+    expect(result.current.hiddenHeader).toEqual([]);
   });
 });

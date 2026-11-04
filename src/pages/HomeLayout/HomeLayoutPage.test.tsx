@@ -75,10 +75,14 @@ const data = vi.hoisted(() => ({
   handleSectionToggle: vi.fn(),
   handleReset: vi.fn(),
   getExpandableConfig: vi.fn(() => null),
+  hiddenHeader: [] as string[],
+  handleHeaderToggle: vi.fn(),
 }));
 vi.mock('./useHomeLayoutData', () => ({
   useHomeLayoutData: () => data,
   SECTION_LABELS: { 'continue-watching': 'Weiterschauen', 'today-episodes': 'Heute Neu' },
+  HEADER_ITEMS: ['stat-pods'],
+  HEADER_LABELS: { 'stat-pods': 'Kennzahlen' },
 }));
 
 const nav = vi.hoisted(() => ({
@@ -87,6 +91,7 @@ const nav = vi.hoisted(() => ({
 }));
 vi.mock('../../services/settings/navConfig', () => nav);
 vi.mock('../../hooks/ui/useNavConfig', () => ({ useNavSlots: () => ['watchnext'] }));
+vi.mock('./useDockLabelFit', () => ({ useDockLabelFit: () => undefined }));
 
 vi.mock('../../components/ui', () => ({
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -124,7 +129,9 @@ describe('HomeLayoutPage', () => {
     fireEvent.click(screen.getByLabelText('Kalender zur Navigation hinzufügen'));
     expect(nav.setNavSlots).toHaveBeenCalledWith('u1', ['watchnext', 'calendar']);
 
-    fireEvent.click(screen.getByLabelText('Weiter aus der Navigation entfernen'));
+    const slot = screen.getByLabelText('Weiter aus der Navigation entfernen');
+    fireEvent.pointerDown(slot, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window, { clientX: 10, clientY: 10 });
     expect(nav.setNavSlots).toHaveBeenCalledWith('u1', []);
   });
 });

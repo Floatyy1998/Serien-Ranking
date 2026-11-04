@@ -174,16 +174,11 @@ const dict: Record<string, string> = {
   '{who} hat „{title}" mit {rating} bewertet': '{who} a noté « {title} » {rating}',
   '{who} hat „{title}" bewertet': '{who} a noté « {title} »',
   'Aktivitäten deiner Freunde anzeigen': "Afficher l'activité de tes amis",
-  'Hol TV-Rank in den Play Store!': 'Télécharge TV-Rank sur le Play Store !',
-  'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.':
-    "Envie de tester l'app Android ? Ouvre un ticket de fonctionnalité avec ton e-mail Play Store — tu recevras une invitation personnelle au test.",
-  'Hinweis ausblenden': "Masquer l'info",
   'Jetzt drehen!': 'Fais tourner !',
   'KI Geschmacksprofil: Dein Seriengeschmack analysiert':
     'Profil de goûts IA : tes goûts en séries analysés',
   '1 Hinweis zu deinen Serien': '1 info sur tes séries',
   '{n} Hinweise zu deinen Serien': '{n} infos sur tes séries',
-  'Feature-Ticket öffnen': 'Ouvrir un ticket',
   'Glücksrad drehen': 'Tourner la roue',
   'Glücksrad – morgen wieder verfügbar': 'Roue de la chance – de retour demain',
   Glücksrad: 'Roue de la chance',
@@ -1525,6 +1520,9 @@ const dict: Record<string, string> = {
   'Nur noch ein Band': 'Encore un tome',
   'Warten auf den Mitternachts-Release': 'En attendant la sortie de minuit',
   'Noch ein Arc, dann Schlaf': 'Encore un arc, et au lit',
+  'Startseite anpassen': "Personnaliser l'accueil",
+  Kopfbereich: 'En-tête',
+  Kennzahlen: 'Chiffres clés',
 };
 
 export default dict;

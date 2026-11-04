@@ -48,9 +48,10 @@ afterEach(() => {
 describe('BottomNavigation', () => {
   it('rendert alle Navigations-Labels', () => {
     render(<BottomNavigation />);
-    ['Home', 'Weiter', 'Kalender', 'Bewertungen', 'Lesen', 'Mehr'].forEach((label) => {
+    ['Home', 'Weiter', 'Kalender', 'Lesen', 'Mehr'].forEach((label) => {
       expect(screen.getByText(label)).toBeInTheDocument();
     });
+    expect(screen.queryByText('Bewertungen')).not.toBeInTheDocument();
   });
 
   it('navigiert beim Klick auf einen inaktiven Tab', () => {

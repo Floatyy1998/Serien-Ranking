@@ -161,6 +161,12 @@ function prefersReducedMotion(): boolean {
   );
 }
 
+const zoomOf = (el: HTMLElement | null): number => {
+  if (!el || el.offsetWidth === 0) return 1;
+  const k = el.getBoundingClientRect().width / el.offsetWidth;
+  return Number.isFinite(k) && k > 0 ? k : 1;
+};
+
 export const PetStage = ({
   pet,
   companions = [],
@@ -178,6 +184,8 @@ export const PetStage = ({
   const { allSeriesList } = useSeriesList();
 
   const stageRef = useRef<HTMLDivElement>(null);
+  // Dock-Rect und Pointer liefern Bildschirm-Pixel, die Bühne rechnet unter Anzeige-Zoom in CSS-Pixeln.
+  const zoomRef = useRef(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hitRefs = useRef(new Map<string, HTMLDivElement>());
   const hungerRefs = useRef(new Map<string, HTMLDivElement>());
@@ -192,7 +200,9 @@ export const PetStage = ({
   const brainFor = useCallback((id: string, startX?: number): PetBrain => {
     let brain = brainsRef.current.get(id);
     if (!brain) {
-      brain = new PetBrain(startX ?? readNumber(POS_KEY) ?? window.innerWidth * 0.75);
+      brain = new PetBrain(
+        startX ?? readNumber(POS_KEY) ?? (window.innerWidth / zoomRef.current) * 0.75
+      );
       brainsRef.current.set(id, brain);
     }
     return brain;
@@ -346,17 +356,19 @@ export const PetStage = ({
 
     const measure = () => {
       const dock = document.querySelector('.mobile-bottom-navigation');
-      const width = window.innerWidth;
+      const z = zoomOf(stage);
+      zoomRef.current = z;
+      const width = window.innerWidth / z;
       const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-      let dockTop = window.innerHeight - 96;
+      let dockTop = window.innerHeight / z - 96;
       let dockLeft = 12;
       let dockRight = width - 12;
       if (dock) {
         const r = dock.getBoundingClientRect();
         if (r.width > 0) {
-          dockTop = r.top;
-          dockLeft = r.left;
-          dockRight = r.right;
+          dockTop = r.top / z;
+          dockLeft = r.left / z;
+          dockRight = r.right / z;
         }
       }
       // Die Bühne reicht vom oberen Rand bis aufs Dock: so bleibt ein hochgetragenes Pet sichtbar
@@ -540,8 +552,8 @@ export const PetStage = ({
   } | null>(null);
 
   const stageCoords = (clientX: number, clientY: number) => {
-    const groundScreenY = geoRef.current.dockTop;
-    return { x: clientX, h: groundScreenY - clientY };
+    const z = zoomRef.current;
+    return { x: clientX / z, h: geoRef.current.dockTop - clientY / z };
   };
 
   const actorOf = (petId: string) => castRef.current.find((c) => c.id === petId) ?? petRef.current;
@@ -593,7 +605,7 @@ export const PetStage = ({
     if (!g || g.id !== e.pointerId) return;
     const brain = brainFor(g.petId);
     if (g.grabbed) {
-      brain.release(g.vx, -g.vy);
+      brain.release(g.vx / zoomRef.current, -g.vy / zoomRef.current);
       return;
     }
     if (!actorOf(g.petId).isAlive) {
@@ -630,13 +642,13 @@ export const PetStage = ({
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
     snackDrag.current = { id: e.pointerId, moved: false };
-    setSnackGhost({ x: e.clientX, y: e.clientY });
+    setSnackGhost({ x: e.clientX / zoomRef.current, y: e.clientY / zoomRef.current });
   };
 
   const onSnackMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (!snackDrag.current || snackDrag.current.id !== e.pointerId) return;
     snackDrag.current.moved = true;
-    setSnackGhost({ x: e.clientX, y: e.clientY });
+    setSnackGhost({ x: e.clientX / zoomRef.current, y: e.clientY / zoomRef.current });
   };
 
   const onSnackUp = (e: ReactPointerEvent<HTMLButtonElement>) => {

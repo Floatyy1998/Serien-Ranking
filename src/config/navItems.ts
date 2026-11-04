@@ -46,7 +46,7 @@ export const MAIN_TAB_PATHS: ReadonlySet<string> = new Set([
   ...NAV_SLOT_OPTIONS.flatMap((o) => [o.path, ...(o.aliases ?? [])]),
 ]);
 
-export const DEFAULT_NAV_SLOTS = ['watchnext', 'calendar', 'ratings', 'manga'];
+export const DEFAULT_NAV_SLOTS = ['watchnext', 'calendar', 'manga'];
 
 /** Bei „Manga & Bücher" ist Home die Lese-Seite — der Lesen-Platz führt dann zur Serien-Startseite. */
 export const READER_WATCH_PATH = '/watch';

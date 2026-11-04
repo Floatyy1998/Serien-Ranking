@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeSectionOrder, sanitizeHiddenIds } from './sectionOrder';
+import { mergeSectionOrder, sanitizeHiddenIds, moveIdTo } from './sectionOrder';
 
 const DEFAULTS = ['a', 'b', 'c', 'd'];
 
@@ -31,5 +31,17 @@ describe('sanitizeHiddenIds', () => {
   it('lässt nur bekannte, eindeutige IDs durch', () => {
     expect(sanitizeHiddenIds(['b', 'x', 'b', 3, 'd'], DEFAULTS)).toEqual(['b', 'd']);
     expect(sanitizeHiddenIds(null, DEFAULTS)).toEqual([]);
+  });
+});
+
+describe('moveIdTo', () => {
+  it('schiebt nach vorne und nach hinten auf die Stelle des Ziels', () => {
+    expect(moveIdTo(['a', 'b', 'c', 'd'], 'd', 'b')).toEqual(['a', 'd', 'b', 'c']);
+    expect(moveIdTo(['a', 'b', 'c', 'd'], 'a', 'c')).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('lässt die Reihenfolge bei unbekannten oder gleichen IDs unverändert', () => {
+    expect(moveIdTo(['a', 'b'], 'x', 'a')).toEqual(['a', 'b']);
+    expect(moveIdTo(['a', 'b'], 'a', 'a')).toEqual(['a', 'b']);
   });
 });

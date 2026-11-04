@@ -255,6 +255,7 @@ const settings: Record<string, string> = {
     'You fill the bottom bar yourself — up to {n} tabs',
   '{name} einblenden': 'Show {name}',
   '{name} ausblenden': 'Hide {name}',
+  '{name} verschieben': 'Move {name}',
   Mehr: 'More',
   'Antippen legt ein Ziel in die untere Leiste — Tippen in der Leiste entfernt es wieder, Ziehen sortiert.':
     'Tap to add a tab to the bottom bar — tap it in the bar to remove it, drag to reorder.',

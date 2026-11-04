@@ -96,7 +96,7 @@ export const RewatchSection = React.memo(function RewatchSection({
   if (episodes.length === 0) return null;
 
   return (
-    <section style={{ marginBottom: '32px' }}>
+    <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={<Repeat />}
         iconColor={accentColor}

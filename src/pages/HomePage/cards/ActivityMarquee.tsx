@@ -189,7 +189,7 @@ export const ActivityMarquee = memo(function ActivityMarquee({
       style={{
         position: 'relative',
         width: 'calc(100% - 40px)',
-        margin: '0 auto 14px',
+        margin: '0 auto var(--home-row-gap)',
         padding: '7px 0',
         borderRadius: 999,
         background: `linear-gradient(135deg, color-mix(in srgb, ${currentTheme.primary} 8%, transparent), color-mix(in srgb, ${currentTheme.accent} 5%, transparent)), var(--glass-subtle)`,

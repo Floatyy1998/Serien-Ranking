@@ -239,6 +239,7 @@ const dict: Record<string, string> = {
   'Das Auge blendet eine Sektion aus': "L'œil masque une section",
   '{name} einblenden': 'Afficher {name}',
   '{name} ausblenden': 'Masquer {name}',
+  '{name} verschieben': 'Déplacer {name}',
   Mehr: 'Plus',
   '{name} aus der Navigation entfernen': 'Retirer {name} de la navigation',
   '{name} zur Navigation hinzufügen': 'Ajouter {name} à la navigation',

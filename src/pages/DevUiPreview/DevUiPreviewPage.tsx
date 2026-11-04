@@ -20,6 +20,7 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
+import { HomeLayoutPage } from '../HomeLayout';
 import { PatchNotesPage } from '../PatchNotes/PatchNotesPage';
 import { LitComparePreview, OutfitClashPreview, PetsPagePreview } from './PetsPagePreview';
 import {
@@ -214,6 +215,7 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  { id: 'home-layout', label: 'Layout-Editor', render: () => <HomeLayoutPage /> },
   {
     id: 'scroll-escape-detail',
     label: 'Mitwandernde Leiste: Detailseite',

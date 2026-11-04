@@ -126,6 +126,7 @@ vi.mock('./hooks/useHomeConfig', () => ({
     hiddenQuickActions: [],
     secondaryActionsOrder: [],
     hiddenSecondaryActions: [],
+    hiddenHeader: [],
   }),
 }));
 vi.mock('./hooks/useUnifiedNotifications', () => ({

@@ -2,8 +2,8 @@
 
 import { DragIndicator, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion, Reorder, useDragControls } from 'framer-motion';
-import { useRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePointerReorder } from '../../hooks/ui/usePointerReorder';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
 
@@ -97,6 +97,57 @@ export interface CanvasChips {
   labels: Record<string, string>;
 }
 
+const CanvasSubList = ({ chips }: { chips: CanvasChips }) => {
+  const { currentTheme } = useTheme();
+  const { itemProps, handleProps } = usePointerReorder(chips.order, chips.onReorder);
+
+  return (
+    <ul className="hl-cv-sublist">
+      {chips.order.map((sub) => {
+        const off = chips.hiddenItems.includes(sub);
+        const label = chips.labels[sub] || sub;
+        return (
+          <li
+            key={sub}
+            {...itemProps(sub)}
+            className={`hl-cv-subrow ${off ? 'hl-cv-subrow--off' : ''}`}
+          >
+            <span
+              {...handleProps(sub)}
+              className="hl-grip"
+              role="button"
+              tabIndex={0}
+              aria-label={t('{name} verschieben', { name: label })}
+            >
+              <DragIndicator className="hl-cv-drag" style={{ color: currentTheme.text.muted }} />
+            </span>
+            <span
+              className="hl-cv-sublabel"
+              style={{ color: off ? currentTheme.text.muted : currentTheme.text.secondary }}
+            >
+              {label}
+            </span>
+            <button
+              type="button"
+              className="hl-cv-eye hl-cv-subeye"
+              onClick={() => chips.onToggle(sub)}
+              aria-pressed={!off}
+              aria-label={
+                off
+                  ? t('{name} einblenden', { name: label })
+                  : t('{name} ausblenden', { name: label })
+              }
+              style={{ color: off ? currentTheme.text.muted : currentTheme.primary }}
+            >
+              {off ? <VisibilityOff /> : <Visibility />}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
 interface LayoutCanvasSectionProps {
   id: string;
   label: string;
@@ -115,7 +166,6 @@ export const LayoutCanvasSection = ({
   expandable,
 }: LayoutCanvasSectionProps) => {
   const { currentTheme } = useTheme();
-  const chipDragRef = useRef(false);
   // Drag nur am Griff — sonst frisst framer-motion auf Touch jede Berührung und blockiert das Scrollen
   const dragControls = useDragControls();
 
@@ -166,42 +216,7 @@ export const LayoutCanvasSection = ({
 
       {!hidden && !expandable && <SkeletonShapeBlock shape={shape} />}
 
-      {!hidden && expandable && (
-        <Reorder.Group
-          axis="x"
-          values={expandable.order}
-          onReorder={expandable.onReorder}
-          className="hl-cv-chips hide-scrollbar"
-        >
-          {expandable.order.map((sub) => {
-            const off = expandable.hiddenItems.includes(sub);
-            return (
-              <Reorder.Item
-                key={sub}
-                value={sub}
-                className={`hl-cv-chip ${off ? 'hl-cv-chip--off' : ''}`}
-                onDragStart={() => {
-                  chipDragRef.current = true;
-                }}
-                onDragEnd={() => {
-                  setTimeout(() => {
-                    chipDragRef.current = false;
-                  }, 0);
-                }}
-                onClick={() => {
-                  if (!chipDragRef.current) expandable.onToggle(sub);
-                }}
-                style={{
-                  color: off ? currentTheme.text.muted : currentTheme.text.secondary,
-                  touchAction: 'none',
-                }}
-              >
-                {expandable.labels[sub] || sub}
-              </Reorder.Item>
-            );
-          })}
-        </Reorder.Group>
-      )}
+      {!hidden && expandable && <CanvasSubList chips={expandable} />}
     </Reorder.Item>
   );
 };

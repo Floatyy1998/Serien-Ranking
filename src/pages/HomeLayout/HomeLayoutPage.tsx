@@ -9,11 +9,18 @@ import { MAX_NAV_SLOTS, NAV_SLOT_LABELS, NAV_SLOT_OPTIONS } from '../../config/n
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavSlots } from '../../hooks/ui/useNavConfig';
+import { usePointerReorder } from '../../hooks/ui/usePointerReorder';
+import { useDockLabelFit } from './useDockLabelFit';
 import { hapticSelect, hapticWarning } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
 import { resetNavSlots, setNavSlots } from '../../services/settings/navConfig';
 import { LayoutCanvasSection, type SkeletonShape } from './LayoutCanvasSection';
-import { SECTION_LABELS, useHomeLayoutData } from './useHomeLayoutData';
+import {
+  HEADER_ITEMS,
+  HEADER_LABELS,
+  SECTION_LABELS,
+  useHomeLayoutData,
+} from './useHomeLayoutData';
 import './HomeLayoutPage.css';
 import { tapScaleTight } from '../../lib/motion';
 
@@ -37,14 +44,15 @@ export const HomeLayoutPage = () => {
   const {
     sectionOrder,
     hiddenSections,
+    hiddenHeader,
     handleSectionReorder,
     handleSectionToggle,
+    handleHeaderToggle,
     handleReset,
     getExpandableConfig,
   } = useHomeLayoutData();
 
   const navSlots = useNavSlots();
-  const dockDragRef = useRef(false);
   const paletteOptions = useMemo(
     () => NAV_SLOT_OPTIONS.filter((o) => !navSlots.includes(o.id)),
     [navSlots]
@@ -67,6 +75,15 @@ export const HomeLayoutPage = () => {
     setNavSlots(user?.uid, [...navSlots, id]);
     hapticSelect();
   };
+
+  const dockRef = useRef<HTMLDivElement>(null);
+  useDockLabelFit(dockRef, navSlots.join(','));
+
+  const dockReorder = usePointerReorder(
+    navSlots,
+    (order) => setNavSlots(user?.uid, order),
+    removeSlot
+  );
 
   return (
     <PageLayout>
@@ -139,6 +156,33 @@ export const HomeLayoutPage = () => {
                 <div className="hl-skel-avatar hl-mini-avatar" />
               </div>
 
+              <div className="hl-cv-section hl-head-section">
+                <div className="hl-cv-head">
+                  <span className="hl-cv-label" style={{ color: currentTheme.text.secondary }}>
+                    {t('Kopfbereich')}
+                  </span>
+                </div>
+                <div className="hl-cv-chips" role="group" aria-label={t('Kopfbereich')}>
+                  {HEADER_ITEMS.map((id) => {
+                    const off = hiddenHeader.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`hl-cv-chip ${off ? 'hl-cv-chip--off' : ''}`}
+                        aria-pressed={!off}
+                        onClick={() => handleHeaderToggle(id)}
+                        style={{
+                          color: off ? currentTheme.text.muted : currentTheme.text.secondary,
+                        }}
+                      >
+                        {HEADER_LABELS[id]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <Reorder.Group
                 axis="y"
                 values={sectionOrder}
@@ -158,7 +202,7 @@ export const HomeLayoutPage = () => {
                 ))}
               </Reorder.Group>
 
-              <div className="hl-dock-editor liquid-glass">
+              <div className="hl-dock-editor liquid-glass" ref={dockRef}>
                 <span
                   className="hl-dock-item hl-dock-item--fixed"
                   style={{ color: currentTheme.primary }}
@@ -171,31 +215,16 @@ export const HomeLayoutPage = () => {
                   <span className="hl-dock-label">{t('Home')}</span>
                 </span>
 
-                <Reorder.Group
-                  axis="x"
-                  values={navSlots}
-                  onReorder={(order) => setNavSlots(user?.uid, order)}
-                  className="hl-dock-slots"
-                >
+                <ul className="hl-dock-slots">
                   {navSlots.map((id) => (
-                    <Reorder.Item
+                    <li
                       key={id}
-                      value={id}
+                      {...dockReorder.itemProps(id)}
+                      {...dockReorder.handleProps(id)}
                       className="hl-dock-item hl-dock-item--slot"
                       style={{ color: currentTheme.text.secondary, touchAction: 'none' }}
-                      whileDrag={{ scale: 1.08, zIndex: 10 }}
-                      onDragStart={() => {
-                        dockDragRef.current = true;
-                      }}
-                      onDragEnd={() => {
-                        setTimeout(() => {
-                          dockDragRef.current = false;
-                        }, 0);
-                      }}
-                      onClick={() => {
-                        if (!dockDragRef.current) removeSlot(id);
-                      }}
                       role="button"
+                      tabIndex={0}
                       aria-label={t('{name} aus der Navigation entfernen', {
                         name: t(NAV_SLOT_LABELS[id]),
                       })}
@@ -205,9 +234,9 @@ export const HomeLayoutPage = () => {
                       <span className="hl-dock-remove" aria-hidden>
                         <Close style={{ fontSize: 11 }} />
                       </span>
-                    </Reorder.Item>
+                    </li>
                   ))}
-                </Reorder.Group>
+                </ul>
 
                 <span
                   className="hl-dock-item hl-dock-item--fixed"

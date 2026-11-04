@@ -146,7 +146,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     if (seriesList.length === 0) {
       if (seriesLoading) return null;
       return (
-        <section style={{ marginBottom: '32px' }}>
+        <section style={{ marginBottom: 'var(--home-section-gap)' }}>
           <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
           <div style={{ padding: '0 20px' }}>
             <button
@@ -197,7 +197,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     }
     if (unwatchlistedWithUnwatched === 0) return null;
     return (
-      <section style={{ marginBottom: '32px' }}>
+      <section style={{ marginBottom: 'var(--home-section-gap)' }}>
         <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
         <div style={{ padding: '0 20px' }}>
           <button
@@ -249,7 +249,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   }
 
   return (
-    <section style={{ marginBottom: '32px' }}>
+    <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={<PlayCircle />}
         iconColor={accentColor}

@@ -79,7 +79,7 @@ export const NewOnSubscriptionsSection = React.memo(function NewOnSubscriptionsS
   const cardWidth = isMobile ? '155px' : '280px';
 
   return (
-    <section style={{ marginBottom: '32px' }}>
+    <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={<NewReleases />}
         iconColor={currentTheme.accent}

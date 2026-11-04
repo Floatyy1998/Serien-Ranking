@@ -1261,13 +1261,6 @@ button:active:not(:disabled),
 }
 
 /* Homepage-Top-Banner (Wrapped, Admin-Message): erster Banner braucht Safe-Area-Abstand */
-.home-top-banner {
-  margin-top: calc(env(safe-area-inset-top, 0px) + 16px);
-}
-.home-top-banner ~ .home-top-banner {
-  margin-top: 16px;
-}
-
 /* Streak-Karte in der engen Ansicht: kleinere Zahl und Marke, damit dem Text
    daneben genug Breite bleibt. Die Ueberlappung selbst behebt flexShrink:0
    an der Wertgruppe — das hier ist die Feinabstimmung. */
@@ -1283,4 +1276,13 @@ button:active:not(:disabled),
 
 :root[data-width='xs'] .streak-card__value span {
   font-size: 20px;
+}
+
+:root {
+  --home-section-gap: 32px;
+  --home-row-gap: 16px;
+}
+:root[data-layout='mobile'] {
+  --home-section-gap: 12px;
+  --home-row-gap: 12px;
 }

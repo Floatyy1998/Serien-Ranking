@@ -37,3 +37,12 @@ export function sanitizeHiddenIds(saved: unknown, defaults: readonly string[]): 
   }
   return out;
 }
+
+export function moveIdTo(order: readonly string[], id: string, targetId: string): string[] {
+  const from = order.indexOf(id);
+  const to = order.indexOf(targetId);
+  if (from === -1 || to === -1 || from === to) return [...order];
+  const next = order.filter((x) => x !== id);
+  next.splice(to, 0, id);
+  return next;
+}

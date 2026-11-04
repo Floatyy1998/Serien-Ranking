@@ -212,14 +212,8 @@ const dict: Record<string, string> = {
   '{who} hat „{title}" bewertet': '{who} rated "{title}"',
   'Aktivitäten deiner Freunde anzeigen': "Show your friends' activity",
 
-  // PlayTestBanner
-  'Hol TV-Rank in den Play Store!': 'Get TV-Rank on the Play Store!',
-  'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.':
-    "Want to test the Android app? Open a feature ticket with your Play Store email — we'll send you a personal invite.",
-  'Hinweis ausblenden': 'Dismiss',
   '1 Hinweis zu deinen Serien': '1 update about your shows',
   '{n} Hinweise zu deinen Serien': '{n} updates about your shows',
-  'Feature-Ticket öffnen': 'Open feature ticket',
 
   // DailySpinCard
   'Glücksrad drehen': 'Spin the wheel',
@@ -1583,6 +1577,9 @@ const dict: Record<string, string> = {
   'Nur noch ein Band': 'Just one more volume',
   'Warten auf den Mitternachts-Release': 'Waiting for the midnight release',
   'Noch ein Arc, dann Schlaf': 'One more arc, then sleep',
+  'Startseite anpassen': 'Customize home',
+  Kopfbereich: 'Header',
+  Kennzahlen: 'Stats',
 };
 
 export default dict;

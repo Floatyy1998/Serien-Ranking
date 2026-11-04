@@ -40,7 +40,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
         }
       }}
       style={{
-        margin: '0 20px 16px',
+        margin: '0 20px var(--home-row-gap)',
         borderRadius: '18px',
         padding: isDesktop ? '16px 20px' : '12px 14px',
         cursor: 'pointer',

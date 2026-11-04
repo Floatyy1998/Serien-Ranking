@@ -30,31 +30,31 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
     { icon: React.ReactNode; label: string; path: string; color: string; badge?: number }
   > = {
     ratings: {
-      icon: <Star style={{ fontSize: '22px' }} />,
+      icon: <Star style={{ fontSize: isMobile ? '18px' : '22px' }} />,
       label: t('Ratings'),
       path: '/ratings',
       color: currentTheme.status.warning,
     },
     discover: {
-      icon: <AutoAwesome style={{ fontSize: '22px' }} />,
+      icon: <AutoAwesome style={{ fontSize: isMobile ? '18px' : '22px' }} />,
       label: t('Entdecken'),
       path: '/discover',
       color: currentTheme.status.success,
     },
     history: {
-      icon: <History style={{ fontSize: '22px' }} />,
+      icon: <History style={{ fontSize: isMobile ? '18px' : '22px' }} />,
       label: t('Verlauf'),
       path: '/recently-watched',
       color: currentTheme.status.error,
     },
     friends: {
-      icon: <Group style={{ fontSize: '22px' }} />,
+      icon: <Group style={{ fontSize: isMobile ? '18px' : '22px' }} />,
       label: t('Freunde'),
       path: '/activity?tab=friends',
       color: currentTheme.status.info.main,
     },
     activity: {
-      icon: <DynamicFeed style={{ fontSize: '22px' }} />,
+      icon: <DynamicFeed style={{ fontSize: isMobile ? '18px' : '22px' }} />,
       label: t('Aktivität'),
       path: '/activity',
       color: currentTheme.primary,
@@ -67,9 +67,9 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${visible.length}, 1fr)`,
-        gap: '10px',
-        padding: '0 20px',
-        marginBottom: '16px',
+        gap: isMobile ? '8px' : '10px',
+        padding: isMobile ? '0 16px' : '0 20px',
+        marginBottom: 'var(--home-row-gap)',
       }}
     >
       {visible.map((id) => {
@@ -90,9 +90,9 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
               flexDirection: isMobile ? 'column' : 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: isMobile ? '6px' : '10px',
-              padding: isMobile ? '14px 8px' : '14px 12px',
-              borderRadius: '16px',
+              gap: isMobile ? '4px' : '10px',
+              padding: isMobile ? '8px 4px' : '14px 12px',
+              borderRadius: isMobile ? '14px' : '16px',
               background: `linear-gradient(160deg, ${a.color}16, transparent 60%), var(--glass-light)`,
               border: `1px solid ${a.color}26`,
               boxShadow: 'var(--glass-specular)',
@@ -103,9 +103,9 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
             <div
               style={{
                 position: 'relative',
-                width: '44px',
-                height: '44px',
-                borderRadius: '14px',
+                width: isMobile ? '30px' : '44px',
+                height: isMobile ? '30px' : '44px',
+                borderRadius: isMobile ? '10px' : '14px',
                 background: `${a.color}1f`,
                 boxShadow: `inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 18px -8px ${a.color}66`,
                 display: 'flex',
@@ -141,10 +141,11 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
             </div>
             <span
               style={{
-                fontSize: isMobile ? '12px' : '14px',
+                fontSize: isMobile ? '11.5px' : '14px',
                 fontWeight: 600,
                 color: currentTheme.text.secondary,
                 letterSpacing: '0.2px',
+                lineHeight: 1.2,
               }}
             >
               {a.label}
@@ -166,6 +167,7 @@ interface SecondaryActionsProps {
 
 export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ config, navigate }) => {
   const { currentTheme } = useTheme();
+  const { isMobile } = useDeviceType();
   const petEnabled = usePetEnabled();
 
   const all: Record<
@@ -213,9 +215,9 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${Math.min(visible.length, 3)}, 1fr)`,
-        gap: '10px',
-        padding: '0 20px',
-        marginBottom: '32px',
+        gap: isMobile ? '8px' : '10px',
+        padding: isMobile ? '0 16px' : '0 20px',
+        marginBottom: 'var(--home-section-gap)',
       }}
     >
       {visible.map((id) => {
@@ -230,7 +232,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
               navigate(a.path);
             }}
             style={{
-              padding: '13px 10px',
+              padding: isMobile ? '9px 10px' : '13px 10px',
               background: a.bg,
               border: a.border,
               borderRadius: '14px',

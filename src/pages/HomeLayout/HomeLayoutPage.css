@@ -631,7 +631,7 @@
   align-items: center;
   gap: 2px;
   border-radius: var(--radius-full);
-  padding: 7px 8px;
+  padding: 7px 6px;
   flex-shrink: 0;
 }
 
@@ -641,10 +641,9 @@
   padding: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
-  justify-content: space-around;
 }
 
 .hl-dock-item {
@@ -658,6 +657,8 @@
 }
 
 .hl-dock-item--slot {
+  flex: 1 1 0;
+  padding: 6px 2px;
   cursor: grab;
   border-radius: var(--radius-lg);
   transition: background 0.2s;
@@ -669,6 +670,7 @@
 
 .hl-dock-item--fixed {
   flex-shrink: 0;
+  padding: 6px 6px;
   border-radius: var(--radius-lg);
 }
 
@@ -697,13 +699,17 @@
   mask-position: center;
 }
 
+/* Schriftgröße und data-labels setzt useDockLabelFit */
 .hl-dock-label {
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 72px;
+  max-width: 100%;
+}
+
+.hl-dock-editor[data-labels='off'] .hl-dock-label {
+  display: none;
 }
 
 .hl-dock-remove {
@@ -848,4 +854,74 @@
     max-width: 640px;
     margin: 0 auto;
   }
+}
+
+.hl-head-section {
+  flex-shrink: 0;
+}
+
+.hl-head-section .hl-cv-chip,
+.mobile-app .hl-head-section button.hl-cv-chip {
+  min-width: 0;
+  min-height: 0;
+  display: inline-flex;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hl-cv-subrow[data-dragging='true'],
+.hl-dock-item--slot[data-dragging='true'] {
+  background: var(--theme-primary-25);
+  border-color: var(--theme-primary-40);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  cursor: grabbing;
+}
+
+.hl-cv-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hl-cv-subrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 4px 12px;
+  border-radius: var(--radius-md);
+  background: var(--theme-primary-12);
+  border: 1px solid var(--theme-primary-20);
+}
+
+.hl-cv-subrow--off {
+  background: transparent;
+  border-color: var(--glass-border-subtle);
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.hl-cv-sublabel {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hl-cv-subrow .hl-grip {
+  margin: -4px -2px -4px -8px;
+  padding: 8px 4px 8px 8px;
+}
+
+.hl-cv-subeye,
+.mobile-app button.hl-cv-subeye {
+  min-width: 36px;
+  min-height: 36px;
+  justify-content: center;
 }

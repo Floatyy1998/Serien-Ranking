@@ -52,7 +52,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 
   if (loading && items.length === 0) {
     return (
-      <section style={{ marginBottom: '32px' }}>
+      <section style={{ marginBottom: 'var(--home-section-gap)' }}>
         <SectionHeader
           icon={sectionIcon}
           iconColor={iconColor || currentTheme.accent}
@@ -68,7 +68,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   const sectionIconColor = iconColor || currentTheme.accent;
 
   return (
-    <section style={{ marginBottom: '32px' }}>
+    <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={sectionIcon}
         iconColor={sectionIconColor}
