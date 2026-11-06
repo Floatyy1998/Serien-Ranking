@@ -1,17 +1,37 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
-import { seriesProgress, type SeriesProgress } from '../../../lib/books/bookSeries';
+import {
+  adoptSeries,
+  needsHardcoverSeries,
+  seriesProgress,
+  type SeriesProgress,
+} from '../../../lib/books/bookSeries';
+import { hardcoverBook, hardcoverIsbn } from '../../../services/api/hardcoverApi';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
 import { updateBookFields } from '../../../services/books/bookService';
-import type { Book, BookSeriesPart } from '../../../types/Book';
+import type { Book, BookSeriesInfo, BookSeriesPart } from '../../../types/Book';
 
 export type { SeriesProgress };
 
 const MAX_LOOKUPS = 10;
 const RECHECK_MS = 30 * 86_400_000;
 
-/** Findet für gelesene Bücher die Reihe (Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
+/** Reihe laut Hardcover; `null` = Hardcover kennt keine, `undefined` = nicht erreichbar (beim nächsten Besuch erneut). */
+async function hardcoverSeriesOf(book: Book): Promise<BookSeriesInfo | null | undefined> {
+  try {
+    const hit = book.hardcoverId
+      ? (await hardcoverBook(book.hardcoverId))?.result
+      : book.isbn13
+        ? await hardcoverIsbn(book.isbn13)
+        : null;
+    return hit?.series?.wikidataId ? hit.series : null;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Findet für gelesene Bücher die Reihe (Hardcover, Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
 export function useNextVolumes(books: Book[], now: number, options: { readOnly?: boolean } = {}) {
   const { readOnly = false } = options;
   const { user } = useAuth() || {};
@@ -34,16 +54,43 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
     let alive = true;
     setLoading(true);
     (async () => {
-      const seriesIds = new Set<string>();
       const names: Record<string, string> = {};
-      let lookups = 0;
+      const next: Record<string, BookSeriesPart[]> = {};
+      const loadParts = async (id: string) => {
+        if (!(id in next)) next[id] = await fetchSeriesParts(id).catch(() => []);
+        return next[id];
+      };
       for (const book of candidates) {
         const known = book.series?.wikidataId;
-        if (known) {
-          seriesIds.add(known);
-          if (book.series?.name) names[known] = book.series.name;
+        if (!known) continue;
+        if (book.series?.name) names[known] = book.series.name;
+        await loadParts(known);
+        if (!alive) return;
+      }
+      let lookups = 0;
+      for (const book of candidates) {
+        if (readOnly || !uid || lookups >= MAX_LOOKUPS) break;
+        const known = book.series?.wikidataId;
+        // Deutsche DNB-Reihennamen kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen.
+        if (needsHardcoverSeries(book, known ? next[known].length : 0, Date.now())) {
+          lookups += 1;
+          const found = await hardcoverSeriesOf(book);
+          if (!alive) return;
+          if (found !== undefined) {
+            const fields: Record<string, unknown> = { seriesChecked: new Date().toISOString() };
+            if (found?.wikidataId && found.wikidataId !== known) {
+              const parts = await loadParts(found.wikidataId);
+              if (!alive) return;
+              if (parts.length >= 2) {
+                const series = adoptSeries(book.series, found);
+                fields.series = series;
+                names[found.wikidataId] = series.name;
+              }
+            }
+            await updateBookFields(uid, book.id, fields).catch(() => undefined);
+            if (fields.series) continue;
+          }
         }
-        if (readOnly || !uid) continue;
         const checkedAt = book.wdChecked ? new Date(book.wdChecked).getTime() : 0;
         const settled = known
           ? !!(book.series?.position || book.wikidataId)
@@ -64,8 +111,9 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
               fields.series = { ...book.series, position: links.series.position };
             }
           } else if (links.series?.wikidataId) {
-            seriesIds.add(links.series.wikidataId);
             if (links.series.name) names[links.series.wikidataId] = links.series.name;
+            await loadParts(links.series.wikidataId);
+            if (!alive) return;
             fields.series = {
               name: links.series.name || book.series?.name || '',
               wikidataId: links.series.wikidataId,
@@ -78,11 +126,6 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
         } catch {
           /* Wikidata nicht erreichbar — beim nächsten Besuch erneut */
         }
-      }
-      const next: Record<string, BookSeriesPart[]> = {};
-      for (const id of seriesIds) {
-        next[id] = await fetchSeriesParts(id).catch(() => []);
-        if (!alive) return;
       }
       setPartsBySeries(next);
       setSeriesNames(names);

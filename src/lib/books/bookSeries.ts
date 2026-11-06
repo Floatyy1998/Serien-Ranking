@@ -165,6 +165,32 @@ export function seriesProgress(
   return out.sort((a, b) => (a.next.daysUntil ?? -1) - (b.next.daysUntil ?? -1));
 }
 
+const SERIES_RECHECK_MS = 30 * 86_400_000;
+
+/**
+ * Braucht das Buch eine Reihen-Suche bei Hardcover? Nur wenn sein Schlüssel keine Bände liefert
+ * (z. B. deutscher DNB-Reihenname), Hardcover es über ID oder ISBN finden kann und die letzte Suche alt ist.
+ */
+export function needsHardcoverSeries(book: Book, knownParts: number, now: number): boolean {
+  if (knownParts >= 2 || (!book.hardcoverId && !book.isbn13)) return false;
+  const checkedAt = book.seriesChecked ? new Date(book.seriesChecked).getTime() : 0;
+  return now - checkedAt >= SERIES_RECHECK_MS;
+}
+
+/** Hardcover-Reihe übernehmen: Name zur Anzeige bleibt, Schlüssel und Bandnummer kommen aus derselben Quelle wie die Bände. */
+export function adoptSeries(
+  own: BookSeriesInfo | undefined,
+  found: BookSeriesInfo
+): BookSeriesInfo {
+  const position = found.position ?? own?.position;
+  return {
+    name: own?.name || found.name,
+    wikidataId: found.wikidataId,
+    ...(position ? { position } : {}),
+    ...(found.hardcoverId ? { hardcoverId: found.hardcoverId } : {}),
+  };
+}
+
 const seriesNameKey = (name: string) => fold(name).replace(/[^a-z0-9ß]+/g, '');
 
 /**

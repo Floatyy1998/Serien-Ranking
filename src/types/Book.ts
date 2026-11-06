@@ -52,6 +52,8 @@ export interface Book {
   ownedAt?: string;
   /** Zeitpunkt der letzten Wikidata-Suche nach Reihe/Verfilmung (verhindert Dauer-Abfragen). */
   wdChecked?: string;
+  /** Zeitpunkt der letzten Hardcover-Suche nach der Reihe, wenn der eigene Reihen-Schlüssel keine Bände liefert. */
+  seriesChecked?: string;
 }
 
 /** Suchtreffer aus Hardcover, Google Books oder Open Library, noch nicht in der Sammlung. */
