@@ -89,6 +89,87 @@ describe('SeriesListProvider', () => {
   });
 });
 
+describe('Detection beim Zurückholen der App', () => {
+  const HintCount = () => {
+    const { inactiveSeries } = useSeriesList();
+    return <div data-testid="inactive">{inactiveSeries.length}</div>;
+  };
+
+  const setVisible = () => {
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  };
+
+  afterEach(() => {
+    vi.useRealTimers();
+    cacheResult.data = {};
+  });
+
+  it('prüft nach langer Pause erneut und räumt erledigte Hinweise weg', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-06T09:00:00'));
+    cacheResult.data = { '42': { rating: {}, watchlist: true } };
+    catalog.fetchStaticCatalogSeries.mockResolvedValue({ '42': { title: 'Dark', poster: '' } });
+    catalog.fetchStaticCatalogSeasonsBulk.mockResolvedValue({
+      '42': { '0': { seasonNumber: 0, episodes: [{ id: 1, name: 'A', airDate: '2020-01-01' }] } },
+    });
+    const { runSequentialDetections } = await import('./seriesListDetection');
+    const run = vi.mocked(runSequentialDetections);
+    run.mockImplementationOnce(async (list, _uid, onUpdate) => {
+      onUpdate({ inactiveSeries: list });
+    });
+
+    render(
+      <SeriesListProvider>
+        <HintCount />
+      </SeriesListProvider>
+    );
+    await vi.waitFor(() => expect(screen.getByTestId('inactive').textContent).toBe('1'));
+    expect(run).toHaveBeenCalledTimes(1);
+
+    await act(async () => setVisible());
+    expect(run).toHaveBeenCalledTimes(1);
+
+    vi.setSystemTime(new Date('2026-11-06T14:00:00'));
+    await act(async () => setVisible());
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(screen.getByTestId('inactive').textContent).toBe('0'));
+  });
+
+  const mountWithSeries = async () => {
+    cacheResult.data = { '42': { rating: {}, watchlist: true } };
+    catalog.fetchStaticCatalogSeries.mockResolvedValue({ '42': { title: 'Dark', poster: '' } });
+    catalog.fetchStaticCatalogSeasonsBulk.mockResolvedValue({
+      '42': { '0': { seasonNumber: 0, episodes: [{ id: 1, name: 'A', airDate: '2020-01-01' }] } },
+    });
+    const { runSequentialDetections } = await import('./seriesListDetection');
+    const run = vi.mocked(runSequentialDetections);
+    render(
+      <SeriesListProvider>
+        <HintCount />
+      </SeriesListProvider>
+    );
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(1));
+    return run;
+  };
+
+  it('prüft nach einem Staffel- oder Anbieter-Push sofort neu, ohne Wartezeit', async () => {
+    const run = await mountWithSeries();
+    const { requestHintRefresh } = await import('../services/notifications/hintRefresh');
+    await act(async () => requestHintRefresh());
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(2));
+    expect(catalog.refreshCatalogNow).toHaveBeenCalled();
+  });
+
+  it('prüft neu, wenn sich der Katalog ändert', async () => {
+    const run = await mountWithSeries();
+    const calls = catalog.subscribeCatalogChange.mock.calls as unknown as [() => void][];
+    const onChange = calls[calls.length - 1]?.[0];
+    await act(async () => onChange?.());
+    await vi.waitFor(() => expect(run).toHaveBeenCalledTimes(2));
+  });
+});
+
 describe('refetchAfterAdd', () => {
   const grabbed: { fn: (id?: number) => Promise<void> } = { fn: async () => {} };
   const refetchAfterAdd = (id?: number) => grabbed.fn(id);

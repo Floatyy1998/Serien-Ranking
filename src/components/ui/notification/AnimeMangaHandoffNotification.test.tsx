@@ -6,7 +6,7 @@ import { AnimeMangaHandoffNotification } from './AnimeMangaHandoffNotification';
 
 vi.mock('framer-motion', async () => {
   const React = await import('react');
-  const MOTION_PROPS = new Set(['whileTap', 'initial', 'animate', 'exit', 'transition']);
+  const MOTION_PROPS = new Set(['whileTap', 'initial', 'animate', 'exit', 'transition', 'layout']);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clean = (props: any) =>
     Object.fromEntries(Object.entries(props).filter(([k]) => !MOTION_PROPS.has(k)));
@@ -18,7 +18,9 @@ vi.mock('framer-motion', async () => {
         React.createElement(tag, clean(props), props.children),
     }
   );
-  return { motion };
+  const AnimatePresence = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children);
+  return { motion, AnimatePresence };
 });
 
 const navigate = vi.hoisted(() => vi.fn());
@@ -26,14 +28,16 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 const mangaState = vi.hoisted(() => ({ mangaList: [] as { anilistId: number }[] }));
 vi.mock('../../../contexts/MangaListContext', () => ({ useMangaList: () => mangaState }));
-vi.mock('../../../contexts/ThemeContext', () => {
-  const make = (): unknown =>
-    new Proxy(() => '#3355ff', {
-      get: (_t, p) =>
-        p === Symbol.toPrimitive || p === 'toString' || p === 'valueOf' ? () => '#3355ff' : make(),
-    });
-  return { useTheme: () => ({ currentTheme: make() }) };
-});
+vi.mock('../../../contexts/ThemeContext', () => ({
+  useTheme: () => ({
+    currentTheme: {
+      primary: '#3355ff',
+      accent: '#3355ff',
+      background: { default: '#000', surface: '#111' },
+      text: { primary: '#fff', secondary: '#ddd', muted: '#999' },
+    },
+  }),
+}));
 vi.mock('../../../lib/interaction/haptics', () => ({ hapticTap: vi.fn() }));
 const dismissMock = vi.hoisted(() => vi.fn());
 vi.mock('../../../services/detection/animeMangaHandoffDetection', () => ({
@@ -62,8 +66,8 @@ const handoff = (over: Partial<AnimeMangaHandoff> = {}): AnimeMangaHandoff =>
 describe('AnimeMangaHandoffNotification', () => {
   it('shows the season, manga and estimated chapter with an AI caveat', () => {
     render(<AnimeMangaHandoffNotification handoffs={[handoff()]} onDismiss={() => {}} />);
-    expect(screen.getByText(/Staffel 4 von Fairy Tail durch/)).toBeInTheDocument();
-    expect(screen.getByText(/Fairy Tail \(Manga\)/)).toBeInTheDocument();
+    expect(screen.getByText('Fairy Tail (Manga)')).toBeInTheDocument();
+    expect(screen.getByText('Fairy Tail · Staffel 4')).toBeInTheDocument();
     expect(screen.getByText(/Kapitel 120/)).toBeInTheDocument();
     expect(screen.getByText(/KI-Schätzung/)).toBeInTheDocument();
   });
@@ -81,16 +85,18 @@ describe('AnimeMangaHandoffNotification', () => {
     expect(screen.getByRole('button', { name: /Weiterlesen/ })).toBeInTheDocument();
   });
 
-  it('advances to the next handoff on "Später", then closes the category', () => {
+  it('nimmt eine Karte mit „Später“ aus der Reihe und schließt nach der letzten', () => {
     const onDismiss = vi.fn();
     const two = [
       handoff({ series: { id: 1, title: 'A' } as AnimeMangaHandoff['series'] }),
       handoff({ series: { id: 2, title: 'B' } as AnimeMangaHandoff['series'] }),
     ];
     render(<AnimeMangaHandoffNotification handoffs={two} onDismiss={onDismiss} />);
-    expect(screen.getByText(/Staffel 4 von A durch/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Später' }));
-    expect(screen.getByText(/Staffel 4 von B durch/)).toBeInTheDocument();
+    expect(screen.getByText('A · Staffel 4')).toBeInTheDocument();
+    expect(screen.getByText('B · Staffel 4')).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Später' })[0]);
+    expect(screen.queryByText('A · Staffel 4')).not.toBeInTheDocument();
+    expect(screen.getByText('B · Staffel 4')).toBeInTheDocument();
     expect(onDismiss).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Später' }));
     expect(onDismiss).toHaveBeenCalledTimes(1);

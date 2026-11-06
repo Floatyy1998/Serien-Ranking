@@ -21,6 +21,7 @@ import {
 } from '../services/catalog/staticCatalog';
 
 import { paths } from '../services/db/ref';
+import { subscribeHintRefresh } from '../services/notifications/hintRefresh';
 import { setSeriesHidden } from '../services/series/hiddenSeries';
 import {
   fixMissingFirstWatchedAt,
@@ -43,6 +44,8 @@ interface MergeCacheEntry {
 }
 /** Maximale Splash-Verlaengerung zugunsten frischer Watch-Daten. */
 const WATCH_SYNC_GRACE_MS = 1200;
+/** Ab diesem Abstand (oder neuem Kalendertag) laeuft die Detection beim Zurueckholen erneut. */
+const DETECTION_REFRESH_MS = 4 * 60 * 60 * 1000;
 
 let mergeCacheUid: string | null = null;
 const mergeCache = new Map<string, MergeCacheEntry>();
@@ -98,13 +101,22 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>([]);
   const [inactiveSeries, setInactiveSeries] = useState<Series[]>([]);
   const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>([]);
-  const [completedSeries, setCompletedSeries] = useState<Series[]>([]);
   const [unratedSeries, setUnratedSeries] = useState<Series[]>([]);
   const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>([]);
   const [hiddenProviderChanges, setHiddenProviderChanges] = useState<ProviderChangeInfo[]>([]);
   const [animeMangaHandoffs, setAnimeMangaHandoffs] = useState<AnimeMangaHandoff[]>([]);
 
   const detectionRunRef = useRef(false);
+  const detectionInFlightRef = useRef(false);
+  const detectionDueRef = useRef(false);
+  const lastDetectionRef = useRef<{ at: number; day: string } | null>(null);
+  const [detectionResumeTick, setDetectionResumeTick] = useState(0);
+
+  // Neuer Detection-Lauf, sobald die Daten stehen; laeuft gerade einer, direkt danach.
+  const requestDetection = useCallback(() => {
+    detectionDueRef.current = true;
+    if (!detectionInFlightRef.current) setDetectionResumeTick((n) => n + 1);
+  }, []);
 
   // Zeitbudget fuer das Warten auf frische Watch-Daten. Der Splash soll dafuer
   // kurz warten (sonst wischen fertige Serien direkt danach sichtbar aus den
@@ -356,13 +368,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
               return newSeasons;
             });
           }
+          // Neue Staffeln und Anbieterwechsel kommen ueber den Katalog.
+          if (detectionRunRef.current && (newMeta || newBulk)) requestDetection();
         } catch {
           // silent fail — nicht den haupt-flow stoeren
         }
       })();
     });
     return unsubscribe;
-  }, []);
+  }, [requestDetection]);
 
   const loading = refsLoading || watchLoading || catalogLoading;
 
@@ -444,39 +458,102 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [user, authStateResolved, loading, blockOnSync, refsLoading, userSeriesRefs, seriesList]);
 
-  // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
+  const applyDetections = useCallback((partial: Partial<DetectionResults>) => {
+    if (partial.seriesWithNewSeasons) setSeriesWithNewSeasons(partial.seriesWithNewSeasons);
+    if (partial.inactiveSeries) setInactiveSeries(partial.inactiveSeries);
+    if (partial.inactiveRewatches) setInactiveRewatches(partial.inactiveRewatches);
+    if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
+    if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+    if (partial.hiddenProviderChanges) setHiddenProviderChanges(partial.hiddenProviderChanges);
+    if (partial.animeMangaHandoffs) setAnimeMangaHandoffs(partial.animeMangaHandoffs);
+  }, []);
+
+  // Ein Durchlauf meldet nur nicht-leere Ergebnisse. Beim Wiederholen sind die
+  // nicht gemeldeten Toepfe erledigt und werden geleert.
+  const clearUnreported = useCallback((reported: Set<string>) => {
+    const empty = <T,>(prev: T[]) => (prev.length ? [] : prev);
+    if (!reported.has('seriesWithNewSeasons')) setSeriesWithNewSeasons(empty);
+    if (!reported.has('inactiveSeries')) setInactiveSeries(empty);
+    if (!reported.has('inactiveRewatches')) setInactiveRewatches(empty);
+    if (!reported.has('unratedSeries')) setUnratedSeries(empty);
+    if (!reported.has('providerChanges')) setProviderChanges(empty);
+    if (!reported.has('hiddenProviderChanges')) setHiddenProviderChanges(empty);
+    if (!reported.has('animeMangaHandoffs')) setAnimeMangaHandoffs(empty);
+  }, []);
+
+  const startDetection = useCallback(
+    (list: Series[], hidden: Series[], uid: string, replace: boolean) => {
+      detectionRunRef.current = true;
+      detectionInFlightRef.current = true;
+      lastDetectionRef.current = { at: Date.now(), day: new Date().toDateString() };
+      const reported = new Set<string>();
+      void runSequentialDetections(
+        list,
+        uid,
+        (partial) => {
+          Object.keys(partial).forEach((key) => reported.add(key));
+          applyDetections(partial);
+        },
+        new AbortController().signal,
+        hidden
+      ).finally(() => {
+        detectionInFlightRef.current = false;
+        if (replace) clearUnreported(reported);
+        if (detectionDueRef.current) setDetectionResumeTick((n) => n + 1);
+      });
+    },
+    [applyDetections, clearUnreported]
+  );
+
+  // Die App bleibt auf dem Handy tagelang im Speicher. Ohne erneuten Lauf beim
+  // Zurueckholen erschienen neue Hinweise erst nach einem Kaltstart.
+  useEffect(() => {
+    if (!user) return;
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      const last = lastDetectionRef.current;
+      if (!last) return;
+      const stale =
+        Date.now() - last.at > DETECTION_REFRESH_MS || new Date().toDateString() !== last.day;
+      if (stale) requestDetection();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [user, requestDetection]);
+
+  // Push zu neuer Staffel / Anbieterwechsel: sofort frischen Katalog holen und
+  // pruefen, damit die passende Karte auf der Startseite steht.
+  useEffect(() => {
+    if (!user) return;
+    return subscribeHintRefresh(() => {
+      requestDetection();
+      void refreshCatalogNow();
+    });
+  }, [user, requestDetection]);
+
+  // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!) und
+  // erneut, wenn die App nach laengerer Pause zurueckkommt.
   const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);
   useEffect(() => {
-    // watchSyncing abwarten: die Detection laeuft ueber detectionRunRef genau
-    // EINMAL. Startet sie auf dem Cache-Stand, werden gerade erst auf dem Handy
-    // fertiggeschaute Serien nicht als abgeschlossen/unbewertet erkannt.
+    // watchSyncing abwarten: startet die Detection auf dem Cache-Stand, werden
+    // gerade erst auf dem Handy fertiggeschaute Serien nicht als
+    // abgeschlossen/unbewertet erkannt.
     if (!user || !seriesList.length || !hasSeasons || isOffline || watchSyncing) return;
-    if (detectionRunRef.current) return;
+    if (detectionRunRef.current && !detectionDueRef.current) return;
 
-    detectionRunRef.current = true;
-    const abortController = new AbortController();
-
-    runSequentialDetections(
-      seriesList,
-      user.uid,
-      (partial: Partial<DetectionResults>) => {
-        if (partial.seriesWithNewSeasons) setSeriesWithNewSeasons(partial.seriesWithNewSeasons);
-        if (partial.inactiveSeries) setInactiveSeries(partial.inactiveSeries);
-        if (partial.inactiveRewatches) setInactiveRewatches(partial.inactiveRewatches);
-        if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
-        if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
-        if (partial.providerChanges) setProviderChanges(partial.providerChanges);
-        if (partial.hiddenProviderChanges) setHiddenProviderChanges(partial.hiddenProviderChanges);
-        if (partial.animeMangaHandoffs) setAnimeMangaHandoffs(partial.animeMangaHandoffs);
-      },
-      abortController.signal,
-      hiddenSeriesList
-    );
-
-    return () => {
-      abortController.abort();
-    };
-  }, [user, seriesList, hiddenSeriesList, hasSeasons, isOffline, watchSyncing]);
+    const replace = detectionDueRef.current;
+    detectionDueRef.current = false;
+    startDetection(seriesList, hiddenSeriesList, user.uid, replace);
+  }, [
+    user,
+    seriesList,
+    hiddenSeriesList,
+    hasSeasons,
+    isOffline,
+    watchSyncing,
+    detectionResumeTick,
+    startDetection,
+  ]);
 
   // Reset bei User-Wechsel
   useEffect(() => {
@@ -486,7 +563,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setSeriesWithNewSeasons([]);
       setInactiveSeries([]);
       setInactiveRewatches([]);
-      setCompletedSeries([]);
       setUnratedSeries([]);
       setProviderChanges([]);
       setHiddenProviderChanges([]);
@@ -507,10 +583,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setInactiveRewatches([]);
   }, []);
 
-  const clearCompletedSeries = useCallback(() => {
-    setCompletedSeries([]);
-  }, []);
-
   const clearUnratedSeries = useCallback(() => {
     setUnratedSeries([]);
   }, []);
@@ -523,7 +595,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         'new-season': setSeriesWithNewSeasons,
         inactive: setInactiveSeries,
         'inactive-rewatch': setInactiveRewatches,
-        completed: setCompletedSeries,
         unrated: setUnratedSeries,
       };
       lists.forEach((list) => setters[list](drop));
@@ -545,36 +616,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
-    setSeriesWithNewSeasons([]);
-    setInactiveSeries([]);
-    setInactiveRewatches([]);
-    setCompletedSeries([]);
-    setUnratedSeries([]);
-    setProviderChanges([]);
-    setHiddenProviderChanges([]);
-    setAnimeMangaHandoffs([]);
-
+    clearUnreported(new Set());
     if (user && seriesList.length > 0) {
-      detectionRunRef.current = true;
-      const abortController = new AbortController();
-      runSequentialDetections(
-        seriesList,
-        user.uid,
-        (partial: Partial<DetectionResults>) => {
-          if (partial.seriesWithNewSeasons) setSeriesWithNewSeasons(partial.seriesWithNewSeasons);
-          if (partial.inactiveSeries) setInactiveSeries(partial.inactiveSeries);
-          if (partial.inactiveRewatches) setInactiveRewatches(partial.inactiveRewatches);
-          if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
-          if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
-          if (partial.providerChanges) setProviderChanges(partial.providerChanges);
-          if (partial.hiddenProviderChanges)
-            setHiddenProviderChanges(partial.hiddenProviderChanges);
-        },
-        abortController.signal,
-        hiddenSeriesList
-      );
+      startDetection(seriesList, hiddenSeriesList, user.uid, false);
     }
-  }, [user, seriesList, hiddenSeriesList]);
+  }, [user, seriesList, hiddenSeriesList, clearUnreported, startDetection]);
 
   const refetchSeries = useCallback(() => {
     refetchRefs();
@@ -710,7 +756,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       seriesWithNewSeasons,
       inactiveSeries,
       inactiveRewatches,
-      completedSeries,
       unratedSeries,
       providerChanges,
       hiddenProviderChanges,
@@ -718,7 +763,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearNewSeasons,
       clearInactiveSeries,
       clearInactiveRewatches,
-      clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
       clearHiddenProviderChanges,
@@ -740,7 +784,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       seriesWithNewSeasons,
       inactiveSeries,
       inactiveRewatches,
-      completedSeries,
       unratedSeries,
       providerChanges,
       hiddenProviderChanges,
@@ -748,7 +791,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       clearNewSeasons,
       clearInactiveSeries,
       clearInactiveRewatches,
-      clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
       clearHiddenProviderChanges,

@@ -1,5 +1,6 @@
 /** Nativer Push via Capacitor — im Browser No-op; Token landet unter users/$uid/fcmTokens für den Backend-Sender. */
 import { dbRef, serverTimestamp, userPath } from '../db/ref';
+import { isHintPushKind, requestHintRefresh } from './hintRefresh';
 
 interface DeliveredNotification {
   id?: string;
@@ -88,13 +89,23 @@ const bindListeners = (uid: string): void => {
   // einen Vollreload und zeigt so einen ZWEITEN Splashscreen.
   entry.plugin.addListener?.(
     'pushNotificationActionPerformed',
-    (action: { notification?: { data?: { url?: string } } }) => {
-      const url = action?.notification?.data?.url;
+    (action: { notification?: { data?: { url?: string; kind?: string } } }) => {
+      const data = action?.notification?.data;
+      if (isHintPushKind(data?.kind)) requestHintRefresh();
+      const url = data?.url;
       if (url && url.startsWith('/')) {
         import('../app/nativeShell')
           .then((m) => m.routerNavigate(url))
           .catch(() => window.location.assign(url));
       }
+    }
+  );
+
+  // Push bei offener App: Hinweis-Karte gleich mitliefern.
+  entry.plugin.addListener?.(
+    'pushNotificationReceived',
+    (notification: { data?: { kind?: string } }) => {
+      if (isHintPushKind(notification?.data?.kind)) requestHintRefresh();
     }
   );
 };

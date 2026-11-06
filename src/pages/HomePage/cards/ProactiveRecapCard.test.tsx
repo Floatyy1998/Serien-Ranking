@@ -8,14 +8,19 @@ const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 
-vi.mock('../../../contexts/ThemeContext', () => {
-  const make = (): unknown =>
-    new Proxy(() => '#3355ff', {
-      get: (_t, p) =>
-        p === Symbol.toPrimitive || p === 'toString' || p === 'valueOf' ? () => '#3355ff' : make(),
-    });
-  return { useTheme: () => ({ currentTheme: make() }) };
-});
+vi.mock('../../../contexts/ThemeContext', () => ({
+  useTheme: () => ({
+    currentTheme: {
+      primary: '#3355ff',
+      accent: '#3355ff',
+      background: { default: '#000', surface: '#111' },
+      text: { primary: '#fff', secondary: '#ddd', muted: '#999' },
+    },
+  }),
+}));
+vi.mock('../../../contexts/SeriesListContext', () => ({
+  useSeriesList: () => ({ allSeriesList: [] }),
+}));
 
 vi.mock('../../../hooks/platform/useDeviceType', () => ({
   useDeviceType: () => ({ isMobile: false }),
@@ -83,7 +88,7 @@ describe('ProactiveRecapCard', () => {
   it('fetches the recap and calls onDismiss via the close button', () => {
     const onFetchRecap = vi.fn(() => Promise.resolve());
     const onDismiss = vi.fn();
-    const { container } = render(
+    render(
       <ProactiveRecapCard
         recaps={[makeRecap()]}
         onDismiss={onDismiss}
@@ -93,9 +98,7 @@ describe('ProactiveRecapCard', () => {
     fireEvent.click(screen.getByText('Recap lesen'));
     expect(onFetchRecap).toHaveBeenCalledWith('k1');
 
-    const closeBtn = container.querySelector('.close-button');
-    expect(closeBtn).not.toBeNull();
-    fireEvent.click(closeBtn as Element);
+    fireEvent.click(screen.getByRole('button', { name: 'Schließen' }));
     expect(onDismiss).toHaveBeenCalledWith('k1');
   });
 });

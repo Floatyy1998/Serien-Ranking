@@ -1,0 +1,755 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * Hinweis-Deck (CarouselNotification): Kopfzeile + wischbare Reihe aus
+ * Kino-Karten mit Serien-Backdrop. Farben kommen über --hint-color
+ * (Variante) und --hint-bg (Theme-Hintergrund) inline vom Deck.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+.hint-deck {
+  position: relative;
+}
+
+/* ─── Kopfzeile ─────────────────────────────────────────────────────── */
+.hint-deck-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+
+.hint-deck-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: var(--hint-color);
+  background: color-mix(in srgb, var(--hint-color) 16%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--hint-color) 30%, transparent),
+    0 4px 16px -4px color-mix(in srgb, var(--hint-color) 45%, transparent);
+}
+
+.hint-deck-icon svg {
+  font-size: 18px;
+}
+
+.hint-deck-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hint-deck-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.hint-deck-arrows {
+  display: none;
+  gap: 2px;
+  margin-right: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hint-deck-arrows {
+    display: flex;
+  }
+}
+
+.hint-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  transition:
+    opacity 0.15s var(--ease-default),
+    background 0.15s var(--ease-default);
+}
+
+.hint-icon-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--glass-light);
+}
+
+.hint-icon-btn:active:not(:disabled) {
+  opacity: 0.4;
+}
+
+.hint-icon-btn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.hint-icon-btn svg {
+  font-size: 20px;
+}
+
+/* ─── Snooze-Menü ───────────────────────────────────────────────────── */
+.hint-snooze {
+  position: relative;
+}
+
+.hint-snooze-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  min-width: 168px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--hint-bg) 97%, #fff 3%);
+  border: 1px solid var(--glass-border-medium);
+  box-shadow: var(--shadow-lg);
+}
+
+.hint-snooze-head {
+  padding: 6px 10px 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.hint-snooze-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hint-snooze-menu button:hover {
+  background: var(--glass-light);
+}
+
+.hint-snooze-menu button:active {
+  opacity: 0.7;
+}
+
+.hint-snooze-menu button svg {
+  font-size: 18px;
+  color: var(--hint-color);
+}
+
+/* ─── Reihe ─────────────────────────────────────────────────────────── */
+/* Läuft auf dem Handy bis an den Bildschirmrand, die erste Karte bleibt
+ * bündig mit dem Seitenrand (Gutter 16 px wie die anderen Reihen). */
+.hint-rail {
+  display: flex;
+  gap: 12px;
+  margin: 0 -16px;
+  padding: 2px 16px 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+}
+
+.hint-rail::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hint-rail {
+    margin: 0 -20px;
+    padding-inline: 20px;
+    scroll-padding-inline: 20px;
+  }
+}
+
+/* ─── Karte ─────────────────────────────────────────────────────────── */
+.hint-card {
+  position: relative;
+  display: flex;
+  flex: 0 0 100%;
+  container: hint-card / inline-size;
+  min-width: 0;
+  scroll-snap-align: start;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--hint-bg);
+  border: 1px solid color-mix(in srgb, var(--hint-color) 28%, transparent);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Mehrere Karten: die nächste lugt rechts hervor, damit klar ist, dass es weitergeht. */
+.hint-deck--multi .hint-card {
+  flex-basis: calc(100% - 36px);
+}
+
+@media (min-width: 768px) {
+  .hint-deck--multi .hint-card {
+    flex: 1 0 clamp(360px, calc((100% - 24px) / 3), 560px);
+  }
+}
+
+.hint-card-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center 25%;
+  filter: brightness(0.7) saturate(0.85);
+}
+
+.hint-card-bg--poster {
+  inset: -30px;
+  filter: blur(26px) saturate(1.4) brightness(0.6);
+}
+
+.hint-card-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      120% 90% at 0% 100%,
+      color-mix(in srgb, var(--hint-color) 26%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hint-bg) 96%, transparent) 0%,
+      color-mix(in srgb, var(--hint-bg) 90%, transparent) 45%,
+      color-mix(in srgb, var(--hint-bg) 72%, transparent) 100%
+    ),
+    linear-gradient(0deg, color-mix(in srgb, var(--hint-bg) 80%, transparent), transparent 75%);
+}
+
+.hint-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.hint-card-content {
+  display: flex;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  gap: 14px;
+  padding: 14px 14px 0;
+}
+
+.hint-card-poster {
+  position: relative;
+  flex-shrink: 0;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 120px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  overflow: visible;
+  background: var(--glass-medium);
+  cursor: pointer;
+  box-shadow:
+    0 10px 24px -8px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.hint-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.hint-card-poster:active,
+.hint-card-title:active {
+  opacity: 0.7;
+}
+
+.hint-card-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.hint-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 4px 0 8px;
+  padding-right: 28px;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.hint-card-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--hint-color);
+  min-width: 0;
+}
+
+.hint-card-detail svg {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.hint-card-detail span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.hint-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hint-card-progress-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.hint-card-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hint-color);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hint-color) 60%, transparent);
+}
+
+.hint-card-progress-label {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.hint-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding: 14px;
+}
+
+.hint-card-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  opacity: 0.9;
+  cursor: pointer;
+  transition: opacity 0.15s var(--ease-default);
+}
+
+/* Kleiner sichtbarer Kreis, Tippfläche bleibt 44 px. */
+.hint-card-close::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--hint-bg) 80%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.hint-card-close svg {
+  position: relative;
+}
+
+.hint-card-close:hover {
+  opacity: 1;
+}
+
+.hint-card-close:active {
+  opacity: 0.4;
+}
+
+.hint-card-close svg {
+  font-size: 18px;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────── */
+.hint-btn {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.15s var(--ease-default),
+    background 0.15s var(--ease-default);
+}
+
+.hint-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hint-btn svg {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.hint-btn:active:not(:disabled) {
+  opacity: 0.7;
+}
+
+.hint-btn--primary {
+  background: var(--hint-color);
+  color: var(--hint-on-color);
+  box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--hint-color) 70%, transparent);
+}
+
+.hint-btn--primary:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+  cursor: default;
+}
+
+.hint-btn--ghost {
+  background: rgba(255, 255, 255, 0.09);
+  color: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.hint-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hint-btn--done {
+  background: color-mix(in srgb, var(--hint-color) 16%, transparent);
+  color: var(--hint-color);
+  cursor: default;
+}
+
+.hint-btn--done svg {
+  font-size: 17px;
+}
+
+/* ─── Inline-Bewertung (variant='unrated') ──────────────────────────── */
+.inline-rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.inline-rating-star-row {
+  display: flex;
+  gap: 1px;
+}
+
+.inline-rating-star-visual {
+  position: relative;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+}
+
+.inline-rating-star-bg {
+  position: absolute;
+  inset: 0;
+  font-size: 18px !important;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.inline-rating-star-fg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.inline-rating-star-fg svg {
+  font-size: 18px !important;
+  flex-shrink: 0;
+}
+
+.inline-rating-value {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.inline-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.inline-rating-range {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.inline-rating-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+.inline-rating-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+.inline-rating-submit {
+  flex: 0 0 auto;
+  min-width: 84px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint-icon-btn:focus-visible,
+.hint-card-close:focus-visible,
+.hint-btn:focus-visible,
+.hint-snooze-menu button:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .hint-card-content {
+    gap: 18px;
+    padding: 16px 16px 0;
+  }
+
+  .hint-card-actions {
+    padding: 14px 16px 16px;
+  }
+
+  .hint-card-poster {
+    width: 96px;
+    height: 144px;
+  }
+
+  .hint-card-title {
+    font-size: 1.15rem;
+  }
+}
+
+/* Breite Karte (einzeln am Desktop oder auf großen Bildschirmen): Banner mit
+ * Aktionen rechts, statt die Knöpfe über die ganze Breite zu ziehen. */
+@container hint-card (min-width: 640px) {
+  .hint-card-body {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .hint-card-content {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 16px;
+  }
+
+  .hint-card-main {
+    max-width: 520px;
+    align-self: center;
+  }
+
+  .hint-card-actions {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 16px 64px 16px 0;
+  }
+
+  .hint-btn {
+    flex: 0 0 auto;
+    min-width: 150px;
+    padding: 0 20px;
+  }
+
+  .inline-rating-row {
+    width: 340px;
+  }
+}
+
+/* ─── Zusätze für die übrigen Hinweis-Typen ─────────────────────────── */
+.hint-card {
+  flex-direction: column;
+}
+
+.hint-card-note {
+  margin: 6px 0 0;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  opacity: 0.8;
+}
+
+.hint-card-note em {
+  opacity: 0.75;
+}
+
+.hint-card-logos {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.hint-card-logos img {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.hint-card-loading {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--hint-color) 15%, transparent);
+}
+
+.hint-card-loading span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: var(--hint-color);
+}
+
+.hint-card-footer {
+  overflow: hidden;
+}
+
+.hint-recap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 42dvh;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+}
+
+.hint-recap-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint-recap-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--hint-color) 35%, transparent),
+    transparent
+  );
+}
+
+.hint-recap-point {
+  position: relative;
+  margin: 0;
+  padding-left: 13px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.hint-recap-point::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--hint-color);
+  opacity: 0.6;
+}
+
+.hint-btn--compact {
+  flex: 0 0 auto;
+  padding: 0 16px;
+}

@@ -18,6 +18,7 @@ import { useActiveSubscriptions } from '../../../hooks/provider/useActiveSubscri
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
+import { formatLastWatched } from '../../../lib/episode/lastWatchedLabel';
 import { getProviderColor } from '../../../lib/provider/providerColors';
 import { resolveProviderOverlay } from '../../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../../services/detection/providerChangeDetection';
@@ -32,27 +33,6 @@ import { mediaTargetProps } from '../../../lib/interaction/mediaTarget';
 // across a weekend or weekday-evening sessions, while still letting the
 // indicator fade out on long-paused shows.
 const ACTIVE_WATCH_WINDOW_MS = 72 * 60 * 60 * 1000;
-
-function formatLastWatched(lastWatchedAt: string): string | null {
-  if (!lastWatchedAt) return null;
-  const now = Date.now();
-  const then = new Date(lastWatchedAt).getTime();
-  if (isNaN(then)) return null;
-  const diffMs = now - then;
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 60) return t('Gerade eben gesehen');
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return t('Vor {n}h gesehen', { n: diffHours });
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return t('Gestern gesehen');
-  if (diffDays < 7) return t('Vor {n} Tagen gesehen', { n: diffDays });
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks === 1) return t('Vor 1 Woche gesehen');
-  if (diffDays < 30) return t('Vor {n} Wochen gesehen', { n: diffWeeks });
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return t('Vor 1 Monat gesehen');
-  return t('Vor {n} Monaten gesehen', { n: diffMonths });
-}
 
 interface ContinueWatchingItem {
   type: 'series';

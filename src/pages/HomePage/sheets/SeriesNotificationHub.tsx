@@ -11,7 +11,6 @@
 import {
   AccessTime,
   AutoStories,
-  CheckCircle,
   ExpandLess,
   ExpandMore,
   MenuBook,
@@ -43,7 +42,6 @@ type CategoryKey =
   | 'unsubscribed'
   | 'inactive'
   | 'inactive-rewatch'
-  | 'completed'
   | 'unrated'
   | 'anime-manga';
 
@@ -82,12 +80,6 @@ const CATEGORY_DEFS: CategoryDef[] = [
     Icon: AccessTime,
     color: (t) => t.status.warning,
   },
-  {
-    key: 'completed',
-    label: t('Fertig'),
-    Icon: CheckCircle,
-    color: (t) => t.status.success,
-  },
   { key: 'unrated', label: t('Bewerten'), Icon: StarOutlined, color: (t) => t.primary },
   {
     key: 'anime-manga',
@@ -104,7 +96,7 @@ interface SeriesNotificationHubProps {
     fetchRecap: (cacheKey: string) => Promise<void>;
   };
   unsubscribedNewSeasons: UnsubscribedNewSeasonEntry[];
-  onDismissUnsubscribed: () => void;
+  onDismissUnsubscribed: (seriesIds?: number[]) => void;
   providerChanges: ProviderChangeInfo[];
   onDismissProvider: () => void;
   hiddenProviderChanges: ProviderChangeInfo[];
@@ -116,8 +108,6 @@ interface SeriesNotificationHubProps {
   onDismissInactive: () => void;
   inactiveRewatches: Series[];
   onDismissInactiveRewatch: () => void;
-  completedSeries: Series[];
-  onDismissCompleted: () => void;
   unratedSeries: Series[];
   onDismissUnrated: () => void;
   animeMangaHandoffs: AnimeMangaHandoff[];
@@ -139,8 +129,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   onDismissInactive,
   inactiveRewatches,
   onDismissInactiveRewatch,
-  completedSeries,
-  onDismissCompleted,
   unratedSeries,
   onDismissUnrated,
   animeMangaHandoffs,
@@ -157,7 +145,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       unsubscribed: unsubscribedNewSeasons.length,
       inactive: inactiveSeries.length,
       'inactive-rewatch': inactiveRewatches.length,
-      completed: completedSeries.length,
       unrated: unratedSeries.length,
       'anime-manga': animeMangaHandoffs.length,
     }),
@@ -169,7 +156,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       unsubscribedNewSeasons.length,
       inactiveSeries.length,
       inactiveRewatches.length,
-      completedSeries.length,
       unratedSeries.length,
       animeMangaHandoffs.length,
     ]
@@ -255,14 +241,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="inactive-rewatch"
             series={inactiveRewatches}
             onDismiss={onDismissInactiveRewatch}
-          />
-        );
-      case 'completed':
-        return (
-          <CarouselNotification
-            variant="completed"
-            series={completedSeries}
-            onDismiss={onDismissCompleted}
           />
         );
       case 'unrated':

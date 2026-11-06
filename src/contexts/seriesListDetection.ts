@@ -3,7 +3,6 @@ import {
   detectInactiveSeries,
   detectInactiveRewatches,
 } from '../services/detection/inactiveSeriesDetection';
-import { detectCompletedSeries } from '../services/detection/completedSeriesDetection';
 import { detectUnratedSeries } from '../services/detection/unratedSeriesDetection';
 import {
   detectAnimeMangaHandoff,
@@ -69,7 +68,6 @@ export interface DetectionResults {
   seriesWithNewSeasons: Series[];
   inactiveSeries: Series[];
   inactiveRewatches: Series[];
-  completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
   /** Provider-Wechsel bei ausgeblendeten Serien — Angebot zum Wiedereinblenden. */
@@ -121,17 +119,7 @@ export async function runSequentialDetections(
     console.error('Error detecting inactive series:', error);
   }
 
-  // 3. Abgeschlossene Serien
-  try {
-    const completed = await detectCompletedSeries(seriesList, userId);
-    if (completed.length > 0) {
-      onUpdate({ completedSeries: completed });
-    }
-  } catch (error) {
-    console.error('Error detecting completed series:', error);
-  }
-
-  // 4. Unbewertete Serien
+  // 3. Unbewertete Serien
   try {
     const unrated = await detectUnratedSeries(seriesList, userId);
     if (unrated.length > 0) {
@@ -141,7 +129,7 @@ export async function runSequentialDetections(
     console.error('Error detecting unrated series:', error);
   }
 
-  // 5. Provider-Änderungen (niedrigste Priorität, TMDB API calls).
+  // 4. Provider-Änderungen (niedrigste Priorität, TMDB API calls).
   //    Ausgeblendete Serien laufen mit, landen aber in einem eigenen Topf:
   //    dort lautet das Angebot „wieder einblenden" statt „ansehen".
   try {
@@ -158,7 +146,7 @@ export async function runSequentialDetections(
     console.error('Error detecting provider changes:', error);
   }
 
-  // 6. Anime→Manga-Anschluss (Staffel durch → Manga weiterlesen)
+  // 5. Anime→Manga-Anschluss (Staffel durch → Manga weiterlesen)
   try {
     const handoffs = await detectAnimeMangaHandoff(seriesList, userId);
     if (handoffs.length > 0) {

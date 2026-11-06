@@ -77,11 +77,9 @@ export const HomePage: React.FC = () => {
     seriesWithNewSeasons,
     inactiveSeries,
     inactiveRewatches,
-    completedSeries,
     clearNewSeasons,
     clearInactiveSeries,
     clearInactiveRewatches,
-    clearCompletedSeries,
     unratedSeries,
     clearUnratedSeries,
     providerChanges,
@@ -415,11 +413,6 @@ export const HomePage: React.FC = () => {
         showStatPods={!config.hiddenHeader.includes('stat-pods')}
       />
 
-      <WrappedNotification />
-
-      <AdminMessageBanner />
-
-      {/* Unified Series-Notification Hub — Tab-Bar + Mini-Mode + alle Kategorien */}
       <SeriesNotificationHub
         proactiveRecaps={proactiveRecaps}
         unsubscribedNewSeasons={unsubscribedNewSeasons}
@@ -435,13 +428,15 @@ export const HomePage: React.FC = () => {
         onDismissInactive={clearInactiveSeries}
         inactiveRewatches={inactiveRewatches}
         onDismissInactiveRewatch={clearInactiveRewatches}
-        completedSeries={completedSeries}
-        onDismissCompleted={clearCompletedSeries}
         unratedSeries={unratedSeries}
         onDismissUnrated={clearUnratedSeries}
         animeMangaHandoffs={animeMangaHandoffs}
         onDismissAnimeManga={clearAnimeMangaHandoffs}
       />
+
+      <WrappedNotification />
+
+      <AdminMessageBanner />
 
       <FocusSuggestionCard />
 

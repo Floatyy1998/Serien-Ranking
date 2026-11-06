@@ -76,13 +76,7 @@ export const setProviderNotificationsEnabled = async (
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type NotificationCategory =
-  | 'inactive'
-  | 'inactive-rewatch'
-  | 'completed'
-  | 'unrated'
-  | 'new-season'
-  | 'provider'
-  | 'animeManga';
+  'inactive' | 'inactive-rewatch' | 'unrated' | 'new-season' | 'provider' | 'animeManga';
 
 export const SNOOZE_OPTIONS = [1, 7, 30] as const;
 export type SnoozeOption = (typeof SNOOZE_OPTIONS)[number];

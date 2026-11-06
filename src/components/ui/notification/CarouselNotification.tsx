@@ -1,22 +1,17 @@
 import {
   AccessTime,
   Check,
-  CheckCircle,
   ChevronRight,
-  Close,
-  ExpandLess,
   NewReleases,
   PlaylistAdd,
   PlaylistRemove,
-  SnoozeOutlined,
   Star,
   StarOutlined,
   Stop,
   Tv,
 } from '@mui/icons-material';
-import { Tooltip } from '@mui/material';
-import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, userPath } from '../../../services/db/ref';
 import { bumpSeriesVersion } from '../../../services/firebase/seriesVersionBump';
@@ -31,9 +26,13 @@ import {
 } from '../../../lib/settings/notificationSettings';
 import { markMultipleSeasonsAsNotified } from '../../../services/detection/newSeasonDetection';
 import { getEpisodeAirDate } from '../../../utils/episodeDate';
+import { getImageUrl } from '../../../utils/imageUrl';
 import { formatSeasonDate } from '../../../lib/date';
+import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../../../lib/episode/seriesMetrics';
+import { formatLastWatched } from '../../../lib/episode/lastWatchedLabel';
 import { t } from '../../../services/i18n';
 import type { Series } from '../../../types/Series';
+import { HintCard, HintDeck, HintProgress } from './HintDeck';
 import './CarouselNotification.css';
 
 const NOTIF_DAY_MS = 24 * 60 * 60 * 1000;
@@ -84,7 +83,10 @@ const newSeasonDetailLabel = (series: Series): string => {
   return `${base} · ${t('läuft seit {datum}', { datum: formatSeasonDate(start) })}`;
 };
 
-type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch' | 'unrated';
+const lastWatchedLabel = (series: Series, fallback: string): string =>
+  formatLastWatched(getSeriesLastWatchedAt(series).replace(/^1900-01-01$/, '')) ?? fallback;
+
+type Variant = SeriesNotificationList;
 
 interface VariantConfig {
   category: NotificationCategory;
@@ -93,10 +95,11 @@ interface VariantConfig {
   DetailIcon: typeof Tv;
   headerText: (count: number) => string;
   detailText: (series: Series) => string;
+  /** Fortschrittsbalken unter dem Titel (geschaute von erschienenen Folgen). */
+  showProgress?: boolean;
   actionLabel: string;
   actionDoneLabel: string;
   ActionIcon: typeof PlaylistAdd;
-  counterSuffix: string;
   dismissFirebasePath: string;
   /** Watchlist-Update bei Action (für variants die Watchlist-Status togglen). */
   watchlistValue?: boolean;
@@ -116,25 +119,9 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     actionLabel: t('Watchlist'),
     actionDoneLabel: t('Hinzugefügt'),
     ActionIcon: PlaylistAdd,
-    counterSuffix: t('neue Staffeln'),
     dismissFirebasePath: '',
     watchlistValue: true,
     resolves: ['new-season'],
-  },
-  completed: {
-    category: 'completed',
-    themeColor: (t) => t.status.success,
-    HeaderIcon: CheckCircle,
-    DetailIcon: CheckCircle,
-    headerText: (n) => (n > 1 ? t('{n} Serien abgeschlossen', { n }) : t('Serie abgeschlossen')),
-    detailText: () => t('Komplett geschaut, keine neuen Folgen'),
-    actionLabel: t('Entfernen'),
-    actionDoneLabel: t('Entfernt'),
-    ActionIcon: PlaylistRemove,
-    counterSuffix: t('abgeschlossene Serien'),
-    dismissFirebasePath: 'completedSeriesNotifications',
-    watchlistValue: false,
-    resolves: ['completed', 'inactive'],
   },
   inactive: {
     category: 'inactive',
@@ -145,14 +132,14 @@ const variantConfigs: Record<Variant, VariantConfig> = {
       n > 1
         ? t('{n} inaktive Serien auf der Watchlist', { n })
         : t('Inaktive Serie auf der Watchlist'),
-    detailText: () => t('Länger nicht geschaut'),
+    detailText: (s) => lastWatchedLabel(s, t('Länger nicht geschaut')),
+    showProgress: true,
     actionLabel: t('Entfernen'),
     actionDoneLabel: t('Entfernt'),
     ActionIcon: PlaylistRemove,
-    counterSuffix: t('inaktive Serien'),
     dismissFirebasePath: 'inactiveSeriesNotifications',
     watchlistValue: false,
-    resolves: ['inactive', 'completed'],
+    resolves: ['inactive'],
   },
   'inactive-rewatch': {
     category: 'inactive-rewatch',
@@ -160,11 +147,10 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     HeaderIcon: AccessTime,
     DetailIcon: AccessTime,
     headerText: (n) => (n > 1 ? t('{n} inaktive Rewatches', { n }) : t('Inaktiver Rewatch')),
-    detailText: () => t('Längere Zeit nicht rewatcht'),
+    detailText: (s) => lastWatchedLabel(s, t('Längere Zeit nicht rewatcht')),
     actionLabel: t('Beenden'),
     actionDoneLabel: t('Beendet'),
     ActionIcon: Stop,
-    counterSuffix: t('inaktive Rewatches'),
     dismissFirebasePath: 'inactiveRewatchNotifications',
     resolves: ['inactive-rewatch'],
   },
@@ -178,7 +164,6 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     actionLabel: t('Bewerten'),
     actionDoneLabel: t('Bewertet'),
     ActionIcon: Star,
-    counterSuffix: t('unbewertete Serien'),
     dismissFirebasePath: 'unratedSeriesNotifications',
     resolves: ['unrated'],
   },
@@ -192,91 +177,179 @@ interface CarouselNotificationProps {
   onCollapse?: () => void;
 }
 
-// Eigene Sub-Component damit der Rating-State automatisch beim Index-Wechsel
-// resetted (via key={safeIndex} → re-mount), statt setState im useEffect.
-const InlineRatingPicker: React.FC<{
+const RatingStars: React.FC<{ value: number; themeColor: string }> = ({ value, themeColor }) => (
+  <div className="inline-rating-stars">
+    <span className="inline-rating-star-row" aria-hidden>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+        const fillPct = Math.max(0, Math.min(1, value - (n - 1)));
+        return (
+          <span key={n} className="inline-rating-star-visual">
+            <StarOutlined className="inline-rating-star-bg" />
+            <span
+              className="inline-rating-star-fg"
+              style={{ width: `${fillPct * 100}%`, color: themeColor }}
+            >
+              <Star />
+            </span>
+          </span>
+        );
+      })}
+    </span>
+    {value > 0 && (
+      <span className="inline-rating-value" style={{ color: themeColor }}>
+        {value.toFixed(1)}
+      </span>
+    )}
+  </div>
+);
+
+const RatingSlider: React.FC<{
+  value: number;
+  onChange: (value: number) => void;
   onSubmit: (rating: number) => void;
   saving: boolean;
   themeColor: string;
-}> = ({ onSubmit, saving, themeColor }) => {
-  const [value, setValue] = useState(0);
-  // Stars filled proportionally — value 7.3 → 7 full + partial 8th
-  return (
-    <div className="inline-rating">
-      <div className="inline-rating-stars" aria-hidden>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
-          const fillPct = Math.max(0, Math.min(1, value - (n - 1)));
-          return (
-            <span key={n} className="inline-rating-star-visual">
-              <StarOutlined className="inline-rating-star-bg" />
-              <span
-                className="inline-rating-star-fg"
-                style={{
-                  width: `${fillPct * 100}%`,
-                  color: themeColor,
-                }}
-              >
-                <Star />
-              </span>
-            </span>
-          );
-        })}
-      </div>
-      <input
-        type="range"
-        min="0"
-        max="10"
-        step="0.1"
-        value={value}
-        onChange={(e) => setValue(parseFloat(e.target.value))}
-        disabled={saving}
-        className="inline-rating-range"
-        aria-label={t('Bewertung')}
-        style={{
-          background: `linear-gradient(to right, ${themeColor} 0%, ${themeColor} ${value * 10}%, rgba(255,255,255,0.1) ${value * 10}%, rgba(255,255,255,0.1) 100%)`,
-        }}
-      />
-      <div className="inline-rating-row">
-        <div className="inline-rating-label">
-          {value > 0 ? (
-            <>
-              <span style={{ color: themeColor, fontWeight: 800, fontSize: '1.05em' }}>
-                {value.toFixed(1)}
-              </span>{' '}
-              / 10
-            </>
-          ) : (
-            t('Zieh den Regler zum Bewerten')
-          )}
-        </div>
-        <button
-          type="button"
-          className="inline-rating-submit"
-          onClick={() => value > 0 && onSubmit(value)}
-          disabled={saving || value <= 0}
-          style={{
-            background: value > 0 ? themeColor : 'rgba(255,255,255,0.08)',
-            color: value > 0 ? '#0a0a0a' : 'rgba(255,255,255,0.4)',
-            cursor: saving || value <= 0 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {saving ? '…' : t('Speichern')}
-        </button>
-      </div>
-    </div>
-  );
-};
+}> = ({ value, onChange, onSubmit, saving, themeColor }) => (
+  <div className="inline-rating-row">
+    <input
+      type="range"
+      min="0"
+      max="10"
+      step="0.1"
+      value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
+      disabled={saving}
+      className="inline-rating-range"
+      aria-label={t('Bewertung')}
+      style={{
+        background: `linear-gradient(to right, ${themeColor} 0%, ${themeColor} ${value * 10}%, rgba(255,255,255,0.12) ${value * 10}%, rgba(255,255,255,0.12) 100%)`,
+      }}
+    />
+    <button
+      type="button"
+      className="hint-btn hint-btn--primary inline-rating-submit"
+      onClick={() => value > 0 && onSubmit(value)}
+      disabled={saving || value <= 0}
+    >
+      {saving ? '…' : t('Speichern')}
+    </button>
+  </div>
+);
 
-const formatRelative = (ts: number): string => {
-  const diff = Date.now() - ts;
-  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-  if (days < 1) return t('heute erkannt');
-  if (days === 1) return t('gestern erkannt');
-  if (days < 30) return t('vor {tage} Tagen erkannt', { tage: days });
-  const months = Math.floor(days / 30);
-  return months > 1
-    ? t('vor {monate} Monaten erkannt', { monate: months })
-    : t('vor 1 Monat erkannt');
+const SPARKLES = [
+  { x: '12%', y: '10%', delay: 0 },
+  { x: '70%', y: '4%', delay: 0.5 },
+  { x: '6%', y: '62%', delay: 1 },
+];
+
+interface SeriesHintCardProps {
+  series: Series;
+  config: VariantConfig;
+  variant: Variant;
+  color: string;
+  actioned: boolean;
+  savingRating: boolean;
+  onOpen: () => void;
+  onAction: () => void;
+  onRate: (rating: number) => void;
+  onDismiss: () => void;
+}
+
+const SeriesHintCard: React.FC<SeriesHintCardProps> = ({
+  series,
+  config,
+  variant,
+  color,
+  actioned,
+  savingRating,
+  onOpen,
+  onAction,
+  onRate,
+  onDismiss,
+}) => {
+  const [ratingValue, setRatingValue] = useState(0);
+  const metrics = config.showProgress ? calculateSeriesMetrics(series) : null;
+  const { ActionIcon } = config;
+
+  const done = (
+    <span className="hint-btn hint-btn--done">
+      <Check />
+      {config.actionDoneLabel}
+    </span>
+  );
+
+  return (
+    <HintCard
+      title={series.title || series.original_name || t('Serie')}
+      poster={getImageUrl(series.poster, 'w342', '') || undefined}
+      backdrop={getImageUrl(series.backdrop, 'w780', '') || undefined}
+      DetailIcon={config.DetailIcon}
+      detail={config.detailText(series)}
+      onOpen={onOpen}
+      onDismiss={onDismiss}
+      posterOverlay={
+        variant === 'new-season' &&
+        SPARKLES.map((s, i) => (
+          <motion.span
+            key={i}
+            className="notif-sparkle"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+            transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.4, delay: s.delay }}
+            style={{ top: s.y, left: s.x, color }}
+          >
+            <Star style={{ fontSize: 14 }} />
+          </motion.span>
+        ))
+      }
+      extra={
+        <>
+          {metrics && metrics.totalAiredEpisodes > 0 && (
+            <HintProgress
+              percent={metrics.progress}
+              label={t('{watched}/{total} Episoden', {
+                watched: metrics.watchedEpisodes,
+                total: metrics.totalAiredEpisodes,
+              })}
+            />
+          )}
+          {variant === 'unrated' && !actioned && (
+            <RatingStars value={ratingValue} themeColor={color} />
+          )}
+        </>
+      }
+      actions={
+        variant === 'unrated' ? (
+          actioned ? (
+            done
+          ) : (
+            <RatingSlider
+              value={ratingValue}
+              onChange={setRatingValue}
+              onSubmit={onRate}
+              saving={savingRating}
+              themeColor={color}
+            />
+          )
+        ) : (
+          <>
+            {actioned ? (
+              done
+            ) : (
+              <button type="button" className="hint-btn hint-btn--ghost" onClick={onAction}>
+                <ActionIcon />
+                <span>{config.actionLabel}</span>
+              </button>
+            )}
+            <button type="button" className="hint-btn hint-btn--primary" onClick={onOpen}>
+              <span>{t('Ansehen')}</span>
+              <ChevronRight />
+            </button>
+          </>
+        )
+      }
+    />
+  );
 };
 
 export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
@@ -289,47 +362,11 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { refetchSeries, resolveSeriesNotification } = useSeriesList();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [actionedIds, setActionedIds] = useState<Set<number>>(new Set());
-  const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
-  const dotsContainerRef = useRef<HTMLDivElement>(null);
-  const snoozeMenuRef = useRef<HTMLDivElement>(null);
-  // Lazy-init: einmal pro Mount — Date.now() wäre sonst impure im Render-Body.
-  const [detectedTimestamp] = useState(() => Date.now() - 1000);
 
   const config = variantConfigs[variant];
   const color = config.themeColor(currentTheme);
-
-  // Wenn die Liste schrumpft, zeigt series[currentIndex] auf undefined — abgeleiteter
-  // safeIndex statt setState im Effect.
-  const safeIndex = series.length > 0 ? Math.min(currentIndex, series.length - 1) : 0;
-
-  // KEIN automatischer Mount-Marker mehr: die Karte soll bleiben, bis der User
-  // aktiv reagiert (X / Snooze / Aktion). Reagiert er nicht, sieht er sie beim
-  // nächsten Reload wieder — fühlt sich vorhersagbarer an als ein versteckter
-  // Cooldown nach reinem Sehen. (markInactiveSeriesAsNotified etc. werden noch
-  // exportiert, falls wir später einen "Mark all as seen"-Button bauen wollen.)
-
-  // Snooze-Menu: outside-click schließt
-  useEffect(() => {
-    if (!snoozeOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (snoozeMenuRef.current && !snoozeMenuRef.current.contains(e.target as Node)) {
-        setSnoozeOpen(false);
-      }
-    };
-    setTimeout(() => window.addEventListener('click', onClick), 0);
-    return () => window.removeEventListener('click', onClick);
-  }, [snoozeOpen]);
-
-  // Scroll active dot into view
-  useEffect(() => {
-    if (dotsContainerRef.current && series.length > 1) {
-      const activeDot = dotsContainerRef.current.children[safeIndex] as HTMLElement;
-      activeDot?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-  }, [safeIndex, series.length]);
 
   const markAsDismissed = async (seriesIds: number[]) => {
     if (!user) return;
@@ -351,12 +388,15 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   const handleNavigate = (seriesItem: Series) => {
     markAsDismissed([seriesItem.id]);
-    if (variant === 'unrated') {
-      navigate(`/rating/series/${seriesItem.id}`);
-    } else {
-      navigate(`/series/${seriesItem.id}`);
-    }
-    onDismiss();
+    navigate(
+      variant === 'unrated' ? `/rating/series/${seriesItem.id}` : `/series/${seriesItem.id}`
+    );
+    resolveSeriesNotification([variant], seriesItem.id);
+  };
+
+  const handleDismissOne = (seriesItem: Series) => {
+    markAsDismissed([seriesItem.id]);
+    resolveSeriesNotification([variant], seriesItem.id);
   };
 
   const handleDismissAll = async () => {
@@ -366,32 +406,14 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   const handleSnooze = async (days: SnoozeOption) => {
     if (!user) return;
-    setSnoozeOpen(false);
     const ids = series.map((s) => s.id);
     await snoozeNotifications(config.category, ids, user.uid, days);
     onDismiss();
   };
 
-  const handleSwipe = (_: unknown, info: PanInfo) => {
-    if (series.length <= 1) return;
-    const threshold = 60;
-    if (info.offset.x > threshold && safeIndex > 0) {
-      setCurrentIndex(safeIndex - 1);
-    } else if (info.offset.x < -threshold && safeIndex < series.length - 1) {
-      setCurrentIndex(safeIndex + 1);
-    }
-  };
-
   const handleAction = async (seriesItem: Series) => {
     if (!user) return;
     try {
-      if (variant === 'unrated') {
-        // Inline-Rating: wird über handleQuickRate gehandhabt — hier nur Fallback
-        navigate(`/rating/series/${seriesItem.id}`);
-        await markAsDismissed([seriesItem.id]);
-        onDismiss();
-        return;
-      }
       if (variant === 'inactive-rewatch') {
         await dbRef(userPath(user.uid, 'series', seriesItem.id, 'rewatch')).remove();
         // Rewatch-Stop bumpt serienVersion — analog zu useSeriesActions.handleStopRewatch,
@@ -426,9 +448,8 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
     }
   };
 
-  const handleSubmitRating = async (rating: number) => {
-    if (!user || series.length === 0 || savingRating) return;
-    const seriesItem = series[safeIndex];
+  const handleSubmitRating = async (seriesItem: Series, rating: number) => {
+    if (!user || savingRating) return;
     setSavingRating(true);
     try {
       // Pfad analog zu useQuickSeasonRating.saveQuickRating:
@@ -458,7 +479,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         setTimeout(() => refetchSeries(), 100);
       });
       setTimeout(() => refetchSeries(), 100);
-      resolveSeriesNotification(config.resolves, seriesItem.id);
+      setTimeout(() => resolveSeriesNotification(config.resolves, seriesItem.id), RESOLVE_DELAY_MS);
     } catch (error) {
       console.error('Error saving rating:', error);
     } finally {
@@ -466,395 +487,43 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
     }
   };
 
-  // Confetti für 'completed' beim ersten Render — lazy init (Math.random ist impure)
-  const showConfetti = variant === 'completed';
-  const [confettiParticles] = useState(() =>
-    Array.from({ length: 14 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 200 - 100,
-      rotate: Math.random() * 360,
-      color: ['#4caf50', '#81c784', '#ffd54f', '#ffffff'][i % 4],
-      delay: Math.random() * 0.3,
-      // Random-End-Y einmalig fixieren, damit das animate-prop pure bleibt
-      endY: 220 + Math.random() * 60,
-    }))
-  );
-
-  // Sparkles für 'new-season'
-  const showSparkles = variant === 'new-season';
-  const sparkleAngles = useMemo(() => {
-    if (!showSparkles) return [];
-    return [
-      { x: 10, y: 10, delay: 0 },
-      { x: 38, y: 4, delay: 0.4 },
-      { x: 2, y: 50, delay: 0.8 },
-    ];
-  }, [showSparkles]);
-
   if (series.length === 0) return null;
-  const currentSeries = series[safeIndex];
-  if (!currentSeries) return null;
 
-  const isActioned =
+  const isActioned = (s: Series) =>
     variant === 'new-season'
-      ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
+      ? actionedIds.has(s.id) || !!s.watchlist
       : variant === 'inactive-rewatch' || variant === 'unrated'
-        ? actionedIds.has(currentSeries.id)
-        : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
+        ? actionedIds.has(s.id)
+        : actionedIds.has(s.id) || !s.watchlist;
 
-  const { HeaderIcon, DetailIcon, ActionIcon } = config;
-
-  // Deckende Basis-Schicht: ohne funktionierenden backdrop-filter (Android WebView)
-  // scheint sonst der Seiteninhalt durch die Karte durch.
-  const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%), rgb(15, 17, 21)`;
-  const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
+  const multiple = series.length > 1;
 
   return (
-    <motion.div
-      className="series-notification"
-      initial={{ opacity: 0, y: -12, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.97 }}
-      transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-      style={
-        {
-          background: cardBackground,
-          color: currentTheme.text.primary,
-          '--notif-glow': glowGradient,
-        } as React.CSSProperties
-      }
+    <HintDeck
+      color={color}
+      Icon={config.HeaderIcon}
+      iconMotion={variant === 'inactive' || variant === 'inactive-rewatch' ? 'wobble' : 'pulse'}
+      title={config.headerText(series.length)}
+      count={series.length}
+      onSnooze={handleSnooze}
+      onDismissAll={handleDismissAll}
+      onCollapse={onCollapse}
     >
-      <div className="series-notification-inner">
-        {/* Color aura */}
-        <div
-          className="series-notification-aura"
-          style={{ background: `radial-gradient(ellipse, ${color}30, transparent 70%)` }}
+      {series.map((s) => (
+        <SeriesHintCard
+          key={s.id}
+          series={s}
+          config={config}
+          variant={variant}
+          color={color}
+          actioned={isActioned(s)}
+          savingRating={savingRating}
+          onOpen={() => handleNavigate(s)}
+          onAction={() => handleAction(s)}
+          onRate={(rating) => handleSubmitRating(s, rating)}
+          onDismiss={() => (multiple ? handleDismissOne(s) : handleDismissAll())}
         />
-
-        {/* Confetti particles für completed */}
-        {showConfetti && (
-          <div
-            style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}
-          >
-            {confettiParticles.map((p) => (
-              <motion.div
-                key={p.id}
-                className="notif-particle"
-                initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-                animate={{
-                  x: p.x,
-                  y: p.endY,
-                  opacity: 0,
-                  rotate: p.rotate,
-                }}
-                transition={{ duration: 1.6, ease: 'easeOut', delay: p.delay }}
-                style={{
-                  top: 0,
-                  left: '50%',
-                  width: 8,
-                  height: 8,
-                  background: p.color,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="series-notification-header">
-          <div
-            className="series-notification-header-icon"
-            style={{
-              background: `linear-gradient(135deg, ${color}30, ${color}10)`,
-              color,
-              boxShadow: `0 4px 14px -2px ${color}40, inset 0 0 0 1px ${color}25`,
-            }}
-          >
-            <motion.div
-              animate={
-                variant === 'inactive' || variant === 'inactive-rewatch'
-                  ? { rotate: [0, -8, 8, -4, 4, 0] }
-                  : variant === 'completed'
-                    ? { scale: [0.6, 1.2, 1] }
-                    : { scale: [1, 1.08, 1] }
-              }
-              transition={
-                variant === 'inactive' || variant === 'inactive-rewatch'
-                  ? { duration: 1.8, repeat: Infinity, repeatDelay: 3 }
-                  : variant === 'completed'
-                    ? { duration: 0.5, ease: 'backOut' }
-                    : { duration: 2, repeat: Infinity }
-              }
-              style={{ display: 'flex' }}
-            >
-              <HeaderIcon />
-            </motion.div>
-          </div>
-          <h3 className="series-notification-title">{config.headerText(series.length)}</h3>
-          {series.length > 1 && (
-            <span
-              className="series-notification-count-pill"
-              style={{
-                background: `${color}25`,
-                color,
-                border: `1px solid ${color}40`,
-              }}
-            >
-              {series.length}
-            </span>
-          )}
-          {onCollapse && (
-            <Tooltip title={t('Minimieren')} arrow>
-              <button
-                className="series-notification-collapse-btn"
-                onClick={onCollapse}
-                aria-label={t('Minimieren')}
-              >
-                <ExpandLess />
-              </button>
-            </Tooltip>
-          )}
-          <Tooltip title={series.length > 1 ? t('Alle schließen') : t('Schließen')} arrow>
-            <button
-              className="series-notification-collapse-btn"
-              onClick={handleDismissAll}
-              aria-label={t('Schließen')}
-            >
-              <Close />
-            </button>
-          </Tooltip>
-        </div>
-
-        {/* Series body (swipeable) */}
-        <div className="series-notification-body">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={safeIndex}
-              drag={series.length > 1 ? 'x' : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.3}
-              onDragEnd={handleSwipe}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="series-notification-series">
-                <div className="series-notification-poster-wrapper">
-                  {currentSeries.poster?.poster ? (
-                    <img
-                      src={currentSeries.poster.poster}
-                      alt={currentSeries.title || currentSeries.original_name}
-                      loading="lazy"
-                      decoding="async"
-                      className="series-notification-poster"
-                    />
-                  ) : (
-                    <div className="series-notification-poster-placeholder">
-                      <Tv style={{ fontSize: 22, opacity: 0.4 }} />
-                    </div>
-                  )}
-                  {/* Sparkles für new-season über dem Poster */}
-                  {showSparkles &&
-                    sparkleAngles.map((s, i) => (
-                      <motion.div
-                        key={i}
-                        className="notif-sparkle"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{
-                          opacity: [0, 1, 0],
-                          scale: [0.5, 1.2, 0.5],
-                        }}
-                        transition={{
-                          duration: 1.6,
-                          repeat: Infinity,
-                          repeatDelay: 2.4,
-                          delay: s.delay,
-                        }}
-                        style={{ top: s.y, left: s.x }}
-                      >
-                        <Star style={{ fontSize: 16 }} />
-                      </motion.div>
-                    ))}
-                </div>
-                <div className="series-notification-details">
-                  <h4 className="series-notification-name">
-                    {currentSeries.title || currentSeries.original_name || t('Serie')}
-                  </h4>
-                  <p className="series-notification-detail">
-                    <DetailIcon />
-                    <span>{config.detailText(currentSeries)}</span>
-                  </p>
-                  <div className="series-notification-timestamp">
-                    {formatRelative(detectedTimestamp)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Inline-Rating für unrated — eigener State, key={safeIndex} resetted bei Wechsel */}
-              {variant === 'unrated' && !isActioned && (
-                <InlineRatingPicker
-                  key={safeIndex}
-                  onSubmit={handleSubmitRating}
-                  saving={savingRating}
-                  themeColor={color}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Action-Bar */}
-          <div className="series-notification-actions">
-            {variant !== 'unrated' && (
-              <>
-                {!isActioned ? (
-                  <button
-                    className="series-notification-btn series-notification-btn--secondary"
-                    onClick={() => handleAction(currentSeries)}
-                  >
-                    <ActionIcon />
-                    <span>{config.actionLabel}</span>
-                  </button>
-                ) : (
-                  <button
-                    className="series-notification-btn series-notification-btn--done"
-                    disabled
-                  >
-                    <Check />
-                    <span>{config.actionDoneLabel}</span>
-                  </button>
-                )}
-                <button
-                  className="series-notification-btn series-notification-btn--primary"
-                  onClick={() => handleNavigate(currentSeries)}
-                  style={{
-                    background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                    color: currentTheme.background.default,
-                  }}
-                >
-                  <span>{t('Ansehen')}</span>
-                  <ChevronRight />
-                </button>
-              </>
-            )}
-            {variant === 'unrated' && (
-              <button
-                className="series-notification-btn series-notification-btn--primary"
-                onClick={() => handleNavigate(currentSeries)}
-                style={{
-                  background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                  color: currentTheme.background.default,
-                  flex: 1,
-                }}
-              >
-                <span>{t('Details')}</span>
-                <ChevronRight />
-              </button>
-            )}
-
-            {/* Snooze-Button */}
-            <div style={{ position: 'relative' }} ref={snoozeMenuRef}>
-              <Tooltip title={t('Später erinnern')} arrow>
-                <button
-                  className="series-notification-btn series-notification-btn--icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSnoozeOpen((p) => !p);
-                  }}
-                  aria-label={t('Später erinnern')}
-                >
-                  <SnoozeOutlined />
-                </button>
-              </Tooltip>
-              <AnimatePresence>
-                {snoozeOpen && (
-                  <motion.div
-                    className="snooze-menu"
-                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <div className="snooze-menu-header">{t('Erinnere mich in')}</div>
-                    <button className="snooze-menu-item" onClick={() => handleSnooze(1)}>
-                      <span>
-                        <span className="snooze-menu-item-emoji">☕</span>
-                        {t('1 Tag')}
-                      </span>
-                    </button>
-                    <button className="snooze-menu-item" onClick={() => handleSnooze(7)}>
-                      <span>
-                        <span className="snooze-menu-item-emoji">📅</span>
-                        {t('1 Woche')}
-                      </span>
-                    </button>
-                    <button className="snooze-menu-item" onClick={() => handleSnooze(30)}>
-                      <span>
-                        <span className="snooze-menu-item-emoji">🌙</span>
-                        {t('1 Monat')}
-                      </span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Carousel-Navigation */}
-          {series.length > 1 && (
-            <>
-              <div className="series-notification-nav">
-                <button
-                  className="series-notification-nav-btn"
-                  onClick={() => setCurrentIndex(Math.max(0, safeIndex - 1))}
-                  disabled={safeIndex === 0}
-                  aria-label={t('Vorherige')}
-                >
-                  ‹
-                </button>
-                <div
-                  className="series-notification-dots"
-                  ref={dotsContainerRef}
-                  role="tablist"
-                  aria-label={t('Serie auswählen')}
-                >
-                  {series.map((s, index) => (
-                    <button
-                      key={index}
-                      role="tab"
-                      aria-selected={index === safeIndex}
-                      aria-label={`${s.title || t('Serie')} (${index + 1}/${series.length})`}
-                      className={`series-notification-dot ${index === safeIndex ? 'active' : ''}`}
-                      onClick={() => setCurrentIndex(index)}
-                      style={
-                        index === safeIndex
-                          ? ({ ['--dot-color' as string]: color } as React.CSSProperties)
-                          : undefined
-                      }
-                    >
-                      <style>
-                        {`.series-notification-dot.active::after { background: ${color}; }`}
-                      </style>
-                    </button>
-                  ))}
-                </div>
-                <button
-                  className="series-notification-nav-btn"
-                  onClick={() => setCurrentIndex(Math.min(series.length - 1, safeIndex + 1))}
-                  disabled={safeIndex === series.length - 1}
-                  aria-label={t('Nächste')}
-                >
-                  ›
-                </button>
-              </div>
-              <p className="series-notification-counter">
-                {t('{aktuell} von {gesamt}', { aktuell: safeIndex + 1, gesamt: series.length })}{' '}
-                {config.counterSuffix}
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-    </motion.div>
+      ))}
+    </HintDeck>
   );
 };

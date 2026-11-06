@@ -124,25 +124,45 @@ describe('CarouselNotification', () => {
     expect(screen.getByText(new RegExp(String(start.getFullYear())))).toBeInTheDocument();
   });
 
-  it('renders the completed variant header', () => {
-    render(
-      <CarouselNotification
-        series={[makeSeries({ watchlist: true })]}
-        onDismiss={vi.fn()}
-        variant="completed"
-      />
-    );
-    expect(screen.getByText(/abgeschlossen/)).toBeInTheDocument();
-  });
-
-  it('navigates and dismisses when the primary action is clicked', () => {
+  it('öffnet die Serie und erledigt nur diesen einen Hinweis', () => {
     const onDismiss = vi.fn();
     render(
-      <CarouselNotification series={[makeSeries()]} onDismiss={onDismiss} variant="new-season" />
+      <CarouselNotification
+        series={[makeSeries(), makeSeries({ id: 7, title: 'Dark' })]}
+        onDismiss={onDismiss}
+        variant="new-season"
+      />
     );
-    fireEvent.click(screen.getByRole('button', { name: /Ansehen/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Ansehen/ })[0]);
     expect(navigate).toHaveBeenCalledWith('/series/42');
-    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(resolveSeriesNotification).toHaveBeenCalledWith(['new-season'], 42);
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
+
+  it('zeigt bei mehreren Hinweisen alle Serien nebeneinander', () => {
+    render(
+      <CarouselNotification
+        series={[makeSeries(), makeSeries({ id: 7, title: 'Dark' })]}
+        onDismiss={vi.fn()}
+        variant="new-season"
+      />
+    );
+    expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+    expect(screen.getByText('Dark')).toBeInTheDocument();
+  });
+
+  it('schließt mit dem X einer Karte nur diese Serie', () => {
+    const onDismiss = vi.fn();
+    render(
+      <CarouselNotification
+        series={[makeSeries({ watchlist: true }), makeSeries({ id: 7, watchlist: true })]}
+        onDismiss={onDismiss}
+        variant="inactive"
+      />
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'Schließen' })[1]);
+    expect(resolveSeriesNotification).toHaveBeenCalledWith(['inactive'], 7);
+    expect(onDismiss).not.toHaveBeenCalled();
   });
 
   it('shows a collapse button when onCollapse is provided', () => {
@@ -157,7 +177,7 @@ describe('CarouselNotification', () => {
     expect(screen.getByRole('button', { name: 'Minimieren' })).toBeInTheDocument();
   });
 
-  it('nimmt eine von der Watchlist entfernte Serie aus inaktiv und abgeschlossen heraus', async () => {
+  it('nimmt eine von der Watchlist entfernte Serie aus den inaktiven heraus', async () => {
     render(
       <CarouselNotification
         series={[makeSeries({ watchlist: true }), makeSeries({ id: 7, watchlist: true })]}
@@ -165,11 +185,10 @@ describe('CarouselNotification', () => {
         variant="inactive"
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: /Entfernen/ }));
-    await waitFor(
-      () => expect(resolveSeriesNotification).toHaveBeenCalledWith(['inactive', 'completed'], 42),
-      { timeout: 2000 }
-    );
+    fireEvent.click(screen.getAllByRole('button', { name: /Entfernen/ })[0]);
+    await waitFor(() => expect(resolveSeriesNotification).toHaveBeenCalledWith(['inactive'], 42), {
+      timeout: 2000,
+    });
   });
 
   it('erledigt einen beendeten Rewatch nur in der Rewatch-Liste', async () => {

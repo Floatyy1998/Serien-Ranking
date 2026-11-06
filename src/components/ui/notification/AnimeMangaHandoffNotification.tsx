@@ -1,18 +1,17 @@
-import { Close, MenuBook } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { MenuBook, Tv } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { hapticTap } from '../../../lib/interaction/haptics';
-import { tapScale } from '../../../lib/motion';
 import {
   markAnimeMangaHandoffDismissed,
   type AnimeMangaHandoff,
 } from '../../../services/detection/animeMangaHandoffDetection';
 import { t } from '../../../services/i18n';
+import { getImageUrl } from '../../../utils/imageUrl';
+import { HintCard, HintDeck, HintProgress } from './HintDeck';
 
 interface AnimeMangaHandoffNotificationProps {
   handoffs: AnimeMangaHandoff[];
@@ -20,11 +19,11 @@ interface AnimeMangaHandoffNotificationProps {
   onDismiss: () => void;
 }
 
+const handoffKey = (h: AnimeMangaHandoff) => `${h.series.id}-${h.seasonNumber}`;
+
 /**
- * F9 „Manga-Anschluss": zeigt eine Karte, wenn der Nutzer eine Anime-Staffel
- * durch hat, für die ein Quell-Manga bekannt ist — „lies den Manga weiter ab
- * ~Kapitel X" (KI-Schätzung, klar gelabelt). Ein-Karte-Muster (kein Carousel);
- * bei mehreren Anschlüssen wird nach dem Wegtippen der nächste gezeigt.
+ * F9 „Manga-Anschluss": Anime-Staffel durch, Quell-Manga bekannt — „lies den
+ * Manga ab ~Kapitel X weiter" (KI-Schätzung, klar gelabelt).
  */
 export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificationProps> = ({
   handoffs,
@@ -34,168 +33,96 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
   const { currentTheme } = useTheme();
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
-  const [index, setIndex] = useState(0);
+  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set());
 
-  const safeIndex = handoffs.length > 0 ? Math.min(index, handoffs.length - 1) : 0;
-  const h = handoffs[safeIndex];
-  if (!h) return null;
+  const visible = handoffs.filter((h) => !doneKeys.has(handoffKey(h)));
+  if (visible.length === 0) return null;
 
-  const accent = currentTheme.accent || currentTheme.primary;
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
-  const tracked = mangaList.some((m) => m.anilistId === h.mangaId);
-  const remaining = handoffs.length - safeIndex - 1;
+  const color = currentTheme.accent || currentTheme.primary;
 
-  const persistDismiss = () => {
+  const finish = (h: AnimeMangaHandoff) => {
     if (user) void markAnimeMangaHandoffDismissed(user.uid, h.series.id, h.seasonNumber);
+    if (visible.length <= 1) onDismiss();
+    else setDoneKeys((prev) => new Set(prev).add(handoffKey(h)));
   };
-  const advanceOrClose = () => {
-    if (safeIndex + 1 < handoffs.length) setIndex(safeIndex + 1);
-    else onDismiss();
-  };
-  const handleDismiss = () => {
+
+  const handleGoToManga = (h: AnimeMangaHandoff) => {
     hapticTap();
-    persistDismiss();
-    advanceOrClose();
-  };
-  const handleGoToManga = () => {
-    hapticTap();
-    persistDismiss();
+    if (user) void markAnimeMangaHandoffDismissed(user.uid, h.series.id, h.seasonNumber);
     navigate(`/manga/${h.mangaId}`);
   };
 
+  const handleDismissAll = () => {
+    if (user) {
+      visible.forEach(
+        (h) => void markAnimeMangaHandoffDismissed(user.uid, h.series.id, h.seasonNumber)
+      );
+    }
+    onDismiss();
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      style={{
-        position: 'relative',
-        padding: '16px 18px',
-        borderRadius: 'var(--radius-lg)',
-        background: `linear-gradient(145deg, ${currentTheme.background.surface}, ${currentTheme.background.default})`,
-        border: `1px solid ${accent}44`,
-        boxShadow: 'var(--shadow-md)',
-      }}
+    <HintDeck
+      color={color}
+      Icon={MenuBook}
+      title={t('Manga-Anschluss')}
+      count={visible.length}
+      onDismissAll={handleDismissAll}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <MenuBook style={{ fontSize: 18, color: accent }} />
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: '0.6px',
-            textTransform: 'uppercase',
-            color: accent,
-            flex: 1,
-          }}
-        >
-          {t('Manga-Anschluss')}
-        </span>
-        <motion.button
-          whileTap={tapScale}
-          onClick={handleDismiss}
-          aria-label={t('Benachrichtigung schließen')}
-          style={{
-            display: 'flex',
-            border: 'none',
-            background: 'transparent',
-            color: currentTheme.text.muted,
-            cursor: 'pointer',
-            padding: 4,
-          }}
-        >
-          <Close style={{ fontSize: 18 }} />
-        </motion.button>
-      </div>
-
-      <h3
-        style={{
-          margin: '0 0 4px',
-          fontSize: 16,
-          fontWeight: 700,
-          fontFamily: 'var(--font-display)',
-          color: currentTheme.text.primary,
-          lineHeight: 1.25,
-        }}
-      >
-        {t('Staffel {staffel} von {titel} durch! 🎉', {
-          staffel: h.seasonNumber,
-          titel: h.series.title,
-        })}
-      </h3>
-      <p
-        style={{
-          margin: '0 0 14px',
-          fontSize: 13,
-          color: currentTheme.text.secondary,
-          lineHeight: 1.45,
-        }}
-      >
-        {t('Lies')} <strong style={{ color: currentTheme.text.primary }}>{h.mangaTitle}</strong>{' '}
-        {t('weiter — der Anime endet ca. bei Kapitel {kapitel}.', { kapitel: h.estimatedChapter })}{' '}
-        <span style={{ color: currentTheme.text.muted, fontStyle: 'italic' }}>
-          {t('(KI-Schätzung)')}
-        </span>
-      </p>
-
-      {/* Aktionen */}
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-        <motion.button
-          whileTap={tapScale}
-          onClick={handleGoToManga}
-          style={{
-            flex: 1,
-            minHeight: 44,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            background: currentTheme.primary,
-            color: onPrimary,
-            fontSize: 14,
-            fontWeight: 700,
-            fontFamily: 'inherit',
-            cursor: 'pointer',
-          }}
-        >
-          <MenuBook style={{ fontSize: 18 }} />
-          {tracked ? t('Weiterlesen') : t('Zum Manga')}
-        </motion.button>
-        <motion.button
-          whileTap={tapScale}
-          onClick={handleDismiss}
-          style={{
-            minHeight: 44,
-            padding: '0 18px',
-            border: `1px solid ${currentTheme.border.default}`,
-            borderRadius: 'var(--radius-md)',
-            background: 'transparent',
-            color: currentTheme.text.secondary,
-            fontSize: 14,
-            fontWeight: 500,
-            fontFamily: 'inherit',
-            cursor: 'pointer',
-          }}
-        >
-          {t('Später')}
-        </motion.button>
-      </div>
-
-      {remaining > 0 && (
-        <p
-          style={{
-            margin: '10px 0 0',
-            fontSize: 11,
-            color: currentTheme.text.muted,
-            textAlign: 'center',
-          }}
-        >
-          +{remaining} {remaining === 1 ? t('weiterer Anschluss') : t('weitere Anschlüsse')}
-        </p>
-      )}
-    </motion.div>
+      {visible.map((h) => {
+        const tracked = mangaList.some((m) => m.anilistId === h.mangaId);
+        return (
+          <HintCard
+            key={handoffKey(h)}
+            title={h.mangaTitle}
+            poster={getImageUrl(h.series.poster, 'w342', '') || undefined}
+            backdrop={getImageUrl(h.series.backdrop, 'w780', '') || undefined}
+            DetailIcon={Tv}
+            detail={`${h.series.title || t('Serie')} · ${t('Staffel {staffel}', { staffel: h.seasonNumber })}`}
+            extra={
+              <>
+                <p className="hint-card-note">
+                  {t('Anime endet ca. bei Kapitel {kapitel}', { kapitel: h.estimatedChapter })}{' '}
+                  <em>{t('(KI-Schätzung)')}</em>
+                </p>
+                {h.totalChapters && h.totalChapters > 0 ? (
+                  <HintProgress
+                    percent={(h.estimatedChapter / h.totalChapters) * 100}
+                    label={`~${h.estimatedChapter} / ${h.totalChapters}`}
+                  />
+                ) : null}
+              </>
+            }
+            onOpen={() => handleGoToManga(h)}
+            onDismiss={() => {
+              hapticTap();
+              finish(h);
+            }}
+            actions={
+              <>
+                <button
+                  type="button"
+                  className="hint-btn hint-btn--ghost"
+                  onClick={() => {
+                    hapticTap();
+                    finish(h);
+                  }}
+                >
+                  <span>{t('Später')}</span>
+                </button>
+                <button
+                  type="button"
+                  className="hint-btn hint-btn--primary"
+                  onClick={() => handleGoToManga(h)}
+                >
+                  <MenuBook />
+                  <span>{tracked ? t('Weiterlesen') : t('Zum Manga')}</span>
+                </button>
+              </>
+            }
+          />
+        );
+      })}
+    </HintDeck>
   );
 };

@@ -22,7 +22,6 @@ const mocks = vi.hoisted(() => ({
   detectNewSeasons: vi.fn(async () => [] as Series[]),
   detectInactiveSeries: vi.fn(async () => [] as Series[]),
   detectInactiveRewatches: vi.fn(async () => [] as Series[]),
-  detectCompletedSeries: vi.fn(async () => [] as Series[]),
   detectUnratedSeries: vi.fn(async () => [] as Series[]),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   detectProviderChanges: vi.fn(async () => [] as any[]),
@@ -33,9 +32,6 @@ vi.mock('../services/detection/newSeasonDetection', () => ({
 vi.mock('../services/detection/inactiveSeriesDetection', () => ({
   detectInactiveSeries: mocks.detectInactiveSeries,
   detectInactiveRewatches: mocks.detectInactiveRewatches,
-}));
-vi.mock('../services/detection/completedSeriesDetection', () => ({
-  detectCompletedSeries: mocks.detectCompletedSeries,
 }));
 vi.mock('../services/detection/unratedSeriesDetection', () => ({
   detectUnratedSeries: mocks.detectUnratedSeries,
@@ -74,7 +70,6 @@ describe('runSequentialDetections', () => {
     mocks.detectNewSeasons.mockResolvedValue([series(1)]);
     mocks.detectInactiveSeries.mockResolvedValue([series(2)]);
     mocks.detectInactiveRewatches.mockResolvedValue([series(3)]);
-    mocks.detectCompletedSeries.mockResolvedValue([series(4)]);
     mocks.detectUnratedSeries.mockResolvedValue([series(5)]);
     mocks.detectProviderChanges.mockResolvedValue([{ seriesId: 6 }]);
 
@@ -84,7 +79,6 @@ describe('runSequentialDetections', () => {
     expect(partials).toEqual([
       { seriesWithNewSeasons: [series(1)] },
       { inactiveSeries: [series(2)], inactiveRewatches: [series(3)] },
-      { completedSeries: [series(4)] },
       { unratedSeries: [series(5)] },
       { providerChanges: [{ seriesId: 6 }] },
     ]);
@@ -125,7 +119,7 @@ describe('runSequentialDetections', () => {
     await runSequentialDetections([series(1)], UID, () => {}, signal());
     const order = [
       mocks.detectNewSeasons.mock.invocationCallOrder[0],
-      mocks.detectCompletedSeries.mock.invocationCallOrder[0],
+      mocks.detectInactiveSeries.mock.invocationCallOrder[0],
       mocks.detectUnratedSeries.mock.invocationCallOrder[0],
       mocks.detectProviderChanges.mock.invocationCallOrder[0],
     ];
@@ -134,14 +128,14 @@ describe('runSequentialDetections', () => {
 
   it('ein Fehler in einer Detection stoppt die nachfolgenden nicht', async () => {
     mocks.detectNewSeasons.mockRejectedValue(new Error('boom'));
-    mocks.detectCompletedSeries.mockResolvedValue([series(4)]);
+    mocks.detectUnratedSeries.mockResolvedValue([series(4)]);
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const partials: Record<string, unknown>[] = [];
     await runSequentialDetections([series(1)], UID, (p) => partials.push(p), signal());
 
-    expect(mocks.detectCompletedSeries).toHaveBeenCalled();
-    expect(partials).toContainEqual({ completedSeries: [series(4)] });
+    expect(mocks.detectUnratedSeries).toHaveBeenCalled();
+    expect(partials).toContainEqual({ unratedSeries: [series(4)] });
   });
 });
 

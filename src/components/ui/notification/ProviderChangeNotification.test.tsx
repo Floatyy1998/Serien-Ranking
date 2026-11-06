@@ -72,7 +72,7 @@ describe('ProviderChangeNotification', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('dismisses all when the close button is pressed', async () => {
+  it('schließt die einzige Karte über ihr X', async () => {
     const onDismiss = vi.fn();
     render(<ProviderChangeNotification changes={changes()} onDismiss={onDismiss} />);
     fireEvent.click(screen.getByRole('button', { name: 'Schließen' }));

@@ -2,8 +2,7 @@ import { createContext, useContext } from 'react';
 import type { Series } from '../types/Series';
 import type { ProviderChangeInfo, AnimeMangaHandoff } from './seriesListDetection';
 
-export type SeriesNotificationList =
-  'new-season' | 'inactive' | 'inactive-rewatch' | 'completed' | 'unrated';
+export type SeriesNotificationList = 'new-season' | 'inactive' | 'inactive-rewatch' | 'unrated';
 
 export interface SeriesListContextType {
   seriesList: Series[];
@@ -13,7 +12,6 @@ export interface SeriesListContextType {
   seriesWithNewSeasons: Series[];
   inactiveSeries: Series[];
   inactiveRewatches: Series[];
-  completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
   hiddenProviderChanges: ProviderChangeInfo[];
@@ -21,7 +19,6 @@ export interface SeriesListContextType {
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
   clearInactiveRewatches: () => void;
-  clearCompletedSeries: () => void;
   clearUnratedSeries: () => void;
   clearProviderChanges: () => void;
   clearHiddenProviderChanges: () => void;
@@ -46,7 +43,6 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   seriesWithNewSeasons: [],
   inactiveSeries: [],
   inactiveRewatches: [],
-  completedSeries: [],
   unratedSeries: [],
   providerChanges: [],
   hiddenProviderChanges: [],
@@ -54,7 +50,6 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
   clearInactiveRewatches: () => {},
-  clearCompletedSeries: () => {},
   clearUnratedSeries: () => {},
   clearProviderChanges: () => {},
   clearHiddenProviderChanges: () => {},

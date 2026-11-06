@@ -12,6 +12,17 @@ import {
 } from './SeasonMarkPreviews';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import {
+  HintDeckMultiPreview,
+  HintAnimeMangaPreview,
+  HintHiddenProviderPreview,
+  HintProviderPreview,
+  HintRecapPreview,
+  HintUnsubscribedPreview,
+  HintDeckNewSeasonPreview,
+  HintDeckSinglePreview,
+  HintDeckUnratedPreview,
+} from './HintDeckPreviews';
 import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
 import { AvatarViewerHost } from '../../components/AvatarViewerHost';
 import { ZoomableImage } from '../../components/ui/overlay/ZoomableImage';
@@ -215,6 +226,19 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  { id: 'hint-single', label: 'Hinweis: eine Serie', render: () => <HintDeckSinglePreview /> },
+  { id: 'hint-multi', label: 'Hinweis: mehrere Serien', render: () => <HintDeckMultiPreview /> },
+  { id: 'hint-new', label: 'Hinweis: neue Staffel', render: () => <HintDeckNewSeasonPreview /> },
+  { id: 'hint-unrated', label: 'Hinweis: bewerten', render: () => <HintDeckUnratedPreview /> },
+  { id: 'hint-provider', label: 'Hinweis: Anbieter', render: () => <HintProviderPreview /> },
+  {
+    id: 'hint-hidden',
+    label: 'Hinweis: ausgeblendet',
+    render: () => <HintHiddenProviderPreview />,
+  },
+  { id: 'hint-unsub', label: 'Hinweis: Abo fehlt', render: () => <HintUnsubscribedPreview /> },
+  { id: 'hint-manga', label: 'Hinweis: Manga-Anschluss', render: () => <HintAnimeMangaPreview /> },
+  { id: 'hint-recap', label: 'Hinweis: Recap', render: () => <HintRecapPreview /> },
   { id: 'home-layout', label: 'Layout-Editor', render: () => <HomeLayoutPage /> },
   {
     id: 'scroll-escape-detail',

@@ -24,7 +24,8 @@ const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
   entries: UnsubscribedNewSeasonEntry[];
-  dismiss: () => Promise<void>;
+  /** Ohne ids: alle aktuell gezeigten Einträge. */
+  dismiss: (seriesIds?: number[]) => Promise<void>;
 } {
   const { user } = useAuth() || {};
   const [activeProviders, setActiveProviders] = useState<Set<string>>(new Set());
@@ -77,12 +78,13 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
     return result;
   }, [seriesWithNewSeasons, activeProviders, hasAnySubscription, dismissed, now]);
 
-  const dismiss = async (): Promise<void> => {
+  const dismiss = async (seriesIds?: number[]): Promise<void> => {
     if (!user || entries.length === 0) return;
+    const targets = seriesIds ? entries.filter((e) => seriesIds.includes(e.series.id)) : entries;
     const now = Date.now();
     const updates: Record<string, number> = {};
     const nextLocal: Record<string, number> = { ...dismissed };
-    for (const { series } of entries) {
+    for (const { series } of targets) {
       updates[`users/${user.uid}/unsubscribedNewSeasonDismissed/${series.id}`] = now;
       nextLocal[String(series.id)] = now;
     }

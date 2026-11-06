@@ -8,6 +8,8 @@ const dict: Record<string, string> = {
   'weiter — der Anime endet ca. bei Kapitel {kapitel}.':
     '— o anime termina por volta do capítulo {kapitel}.',
   '(KI-Schätzung)': '(estimativa da IA)',
+  'Anime endet ca. bei Kapitel {kapitel}': 'O anime termina por volta do capítulo {kapitel}',
+  '{n} Recaps vor dem Staffelstart': '{n} resumos antes da estreia',
   Weiterlesen: 'Continuar lendo',
   'Zum Manga': 'Ir para o mangá',
   Später: 'Mais tarde',

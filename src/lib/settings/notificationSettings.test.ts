@@ -165,13 +165,13 @@ describe('Snooze', () => {
 
   it('getSnoozedUntil ohne Einträge → {}', async () => {
     const { getSnoozedUntil } = await load();
-    await expect(getSnoozedUntil('completed', UID)).resolves.toEqual({});
+    await expect(getSnoozedUntil('unrated', UID)).resolves.toEqual({});
   });
 
   it('Snooze-Kategorien sind isoliert', async () => {
     const { snoozeNotifications, getSnoozedUntil } = await load();
     await snoozeNotifications('inactive', [1], UID, 1);
-    await expect(getSnoozedUntil('completed', UID)).resolves.toEqual({});
+    await expect(getSnoozedUntil('unrated', UID)).resolves.toEqual({});
   });
 });
 
