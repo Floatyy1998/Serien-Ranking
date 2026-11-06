@@ -44,6 +44,7 @@ const series = (o: Partial<SeriesProgress> = {}): SeriesProgress => ({
     state: 'available',
     daysUntil: null,
   },
+  volume: 2,
   ownedCount: 1,
   total: 4,
   books: [book({ status: 'completed', pageCount: 200, completedAt: '2026-05-01T00:00:00Z' })],

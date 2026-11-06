@@ -115,7 +115,7 @@ export const FriendBooksInsights = memo(function FriendBooksInsights({
           coverFallback: match?.coverFallback,
           reason: upcomingDate
             ? t('Erscheint {date}', { date: upcomingDate })
-            : t('Band {n} fehlt', { n: part.position }),
+            : t('Band {n} fehlt', { n: item.volume }),
           color: currentTheme.status.success,
           open: () => (match ? openResult(match) : void openByTitle(part.title, item.author)),
         },

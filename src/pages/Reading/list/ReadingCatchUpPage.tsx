@@ -181,8 +181,8 @@ export const ReadingCatchUpPage = () => {
     const { series } = entry;
     return {
       meta: series.seriesName
-        ? `${series.seriesName} · ${t('Band {n}', { n: series.next.part.position })}`
-        : t('Band {n}', { n: series.next.part.position }),
+        ? `${series.seriesName} · ${t('Band {n}', { n: series.volume })}`
+        : t('Band {n}', { n: series.volume }),
       sub: t('Schon erschienen'),
       side: t('Neu'),
     };

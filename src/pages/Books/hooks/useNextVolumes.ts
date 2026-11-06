@@ -81,7 +81,7 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
           if (!alive) return;
           if (found !== undefined) {
             const fields: Record<string, unknown> = { seriesChecked: new Date().toISOString() };
-            if (found && found.wikidataId === known && found.position && !placed) {
+            if (found && found.wikidataId === known && found.position !== undefined && !placed) {
               fields.series = adoptSeries(book.series, found);
             } else if (found?.wikidataId && found.wikidataId !== known) {
               const parts = await loadParts(found.wikidataId);

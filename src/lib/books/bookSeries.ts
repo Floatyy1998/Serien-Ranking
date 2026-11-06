@@ -63,14 +63,18 @@ interface SeriesBookRef {
   series?: { wikidataId?: string; position?: number };
 }
 
-/** Bandnummer eines eigenen Buchs: gespeichert, über Wikidata-/Open-Library-ID oder eindeutig über den Titel. */
+/**
+ * Bandnummer eines eigenen Buchs: gespeichert, über Wikidata-/Open-Library-ID oder eindeutig über den Titel.
+ * Band 0 ist eine Vorgeschichte (Hardcover führt z. B. Dicks Roman als Band 0 der Blade-Runner-Reihe).
+ */
 export function partPositionOf(
   book: SeriesBookRef,
   parts: BookSeriesPart[],
   seriesId?: string
 ): number | undefined {
-  if (book.series?.position && (!seriesId || book.series.wikidataId === seriesId)) {
-    return book.series.position;
+  const own = book.series?.position;
+  if (typeof own === 'number' && own >= 0 && (!seriesId || book.series?.wikidataId === seriesId)) {
+    return own;
   }
   const byId = parts.find(
     (p) =>
@@ -84,6 +88,50 @@ export function partPositionOf(
     if (hits.length === 1) return hits[0].position;
   }
   return undefined;
+}
+
+const authorKeys = (authors: string[] | undefined) =>
+  new Set(
+    (authors ?? []).flatMap((a) =>
+      fold(a)
+        .split(/[^a-z0-9ß]+/)
+        .filter((w) => w.length >= 3)
+    )
+  );
+
+/** Gleicher Autor, soweit beide Seiten einen kennen — „Maas, Sarah J." trifft „Sarah J. Maas". */
+function sameAuthor(a: string[] | undefined, b: string[] | undefined): boolean {
+  const keysA = authorKeys(a);
+  const keysB = authorKeys(b);
+  return !keysA.size || !keysB.size || sharesKey(keysA, keysB);
+}
+
+/**
+ * Bandnummer für die Reihenfolge: Steht auf dem Platz des Buchs ein Band eines anderen Autors
+ * (Romanvorlage, Sammelband), liegt das Buch vor diesem Band — sonst würde der Band übersprungen.
+ */
+function orderPositionOf(
+  book: Book,
+  parts: BookSeriesPart[],
+  seriesId: string
+): number | undefined {
+  const position = partPositionOf(book, parts, seriesId);
+  if (position === undefined) return undefined;
+  const part = parts.find((p) => p.position === position);
+  return part && !sameAuthor(book.authors, part.result?.authors) ? position - 0.5 : position;
+}
+
+/**
+ * Bandnummer zur Anzeige: Nennt der Titel selbst eine Nummer der Reihe („Blade Runner 3: Replicant Night"),
+ * gilt diese — Hardcover zählt hier ab der Romanvorlage als Band 0.
+ */
+export function displayVolume(part: BookSeriesPart, seriesName?: string): number {
+  const { series, volume } = splitVolume(part.title);
+  if (volume === undefined) return part.position;
+  const names = [part.result?.series?.name, seriesName].filter((n): n is string => !!n);
+  return names.some((name) => seriesNameKey(name) === seriesNameKey(series))
+    ? volume
+    : part.position;
 }
 
 export interface NextVolume {
@@ -122,6 +170,8 @@ export interface SeriesProgress {
   seriesName: string;
   author?: string;
   next: NextVolume;
+  /** Bandnummer des nächsten Bands zur Anzeige (siehe `displayVolume`). */
+  volume: number;
   ownedCount: number;
   total: number;
   books: Book[];
@@ -143,8 +193,8 @@ export function seriesProgress(
     const positionsOf = (statuses: Book['status'][]) =>
       inSeries
         .filter((b) => statuses.includes(b.status))
-        .map((b) => partPositionOf(b, parts, seriesId))
-        .filter((p): p is number => !!p);
+        .map((b) => orderPositionOf(b, parts, seriesId))
+        .filter((p): p is number => p !== undefined);
     // Wer eine Reihe gerade anfängt, sieht den nächsten Band schon beim Lesen, nicht erst nach dem Beenden.
     const startedPositions = positionsOf(['completed', 'reading']);
     if (!startedPositions.length) continue;
@@ -152,15 +202,18 @@ export function seriesProgress(
     const next = findNextVolume(parts, startedPositions, now);
     if (!next) continue;
     const owned = inSeries.some(
-      (b) => partPositionOf(b, parts, seriesId) === next.part.position && b.status !== 'planned'
+      (b) => orderPositionOf(b, parts, seriesId) === next.part.position && b.status !== 'planned'
     );
     if (owned) continue;
     const sample = inSeries[0];
+    const seriesName = seriesNames[seriesId] || sample?.series?.name || '';
     out.push({
       seriesId,
-      seriesName: seriesNames[seriesId] || sample?.series?.name || '',
-      author: sample?.authors?.[0],
+      seriesName,
+      // Der nächste Band kann von jemand anderem sein (Jeter nach Dick) — sein Autor findet ihn.
+      author: next.part.result?.authors?.[0] ?? sample?.authors?.[0],
       next,
+      volume: displayVolume(next.part, seriesName),
       ownedCount: readPositions.length,
       total: parts.length,
       books: inSeries,
@@ -196,7 +249,7 @@ export function adoptSeries(
   return {
     name: own?.name || found.name,
     wikidataId: found.wikidataId,
-    ...(position ? { position } : {}),
+    ...(position !== undefined ? { position } : {}),
     ...(found.hardcoverId ? { hardcoverId: found.hardcoverId } : {}),
   };
 }

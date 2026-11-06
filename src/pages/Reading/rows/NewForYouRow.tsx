@@ -86,7 +86,7 @@ export const NewForYouRow = ({ showBooks, showManga, nextVolumes }: NewForYouRow
             key={`b-${item.seriesId}`}
             title={part.title}
             poster={coverAtSize(match?.cover, 'M') || match?.coverFallback || PLACEHOLDER_SVG}
-            badge={t('Band {n}', { n: part.position })}
+            badge={t('Band {n}', { n: item.volume })}
             highlight={isFresh(item.next, now) ? t('Neu') : undefined}
             meta={volumeState(item.next)}
             onClick={() => (match ? openResult(match) : void open(part.title, item.author))}
