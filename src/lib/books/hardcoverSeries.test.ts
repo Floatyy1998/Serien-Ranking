@@ -28,25 +28,31 @@ const part = (position: number, title: string): BookSeriesPart => ({
 
 describe('needsHardcoverSeries', () => {
   it('sucht, wenn der eigene Reihen-Schlüssel keine Bände liefert', () => {
-    expect(needsHardcoverSeries(book(), 0, NOW)).toBe(true);
+    expect(needsHardcoverSeries(book(), 0, false, NOW)).toBe(true);
   });
 
-  it('lässt Bücher mit funktionierender Reihe in Ruhe', () => {
-    expect(needsHardcoverSeries(book(), 7, NOW)).toBe(false);
+  it('lässt Bücher mit funktionierender Reihe und gefundenem Band in Ruhe', () => {
+    expect(needsHardcoverSeries(book(), 7, true, NOW)).toBe(false);
+  });
+
+  it('sucht, wenn die Reihe Bände hat, der eigene Band darin aber fehlt', () => {
+    expect(needsHardcoverSeries(book(), 7, false, NOW)).toBe(true);
   });
 
   it('braucht eine Hardcover-ID oder ISBN', () => {
-    expect(needsHardcoverSeries(book({ isbn13: undefined }), 0, NOW)).toBe(false);
-    expect(needsHardcoverSeries(book({ isbn13: undefined, hardcoverId: 42 }), 0, NOW)).toBe(true);
+    expect(needsHardcoverSeries(book({ isbn13: undefined }), 0, false, NOW)).toBe(false);
+    expect(needsHardcoverSeries(book({ isbn13: undefined, hardcoverId: 42 }), 0, false, NOW)).toBe(
+      true
+    );
   });
 
   it('fragt erst nach 30 Tagen erneut', () => {
-    expect(needsHardcoverSeries(book({ seriesChecked: '2026-10-20T00:00:00.000Z' }), 0, NOW)).toBe(
-      false
-    );
-    expect(needsHardcoverSeries(book({ seriesChecked: '2026-09-01T00:00:00.000Z' }), 0, NOW)).toBe(
-      true
-    );
+    expect(
+      needsHardcoverSeries(book({ seriesChecked: '2026-10-20T00:00:00.000Z' }), 0, false, NOW)
+    ).toBe(false);
+    expect(
+      needsHardcoverSeries(book({ seriesChecked: '2026-09-01T00:00:00.000Z' }), 0, false, NOW)
+    ).toBe(true);
   });
 });
 
@@ -79,6 +85,17 @@ describe('adoptSeries', () => {
 });
 
 describe('seriesProgress mit übernommener Hardcover-Reihe', () => {
+  it('zeigt den nächsten Band schon, während Band 1 gelesen wird', () => {
+    const reading = book({
+      status: 'reading',
+      series: { name: 'Dune', position: 1, wikidataId: 'hc:Dune' },
+    });
+    const parts = [part(1, 'Der Wüstenplanet'), part(2, 'Der Herr des Wüstenplaneten')];
+    const [first] = seriesProgress([reading], { 'hc:Dune': parts }, {}, NOW);
+    expect(first.next.part.position).toBe(2);
+    expect(first.ownedCount).toBe(0);
+  });
+
   it('zeigt nach Band 1 den zweiten Band', () => {
     const adopted = book({
       series: adoptSeries(book().series, {

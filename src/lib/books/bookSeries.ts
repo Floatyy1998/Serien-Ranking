@@ -127,7 +127,7 @@ export interface SeriesProgress {
   books: Book[];
 }
 
-/** Reihen, in denen jemand gelesen hat und deren nächster Band noch fehlt (geplant zählt als fehlend). */
+/** Reihen, in denen jemand liest oder gelesen hat und deren nächster Band noch fehlt (geplant zählt als fehlend). */
 export function seriesProgress(
   books: Book[],
   partsBySeries: Record<string, BookSeriesPart[]>,
@@ -140,12 +140,16 @@ export function seriesProgress(
     const inSeries = books.filter(
       (b) => b.series?.wikidataId === seriesId || partPositionOf(b, parts, seriesId) !== undefined
     );
-    const readPositions = inSeries
-      .filter((b) => b.status === 'completed')
-      .map((b) => partPositionOf(b, parts, seriesId))
-      .filter((p): p is number => !!p);
-    if (!readPositions.length) continue;
-    const next = findNextVolume(parts, readPositions, now);
+    const positionsOf = (statuses: Book['status'][]) =>
+      inSeries
+        .filter((b) => statuses.includes(b.status))
+        .map((b) => partPositionOf(b, parts, seriesId))
+        .filter((p): p is number => !!p);
+    // Wer eine Reihe gerade anfängt, sieht den nächsten Band schon beim Lesen, nicht erst nach dem Beenden.
+    const startedPositions = positionsOf(['completed', 'reading']);
+    if (!startedPositions.length) continue;
+    const readPositions = positionsOf(['completed']);
+    const next = findNextVolume(parts, startedPositions, now);
     if (!next) continue;
     const owned = inSeries.some(
       (b) => partPositionOf(b, parts, seriesId) === next.part.position && b.status !== 'planned'
@@ -169,10 +173,16 @@ const SERIES_RECHECK_MS = 30 * 86_400_000;
 
 /**
  * Braucht das Buch eine Reihen-Suche bei Hardcover? Nur wenn sein Schlüssel keine Bände liefert
- * (z. B. deutscher DNB-Reihenname), Hardcover es über ID oder ISBN finden kann und die letzte Suche alt ist.
+ * (z. B. deutscher DNB-Reihenname) oder sein Band darin nicht zu finden ist, Hardcover es über ID
+ * oder ISBN finden kann und die letzte Suche alt ist.
  */
-export function needsHardcoverSeries(book: Book, knownParts: number, now: number): boolean {
-  if (knownParts >= 2 || (!book.hardcoverId && !book.isbn13)) return false;
+export function needsHardcoverSeries(
+  book: Book,
+  knownParts: number,
+  placed: boolean,
+  now: number
+): boolean {
+  if ((knownParts >= 2 && placed) || (!book.hardcoverId && !book.isbn13)) return false;
   const checkedAt = book.seriesChecked ? new Date(book.seriesChecked).getTime() : 0;
   return now - checkedAt >= SERIES_RECHECK_MS;
 }

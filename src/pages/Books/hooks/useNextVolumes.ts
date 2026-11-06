@@ -4,6 +4,7 @@ import { sortByRecentActivity } from '../../../lib/books/bookProgress';
 import {
   adoptSeries,
   needsHardcoverSeries,
+  partPositionOf,
   seriesProgress,
   type SeriesProgress,
 } from '../../../lib/books/bookSeries';
@@ -71,14 +72,18 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
       for (const book of candidates) {
         if (readOnly || !uid || lookups >= MAX_LOOKUPS) break;
         const known = book.series?.wikidataId;
-        // Deutsche DNB-Reihennamen kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen.
-        if (needsHardcoverSeries(book, known ? next[known].length : 0, Date.now())) {
+        const knownParts = known ? next[known] : [];
+        const placed = !!known && partPositionOf(book, knownParts, known) !== undefined;
+        // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen.
+        if (needsHardcoverSeries(book, knownParts.length, placed, Date.now())) {
           lookups += 1;
           const found = await hardcoverSeriesOf(book);
           if (!alive) return;
           if (found !== undefined) {
             const fields: Record<string, unknown> = { seriesChecked: new Date().toISOString() };
-            if (found?.wikidataId && found.wikidataId !== known) {
+            if (found && found.wikidataId === known && found.position && !placed) {
+              fields.series = adoptSeries(book.series, found);
+            } else if (found?.wikidataId && found.wikidataId !== known) {
               const parts = await loadParts(found.wikidataId);
               if (!alive) return;
               if (parts.length >= 2) {
