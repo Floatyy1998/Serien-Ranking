@@ -187,8 +187,13 @@ const BookSearchView = () => {
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState(params.get('q') ?? '');
   const qParam = params.get('q') ?? '';
+  // Die eigene, verzögert geschriebene URL darf das Feld nicht zurücksetzen: wer
+  // in der Zwischenzeit weitertippt, verlöre sonst die neuen Zeichen.
+  const writtenQ = useRef(qParam);
   useEffect(() => {
-    setQuery((current) => (current.trim() === qParam ? current : qParam));
+    if (qParam === writtenQ.current) return;
+    writtenQ.current = qParam;
+    setQuery(qParam);
   }, [qParam]);
   const recent = useRecentSearches('books');
   const [pending, setPending] = useState<{ result: BookSearchResult; asBookOf?: number } | null>(
@@ -204,6 +209,7 @@ const BookSearchView = () => {
   useEffect(() => {
     const q = query.trim();
     const timer = setTimeout(() => {
+      writtenQ.current = q;
       setParams(
         (prev) => {
           const next = new URLSearchParams(prev);
