@@ -30,6 +30,14 @@ const volumeState = (next: SeriesProgress['next']): string =>
       ? t('Schon erschienen')
       : t('Termin offen');
 
+const FRESH_MS = 365 * 86_400_000;
+
+/** „Neu" nur für Bände, die vor kurzem erschienen sind — nicht für den vierten Dune-Band von 1981. */
+const isFresh = (next: SeriesProgress['next'], now: number): boolean =>
+  next.state === 'available' &&
+  !!next.part.publishedDate &&
+  now - new Date(`${next.part.publishedDate}T00:00:00`).getTime() < FRESH_MS;
+
 /** Neu für dich: frische Manga-Kapitel und der nächste Band deiner Buchreihen in einer Reihe. */
 export const NewForYouRow = ({ showBooks, showManga, nextVolumes }: NewForYouRowProps) => {
   const { currentTheme } = useTheme();
@@ -79,7 +87,7 @@ export const NewForYouRow = ({ showBooks, showManga, nextVolumes }: NewForYouRow
             title={part.title}
             poster={coverAtSize(match?.cover, 'M') || match?.coverFallback || PLACEHOLDER_SVG}
             badge={t('Band {n}', { n: part.position })}
-            highlight={item.next.state === 'available' ? t('Neu') : undefined}
+            highlight={isFresh(item.next, now) ? t('Neu') : undefined}
             meta={volumeState(item.next)}
             onClick={() => (match ? openResult(match) : void open(part.title, item.author))}
           />

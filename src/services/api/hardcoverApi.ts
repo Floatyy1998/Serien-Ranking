@@ -424,7 +424,10 @@ export async function hardcoverBrowse(
   return { items: mapList(data.results), done: !!data.done };
 }
 
-/** Bände der Reihe als Teile für die Reihenansicht — Zwischenbände (Band 1,5) bleiben außen vor. */
+/**
+ * Bände der Reihe als Teile für die Reihenansicht — Zwischenbände (Band 1,5) bleiben außen vor.
+ * Hardcover kennt nur das Jahr: Ein Band aus dem laufenden Jahr bleibt ohne Datum, er kann noch ausstehen.
+ */
 export function seriesPartsFrom(books: BookSearchResult[], now = new Date()): BookSeriesPart[] {
   const year = now.getFullYear();
   const parts: BookSeriesPart[] = [];
@@ -437,7 +440,7 @@ export function seriesPartsFrom(books: BookSearchResult[], now = new Date()): Bo
         title: book.title,
         position,
         publishedDate:
-          book.publishedYear && book.publishedYear > year
+          book.publishedYear && book.publishedYear !== year
             ? `${book.publishedYear}-01-01`
             : undefined,
         result: book,
@@ -450,7 +453,7 @@ export function seriesPartsFrom(books: BookSearchResult[], now = new Date()): Bo
 export function hardcoverSeriesParts(name: string): Promise<BookSeriesPart[]> {
   return cached<BookSeriesPart[]>(
     'hcseries',
-    `${appLocale}:${name.toLowerCase()}`,
+    `${appLocale}:${name.toLowerCase()}:2`,
     7 * DAY,
     async () => {
       const data = await post<{ results?: HcItem[] }>('/hc/series', { name });

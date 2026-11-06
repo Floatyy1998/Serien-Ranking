@@ -256,7 +256,7 @@ describe('hardcoverApi', () => {
     expect(hardcoverReady()).toBe(false);
   });
 
-  it('liefert Reihenteile nur mit ganzzahliger Bandnummer und zeigt Zukunftsbände als erscheinend', async () => {
+  it('liefert Reihenteile nur mit ganzzahliger Bandnummer und datiert sie per Jahr', async () => {
     const { seriesPartsFrom, mapHardcoverItem } = await import('./hardcoverApi');
     const book = (position: number, year: number) =>
       mapHardcoverItem({
@@ -268,12 +268,13 @@ describe('hardcoverApi', () => {
         series: { name: 'Harry Potter', position },
       });
     const parts = seriesPartsFrom(
-      [book(3, 1999), book(0.5, 2010), book(1, 1997), book(4, 2031)],
+      [book(3, 1999), book(0.5, 2010), book(1, 1997), book(4, 2031), book(5, 2026)],
       new Date('2026-10-16')
     );
-    expect(parts.map((p) => p.position)).toEqual([1, 3, 4]);
+    expect(parts.map((p) => p.position)).toEqual([1, 3, 4, 5]);
     expect(parts[2].publishedDate).toBe('2031-01-01');
-    expect(parts[0].publishedDate).toBeUndefined();
+    expect(parts[0].publishedDate).toBe('1997-01-01');
+    expect(parts[3].publishedDate).toBeUndefined();
     expect(parts[0].result?.title).toBe('Band 1');
   });
 
