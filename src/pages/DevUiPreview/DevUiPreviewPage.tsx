@@ -33,7 +33,12 @@ import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
 import { HomeLayoutPage } from '../HomeLayout';
 import { PatchNotesPage } from '../PatchNotes/PatchNotesPage';
-import { LitComparePreview, OutfitClashPreview, PetsPagePreview } from './PetsPagePreview';
+import {
+  LitComparePreview,
+  OutfitClashPreview,
+  PetCreationPreview,
+  PetsPagePreview,
+} from './PetsPagePreview';
 import {
   PetPlaygroundPreview,
   PetPoseGalleryPreview,
@@ -319,6 +324,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <PetStagePreview initialDead />,
   },
   { id: 'pets-page', label: 'Pets: Seite', render: () => <PetsPagePreview /> },
+  { id: 'pet-create', label: 'Pets: Erschaffen', render: () => <PetCreationPreview /> },
+  {
+    id: 'pet-create-named',
+    label: 'Pets: Erschaffen mit Name',
+    render: () => <PetCreationPreview name="Mochi" cancel />,
+  },
   { id: 'pet-outfit-clash', label: 'Pet: Outfit-Kombis', render: () => <OutfitClashPreview /> },
   { id: 'pet-lit', label: 'Pet: Licht', render: () => <LitComparePreview /> },
   {

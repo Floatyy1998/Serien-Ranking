@@ -29,7 +29,7 @@ export const PetsPage: React.FC = () => {
 
   const data = usePetsData(petEnabled);
   const { isLoading, showCreateModal, petName, selectedType, setPetName, setSelectedType } = data;
-  const { createPet, pet } = data;
+  const { createPet, pet, pets, selectedColor, setSelectedColor, closeCreateModal } = data;
 
   const enablePet = async () => {
     if (!user || enabling) return;
@@ -100,7 +100,10 @@ export const PetsPage: React.FC = () => {
         selectedType={selectedType}
         onNameChange={setPetName}
         onTypeChange={setSelectedType}
+        selectedColor={selectedColor}
+        onColorChange={setSelectedColor}
         onCreatePet={createPet}
+        onCancel={pets.length > 0 ? closeCreateModal : undefined}
       />
     );
   }

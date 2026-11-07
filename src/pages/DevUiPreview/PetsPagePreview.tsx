@@ -10,6 +10,7 @@ import { DEFAULT_LIGHT, drawLitFigure, drawSoftShadow } from '../../components/p
 import { dockAfterSwitch } from '../../services/pet/petCore';
 import type { Pet, PetAccessory } from '../../types/pet.types';
 import { PetsPageView, type PetsPageData } from '../Pets/PetsPage';
+import { PetCreationModal } from '../Pets/PetCreationModal';
 import { makeDevPet } from './devPets';
 
 const noop = () => {};
@@ -70,6 +71,7 @@ export const PetsPagePreview = ({
       showCreateModal: false,
       petName: '',
       selectedType: 'cat',
+      selectedColor: 'orange',
       activeColorBorder: pet.color,
       showReleaseConfirm: false,
       showReviveConfirm: false,
@@ -83,6 +85,7 @@ export const PetsPagePreview = ({
       xpBonusHint: '',
       setPetName: noop,
       setSelectedType: noop,
+      setSelectedColor: noop,
       createPet: async () => {},
       feedPet: async () => {},
       playWithPet: async () => {},
@@ -226,5 +229,29 @@ export const LitComparePreview = () => {
         );
       })}
     </div>
+  );
+};
+
+export const PetCreationPreview = ({
+  name = '',
+  cancel = false,
+}: {
+  name?: string;
+  cancel?: boolean;
+}) => {
+  const [petName, setPetName] = useState(name);
+  const [type, setType] = useState<Pet['type']>('cat');
+  const [color, setColor] = useState<string | undefined>(undefined);
+  return (
+    <PetCreationModal
+      petName={petName}
+      selectedType={type}
+      selectedColor={color}
+      onNameChange={setPetName}
+      onTypeChange={setType}
+      onColorChange={setColor}
+      onCreatePet={noop}
+      onCancel={cancel ? noop : undefined}
+    />
   );
 };

@@ -281,9 +281,15 @@ export async function canCreateNewPet(userId: string): Promise<boolean> {
   return pets.every((p) => p.level >= PET_CONFIG.NEW_PET_LEVEL_REQUIREMENT);
 }
 
-export async function createPet(userId: string, name: string, type: Pet['type']): Promise<Pet> {
+export async function createPet(
+  userId: string,
+  name: string,
+  type: Pet['type'],
+  color?: string
+): Promise<Pet> {
   const colors = Object.keys(PET_COLORS);
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const randomColor =
+    color && PET_COLORS[color] ? color : colors[Math.floor(Math.random() * colors.length)];
 
   const patterns: Pet['pattern'][] = ['spots', 'stripes', 'plain', 'patches'];
   const eyeColors = ['#000000', '#0066CC', '#00AA00', '#8B4513', '#FFD700', '#FF0000'];

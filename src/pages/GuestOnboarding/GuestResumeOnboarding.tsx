@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { invalidateActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { petService } from '../../services/pet/petService';
+import { petSignatureColor } from '../../components/pet/data/petSignature';
 import { setPetEnabled } from '../../services/pet/petPreferences';
 import { t } from '../../services/i18n';
 import {
@@ -202,7 +203,13 @@ export const GuestResumeOnboarding: React.FC<{ onRestartFull?: () => void }> = (
 
       const hasPet = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
       if (pet) {
-        if (!hasPet) await petService.createPet(uid, pet.name.trim() || t('Mein Pet'), pet.type);
+        if (!hasPet)
+          await petService.createPet(
+            uid,
+            pet.name.trim() || t('Mein Pet'),
+            pet.type,
+            petSignatureColor(pet.type)
+          );
       } else if (!hasPet) {
         // Begleiter im Gast-Flow übersprungen: Pet aus, bis es in den Einstellungen eingeschaltet wird.
         await setPetEnabled(uid, false);

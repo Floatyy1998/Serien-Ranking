@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { EvolvingPixelPet } from '../../../components/pet';
+import { PET_SIGNATURES, petSignatureColor } from '../../../components/pet/data/petSignature';
 import { t } from '../../../services/i18n';
 import { useActNum } from '../data/acts';
 import type { Pet } from '../../../types/pet.types';
@@ -17,23 +18,8 @@ interface Props {
   onBack: () => void;
 }
 
-// Signaturfarbe pro Gestalt (Key aus PET_COLORS) — die Auswahl wirkt dadurch
-// wie ein Ensemble statt zehnmal dasselbe Pet in Teal.
-const TYPES: { type: Pet['type']; label: string; color: string }[] = [
-  { type: 'cat', label: 'Katze', color: 'orange' },
-  { type: 'dog', label: 'Hund', color: 'gelb' },
-  { type: 'fox', label: 'Fuchs', color: 'rot' },
-  { type: 'rabbit', label: 'Hase', color: 'rosa' },
-  { type: 'panda', label: 'Panda', color: 'gruen' },
-  { type: 'bird', label: 'Vogel', color: 'tuerkis' },
-  { type: 'dragon', label: 'Drache', color: 'lila' },
-  { type: 'owl', label: 'Eule', color: 'orange' },
-  { type: 'penguin', label: 'Pinguin', color: 'blau' },
-  { type: 'axolotl', label: 'Axolotl', color: 'rosa' },
-];
-
-const typeColorKey = (type: Pet['type']): string =>
-  TYPES.find((x) => x.type === type)?.color ?? 'blau';
+const TYPES = PET_SIGNATURES;
+const typeColorKey = petSignatureColor;
 
 function previewPet(type: Pet['type'], name: string): Pet {
   return {
@@ -42,7 +28,7 @@ function previewPet(type: Pet['type'], name: string): Pet {
     name: name || 'Buddy',
     type,
     color: typeColorKey(type),
-    level: 3,
+    level: 1,
     experience: 0,
     hunger: 10,
     happiness: 95,

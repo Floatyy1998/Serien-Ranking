@@ -11,6 +11,7 @@ import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
 import { dockAfterSwitch } from '../../services/pet/petCore';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { toggleWorn } from '../../components/pet/outfit';
+import { petSignatureColor } from '../../components/pet/data/petSignature';
 import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 
@@ -25,6 +26,8 @@ export function usePetsData(enabled = true) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [petName, setPetName] = useState('');
   const [selectedType, setSelectedType] = useState<Pet['type']>('cat');
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
+  const selectedColor = pickedColor ?? petSignatureColor(selectedType);
   const [activeColorBorder, setActiveColorBorder] = useState<string | null>(null);
   const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
   const [showReviveConfirm, setShowReviveConfirm] = useState(false);
@@ -144,7 +147,12 @@ export function usePetsData(enabled = true) {
   const createPet = async () => {
     if (!user || !petName.trim()) return;
     try {
-      const newPet = await petService.createPet(user.uid, petName.trim(), selectedType);
+      const newPet = await petService.createPet(
+        user.uid,
+        petName.trim(),
+        selectedType,
+        selectedColor
+      );
       setPets((prev) => [...prev, newPet]);
       setSelectedPetIndex(pets.length); // neues Pet auswählen
       petService
@@ -156,6 +164,7 @@ export function usePetsData(enabled = true) {
         .catch(() => {});
       setShowCreateModal(false);
       setPetName('');
+      setPickedColor(null);
       const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
@@ -333,6 +342,7 @@ export function usePetsData(enabled = true) {
     showCreateModal,
     petName,
     selectedType,
+    selectedColor,
     activeColorBorder,
     showReleaseConfirm,
     showReviveConfirm,
@@ -350,6 +360,7 @@ export function usePetsData(enabled = true) {
     // Setters
     setPetName,
     setSelectedType,
+    setSelectedColor: setPickedColor,
 
     // Actions
     createPet,

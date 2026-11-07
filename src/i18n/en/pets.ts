@@ -25,6 +25,9 @@ const dict: Record<string, string> = {
   'Erschaffe dein Pet!': 'Create your pet!',
   'Wähle deinen Typ:': 'Pick your type:',
   'Pet erschaffen!': 'Create pet!',
+  Farbe: 'Color',
+  'Überrasch mich': 'Surprise me',
+  '{name} ist geschlüpft!': '{name} has hatched!',
   'Neues Pet ab Lv.15': 'New pet at Lv.15',
 
   // Pet types

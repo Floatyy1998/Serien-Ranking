@@ -28,7 +28,8 @@ const svc = vi.hoisted(() => ({
   updateAllPetsStatus: vi.fn<(uid: string) => Promise<Pet[]>>(),
   getActivePetId: vi.fn<(uid: string) => Promise<string | null>>(),
   canCreateNewPet: vi.fn<(uid: string) => Promise<boolean>>(),
-  createPet: vi.fn<(uid: string, name: string, type: Pet['type']) => Promise<Pet>>(),
+  createPet:
+    vi.fn<(uid: string, name: string, type: Pet['type'], color?: string) => Promise<Pet>>(),
   feedPet: vi.fn<(uid: string, id: string) => Promise<Pet | null>>(),
   playWithPet: vi.fn<(uid: string, id: string) => Promise<Pet | null>>(),
   revivePet: vi.fn<(uid: string, id: string) => Promise<Pet | null>>(),
@@ -119,7 +120,7 @@ describe('usePetsData – actions', () => {
     await act(async () => {
       await result.current.createPet();
     });
-    expect(svc.createPet).toHaveBeenCalledWith('u1', 'Rex', 'cat');
+    expect(svc.createPet).toHaveBeenCalledWith('u1', 'Rex', 'cat', 'orange');
     await waitFor(() => expect(result.current.pets.some((p) => p.id === 'p2')).toBe(true));
     expect(result.current.showCreateModal).toBe(false);
   });

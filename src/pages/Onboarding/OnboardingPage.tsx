@@ -34,6 +34,7 @@ import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { petService } from '../../services/pet/petService';
+import { petSignatureColor } from '../../components/pet/data/petSignature';
 import { setPetEnabled } from '../../services/pet/petPreferences';
 import { hasGuestOnboarding } from '../../services/account/guestOnboarding';
 import { markOnboardingStep } from '../../services/account/onboardingProgress';
@@ -363,7 +364,12 @@ export const OnboardingPage: React.FC = () => {
         if (petSkipped) {
           if (!hasPet) await setPetEnabled(uid, false);
         } else if (!hasPet) {
-          await petService.createPet(uid, petName.trim() || t('Mein Pet'), petType);
+          await petService.createPet(
+            uid,
+            petName.trim() || t('Mein Pet'),
+            petType,
+            petSignatureColor(petType)
+          );
         }
       } catch {
         /* ignore */
