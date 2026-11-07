@@ -3,6 +3,7 @@ import { AnimatePresence, motion, type PanInfo, type Variants } from 'framer-mot
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
+import { useBooksList } from '../../../contexts/BooksListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf, useBookShelves } from '../../../hooks/books/useBookShelf';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
@@ -38,10 +39,12 @@ export function useOpenResult() {
   const navigate = useNavigate();
   const ownedFor = useOwnedBooks();
   const mangaFor = useMangaForBook();
+  const { seriesAsBooks } = useBooksList();
   return (result: BookSearchResult) => {
     const owned = ownedFor(result);
     const manga = owned ? undefined : mangaFor(result);
-    if (manga) {
+    // „Als Buch führen": Bände der Reihe öffnen als Buch, nicht auf der Manga-Seite.
+    if (manga && !seriesAsBooks.has(manga.anilistId)) {
       navigate(
         mangaPath(manga.anilistId, splitVolume(result.title).volume),
         volumeBookState(result)
