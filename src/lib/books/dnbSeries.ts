@@ -35,9 +35,7 @@ export function mapDnbSeriesParts(xml: string, name: string, now = new Date()): 
     const result = mapDnbRecord(serializer.serializeToString(record), isbn13);
     const position = result && volumeIn(result, wanted);
     if (!result || !position) continue;
-    const existing = byPosition.get(position);
-    if (existing && (existing.result?.pageCount || !result.pageCount)) continue;
-    byPosition.set(position, {
+    keepPrint(byPosition, {
       wikidataId: result.id,
       title: result.title,
       position,
@@ -47,5 +45,19 @@ export function mapDnbSeriesParts(xml: string, name: string, now = new Date()): 
       result,
     });
   }
+  return [...byPosition.values()].sort((a, b) => a.position - b.position);
+}
+
+/** Pro Band die Druckausgabe (mit Seitenzahl) vor dem E-Book; bei Gleichstand bleibt der erste Treffer. */
+function keepPrint(byPosition: Map<number, BookSeriesPart>, part: BookSeriesPart) {
+  const existing = byPosition.get(part.position);
+  if (existing && (existing.result?.pageCount || !part.result?.pageCount)) return;
+  byPosition.set(part.position, part);
+}
+
+/** Bandlisten mehrerer DNB-Abfragen (`partof`, Titelsuche) zu einer zusammenführen. */
+export function mergeSeriesParts(lists: BookSeriesPart[][]): BookSeriesPart[] {
+  const byPosition = new Map<number, BookSeriesPart>();
+  for (const part of lists.flat()) keepPrint(byPosition, part);
   return [...byPosition.values()].sort((a, b) => a.position - b.position);
 }

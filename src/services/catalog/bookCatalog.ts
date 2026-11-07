@@ -43,6 +43,11 @@ interface CatalogItem extends Omit<BookSearchResult, 'authors' | 'source'> {
   lang?: string;
   /** Klappentext je Sprache — einmal übersetzt, dann für alle da. */
   descriptions?: Record<string, string>;
+  /** Reihe laut Nachtlauf (Hardcover/DNB) — schlägt `series`, das aus dem ersten Nutzerbuch stammt. */
+  seriesRef?: { key: string; name: string; position?: number };
+  seriesTried?: number;
+  dnbTried?: number;
+  coverTried?: number;
 }
 
 /** Was beim Hinzufügen an den Katalog geht — ohne Bewertungen und Beliebtheit (Community-Daten bleiben bei der Quelle). */
@@ -64,15 +69,38 @@ export const loadBookCatalogIndex = client.index;
 export const describeFromCatalog = client.describe;
 
 function toResult(item: CatalogItem): BookSearchResult {
-  const { v, coverSrc, adds, addedAt, lang, descriptions, ...rest } = item;
+  const {
+    v,
+    coverSrc,
+    adds,
+    addedAt,
+    lang,
+    descriptions,
+    seriesRef,
+    seriesTried,
+    dnbTried,
+    coverTried,
+    ...rest
+  } = item;
   void v;
   void coverSrc;
   void adds;
   void addedAt;
   void lang;
   void descriptions;
+  void seriesTried;
+  void dnbTried;
+  void coverTried;
   return stripUndefined({
     ...rest,
+    // `series` stammt ungeprüft aus dem ersten Nutzerbuch; die Reihe des Nachtlaufs ist gegen Hardcover/DNB geprüft.
+    series: seriesRef
+      ? stripUndefined({
+          name: seriesRef.name,
+          position: seriesRef.position,
+          wikidataId: seriesRef.key,
+        })
+      : rest.series,
     authors: item.authors ?? [],
     source:
       item.source ??

@@ -5,10 +5,12 @@ import type {
   BookSeriesPart,
 } from '../../types/Book';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
-import { mapDnbSeriesParts } from '../../lib/books/dnbSeries';
+import { mapDnbSeriesParts, mergeSeriesParts } from '../../lib/books/dnbSeries';
 import {
   coverAtSize,
   dnbSeriesKey,
+  isDnbSeriesKey,
+  parseDnbSeriesKey,
   mapDnbRecord,
   mapGoogleDetails,
   mapGoogleVolume,
@@ -145,26 +147,44 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
 export async function dnbSeriesOf(isbn13: string): Promise<BookSeriesInfo | null> {
   const [hit] = await searchDnb(isbn13);
   const series = hit?.series;
-  return series?.name ? { ...series, wikidataId: dnbSeriesKey(series.name) } : null;
+  if (!series?.name) return null;
+  return isDnbSeriesKey(series.wikidataId)
+    ? series
+    : { ...series, wikidataId: dnbSeriesKey(series.name) };
 }
 
-/** Alle Bände einer Reihe aus der DNB, auch angekündigte — eine Titelsuche, 7 Tage gemerkt. */
-export function dnbSeriesParts(name: string): Promise<BookSeriesPart[]> {
+async function dnbQuery(query: string): Promise<string> {
+  const params = new URLSearchParams({
+    version: '1.1',
+    operation: 'searchRetrieve',
+    query,
+    recordSchema: 'MARC21-xml',
+    maximumRecords: '100',
+  });
+  const res = await fetch(`${DNB_SRU}?${params.toString()}`);
+  if (!res.ok) throw new Error(`DNB ${res.status}`);
+  return res.text();
+}
+
+/**
+ * Alle Bände einer DNB-Reihe, auch angekündigte, 7 Tage gemerkt: `partof` findet die Bände am Gesamttitel
+ * (auch bei Allerweltsnamen wie „Existence" mit 12.000 Titeltreffern), die Titelsuche neuere Bände nur mit Feld 490.
+ */
+export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
+  const { name, parentId } = parseDnbSeriesKey(key);
   return cached<BookSeriesPart[]>(
     'dnbseries',
-    name.toLowerCase(),
+    key.toLowerCase(),
     7 * DAY,
     async () => {
-      const params = new URLSearchParams({
-        version: '1.1',
-        operation: 'searchRetrieve',
-        query: `tit="${name.replace(/["\\]/g, ' ')}"`,
-        recordSchema: 'MARC21-xml',
-        maximumRecords: '100',
-      });
-      const res = await fetch(`${DNB_SRU}?${params.toString()}`);
-      if (!res.ok) throw new Error(`DNB ${res.status}`);
-      const parts = mapDnbSeriesParts(await res.text(), name);
+      const queries = [
+        ...(parentId ? [`partof=${parentId}`] : []),
+        `tit="${name.replace(/["\\]/g, ' ')}"`,
+      ];
+      const lists = await Promise.all(
+        queries.map((q) => dnbQuery(q).then((xml) => mapDnbSeriesParts(xml, name)))
+      );
+      const parts = mergeSeriesParts(lists);
       if (!parts.length) throw NO_HITS;
       return parts;
     },

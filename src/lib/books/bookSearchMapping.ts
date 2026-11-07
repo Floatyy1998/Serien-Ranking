@@ -220,9 +220,19 @@ function namesFromStatement(statement: string | undefined): string[] {
     .slice(0, 3);
 }
 
-/** Reihen aus der DNB tragen den Schlüssel `dnb:<Reihentitel>` — ihre Bände holt eine Titelsuche dort. */
-export const dnbSeriesKey = (name: string): string => `dnb:${name}`;
+/**
+ * Reihen aus der DNB tragen den Schlüssel `dnb:<IDN des Gesamttitels>:<Reihentitel>` (ohne Gesamttitel
+ * `dnb:<Reihentitel>`) — ihre Bände holt die DNB über `partof=<IDN>` und eine Titelsuche.
+ */
+export const dnbSeriesKey = (name: string, parentId?: string): string =>
+  parentId ? `dnb:${parentId}:${name}` : `dnb:${name}`;
 export const isDnbSeriesKey = (key: string | undefined): boolean => !!key && key.startsWith('dnb:');
+
+export function parseDnbSeriesKey(key: string): { name: string; parentId?: string } {
+  const rest = key.replace(/^dnb:/, '');
+  const match = rest.match(/^(\d{6,12}X?):(.+)$/i);
+  return match ? { parentId: match[1], name: match[2] } : { name: rest };
+}
 
 /** MARC21-Datensatz der Deutschen Nationalbibliothek (SRU) — kennt fast jede deutsche ISBN. */
 export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | null {
@@ -270,6 +280,7 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const titleVolume = Number(
     partNumber?.match(/^(?:band|bd\.?|teil|vol\.?)?\s*(\d{1,4})$/i)?.[1] ?? NaN
   );
+  const parentId = first(['773'], 'w')?.match(/\(DE-101\)(\w+)/)?.[1];
   const comic = fields.some(
     (f) =>
       ['082', '083'].includes(f.getAttribute('tag') ?? '') &&
@@ -303,7 +314,11 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
           wikidataId: `hc:${seriesName}`,
         })
       : titleVolume > 0
-        ? { name: mainTitle, position: titleVolume, wikidataId: dnbSeriesKey(mainTitle) }
+        ? {
+            name: mainTitle,
+            position: titleVolume,
+            wikidataId: dnbSeriesKey(mainTitle, parentId),
+          }
         : undefined,
     source: 'dnb' as const,
   });

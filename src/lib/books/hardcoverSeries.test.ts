@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Book, BookSeriesPart } from '../../types/Book';
-import { adoptSeries, displayVolume, needsSeriesLookup, seriesProgress } from './bookSeries';
+import {
+  adoptSeries,
+  displayVolume,
+  fitsSeries,
+  needsSeriesLookup,
+  seriesProgress,
+} from './bookSeries';
 
 const NOW = new Date('2026-11-07T12:00:00').getTime();
 
@@ -172,5 +178,38 @@ describe('displayVolume', () => {
   it('nimmt die Bandnummer der Reihe sonst unverändert', () => {
     expect(displayVolume(part(4, 'Der Gottkaiser des Wüstenplaneten'), 'Dune')).toBe(4);
     expect(displayVolume(part(2, 'Fahrenheit 451'), 'Dune')).toBe(2);
+  });
+});
+
+describe('fitsSeries', () => {
+  const orv = [1, 2, 3].map((position) => ({
+    wikidataId: `hc-orv-${position}`,
+    title: `Omniscient Reader's Viewpoint (Manhwa), Vol. ${position}`,
+    position,
+    result: {
+      id: `hc-orv-${position}`,
+      title: `Omniscient Reader's Viewpoint (Manhwa), Vol. ${position}`,
+      authors: ['singNsong', 'Sleepy-C'],
+      source: 'hardcover' as const,
+    },
+  }));
+  const key = "hc:Omniscient Reader's Viewpoint (Manhwa)";
+
+  it('erkennt eine falsch zugeordnete Reihe am Autor', () => {
+    const atsumori = book({
+      title: 'Verlobt mit Atsumori-kun 06',
+      authors: ['Taamo'],
+      series: { name: "Omniscient Reader's Viewpoint (Manhwa)", position: 1, wikidataId: key },
+    });
+    expect(fitsSeries(atsumori, orv, key)).toBe(false);
+  });
+
+  it('lässt richtig zugeordnete Bände gelten', () => {
+    const reader = book({
+      title: 'The Omniscient Reader 2',
+      authors: ['singNsong'],
+      series: { name: "Omniscient Reader's Viewpoint (Manhwa)", position: 2, wikidataId: key },
+    });
+    expect(fitsSeries(reader, orv, key)).toBe(true);
   });
 });

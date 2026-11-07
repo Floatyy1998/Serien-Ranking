@@ -122,6 +122,17 @@ function orderPositionOf(
 }
 
 /**
+ * Passt das Buch in die Reihe? Es braucht einen Platz darin, und liegt dort ein Band, muss der Autor stimmen —
+ * sonst ist die Reihe falsch zugeordnet (Verlobt mit Atsumori-kun als Band 1 von Omniscient Reader's Viewpoint).
+ */
+export function fitsSeries(book: Book, parts: BookSeriesPart[], seriesId: string): boolean {
+  const position = partPositionOf(book, parts, seriesId);
+  if (position === undefined) return false;
+  const part = parts.find((p) => p.position === position);
+  return !part || sameAuthor(book.authors, part.result?.authors);
+}
+
+/**
  * Bandnummer zur Anzeige: Nennt der Titel selbst eine Nummer der Reihe („Blade Runner 3: Replicant Night"),
  * gilt diese — Hardcover zählt hier ab der Romanvorlage als Band 0.
  */
@@ -223,8 +234,8 @@ export function seriesProgress(
 }
 
 const SERIES_RECHECK_MS = 30 * 86_400_000;
-/** Prüfungen davor kannten die DNB als Reihenquelle noch nicht. */
-const SERIES_LOOKUP_SINCE = Date.parse('2026-11-07T12:00:00+01:00');
+/** Prüfungen davor kannten die DNB-Gesamttitel (`partof`) als Reihenquelle noch nicht. */
+const SERIES_LOOKUP_SINCE = Date.parse('2026-11-07T15:00:00+01:00');
 
 /**
  * Braucht das Buch eine Reihen-Suche (Hardcover, dann DNB)? Nur wenn sein Schlüssel keine Bände liefert

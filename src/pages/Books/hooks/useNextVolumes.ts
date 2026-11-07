@@ -3,8 +3,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
 import {
   adoptSeries,
+  fitsSeries,
   needsSeriesLookup,
-  partPositionOf,
   seriesProgress,
   type SeriesProgress,
 } from '../../../lib/books/bookSeries';
@@ -95,7 +95,9 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
         if (readOnly || !uid || lookups >= MAX_LOOKUPS) break;
         const known = book.series?.wikidataId;
         const knownParts = known ? next[known] : [];
-        const placed = !!known && partPositionOf(book, knownParts, known) !== undefined;
+        const placed = !!known && fitsSeries(book, knownParts, known);
+        // Eine Reihe mit Bänden, in die das Buch nicht passt, ist falsch zugeordnet: Name und Band nicht übernehmen.
+        const own = knownParts.length >= 2 && !placed ? undefined : book.series;
         // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen,
         // deutsche Manga-Bände kennt meist nur die DNB.
         if (needsSeriesLookup(book, knownParts.length, placed, Date.now())) {
@@ -110,13 +112,13 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
             if (!found?.wikidataId) continue;
             if (found.wikidataId === known) {
               if (placed || found.position === undefined) continue;
-              adopted = adoptSeries(book.series, found);
+              adopted = adoptSeries(own, found);
               break;
             }
             const parts = await loadParts(found.wikidataId);
             if (!alive) return;
             if (parts.length >= 2) {
-              adopted = adoptSeries(book.series, found);
+              adopted = adoptSeries(own, found);
               names[found.wikidataId] = adopted.name;
               break;
             }

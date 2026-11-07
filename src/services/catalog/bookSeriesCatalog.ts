@@ -1,3 +1,4 @@
+import { isDnbSeriesKey, parseDnbSeriesKey } from '../../lib/books/bookSearchMapping';
 import {
   mapCatalogSeries,
   seriesFileName,
@@ -41,7 +42,9 @@ export async function catalogSeriesOf(bookId: string): Promise<BookSeriesInfo | 
   const entry = index?.items.find((item) => item.id === bookId);
   if (!entry) return undefined;
   if (!entry.s) return null;
-  const name = entry.s.replace(/^(?:hc|dnb):/, '');
+  const name = isDnbSeriesKey(entry.s)
+    ? parseDnbSeriesKey(entry.s).name
+    : entry.s.replace(/^hc:/, '');
   return {
     name,
     wikidataId: entry.s,

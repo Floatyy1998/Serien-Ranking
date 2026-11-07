@@ -182,7 +182,7 @@ export function fetchSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
 }
 
 function liveSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
-  if (isDnbSeriesKey(seriesId)) return dnbSeriesParts(seriesId.slice(4));
+  if (isDnbSeriesKey(seriesId)) return dnbSeriesParts(seriesId);
   if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3));
   return cached(`parts:${appLocale}:${seriesId}`, 3 * DAY, async () => {
     const rows = await runQuery(`SELECT ?part ?partLabel ?ord ?date ?olid WHERE {

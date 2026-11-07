@@ -23,7 +23,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
-import { partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
+import { fitsSeries, partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import { searchBooks } from '../../services/api/booksApi';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
@@ -282,8 +282,25 @@ export const BookDetailPage = () => {
   const uid = useAuth()?.user?.uid;
   const { add: addManga, addingId } = useAddManga();
 
+  const checkedSeries = catalogFill?.id === decodedId ? catalogFill.series : undefined;
   useEffect(() => {
     if (!owned || !links) return;
+    const ownKey = owned.series?.wikidataId;
+    // Falsch zugeordnete Reihe (Band eines anderen Autors auf diesem Platz): die geprüfte Reihe des Katalogs übernehmen.
+    if (
+      ownKey &&
+      checkedSeries?.wikidataId &&
+      checkedSeries.wikidataId !== ownKey &&
+      links.series?.wikidataId === ownKey &&
+      parts.length >= 2 &&
+      !fitsSeries(owned, parts, ownKey)
+    ) {
+      void actions.updateFields(owned, {
+        series: checkedSeries,
+        seriesChecked: new Date().toISOString(),
+      });
+      return;
+    }
     const fields: Partial<Book> = {};
     if (links.wikidataId && !owned.wikidataId) fields.wikidataId = links.wikidataId;
     const seriesId = owned.series?.wikidataId ?? links.series?.wikidataId;
@@ -300,7 +317,7 @@ export const BookDetailPage = () => {
     }
     if (Object.keys(fields).length === 0) return;
     void actions.updateFields(owned, { ...fields, wdChecked: new Date().toISOString() });
-  }, [owned, links, parts, actions]);
+  }, [owned, links, parts, actions, checkedSeries]);
 
   if (!view) {
     return (
@@ -355,11 +372,9 @@ export const BookDetailPage = () => {
   const saveSeriesPosition = (value: string) => {
     if (!owned) return;
     const position = Number(value);
+    // Leeren heißt „die Reihe stimmt nicht": Zuordnung ganz weg, die App bestimmt sie neu.
     if (!position) {
-      void actions.updateFields(
-        owned,
-        owned.series?.wikidataId ? { 'series/position': null } : { series: null }
-      );
+      void actions.updateFields(owned, { series: null, seriesChecked: null });
       return;
     }
     void actions.updateFields(owned, {

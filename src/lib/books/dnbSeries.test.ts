@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { mapDnbRecord } from './bookSearchMapping';
-import { mapDnbSeriesParts } from './dnbSeries';
+import { mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
+import { mapDnbSeriesParts, mergeSeriesParts } from './dnbSeries';
 
 const NAME = 'Verliebt in mehr als dein Gesicht';
 
@@ -61,5 +61,44 @@ describe('mapDnbSeriesParts', () => {
   it('nimmt pro Band die Druckausgabe', () => {
     expect(parts[0].result?.isbn13).toBe('9783753921068');
     expect(parts[0].result?.pageCount).toBe(192);
+  });
+});
+
+describe('DNB-Reihenschlüssel mit Gesamttitel', () => {
+  it('nimmt die IDN aus Feld 773 in den Schlüssel', () => {
+    const xml = `<record xmlns="http://www.loc.gov/MARC21/slim">
+      ${field('245', sub('a', 'Existence'), sub('n', '1'))}
+      ${field('773', sub('q', '11'), sub('w', '(DE-101)1354617061'))}
+    </record>`;
+    expect(mapDnbRecord(xml, '9783551630483')?.series?.wikidataId).toBe('dnb:1354617061:Existence');
+  });
+
+  it('liest Schlüssel mit und ohne Gesamttitel', () => {
+    expect(parseDnbSeriesKey('dnb:1354617061:Existence')).toEqual({
+      parentId: '1354617061',
+      name: 'Existence',
+    });
+    expect(parseDnbSeriesKey('dnb:130039255X:How to use a returner')).toEqual({
+      parentId: '130039255X',
+      name: 'How to use a returner',
+    });
+    expect(parseDnbSeriesKey(`dnb:${NAME}`)).toEqual({ name: NAME });
+  });
+
+  it('führt Bandlisten zusammen und behält die Druckausgabe', () => {
+    const print = mapDnbSeriesParts(
+      response(record({ isbn: '978-3-7539-2106-8', n: '7', year: '2024', pages: true })),
+      NAME
+    );
+    const ebook = mapDnbSeriesParts(
+      response(
+        record({ isbn: '978-3-7539-2107-5', title: `${NAME} 07`, v: '7', year: '2024' }),
+        record({ isbn: '978-3-7539-5173-7', title: `${NAME} 17`, v: '17', year: '2027' })
+      ),
+      NAME
+    );
+    const merged = mergeSeriesParts([ebook, print]);
+    expect(merged.map((p) => p.position)).toEqual([7, 17]);
+    expect(merged[0].result?.isbn13).toBe('9783753921068');
   });
 });
