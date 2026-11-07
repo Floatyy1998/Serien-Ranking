@@ -1,5 +1,6 @@
 import type firebase from 'firebase/compat/app';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
+import { getAuthTokenRejection } from './breadcrumbs';
 import { captureError } from './errorReporter';
 
 const SLOW_AUTH_MS = 5000;
@@ -17,6 +18,7 @@ type ExitKind = 'manuell' | 'beim Start' | 'in Sitzung';
 interface LastExit {
   at: number;
   how: ExitKind;
+  why?: string;
 }
 
 interface StartSnapshot {
@@ -43,9 +45,9 @@ function readLastExit(): LastExit | null {
   }
 }
 
-function writeLastExit(how: ExitKind | null): void {
+function writeLastExit(how: ExitKind | null, why?: string): void {
   try {
-    if (how) localStorage.setItem(LAST_EXIT_KEY, JSON.stringify({ at: Date.now(), how }));
+    if (how) localStorage.setItem(LAST_EXIT_KEY, JSON.stringify({ at: Date.now(), how, why }));
     else localStorage.removeItem(LAST_EXIT_KEY);
   } catch {
     // localStorage gesperrt
@@ -71,7 +73,8 @@ function hasFirebaseLocalUser(): boolean {
 function describeLastExit(exit: LastExit | null): string {
   if (!exit) return 'unbekannt';
   const hours = Math.round((Date.now() - exit.at) / 3_600_000);
-  return `${exit.how} vor ${hours < 48 ? `${hours} h` : `${Math.round(hours / 24)} d`}`;
+  const why = exit.why ? ` (${exit.why})` : '';
+  return `${exit.how}${why} vor ${hours < 48 ? `${hours} h` : `${Math.round(hours / 24)} d`}`;
 }
 
 /** Liegt Firebases Login noch in IndexedDB, obwohl Firebase „abgemeldet“ meldet? */
@@ -141,7 +144,8 @@ function writeRetryFlag(on: boolean): void {
 async function recoverUnreadSession(): Promise<void> {
   const idb = await probeFirebaseIdb();
   if (snapshot) snapshot.idb = idb;
-  if (idb !== 'user' || readRetryFlag()) return;
+  // Abgelehntes Token: Firebase räumt den Login gerade selbst weg, Neuladen rettet nichts.
+  if (idb !== 'user' || readRetryFlag() || getAuthTokenRejection()) return;
   writeRetryFlag(true);
   window.dispatchEvent(new Event(PAGE_REPLACING_EVENT));
   window.location.reload();
@@ -196,7 +200,7 @@ export function trackAuthEvent(user: firebase.User | null): void {
     const waitedMs = Date.now() - snapshot.startedAt;
     if (!user) {
       startedLoggedOut = true;
-      if (snapshot.hadSession) writeLastExit('beim Start');
+      if (snapshot.hadSession) writeLastExit('beim Start', getAuthTokenRejection() ?? undefined);
       // Auch ohne cachedUser prüfen: der kann schon in einer früheren Sitzung verschwunden sein.
       void recoverUnreadSession();
       return;
@@ -233,16 +237,19 @@ export function trackAuthEvent(user: firebase.User | null): void {
   writeLastExit(null);
   const createdAt = Date.parse(user.metadata?.creationTime || '') || Date.now();
   if (Date.now() - createdAt < DAY_MS) return;
+  const reloaded = readRetryFlag();
   writeRetryFlag(false);
   // Nach einem bewussten Abmelden ist der Neu-Login kein Befund.
   if (lastExit?.how === 'manuell') return;
   // Völlig leerer Speicher ohne Spuren = neues Gerät oder Neuinstallation, kein Sitzungsverlust.
   if (!hadSession && storageKeys === 0 && !lastExit) return;
+  const rejection = getAuthTokenRejection();
+  const token = rejection ? `abgelehnt (${rejection})` : 'keine Ablehnung';
   void describeStorage().then((storage) =>
     captureError({
       kind: 'error',
       name: 'AuthRelogin',
-      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Firebase-IDB: ${idb ?? 'ungeprüft'}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys}, ${storage})`,
+      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Token-Erneuerung: ${token}, Firebase-IDB: ${idb ?? 'ungeprüft'}${reloaded ? ' nach Neuladen' : ''}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys}, ${storage})`,
     })
   );
 }

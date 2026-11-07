@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { captureErrorMock } = vi.hoisted(() => ({ captureErrorMock: vi.fn() }));
+const { captureErrorMock, rejection } = vi.hoisted(() => ({
+  captureErrorMock: vi.fn(),
+  rejection: { code: null as string | null },
+}));
 vi.mock('./errorReporter', () => ({ captureError: captureErrorMock }));
+vi.mock('./breadcrumbs', () => ({ getAuthTokenRejection: () => rejection.code }));
 
 import {
   beginAuthDiagnostics,
@@ -54,6 +58,7 @@ describe('authDiagnostics', () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     captureErrorMock.mockClear();
+    rejection.code = null;
     sessionStorage.clear();
     localStorage.clear();
   });
@@ -198,5 +203,27 @@ describe('authDiagnostics', () => {
     trackAuthEvent(null);
     await vi.advanceTimersByTimeAsync(10);
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('lädt nicht neu und nennt den Grund, wenn Google das Token abgelehnt hat', async () => {
+    const reload = vi.fn();
+    vi.stubGlobal('location', { ...window.location, reload });
+    stubFirebaseIdb(['firebase:authUser:key:[DEFAULT]']);
+    rejection.code = 'TOKEN_EXPIRED';
+    beginAuthDiagnostics(true);
+    trackAuthEvent(null);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(reload).not.toHaveBeenCalled();
+    trackAuthEvent(user(OLD));
+    await vi.waitFor(() =>
+      expect(captureErrorMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'AuthRelogin',
+          message: expect.stringMatching(
+            /Token-Erneuerung: abgelehnt \(TOKEN_EXPIRED\).*zuvor: beim Start \(TOKEN_EXPIRED\) vor 0 h/
+          ),
+        })
+      )
+    );
   });
 });

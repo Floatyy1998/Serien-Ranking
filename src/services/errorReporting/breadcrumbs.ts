@@ -64,6 +64,23 @@ function installHistoryHook(): void {
   window.addEventListener('popstate', trackRoute);
 }
 
+const SECURETOKEN_HOST = 'securetoken.googleapis.com';
+let authTokenRejection: string | null = null;
+
+/** Hat Google in dieser Sitzung die Erneuerung des Login-Tokens abgelehnt? Dann ist die Sitzung serverseitig ungültig. */
+export const getAuthTokenRejection = (): string | null => authTokenRejection;
+
+/** Liest den Fehlercode (z. B. TOKEN_EXPIRED) aus einer Kopie der Antwort, ohne Firebase den Body wegzunehmen. */
+async function readAuthErrorCode(response: Response): Promise<string> {
+  try {
+    const body = (await response.clone().json()) as { error?: { message?: unknown } };
+    const message = typeof body?.error?.message === 'string' ? body.error.message : '';
+    return /^[A-Z_]{3,60}/.exec(message)?.[0] ?? '';
+  } catch {
+    return '';
+  }
+}
+
 function installFetchHook(): void {
   if (typeof window.fetch !== 'function') return;
   const originalFetch = window.fetch.bind(window);
@@ -72,7 +89,15 @@ function installFetchHook(): void {
       typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url || '';
     try {
       const response = await originalFetch(input, init);
-      if (!response.ok) addBreadcrumb('fetch', redactUrl(url), String(response.status));
+      if (!response.ok) {
+        const reason = url.includes(SECURETOKEN_HOST) ? await readAuthErrorCode(response) : '';
+        if (url.includes(SECURETOKEN_HOST)) authTokenRejection = reason || String(response.status);
+        addBreadcrumb(
+          'fetch',
+          redactUrl(url),
+          reason ? `${response.status} ${reason}` : String(response.status)
+        );
+      }
       return response;
     } catch (err) {
       addBreadcrumb('fetch', redactUrl(url), err instanceof Error ? err.name : 'network');
