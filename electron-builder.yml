@@ -9,6 +9,26 @@ directories:
 files:
   - electron/**/*
   - package.json
+  # Die Hülle lädt https://tv-rank.de und braucht zur Laufzeit nur electron-updater.
+  # Ohne diese Positivliste packt electron-builder alle dependencies der Web-App
+  # ein (React, Firebase, Capacitor …): 238 MB asar, 9000 entpackte Dateien mit
+  # Pfaden über 247 Zeichen — daran scheiterte der alte Deinstaller beim Update
+  # (Verschieben nach %TEMP% überschreitet MAX_PATH).
+  - "!node_modules/**/*"
+  - node_modules/electron-updater/**/*
+  - node_modules/builder-util-runtime/**/*
+  - node_modules/argparse/**/*
+  - node_modules/debug/**/*
+  - node_modules/graceful-fs/**/*
+  - node_modules/js-yaml/**/*
+  - node_modules/jsonfile/**/*
+  - node_modules/lazy-val/**/*
+  - node_modules/lodash.escaperegexp/**/*
+  - node_modules/lodash.isequal/**/*
+  - node_modules/ms/**/*
+  - node_modules/sax/**/*
+  - node_modules/tiny-typed-emitter/**/*
+  - node_modules/universalify/**/*
   # Nur en-US Locale behalten — die anderen 50+ Chromium-Locales kosten ~10MB
   # und werden eh nicht genutzt (App ist nur Deutsch).
   - "!**/locales/*.pak"
@@ -24,6 +44,7 @@ win:
   icon: public/app-icon.ico
   signAndEditExecutable: false
 nsis:
+  include: scripts/installer.nsh
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
