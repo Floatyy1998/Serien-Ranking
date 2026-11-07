@@ -3,11 +3,12 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
 import {
   adoptSeries,
-  needsHardcoverSeries,
+  needsSeriesLookup,
   partPositionOf,
   seriesProgress,
   type SeriesProgress,
 } from '../../../lib/books/bookSeries';
+import { dnbSeriesOf } from '../../../services/api/booksApi';
 import { hardcoverBook, hardcoverIsbn } from '../../../services/api/hardcoverApi';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
 import { updateBookFields } from '../../../services/books/bookService';
@@ -32,7 +33,19 @@ async function hardcoverSeriesOf(book: Book): Promise<BookSeriesInfo | null | un
   }
 }
 
-/** Findet für gelesene Bücher die Reihe (Hardcover, Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
+/** Reihe laut DNB (Feld 490 oder Bandnummer im Titel) — kennt deutsche Ausgaben, auch Manga. */
+async function dnbSeriesOfBook(book: Book): Promise<BookSeriesInfo | null | undefined> {
+  if (!book.isbn13) return null;
+  try {
+    return await dnbSeriesOf(book.isbn13);
+  } catch {
+    return undefined;
+  }
+}
+
+const SERIES_SOURCES = [hardcoverSeriesOf, dnbSeriesOfBook];
+
+/** Findet für gelesene Bücher die Reihe (Hardcover, DNB, Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
 export function useNextVolumes(books: Book[], now: number, options: { readOnly?: boolean } = {}) {
   const { readOnly = false } = options;
   const { user } = useAuth() || {};
@@ -74,27 +87,38 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
         const known = book.series?.wikidataId;
         const knownParts = known ? next[known] : [];
         const placed = !!known && partPositionOf(book, knownParts, known) !== undefined;
-        // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen.
-        if (needsHardcoverSeries(book, knownParts.length, placed, Date.now())) {
+        // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen,
+        // deutsche Manga-Bände kennt meist nur die DNB.
+        if (needsSeriesLookup(book, knownParts.length, placed, Date.now())) {
           lookups += 1;
-          const found = await hardcoverSeriesOf(book);
-          if (!alive) return;
-          if (found !== undefined) {
-            const fields: Record<string, unknown> = { seriesChecked: new Date().toISOString() };
-            if (found && found.wikidataId === known && found.position !== undefined && !placed) {
-              fields.series = adoptSeries(book.series, found);
-            } else if (found?.wikidataId && found.wikidataId !== known) {
-              const parts = await loadParts(found.wikidataId);
-              if (!alive) return;
-              if (parts.length >= 2) {
-                const series = adoptSeries(book.series, found);
-                fields.series = series;
-                names[found.wikidataId] = series.name;
-              }
+          let answered = false;
+          let adopted: BookSeriesInfo | undefined;
+          for (const source of SERIES_SOURCES) {
+            const found = await source(book);
+            if (!alive) return;
+            if (found === undefined) continue;
+            answered = true;
+            if (!found?.wikidataId) continue;
+            if (found.wikidataId === known) {
+              if (placed || found.position === undefined) continue;
+              adopted = adoptSeries(book.series, found);
+              break;
             }
-            await updateBookFields(uid, book.id, fields).catch(() => undefined);
-            if (fields.series) continue;
+            const parts = await loadParts(found.wikidataId);
+            if (!alive) return;
+            if (parts.length >= 2) {
+              adopted = adoptSeries(book.series, found);
+              names[found.wikidataId] = adopted.name;
+              break;
+            }
           }
+          if (answered || adopted) {
+            await updateBookFields(uid, book.id, {
+              seriesChecked: new Date().toISOString(),
+              ...(adopted ? { series: adopted } : {}),
+            }).catch(() => undefined);
+          }
+          if (adopted) continue;
         }
         const checkedAt = book.wdChecked ? new Date(book.wdChecked).getTime() : 0;
         const settled = known

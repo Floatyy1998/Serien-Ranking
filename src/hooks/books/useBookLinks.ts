@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getBookDetails } from '../../services/api/booksApi';
-import { hardcoverSeriesKey } from '../../services/api/hardcoverApi';
+import { isDnbSeriesKey } from '../../lib/books/bookSearchMapping';
+import { isHardcoverSeriesKey } from '../../services/api/hardcoverApi';
 import { fetchBookLinks, fetchSeriesParts } from '../../services/api/wikidataBooks';
 import type { BookDetails, BookLinks, BookSeriesPart } from '../../types/Book';
 
@@ -33,8 +34,9 @@ export function useBookDetails(
 }
 
 /**
- * Verfilmungen und Wikipedia aus Wikidata; die Reihe kommt aus Hardcover, wenn das Buch von dort stammt
- * (series.wikidataId = `hc:<Name>`), sonst ebenfalls aus Wikidata. Die Bandliste gibt es nur bei einer Reihe.
+ * Verfilmungen und Wikipedia aus Wikidata; die Reihe kommt aus Hardcover bzw. der DNB, wenn das Buch einen
+ * solchen Schlüssel trägt (`hc:<Name>`, `dnb:<Name>` — der Name zur Anzeige kann abweichen), sonst ebenfalls
+ * aus Wikidata. Die Bandliste gibt es nur bei einer Reihe.
  */
 export function useBookLinks(
   title: string | undefined,
@@ -44,30 +46,28 @@ export function useBookLinks(
   const [links, setLinks] = useState<BookLinks | null>(null);
   const [parts, setParts] = useState<BookSeriesPart[]>([]);
   const [loading, setLoading] = useState(!!title);
-  const hardcoverName = ownSeries?.wikidataId?.startsWith('hc:') ? ownSeries.name : undefined;
-  const hardcoverPosition = ownSeries?.position;
+  const ownKey =
+    isHardcoverSeriesKey(ownSeries?.wikidataId) || isDnbSeriesKey(ownSeries?.wikidataId)
+      ? ownSeries?.wikidataId
+      : undefined;
+  const ownName = ownSeries?.name;
+  const ownPosition = ownSeries?.position;
 
   useEffect(() => {
     if (!title) return;
     let alive = true;
     setLoading(true);
     setParts([]);
-    const fromHardcover = hardcoverName
-      ? fetchSeriesParts(hardcoverSeriesKey(hardcoverName)).catch(() => [])
-      : Promise.resolve(null);
+    const fromOwnKey = ownKey ? fetchSeriesParts(ownKey).catch(() => []) : Promise.resolve(null);
     fetchBookLinks(title, author)
       .then(async (result) => {
         if (!alive) return;
-        const list = await fromHardcover;
+        const list = await fromOwnKey;
         if (!alive) return;
-        if (hardcoverName && list && list.length > 1) {
+        if (ownKey && list && list.length > 1) {
           setLinks({
             ...result,
-            series: {
-              wikidataId: hardcoverSeriesKey(hardcoverName),
-              name: hardcoverName,
-              position: hardcoverPosition,
-            },
+            series: { wikidataId: ownKey, name: ownName ?? '', position: ownPosition },
           });
           setParts(list);
           return;
@@ -83,7 +83,7 @@ export function useBookLinks(
     return () => {
       alive = false;
     };
-  }, [title, author, hardcoverName, hardcoverPosition]);
+  }, [title, author, ownKey, ownName, ownPosition]);
 
   return { links, parts, loading };
 }

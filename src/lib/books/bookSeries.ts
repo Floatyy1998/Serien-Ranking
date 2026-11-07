@@ -223,13 +223,15 @@ export function seriesProgress(
 }
 
 const SERIES_RECHECK_MS = 30 * 86_400_000;
+/** Prüfungen davor kannten die DNB als Reihenquelle noch nicht. */
+const SERIES_LOOKUP_SINCE = Date.parse('2026-11-07T12:00:00+01:00');
 
 /**
- * Braucht das Buch eine Reihen-Suche bei Hardcover? Nur wenn sein Schlüssel keine Bände liefert
- * (z. B. deutscher DNB-Reihenname) oder sein Band darin nicht zu finden ist, Hardcover es über ID
- * oder ISBN finden kann und die letzte Suche alt ist.
+ * Braucht das Buch eine Reihen-Suche (Hardcover, dann DNB)? Nur wenn sein Schlüssel keine Bände liefert
+ * (z. B. deutscher DNB-Reihenname) oder sein Band darin nicht zu finden ist, es eine Hardcover-ID oder
+ * ISBN hat und die letzte Suche alt ist.
  */
-export function needsHardcoverSeries(
+export function needsSeriesLookup(
   book: Book,
   knownParts: number,
   placed: boolean,
@@ -237,7 +239,7 @@ export function needsHardcoverSeries(
 ): boolean {
   if ((knownParts >= 2 && placed) || (!book.hardcoverId && !book.isbn13)) return false;
   const checkedAt = book.seriesChecked ? new Date(book.seriesChecked).getTime() : 0;
-  return now - checkedAt >= SERIES_RECHECK_MS;
+  return checkedAt < SERIES_LOOKUP_SINCE || now - checkedAt >= SERIES_RECHECK_MS;
 }
 
 /** Hardcover-Reihe übernehmen: Name zur Anzeige bleibt, Schlüssel und Bandnummer kommen aus derselben Quelle wie die Bände. */
@@ -254,7 +256,7 @@ export function adoptSeries(
   };
 }
 
-const seriesNameKey = (name: string) => fold(name).replace(/[^a-z0-9ß]+/g, '');
+export const seriesNameKey = (name: string) => fold(name).replace(/[^a-z0-9ß]+/g, '');
 
 /**
  * Hat jemand die Reihe schon über einen anderen Schlüssel (z. B. Wikidata) in der Sammlung, übernimmt ein neu

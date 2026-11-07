@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Book, BookSeriesPart } from '../../types/Book';
-import { adoptSeries, displayVolume, needsHardcoverSeries, seriesProgress } from './bookSeries';
+import { adoptSeries, displayVolume, needsSeriesLookup, seriesProgress } from './bookSeries';
 
 const NOW = new Date('2026-11-07T12:00:00').getTime();
 
@@ -26,32 +26,40 @@ const part = (position: number, title: string): BookSeriesPart => ({
   position,
 });
 
-describe('needsHardcoverSeries', () => {
+describe('needsSeriesLookup', () => {
+  const LATER = new Date('2026-11-20T12:00:00').getTime();
+
   it('sucht, wenn der eigene Reihen-Schlüssel keine Bände liefert', () => {
-    expect(needsHardcoverSeries(book(), 0, false, NOW)).toBe(true);
+    expect(needsSeriesLookup(book(), 0, false, NOW)).toBe(true);
   });
 
   it('lässt Bücher mit funktionierender Reihe und gefundenem Band in Ruhe', () => {
-    expect(needsHardcoverSeries(book(), 7, true, NOW)).toBe(false);
+    expect(needsSeriesLookup(book(), 7, true, NOW)).toBe(false);
   });
 
   it('sucht, wenn die Reihe Bände hat, der eigene Band darin aber fehlt', () => {
-    expect(needsHardcoverSeries(book(), 7, false, NOW)).toBe(true);
+    expect(needsSeriesLookup(book(), 7, false, NOW)).toBe(true);
   });
 
   it('braucht eine Hardcover-ID oder ISBN', () => {
-    expect(needsHardcoverSeries(book({ isbn13: undefined }), 0, false, NOW)).toBe(false);
-    expect(needsHardcoverSeries(book({ isbn13: undefined, hardcoverId: 42 }), 0, false, NOW)).toBe(
+    expect(needsSeriesLookup(book({ isbn13: undefined }), 0, false, NOW)).toBe(false);
+    expect(needsSeriesLookup(book({ isbn13: undefined, hardcoverId: 42 }), 0, false, NOW)).toBe(
       true
     );
   });
 
   it('fragt erst nach 30 Tagen erneut', () => {
     expect(
-      needsHardcoverSeries(book({ seriesChecked: '2026-10-20T00:00:00.000Z' }), 0, false, NOW)
+      needsSeriesLookup(book({ seriesChecked: '2026-11-10T00:00:00.000Z' }), 0, false, LATER)
     ).toBe(false);
     expect(
-      needsHardcoverSeries(book({ seriesChecked: '2026-09-01T00:00:00.000Z' }), 0, false, NOW)
+      needsSeriesLookup(book({ seriesChecked: '2026-10-01T00:00:00.000Z' }), 0, false, LATER)
+    ).toBe(true);
+  });
+
+  it('wiederholt Prüfungen, die die DNB noch nicht kannten', () => {
+    expect(
+      needsSeriesLookup(book({ seriesChecked: '2026-11-07T08:00:00.000Z' }), 0, false, LATER)
     ).toBe(true);
   });
 });

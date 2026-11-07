@@ -220,6 +220,10 @@ function namesFromStatement(statement: string | undefined): string[] {
     .slice(0, 3);
 }
 
+/** Reihen aus der DNB tragen den Schlüssel `dnb:<Reihentitel>` — ihre Bände holt eine Titelsuche dort. */
+export const dnbSeriesKey = (name: string): string => `dnb:${name}`;
+export const isDnbSeriesKey = (key: string | undefined): boolean => !!key && key.startsWith('dnb:');
+
 /** MARC21-Datensatz der Deutschen Nationalbibliothek (SRU) — kennt fast jede deutsche ISBN. */
 export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | null {
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
@@ -262,6 +266,10 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
   const seriesVolume = seriesField
     ? Number(subfields(seriesField, 'v')[0]?.match(/\d+/)?.[0])
     : undefined;
+  // Manga-Bände führt die DNB ohne Feld 490, mit der Bandnummer im Titel (245 $n) und dem Gesamttitel in 773.
+  const titleVolume = Number(
+    partNumber?.match(/^(?:band|bd\.?|teil|vol\.?)?\s*(\d{1,4})$/i)?.[1] ?? NaN
+  );
   const comic = fields.some(
     (f) =>
       ['082', '083'].includes(f.getAttribute('tag') ?? '') &&
@@ -294,7 +302,9 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
           position: seriesVolume && Number.isFinite(seriesVolume) ? seriesVolume : undefined,
           wikidataId: `hc:${seriesName}`,
         })
-      : undefined,
+      : titleVolume > 0
+        ? { name: mainTitle, position: titleVolume, wikidataId: dnbSeriesKey(mainTitle) }
+        : undefined,
     source: 'dnb' as const,
   });
 }

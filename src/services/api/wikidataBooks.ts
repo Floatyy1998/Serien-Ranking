@@ -1,5 +1,7 @@
 import type { BasedOnBook, BookAdaptation, BookLinks, BookSeriesPart } from '../../types/Book';
+import { isDnbSeriesKey } from '../../lib/books/bookSearchMapping';
 import { normalizeSeriesParts } from '../../lib/books/bookSeries';
+import { dnbSeriesParts } from './booksApi';
 import { appLocale } from '../i18n';
 import { loadStaticBasedOn } from './bookStatic';
 import { hardcoverSeriesParts, isHardcoverSeriesKey } from './hardcoverApi';
@@ -169,6 +171,7 @@ export function fetchBookLinks(title: string, author?: string): Promise<BookLink
 }
 
 export function fetchSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
+  if (isDnbSeriesKey(seriesId)) return dnbSeriesParts(seriesId.slice(4));
   if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3));
   return cached(`parts:${appLocale}:${seriesId}`, 3 * DAY, async () => {
     const rows = await runQuery(`SELECT ?part ?partLabel ?ord ?date ?olid WHERE {

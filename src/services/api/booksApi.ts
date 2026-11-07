@@ -1,7 +1,14 @@
-import type { BookDetails, BookSearchResult } from '../../types/Book';
+import type {
+  BookDetails,
+  BookSearchResult,
+  BookSeriesInfo,
+  BookSeriesPart,
+} from '../../types/Book';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
+import { mapDnbSeriesParts } from '../../lib/books/dnbSeries';
 import {
   coverAtSize,
+  dnbSeriesKey,
   mapDnbRecord,
   mapGoogleDetails,
   mapGoogleVolume,
@@ -132,6 +139,37 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
   if (!res.ok) throw new Error(`DNB ${res.status}`);
   const hit = mapDnbRecord(await res.text(), isbn13);
   return hit ? [hit] : [];
+}
+
+/** Reihe eines Buchs laut DNB als `dnb:`-Schlüssel; `null` = keine Reihe, Fehler werfen (beim nächsten Besuch erneut). */
+export async function dnbSeriesOf(isbn13: string): Promise<BookSeriesInfo | null> {
+  const [hit] = await searchDnb(isbn13);
+  const series = hit?.series;
+  return series?.name ? { ...series, wikidataId: dnbSeriesKey(series.name) } : null;
+}
+
+/** Alle Bände einer Reihe aus der DNB, auch angekündigte — eine Titelsuche, 7 Tage gemerkt. */
+export function dnbSeriesParts(name: string): Promise<BookSeriesPart[]> {
+  return cached<BookSeriesPart[]>(
+    'dnbseries',
+    name.toLowerCase(),
+    7 * DAY,
+    async () => {
+      const params = new URLSearchParams({
+        version: '1.1',
+        operation: 'searchRetrieve',
+        query: `tit="${name.replace(/["\\]/g, ' ')}"`,
+        recordSchema: 'MARC21-xml',
+        maximumRecords: '100',
+      });
+      const res = await fetch(`${DNB_SRU}?${params.toString()}`);
+      if (!res.ok) throw new Error(`DNB ${res.status}`);
+      const parts = mapDnbSeriesParts(await res.text(), name);
+      if (!parts.length) throw NO_HITS;
+      return parts;
+    },
+    40
+  ).catch(() => []);
 }
 
 /** Die DNB zählt die Bände der deutschen Ausgabe selbst (Quartalsbände); ihre Nummer schlägt die der Hauptquelle. */
