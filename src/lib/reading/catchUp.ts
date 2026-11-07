@@ -80,10 +80,13 @@ export function bookCatchUp(list: Book[]): CatchUpEntry[] {
   return out;
 }
 
-/** Buchreihen, deren nächster Band schon erschienen ist und noch fehlt. */
+/**
+ * Buchreihen, deren nächster Band noch fehlt und schon zu haben sein kann: erschienen oder ohne bekannten Termin
+ * (die DNB nennt oft nur das Jahr). Angekündigte Bände kann man noch nicht aufholen.
+ */
 export function seriesCatchUp(list: SeriesProgress[]): CatchUpEntry[] {
   return list
-    .filter((s) => s.next.state === 'available')
+    .filter((s) => s.next.state !== 'upcoming')
     .map((series) => {
       const pages = series.books.map((b) => b.pageCount || 0).filter((p) => p > 0);
       const avgPages = pages.length

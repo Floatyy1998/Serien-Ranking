@@ -183,8 +183,8 @@ export const ReadingCatchUpPage = () => {
       meta: series.seriesName
         ? `${series.seriesName} · ${t('Band {n}', { n: series.volume })}`
         : t('Band {n}', { n: series.volume }),
-      sub: t('Schon erschienen'),
-      side: t('Neu'),
+      sub: series.next.state === 'available' ? t('Schon erschienen') : t('Termin offen'),
+      side: series.next.state === 'available' ? t('Neu') : '',
     };
   };
 

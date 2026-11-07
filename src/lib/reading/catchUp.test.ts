@@ -84,7 +84,7 @@ describe('bookCatchUp', () => {
 });
 
 describe('seriesCatchUp', () => {
-  it('zeigt nur erschienene nächste Bände', () => {
+  it('zeigt erschienene und Bände ohne Termin, keine angekündigten', () => {
     const list = seriesCatchUp([
       series(),
       series({
@@ -95,8 +95,16 @@ describe('seriesCatchUp', () => {
           daysUntil: 5,
         },
       }),
+      series({
+        seriesId: 'Q11',
+        next: {
+          part: { wikidataId: 'Q12', title: 'Ohne Termin', position: 3 },
+          state: 'unknown',
+          daysUntil: null,
+        },
+      }),
     ]);
-    expect(list.map((e) => e.key)).toEqual(['s-Q1']);
+    expect(list.map((e) => e.key)).toEqual(['s-Q1', 's-Q11']);
     expect(list[0].title).toBe('Die Gefährten');
     expect(list[0].progress).toBe(25);
     expect(list[0].openMinutes).toBe(300);
