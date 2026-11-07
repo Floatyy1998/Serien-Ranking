@@ -5,11 +5,14 @@ const writes = vi.hoisted(() => ({
   update: vi.fn(async () => {}),
   set: vi.fn(async () => {}),
   push: vi.fn(async () => {}),
+  remove: vi.fn(async () => {}),
+  once: vi.fn(async () => ({ val: () => null as unknown })),
 }));
 
 vi.mock('../db/ref', () => ({
   dbRef: () => writes,
   dbUpdate: vi.fn(),
+  userPath: (uid: string, node: string) => `users/${uid}/${node}`,
   paths: {
     bookItem: (uid: string, id: string) => `users/${uid}/books/${id}`,
     bookEvents: (uid: string, year: number) => `users/${uid}/wrapped/${year}/bookEvents`,
@@ -19,7 +22,7 @@ vi.mock('../db/ref', () => ({
 vi.mock('../api/booksApi', () => ({ resolveCover: async () => 'https://cover.test/x.jpg' }));
 vi.mock('../catalog/bookCatalog', () => ({ keepInCatalog: vi.fn() }));
 
-import { addBook, setBookStatus, setBookWish, updateBookProgress } from './bookService';
+import { addBook, removeBook, setBookStatus, setBookWish, updateBookProgress } from './bookService';
 
 const wished: Book = {
   id: 'b1',
@@ -67,5 +70,27 @@ describe('Wunschliste', () => {
     expect(writes.update).toHaveBeenLastCalledWith({ wishedAt: expect.any(String) });
     await setBookWish('u1', 'b1', false);
     expect(writes.update).toHaveBeenLastCalledWith({ wishedAt: null });
+  });
+});
+
+describe('removeBook', () => {
+  it('nimmt die Feed-Meldungen des Buchs mit, andere bleiben', async () => {
+    writes.update.mockClear();
+    writes.once.mockResolvedValueOnce({
+      val: () => ({
+        a1: { itemType: 'book', itemId: 'gb-WaTN0AEACAAJ', type: 'book_finished' },
+        a2: { itemType: 'book', itemId: 'hc-2580846', type: 'book_added' },
+        a3: { itemType: 'series', tmdbId: 1 },
+      }),
+    });
+    await removeBook('u1', 'gb-WaTN0AEACAAJ');
+    expect(writes.remove).toHaveBeenCalled();
+    expect(writes.update).toHaveBeenCalledWith({ a1: null });
+  });
+
+  it('schreibt nichts, wenn es keine Meldung gibt', async () => {
+    writes.update.mockClear();
+    await removeBook('u1', 'gb-x');
+    expect(writes.update).not.toHaveBeenCalled();
   });
 });

@@ -8,7 +8,7 @@ import {
 import { searchResultToBook, stripUndefined } from '../../lib/books/bookSearchMapping';
 import { resolveCover } from '../api/booksApi';
 import { keepInCatalog } from '../catalog/bookCatalog';
-import { dbRef, dbUpdate, paths } from '../db/ref';
+import { dbRef, dbUpdate, paths, userPath } from '../db/ref';
 
 const nowIso = () => new Date().toISOString();
 
@@ -173,6 +173,27 @@ export async function setFavoriteBookGenres(uid: string, ids: string[]): Promise
 
 export async function removeBook(uid: string, bookId: string): Promise<void> {
   await dbRef(paths.bookItem(uid, bookId)).remove();
+  await removeBookActivities(uid, bookId);
+}
+
+/**
+ * Feed-Meldungen zu einem entfernten Buch mit entfernen — sonst öffnen Freunde eine Ausgabe, die längst
+ * getauscht ist (koreanische Google-Ausgabe von „Existence" statt der deutschen). Höchstens 30 Einträge.
+ */
+async function removeBookActivities(uid: string, bookId: string): Promise<void> {
+  try {
+    const ref = dbRef(userPath(uid, 'activities'));
+    const all = ((await ref.once('value')).val() ?? {}) as Record<
+      string,
+      { itemType?: string; itemId?: unknown } | null
+    >;
+    const stale = Object.keys(all).filter(
+      (key) => all[key]?.itemType === 'book' && all[key]?.itemId === bookId
+    );
+    if (stale.length) await ref.update(Object.fromEntries(stale.map((key) => [key, null])));
+  } catch {
+    /* Feed-Aufräumen ist best effort */
+  }
 }
 
 export async function setSeriesAsBooks(uid: string, anilistId: number): Promise<void> {
