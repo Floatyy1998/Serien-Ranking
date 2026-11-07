@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
-import { mapDnbSeriesParts, mergeSeriesParts } from './dnbSeries';
+import { mapDnbSeriesParts, mergeSeriesParts, seriesFromTitle } from './dnbSeries';
 
 const NAME = 'Verliebt in mehr als dein Gesicht';
 
@@ -100,5 +100,47 @@ describe('DNB-Reihenschlüssel mit Gesamttitel', () => {
     const merged = mergeSeriesParts([ebook, print]);
     expect(merged.map((p) => p.position)).toEqual([7, 17]);
     expect(merged[0].result?.isbn13).toBe('9783753921068');
+  });
+});
+
+describe('seriesFromTitle', () => {
+  const part = (position: number, authors: string[], parent = '1165341840') => ({
+    wikidataId: `dnb-${position}`,
+    title: `Bungo Stray Dogs ${position}`,
+    position,
+    result: {
+      id: `dnb-${position}`,
+      title: `Bungo Stray Dogs ${position}`,
+      authors,
+      source: 'dnb' as const,
+      series: {
+        name: 'Bungo Stray Dogs',
+        position,
+        wikidataId: `dnb:${parent}:Bungo Stray Dogs`,
+      },
+    },
+  });
+  const parts = [1, 2, 3].map((n) => part(n, ['Sango Harukawa', 'Kafuka Asagiri']));
+
+  it('nimmt Reihe und Band aus dem Titel, wenn der Autor stimmt', () => {
+    expect(
+      seriesFromTitle(
+        { title: 'Bungo Stray Dogs 01', authors: ['Kafka Asagiri', 'Sango Harukawa'] },
+        parts
+      )
+    ).toEqual({
+      name: 'Bungo Stray Dogs',
+      position: 1,
+      wikidataId: 'dnb:1165341840:Bungo Stray Dogs',
+    });
+  });
+
+  it('lehnt Bände anderer Autoren und Titel ohne Bandnummer ab', () => {
+    expect(
+      seriesFromTitle({ title: 'Bungo Stray Dogs 01', authors: ['Ray Bradbury'] }, parts)
+    ).toBe(null);
+    expect(seriesFromTitle({ title: 'Bungo Stray Dogs', authors: ['Kafka Asagiri'] }, parts)).toBe(
+      null
+    );
   });
 });

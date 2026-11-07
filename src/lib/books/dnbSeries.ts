@@ -1,7 +1,7 @@
-import type { BookSearchResult, BookSeriesPart } from '../../types/Book';
+import type { BookSearchResult, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
 import { pickIsbn13 } from './bookIdentity';
-import { mapDnbRecord } from './bookSearchMapping';
-import { seriesNameKey } from './bookSeries';
+import { dnbSeriesKey, isDnbSeriesKey, mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
+import { sameAuthor, seriesNameKey } from './bookSeries';
 import { splitVolume } from './mangaVolume';
 
 const MARC_NS = 'http://www.loc.gov/MARC21/slim';
@@ -53,6 +53,29 @@ function keepPrint(byPosition: Map<number, BookSeriesPart>, part: BookSeriesPart
   const existing = byPosition.get(part.position);
   if (existing && (existing.result?.pageCount || !part.result?.pageCount)) return;
   byPosition.set(part.position, part);
+}
+
+/**
+ * Reihe aus dem Titel („Bungo Stray Dogs 01"), wenn keine Quelle die ISBN kennt: Die DNB-Bände der Reihe müssen
+ * vom selben Autor sein, sonst ist es keine („Fahrenheit 451"). Schlüssel mit dem häufigsten Gesamttitel der Bände.
+ */
+export function seriesFromTitle(
+  book: { title: string; authors?: string[] },
+  parts: BookSeriesPart[]
+): BookSeriesInfo | null {
+  const { series, volume } = splitVolume(book.title);
+  if (volume === undefined || parts.length < 2 || !book.authors?.length) return null;
+  const known = parts.filter((p) => p.result?.authors?.length);
+  const matching = known.filter((p) => sameAuthor(book.authors, p.result?.authors)).length;
+  if (!known.length || matching * 2 < known.length) return null;
+  const parents = new Map<string, number>();
+  for (const part of parts) {
+    const key = part.result?.series?.wikidataId;
+    const parentId = key && isDnbSeriesKey(key) ? parseDnbSeriesKey(key).parentId : undefined;
+    if (parentId) parents.set(parentId, (parents.get(parentId) ?? 0) + 1);
+  }
+  const parentId = [...parents.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  return { name: series, position: volume, wikidataId: dnbSeriesKey(series, parentId) };
 }
 
 /** Bandlisten mehrerer DNB-Abfragen (`partof`, Titelsuche) zu einer zusammenführen. */

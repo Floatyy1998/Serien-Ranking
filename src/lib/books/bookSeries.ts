@@ -1,4 +1,5 @@
 import type { Book, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
+import { isDnbSeriesKey, parseDnbSeriesKey } from './bookSearchMapping';
 import { splitVolume } from './mangaVolume';
 
 export interface RawSeriesPart {
@@ -44,9 +45,9 @@ export function normalizeSeriesParts(raw: RawSeriesPart[]): BookSeriesPart[] {
 
 const fold = (title: string) => title.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
 
-/** „Bis(s)" soll „Biss" wie „Bis" treffen — deshalb beide Lesarten der Klammer. */
+/** „Bis(s)" soll „Biss" wie „Bis" treffen — deshalb beide Lesarten der Klammer. „06" ist derselbe Band wie „6". */
 function titleKeys(title: string, mainOnly: boolean): Set<string> {
-  let text = fold(title);
+  let text = fold(title).replace(/(^|\D)0+(?=\d)/g, '$1');
   if (mainOnly) text = text.split(/[:–—]| - /)[0];
   const squash = (s: string) => s.replace(/[^a-z0-9ß]+/g, '');
   return new Set(
@@ -60,7 +61,24 @@ interface SeriesBookRef {
   title: string;
   wikidataId?: string;
   olWorkId?: string;
+  isbn13?: string;
   series?: { wikidataId?: string; position?: number };
+}
+
+/**
+ * Derselbe Reihen-Schlüssel? DNB-Reihen gab es kurz ohne Gesamttitel (`dnb:<Name>`) — sie gelten als dieselbe
+ * Reihe wie `dnb:<IDN>:<Name>`, sonst zählte ein Band unter dem neuen Schlüssel in der alten Reihe als fehlend.
+ */
+export function sameSeriesKey(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (!isDnbSeriesKey(a) || !isDnbSeriesKey(b)) return false;
+  const x = parseDnbSeriesKey(a);
+  const y = parseDnbSeriesKey(b);
+  return (
+    (!x.parentId || !y.parentId || x.parentId === y.parentId) &&
+    seriesNameKey(x.name) === seriesNameKey(y.name)
+  );
 }
 
 /**
@@ -73,13 +91,18 @@ export function partPositionOf(
   seriesId?: string
 ): number | undefined {
   const own = book.series?.position;
-  if (typeof own === 'number' && own >= 0 && (!seriesId || book.series?.wikidataId === seriesId)) {
+  if (
+    typeof own === 'number' &&
+    own >= 0 &&
+    (!seriesId || sameSeriesKey(book.series?.wikidataId, seriesId))
+  ) {
     return own;
   }
   const byId = parts.find(
     (p) =>
       (!!book.wikidataId && p.wikidataId === book.wikidataId) ||
-      (!!book.olWorkId && p.olWorkId === book.olWorkId)
+      (!!book.olWorkId && p.olWorkId === book.olWorkId) ||
+      (!!book.isbn13 && p.result?.isbn13 === book.isbn13)
   );
   if (byId) return byId.position;
   for (const mainOnly of [false, true]) {
@@ -100,7 +123,7 @@ const authorKeys = (authors: string[] | undefined) =>
   );
 
 /** Gleicher Autor, soweit beide Seiten einen kennen — „Maas, Sarah J." trifft „Sarah J. Maas". */
-function sameAuthor(a: string[] | undefined, b: string[] | undefined): boolean {
+export function sameAuthor(a: string[] | undefined, b: string[] | undefined): boolean {
   const keysA = authorKeys(a);
   const keysB = authorKeys(b);
   return !keysA.size || !keysB.size || sharesKey(keysA, keysB);
@@ -196,10 +219,21 @@ export function seriesProgress(
   now: number
 ): SeriesProgress[] {
   const out: SeriesProgress[] = [];
-  for (const [seriesId, parts] of Object.entries(partsBySeries)) {
+  const seen: string[] = [];
+  // Schlüssel mit Gesamttitel zuerst — ein älterer gleichwertiger Schlüssel ergäbe dieselbe Reihe ein zweites Mal.
+  const entries = Object.entries(partsBySeries).sort(
+    ([a], [b]) =>
+      Number(!isDnbSeriesKey(a) || !parseDnbSeriesKey(a).parentId) -
+      Number(!isDnbSeriesKey(b) || !parseDnbSeriesKey(b).parentId)
+  );
+  for (const [seriesId, parts] of entries) {
     if (parts.length < 2) continue;
+    if (seen.some((key) => sameSeriesKey(key, seriesId))) continue;
+    seen.push(seriesId);
     const inSeries = books.filter(
-      (b) => b.series?.wikidataId === seriesId || partPositionOf(b, parts, seriesId) !== undefined
+      (b) =>
+        sameSeriesKey(b.series?.wikidataId, seriesId) ||
+        partPositionOf(b, parts, seriesId) !== undefined
     );
     const positionsOf = (statuses: Book['status'][]) =>
       inSeries
@@ -234,13 +268,22 @@ export function seriesProgress(
 }
 
 const SERIES_RECHECK_MS = 30 * 86_400_000;
-/** Prüfungen davor kannten die DNB-Gesamttitel (`partof`) als Reihenquelle noch nicht. */
-const SERIES_LOOKUP_SINCE = Date.parse('2026-11-07T15:00:00+01:00');
+/**
+ * Stand der Reihensuche (`seriesCheckedV`): eine neue Quelle erhöht ihn, dann prüft die App jedes Buch einmal neu.
+ * 3 = Katalog, Hardcover, DNB per ISBN mit Gesamttitel, DNB über den Titel.
+ */
+export const SERIES_LOOKUP_VERSION = 3;
+
+/** Felder, die eine abgeschlossene Reihensuche am Buch hinterlässt. */
+export const seriesCheckedFields = () => ({
+  seriesChecked: new Date().toISOString(),
+  seriesCheckedV: SERIES_LOOKUP_VERSION,
+});
 
 /**
- * Braucht das Buch eine Reihen-Suche (Hardcover, dann DNB)? Nur wenn sein Schlüssel keine Bände liefert
+ * Braucht das Buch eine Reihen-Suche (Katalog, Hardcover, DNB)? Nur wenn sein Schlüssel keine Bände liefert
  * (z. B. deutscher DNB-Reihenname) oder sein Band darin nicht zu finden ist, es eine Hardcover-ID oder
- * ISBN hat und die letzte Suche alt ist.
+ * ISBN hat und die letzte Suche alt ist oder älter als die heutigen Quellen.
  */
 export function needsSeriesLookup(
   book: Book,
@@ -249,8 +292,9 @@ export function needsSeriesLookup(
   now: number
 ): boolean {
   if ((knownParts >= 2 && placed) || (!book.hardcoverId && !book.isbn13)) return false;
+  if (book.seriesCheckedV !== SERIES_LOOKUP_VERSION) return true;
   const checkedAt = book.seriesChecked ? new Date(book.seriesChecked).getTime() : 0;
-  return checkedAt < SERIES_LOOKUP_SINCE || now - checkedAt >= SERIES_RECHECK_MS;
+  return now - checkedAt >= SERIES_RECHECK_MS;
 }
 
 /** Hardcover-Reihe übernehmen: Name zur Anzeige bleibt, Schlüssel und Bandnummer kommen aus derselben Quelle wie die Bände. */

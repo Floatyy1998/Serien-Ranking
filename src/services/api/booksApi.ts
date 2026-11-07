@@ -5,7 +5,8 @@ import type {
   BookSeriesPart,
 } from '../../types/Book';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
-import { mapDnbSeriesParts, mergeSeriesParts } from '../../lib/books/dnbSeries';
+import { mapDnbSeriesParts, mergeSeriesParts, seriesFromTitle } from '../../lib/books/dnbSeries';
+import { splitVolume } from '../../lib/books/mangaVolume';
 import {
   coverAtSize,
   dnbSeriesKey,
@@ -151,6 +152,16 @@ export async function dnbSeriesOf(isbn13: string): Promise<BookSeriesInfo | null
   return isDnbSeriesKey(series.wikidataId)
     ? series
     : { ...series, wikidataId: dnbSeriesKey(series.name) };
+}
+
+/** Reihe über den Titel („Bungo Stray Dogs 01") — nur, wenn die DNB-Bände vom selben Autor sind. */
+export async function dnbSeriesByTitle(book: {
+  title: string;
+  authors?: string[];
+}): Promise<BookSeriesInfo | null> {
+  const { series, volume } = splitVolume(book.title);
+  if (volume === undefined || series.length < 3) return null;
+  return seriesFromTitle(book, await dnbSeriesParts(dnbSeriesKey(series)));
 }
 
 async function dnbQuery(query: string): Promise<string> {

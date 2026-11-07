@@ -54,6 +54,8 @@ export interface Book {
   wdChecked?: string;
   /** Zeitpunkt der letzten Hardcover-Suche nach der Reihe, wenn der eigene Reihen-Schlüssel keine Bände liefert. */
   seriesChecked?: string;
+  /** Stand der Reihensuche bei `seriesChecked` (SERIES_LOOKUP_VERSION) — ältere Prüfungen werden wiederholt. */
+  seriesCheckedV?: number;
 }
 
 /** Suchtreffer aus Hardcover, Google Books oder Open Library, noch nicht in der Sammlung. */

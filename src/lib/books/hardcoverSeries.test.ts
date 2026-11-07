@@ -5,6 +5,7 @@ import {
   displayVolume,
   fitsSeries,
   needsSeriesLookup,
+  SERIES_LOOKUP_VERSION,
   seriesProgress,
 } from './bookSeries';
 
@@ -54,18 +55,18 @@ describe('needsSeriesLookup', () => {
     );
   });
 
+  const checked = (at: string, v = SERIES_LOOKUP_VERSION) =>
+    book({ seriesChecked: at, seriesCheckedV: v });
+
   it('fragt erst nach 30 Tagen erneut', () => {
-    expect(
-      needsSeriesLookup(book({ seriesChecked: '2026-11-10T00:00:00.000Z' }), 0, false, LATER)
-    ).toBe(false);
-    expect(
-      needsSeriesLookup(book({ seriesChecked: '2026-10-01T00:00:00.000Z' }), 0, false, LATER)
-    ).toBe(true);
+    expect(needsSeriesLookup(checked('2026-11-10T00:00:00.000Z'), 0, false, LATER)).toBe(false);
+    expect(needsSeriesLookup(checked('2026-10-01T00:00:00.000Z'), 0, false, LATER)).toBe(true);
   });
 
-  it('wiederholt Prüfungen, die die DNB noch nicht kannten', () => {
+  it('wiederholt Prüfungen mit älterem Stand der Quellen sofort', () => {
+    expect(needsSeriesLookup(checked('2026-11-19T00:00:00.000Z', 2), 0, false, LATER)).toBe(true);
     expect(
-      needsSeriesLookup(book({ seriesChecked: '2026-11-07T08:00:00.000Z' }), 0, false, LATER)
+      needsSeriesLookup(book({ seriesChecked: '2026-11-19T00:00:00.000Z' }), 0, false, LATER)
     ).toBe(true);
   });
 });
@@ -211,5 +212,49 @@ describe('fitsSeries', () => {
       series: { name: "Omniscient Reader's Viewpoint (Manhwa)", position: 2, wikidataId: key },
     });
     expect(fitsSeries(reader, orv, key)).toBe(true);
+  });
+});
+
+describe('Verlobt mit Atsumori-kun: alter und neuer DNB-Schlüssel', () => {
+  const OLD = 'dnb:Verlobt mit Atsumori-kun';
+  const NEW = 'dnb:1238297749:Verlobt mit Atsumori-kun';
+  const parts = [1, 2, 3, 4, 5, 6].map((position) => ({
+    wikidataId: `dnb-97838420${position}`,
+    title: `Verlobt mit Atsumori-kun ${position}`,
+    position,
+    result: {
+      id: `dnb-97838420${position}`,
+      title: `Verlobt mit Atsumori-kun ${position}`,
+      authors: ['Taamo'],
+      isbn13: `978384200000${position}`,
+      source: 'dnb' as const,
+    },
+  }));
+  const volume = (position: number, key: string | undefined, over: Partial<Book> = {}) =>
+    book({
+      id: `gb-${position}`,
+      title: `Verlobt mit Atsumori-kun 0${position}`,
+      authors: ['Taamo'],
+      isbn13: `978384299999${position}`,
+      series: key ? { name: 'Verlobt mit Atsumori-kun', position, wikidataId: key } : undefined,
+      ...over,
+    });
+
+  it('zählt den letzten Band unter dem neuen Schlüssel auch in der alten Reihe', () => {
+    const books = [1, 2, 3, 4, 5].map((n) => volume(n, OLD)).concat(volume(6, NEW));
+    expect(seriesProgress(books, { [OLD]: parts, [NEW]: parts }, {}, NOW)).toEqual([]);
+  });
+
+  it('findet „06" als Band 6 über den Titel', () => {
+    const books = [1, 2, 3, 4, 5].map((n) => volume(n, OLD)).concat(volume(6, undefined));
+    expect(seriesProgress(books, { [OLD]: parts }, {}, NOW)).toEqual([]);
+  });
+
+  it('zeigt eine Reihe unter zwei Schlüsseln nur einmal', () => {
+    const books = [1, 2, 3].map((n) => volume(n, n === 3 ? NEW : OLD));
+    const out = seriesProgress(books, { [OLD]: parts, [NEW]: parts }, {}, NOW);
+    expect(out).toHaveLength(1);
+    expect(out[0].seriesId).toBe(NEW);
+    expect(out[0].next.part.position).toBe(4);
   });
 });

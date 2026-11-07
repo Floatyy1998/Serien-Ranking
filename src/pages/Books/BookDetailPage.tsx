@@ -23,7 +23,12 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
-import { fitsSeries, partPositionOf, seriesPlacement } from '../../lib/books/bookSeries';
+import {
+  fitsSeries,
+  partPositionOf,
+  seriesCheckedFields,
+  seriesPlacement,
+} from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import { searchBooks } from '../../services/api/booksApi';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
@@ -297,7 +302,7 @@ export const BookDetailPage = () => {
     ) {
       void actions.updateFields(owned, {
         series: checkedSeries,
-        seriesChecked: new Date().toISOString(),
+        ...seriesCheckedFields(),
       });
       return;
     }
@@ -374,7 +379,7 @@ export const BookDetailPage = () => {
     const position = Number(value);
     // Leeren heißt „die Reihe stimmt nicht": Zuordnung ganz weg, die App bestimmt sie neu.
     if (!position) {
-      void actions.updateFields(owned, { series: null, seriesChecked: null });
+      void actions.updateFields(owned, { series: null, seriesChecked: null, seriesCheckedV: null });
       return;
     }
     void actions.updateFields(owned, {

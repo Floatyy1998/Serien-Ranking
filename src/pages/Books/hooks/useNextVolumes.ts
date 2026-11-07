@@ -5,10 +5,11 @@ import {
   adoptSeries,
   fitsSeries,
   needsSeriesLookup,
+  seriesCheckedFields,
   seriesProgress,
   type SeriesProgress,
 } from '../../../lib/books/bookSeries';
-import { dnbSeriesOf } from '../../../services/api/booksApi';
+import { dnbSeriesByTitle, dnbSeriesOf } from '../../../services/api/booksApi';
 import { hardcoverBook, hardcoverIsbn } from '../../../services/api/hardcoverApi';
 import { catalogSeriesOf } from '../../../services/catalog/bookSeriesCatalog';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
@@ -52,7 +53,16 @@ async function catalogSeriesOfBook(book: Book): Promise<BookSeriesInfo | undefin
   return (await catalogSeriesOf(book.id).catch(() => undefined)) ?? undefined;
 }
 
-const SERIES_SOURCES = [catalogSeriesOfBook, hardcoverSeriesOf, dnbSeriesOfBook];
+/** Zuletzt über den Titel („Bungo Stray Dogs 01"), wenn keine Quelle die ISBN kennt. */
+async function dnbTitleSeriesOf(book: Book): Promise<BookSeriesInfo | null | undefined> {
+  try {
+    return await dnbSeriesByTitle(book);
+  } catch {
+    return undefined;
+  }
+}
+
+const SERIES_SOURCES = [catalogSeriesOfBook, hardcoverSeriesOf, dnbSeriesOfBook, dnbTitleSeriesOf];
 
 /** Findet für gelesene Bücher die Reihe (Hardcover, DNB, Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
 export function useNextVolumes(books: Book[], now: number, options: { readOnly?: boolean } = {}) {
@@ -125,7 +135,7 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
           }
           if (answered || adopted) {
             await updateBookFields(uid, book.id, {
-              seriesChecked: new Date().toISOString(),
+              ...seriesCheckedFields(),
               ...(adopted ? { series: adopted } : {}),
             }).catch(() => undefined);
           }
