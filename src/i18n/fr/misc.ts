@@ -173,6 +173,15 @@ const dict: Record<string, string> = {
     'Allemand, anglais, espagnol, français et portugais.',
   'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.':
     'Commence dès aujourd’hui – avec ta série préférée, ton manga ou le livre sur ta table de chevet.',
+  Gerät: 'Appareil',
+  'Letzte Schritte': 'Dernières étapes',
+  Netzwerk: 'Réseau',
+  Konsole: 'Console',
+  'Was wird gesendet?': "Qu'est-ce qui est envoyé ?",
+  '{count} fehlgeschlagen': '{count} en échec',
+  'Diese Seite und technische Daten mitschicken': 'Joindre cette page et les données techniques',
+  'Nur für die Fehlersuche und nur für den Betreiber sichtbar. Werte in Adressen wie Suchbegriffe werden vorher entfernt.':
+    "Sert uniquement au diagnostic et n'est visible que par l'éditeur de l'app. Les valeurs contenues dans les adresses, comme les termes de recherche, sont supprimées au préalable.",
 };
 
 export default dict;

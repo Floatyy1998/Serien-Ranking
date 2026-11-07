@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
+import type { BugContext } from '../../../types/ErrorReport';
 
 vi.mock(
   '@mui/icons-material',
@@ -115,5 +116,39 @@ describe('NewTicketForm', () => {
     );
     fireEvent.click(screen.getByText(/Feature/));
     expect(screen.getByPlaceholderText('Kurze Beschreibung des Features')).toBeInTheDocument();
+  });
+
+  it('sends the page context unless the checkbox is cleared', async () => {
+    const context = {
+      page: '/series/1396',
+      capturedAt: '2026-11-07T10:00:00.000Z',
+      env: { route: '/series/1396', sessionAgeMs: 1000 },
+      breadcrumbs: [],
+      network: [{ t: 1, method: 'GET', url: '/x', status: 500, ms: 5, via: 'fetch' }],
+      console: [],
+    } as unknown as BugContext;
+    const onSubmit = vi.fn(async (_data: { context?: BugContext }) => false);
+    render(
+      <NewTicketForm
+        theme={theme}
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        onUpload={vi.fn(async () => null)}
+        context={context}
+      />
+    );
+    expect(screen.getByText(/\/series\/1396/)).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Kurze Beschreibung des Problems'), {
+      target: { value: 'Titel' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Was genau ist passiert? Was hast du erwartet?'), {
+      target: { value: 'Text' },
+    });
+    fireEvent.click(screen.getByText('Absenden'));
+    expect(onSubmit.mock.calls[0]?.[0].context).toBe(context);
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(await screen.findByText('Absenden'));
+    expect(onSubmit.mock.calls[1]?.[0].context).toBeUndefined();
   });
 });

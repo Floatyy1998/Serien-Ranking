@@ -25,6 +25,7 @@ vi.mock('./breadcrumbs', () => ({
   addBreadcrumb: vi.fn(),
   getBreadcrumbs: () => [{ t: 5, type: 'click', label: 'button#x' }],
   installBreadcrumbs: vi.fn(),
+  sessionAgeMs: () => 0,
 }));
 
 const stylesheetRetry = { pending: false };

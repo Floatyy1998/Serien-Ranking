@@ -7,11 +7,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { NewTicketForm } from './components/NewTicketForm';
 import { TicketCard } from './components/TicketCard';
 import { useBugReportData } from './useBugReportData';
+import { isArchivedStatus } from './types';
 import { isPermanentBan, useModerationBan } from '../../hooks/social/useModerationBan';
 import { t } from '../../services/i18n';
-
-// Offene Tickets zuerst — der Rest wandert ins Archiv
-const isArchived = (status: string) => ['done', 'rejected', 'obsolete', 'closed'].includes(status);
+import {
+  clearStashedBugContext,
+  currentBugContext,
+} from '../../services/errorReporting/bugContext';
 
 export const BugReportPage = memo(() => {
   const { currentTheme } = useTheme();
@@ -29,6 +31,7 @@ export const BugReportPage = memo(() => {
   } = useBugReportData();
   const ban = useModerationBan();
   const [showForm, setShowForm] = useState(() => searchParams.get('create') === 'true');
+  const [bugContext] = useState(currentBugContext);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'open' | 'archive'>('open');
   const initialErrors = searchParams.get('errors') || '';
@@ -36,8 +39,8 @@ export const BugReportPage = memo(() => {
   const initialDescription = searchParams.get('description') || '';
   const initialType = searchParams.get('type') === 'feature' ? 'feature' : undefined;
 
-  const openTickets = tickets.filter((tk) => !isArchived(tk.status));
-  const archivedTickets = tickets.filter((tk) => isArchived(tk.status));
+  const openTickets = tickets.filter((tk) => !isArchivedStatus(tk.status));
+  const archivedTickets = tickets.filter((tk) => isArchivedStatus(tk.status));
   const visibleTickets = activeTab === 'open' ? openTickets : archivedTickets;
 
   return (
@@ -112,15 +115,22 @@ export const BugReportPage = memo(() => {
                 theme={currentTheme}
                 onSubmit={async (data) => {
                   const success = await createTicket(data);
-                  if (success) setShowForm(false);
+                  if (success) {
+                    clearStashedBugContext();
+                    setShowForm(false);
+                  }
                   return success;
                 }}
-                onCancel={() => setShowForm(false)}
+                onCancel={() => {
+                  clearStashedBugContext();
+                  setShowForm(false);
+                }}
                 onUpload={uploadScreenshot}
                 initialConsoleErrors={initialErrors}
                 initialTitle={initialTitle}
                 initialDescription={initialDescription}
                 initialType={initialType}
+                context={bugContext}
               />
             </motion.div>
           )}

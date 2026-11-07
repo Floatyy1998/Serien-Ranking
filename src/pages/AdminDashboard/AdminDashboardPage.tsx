@@ -288,7 +288,7 @@ export function AdminDashboardPage() {
               {activeTab === 'activity' && <ActivityTab data={data} theme={currentTheme} />}
               {activeTab === 'events' && <EventsTab data={data} theme={currentTheme} />}
               {activeTab === 'extension' && <ExtensionTab data={data} theme={currentTheme} />}
-              {activeTab === 'tickets' && <TicketsTab theme={currentTheme} />}
+              {activeTab === 'tickets' && <TicketsTab />}
               {activeTab === 'moderation' && <ModerationTab theme={currentTheme} />}
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}

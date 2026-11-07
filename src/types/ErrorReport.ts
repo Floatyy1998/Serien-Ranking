@@ -71,3 +71,38 @@ export interface ErrorReport {
   breadcrumbs: ErrorBreadcrumb[];
   status?: 'open' | 'resolved';
 }
+
+/** Eine HTTP-Anfrage aus dem Netzwerkprotokoll (fetch/XHR, keine WebSockets). */
+export interface NetworkLogEntry {
+  /** Millisekunden seit Sitzungsstart beim Absenden. */
+  t: number;
+  method: string;
+  /** Adresse ohne Query-Werte. */
+  url: string;
+  /** HTTP-Status; fehlt, wenn die Anfrage gar keine Antwort bekam. */
+  status?: number;
+  /** Dauer bis zur Antwort. */
+  ms: number;
+  /** Fehlername bei abgebrochenen oder gescheiterten Anfragen. */
+  failed?: string;
+  via: 'fetch' | 'xhr';
+}
+
+export interface ConsoleLogEntry {
+  t: number;
+  level: 'error' | 'warn';
+  text: string;
+}
+
+/** Was ein Bug-Ticket auf Wunsch über die Seite mitschickt, auf der es gemeldet wurde. */
+export interface BugContext {
+  /** Seite, auf der der Bug-Knopf gedrückt wurde (Pfad, Query-Werte entschärft). */
+  page: string;
+  pageTitle?: string;
+  scrollY?: number;
+  capturedAt: string;
+  env: ErrorEnvironment;
+  breadcrumbs: ErrorBreadcrumb[];
+  network: NetworkLogEntry[];
+  console: ConsoleLogEntry[];
+}

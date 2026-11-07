@@ -1,13 +1,17 @@
 import { BugReport } from '@mui/icons-material';
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { stashBugContext } from '../services/errorReporting/bugContext';
 import { t } from '../services/i18n';
 
 export const BugFab = memo(() => {
   const navigate = useNavigate();
   return (
     <button
-      onClick={() => navigate('/bug-report?create=true')}
+      onClick={() => {
+        stashBugContext();
+        navigate('/bug-report?create=true');
+      }}
       aria-label={t('Bug melden')}
       style={{
         // Schmale Lasche am Bildschirmrand statt runder Knopf mitten im

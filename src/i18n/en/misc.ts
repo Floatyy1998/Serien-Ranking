@@ -192,6 +192,15 @@ const dict: Record<string, string> = {
     'German, English, Spanish, French and Portuguese.',
   'Starte noch heute – mit deiner Lieblingsserie, deinem Manga oder dem Buch auf deinem Nachttisch.':
     'Start today – with your favorite show, your manga or the book on your nightstand.',
+  Gerät: 'Device',
+  'Letzte Schritte': 'Recent steps',
+  Netzwerk: 'Network',
+  Konsole: 'Console',
+  'Was wird gesendet?': 'What gets sent?',
+  '{count} fehlgeschlagen': '{count} failed',
+  'Diese Seite und technische Daten mitschicken': 'Include this page and technical details',
+  'Nur für die Fehlersuche und nur für den Betreiber sichtbar. Werte in Adressen wie Suchbegriffe werden vorher entfernt.':
+    'Only used for troubleshooting and only visible to the developer. Values in addresses, such as search terms, are removed first.',
 };
 
 export default dict;

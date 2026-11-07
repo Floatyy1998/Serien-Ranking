@@ -80,6 +80,7 @@ const SAMPLE = {
     createdBy: 'user-a',
     status: 'open',
     ticketType: 'bug',
+    createdAt: '2026-05-01T00:00:00Z',
     updatedAt: '2026-05-01T00:00:00Z',
     screenshots: ['https://cdn/a.png'],
   },
@@ -91,6 +92,7 @@ const SAMPLE = {
     createdBy: 'user-b',
     status: 'done',
     ticketType: 'feature',
+    createdAt: '2026-04-01T00:00:00Z',
     updatedAt: '2026-06-01T00:00:00Z',
   },
 };
@@ -112,38 +114,71 @@ afterEach(() => {
 });
 
 describe('useTicketsData – list & filter', () => {
-  it('lädt Tickets (neueste zuerst) und berechnet Counts', async () => {
+  const ids = (result: { current: ReturnType<typeof useTicketsData> }) =>
+    result.current.items.map((i) => i.ticket.id);
+
+  it('zeigt standardmäßig den Eingang und zählt die Warteschlangen', async () => {
     const { result } = renderHook(() => useTicketsData());
     fireTickets(SAMPLE);
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.tickets.map((t) => t.id)).toEqual(['t2', 't1']);
+    expect(ids(result)).toEqual(['t1']);
+    expect(result.current.counts.inbox).toBe(1);
+    expect(result.current.counts.done).toBe(1);
     expect(result.current.counts.all).toBe(2);
-    expect(result.current.counts.bug).toBe(1);
-    expect(result.current.counts.feature).toBe(1);
-    expect(result.current.counts.open).toBe(1);
   });
 
-  it('filtert nach Status, Typ und Suchbegriff', async () => {
+  it('filtert nach Warteschlange, Typ und Suchbegriff', async () => {
     const { result } = renderHook(() => useTicketsData());
     fireTickets(SAMPLE);
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    act(() => result.current.setStatusFilter('open'));
-    expect(result.current.filtered.map((t) => t.id)).toEqual(['t1']);
+    act(() => result.current.setQueue('all'));
+    expect(ids(result)).toEqual(['t1', 't2']);
 
-    act(() => result.current.setStatusFilter('all'));
     act(() => result.current.setTypeFilter('feature'));
-    expect(result.current.filtered.map((t) => t.id)).toEqual(['t2']);
+    expect(ids(result)).toEqual(['t2']);
 
     act(() => result.current.setTypeFilter('all'));
     act(() => result.current.setSearchQuery('login'));
-    expect(result.current.filtered.map((t) => t.id)).toEqual(['t1']);
+    expect(ids(result)).toEqual(['t1']);
   });
 
-  it('übernimmt expandedId aus dem ticket-Query-Param', () => {
+  it('lässt ein erledigtes Ticket bis zum Neuaufbau an seinem Platz', async () => {
+    const { result } = renderHook(() => useTicketsData());
+    fireTickets(SAMPLE);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    fireTickets({ ...SAMPLE, t1: { ...SAMPLE.t1, status: 'done' } });
+    expect(ids(result)).toEqual(['t1']);
+    expect(result.current.items[0].stale).toBe(true);
+    expect(result.current.pending).toBe(1);
+
+    act(() => result.current.refresh());
+    expect(ids(result)).toEqual([]);
+    expect(result.current.pending).toBe(0);
+  });
+
+  it('setzt neu eingegangene Tickets oben drauf, ohne den Rest umzusortieren', async () => {
+    const { result } = renderHook(() => useTicketsData());
+    fireTickets(SAMPLE);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    act(() => result.current.setQueue('all'));
+    act(() => result.current.setSort('activity'));
+    expect(ids(result)).toEqual(['t2', 't1']);
+
+    fireTickets({
+      ...SAMPLE,
+      t1: { ...SAMPLE.t1, updatedAt: '2026-07-01T00:00:00Z' },
+      t3: { ...SAMPLE.t1, id: 't3', title: 'Neu', createdAt: '2026-07-02T00:00:00Z' },
+    });
+    expect(ids(result)).toEqual(['t3', 't2', 't1']);
+  });
+
+  it('öffnet das Ticket aus dem ticket-Query-Param', () => {
     searchParamsState.params = new URLSearchParams('ticket=t9');
     const { result } = renderHook(() => useTicketsData());
-    expect(result.current.expandedId).toBe('t9');
+    expect(result.current.selectedId).toBe('t9');
+    expect(result.current.queue).toBe('all');
   });
 });
 

@@ -11,11 +11,12 @@
  */
 import { buildFingerprint } from '../../lib/errorReport/fingerprint';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
-import { shortStack, truncate } from '../../lib/errorReport/redact';
+import { redactUrl, shortStack, truncate } from '../../lib/errorReport/redact';
 import { decideThrottle, type ThrottleState } from '../../lib/errorReport/throttle';
 import { willRetryStylesheet } from '../app/stylesheetRetry';
 import { dbRef, serverTimestamp } from '../db/ref';
-import { addBreadcrumb, getBreadcrumbs, installBreadcrumbs } from './breadcrumbs';
+import { addBreadcrumb, getBreadcrumbs, installBreadcrumbs, sessionAgeMs } from './breadcrumbs';
+import { recordConsole } from './diagnosticLog';
 import { collectEnvironment, primeErrorContext } from './context';
 import type { ErrorKind, ErrorReport } from '../../types/ErrorReport';
 
@@ -139,11 +140,23 @@ function isResizeObserverLoop(input: CaptureInput): boolean {
   return /resizeobserver loop/i.test(input.message || '');
 }
 
+function logToConsoleBuffer(input: CaptureInput): void {
+  try {
+    const source = input.source ? ` @ ${redactUrl(input.source)}` : '';
+    recordConsole('error', sessionAgeMs(), [`${input.name}: ${input.message}${source}`]);
+  } catch {
+    // Das Protokoll ist Beiwerk, der Bericht geht vor
+  }
+}
+
+export const getSessionErrorCount = (): number => sessionErrorCount;
+
 export function captureError(input: CaptureInput): void {
   try {
     if (isStorageCondition(input)) return;
     if (isServiceWorkerRegistration(input)) return;
     if (isResizeObserverLoop(input)) return;
+    logToConsoleBuffer(input);
     const fingerprint = buildFingerprint(input);
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);

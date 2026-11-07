@@ -1,52 +1,57 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
 import { localizedVariants, tLocale } from '../../../../services/i18n';
 import { sendNotificationToUser } from '../../../../hooks/social/useDiscussionHelpers';
-import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
-import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
+import type { BugTicket, TicketComment, TicketType } from '../../../BugReport/types';
+import { isArchivedStatus, STATUS_CONFIG } from '../../../BugReport/types';
 import { onValue } from '../../../../services/db/subscribeValue';
+import {
+  countQueues,
+  matchesFilter,
+  mergeOrder,
+  pendingChanges,
+  sortTickets,
+  type TicketQueue,
+  type TicketSort,
+} from './ticketQueue';
 
-interface UseTicketsDataResult {
-  tickets: BugTicket[];
-  loading: boolean;
-  filtered: BugTicket[];
-  counts: Record<string, number>;
-  expandedId: string | null;
-  setExpandedId: React.Dispatch<React.SetStateAction<string | null>>;
-  expandedRef: React.RefObject<HTMLDivElement | null>;
-  statusFilter: TicketStatus | 'all';
-  setStatusFilter: (s: TicketStatus | 'all') => void;
-  typeFilter: TicketType | 'all';
-  setTypeFilter: (t: TicketType | 'all') => void;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  updateTicket: (ticketId: string, updates: Partial<BugTicket>) => Promise<void>;
-  addAdminComment: (ticketId: string, text: string) => Promise<void>;
-  addAdminNote: (ticketId: string, text: string) => Promise<void>;
-  deleteTicket: (ticketId: string) => Promise<void>;
+export interface InboxItem {
+  ticket: BugTicket;
+  /** Passt nach einer Änderung nicht mehr zum Filter, bleibt bis zum Neuaufbau stehen. */
+  stale: boolean;
+}
+
+interface ViewState {
+  key: string;
+  src: BugTicket[];
+  order: string[];
+  seen: Set<string>;
 }
 
 /**
- * Realtime ticket list + filter state + mutations. Lifted out of TicketsTab
- * so the JSX stays focused on layout.
+ * Realtime-Ticketliste, Inbox-Filter und Schreibaktionen. Die Reihenfolge der
+ * Liste wird eingefroren, sobald ein Filter steht — siehe `mergeOrder`.
  */
-export function useTicketsData(): UseTicketsDataResult {
+export function useTicketsData() {
   const { user } = useAuth() || {};
   const [searchParams] = useSearchParams();
   const [tickets, setTickets] = useState<BugTicket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(
+  const [selectedId, setSelectedId] = useState<string | null>(
     () => searchParams.get('ticket') || null
   );
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
+  const [queue, setQueue] = useState<TicketQueue>(() =>
+    searchParams.get('ticket') ? 'all' : 'inbox'
+  );
   const [typeFilter, setTypeFilter] = useState<TicketType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const expandedRef = useRef<HTMLDivElement>(null);
+  const [sort, setSort] = useState<TicketSort>('newest');
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     // limitToLast begrenzt den Listener auf die 100 neuesten Tickets (Push-Keys
@@ -55,26 +60,56 @@ export function useTicketsData(): UseTicketsDataResult {
     const query = dbRef('bugTickets').orderByKey().limitToLast(100);
     const handler = onValue(query, (snap) => {
       const val = snap.val();
-      if (val) {
-        const list = Object.values(val) as BugTicket[];
-        list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        setTickets(list);
-      } else {
-        setTickets([]);
-      }
+      setTickets(val ? (Object.values(val) as BugTicket[]) : []);
       setLoading(false);
     });
     return () => query.off('value', handler);
   }, []);
 
-  // Auto-scroll to expanded ticket from notification
-  useEffect(() => {
-    if (expandedId && expandedRef.current) {
-      setTimeout(() => {
-        expandedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 300);
-    }
-  }, [expandedId]);
+  const byId = useMemo(() => new Map(tickets.map((t) => [t.id, t])), [tickets]);
+
+  const freshIds = useMemo(
+    () =>
+      sortTickets(
+        tickets.filter((t) => matchesFilter(t, { queue, type: typeFilter, search: searchQuery })),
+        sort
+      ).map((t) => t.id),
+    [tickets, queue, typeFilter, searchQuery, sort]
+  );
+
+  const viewKey = `${queue}|${typeFilter}|${searchQuery}|${sort}|${refreshToken}`;
+  const [view, setView] = useState<ViewState>({
+    key: viewKey,
+    src: tickets,
+    order: freshIds,
+    seen: new Set(tickets.map((t) => t.id)),
+  });
+
+  // Abgeleiteter Zustand aus dem vorigen Render (React-Muster statt Effekt):
+  // neuer Filter = neu aufbauen, neue Daten = nur einsortieren.
+  if (view.key !== viewKey) {
+    setView({ key: viewKey, src: tickets, order: freshIds, seen: new Set(byId.keys()) });
+  } else if (view.src !== tickets) {
+    setView({
+      key: viewKey,
+      src: tickets,
+      order: mergeOrder(view.order, view.seen, freshIds, new Set(byId.keys())),
+      seen: new Set([...view.seen, ...byId.keys()]),
+    });
+  }
+
+  const items = useMemo<InboxItem[]>(() => {
+    const fresh = new Set(freshIds);
+    return view.order.flatMap((id) => {
+      const ticket = byId.get(id);
+      return ticket ? [{ ticket, stale: !fresh.has(id) }] : [];
+    });
+  }, [view.order, byId, freshIds]);
+
+  const pending = useMemo(() => pendingChanges(view.order, freshIds), [view.order, freshIds]);
+  const counts = useMemo(() => countQueues(tickets), [tickets]);
+  const refresh = useCallback(() => setRefreshToken((n) => n + 1), []);
+  const selected = selectedId ? byId.get(selectedId) || null : null;
 
   const deleteScreenshots = useCallback(async (screenshots: string[]) => {
     for (const url of screenshots) {
@@ -88,12 +123,8 @@ export function useTicketsData(): UseTicketsDataResult {
 
   const updateTicket = useCallback(
     async (ticketId: string, updates: Partial<BugTicket>) => {
-      const ticket = tickets.find((t) => t.id === ticketId);
-      if (
-        updates.status &&
-        ['done', 'rejected', 'obsolete', 'closed'].includes(updates.status) &&
-        ticket?.screenshots?.length
-      ) {
+      const ticket = byId.get(ticketId);
+      if (updates.status && isArchivedStatus(updates.status) && ticket?.screenshots?.length) {
         await deleteScreenshots(ticket.screenshots);
         updates.screenshots = [];
       }
@@ -117,7 +148,7 @@ export function useTicketsData(): UseTicketsDataResult {
         });
       }
     },
-    [tickets, deleteScreenshots]
+    [byId, deleteScreenshots]
   );
 
   const addAdminComment = useCallback(
@@ -134,7 +165,7 @@ export function useTicketsData(): UseTicketsDataResult {
       };
       await dbRef(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
       await dbRef(`bugTickets/${ticketId}/updatedAt`).set(new Date().toISOString());
-      const ticket = tickets.find((t) => t.id === ticketId);
+      const ticket = byId.get(ticketId);
       if (ticket) {
         const template = 'Admin hat auf "{title}" geantwortet: {snippet}';
         const vars = {
@@ -151,7 +182,7 @@ export function useTicketsData(): UseTicketsDataResult {
         });
       }
     },
-    [user, tickets]
+    [user, byId]
   );
 
   const addAdminNote = useCallback(
@@ -173,61 +204,39 @@ export function useTicketsData(): UseTicketsDataResult {
 
   const deleteTicket = useCallback(
     async (ticketId: string) => {
-      const ticket = tickets.find((t) => t.id === ticketId);
+      const ticket = byId.get(ticketId);
       if (ticket?.screenshots?.length) {
         await deleteScreenshots(ticket.screenshots);
       }
       await dbRef(`bugTickets/${ticketId}`).remove();
+      setSelectedId((current) => (current === ticketId ? null : current));
     },
-    [tickets, deleteScreenshots]
+    [byId, deleteScreenshots]
   );
-
-  const filtered = useMemo(() => {
-    let result = tickets;
-    if (statusFilter !== 'all') result = result.filter((t) => t.status === statusFilter);
-    if (typeFilter !== 'all') result = result.filter((t) => (t.ticketType || 'bug') === typeFilter);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.description.toLowerCase().includes(q) ||
-          t.createdByName.toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [tickets, statusFilter, typeFilter, searchQuery]);
-
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: tickets.length };
-    for (const key of Object.keys(STATUS_CONFIG)) {
-      c[key] = tickets.filter((t) => t.status === key).length;
-    }
-    c['bug'] = tickets.filter((t) => (t.ticketType || 'bug') === 'bug').length;
-    c['feature'] = tickets.filter((t) => t.ticketType === 'feature').length;
-    // Touch TYPE_CONFIG so the import isn't tree-shaken away — kept here for
-    // future per-type stats without re-importing in TicketsTab.
-    void TYPE_CONFIG;
-    return c;
-  }, [tickets]);
 
   return {
     tickets,
     loading,
-    filtered,
+    items,
     counts,
-    expandedId,
-    setExpandedId,
-    expandedRef,
-    statusFilter,
-    setStatusFilter,
+    pending,
+    refresh,
+    selected,
+    selectedId,
+    setSelectedId,
+    queue,
+    setQueue,
     typeFilter,
     setTypeFilter,
     searchQuery,
     setSearchQuery,
+    sort,
+    setSort,
     updateTicket,
     addAdminComment,
     addAdminNote,
     deleteTicket,
   };
 }
+
+export type TicketsData = ReturnType<typeof useTicketsData>;

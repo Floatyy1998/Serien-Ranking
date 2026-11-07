@@ -105,6 +105,7 @@ import {
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
 import { DuoShellPreview } from './DuoShellPreview';
+import { AdminTicketsPreview } from './AdminTicketsPreview';
 import { ProfileStatsPreview } from './ProfilePreviews';
 import { RatingsBooksPreview } from './RatingsPreviews';
 import { TasteMatchOverviewPreview, TasteMatchReadingPreview } from './TasteMatchPreviews';
@@ -226,6 +227,7 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  { id: 'admin-tickets', label: 'Admin: Tickets', render: () => <AdminTicketsPreview /> },
   { id: 'hint-single', label: 'Hinweis: eine Serie', render: () => <HintDeckSinglePreview /> },
   { id: 'hint-multi', label: 'Hinweis: mehrere Serien', render: () => <HintDeckMultiPreview /> },
   { id: 'hint-new', label: 'Hinweis: neue Staffel', render: () => <HintDeckNewSeasonPreview /> },

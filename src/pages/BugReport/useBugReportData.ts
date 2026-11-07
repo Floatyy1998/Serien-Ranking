@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { sendNotificationToUser } from '../../hooks/social/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
+import { isArchivedStatus } from './types';
+import type { BugContext } from '../../types/ErrorReport';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { onValue } from '../../services/db/subscribeValue';
@@ -63,6 +65,7 @@ export function useBugReportData() {
       stepsToReproduce: string;
       screenshots: string[];
       consoleErrors?: string;
+      context?: BugContext;
       priority: TicketPriority;
     }): Promise<boolean> => {
       if (!user) return false;
@@ -88,6 +91,7 @@ export function useBugReportData() {
           comments: {},
           device: navigator.userAgent,
           ...(data.consoleErrors ? { consoleErrors: data.consoleErrors } : {}),
+          ...(data.context ? { context: JSON.parse(JSON.stringify(data.context)) } : {}),
         };
 
         await dbRef(`bugTickets/${ticketId}`).set(ticket);
@@ -273,7 +277,8 @@ export function useBugReportData() {
           }
         }
         await dbRef(`bugTickets/${ticketId}`).update({
-          status: 'closed',
+          status: 'done',
+          closedByUser: true,
           screenshots: [],
           updatedAt: new Date().toISOString(),
         });
@@ -319,10 +324,7 @@ export async function cleanupOldTickets() {
     if (!all) return;
     const cutoff = Date.now() - AUTO_DELETE_DAYS * 24 * 60 * 60 * 1000;
     for (const [id, t] of Object.entries(all as Record<string, BugTicket>)) {
-      if (
-        ['done', 'rejected', 'obsolete', 'closed'].includes(t.status) &&
-        new Date(t.updatedAt).getTime() < cutoff
-      ) {
+      if (isArchivedStatus(t.status) && new Date(t.updatedAt).getTime() < cutoff) {
         if (t.screenshots?.length) {
           for (const url of t.screenshots) {
             try {

@@ -6,6 +6,8 @@ import type { TicketPriority, TicketType } from '../types';
 import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
+import type { BugContext } from '../../../types/ErrorReport';
+import { BugContextToggle } from './BugContextToggle';
 
 interface NewTicketFormProps {
   theme: ThemeContextType['currentTheme'];
@@ -16,6 +18,7 @@ interface NewTicketFormProps {
     stepsToReproduce: string;
     screenshots: string[];
     consoleErrors?: string;
+    context?: BugContext;
     priority: TicketPriority;
   }) => Promise<boolean>;
   onCancel: () => void;
@@ -24,6 +27,7 @@ interface NewTicketFormProps {
   initialTitle?: string;
   initialDescription?: string;
   initialType?: TicketType;
+  context?: BugContext | null;
 }
 
 export function NewTicketForm({
@@ -35,6 +39,7 @@ export function NewTicketForm({
   initialTitle,
   initialDescription,
   initialType,
+  context,
 }: NewTicketFormProps) {
   const [ticketType, setTicketType] = useState<TicketType>(initialType || 'bug');
   const [priority, setPriority] = useState<TicketPriority>('low');
@@ -42,6 +47,7 @@ export function NewTicketForm({
   const [description, setDescription] = useState(initialDescription || '');
   const [consoleErrors, setConsoleErrors] = useState(initialConsoleErrors || '');
   const [steps, setSteps] = useState('');
+  const [includeContext, setIncludeContext] = useState(true);
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -91,6 +97,7 @@ export function NewTicketForm({
       stepsToReproduce: steps.trim(),
       screenshots,
       consoleErrors: consoleErrors.trim() || undefined,
+      ...(context && includeContext ? { context } : {}),
       priority,
     });
     if (!success) setSubmitting(false);
@@ -378,6 +385,15 @@ export function NewTicketForm({
             </motion.button>
           </div>
         </div>
+
+        {context && (
+          <BugContextToggle
+            theme={theme}
+            context={context}
+            checked={includeContext}
+            onChange={setIncludeContext}
+          />
+        )}
 
         {ticketType === 'bug' && (
           <div>

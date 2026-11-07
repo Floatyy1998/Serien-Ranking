@@ -6,6 +6,7 @@
  */
 import { redactUrl, selectorFor, truncate } from '../../lib/errorReport/redact';
 import type { BreadcrumbType, ErrorBreadcrumb } from '../../types/ErrorReport';
+import { installXhrLog, recordConsole, recordRequest } from './diagnosticLog';
 
 const MAX_BREADCRUMBS = 25;
 
@@ -87,8 +88,21 @@ function installFetchHook(): void {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url =
       typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url || '';
+    const method = String(
+      init?.method || (input instanceof Request ? input.method : '') || 'GET'
+    ).toUpperCase();
+    const t = sessionAgeMs();
+    const started = performance.now();
     try {
       const response = await originalFetch(input, init);
+      recordRequest({
+        t,
+        method,
+        url,
+        status: response.status,
+        ms: performance.now() - started,
+        via: 'fetch',
+      });
       if (!response.ok) {
         const reason = url.includes(SECURETOKEN_HOST) ? await readAuthErrorCode(response) : '';
         if (url.includes(SECURETOKEN_HOST)) authTokenRejection = reason || String(response.status);
@@ -100,6 +114,14 @@ function installFetchHook(): void {
       }
       return response;
     } catch (err) {
+      recordRequest({
+        t,
+        method,
+        url,
+        ms: performance.now() - started,
+        failed: err instanceof Error ? err.name : 'network',
+        via: 'fetch',
+      });
       addBreadcrumb('fetch', redactUrl(url), err instanceof Error ? err.name : 'network');
       throw err;
     }
@@ -115,12 +137,26 @@ function installConsoleHook(): void {
         const first = args[0];
         const text = first instanceof Error ? `${first.name}: ${first.message}` : String(first);
         addBreadcrumb('console', truncate(text, 160));
+        recordConsole('error', sessionAgeMs(), args);
       } catch {
         // Breadcrumbs duerfen nie die eigentliche Ausgabe verhindern
       }
       insideConsoleHook = false;
     }
     originalError.apply(console, args);
+  };
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    if (!insideConsoleHook) {
+      insideConsoleHook = true;
+      try {
+        recordConsole('warn', sessionAgeMs(), args);
+      } catch {
+        // siehe oben
+      }
+      insideConsoleHook = false;
+    }
+    originalWarn.apply(console, args);
   };
 }
 
@@ -131,6 +167,7 @@ export function installBreadcrumbs(): void {
   trackRoute();
   installHistoryHook();
   installFetchHook();
+  installXhrLog(sessionAgeMs);
   installConsoleHook();
 
   document.addEventListener(
