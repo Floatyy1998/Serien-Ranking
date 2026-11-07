@@ -41,7 +41,8 @@ export function useBookDetails(
 export function useBookLinks(
   title: string | undefined,
   author: string | undefined,
-  ownSeries?: { name: string; position?: number; wikidataId?: string }
+  ownSeries?: { name: string; position?: number; wikidataId?: string },
+  lang?: string
 ) {
   const [links, setLinks] = useState<BookLinks | null>(null);
   const [parts, setParts] = useState<BookSeriesPart[]>([]);
@@ -58,7 +59,9 @@ export function useBookLinks(
     let alive = true;
     setLoading(true);
     setParts([]);
-    const fromOwnKey = ownKey ? fetchSeriesParts(ownKey).catch(() => []) : Promise.resolve(null);
+    const fromOwnKey = ownKey
+      ? fetchSeriesParts(ownKey, lang).catch(() => [])
+      : Promise.resolve(null);
     fetchBookLinks(title, author)
       .then(async (result) => {
         if (!alive) return;
@@ -74,7 +77,9 @@ export function useBookLinks(
         }
         setLinks(result);
         if (result.series?.wikidataId) {
-          const wikidataParts = await fetchSeriesParts(result.series.wikidataId).catch(() => []);
+          const wikidataParts = await fetchSeriesParts(result.series.wikidataId, lang).catch(
+            () => []
+          );
           if (alive) setParts(wikidataParts);
         }
       })
@@ -83,7 +88,7 @@ export function useBookLinks(
     return () => {
       alive = false;
     };
-  }, [title, author, ownKey, ownName, ownPosition]);
+  }, [title, author, ownKey, ownName, ownPosition, lang]);
 
   return { links, parts, loading };
 }

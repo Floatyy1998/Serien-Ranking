@@ -24,6 +24,7 @@ import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
 import { PAGES_PER_HOUR } from '../../lib/books/bookProgress';
 import {
+  editionLanguage,
   fitsSeries,
   partPositionOf,
   seriesCheckedFields,
@@ -247,7 +248,12 @@ export const BookDetailPage = () => {
     links,
     parts,
     loading: linksLoading,
-  } = useBookLinks(view?.title, view?.authors?.[0], view?.series);
+  } = useBookLinks(
+    view?.title,
+    view?.authors?.[0],
+    view?.series,
+    editionLanguage(view ?? undefined)
+  );
   const adaptations = useAdaptationMeta(links?.adaptations ?? []);
   const mangaItems = useMemo(
     () =>

@@ -450,13 +450,17 @@ export function seriesPartsFrom(books: BookSearchResult[], now = new Date()): Bo
   return parts.sort((a, b) => a.position - b.position);
 }
 
-export function hardcoverSeriesParts(name: string): Promise<BookSeriesPart[]> {
+/** Bände in der Ausgabe der gewünschten Sprache (Sprache des gelesenen Bands), sonst der App-Sprache. */
+export function hardcoverSeriesParts(
+  name: string,
+  lang: string = appLocale
+): Promise<BookSeriesPart[]> {
   return cached<BookSeriesPart[]>(
     'hcseries',
-    `${appLocale}:${name.toLowerCase()}:2`,
+    `${lang}:${name.toLowerCase()}:2`,
     7 * DAY,
     async () => {
-      const data = await post<{ results?: HcItem[] }>('/hc/series', { name });
+      const data = await post<{ results?: HcItem[] }>('/hc/series', { name, lang });
       const parts = seriesPartsFrom(mapList(data.results));
       if (!parts.length) throw new Error('no series');
       return parts;

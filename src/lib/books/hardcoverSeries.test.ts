@@ -4,7 +4,9 @@ import {
   adoptSeries,
   displayVolume,
   fitsSeries,
+  editionLanguage,
   needsSeriesLookup,
+  partsFitLanguage,
   SERIES_LOOKUP_VERSION,
   seriesProgress,
 } from './bookSeries';
@@ -256,5 +258,87 @@ describe('Verlobt mit Atsumori-kun: alter und neuer DNB-Schlüssel', () => {
     expect(out).toHaveLength(1);
     expect(out[0].seriesId).toBe(NEW);
     expect(out[0].next.part.position).toBe(4);
+  });
+});
+
+describe('Her Tale of Shim Chong: Bandliste in der Sprache des Buchs', () => {
+  const reader = book({
+    id: 'gb-epMB0QEACAAJ',
+    title: 'Her tale of Shim Chong 2',
+    authors: ['Seri'],
+    isbn13: '9783989490741',
+    language: 'de',
+    series: {
+      name: '그녀의 심청 (Her Tale of Shim Chong)',
+      position: 2,
+      wikidataId: 'hc:그녀의 심청 (Her Tale of Shim Chong)',
+    },
+  });
+  const korean = [1, 2, 3].map((position, i) => ({
+    wikidataId: `hc-${position}`,
+    title: `그녀의 심청 (Her Tale of Shim Chong) #${position}`,
+    position,
+    result: {
+      id: `hc-${position}`,
+      title: `그녀의 심청 #${position}`,
+      authors: ['Seri', '비완'],
+      language: 'en',
+      isbn13: ['9791162207475', '9791189709402', '9791196720575'][i],
+      source: 'hardcover' as const,
+    },
+  }));
+  const german = [1, 2, 3].map((position) => ({
+    wikidataId: `dnb-978398949073${position + 3}`,
+    title: `Her Tale of Shim Chong ${position}`,
+    position,
+    result: {
+      id: `dnb-978398949073${position + 3}`,
+      title: `Her Tale of Shim Chong ${position}`,
+      authors: ['Seri'],
+      language: 'de',
+      isbn13: `978398949073${position + 3}`,
+      source: 'dnb' as const,
+    },
+  }));
+
+  it('liest die Sprache aus der ISBN-Gruppe, nicht aus Hardcovers pauschalem „en"', () => {
+    expect(editionLanguage({ isbn13: '9783989490741' })).toBe('de');
+    expect(editionLanguage({ isbn13: '9788467951234' })).toBe('es');
+    expect(editionLanguage({ isbn13: '9782505012345' })).toBe('fr');
+    expect(editionLanguage({ isbn13: '9786555123456' })).toBe('pt');
+    expect(editionLanguage({ isbn13: '9780062315007' })).toBe('en');
+    expect(
+      editionLanguage({ isbn13: '9791189709402', language: 'en', source: 'hardcover' })
+    ).toBeUndefined();
+    expect(editionLanguage({ language: 'pt-BR' })).toBe('pt');
+    expect(editionLanguage({ language: 'ko' })).toBeUndefined();
+    expect(editionLanguage(undefined)).toBeUndefined();
+  });
+
+  it('verwirft für ein deutsches Buch eine Liste nur mit Originalausgaben', () => {
+    expect(partsFitLanguage(reader, korean)).toBe(false);
+    expect(partsFitLanguage(reader, german)).toBe(true);
+    expect(partsFitLanguage(reader, [...korean.slice(0, 2), german[2]])).toBe(true);
+  });
+
+  it('gilt für alle App-Sprachen', () => {
+    const spanish = { ...korean[2], result: { ...korean[2].result, isbn13: '9788467951234' } };
+    expect(partsFitLanguage({ isbn13: '9788467950000' }, korean)).toBe(false);
+    expect(partsFitLanguage({ isbn13: '9788467950000' }, [...korean.slice(0, 2), spanish])).toBe(
+      true
+    );
+    expect(partsFitLanguage({ isbn13: '9780062315007', language: 'en' }, korean)).toBe(false);
+  });
+
+  it('lässt Bücher ohne App-Sprache und leere Listen in Ruhe', () => {
+    expect(partsFitLanguage({ isbn13: '9791162207475', language: 'ko' }, korean)).toBe(true);
+    expect(partsFitLanguage(reader, [])).toBe(true);
+  });
+
+  it('sucht neu, obwohl das Buch in der Originalliste seinen Platz hat', () => {
+    const placed = fitsSeries(reader, korean, 'hc:그녀의 심청 (Her Tale of Shim Chong)');
+    expect(placed).toBe(true);
+    const settled = placed && partsFitLanguage(reader, korean);
+    expect(needsSeriesLookup(reader, korean.length, settled, NOW)).toBe(true);
   });
 });

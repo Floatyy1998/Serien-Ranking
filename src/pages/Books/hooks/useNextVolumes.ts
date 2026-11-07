@@ -3,14 +3,17 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { sortByRecentActivity } from '../../../lib/books/bookProgress';
 import {
   adoptSeries,
+  editionLanguage,
   fitsSeries,
   needsSeriesLookup,
+  partsFitLanguage,
   seriesCheckedFields,
   seriesProgress,
   type SeriesProgress,
 } from '../../../lib/books/bookSeries';
 import { dnbSeriesByTitle, dnbSeriesOf } from '../../../services/api/booksApi';
 import { hardcoverBook, hardcoverIsbn } from '../../../services/api/hardcoverApi';
+import { appLocale } from '../../../services/i18n';
 import { catalogSeriesOf } from '../../../services/catalog/bookSeriesCatalog';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
 import { updateBookFields } from '../../../services/books/bookService';
@@ -89,15 +92,18 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
     (async () => {
       const names: Record<string, string> = {};
       const next: Record<string, BookSeriesPart[]> = {};
-      const loadParts = async (id: string) => {
-        if (!(id in next)) next[id] = await fetchSeriesParts(id).catch(() => []);
+      // Bände in der Sprache des Buchs; das zuletzt gelesene kommt zuerst und legt sie für die Reihe fest.
+      const loadParts = async (id: string, book: Book) => {
+        if (!(id in next)) {
+          next[id] = await fetchSeriesParts(id, editionLanguage(book) ?? appLocale).catch(() => []);
+        }
         return next[id];
       };
       for (const book of candidates) {
         const known = book.series?.wikidataId;
         if (!known) continue;
         if (book.series?.name) names[known] = book.series.name;
-        await loadParts(known);
+        await loadParts(known, book);
         if (!alive) return;
       }
       let lookups = 0;
@@ -108,30 +114,43 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
         const placed = !!known && fitsSeries(book, knownParts, known);
         // Eine Reihe mit Bänden, in die das Buch nicht passt, ist falsch zugeordnet: Name und Band nicht übernehmen.
         const own = knownParts.length >= 2 && !placed ? undefined : book.series;
+        // Bandliste ohne Ausgabe in der Sprache des Buchs (nur Originale): nach einer passenden suchen, sonst bleibt sie.
+        const speaks = partsFitLanguage(book, knownParts);
         // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen,
         // deutsche Manga-Bände kennt meist nur die DNB.
-        if (needsSeriesLookup(book, knownParts.length, placed, Date.now())) {
+        if (needsSeriesLookup(book, knownParts.length, placed && speaks, Date.now())) {
           lookups += 1;
           let answered = false;
           let adopted: BookSeriesInfo | undefined;
+          let foreign: BookSeriesInfo | undefined;
+          const worth = (found: BookSeriesInfo, parts: BookSeriesPart[]) =>
+            found.wikidataId === known
+              ? !placed && found.position !== undefined
+              : parts.length >= 2;
           for (const source of SERIES_SOURCES) {
             const found = await source(book);
             if (!alive) return;
             if (found === undefined) continue;
             answered = true;
             if (!found?.wikidataId) continue;
-            if (found.wikidataId === known) {
-              if (placed || found.position === undefined) continue;
-              adopted = adoptSeries(own, found);
-              break;
-            }
-            const parts = await loadParts(found.wikidataId);
+            const parts = await loadParts(found.wikidataId, book);
             if (!alive) return;
-            if (parts.length >= 2) {
-              adopted = adoptSeries(own, found);
-              names[found.wikidataId] = adopted.name;
-              break;
+            if (!partsFitLanguage(book, parts)) {
+              foreign ??= found;
+              continue;
             }
+            if (found.wikidataId === known && speaks && placed) continue;
+            if (!worth(found, parts)) continue;
+            // Wechsel der Sprache: nur in eine Liste, in der das Buch selbst steht; Name kommt aus der neuen Quelle.
+            if (!speaks && !fitsSeries({ ...book, series: found }, parts, found.wikidataId))
+              continue;
+            adopted = adoptSeries(speaks ? own : undefined, found);
+            names[found.wikidataId] = adopted.name;
+            break;
+          }
+          if (!adopted && foreign?.wikidataId && worth(foreign, next[foreign.wikidataId] ?? [])) {
+            adopted = adoptSeries(own, foreign);
+            names[foreign.wikidataId] = adopted.name;
           }
           if (answered || adopted) {
             await updateBookFields(uid, book.id, {
@@ -162,7 +181,7 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
             }
           } else if (links.series?.wikidataId) {
             if (links.series.name) names[links.series.wikidataId] = links.series.name;
-            await loadParts(links.series.wikidataId);
+            await loadParts(links.series.wikidataId, book);
             if (!alive) return;
             fields.series = {
               name: links.series.name || book.series?.name || '',

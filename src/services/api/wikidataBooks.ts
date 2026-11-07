@@ -171,19 +171,25 @@ export function fetchBookLinks(title: string, author?: string): Promise<BookLink
   });
 }
 
-/** Bände einer Reihe: Hardcover-/DNB-Reihen erst aus dem statischen Katalog, sonst live; Wikidata-Reihen live. */
-export function fetchSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
+/**
+ * Bände einer Reihe: Hardcover-/DNB-Reihen erst aus dem statischen Katalog, sonst live; Wikidata-Reihen live.
+ * `lang` = Sprache der Ausgaben (die des gelesenen Bands); DNB-Reihen sind immer deutsch.
+ */
+export function fetchSeriesParts(
+  seriesId: string,
+  lang: string = appLocale
+): Promise<BookSeriesPart[]> {
   if (isDnbSeriesKey(seriesId) || isHardcoverSeriesKey(seriesId)) {
-    return loadCatalogSeries(seriesId).then((parts) =>
-      parts.length >= 2 ? parts : liveSeriesParts(seriesId)
+    return loadCatalogSeries(seriesId, isDnbSeriesKey(seriesId) ? 'de' : lang).then((parts) =>
+      parts.length >= 2 ? parts : liveSeriesParts(seriesId, lang)
     );
   }
-  return liveSeriesParts(seriesId);
+  return liveSeriesParts(seriesId, lang);
 }
 
-function liveSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
+function liveSeriesParts(seriesId: string, lang: string): Promise<BookSeriesPart[]> {
   if (isDnbSeriesKey(seriesId)) return dnbSeriesParts(seriesId);
-  if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3));
+  if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3), lang);
   return cached(`parts:${appLocale}:${seriesId}`, 3 * DAY, async () => {
     const rows = await runQuery(`SELECT ?part ?partLabel ?ord ?date ?olid WHERE {
   ?part p:P179 ?st . ?st ps:P179 wd:${seriesId} .

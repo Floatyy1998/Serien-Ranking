@@ -19,19 +19,22 @@ const SERIES_LANGS = new Set(['de', 'en']);
 const files = new Map<string, Promise<BookSeriesPart[]>>();
 
 /** Bandliste aus dem Katalog; leer, wenn es (noch) keine gibt — dann fragt die App die Quelle live. */
-export function loadCatalogSeries(key: string): Promise<BookSeriesPart[]> {
-  if (!SERIES_LANGS.has(appLocale)) return Promise.resolve([]);
-  let pending = files.get(key);
+export function loadCatalogSeries(
+  key: string,
+  lang: string = appLocale
+): Promise<BookSeriesPart[]> {
+  if (!SERIES_LANGS.has(lang)) return Promise.resolve([]);
+  let pending = files.get(`${lang}:${key}`);
   if (!pending) {
     pending = (async () => {
       const v = await bookCatalogVersion();
-      const url = `${CATALOG_BACKEND}/catalog/books/series/${appLocale}/${seriesFileName(key)}?v=${v}`;
+      const url = `${CATALOG_BACKEND}/catalog/books/series/${lang}/${seriesFileName(key)}?v=${v}`;
       const res = await fetch(url);
       if (!res.ok) return [];
       const file = (await res.json()) as CatalogSeriesFile;
       return file.key === key ? mapCatalogSeries(file) : [];
     })().catch(() => []);
-    files.set(key, pending);
+    files.set(`${lang}:${key}`, pending);
   }
   return pending;
 }

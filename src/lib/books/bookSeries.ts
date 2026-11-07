@@ -1,3 +1,4 @@
+import { isLocale, type Locale } from '../../i18n/locales';
 import type { Book, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
 import { isDnbSeriesKey, parseDnbSeriesKey } from './bookSearchMapping';
 import { splitVolume } from './mangaVolume';
@@ -271,8 +272,63 @@ const SERIES_RECHECK_MS = 30 * 86_400_000;
 /**
  * Stand der Reihensuche (`seriesCheckedV`): eine neue Quelle erhöht ihn, dann prüft die App jedes Buch einmal neu.
  * 3 = Katalog, Hardcover, DNB per ISBN mit Gesamttitel, DNB über den Titel.
+ * 4 = die Bandliste folgt der Sprache des Buchs (Hardcover in dieser Sprache, für Deutsch notfalls die DNB).
  */
-export const SERIES_LOOKUP_VERSION = 3;
+export const SERIES_LOOKUP_VERSION = 4;
+
+/** ISBN-Gruppen der App-Sprachen (Sprachräume bzw. Länder) — verlässlicher als das Sprachfeld der Quellen. */
+const ISBN_LANGUAGE: [prefix: string, language: Locale][] = [
+  ['9780', 'en'],
+  ['9781', 'en'],
+  ['9798', 'en'],
+  ['9782', 'fr'],
+  ['97910', 'fr'],
+  ['9783', 'de'],
+  ['97884', 'es'],
+  ['978607', 'es'],
+  ['978612', 'es'],
+  ['978950', 'es'],
+  ['978956', 'es'],
+  ['978958', 'es'],
+  ['978968', 'es'],
+  ['978970', 'es'],
+  ['978980', 'es'],
+  ['978987', 'es'],
+  ['97885', 'pt'],
+  ['97865', 'pt'],
+  ['978972', 'pt'],
+  ['978989', 'pt'],
+];
+
+interface Edition {
+  isbn13?: string;
+  language?: string;
+  source?: string;
+}
+
+/**
+ * Sprache einer Ausgabe, soweit sie eine App-Sprache ist: zuerst die ISBN-Gruppe, sonst das Sprachfeld.
+ * Hardcover markiert unübersetzte Ausgaben pauschal als „en" (die koreanischen Bände von Her Tale of Shim Chong).
+ */
+export function editionLanguage(edition: Edition | undefined): Locale | undefined {
+  if (!edition) return undefined;
+  const isbn = edition.isbn13 ?? '';
+  const byIsbn = ISBN_LANGUAGE.find(([prefix]) => isbn.startsWith(prefix))?.[1];
+  if (byIsbn) return byIsbn;
+  if (edition.source === 'hardcover' && edition.language === 'en') return undefined;
+  const code = edition.language?.slice(0, 2).toLowerCase();
+  return isLocale(code) ? code : undefined;
+}
+
+/**
+ * Passt die Bandliste zur Sprache des Buchs? Wer auf Deutsch (Spanisch, …) liest, soll als nächsten Band nicht
+ * die Originalausgabe sehen — Hardcover kennt bei „Her Tale of Shim Chong" nur die koreanischen Bände, die DNB die deutschen.
+ */
+export function partsFitLanguage(book: Edition, parts: BookSeriesPart[]): boolean {
+  const language = editionLanguage(book);
+  if (!language || !parts.length) return true;
+  return parts.some((p) => editionLanguage(p.result) === language);
+}
 
 /** Felder, die eine abgeschlossene Reihensuche am Buch hinterlässt. */
 export const seriesCheckedFields = () => ({
