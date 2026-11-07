@@ -10,6 +10,7 @@ import {
 } from '../../../lib/books/bookSeries';
 import { dnbSeriesOf } from '../../../services/api/booksApi';
 import { hardcoverBook, hardcoverIsbn } from '../../../services/api/hardcoverApi';
+import { catalogSeriesOf } from '../../../services/catalog/bookSeriesCatalog';
 import { fetchBookLinks, fetchSeriesParts } from '../../../services/api/wikidataBooks';
 import { updateBookFields } from '../../../services/books/bookService';
 import type { Book, BookSeriesInfo, BookSeriesPart } from '../../../types/Book';
@@ -43,7 +44,15 @@ async function dnbSeriesOfBook(book: Book): Promise<BookSeriesInfo | null | unde
   }
 }
 
-const SERIES_SOURCES = [hardcoverSeriesOf, dnbSeriesOfBook];
+/**
+ * Reihe laut Bücher-Katalog (Nachtlauf) — kostet nur den ohnehin geladenen Index. Kennt er keine, fragen
+ * Hardcover und DNB live; das zählt erst dann als geprüft.
+ */
+async function catalogSeriesOfBook(book: Book): Promise<BookSeriesInfo | undefined> {
+  return (await catalogSeriesOf(book.id).catch(() => undefined)) ?? undefined;
+}
+
+const SERIES_SOURCES = [catalogSeriesOfBook, hardcoverSeriesOf, dnbSeriesOfBook];
 
 /** Findet für gelesene Bücher die Reihe (Hardcover, DNB, Wikidata) und den nächsten Band, der noch fehlt. Nur lesend für fremde Bücher. */
 export function useNextVolumes(books: Book[], now: number, options: { readOnly?: boolean } = {}) {

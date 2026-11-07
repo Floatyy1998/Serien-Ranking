@@ -12,7 +12,10 @@ import { createCatalogClient, type CatalogDescription, type CatalogIndex } from 
  */
 const MAX_HITS = 8;
 
-/** Zeile aus index.json: t Titel, a Autoren, y Jahr, i ISBN-13, h Hardcover-ID, c 1 = Cover liegt bei uns, v Stand. */
+/**
+ * Zeile aus index.json: t Titel, a Autoren, y Jahr, i ISBN-13, h Hardcover-ID, c 1 = Cover liegt bei uns,
+ * s/sp Reihen-Schlüssel und Band (Nachtlauf), v Stand.
+ */
 export interface BookCatalogEntry {
   id: string;
   t: string;
@@ -22,6 +25,8 @@ export interface BookCatalogEntry {
   h?: number;
   c?: 1;
   l?: string;
+  s?: string;
+  sp?: number;
   v: number;
 }
 

@@ -1,6 +1,7 @@
 import type { BasedOnBook, BookAdaptation, BookLinks, BookSeriesPart } from '../../types/Book';
 import { isDnbSeriesKey } from '../../lib/books/bookSearchMapping';
 import { normalizeSeriesParts } from '../../lib/books/bookSeries';
+import { loadCatalogSeries } from '../catalog/bookSeriesCatalog';
 import { dnbSeriesParts } from './booksApi';
 import { appLocale } from '../i18n';
 import { loadStaticBasedOn } from './bookStatic';
@@ -170,7 +171,17 @@ export function fetchBookLinks(title: string, author?: string): Promise<BookLink
   });
 }
 
+/** Bände einer Reihe: Hardcover-/DNB-Reihen erst aus dem statischen Katalog, sonst live; Wikidata-Reihen live. */
 export function fetchSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
+  if (isDnbSeriesKey(seriesId) || isHardcoverSeriesKey(seriesId)) {
+    return loadCatalogSeries(seriesId).then((parts) =>
+      parts.length >= 2 ? parts : liveSeriesParts(seriesId)
+    );
+  }
+  return liveSeriesParts(seriesId);
+}
+
+function liveSeriesParts(seriesId: string): Promise<BookSeriesPart[]> {
   if (isDnbSeriesKey(seriesId)) return dnbSeriesParts(seriesId.slice(4));
   if (isHardcoverSeriesKey(seriesId)) return hardcoverSeriesParts(seriesId.slice(3));
   return cached(`parts:${appLocale}:${seriesId}`, 3 * DAY, async () => {
