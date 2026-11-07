@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useMemo, useState } from 'react';
 import type { BugTicket } from '../BugReport/types';
 import { TicketDetail } from '../AdminDashboard/tabs/tickets/TicketDetail';
@@ -174,7 +175,10 @@ export function AdminTicketsPreview() {
 
   return (
     <div className="admin-content" style={{ paddingTop: 16 }}>
-      <div className={`tk-inbox ${data.selected ? 'tk-inbox--detail' : ''}`}>
+      <div
+        className={`tk-inbox ${data.selected ? 'tk-inbox--detail' : ''}`}
+        style={{ '--tk-top': '8px' } as CSSProperties}
+      >
         <TicketList data={data} now={now} />
         <TicketDetail data={data} now={now} />
       </div>

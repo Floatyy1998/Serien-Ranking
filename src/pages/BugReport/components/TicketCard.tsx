@@ -113,9 +113,11 @@ export function TicketCard({
 
   return (
     <motion.div
+      id={`ticket-${ticket.id}`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       style={{
+        scrollMarginTop: '96px',
         borderRadius: '12px',
         background: theme.background.surface,
         border: `1px solid rgba(255,255,255,0.06)`,

@@ -1,6 +1,6 @@
 import { AttachFile, Close, PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { TicketPriority, TicketType } from '../types';
 import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
@@ -28,7 +28,38 @@ interface NewTicketFormProps {
   initialDescription?: string;
   initialType?: TicketType;
   context?: BugContext | null;
+  /** Vom Bug-Knopf aufgenommenes Bild der Seite; wird erst beim Absenden hochgeladen. */
+  pageShot?: Blob | null;
 }
+
+const thumbStyle = {
+  width: '80px',
+  height: '80px',
+  objectFit: 'cover',
+  borderRadius: '8px',
+  border: '1px solid rgba(255,255,255,0.08)',
+} as const;
+
+const removeStyle = (theme: ThemeContextType['currentTheme']) =>
+  ({
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    width: '26px',
+    height: '26px',
+    minWidth: 0,
+    minHeight: 0,
+    borderRadius: '50%',
+    background: theme.status.error,
+    border: 'none',
+    color: '#fff',
+    fontSize: '12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+  }) as const;
 
 export function NewTicketForm({
   theme,
@@ -40,6 +71,7 @@ export function NewTicketForm({
   initialDescription,
   initialType,
   context,
+  pageShot,
 }: NewTicketFormProps) {
   const [ticketType, setTicketType] = useState<TicketType>(initialType || 'bug');
   const [priority, setPriority] = useState<TicketPriority>('low');
@@ -52,6 +84,22 @@ export function NewTicketForm({
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [keepShot, setKeepShot] = useState(true);
+  const [shotPreview, setShotPreview] = useState<string | null>(null);
+  const shotUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pageShot) return;
+    let alive = true;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (alive && typeof reader.result === 'string') setShotPreview(reader.result);
+    };
+    reader.readAsDataURL(pageShot);
+    return () => {
+      alive = false;
+    };
+  }, [pageShot]);
 
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,12 +138,19 @@ export function NewTicketForm({
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) return;
     setSubmitting(true);
+    let shots = screenshots;
+    if (pageShot && keepShot) {
+      shotUrlRef.current ??= await onUpload(
+        new File([pageShot], 'seite.jpg', { type: pageShot.type || 'image/jpeg' })
+      );
+      if (shotUrlRef.current) shots = [shotUrlRef.current, ...screenshots];
+    }
     const success = await onSubmit({
       ticketType,
       title: title.trim(),
       description: description.trim(),
       stepsToReproduce: steps.trim(),
-      screenshots,
+      screenshots: shots,
       consoleErrors: consoleErrors.trim() || undefined,
       ...(context && includeContext ? { context } : {}),
       priority,
@@ -311,18 +366,45 @@ export function NewTicketForm({
             style={{ display: 'none' }}
           />
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {pageShot && keepShot && shotPreview && (
+              <div style={{ position: 'relative' }}>
+                <img src={shotPreview} alt={t('Bild dieser Seite')} style={thumbStyle} />
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: 4,
+                    right: 4,
+                    bottom: 4,
+                    padding: '2px 4px',
+                    borderRadius: '5px',
+                    background: 'rgba(0,0,0,0.72)',
+                    color: '#fff',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {t('Diese Seite')}
+                </span>
+                <button
+                  type="button"
+                  aria-label={t('Bild entfernen')}
+                  onClick={() => setKeepShot(false)}
+                  style={removeStyle(theme)}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             {screenshots.map((url, i) => (
               <div key={i} style={{ position: 'relative' }}>
                 <img
                   src={url}
                   alt={`Screenshot ${i + 1}`}
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                    border: `1px solid rgba(255,255,255,0.08)`,
-                  }}
+                  style={thumbStyle}
                   loading="lazy"
                   decoding="async"
                 />
@@ -330,25 +412,7 @@ export function NewTicketForm({
                   type="button"
                   aria-label={t('Bild entfernen')}
                   onClick={() => setScreenshots((prev) => prev.filter((_, j) => j !== i))}
-                  style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    right: '-8px',
-                    width: '26px',
-                    height: '26px',
-                    minWidth: 0,
-                    minHeight: 0,
-                    borderRadius: '50%',
-                    background: theme.status.error,
-                    border: 'none',
-                    color: '#fff',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                  }}
+                  style={removeStyle(theme)}
                 >
                   ×
                 </button>

@@ -474,7 +474,9 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
               : isBugTicket
                 ? isAdmin
                   ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
-                  : '/bug-report'
+                  : n.data?.ticketId
+                    ? `/bug-report?ticket=${String(n.data.ticketId)}`
+                    : '/bug-report'
                 : navigateTo,
         notificationId: n.id,
         icon:

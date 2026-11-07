@@ -178,6 +178,8 @@ const dict: Record<string, string> = {
   Netzwerk: 'Réseau',
   Konsole: 'Console',
   'Was wird gesendet?': "Qu'est-ce qui est envoyé ?",
+  'Diese Seite': 'Cette page',
+  'Bild dieser Seite': 'Image de cette page',
   '{count} fehlgeschlagen': '{count} en échec',
   'Diese Seite und technische Daten mitschicken': 'Joindre cette page et les données techniques',
   'Nur für die Fehlersuche und nur für den Betreiber sichtbar. Werte in Adressen wie Suchbegriffe werden vorher entfernt.':

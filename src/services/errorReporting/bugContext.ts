@@ -14,8 +14,10 @@ const BUG_REPORT_PATH = '/bug-report';
 const STASH_MAX_AGE_MS = 10 * 60 * 1000;
 
 let stashed: { at: number; context: BugContext } | null = null;
+let stashedShot: { at: number; blob: Blob } | null = null;
 
-export function captureBugContext(): BugContext {
+/** `scrollY` vom Seiten-Scroller; die App scrollt in `.mobile-content`, nicht im Fenster. */
+export function captureBugContext(scrollY = window.scrollY || 0): BugContext {
   const { route, prevRoute } = getRoutes();
   const onReportPage = route.startsWith(BUG_REPORT_PATH);
   const page = onReportPage ? prevRoute || route : route;
@@ -23,7 +25,7 @@ export function captureBugContext(): BugContext {
   return {
     page,
     ...(title ? { pageTitle: title } : {}),
-    ...(!onReportPage ? { scrollY: Math.round(window.scrollY || 0) } : {}),
+    ...(!onReportPage ? { scrollY: Math.round(scrollY) } : {}),
     capturedAt: new Date().toISOString(),
     env: collectEnvironment(getSessionErrorCount()),
     breadcrumbs: getBreadcrumbs(),
@@ -32,9 +34,10 @@ export function captureBugContext(): BugContext {
   };
 }
 
-export function stashBugContext(): void {
+export function stashBugContext(scrollY?: number): void {
+  stashedShot = null;
   try {
-    stashed = { at: Date.now(), context: captureBugContext() };
+    stashed = { at: Date.now(), context: captureBugContext(scrollY) };
   } catch {
     stashed = null;
   }
@@ -50,6 +53,17 @@ export function currentBugContext(): BugContext | null {
   }
 }
 
+/** Nach stashBugContext, damit die Bild-Downloads des Fotos nicht im Netzwerkprotokoll landen. */
+export function stashPageShot(shot: Blob | null): void {
+  stashedShot = shot ? { at: Date.now(), blob: shot } : null;
+}
+
+/** Das Bildschirmfoto, das der Bug-Knopf vor dem Seitenwechsel gemacht hat. */
+export function stashedPageShot(): Blob | null {
+  return stashedShot && Date.now() - stashedShot.at < STASH_MAX_AGE_MS ? stashedShot.blob : null;
+}
+
 export function clearStashedBugContext(): void {
   stashed = null;
+  stashedShot = null;
 }

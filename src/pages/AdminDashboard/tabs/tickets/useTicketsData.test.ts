@@ -60,9 +60,17 @@ vi.mock('../../../../hooks/social/useDiscussionHelpers', () => ({
   sendNotificationToUser: notify.sendNotificationToUser,
 }));
 
-const searchParamsState = vi.hoisted(() => ({ params: new URLSearchParams() }));
+const router = vi.hoisted(() => ({
+  params: new URLSearchParams(),
+  state: null as unknown,
+  setSearchParams: vi.fn(),
+  navigate: vi.fn(),
+}));
+const searchParamsState = router;
 vi.mock('react-router-dom', () => ({
-  useSearchParams: () => [searchParamsState.params, vi.fn()] as const,
+  useSearchParams: () => [router.params, router.setSearchParams] as const,
+  useNavigate: () => router.navigate,
+  useLocation: () => ({ state: router.state }),
 }));
 
 import { useTicketsData } from './useTicketsData';
@@ -106,6 +114,9 @@ beforeEach(() => {
   notify.sendNotificationToUser.mockClear();
   authState.user = { uid: 'admin', displayName: 'Boss' };
   searchParamsState.params = new URLSearchParams();
+  router.state = null;
+  router.setSearchParams.mockClear();
+  router.navigate.mockClear();
 });
 
 afterEach(() => {
@@ -179,6 +190,31 @@ describe('useTicketsData – list & filter', () => {
     const { result } = renderHook(() => useTicketsData());
     expect(result.current.selectedId).toBe('t9');
     expect(result.current.queue).toBe('all');
+  });
+
+  it('legt beim Öffnen aus der Liste einen Verlaufseintrag an, Zurück nimmt ihn wieder weg', () => {
+    searchParamsState.params = new URLSearchParams('tab=tickets');
+    const { result } = renderHook(() => useTicketsData());
+    act(() => result.current.setSelectedId('t1'));
+    const [params, opts] = router.setSearchParams.mock.calls[0];
+    expect((params as URLSearchParams).toString()).toBe('tab=tickets&ticket=t1');
+    expect(opts).toEqual({ replace: false, state: { tkDetail: true } });
+
+    searchParamsState.params = new URLSearchParams('tab=tickets&ticket=t1');
+    router.state = { tkDetail: true };
+    const { result: opened } = renderHook(() => useTicketsData());
+    act(() => opened.current.setSelectedId(null));
+    expect(router.navigate).toHaveBeenCalledWith(-1);
+  });
+
+  it('schließt ein per Push geöffnetes Ticket, ohne die Seite zu verlassen', () => {
+    searchParamsState.params = new URLSearchParams('tab=tickets&ticket=t1');
+    const { result } = renderHook(() => useTicketsData());
+    act(() => result.current.setSelectedId(null));
+    expect(router.navigate).not.toHaveBeenCalled();
+    const [params, opts] = router.setSearchParams.mock.calls[0];
+    expect((params as URLSearchParams).toString()).toBe('tab=tickets');
+    expect(opts).toMatchObject({ replace: true });
   });
 });
 

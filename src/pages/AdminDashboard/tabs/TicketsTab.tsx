@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { currentScroller } from '../../../components/layout/pageScroller';
 import { TicketDetail } from './tickets/TicketDetail';
 import { TicketList } from './tickets/TicketList';
 import { useTicketsData } from './tickets/useTicketsData';
@@ -29,6 +30,35 @@ function useStickyTop(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
+const NARROW = '(max-width: 899px)';
+
+/**
+ * Schmal sind Liste und Ticket zwei Ansichten auf derselben Seite: Ticket
+ * öffnen springt an den Anfang, Zurück landet wieder an der alten Listenstelle.
+ */
+function useNarrowScroll(ref: React.RefObject<HTMLElement | null>, open: boolean) {
+  const listScroll = useRef(0);
+  const wasOpen = useRef(open);
+  useLayoutEffect(() => {
+    if (wasOpen.current === open) return;
+    wasOpen.current = open;
+    if (typeof window.matchMedia !== 'function' || !window.matchMedia(NARROW).matches) return;
+    const el = ref.current;
+    const scroller = currentScroller();
+    if (!scroller) return;
+    if (open) {
+      listScroll.current = scroller.scrollTop;
+      if (!el) return;
+      const sticky = parseFloat(getComputedStyle(el).getPropertyValue('--tk-top')) || 0;
+      const offset = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+      const target = Math.max(0, scroller.scrollTop + offset - sticky);
+      if (scroller.scrollTop > target) scroller.scrollTo({ top: target, behavior: 'instant' });
+    } else {
+      scroller.scrollTo({ top: listScroll.current, behavior: 'instant' });
+    }
+  }, [ref, open]);
+}
+
 export function TicketsTab() {
   const data = useTicketsData();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -36,6 +66,7 @@ export function TicketsTab() {
   const { items, selectedId, setSelectedId } = data;
 
   useStickyTop(rootRef);
+  useNarrowScroll(rootRef, !!data.selected);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 60_000);

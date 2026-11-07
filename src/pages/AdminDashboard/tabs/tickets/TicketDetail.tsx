@@ -1,4 +1,4 @@
-import { ArrowBack, ContentCopy, Delete, Inbox } from '@mui/icons-material';
+import { ArrowBack, ContentCopy, Delete, ExpandLess, ExpandMore, Inbox } from '@mui/icons-material';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { LinkifiedText } from '../../../../components/ui/display/LinkifiedText';
@@ -80,6 +80,10 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
     );
   }
 
+  const index = data.items.findIndex((item) => item.ticket.id === ticket.id);
+  const prevId = index > 0 ? data.items[index - 1].ticket.id : null;
+  const nextId =
+    index >= 0 && index < data.items.length - 1 ? data.items[index + 1].ticket.id : null;
   const status = normalizeStatus(ticket.status);
   const isFeature = ticket.ticketType === 'feature';
   const screenshots = (ticket.screenshots || []).filter(storageUrlOrNull);
@@ -99,11 +103,10 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
         <div className="tk-detail__top">
           <button
             type="button"
-            className="adm-icon-btn tk-back"
-            title="Zurück zur Liste"
+            className="adm-btn adm-btn--ghost tk-back"
             onClick={() => data.setSelectedId(null)}
           >
-            <ArrowBack style={{ fontSize: 18 }} />
+            <ArrowBack style={{ fontSize: 16 }} /> Liste
           </button>
           <span className={`adm-tag tk-type ${isFeature ? 'tk-type--feature' : ''}`}>
             {isFeature ? 'Feature' : 'Bug'}
@@ -117,16 +120,40 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
             #{ticket.id.slice(-6)}
           </button>
           <div className="tk-detail__acts">
+            <div className="tk-stepper">
+              <button
+                type="button"
+                className="adm-icon-btn"
+                title="Vorheriges Ticket (K)"
+                aria-label="Vorheriges Ticket"
+                disabled={!prevId}
+                onClick={() => prevId && data.setSelectedId(prevId)}
+              >
+                <ExpandLess style={{ fontSize: 18 }} />
+              </button>
+              <button
+                type="button"
+                className="adm-icon-btn"
+                title="Nächstes Ticket (J)"
+                aria-label="Nächstes Ticket"
+                disabled={!nextId}
+                onClick={() => nextId && data.setSelectedId(nextId)}
+              >
+                <ExpandMore style={{ fontSize: 18 }} />
+              </button>
+            </div>
             <button
               type="button"
               className="adm-btn adm-btn--ghost"
+              title="Ticket als JSON kopieren"
               onClick={() => {
                 void copyTextToClipboard(exportJson(ticket));
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1500);
               }}
             >
-              <ContentCopy style={{ fontSize: 14 }} /> {copied ? 'Kopiert' : 'JSON'}
+              <ContentCopy style={{ fontSize: 14 }} />{' '}
+              <span className="tk-wide-only">{copied ? 'Kopiert' : 'JSON'}</span>
             </button>
             {confirmDelete === ticket.id ? (
               <>

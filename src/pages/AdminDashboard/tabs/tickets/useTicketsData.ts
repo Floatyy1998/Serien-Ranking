@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
 import { localizedVariants, tLocale } from '../../../../services/i18n';
@@ -39,15 +39,32 @@ interface ViewState {
  */
 export function useTicketsData() {
   const { user } = useAuth() || {};
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [tickets, setTickets] = useState<BugTicket[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(
-    () => searchParams.get('ticket') || null
+  // Das offene Ticket steht in der URL: Push-Taps landen direkt darauf, und die
+  // Zurück-Taste am Handy führt vom Ticket zur Liste statt aus dem Admin raus.
+  const selectedId = searchParams.get('ticket') || null;
+  const openedHere = (location.state as { tkDetail?: boolean } | null)?.tkDetail === true;
+  const setSelectedId = useCallback(
+    (id: string | null) => {
+      if (!id && openedHere) {
+        navigate(-1);
+        return;
+      }
+      const next = new URLSearchParams(searchParams);
+      if (id) next.set('ticket', id);
+      else next.delete('ticket');
+      setSearchParams(next, {
+        replace: !id || !!selectedId,
+        state: id ? { tkDetail: openedHere || !selectedId } : null,
+      });
+    },
+    [navigate, openedHere, searchParams, selectedId, setSearchParams]
   );
-  const [queue, setQueue] = useState<TicketQueue>(() =>
-    searchParams.get('ticket') ? 'all' : 'inbox'
-  );
+  const [queue, setQueue] = useState<TicketQueue>(() => (selectedId ? 'all' : 'inbox'));
   const [typeFilter, setTypeFilter] = useState<TicketType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState<TicketSort>('newest');
@@ -96,6 +113,14 @@ export function useTicketsData() {
       order: mergeOrder(view.order, view.seen, freshIds, new Set(byId.keys())),
       seen: new Set([...view.seen, ...byId.keys()]),
     });
+  }
+
+  // Kommt ein Ticket von außen (Push, Glocke), das der aktuelle Filter nicht
+  // zeigt, auf „Alle" wechseln — sonst fehlt es links in der Liste.
+  const [seenSelection, setSeenSelection] = useState(selectedId);
+  if (selectedId !== seenSelection) {
+    setSeenSelection(selectedId);
+    if (selectedId && !view.order.includes(selectedId)) setQueue('all');
   }
 
   const items = useMemo<InboxItem[]>(() => {
@@ -209,9 +234,9 @@ export function useTicketsData() {
         await deleteScreenshots(ticket.screenshots);
       }
       await dbRef(`bugTickets/${ticketId}`).remove();
-      setSelectedId((current) => (current === ticketId ? null : current));
+      if (selectedId === ticketId) setSelectedId(null);
     },
-    [byId, deleteScreenshots]
+    [byId, deleteScreenshots, selectedId, setSelectedId]
   );
 
   return {

@@ -17,6 +17,22 @@ export const getDiscussionPath = (
   return `discussions/${itemType}/${itemId}`;
 };
 
+/** Ziel beim Tippen auf den nativen Push — bei Tickets direkt das Ticket, nicht nur die Übersicht. */
+export const pushUrlFor = (
+  targetUserId: string,
+  type: string,
+  data?: Record<string, unknown>
+): string => {
+  if (type.startsWith('bug_ticket')) {
+    const ticketId = typeof data?.ticketId === 'string' ? encodeURIComponent(data.ticketId) : '';
+    if (targetUserId === ADMIN_UID) {
+      return ticketId ? `/admin?tab=tickets&ticket=${ticketId}` : '/admin?tab=tickets';
+    }
+    return ticketId ? `/bug-report?ticket=${ticketId}` : '/bug-report';
+  }
+  return type === 'moderation_ban' ? '/' : '/discussions';
+};
+
 // Helper to send notification to another user.
 // title/message sind die deutschen Quelltexte, titleL/messageL die Übersetzungen
 // je Sprache — Anzeige und Push-Versand wählen nach Empfänger-Sprache.
@@ -85,13 +101,7 @@ export const sendNotificationToUser = async (
       })
     );
     // Zusätzlich als nativen Push ausliefern (Backend verschickt an die Geräte)
-    const url = notification.type.startsWith('bug_ticket')
-      ? targetUserId === ADMIN_UID
-        ? '/admin'
-        : '/bug-report'
-      : notification.type === 'moderation_ban'
-        ? '/'
-        : '/discussions';
+    const url = pushUrlFor(targetUserId, notification.type, notification.data);
     await queuePush(
       targetUserId,
       ohneUndefined({

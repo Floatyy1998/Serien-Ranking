@@ -1,6 +1,6 @@
 import { Add, Feedback } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,6 +13,7 @@ import { t } from '../../services/i18n';
 import {
   clearStashedBugContext,
   currentBugContext,
+  stashedPageShot,
 } from '../../services/errorReporting/bugContext';
 
 export const BugReportPage = memo(() => {
@@ -32,8 +33,34 @@ export const BugReportPage = memo(() => {
   const ban = useModerationBan();
   const [showForm, setShowForm] = useState(() => searchParams.get('create') === 'true');
   const [bugContext] = useState(currentBugContext);
+  const [pageShot] = useState(stashedPageShot);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'open' | 'archive'>('open');
+  const paramTicket = searchParams.get('ticket');
+  const [appliedTicket, setAppliedTicket] = useState<string | null>(null);
+  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
+
+  // Push-Tap auf /bug-report?ticket=…: das Ticket aufklappen, auch wenn die
+  // Seite schon offen war und nur der Parameter wechselt.
+  if (paramTicket && paramTicket !== appliedTicket && !loading) {
+    setAppliedTicket(paramTicket);
+    const target = tickets.find((tk) => tk.id === paramTicket);
+    if (target) {
+      setActiveTab(isArchivedStatus(target.status) ? 'archive' : 'open');
+      setExpandedTicket(target.id);
+      setScrollTarget(target.id);
+    }
+  }
+
+  useEffect(() => {
+    if (!scrollTarget) return;
+    const id = requestAnimationFrame(() =>
+      document
+        .getElementById(`ticket-${scrollTarget}`)
+        ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    );
+    return () => cancelAnimationFrame(id);
+  }, [scrollTarget]);
   const initialErrors = searchParams.get('errors') || '';
   const initialTitle = searchParams.get('title') || '';
   const initialDescription = searchParams.get('description') || '';
@@ -131,6 +158,7 @@ export const BugReportPage = memo(() => {
                 initialDescription={initialDescription}
                 initialType={initialType}
                 context={bugContext}
+                pageShot={pageShot}
               />
             </motion.div>
           )}

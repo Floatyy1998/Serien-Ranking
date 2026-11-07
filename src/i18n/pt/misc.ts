@@ -177,6 +177,8 @@ const dict: Record<string, string> = {
   Netzwerk: 'Rede',
   Konsole: 'Console',
   'Was wird gesendet?': 'O que é enviado?',
+  'Diese Seite': 'Esta página',
+  'Bild dieser Seite': 'Imagem desta página',
   '{count} fehlgeschlagen': '{count} com falha',
   'Diese Seite und technische Daten mitschicken': 'Enviar esta página e os dados técnicos',
   'Nur für die Fehlersuche und nur für den Betreiber sichtbar. Werte in Adressen wie Suchbegriffe werden vorher entfernt.':

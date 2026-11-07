@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugContext } from '../../../types/ErrorReport';
 
@@ -150,5 +150,62 @@ describe('NewTicketForm', () => {
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(await screen.findByText('Absenden'));
     expect(onSubmit.mock.calls[1]?.[0].context).toBeUndefined();
+  });
+
+  it('lädt das Bild der Seite beim Absenden als ersten Screenshot hoch', async () => {
+    const shot = new Blob(['jpeg'], { type: 'image/jpeg' });
+    const onUpload = vi.fn(async (_file: File) => 'https://storage/seite.jpg');
+    const onSubmit = vi.fn(async (_data: { screenshots: string[] }) => false);
+    render(
+      <NewTicketForm
+        theme={theme}
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        onUpload={onUpload}
+        pageShot={shot}
+      />
+    );
+    expect(await screen.findByAltText('Bild dieser Seite')).toBeInTheDocument();
+    expect(onUpload).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByPlaceholderText('Kurze Beschreibung des Problems'), {
+      target: { value: 'Titel' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Was genau ist passiert? Was hast du erwartet?'), {
+      target: { value: 'Text' },
+    });
+    fireEvent.click(screen.getByText('Absenden'));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onUpload.mock.calls[0]?.[0].type).toBe('image/jpeg');
+    expect(onSubmit.mock.calls[0]?.[0].screenshots).toEqual(['https://storage/seite.jpg']);
+
+    fireEvent.click(await screen.findByText('Absenden'));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(2));
+    expect(onUpload).toHaveBeenCalledTimes(1);
+  });
+
+  it('schickt das Bild der Seite nicht mit, wenn es entfernt wurde', async () => {
+    const onUpload = vi.fn(async () => 'https://storage/seite.jpg');
+    const onSubmit = vi.fn(async (_data: { screenshots: string[] }) => true);
+    render(
+      <NewTicketForm
+        theme={theme}
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        onUpload={onUpload}
+        pageShot={new Blob(['jpeg'], { type: 'image/jpeg' })}
+      />
+    );
+    await screen.findByAltText('Bild dieser Seite');
+    fireEvent.click(screen.getByRole('button', { name: 'Bild entfernen' }));
+    fireEvent.change(screen.getByPlaceholderText('Kurze Beschreibung des Problems'), {
+      target: { value: 'Titel' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Was genau ist passiert? Was hast du erwartet?'), {
+      target: { value: 'Text' },
+    });
+    fireEvent.click(screen.getByText('Absenden'));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onUpload).not.toHaveBeenCalled();
+    expect(onSubmit.mock.calls[0]?.[0].screenshots).toEqual([]);
   });
 });

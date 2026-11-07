@@ -45,7 +45,7 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/database', () => ({}));
 
-import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
+import { getDiscussionPath, pushUrlFor, sendNotificationToUser } from './useDiscussionHelpers';
 
 beforeEach(() => {
   fb.state.pushCalls = [];
@@ -130,5 +130,24 @@ describe('sendNotificationToUser', () => {
       })
     ).resolves.toBeUndefined();
     expect(console.error).toHaveBeenCalled();
+  });
+});
+
+describe('pushUrlFor', () => {
+  it('führt den Admin direkt zum Ticket', () => {
+    expect(
+      pushUrlFor('83fRTz3YqgMkjz646AJ1GO6I8Kg1', 'bug_ticket_reply', { ticketId: '-Oa1' })
+    ).toBe('/admin?tab=tickets&ticket=-Oa1');
+  });
+
+  it('führt den Ersteller zu seinem Ticket', () => {
+    expect(pushUrlFor('user-a', 'bug_ticket_status', { ticketId: '-Oa1' })).toBe(
+      '/bug-report?ticket=-Oa1'
+    );
+  });
+
+  it('fällt ohne Ticket-ID auf die Übersicht zurück', () => {
+    expect(pushUrlFor('user-a', 'bug_ticket_reply')).toBe('/bug-report');
+    expect(pushUrlFor('user-a', 'discussion_reply')).toBe('/discussions');
   });
 });
