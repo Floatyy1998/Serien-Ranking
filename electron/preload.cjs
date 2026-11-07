@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   installUpdate: () => ipcRenderer.invoke('install-update'),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  // Liefert das Fensterbild als JPEG-Bytes (Bug-Tickets).
+  capturePage: () => ipcRenderer.invoke('capture-page'),
 });
 
 // Mark the page as running in Electron and add drag region for window moving.

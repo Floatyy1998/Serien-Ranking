@@ -175,6 +175,17 @@ ipcMain.handle('set-auto-start', (_event, enabled) => {
   return enabled;
 });
 
+// Bildschirmfoto fuer Bug-Tickets: nativ statt per DOM-Rendering im Renderer,
+// das den Hauptthread sekundenlang blockiert. Nur die eigene Seite.
+ipcMain.handle('capture-page', async (event) => {
+  if (!mainWindow || event.sender !== mainWindow.webContents) return null;
+  const image = await event.sender.capturePage();
+  if (image.isEmpty()) return null;
+  const { width } = image.getSize();
+  const scaled = width > 1600 ? image.resize({ width: 1600, quality: 'good' }) : image;
+  return scaled.toJPEG(80);
+});
+
 // ─── Auto-Update via electron-updater ─────────────────────
 // Sucht nach neuen Releases auf GitHub (Owner/Repo aus electron-builder.yml).
 // Download laeuft im Hintergrund. UI in der App entscheidet, wann installiert

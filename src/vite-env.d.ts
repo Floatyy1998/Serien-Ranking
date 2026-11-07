@@ -36,5 +36,7 @@ interface Window {
     onUpdateStatus: (cb: (status: ElectronUpdateStatus) => void) => () => void;
     installUpdate: () => Promise<void>;
     checkForUpdates: () => Promise<unknown>;
+    /** Erst ab der Desktop-Version mit nativer Aufnahme vorhanden. */
+    capturePage?: () => Promise<Uint8Array | null>;
   };
 }

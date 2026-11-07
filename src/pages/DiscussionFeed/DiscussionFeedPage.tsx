@@ -38,7 +38,12 @@ const FeedCard: React.FC<{
   const isReply = entry.type === 'reply_created';
   const actionText = isReply ? t('hat geantwortet auf') : t('hat eine Diskussion gestartet in');
   const ItemIcon = entry.itemType === 'movie' ? Movie : Tv;
-  const posterUrl = entry.posterPath ? `${POSTER_BASE}${entry.posterPath}` : null;
+  // Serien- und Filmseite speichern die volle Poster-URL, ältere Einträge nur den Pfad.
+  const posterUrl = !entry.posterPath
+    ? null
+    : entry.posterPath.startsWith('http')
+      ? entry.posterPath
+      : `${POSTER_BASE}${entry.posterPath}`;
 
   const itemLabel =
     entry.itemType === 'episode' && entry.seasonNumber && entry.episodeNumber
