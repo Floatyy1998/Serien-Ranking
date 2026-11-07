@@ -6,6 +6,29 @@ import { splitVolume } from './mangaVolume';
 
 const MARC_NS = 'http://www.loc.gov/MARC21/slim';
 
+/** Geplanter Erscheinungsmonat aus Feld 263 („202702") als „2027-02". */
+export function plannedMonthOf(raw: string | undefined | null): string | undefined {
+  const match = raw?.match(/^(\d{4})(\d{2})/);
+  return match ? `${match[1]}-${match[2]}` : undefined;
+}
+
+/**
+ * Erscheinungsdatum eines DNB-Bands: Feld 263 trägt den geplanten Monat, solange der Verlag ihn ankündigt
+ * (im laufenden Monat bleibt der Termin offen). Ohne 263 ist der Band erschienen, das Jahr genügt —
+ * „Why Claris was Married to Jean 03" (2026, erschienen im September) steht sonst als „Termin offen" da.
+ */
+export function dnbPartDate(
+  year: number | undefined,
+  planned: string | undefined,
+  now = new Date()
+): string | undefined {
+  if (planned) {
+    const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return planned === current ? undefined : `${planned}-01`;
+  }
+  return year ? `${year}-01-01` : undefined;
+}
+
 /** Bandnummer eines Treffers, wenn er zur gesuchten Reihe gehört — aus Feld 490/245 $n oder der Zahl am Titelende. */
 function volumeIn(result: BookSearchResult, wanted: string): number | undefined {
   const { series } = result;
@@ -22,26 +45,30 @@ export function mapDnbSeriesParts(xml: string, name: string, now = new Date()): 
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   const serializer = new XMLSerializer();
   const wanted = seriesNameKey(name);
-  const year = now.getFullYear();
   const byPosition = new Map<number, BookSeriesPart>();
   for (const record of [...doc.getElementsByTagNameNS(MARC_NS, 'record')]) {
-    const isbns = [...record.getElementsByTagNameNS(MARC_NS, 'datafield')]
-      .filter((f) => f.getAttribute('tag') === '020')
-      .flatMap((f) => [...f.getElementsByTagNameNS(MARC_NS, 'subfield')])
-      .filter((s) => ['9', 'a'].includes(s.getAttribute('code') ?? ''))
-      .map((s) => s.textContent ?? '');
-    const isbn13 = pickIsbn13(isbns);
+    const fields = [...record.getElementsByTagNameNS(MARC_NS, 'datafield')];
+    const values = (tag: string, codes: string[]) =>
+      fields
+        .filter((f) => f.getAttribute('tag') === tag)
+        .flatMap((f) => [...f.getElementsByTagNameNS(MARC_NS, 'subfield')])
+        .filter((s) => codes.includes(s.getAttribute('code') ?? ''))
+        .map((s) => s.textContent ?? '');
+    const isbn13 = pickIsbn13(values('020', ['9', 'a']));
     if (!isbn13) continue;
     const result = mapDnbRecord(serializer.serializeToString(record), isbn13);
     const position = result && volumeIn(result, wanted);
     if (!result || !position) continue;
+    const publishedDate = dnbPartDate(
+      result.publishedYear,
+      plannedMonthOf(values('263', ['a'])[0]),
+      now
+    );
     keepPrint(byPosition, {
       wikidataId: result.id,
       title: result.title,
       position,
-      ...(result.publishedYear && result.publishedYear !== year
-        ? { publishedDate: `${result.publishedYear}-01-01` }
-        : {}),
+      ...(publishedDate ? { publishedDate } : {}),
       result,
     });
   }

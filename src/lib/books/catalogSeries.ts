@@ -1,4 +1,5 @@
 import type { BookSearchResult, BookSeriesPart } from '../../types/Book';
+import { dnbPartDate } from './dnbSeries';
 
 /** Band in catalog/books/series/<lang>/<datei>.json (Nachtlauf bookSeriesCatalog.js im Backend). */
 export interface CatalogSeriesPart {
@@ -6,6 +7,8 @@ export interface CatalogSeriesPart {
   title: string;
   position: number;
   year?: number;
+  /** Geplanter Erscheinungsmonat laut DNB-Feld 263 („2027-02"), solange der Verlag ihn ankündigt. */
+  planned?: string;
   authors?: string[];
   cover?: string;
   coverFallback?: string;
@@ -33,7 +36,23 @@ export function seriesFileName(key: string): string {
   return `${hash.toString(16).padStart(8, '0')}.json`;
 }
 
-/** Bände im Format der Reihenlogik; ein Band aus dem laufenden Jahr bleibt ohne Datum wie bei Hardcover und DNB. */
+function publishedDateOf(
+  p: CatalogSeriesPart,
+  year: number,
+  now: Date
+): { publishedDate?: string } {
+  const date = p.id.startsWith('dnb-')
+    ? dnbPartDate(p.year, p.planned, now)
+    : p.year && p.year !== year
+      ? `${p.year}-01-01`
+      : undefined;
+  return date ? { publishedDate: date } : {};
+}
+
+/**
+ * Bände im Format der Reihenlogik. DNB-Bände datiert wie im Frontend (geplanter Monat, sonst erschienen);
+ * Hardcover-Bände aus dem laufenden Jahr bleiben ohne Datum.
+ */
 export function mapCatalogSeries(file: CatalogSeriesFile, now = new Date()): BookSeriesPart[] {
   const year = now.getFullYear();
   return file.parts
@@ -58,7 +77,7 @@ export function mapCatalogSeries(file: CatalogSeriesFile, now = new Date()): Boo
         wikidataId: p.id,
         title: p.title,
         position: p.position,
-        ...(p.year && p.year !== year ? { publishedDate: `${p.year}-01-01` } : {}),
+        ...publishedDateOf(p, year, now),
         result: Object.fromEntries(
           Object.entries(result).filter(([, v]) => v !== undefined)
         ) as BookSearchResult,

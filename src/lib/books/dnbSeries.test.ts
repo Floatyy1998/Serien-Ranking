@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
-import { mapDnbSeriesParts, mergeSeriesParts, seriesFromTitle } from './dnbSeries';
+import {
+  dnbPartDate,
+  mapDnbSeriesParts,
+  mergeSeriesParts,
+  plannedMonthOf,
+  seriesFromTitle,
+} from './dnbSeries';
 
 const NAME = 'Verliebt in mehr als dein Gesicht';
 
@@ -142,5 +148,27 @@ describe('seriesFromTitle', () => {
     expect(seriesFromTitle({ title: 'Bungo Stray Dogs', authors: ['Kafka Asagiri'] }, parts)).toBe(
       null
     );
+  });
+});
+
+describe('dnbPartDate', () => {
+  const now = new Date('2026-11-07T12:00:00');
+
+  it('nimmt den geplanten Monat aus Feld 263, im laufenden Monat bleibt er offen', () => {
+    expect(dnbPartDate(2026, '2026-12', now)).toBe('2026-12-01');
+    expect(dnbPartDate(2026, '2026-10', now)).toBe('2026-10-01');
+    expect(dnbPartDate(2026, '2026-11', now)).toBeUndefined();
+  });
+
+  it('wertet Bände ohne geplanten Monat als erschienen', () => {
+    expect(dnbPartDate(2026, undefined, now)).toBe('2026-01-01');
+    expect(dnbPartDate(2027, undefined, now)).toBe('2027-01-01');
+    expect(dnbPartDate(undefined, undefined, now)).toBeUndefined();
+  });
+
+  it('liest Feld 263', () => {
+    expect(plannedMonthOf('202702')).toBe('2027-02');
+    expect(plannedMonthOf('20270215')).toBe('2027-02');
+    expect(plannedMonthOf(undefined)).toBeUndefined();
   });
 });

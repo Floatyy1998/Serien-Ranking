@@ -185,7 +185,7 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
   const { name, parentId } = parseDnbSeriesKey(key);
   return cached<BookSeriesPart[]>(
     'dnbseries',
-    key.toLowerCase(),
+    `${key.toLowerCase()}:2`,
     7 * DAY,
     async () => {
       const queries = [
