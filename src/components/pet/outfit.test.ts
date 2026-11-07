@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { PetAccessory } from '../../types/pet.types';
-import { nextOutfitUnlock, outfitCapacity, toggleWorn, wornAccessories, wornSlots } from './outfit';
+import {
+  coveredSlots,
+  nextOutfitUnlock,
+  outfitCapacity,
+  toggleWorn,
+  wornAccessories,
+  wornSlots,
+} from './outfit';
 
 const acc = (id: string, equipped = false): PetAccessory => ({
   id,
@@ -51,6 +58,21 @@ describe('wornAccessories', () => {
       accessories: [null, acc('gibtsNicht', true), acc('bow', true)] as PetAccessory[],
     };
     expect(ids(wornAccessories(pet))).toEqual(['bow']);
+  });
+});
+
+describe('coveredSlots', () => {
+  it('lässt Drachenhörner unter einem Stirnband stehen', () => {
+    const pet = { type: 'dragon' as const, level: 5, accessories: [acc('headband', true)] };
+    expect(coveredSlots(pet).has('head')).toBe(false);
+    expect(wornSlots(pet).has('head')).toBe(true);
+  });
+
+  it('verdeckt sie unter Hüten und bei anderen Pets weiter', () => {
+    const hat = { type: 'dragon' as const, level: 5, accessories: [acc('beanie', true)] };
+    const panda = { type: 'panda' as const, level: 5, accessories: [acc('headband', true)] };
+    expect(coveredSlots(hat).has('head')).toBe(true);
+    expect(coveredSlots(panda).has('head')).toBe(true);
   });
 });
 

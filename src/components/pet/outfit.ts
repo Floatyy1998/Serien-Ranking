@@ -32,6 +32,16 @@ export function wornSlots(pet: Pick<Pet, 'accessories' | 'level'>): Set<Accessor
   return new Set(wornAccessories(pet).map((a) => slotOf(a.id) as AccessorySlot));
 }
 
+const DRAGON_OPEN_CROWN = new Set(['headband', 'bandana', 'halo']);
+
+/** Plätze, deren eingebaute Körper-Deko das Sprite weglassen muss. Stirnbänder lassen Drachenhörner frei. */
+export function coveredSlots(pet: Pick<Pet, 'accessories' | 'level' | 'type'>): Set<AccessorySlot> {
+  const worn = wornAccessories(pet);
+  const slots = new Set(worn.map((a) => slotOf(a.id) as AccessorySlot));
+  if (pet.type === 'dragon' && worn.some((a) => DRAGON_OPEN_CROWN.has(a.id))) slots.delete('head');
+  return slots;
+}
+
 export interface OutfitChange {
   accessories: PetAccessory[];
   /** Kein Platz mehr frei — erst ab dem nächsten Level-Schritt. */

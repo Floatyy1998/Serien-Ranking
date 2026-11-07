@@ -1,7 +1,7 @@
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS } from '../../types/pet.types';
 import { adjustColor } from './colorUtils';
-import { slotOf, wornAccessories, wornSlots } from './outfit';
+import { coveredSlots, slotOf, wornAccessories } from './outfit';
 import { drawAccessory, drawAccessoryBack } from './sprites/drawAccessory';
 import { drawAxolotl } from './sprites/drawAxolotl';
 import { drawBird } from './sprites/drawBird';
@@ -76,7 +76,7 @@ export function drawPetFigure(ctx: CanvasRenderingContext2D, pet: Pet, o: Figure
     o.animated,
     o.frame,
     o.animationSpeed,
-    wornSlots(pet),
+    coveredSlots(pet),
     o.pose ?? NEUTRAL_POSE
   );
 
