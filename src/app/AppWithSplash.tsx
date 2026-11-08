@@ -47,14 +47,19 @@ export const AppWithSplash: React.FC = () => {
   // und alle Daten-Provider los. Zwei rAF reichen, damit der Splash vorher
   // paintet (~32 ms statt der frueheren 200 ms Pauschal-Verzoegerung, die den
   // gesamten Startvorgang nach hinten geschoben hat).
+  // Verdeckte Seiten bekommen keine Frames: ohne den Timer startete ein im
+  // Hintergrund neu geladenes Fenster erst, wenn der Nutzer zurückkam.
   useEffect(() => {
     let second = 0;
+    const mount = () => setIsAppMounted(true);
     const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => setIsAppMounted(true));
+      second = requestAnimationFrame(mount);
     });
+    const hiddenFallback = setTimeout(mount, 150);
     return () => {
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
+      clearTimeout(hiddenFallback);
     };
   }, []);
 

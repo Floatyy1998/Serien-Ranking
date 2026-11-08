@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('./App', () => ({ App: () => <div>APP_SHELL</div> }));
 vi.mock('../components/ui/overlay/SplashScreen', () => ({
@@ -45,5 +45,20 @@ describe('AppWithSplash', () => {
     await waitFor(() => expect(screen.getByText('APP_SHELL')).toBeInTheDocument());
     expect(screen.getByText('SPLASH_SCREEN')).toBeInTheDocument();
     expect(screen.getByText('APP_SHELL').parentElement).toHaveStyle({ visibility: 'hidden' });
+  });
+
+  it('mounts the app shell even when the page gets no animation frames (hidden window)', () => {
+    vi.useFakeTimers();
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    try {
+      localStorage.setItem('cachedUser', JSON.stringify({ uid: 'u1' }));
+      render(<AppWithSplash />);
+      expect(screen.queryByText('APP_SHELL')).not.toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(200));
+      expect(screen.getByText('APP_SHELL')).toBeInTheDocument();
+    } finally {
+      raf.mockRestore();
+      vi.useRealTimers();
+    }
   });
 });

@@ -24,6 +24,7 @@ interface LastExit {
 interface StartSnapshot {
   hadSession: boolean;
   storageKeys: number;
+  usageKeys: number;
   firebaseLocal: boolean;
   lastExit: LastExit | null;
   startedAt: number;
@@ -68,6 +69,22 @@ function hasFirebaseLocalUser(): boolean {
     // localStorage gesperrt
   }
   return false;
+}
+
+// Schreibt schon die abgemeldete Startseite — beweist also keine frühere Anmeldung.
+const ANONYMOUS_KEY_PREFIXES = ['bk:shelf:', 'firebase:host:', 'firebase:previous_websocket'];
+
+function countUsageKeys(): number {
+  let count = 0;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i) ?? '';
+      if (!ANONYMOUS_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) count++;
+    }
+  } catch {
+    // localStorage gesperrt
+  }
+  return count;
 }
 
 function describeLastExit(exit: LastExit | null): string {
@@ -162,6 +179,7 @@ export function beginAuthDiagnostics(hadSession: boolean): void {
   snapshot = {
     hadSession,
     storageKeys,
+    usageKeys: countUsageKeys(),
     firebaseLocal: hasFirebaseLocalUser(),
     lastExit: readLastExit(),
     startedAt: Date.now(),
@@ -232,7 +250,7 @@ export function trackAuthEvent(user: firebase.User | null): void {
   }
   if (!startedLoggedOut) return;
   startedLoggedOut = false;
-  const { hadSession, storageKeys, firebaseLocal, idb } = snapshot;
+  const { hadSession, storageKeys, usageKeys, firebaseLocal, idb } = snapshot;
   const lastExit = snapshot.lastExit ?? readLastExit();
   writeLastExit(null);
   const createdAt = Date.parse(user.metadata?.creationTime || '') || Date.now();
@@ -241,15 +259,15 @@ export function trackAuthEvent(user: firebase.User | null): void {
   writeRetryFlag(false);
   // Nach einem bewussten Abmelden ist der Neu-Login kein Befund.
   if (lastExit?.how === 'manuell') return;
-  // Völlig leerer Speicher ohne Spuren = neues Gerät oder Neuinstallation, kein Sitzungsverlust.
-  if (!hadSession && storageKeys === 0 && !lastExit) return;
+  // Keine Spur einer früheren Anmeldung = neues Gerät, neuer Browser oder Neuinstallation.
+  if (!hadSession && usageKeys === 0 && !lastExit) return;
   const rejection = getAuthTokenRejection();
   const token = rejection ? `abgelehnt (${rejection})` : 'keine Ablehnung';
   void describeStorage().then((storage) =>
     captureError({
       kind: 'error',
       name: 'AuthRelogin',
-      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Token-Erneuerung: ${token}, Firebase-IDB: ${idb ?? 'ungeprüft'}${reloaded ? ' nach Neuladen' : ''}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys}, ${storage})`,
+      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Token-Erneuerung: ${token}, Firebase-IDB: ${idb ?? 'ungeprüft'}${reloaded ? ' nach Neuladen' : ''}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys} (Nutzungsspuren: ${usageKeys}), ${storage})`,
     })
   );
 }

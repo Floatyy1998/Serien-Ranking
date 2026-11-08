@@ -123,6 +123,33 @@ describe('authDiagnostics', () => {
     expect(captureErrorMock).not.toHaveBeenCalled();
   });
 
+  it('meldet den Login nach abgemeldetem Startseiten-Besuch in neuem Browser nicht', async () => {
+    localStorage.setItem('bk:shelf:#', '[]');
+    localStorage.setItem('bk:shelf:h2:de:fantasy:popular:::8', '[]');
+    localStorage.setItem('firebase:host:serien-ranking.firebaseio.com', '"s-1"');
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(captureErrorMock).not.toHaveBeenCalled();
+  });
+
+  it('meldet den Neu-Login, wenn App-Spuren einer früheren Nutzung da sind', async () => {
+    localStorage.setItem('bk:shelf:#', '[]');
+    localStorage.setItem('customTheme', '{}');
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.waitFor(() =>
+      expect(captureErrorMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'AuthRelogin',
+          message: expect.stringContaining('Einträge beim Start: 2 (Nutzungsspuren: 1)'),
+        })
+      )
+    );
+  });
+
   it('meldet den ersten Login eines neuen Kontos nicht', async () => {
     beginAuthDiagnostics(false);
     trackAuthEvent(null);
