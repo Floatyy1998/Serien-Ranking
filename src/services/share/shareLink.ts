@@ -22,6 +22,11 @@ const getNativeShare = (): CapacitorSharePlugin | null => {
   return cap?.isNativePlatform?.() ? (cap.Plugins?.Share ?? null) : null;
 };
 
+/** Gibt es ein System-Teilen-Fenster (App-Plugin oder Web Share)? */
+export const canSystemShare = (): boolean =>
+  !!getNativeShare()?.share ||
+  (typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+
 const isCancel = (err: unknown): boolean => {
   const e = err as { name?: string; message?: string };
   return e?.name === 'AbortError' || (e?.message || '').toLowerCase().includes('cancel');

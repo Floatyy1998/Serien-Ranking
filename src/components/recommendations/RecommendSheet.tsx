@@ -1,10 +1,12 @@
 import Check from '@mui/icons-material/Check';
 import IosShare from '@mui/icons-material/IosShare';
+import LinkRounded from '@mui/icons-material/LinkRounded';
 import { useState } from 'react';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
-import { shareLink } from '../../services/share/shareLink';
+import { canSystemShare, shareLink } from '../../services/share/shareLink';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import { getImageUrl, readableImageUrl } from '../../utils/imageUrl';
 import { BottomSheet } from '../ui';
 import { FriendPicker } from './FriendPicker';
@@ -31,6 +33,7 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
   const { isMobile } = useDeviceType();
   const { currentTheme } = useTheme();
   const [linkCopied, setLinkCopied] = useState(false);
+  const [systemShare] = useState(canSystemShare);
   const {
     selected,
     message,
@@ -51,8 +54,10 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
 
   // Externes Teilen (System-Share-Sheet). Geteilt wird der tv-rank.de-Link —
   // Universal/App Links öffnen auf Mobilgeräten direkt die App-Detailseite.
+  const shareUrl = `https://tv-rank.de/${media.type === 'movie' ? 'movie' : 'series'}/${media.id}`;
+
   const handleExternalShare = async () => {
-    const url = `https://tv-rank.de/${media.type === 'movie' ? 'movie' : 'series'}/${media.id}`;
+    const url = shareUrl;
     const text = t('Schau dir "{title}" auf TV-RANK an', { title: media.title });
 
     // Wo das Share-Sheet Dateien kann (Web Share Level 2): Poster als Bild
@@ -87,11 +92,40 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
     if (result === 'shared') {
       handleClose();
     } else if (result === 'copied') {
-      // Desktop-Fallback: Link liegt in der Zwischenablage — kurz bestätigen.
-      setLinkCopied(true);
-      window.setTimeout(() => setLinkCopied(false), 2000);
+      confirmCopied();
     }
   };
+
+  const confirmCopied = () => {
+    setLinkCopied(true);
+    window.setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  // Das Windows-Teilen-Fenster bietet (zumal mit Poster-Datei) kein Link-Kopieren an.
+  const handleCopyLink = async () => {
+    if (await copyTextToClipboard(shareUrl)) confirmCopied();
+  };
+
+  const shareButtonStyle = (highlight: boolean): React.CSSProperties => ({
+    flex: 1,
+    minWidth: 0,
+    minHeight: 44,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: '11px 16px',
+    borderRadius: 12,
+    border: highlight
+      ? `1px solid ${currentTheme.status.success}55`
+      : '1px solid var(--glass-border-subtle)',
+    background: highlight ? `${currentTheme.status.success}14` : 'rgba(255,255,255,0.05)',
+    color: highlight ? currentTheme.status.success : currentTheme.text.secondary,
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'background-color 0.2s, border-color 0.2s, color 0.2s',
+  });
 
   return (
     <BottomSheet
@@ -123,40 +157,21 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
           <RecommendSheetHero media={media} />
 
           {/* Extern teilen (WhatsApp, Signal, … via System-Share) */}
-          <div style={{ padding: sectionPadding, marginBottom: 16 }}>
-            <button
-              type="button"
-              onClick={handleExternalShare}
-              aria-label={t('Extern teilen')}
-              style={{
-                width: '100%',
-                minHeight: 44,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                padding: '11px 16px',
-                borderRadius: 12,
-                border: linkCopied
-                  ? `1px solid ${currentTheme.status.success}55`
-                  : '1px solid var(--glass-border-subtle)',
-                background: linkCopied
-                  ? `${currentTheme.status.success}14`
-                  : 'rgba(255,255,255,0.05)',
-                color: linkCopied ? currentTheme.status.success : currentTheme.text.secondary,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
+          <div style={{ padding: sectionPadding, marginBottom: 16, display: 'flex', gap: 10 }}>
+            <button type="button" onClick={handleCopyLink} style={shareButtonStyle(linkCopied)}>
               {linkCopied ? (
                 <Check style={{ fontSize: 18 }} />
               ) : (
-                <IosShare style={{ fontSize: 18 }} />
+                <LinkRounded style={{ fontSize: 18 }} />
               )}
-              {linkCopied ? t('Link kopiert!') : t('Extern teilen')}
+              {linkCopied ? t('Link kopiert!') : t('Link kopieren')}
             </button>
+            {systemShare && (
+              <button type="button" onClick={handleExternalShare} style={shareButtonStyle(false)}>
+                <IosShare style={{ fontSize: 18 }} />
+                {t('Extern teilen')}
+              </button>
+            )}
           </div>
 
           {/* Friend Picker */}

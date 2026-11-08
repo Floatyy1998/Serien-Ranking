@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Friend } from '../../types/Friend';
@@ -55,6 +55,9 @@ vi.mock('./useRecommendSheet', () => ({
   }),
 }));
 
+const clipboard = vi.hoisted(() => ({ copy: vi.fn() }));
+vi.mock('../../utils/clipboard', () => ({ copyTextToClipboard: clipboard.copy }));
+
 const media = { id: 7, type: 'series' as const, title: 'The Wire' };
 
 beforeEach(() => {
@@ -84,5 +87,25 @@ describe('RecommendSheet', () => {
     render(<RecommendSheet isOpen onClose={vi.fn()} media={media} />);
     expect(screen.getByText('Noch keine Freunde')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Sag was dazu…')).not.toBeInTheDocument();
+  });
+
+  it('kopiert den Link direkt, auch wo es ein System-Teilen-Fenster gibt', async () => {
+    clipboard.copy.mockResolvedValue(true);
+    vi.stubGlobal('navigator', { ...navigator, share: vi.fn() });
+    try {
+      render(<RecommendSheet isOpen onClose={vi.fn()} media={media} />);
+      expect(screen.getByText('Extern teilen')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Link kopieren'));
+      await waitFor(() => expect(screen.getByText('Link kopiert!')).toBeInTheDocument());
+      expect(clipboard.copy).toHaveBeenCalledWith('https://tv-rank.de/series/7');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('zeigt ohne System-Teilen nur das Kopieren', () => {
+    render(<RecommendSheet isOpen onClose={vi.fn()} media={media} />);
+    expect(screen.getByText('Link kopieren')).toBeInTheDocument();
+    expect(screen.queryByText('Extern teilen')).not.toBeInTheDocument();
   });
 });
