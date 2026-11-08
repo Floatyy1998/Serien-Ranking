@@ -135,7 +135,7 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
             if (!found?.wikidataId) continue;
             const parts = await loadParts(found.wikidataId, book);
             if (!alive) return;
-            if (!partsFitLanguage(book, parts)) {
+            if (!partsFitLanguage({ ...book, series: found }, parts)) {
               foreign ??= found;
               continue;
             }

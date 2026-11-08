@@ -273,8 +273,9 @@ const SERIES_RECHECK_MS = 30 * 86_400_000;
  * Stand der Reihensuche (`seriesCheckedV`): eine neue Quelle erhöht ihn, dann prüft die App jedes Buch einmal neu.
  * 3 = Katalog, Hardcover, DNB per ISBN mit Gesamttitel, DNB über den Titel.
  * 4 = die Bandliste folgt der Sprache des Buchs (Hardcover in dieser Sprache, für Deutsch notfalls die DNB).
+ * 5 = das Buch selbst zählt dabei nicht mit (Lady Eris: nur Band 1 deutsch, Band 6 und 7 koreanisch).
  */
-export const SERIES_LOOKUP_VERSION = 4;
+export const SERIES_LOOKUP_VERSION = 5;
 
 /** ISBN-Gruppen der App-Sprachen (Sprachräume bzw. Länder) — verlässlicher als das Sprachfeld der Quellen. */
 const ISBN_LANGUAGE: [prefix: string, language: Locale][] = [
@@ -324,10 +325,20 @@ export function editionLanguage(edition: Edition | undefined): Locale | undefine
  * Passt die Bandliste zur Sprache des Buchs? Wer auf Deutsch (Spanisch, …) liest, soll als nächsten Band nicht
  * die Originalausgabe sehen — Hardcover kennt bei „Her Tale of Shim Chong" nur die koreanischen Bände, die DNB die deutschen.
  */
-export function partsFitLanguage(book: Edition, parts: BookSeriesPart[]): boolean {
+export function partsFitLanguage(
+  book: Edition & { series?: { position?: number } },
+  parts: BookSeriesPart[]
+): boolean {
   const language = editionLanguage(book);
   if (!language || !parts.length) return true;
-  return parts.some((p) => editionLanguage(p.result) === language);
+  // Das Buch selbst zählt nicht: Hardcover hängt die eigene Ausgabe in eine Liste aus Originalen.
+  const own = book.series?.position;
+  return parts.some(
+    (p) =>
+      editionLanguage(p.result) === language &&
+      !(book.isbn13 && p.result?.isbn13 === book.isbn13) &&
+      p.position !== own
+  );
 }
 
 /** Felder, die eine abgeschlossene Reihensuche am Buch hinterlässt. */

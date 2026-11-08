@@ -2,7 +2,7 @@ import type { BookSearchResult, BookSeriesInfo, BookSeriesPart } from '../../typ
 import { pickIsbn13 } from './bookIdentity';
 import { dnbSeriesKey, isDnbSeriesKey, mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
 import { sameAuthor, seriesNameKey } from './bookSeries';
-import { splitVolume } from './mangaVolume';
+import { seriesHead, splitVolume } from './mangaVolume';
 
 const MARC_NS = 'http://www.loc.gov/MARC21/slim';
 
@@ -34,7 +34,12 @@ function volumeIn(result: BookSearchResult, wanted: string): number | undefined 
   const { series } = result;
   if (series?.position && seriesNameKey(series.name) === wanted) return series.position;
   const titled = splitVolume(result.title);
-  return titled.volume && seriesNameKey(titled.series) === wanted ? titled.volume : undefined;
+  if (!titled.volume) return undefined;
+  // „Lady Eris - Nur der Tod kann mich erlösen 05" gehört zu „Lady Eris" (Bände 1–4 ohne Untertitel).
+  return seriesNameKey(titled.series) === wanted ||
+    seriesNameKey(seriesHead(titled.series)) === wanted
+    ? titled.volume
+    : undefined;
 }
 
 /**

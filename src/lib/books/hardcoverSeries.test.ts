@@ -342,3 +342,53 @@ describe('Her Tale of Shim Chong: Bandliste in der Sprache des Buchs', () => {
     expect(needsSeriesLookup(reader, korean.length, settled, NOW)).toBe(true);
   });
 });
+
+describe('Lady Eris: das eigene Buch macht eine Originalliste nicht deutsch', () => {
+  const KEY = 'hc:악녀를 죽여 줘 [Agnyeoreul Jugyeo Jwo] (Comic)';
+  const reader = book({
+    id: 'hc-2262232',
+    title: 'Lady Eris - Nur der Tod kann mich erlösen 01',
+    authors: ['Haegi', 'Your April'],
+    isbn13: '9783989500570',
+    language: 'de',
+    source: 'hardcover',
+    series: {
+      name: '악녀를 죽여 줘 [Agnyeoreul Jugyeo Jwo] (Comic)',
+      position: 1,
+      wikidataId: KEY,
+    },
+  });
+  const part = (position: number, title: string, isbn13: string, language: string) => ({
+    wikidataId: `hc-${isbn13}`,
+    title,
+    position,
+    result: {
+      id: `hc-${isbn13}`,
+      title,
+      authors: ['Haegi'],
+      language,
+      isbn13,
+      source: 'hardcover' as const,
+    },
+  });
+  const mixed = [
+    part(1, 'Lady Eris - Nur der Tod kann mich erlösen 01', '9783989500570', 'de'),
+    part(6, '악녀를 죽여 줘 6', '9791193821893', 'en'),
+    part(7, '악녀를 죽여 줘 7', '9791173820335', 'en'),
+  ];
+
+  it('zählt nur andere Bände in der Sprache des Buchs', () => {
+    expect(partsFitLanguage(reader, mixed)).toBe(false);
+    expect(
+      partsFitLanguage(reader, [...mixed, part(2, 'Lady Eris 2', '9783989500587', 'de')])
+    ).toBe(true);
+  });
+
+  it('sucht deshalb trotz Platz in der Liste neu', () => {
+    const placed = fitsSeries(reader, mixed, KEY);
+    expect(placed).toBe(true);
+    expect(
+      needsSeriesLookup(reader, mixed.length, placed && partsFitLanguage(reader, mixed), NOW)
+    ).toBe(true);
+  });
+});

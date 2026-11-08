@@ -172,3 +172,20 @@ describe('dnbPartDate', () => {
     expect(plannedMonthOf(undefined)).toBeUndefined();
   });
 });
+
+describe('Bände mit Untertitel im Titel', () => {
+  it('ordnet „Lady Eris - Nur der Tod kann mich erlösen 05" der Reihe „Lady Eris" zu', () => {
+    const xml = response(
+      record({ isbn: '978-3-98950-057-0', title: 'Lady Eris', n: '1', year: '2024', pages: true }),
+      record({
+        isbn: '978-3-98950-120-1',
+        title: 'Lady Eris - Nur der Tod kann mich erlösen 05',
+        year: '2026',
+        pages: true,
+      }),
+      record({ isbn: '978-3-98950-999-9', title: 'Lady Eris und der Drache', year: '2026' })
+    );
+    const parts = mapDnbSeriesParts(xml, 'Lady Eris', new Date('2026-11-08'));
+    expect(parts.map((p) => p.position)).toEqual([1, 5]);
+  });
+});
