@@ -7,7 +7,9 @@ import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
-    ['CheckCircleOutlined', 'FastForwardRounded', 'WarningAmberRounded'].map((n) => [n, stub])
+    ['CheckCircleOutlined', 'FastForwardRounded', 'ScheduleRounded', 'WarningAmberRounded'].map(
+      (n) => [n, stub]
+    )
   );
 });
 
@@ -65,13 +67,17 @@ describe('CatchUpPlanNote', () => {
     expect(screen.getByText('Rechtzeitig durch — fertig ca. 02.10.')).toBeInTheDocument();
   });
 
-  it('nennt den Rückstand, wenn kein Tempo messbar ist', () => {
+  it('nennt ohne messbares Tempo nur Rückstand und nötiges Tempo, ohne Warnfarbe', () => {
     const plan = makePlan({
       episodesPerWeek: 0,
-      current: variant({ projectedDate: null }),
+      requiredPerWeek: 0.6,
+      current: variant({ episodes: 5, projectedDate: null }),
     });
     render(<CatchUpPlanNote plan={plan} />);
-    expect(screen.getByText('41 Folgen offen, kein Tempo messbar')).toBeInTheDocument();
+    expect(screen.getByText('5 Folgen bis zum Start offen').parentElement).toHaveStyle({
+      color: '#ddd',
+    });
+    expect(screen.getByText('0,6 Folgen pro Woche reichen')).toBeInTheDocument();
   });
 
   it('zeigt den Filler-Hebel, wenn er den Termin rettet', () => {
@@ -96,6 +102,18 @@ describe('CatchUpPlanNote', () => {
     });
     render(<CatchUpPlanNote plan={plan} compact />);
     expect(screen.queryByText('Ohne die 11 Filler-Folgen schaffst du es.')).not.toBeInTheDocument();
-    expect(screen.getByText('12 Wochen zu spät')).toBeInTheDocument();
+    expect(screen.getByText('12 Wochen zu spät · 6,1/Woche nötig')).toBeInTheDocument();
+  });
+
+  it('fasst die kompakte Zeile ohne messbares Tempo neutral zusammen', () => {
+    const plan = makePlan({
+      episodesPerWeek: 0,
+      requiredPerWeek: 0.6,
+      current: variant({ episodes: 5, projectedDate: null }),
+    });
+    render(<CatchUpPlanNote plan={plan} compact />);
+    expect(screen.getByText('5 offen · 0,6/Woche reichen').parentElement).toHaveStyle({
+      color: '#ddd',
+    });
   });
 });

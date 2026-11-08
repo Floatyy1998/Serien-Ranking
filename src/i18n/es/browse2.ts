@@ -251,7 +251,10 @@ const dict: Record<string, string> = {
   'Rechtzeitig durch': 'A tiempo',
   '{n} Wochen zu spät': '{n} semanas tarde',
   '{n} Tage zu spät': '{n} días tarde',
-  '{n} Folgen offen, kein Tempo messbar': '{n} episodios pendientes, sin ritmo medible',
+  '{n} Folgen bis zum Start offen': '{n} episodios pendientes antes del estreno',
+  '{need} Folgen pro Woche reichen': 'Bastan {need} episodios por semana',
+  '{n} offen · {need}/Woche reichen': '{n} pendientes · bastan {need}/semana',
+  '{need}/Woche nötig': '{need}/semana necesarios',
   '{open} Folgen offen · {need} Folgen/Woche nötig':
     '{open} episodios pendientes · {need} episodios/semana necesarios',
   'Ohne die {n} Filler-Folgen schaffst du es.': 'Sáltate los {n} episodios de relleno y llegas.',

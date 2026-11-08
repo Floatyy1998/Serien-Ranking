@@ -6,10 +6,13 @@ import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
+import { CatchUpPlanNote } from './CatchUpPlanNote';
 
 interface CountdownHeroCardProps {
   item: SeriesCountdown;
   onClick: () => void;
+  plan?: CatchUpPlan;
 }
 
 function countdownText(daysUntil: number): string {
@@ -18,7 +21,7 @@ function countdownText(daysUntil: number): string {
   return t('in {n} Tagen', { n: daysUntil });
 }
 
-export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onClick }) => {
+export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onClick, plan }) => {
   const { currentTheme } = useTheme();
   const ACCENT = currentTheme.accent;
 
@@ -87,6 +90,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
           <h2 className="cd-hero-title">{item.title}</h2>
           <p className="cd-hero-season">{t('Staffel {n}', { n: item.seasonNumber })}</p>
           <p className="cd-hero-date">{formatSeasonDate(item.nextDate)}</p>
+          {plan && <CatchUpPlanNote plan={plan} />}
         </div>
 
         {/* Countdown circle */}

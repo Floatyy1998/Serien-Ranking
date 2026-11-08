@@ -261,7 +261,10 @@ const dict: Record<string, string> = {
   'Rechtzeitig durch': 'Done in time',
   '{n} Wochen zu spät': '{n} weeks too late',
   '{n} Tage zu spät': '{n} days too late',
-  '{n} Folgen offen, kein Tempo messbar': '{n} episodes left, no pace measurable',
+  '{n} Folgen bis zum Start offen': '{n} episodes left before the premiere',
+  '{need} Folgen pro Woche reichen': '{need} episodes per week will do',
+  '{n} offen · {need}/Woche reichen': '{n} left · {need}/week will do',
+  '{need}/Woche nötig': '{need}/week needed',
   '{open} Folgen offen · {need} Folgen/Woche nötig':
     '{open} episodes left · {need} episodes/week needed',
   'Ohne die {n} Filler-Folgen schaffst du es.': 'Skip the {n} filler episodes and you make it.',

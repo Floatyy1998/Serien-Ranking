@@ -1,9 +1,15 @@
 /**
- * Aufhol-Hinweis unter einem Countdown: schaffst du den Rückstand bis zum
+ * Aufhol-Hinweis in einer Countdown-Karte: schaffst du den Rückstand bis zum
  * Start — und wenn nicht, welches Tempo oder welcher Filler-Verzicht rettet es.
+ * Steht in einem Button, darum nur Spans.
  */
 
-import { CheckCircleOutlined, FastForwardRounded, WarningAmberRounded } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  FastForwardRounded,
+  ScheduleRounded,
+  WarningAmberRounded,
+} from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { dateLocale, t } from '../../services/i18n';
 import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
@@ -26,10 +32,17 @@ export const CatchUpPlanNote = ({ plan, compact = false }: CatchUpPlanNoteProps)
   const success = currentTheme.status.success;
   const warning = currentTheme.status.warning;
   const accent = currentTheme.accent || currentTheme.primary;
+  const muted = currentTheme.text.secondary;
 
   const madeIt = plan.current.willMakeIt;
-  const tone = madeIt ? success : warning;
-  const Icon = madeIt ? CheckCircleOutlined : WarningAmberRounded;
+  // Ohne messbares Tempo (pausiert, zu wenig Daten) gibt es keine Prognose, also auch keine Warnung.
+  const noPace = !madeIt && !plan.current.projectedDate;
+  const tone = madeIt ? success : noPace ? muted : warning;
+  const Icon = madeIt ? CheckCircleOutlined : noPace ? ScheduleRounded : WarningAmberRounded;
+
+  const open = plan.current.episodes;
+  const need = formatNumber(plan.requiredPerWeek);
+  const hasNeed = !madeIt && plan.requiredPerWeek > 0;
 
   const headline = madeIt
     ? plan.current.projectedDate
@@ -37,41 +50,57 @@ export const CatchUpPlanNote = ({ plan, compact = false }: CatchUpPlanNoteProps)
           date: formatDay(plan.current.projectedDate),
         })
       : t('Rechtzeitig durch')
-    : plan.current.projectedDate
-      ? plan.current.daysLate >= 14
+    : noPace
+      ? t('{n} Folgen bis zum Start offen', { n: open })
+      : plan.current.daysLate >= 14
         ? t('{n} Wochen zu spät', { n: Math.round(plan.current.daysLate / 7) })
-        : t('{n} Tage zu spät', { n: plan.current.daysLate })
-      : t('{n} Folgen offen, kein Tempo messbar', { n: plan.current.episodes });
+        : t('{n} Tage zu spät', { n: plan.current.daysLate });
+
+  if (compact) {
+    const line =
+      noPace && hasNeed
+        ? t('{n} offen · {need}/Woche reichen', { n: open, need })
+        : hasNeed
+          ? `${headline} · ${t('{need}/Woche nötig', { need })}`
+          : headline;
+    return (
+      <span className="cd-plan cd-plan--compact">
+        <span className="cd-plan-line" style={{ color: tone }}>
+          <Icon className="cd-plan-icon" />
+          <span className="cd-plan-text">{line}</span>
+        </span>
+      </span>
+    );
+  }
 
   return (
-    <div className={`cd-plan${compact ? ' cd-plan--compact' : ''}`}>
-      <p className="cd-plan-line" style={{ color: tone }}>
-        <Icon style={{ fontSize: 15 }} />
-        <span>{headline}</span>
-      </p>
+    <span className="cd-plan">
+      <span className="cd-plan-line" style={{ color: tone }}>
+        <Icon className="cd-plan-icon" />
+        <span className="cd-plan-text">{headline}</span>
+      </span>
 
-      {!madeIt && plan.requiredPerWeek > 0 && (
-        <p className="cd-plan-sub" style={{ color: currentTheme.text.secondary }}>
-          {t('{open} Folgen offen · {need} Folgen/Woche nötig', {
-            open: plan.current.episodes,
-            need: formatNumber(plan.requiredPerWeek),
-          })}
-        </p>
+      {hasNeed && (
+        <span className="cd-plan-sub" style={{ color: muted }}>
+          {noPace
+            ? t('{need} Folgen pro Woche reichen', { need })
+            : t('{open} Folgen offen · {need} Folgen/Woche nötig', { open, need })}
+        </span>
       )}
 
-      {!compact && plan.withoutFiller && plan.withoutFiller.episodes < plan.current.episodes && (
-        <p className="cd-plan-sub" style={{ color: plan.fillerSavesIt ? success : accent }}>
-          <FastForwardRounded style={{ fontSize: 14 }} />
+      {plan.withoutFiller && plan.withoutFiller.episodes < open && (
+        <span className="cd-plan-sub" style={{ color: plan.fillerSavesIt ? success : accent }}>
+          <FastForwardRounded className="cd-plan-icon" />
           {plan.fillerSavesIt
             ? t('Ohne die {n} Filler-Folgen schaffst du es.', {
-                n: plan.current.episodes - plan.withoutFiller.episodes,
+                n: open - plan.withoutFiller.episodes,
               })
             : t('Ohne die {n} Filler-Folgen: noch {rest} Folgen.', {
-                n: plan.current.episodes - plan.withoutFiller.episodes,
+                n: open - plan.withoutFiller.episodes,
                 rest: plan.withoutFiller.episodes,
               })}
-        </p>
+        </span>
       )}
-    </div>
+    </span>
   );
 };

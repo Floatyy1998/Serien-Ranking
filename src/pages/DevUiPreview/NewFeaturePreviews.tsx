@@ -70,7 +70,9 @@ import { IncomingRequestActions } from '../FriendProfile/IncomingRequestActions'
 import { FriendAnticipationSection } from '../FriendProfile/FriendAnticipationSection';
 import type { Pet } from '../../types/pet.types';
 import '../FriendProfile/FriendProfilePage.css';
-import { CatchUpPlanNote } from '../Countdown/CatchUpPlanNote';
+import { CountdownHeroCard } from '../Countdown/CountdownHeroCard';
+import { CountdownListItem } from '../Countdown/CountdownListItem';
+import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 import type { DropOffInsight } from '../../lib/watch/dropOff';
@@ -149,54 +151,63 @@ const Case = ({ label, children }: { label: string; children: React.ReactNode })
   );
 };
 
-/** Aufhol-Plan: die Zeile unter einem Countdown, in allen Ausprägungen. */
+const countdown = (seriesId: number, title: string, daysUntil: number): SeriesCountdown => ({
+  seriesId,
+  title,
+  posterUrl: PLACEHOLDER_SVG,
+  nextDate: inDays(daysUntil).toISOString().slice(0, 10),
+  daysUntil,
+  seasonNumber: 2,
+  type: 'season-start',
+});
+
+const noop = () => {};
+
+/** Aufhol-Plan: in der Hero-Karte und als Zeile in den Listenkarten, im echten Grid. */
 export const CatchUpPreview = () => (
-  <div style={{ padding: 16 }}>
-    <Case label="Tempo reicht nicht">
-      <CatchUpPlanNote plan={plan()} />
-    </Case>
-
-    <Case label="Filler-Verzicht rettet den Termin">
-      <CatchUpPlanNote
-        plan={plan({
-          current: variant({ episodes: 30, daysLate: 24 }),
-          withoutFiller: variant({ episodes: 19, willMakeIt: true, daysLate: 0 }),
-          fillerSavesIt: true,
-        })}
-      />
-    </Case>
-
-    <Case label="Filler hilft, reicht aber nicht">
-      <CatchUpPlanNote
-        plan={plan({
-          withoutFiller: variant({ episodes: 30, daysLate: 40 }),
-        })}
-      />
-    </Case>
-
-    <Case label="Rechtzeitig durch">
-      <CatchUpPlanNote
-        plan={plan({
-          requiredPerWeek: 1.2,
-          current: variant({
-            episodes: 6,
-            willMakeIt: true,
-            daysLate: 0,
-            projectedDate: inDays(10),
-          }),
-        })}
-      />
-    </Case>
-
-    <Case label="Kein Tempo messbar (pausiert)">
-      <CatchUpPlanNote
-        plan={plan({ episodesPerWeek: 0, current: variant({ projectedDate: null }) })}
-      />
-    </Case>
-
-    <Case label="Kompakt (Listeneintrag)">
-      <CatchUpPlanNote plan={plan()} compact />
-    </Case>
+  <div className="cd-list" style={{ padding: 16 }}>
+    <CountdownHeroCard
+      item={countdown(1, 'One Piece', 12)}
+      onClick={noop}
+      plan={plan({
+        current: variant({ episodes: 30, daysLate: 24 }),
+        withoutFiller: variant({ episodes: 19, willMakeIt: true, daysLate: 0 }),
+        fillerSavesIt: true,
+      })}
+    />
+    <p className="cd-section-label">Weitere (6)</p>
+    <CountdownListItem
+      item={countdown(2, 'Percy Jackson: Die Serie', 13)}
+      index={0}
+      onClick={noop}
+    />
+    <CountdownListItem
+      item={countdown(3, 'Abbott Elementary', 67)}
+      index={1}
+      onClick={noop}
+      plan={plan({
+        episodesPerWeek: 0,
+        requiredPerWeek: 0.6,
+        current: variant({ episodes: 5, projectedDate: null }),
+      })}
+    />
+    <CountdownListItem
+      item={countdown(4, 'Blade Runner 2099', 17)}
+      index={2}
+      onClick={noop}
+      plan={plan()}
+    />
+    <CountdownListItem
+      item={countdown(5, 'Only Murders in the Building', 30)}
+      index={3}
+      onClick={noop}
+      plan={plan({
+        requiredPerWeek: 1.2,
+        current: variant({ episodes: 6, willMakeIt: true, daysLate: 0, projectedDate: inDays(10) }),
+      })}
+    />
+    <CountdownListItem item={countdown(6, 'Harry Potter', 47)} index={4} onClick={noop} />
+    <CountdownListItem item={countdown(7, 'Ahsoka', 74)} index={5} onClick={noop} />
   </div>
 );
 

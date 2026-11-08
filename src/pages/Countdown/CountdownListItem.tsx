@@ -6,11 +6,14 @@ import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
+import { CatchUpPlanNote } from './CatchUpPlanNote';
 
 interface CountdownListItemProps {
   item: SeriesCountdown;
   index: number;
   onClick: () => void;
+  plan?: CatchUpPlan;
 }
 
 function countdownText(daysUntil: number): string {
@@ -19,7 +22,12 @@ function countdownText(daysUntil: number): string {
   return t('in {n} Tagen', { n: daysUntil });
 }
 
-export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, index, onClick }) => {
+export const CountdownListItem: React.FC<CountdownListItemProps> = ({
+  item,
+  index,
+  onClick,
+  plan,
+}) => {
   const { currentTheme } = useTheme();
 
   const seasonLabel =
@@ -71,6 +79,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
           {seasonLabel} &middot; {formatSeasonDate(item.nextDate)}
         </p>
+        {plan && <CatchUpPlanNote plan={plan} compact />}
       </div>
 
       {/* Day count */}

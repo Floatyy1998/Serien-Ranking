@@ -7,8 +7,6 @@ import { t } from '../../services/i18n';
 import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpPlans } from '../../hooks/watch/useCatchUpPlans';
-import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
-import { CatchUpPlanNote } from './CatchUpPlanNote';
 import { CountdownHeroCard } from './CountdownHeroCard';
 import { CountdownListItem } from './CountdownListItem';
 import './CountdownPage.css';
@@ -66,10 +64,8 @@ export const CountdownPage: React.FC = () => {
                 onClick={() => {
                   navigate(`/series/${hero.seriesId}`);
                 }}
+                plan={catchUpPlans.get(hero.seriesId)}
               />
-              {catchUpPlans.has(hero.seriesId) && (
-                <CatchUpPlanNote plan={catchUpPlans.get(hero.seriesId) as CatchUpPlan} />
-              )}
             </motion.div>
 
             {rest.length > 0 && (
@@ -89,13 +85,8 @@ export const CountdownPage: React.FC = () => {
                       onClick={() => {
                         navigate(`/series/${item.seriesId}`);
                       }}
+                      plan={catchUpPlans.get(item.seriesId)}
                     />
-                    {catchUpPlans.has(item.seriesId) && (
-                      <CatchUpPlanNote
-                        plan={catchUpPlans.get(item.seriesId) as CatchUpPlan}
-                        compact
-                      />
-                    )}
                   </motion.div>
                 ))}
               </>

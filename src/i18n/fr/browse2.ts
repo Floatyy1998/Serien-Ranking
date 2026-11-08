@@ -249,7 +249,10 @@ const dict: Record<string, string> = {
   'Rechtzeitig durch': 'À temps',
   '{n} Wochen zu spät': '{n} semaines de retard',
   '{n} Tage zu spät': '{n} jours de retard',
-  '{n} Folgen offen, kein Tempo messbar': '{n} épisodes restants, rythme non mesurable',
+  '{n} Folgen bis zum Start offen': '{n} épisodes restants avant la reprise',
+  '{need} Folgen pro Woche reichen': '{need} épisodes par semaine suffisent',
+  '{n} offen · {need}/Woche reichen': '{n} restants · {need}/semaine suffisent',
+  '{need}/Woche nötig': '{need}/semaine nécessaires',
   '{open} Folgen offen · {need} Folgen/Woche nötig':
     '{open} épisodes restants · {need} épisodes/semaine nécessaires',
   'Ohne die {n} Filler-Folgen schaffst du es.':
