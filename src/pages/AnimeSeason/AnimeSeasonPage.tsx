@@ -99,7 +99,7 @@ import { AnimeSeasonCard } from './AnimeSeasonCard';
 import { AnimeSeasonHero } from './AnimeSeasonHero';
 import { AnimeSeasonStudioFilter } from './AnimeSeasonStudioFilter';
 import { startDateToDate } from './animeFormat';
-import { readResolveCacheSync, resolveTmdbInfo } from './resolveTmdbId';
+import { forgetResolvedTmdbInfo, readResolveCacheSync, resolveTmdbInfo } from './resolveTmdbId';
 import type { ResolvedTmdbInfo, TmdbProviderInfo } from './resolveTmdbId';
 import {
   animeStudios,
@@ -843,24 +843,41 @@ export const AnimeSeasonPage: React.FC = () => {
         showToast(t('Auf TMDB nicht gefunden'), 2000, 'info');
         return;
       }
-      const isMovie = info.mediaType === 'movie';
-      const response = await backendFetch(isMovie ? '/addMovie' : '/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: import.meta.env.VITE_USER, id: info.tmdbId, uuid: user.uid }),
-      });
+      let tmdbId = info.tmdbId;
+      let isMovie = info.mediaType === 'movie';
+      const send = () =>
+        backendFetch(isMovie ? '/addMovie' : '/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: import.meta.env.VITE_USER, id: tmdbId, uuid: user.uid }),
+        });
+      let response = await send();
+      // TMDB hat den Eintrag gelöscht oder zusammengelegt (z. B. Fortsetzung jetzt als Staffel 2):
+      // die Zuordnung aus Export bzw. Cache ist veraltet, also einmal frisch suchen.
+      if (response.status === 404) {
+        forgetResolvedTmdbInfo(entry.anime.id);
+        const fresh = await resolveTmdbInfo(entry.anime, selected.year);
+        setResolved((prev) => ({ ...prev, [entry.anime.id]: fresh }));
+        if (!fresh.tmdbId || fresh.tmdbId === tmdbId) {
+          showToast(t('Auf TMDB nicht gefunden'), 2000, 'info');
+          return;
+        }
+        tmdbId = fresh.tmdbId;
+        isMovie = fresh.mediaType === 'movie';
+        response = await send();
+      }
       if (!response.ok) throw new Error(`add failed: ${response.status}`);
-      if (!isMovie) void refetchAfterAdd(info.tmdbId);
+      if (!isMovie) void refetchAfterAdd(tmdbId);
 
       const title = entry.anime.title.english || entry.anime.title.romaji || t('Unbekannter Titel');
       hapticSuccess();
       showToast(t('„{title}" hinzugefügt', { title }), 2500, 'success');
       if (isMovie) {
-        trackMovieAdded(String(info.tmdbId), title, 'anime-season');
-        await logMovieAdded(user.uid, title, info.tmdbId);
+        trackMovieAdded(String(tmdbId), title, 'anime-season');
+        await logMovieAdded(user.uid, title, tmdbId);
       } else {
-        trackSeriesAdded(String(info.tmdbId), title, 'anime-season');
-        await logSeriesAdded(user.uid, title, info.tmdbId);
+        trackSeriesAdded(String(tmdbId), title, 'anime-season');
+        await logSeriesAdded(user.uid, title, tmdbId);
       }
     } catch {
       showToast(t('Hinzufügen fehlgeschlagen'), 2500, 'error');

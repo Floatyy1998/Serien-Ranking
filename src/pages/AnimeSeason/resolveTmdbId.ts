@@ -90,6 +90,18 @@ function writeCache(anilistId: number, info: ResolvedTmdbInfo): void {
   }
 }
 
+/** Verwirft eine Auflösung, deren TMDB-Eintrag es nicht mehr gibt — die nächste sucht neu. */
+export function forgetResolvedTmdbInfo(anilistId: number): void {
+  try {
+    const cache = readCache();
+    if (!(String(anilistId) in cache)) return;
+    delete cache[String(anilistId)];
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    /* quota – ignorieren */
+  }
+}
+
 /** Synchroner Cache-Read — die Page hydratisiert damit ohne Request. */
 export function readResolvedTmdbInfoSync(anilistId: number): ResolvedTmdbInfo | undefined {
   return readCache()[String(anilistId)];

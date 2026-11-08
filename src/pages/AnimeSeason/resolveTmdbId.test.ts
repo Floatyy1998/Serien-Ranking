@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SeasonAnime } from '../../services/api/anilistSeasonService';
-import { readResolveCacheSync, readResolvedTmdbInfoSync, resolveTmdbInfo } from './resolveTmdbId';
+import {
+  forgetResolvedTmdbInfo,
+  readResolveCacheSync,
+  readResolvedTmdbInfoSync,
+  resolveTmdbInfo,
+} from './resolveTmdbId';
 
 const CACHE_KEY = 'animeSeasonTmdb:v11';
 
@@ -76,6 +81,19 @@ describe('readResolvedTmdbInfoSync / readResolveCacheSync', () => {
     sessionStore.set(CACHE_KEY, 'nicht json {');
     expect(readResolveCacheSync()).toEqual({});
     expect(readResolvedTmdbInfoSync(1)).toBeUndefined();
+  });
+
+  it('forgetResolvedTmdbInfo verwirft nur den einen Eintrag', () => {
+    sessionStore.set(
+      CACHE_KEY,
+      JSON.stringify({
+        '42': { tmdbId: 7, overviewDe: null, providers: null },
+        '43': { tmdbId: 8, overviewDe: null, providers: null },
+      })
+    );
+    forgetResolvedTmdbInfo(42);
+    expect(readResolvedTmdbInfoSync(42)).toBeUndefined();
+    expect(readResolvedTmdbInfoSync(43)).toEqual({ tmdbId: 8, overviewDe: null, providers: null });
   });
 });
 
