@@ -172,7 +172,10 @@ describe('hardcoverApi', () => {
     const assertion = expect(pending).rejects.toMatchObject({ code: 'busy' });
     await vi.advanceTimersByTimeAsync(2000);
     await assertion;
-    expect(backendFetch.mock.calls[0][2]).toEqual({ quietStatuses: [429, 503] });
+    expect(backendFetch.mock.calls[0][2]).toEqual({
+      quietStatuses: [429, 503],
+      quietConnectionErrors: true,
+    });
     expect(hardcoverFailureCount()).toBe(before + 1);
   });
 

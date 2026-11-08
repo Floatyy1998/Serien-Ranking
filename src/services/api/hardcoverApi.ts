@@ -123,7 +123,8 @@ async function attempt<T>(
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort);
   try {
-    // Hintergrund-Abfragen weist der Server bei Andrang absichtlich ab (503/429) — das ist kein Befund.
+    // Hintergrund-Abfragen weist der Server bei Andrang absichtlich ab (503/429) — das ist kein Befund, und ihr
+    // Verbindungsfehler auch nicht: Niemand wartet darauf, die Ersatzquellen springen ein.
     // Ein 503 beim ersten Versuch auch nicht: post() wiederholt ihn, gemeldet wird erst das endgültige Scheitern.
     const res = await backendFetch(
       path,
@@ -133,7 +134,11 @@ async function attempt<T>(
         body: JSON.stringify({ lang: appLocale, ...(background ? { bg: true } : {}), ...body }),
         signal: controller.signal,
       },
-      background ? { quietStatuses: [429, 503] } : firstTry ? { quietStatuses: [503] } : undefined
+      background
+        ? { quietStatuses: [429, 503], quietConnectionErrors: true }
+        : firstTry
+          ? { quietStatuses: [503] }
+          : undefined
     );
     if (!res.ok) {
       const payload = (await res.json().catch(() => null)) as {

@@ -150,10 +150,18 @@ function cancelledByCaller(init: RequestInit): boolean {
   return (signal.reason as { name?: string } | undefined)?.name !== 'TimeoutError';
 }
 
+/** WebKit verwirft den Abbruchgrund und wirft nur „Fetch is aborted" — die abgelaufene Frist steht dann allein im Signal. */
+function failureMessage(error: unknown, init: RequestInit): string {
+  const reason = init.signal?.aborted ? (init.signal.reason as Error | undefined) : undefined;
+  if (reason?.name === 'TimeoutError' && reason.message) return reason.message;
+  return (error as Error)?.message ?? String(error);
+}
+
 async function sendWithRetry(
   path: string,
   init: RequestInit,
-  token: string | null
+  token: string | null,
+  quietConnectionErrors = false
 ): Promise<Response> {
   const delays = RETRY_PATHS.has(path) ? CONNECTION_RETRY_DELAYS_MS : [];
   for (let attempt = 0; ; attempt++) {
@@ -164,8 +172,8 @@ async function sendWithRetry(
       if (attempt >= delays.length) {
         // Im Hintergrund kappen Android-WebView und iOS das Netz, beim Update-Reload der Browser selbst — kein Befund.
         const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
-        if (!hidden && !isPageLeaving() && !cancelledByCaller(init)) {
-          reportFailure(path, init, `Verbindungsfehler: ${(error as Error)?.message ?? error}`);
+        if (!quietConnectionErrors && !hidden && !isPageLeaving() && !cancelledByCaller(init)) {
+          reportFailure(path, init, `Verbindungsfehler: ${failureMessage(error, init)}`);
         }
         throw error;
       }
@@ -184,30 +192,34 @@ async function sendWithRetry(
  * halten das Minutenlimit des Backends selbst ein. Scheitert ein
  * Aufruf endgültig (401/403/429/5xx oder Verbindungsfehler), geht eine
  * Meldung an die Client-Fehlerberichte, damit der Grund sichtbar wird —
- * außer bei `quietStatuses`, die der Aufrufer bewusst selbst abfängt.
+ * außer bei `quietStatuses`, die der Aufrufer bewusst selbst abfängt, und bei
+ * Verbindungsfehlern mit `quietConnectionErrors` (Hintergrund-Abfragen mit Ersatzquelle).
  */
 export async function backendFetch(
   path: string,
   init: RequestInit = {},
-  { quietStatuses = [] }: { quietStatuses?: readonly number[] } = {}
+  {
+    quietStatuses = [],
+    quietConnectionErrors = false,
+  }: { quietStatuses?: readonly number[]; quietConnectionErrors?: boolean } = {}
 ): Promise<Response> {
   lastTokenError = null;
   let token = await getToken();
-  let response = await sendWithRetry(path, init, token);
+  let response = await sendWithRetry(path, init, token, quietConnectionErrors);
 
   const user = response.status === 401 ? firebase.auth().currentUser : null;
   if (user) {
     const fresh = await fetchToken(user, true);
     if (fresh && fresh !== token) {
       token = fresh;
-      response = await sendWithRetry(path, init, fresh);
+      response = await sendWithRetry(path, init, fresh, quietConnectionErrors);
     }
   }
 
   // Andere Geräte, die Extension oder ein zweiter Tab desselben Kontos zählen mit.
   if (response.status === 429 && ADD_LIMIT_PATHS.has(path)) {
     await sleep(retryAfterMs(response));
-    response = await sendWithRetry(path, init, token);
+    response = await sendWithRetry(path, init, token, quietConnectionErrors);
   }
 
   const failed = [401, 403, 429].includes(response.status) || response.status >= 500;
