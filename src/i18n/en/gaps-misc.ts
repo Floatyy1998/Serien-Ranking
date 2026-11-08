@@ -29,6 +29,7 @@ const dict: Record<string, string> = {
 
   // Service-Worker-Update-Pille (services/serviceWorkerManager.ts)
   'Neue Version verfügbar': 'New version available',
+  'Neue Version wird geladen': 'Loading new version',
   Aktualisieren: 'Update',
   Später: 'Later',
   'Update erfolgreich installiert': 'Update installed successfully',

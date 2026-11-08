@@ -138,6 +138,9 @@ export const SplashContainer = styled(Box, {
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.18s' : '0.8s')} ease-out forwards;
   overflow: hidden;
+
+  /* Fortsetzung nach einem Update-Reload: ohne Einblenden, sonst wirkt es wie ein zweiter Splash. */
+  ${(props) => (props.isHiding ? '' : "&[data-resumed='true'] { animation: none; }")}
 `;
 
 // Bewusst ohne Animation - verhindert Flickern
@@ -227,6 +230,11 @@ export const LogoSVG = styled('svg')`
     ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
     ${breathe} 3s ease-in-out infinite;
   animation-delay: 0s, 1.2s;
+
+  [data-resumed='true'] & {
+    animation: ${breathe} 3s ease-in-out infinite;
+  }
+
   filter: drop-shadow(
     0 10px 40px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent)
   );
@@ -276,6 +284,12 @@ export const Title = styled('h1')`
   animation-delay: 0.3s;
   opacity: 0;
 
+  [data-resumed='true'] & {
+    animation: none;
+    opacity: 1;
+    letter-spacing: 10px;
+  }
+
   @media (max-width: 768px) {
     font-size: 3rem;
   }
@@ -297,6 +311,10 @@ export const Subtitle = styled('p')`
   font-weight: 300;
   animation: ${fadeIn} 1s ease-out 0.6s backwards;
   position: relative;
+
+  [data-resumed='true'] & {
+    animation: none;
+  }
 
   /* Doppelte Klasse schlägt die globale Regel .mobile-app p { margin: 0 } */
   && {
@@ -336,6 +354,10 @@ export const ProgressWrapper = styled(Box)`
   backdrop-filter: var(--blur-sm);
   border: 1px solid color-mix(in srgb, var(--theme-primary, #ef6f8a) 15%, transparent);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
+
+  [data-resumed='true'] & {
+    animation: none;
+  }
 
   @media (max-width: 768px) {
     width: 280px;
@@ -505,4 +527,8 @@ export const CornerAccent = styled(Box, {
   }}
 
   animation: ${fadeIn} 1s ease-out 1s backwards;
+
+  [data-resumed='true'] & {
+    animation: none;
+  }
 `;

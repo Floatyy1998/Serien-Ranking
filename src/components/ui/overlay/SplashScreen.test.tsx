@@ -2,6 +2,11 @@
 import { render, screen, cleanup, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { APP_READY_EVENT } from '../../../services/app/appReady';
+import {
+  holdSplashForUpdate,
+  isSplashHeldForUpdate,
+  releaseSplashHold,
+} from '../../../services/app/startupUpdateHold';
 import { SplashScreen } from './SplashScreen';
 
 function setAllReady(ready: boolean) {
@@ -21,6 +26,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  releaseSplashHold();
   vi.runOnlyPendingTimers();
   vi.useRealTimers();
   cleanup();
@@ -85,5 +91,45 @@ describe('SplashScreen', () => {
       vi.advanceTimersByTime(180);
     });
     expect(order).toEqual(['hideStart', 'complete']);
+  });
+
+  it('bleibt stehen, solange ein neuer Build installiert wird, höchstens 10 s', () => {
+    window.splashScreenComplete = false;
+    const onComplete = vi.fn();
+    render(<SplashScreen onComplete={onComplete} />);
+    act(() => {
+      holdSplashForUpdate();
+      setAllReady(true);
+      vi.advanceTimersByTime(9000);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getByText('Neue Version wird geladen')).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(1500 + 140 + 180);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('geht sofort weiter, wenn der Hold freigegeben wird', () => {
+    window.splashScreenComplete = false;
+    const onComplete = vi.fn();
+    render(<SplashScreen onComplete={onComplete} />);
+    act(() => {
+      holdSplashForUpdate();
+      setAllReady(true);
+      vi.advanceTimersByTime(500);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+    act(() => {
+      releaseSplashHold();
+      vi.advanceTimersByTime(140 + 180);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('hält nichts, wenn der Splash schon vorbei ist', () => {
+    window.splashScreenComplete = true;
+    holdSplashForUpdate();
+    expect(isSplashHeldForUpdate()).toBe(false);
   });
 });

@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { APP_READY_EVENT, APP_READY_KEYS, countAppReady } from '../../../services/app/appReady';
+import {
+  HELD_PROGRESS,
+  isSplashHeldForUpdate,
+  isSplashResumed,
+} from '../../../services/app/startupUpdateHold';
 import { t } from '../../../services/i18n';
 import { SeasonalSplashDecor, SeasonalSplashEyebrow } from '../../seasonal/SeasonalSplash';
 import { readStoredSeason } from '../../../services/settings/storedSeason';
@@ -43,9 +48,13 @@ export const SplashScreen = ({
   previewSeason,
 }: SplashScreenProps) => {
   const isPreview = previewSeason !== undefined;
+  // Nach einem Update-Reload aus dem Splash: dort weitermachen, wo der vorige aufgehört hat.
+  const [resumed] = useState(() => !isPreview && isSplashResumed());
   const [isHiding, setIsHiding] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState(t('Initialisiere System'));
+  const [loadingProgress, setLoadingProgress] = useState(resumed ? HELD_PROGRESS : 0);
+  const [loadingText, setLoadingText] = useState(() =>
+    resumed ? t('Neue Version wird geladen') : t('Initialisiere System')
+  );
   const [season] = useState(() => (isPreview ? previewSeason : readStoredSeason()));
   const palette = season ? SEASON_PALETTES[season] : null;
   const seasonVars = palette
@@ -83,9 +92,19 @@ export const SplashScreen = ({
 
     const evaluate = () => {
       const progress = countAppReady() / APP_READY_KEYS.length;
-      setLoadingProgress(progress);
 
-      if (progress < 0.2) {
+      // Neuer Build wird gerade installiert: gleich folgt der Reload, die alte Version bleibt verdeckt.
+      if (isSplashHeldForUpdate()) {
+        setLoadingProgress(HELD_PROGRESS);
+        setLoadingText(t('Neue Version wird geladen'));
+        return;
+      }
+
+      setLoadingProgress(resumed ? Math.max(progress, HELD_PROGRESS) : progress);
+
+      if (resumed && progress < 1) {
+        setLoadingText(t('Neue Version wird geladen'));
+      } else if (progress < 0.2) {
         setLoadingText(t('Initialisiere System'));
       } else if (progress < 0.4) {
         setLoadingText(t('Lade Interface'));
@@ -133,10 +152,14 @@ export const SplashScreen = ({
       if (holdTimer) clearTimeout(holdTimer);
       if (fadeTimer) clearTimeout(fadeTimer);
     };
-  }, [onComplete, onHideStart, waitForCondition, isPreview]);
+  }, [onComplete, onHideStart, waitForCondition, isPreview, resumed]);
 
   return (
-    <SplashContainer isHiding={isHiding} style={seasonVars}>
+    <SplashContainer
+      isHiding={isHiding}
+      style={seasonVars}
+      data-resumed={resumed ? 'true' : undefined}
+    >
       <BackgroundMesh />
       <SeasonalSplashDecor season={season} />
 

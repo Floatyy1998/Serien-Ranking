@@ -22,6 +22,7 @@ const dict: Record<string, string> = {
   '1 Offline-Änderung synchronisiert': '1 cambio offline sincronizado',
   '{n} Offline-Änderungen synchronisiert': '{n} cambios offline sincronizados',
   'Neue Version verfügbar': 'Nueva versión disponible',
+  'Neue Version wird geladen': 'Cargando nueva versión',
   Aktualisieren: 'Actualizar',
   Später: 'Más tarde',
   'Update erfolgreich installiert': 'Actualización instalada correctamente',

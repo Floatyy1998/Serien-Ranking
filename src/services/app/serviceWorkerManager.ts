@@ -1,6 +1,7 @@
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { t } from '../i18n';
 import { isNativeApp } from './nativeShell';
+import { holdSplashForUpdate, markSplashResume, releaseSplashHold } from './startupUpdateHold';
 import { showUpdatePill } from './updatePill';
 
 interface CacheStatus {
@@ -59,9 +60,10 @@ class ServiceWorkerManager {
     try {
       await this.register();
       this.setupEventListeners();
-      // Update checks: nach 5s, dann alle 5 Minuten, und bei Tab-Fokus
+      // Sofort prüfen, solange der Splash noch steht — ein alter Build aus dem Cache wird dann vor dem ersten Blick ersetzt.
       if (this.updateCheckTimeout) clearTimeout(this.updateCheckTimeout);
-      this.updateCheckTimeout = setTimeout(() => this.checkForUpdates(), 5000);
+      this.updateCheckTimeout = null;
+      void this.checkForUpdates();
       if (this.updateCheckInterval) clearInterval(this.updateCheckInterval);
       this.updateCheckInterval = setInterval(() => this.checkForUpdates(), 5 * 60 * 1000);
       if (!this.visibilityHandler) {
@@ -121,18 +123,25 @@ class ServiceWorkerManager {
       this.onUpdateReady(registration);
     }
 
-    // Mid-session: "installed" + bestehender Controller = Update, kein Erstbesuch.
-    registration.addEventListener('updatefound', () => {
-      const installing = registration.installing;
-      if (!installing) return;
-      installing.addEventListener('statechange', () => {
-        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          this.onUpdateReady(registration);
-        }
-      });
-    });
+    // Der Browser prüft beim Navigieren selbst — der neue Worker kann schon installieren.
+    this.watchInstalling(registration);
+    registration.addEventListener('updatefound', () => this.watchInstalling(registration));
 
     return registration;
+  }
+
+  /** "installed" + bestehender Controller = Update, kein Erstbesuch. */
+  private watchInstalling(registration: ServiceWorkerRegistration): void {
+    const installing = registration.installing;
+    if (!installing || !navigator.serviceWorker.controller) return;
+    holdSplashForUpdate();
+    installing.addEventListener('statechange', () => {
+      if (installing.state === 'installed') {
+        this.onUpdateReady(registration);
+      } else if (installing.state === 'redundant') {
+        releaseSplashHold();
+      }
+    });
   }
 
   /** Update bereit: Pille anbieten + automatisch anwenden, sobald der Tab unsichtbar ist. */
@@ -140,13 +149,18 @@ class ServiceWorkerManager {
     if (this.updateReadyHandled) return;
     this.updateReadyHandled = true;
 
-    // Frischer Start ohne Eingabe: sofort übernehmen. Auf Android feuert „hidden“ beim
-    // Wegwischen oft nicht mehr, der Worker würde sonst über mehrere Starts warten.
-    if (!this.interacted && document.visibilityState === 'visible' && performance.now() < 30000) {
+    // Splash noch sichtbar oder frischer Start ohne Eingabe: sofort übernehmen. Auf Android
+    // feuert „hidden“ beim Wegwischen oft nicht mehr, der Worker würde sonst über mehrere Starts warten.
+    const splashVisible = window.splashScreenComplete === false;
+    const freshStart =
+      !this.interacted && document.visibilityState === 'visible' && performance.now() < 30000;
+    if (splashVisible || freshStart) {
+      if (splashVisible && registration.waiting) markSplashResume();
       this.applyUpdate(registration);
       return;
     }
 
+    releaseSplashHold();
     showUpdatePill(() => this.applyUpdate(registration));
 
     if (!this.hiddenApplyHandler) {
@@ -163,7 +177,10 @@ class ServiceWorkerManager {
 
   /** Wartenden Worker aktivieren — der Reload folgt im controllerchange-Handler. */
   private applyUpdate(registration: ServiceWorkerRegistration): void {
-    if (!registration.waiting) return;
+    if (!registration.waiting) {
+      releaseSplashHold();
+      return;
+    }
     this.intentionalActivation = true;
     window.dispatchEvent(new Event(PAGE_REPLACING_EVENT));
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
