@@ -17,6 +17,7 @@ import { t } from '../../services/i18n';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
+import { formatVoteCount } from '../../utils/voteCount';
 import type { TMDBWatchProvider } from './useMovieData';
 import { useCommunityRating } from '../../hooks/rating/useCommunityRatings';
 
@@ -378,7 +379,7 @@ export const MovieHeroSection = memo(
                       </span>
                       {tmdbRating?.vote_count ? (
                         <span className="md-rating-count">
-                          ({(tmdbRating.vote_count / 1000).toFixed(1)}k)
+                          ({formatVoteCount(tmdbRating.vote_count)})
                         </span>
                       ) : null}
                     </a>
@@ -398,7 +399,7 @@ export const MovieHeroSection = memo(
                       </span>
                       {imdbRating ? (
                         <span className="md-rating-count">
-                          ({(parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)}k)
+                          ({formatVoteCount(imdbRating.votes)})
                         </span>
                       ) : null}
                     </a>
@@ -564,7 +565,7 @@ export const MovieHeroSection = memo(
                       {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
                     </span>
                     <span className="md-rating-count">
-                      ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
+                      ({formatVoteCount(tmdbRating?.vote_count)})
                     </span>
                   </a>
                   <a
@@ -581,13 +582,7 @@ export const MovieHeroSection = memo(
                     <span className="md-rating-value">
                       {imdbRating?.rating?.toFixed(1) || '0.0'}/10
                     </span>
-                    <span className="md-rating-count">
-                      (
-                      {imdbRating
-                        ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
-                        : '0.0'}
-                      k)
-                    </span>
+                    <span className="md-rating-count">({formatVoteCount(imdbRating?.votes)})</span>
                   </a>
                   {renderCommunityBadge(true)}
                 </div>

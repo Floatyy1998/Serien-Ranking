@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useCommunityRating } from '../../../hooks/rating/useCommunityRatings';
 import type { Series } from '../../../types/Series';
+import { formatVoteCount } from '../../../utils/voteCount';
 
 interface RatingsCardProps {
   series: Series;
@@ -40,9 +41,9 @@ export const RatingsCard = memo<RatingsCardProps>(
       localSeries?.vote_average ||
       0
     ).toFixed(1);
-    const tmdbVotes = (
-      (tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0) / 1000
-    ).toFixed(1);
+    const tmdbVotes = formatVoteCount(
+      tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0
+    );
 
     const imdbId = series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || '';
     const hasImdb = !!imdbId;
@@ -59,7 +60,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         pillBg: 'rgba(0, 188, 212, 0.15)',
         pillBorder: 'rgba(0, 188, 212, 0.3)',
         value: `${tmdbValue}/10`,
-        votes: `(${tmdbVotes}k)`,
+        votes: `(${tmdbVotes})`,
         href: `https://www.themoviedb.org/tv/${seriesId}`,
         disabled: false,
       },
@@ -71,7 +72,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         pillBg: 'rgba(245, 197, 24, 0.15)',
         pillBorder: 'rgba(245, 197, 24, 0.3)',
         value: `${imdbRating?.rating?.toFixed(1) || '0.0'}/10`,
-        votes: `(${((parseInt(imdbRating?.votes?.replace(/,/g, '') ?? '', 10) || 0) / 1000).toFixed(1)}k)`,
+        votes: `(${formatVoteCount(imdbRating?.votes)})`,
         href: `https://www.imdb.com/title/${imdbId}`,
         disabled: !hasImdb,
         dim: !hasImdb,
