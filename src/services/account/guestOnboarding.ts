@@ -133,6 +133,13 @@ export function addGuestPick(item: GuestPick): void {
   write({ ...store, picks: [...store.picks, item] });
 }
 
+export function addGuestReadingPick(item: GuestReadingPick): void {
+  const store = read();
+  if (store.readingPicks.some((p) => p.key === item.key)) return;
+  if (store.readingPicks.length >= MAX_PICKS) return;
+  write({ ...store, readingPicks: [...store.readingPicks, item] });
+}
+
 export function removeGuestPick(type: GuestPick['type'], id: number): void {
   const store = read();
   write({ ...store, picks: store.picks.filter((p) => !(p.type === type && p.id === id)) });

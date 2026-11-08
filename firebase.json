@@ -99,6 +99,14 @@
         "function": "ogRender"
       },
       {
+        "regex": "^/books/[a-z]+-[^/]+$",
+        "function": "ogRender"
+      },
+      {
+        "regex": "^/manga/-?\\d+$",
+        "function": "ogRender"
+      },
+      {
         "source": "/og/**",
         "function": "ogRender"
       },

@@ -45,6 +45,7 @@ import {
   volumeSnapshot,
   withSourceBook,
 } from '../../lib/books/mangaBooks';
+import { ShareTitleButton } from '../../components/share/ShareTitleButton';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   moveMangaToBooks,
@@ -57,6 +58,7 @@ import { fetchMoreByAuthor } from '../../services/api/bookDiscovery';
 import { dateLocale, t } from '../../services/i18n';
 import type { Book, BookFormat, BookSearchResult } from '../../types/Book';
 import { useAddManga } from '../Manga/useAddManga';
+import { bookPath } from './helpers';
 import './BookDetailPage.css';
 import { AddOptions, type AddChoice } from './components/AddBookSheet';
 import { BookCover } from './components/BookCover';
@@ -605,6 +607,7 @@ export const BookDetailPage = () => {
 
       <div className="bd-topbar">
         <BackButton />
+        <ShareTitleButton path={bookPath(view.id)} title={view.title} />
       </div>
 
       <header className="bd-hero">

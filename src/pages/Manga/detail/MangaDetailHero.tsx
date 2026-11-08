@@ -1,6 +1,7 @@
 import { Add, CheckCircle, LibraryAdd, OpenInNew, Remove, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { ShareTitleButton } from '../../../components/share/ShareTitleButton';
 import { BackButton } from '../../../components/ui';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { mangaSourceLink } from '../../../lib/manga/mangaSource';
@@ -268,6 +269,10 @@ export const MangaDetailHero = ({
             WebkitBackdropFilter: 'var(--blur-sm)',
           }}
         />
+      </div>
+
+      <div className="mdh-share">
+        <ShareTitleButton path={`/manga/${data.anilistId}`} title={data.title} />
       </div>
 
       <div className="mdh-inner">

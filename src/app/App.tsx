@@ -53,6 +53,16 @@ const GuestMediaPage = lazyWithRetry(() =>
     default: m.GuestMediaPage,
   }))
 );
+const GuestBookPage = lazyWithRetry(() =>
+  import('../pages/GuestMedia/GuestBookPage').then((m) => ({
+    default: m.GuestBookPage,
+  }))
+);
+const GuestMangaPage = lazyWithRetry(() =>
+  import('../pages/GuestMedia/GuestMangaPage').then((m) => ({
+    default: m.GuestMangaPage,
+  }))
+);
 const SharedListPage = lazyWithRetry(() =>
   import('../pages/SharedList').then((m) => ({
     default: m.SharedListPage,
@@ -74,7 +84,7 @@ const ImpressumPage = lazyWithRetry(() =>
   }))
 );
 
-// Ausgeloggt: geteilte Detail-Links (/series/:id, /movie/:id, /list/:id) zeigen die
+// Ausgeloggt: geteilte Detail-Links (/series, /movie, /books, /manga, /list) zeigen die
 // öffentliche Gast-Seite mit Register-CTA statt der Login-Wand (Option B:
 // nur Share-Ziele sind public, der Rest führt zur StartPage).
 const GuestRouteSwitch = () => {
@@ -84,6 +94,10 @@ const GuestRouteSwitch = () => {
   if (import.meta.env.DEV && pathname.startsWith('/dev/')) return <MobileApp />;
   const list = pathname.match(/^\/list\/([\w-]{1,64})/);
   if (list) return <SharedListPage listId={list[1]} />;
+  const book = pathname.match(/^\/books\/(?!search$|shelf$|stats$|import$)([^/]+)$/);
+  if (book) return <GuestBookPage bookId={book[1]} />;
+  const manga = pathname.match(/^\/manga\/(-?\d+)$/);
+  if (manga) return <GuestMangaPage anilistId={Number(manga[1])} />;
   const match = pathname.match(/^\/(series|movie)\/(\d+)/);
   if (match) {
     return (

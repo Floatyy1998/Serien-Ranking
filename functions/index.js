@@ -1,6 +1,7 @@
 /**
- * OG-Renderer für geteilte Detail-Links (/series/:id, /movie/:id) und
- * geteilte Listen (/list/:id, Vorschaubild unter /og/list/:id).
+ * OG-Renderer für geteilte Detail-Links (/series/:id, /movie/:id, /books/:id,
+ * /manga/:id) und geteilte Listen (/list/:id). Vorschaubilder unter /og/list,
+ * /og/book und /og/manga.
  *
  * Firebase Hosting rewritet diese Routen hierher; die Function nimmt das
  * gebaute index.html der Live-Site, ersetzt Title/Description/OG-Tags durch
@@ -42,7 +43,7 @@ async function getIndexHtml() {
   }
   try {
     // /index.html wird von Hosting direkt ausgeliefert (kein Rewrite-Zyklus:
-    // nur /series/**, /movie/**, /list/** und /og/** zeigen auf diese Function).
+    // nur Detail-, Listen- und /og-Routen zeigen auf diese Function).
     const res = await fetch(`${SITE_ORIGIN}/index.html`);
     if (res.ok) {
       const html = await res.text();
@@ -289,6 +290,206 @@ async function renderListImage(list) {
   return sharp(background).composite(layers).jpeg({ quality: 86 }).toBuffer();
 }
 
+// Bücher und Manga: statischer Katalog des Backends, Manga ohne Katalogeintrag direkt von AniList.
+const CATALOG_ORIGIN = 'https://serienapi.konrad-dinges.de';
+const BOOK_ID_RE = /^[a-z]+-[\w.:-]{1,120}$/;
+const MANGA_ID_RE = /^-?\d{1,14}$/;
+const COVER_HOSTS =
+  /^https:\/\/(serienapi\.konrad-dinges\.de|s4\.anilist\.co|image\.tmdb\.org|covers\.openlibrary\.org|books\.google\.com|books\.googleusercontent\.com|assets\.hardcover\.app|portal\.dnb\.de)\//;
+const VERSION_TTL_MS = 10 * 60 * 1000;
+const versions = new Map();
+const readingCache = new Map();
+
+async function catalogVersion(kind) {
+  const hit = versions.get(kind);
+  if (hit && Date.now() - hit.at < VERSION_TTL_MS) return hit.v;
+  try {
+    const res = await fetch(`${CATALOG_ORIGIN}/${kind}/version`);
+    const v = res.ok ? (await res.json()).version || 0 : 0;
+    versions.set(kind, { v, at: Date.now() });
+    return v;
+  } catch {
+    return hit ? hit.v : 0;
+  }
+}
+
+function remember(key, data) {
+  if (readingCache.size >= TMDB_CACHE_MAX) {
+    const oldest = readingCache.keys().next().value;
+    if (oldest) readingCache.delete(oldest);
+  }
+  readingCache.set(key, { data, at: Date.now() });
+  return data;
+}
+
+async function getCatalogItem(kind, id) {
+  const key = `${kind}:${id}`;
+  const cached = readingCache.get(key);
+  if (cached && Date.now() - cached.at < TMDB_TTL_MS) return cached.data;
+  try {
+    const v = await catalogVersion(kind);
+    const res = await fetch(
+      `${CATALOG_ORIGIN}/catalog/${kind}/items/${encodeURIComponent(id)}.json?v=${v}`
+    );
+    const data = res.ok ? await res.json() : null;
+    return remember(key, data && data.title ? data : null);
+  } catch (err) {
+    logger.warn('Katalog-Fetch fehlgeschlagen', { key, message: err && err.message });
+    return null;
+  }
+}
+
+const ANILIST_QUERY =
+  'query ($id: Int) { Media(id: $id, type: MANGA) { id title { romaji english } description(asHtml: false) coverImage { extraLarge large } startDate { year } staff(perPage: 4) { edges { role node { name { full } } } } } }';
+
+async function getAniListManga(id) {
+  const key = `anilist:${id}`;
+  const cached = readingCache.get(key);
+  if (cached && Date.now() - cached.at < TMDB_TTL_MS) return cached.data;
+  try {
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ query: ANILIST_QUERY, variables: { id } }),
+    });
+    const media = res.ok ? (await res.json()).data?.Media : null;
+    if (!media) return remember(key, null);
+    const authors = (media.staff?.edges || [])
+      .filter((e) => /story|art/i.test(e.role || ''))
+      .map((e) => e.node?.name?.full)
+      .filter(Boolean);
+    return remember(key, {
+      title: media.title?.english || media.title?.romaji || '',
+      description: media.description || '',
+      cover: media.coverImage?.extraLarge || media.coverImage?.large || '',
+      year: media.startDate?.year || null,
+      authors: [...new Set(authors)].slice(0, 2),
+      v: 0,
+    });
+  } catch (err) {
+    logger.warn('AniList-Fetch fehlgeschlagen', { id, message: err && err.message });
+    return null;
+  }
+}
+
+const stripHtml = (text) =>
+  String(text || '')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+
+async function getReadingItem(kind, id) {
+  if (kind === 'book') {
+    if (!BOOK_ID_RE.test(id)) return null;
+    const item = await getCatalogItem('books', id);
+    if (!item) return null;
+    return {
+      title: item.title,
+      authors: item.authors || [],
+      year: item.publishedYear || null,
+      description: (item.descriptions && item.descriptions.de) || item.description || '',
+      cover: item.cover || '',
+      v: item.v || 0,
+    };
+  }
+  if (!MANGA_ID_RE.test(id)) return null;
+  const item = await getCatalogItem('manga', id);
+  if (item) {
+    return {
+      title: item.title,
+      authors: [],
+      year: Number(String(item.startDate || '').slice(0, 4)) || null,
+      description: (item.descriptions && item.descriptions.de) || item.description || '',
+      cover: item.cover || item.poster || '',
+      v: item.v || 0,
+    };
+  }
+  return Number(id) > 0 ? getAniListManga(Number(id)) : null;
+}
+
+function injectReadingOg(html, kind, id, item) {
+  const byline = item.authors.slice(0, 2).join(', ');
+  const label = kind === 'book' ? 'Buch' : 'Manga';
+  const pageTitle = escapeHtml(`${item.title}${byline ? ` – ${byline}` : ''} | TV-RANK`);
+  const ogTitle = escapeHtml(item.title);
+  const lead = [label, byline, item.year].filter(Boolean).join(' · ');
+  const body = truncate(stripHtml(item.description), 220);
+  const description = escapeHtml(
+    body ? `${lead} — ${body}` : `${lead} — Lesestand, Bewertungen und neue Bände auf TV-RANK.`
+  );
+  const image = item.cover
+    ? `${SITE_ORIGIN}/og/${kind}/${encodeURIComponent(id)}?v=${item.v}`
+    : `${SITE_ORIGIN}/logo180.png`;
+  const pageUrl = `${SITE_ORIGIN}/${kind === 'book' ? 'books' : 'manga'}/${encodeURIComponent(id)}`;
+  const tags = [
+    `<title>${pageTitle}</title>`,
+    `<meta name="description" content="${description}" />`,
+    `<meta property="og:type" content="${kind === 'book' ? 'book' : 'website'}" />`,
+    `<meta property="og:site_name" content="TV-RANK" />`,
+    `<meta property="og:title" content="${ogTitle}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:image" content="${image}" />`,
+    ...(item.cover
+      ? [
+          `<meta property="og:image:type" content="image/jpeg" />`,
+          `<meta property="og:image:width" content="${OG_W}" />`,
+          `<meta property="og:image:height" content="${OG_H}" />`,
+        ]
+      : []),
+    `<meta property="og:url" content="${pageUrl}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${ogTitle}" />`,
+    `<meta name="twitter:description" content="${description}" />`,
+    `<meta name="twitter:image" content="${image}" />`,
+  ].join('\n    ');
+  return replaceHeadTags(html, tags);
+}
+
+const COVER_MAX_H = 500;
+const COVER_MAX_W = 420;
+
+async function renderCoverImage(coverUrl) {
+  if (!COVER_HOSTS.test(coverUrl)) return null;
+  const res = await fetch(coverUrl);
+  if (!res.ok) return null;
+  const source = Buffer.from(await res.arrayBuffer());
+  const cover = await sharp(source)
+    .resize(COVER_MAX_W, COVER_MAX_H, { fit: 'inside' })
+    .png()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height } = cover.info;
+  const mask = Buffer.from(
+    `<svg width="${width}" height="${height}"><rect width="${width}" height="${height}" rx="18" ry="18"/></svg>`
+  );
+  const rounded = await sharp(cover.data)
+    .composite([{ input: mask, blend: 'dest-in' }])
+    .png()
+    .toBuffer();
+  const coverShadow = Buffer.from(
+    `<svg width="${width + 120}" height="${height + 120}"><defs><filter id="b"><feGaussianBlur stdDeviation="22"/></filter></defs><rect x="60" y="76" width="${width}" height="${height}" rx="18" fill="black" fill-opacity="0.6" filter="url(#b)"/></svg>`
+  );
+  const backdrop = await sharp(source)
+    .resize(OG_W, OG_H, { fit: 'cover' })
+    .blur(36)
+    .modulate({ brightness: 0.55, saturation: 1.2 })
+    .toBuffer();
+  const tint = Buffer.from(
+    `<svg width="${OG_W}" height="${OG_H}"><defs><radialGradient id="v" cx="50%" cy="50%" r="75%"><stop offset="0.35" stop-color="#2b1a2e" stop-opacity="0.15"/><stop offset="1" stop-color="#2b1a2e" stop-opacity="0.8"/></radialGradient></defs><rect width="${OG_W}" height="${OG_H}" fill="url(#v)"/></svg>`
+  );
+  const left = Math.round((OG_W - width) / 2);
+  const top = Math.round((OG_H - height) / 2);
+  return sharp(backdrop)
+    .composite([
+      { input: tint, left: 0, top: 0 },
+      { input: coverShadow, left: Math.max(0, left - 60), top: Math.max(0, top - 60) },
+      { input: rounded, left, top },
+    ])
+    .jpeg({ quality: 86 })
+    .toBuffer();
+}
+
 function replaceHeadTags(html, tags) {
   // Generische SPA-Tags raus (Title, Description, og:*, twitter:*), dann die
   // seitenspezifischen vor </head> einsetzen.
@@ -325,6 +526,28 @@ exports.ogRender = onRequest(
       return;
     }
 
+    const coverMatch = (req.path || '').match(/^\/og\/(book|manga)\/([^/]{1,140})\/?$/);
+    if (coverMatch) {
+      const kind = coverMatch[1];
+      const item = await getReadingItem(kind, decodeURIComponent(coverMatch[2]));
+      try {
+        const jpeg = item && item.cover ? await renderCoverImage(item.cover) : null;
+        if (!jpeg) {
+          res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+          res.status(404).send('Not found');
+          return;
+        }
+        res.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+        res.set('Content-Type', 'image/jpeg');
+        res.status(200).send(jpeg);
+      } catch (err) {
+        logger.warn('Cover-Bild fehlgeschlagen', { message: err && err.message });
+        res.set('Cache-Control', 'no-store');
+        res.status(500).send('Render failed');
+      }
+      return;
+    }
+
     const html = await getIndexHtml();
     if (!html) {
       // Hosting selbst nicht erreichbar (Kaltstart + Ausfall) — kurzlebig.
@@ -335,12 +558,18 @@ exports.ogRender = onRequest(
 
     const match = (req.path || '').match(/^\/(series|movie)\/(\d+)/);
     const listMatch = (req.path || '').match(/^\/list\/([\w-]{1,64})/);
+    const readingMatch = (req.path || '').match(/^\/(books|manga)\/([^/]{1,140})\/?$/);
     let out = html;
     let cacheControl = 'public, max-age=300, s-maxage=3600';
     if (listMatch) {
       const list = await getSharedList(listMatch[1]);
       if (list) out = injectListOg(html, listMatch[1], list);
       cacheControl = 'public, max-age=60, s-maxage=300';
+    } else if (readingMatch) {
+      const kind = readingMatch[1] === 'books' ? 'book' : 'manga';
+      const id = decodeURIComponent(readingMatch[2]);
+      const item = await getReadingItem(kind, id);
+      if (item) out = injectReadingOg(html, kind, id, item);
     } else if (match) {
       const mediaType = match[1] === 'movie' ? 'movie' : 'tv';
       const detail = await getTmdbDetail(mediaType, Number(match[2]));

@@ -25,6 +25,8 @@ import { SocialLoginButtons } from '../Auth/SocialLoginButtons';
 import {
   addGuestPick,
   clearGuestPicks,
+  getGuestPicks,
+  getGuestReading,
   setGuestPet,
   setGuestReading,
   setGuestSubscriptions,
@@ -70,9 +72,15 @@ export const GuestOnboardingPage: React.FC = () => {
     () => setStep((current) => core[core.indexOf(current) - 1] ?? current),
     [core]
   );
-  const [readingPicks, setReadingPicks] = useState<Map<string, ReadingPick>>(new Map());
+  const [preReading] = useState<ReadingPick[]>(() => getGuestReading().picks);
+  const [readingPicks, setReadingPicks] = useState<Map<string, ReadingPick>>(
+    () => new Map(preReading.map((p) => [p.key, p]))
+  );
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
-  const [pendingItems, setPendingItems] = useState<Map<string, OnboardingItem>>(new Map());
+  const [prePicks] = useState<OnboardingItem[]>(getGuestPicks);
+  const [pendingItems, setPendingItems] = useState<Map<string, OnboardingItem>>(
+    () => new Map(prePicks.map((p) => [`${p.type}-${p.id}`, p]))
+  );
   const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
   const [petName, setPetName] = useState('');
   const [petType, setPetType] = useState<Pet['type']>('cat');
@@ -87,6 +95,11 @@ export const GuestOnboardingPage: React.FC = () => {
     search,
     setSearchResults,
   } = useOnboardingSearch();
+
+  const suggestionsWithPrePicks = useMemo(() => {
+    const known = new Set(suggestions.map((it) => `${it.type}-${it.id}`));
+    return [...prePicks.filter((p) => !known.has(`${p.type}-${p.id}`)), ...suggestions];
+  }, [prePicks, suggestions]);
 
   const toggleGenre = useCallback((slug: string) => {
     setSelectedSlugs((prev) =>
@@ -313,7 +326,7 @@ export const GuestOnboardingPage: React.FC = () => {
                 key="series"
                 contentType="series"
                 stepNumber={2}
-                suggestions={suggestions}
+                suggestions={suggestionsWithPrePicks}
                 searchResults={searchResults}
                 loading={loading}
                 searchLoading={searchLoading}
@@ -337,7 +350,7 @@ export const GuestOnboardingPage: React.FC = () => {
                 key="movies"
                 contentType="movie"
                 stepNumber={3}
-                suggestions={suggestions}
+                suggestions={suggestionsWithPrePicks}
                 searchResults={searchResults}
                 loading={loading}
                 searchLoading={searchLoading}
@@ -361,6 +374,7 @@ export const GuestOnboardingPage: React.FC = () => {
                 key="reading"
                 genreSlugs={selectedSlugs}
                 picks={readingPicks}
+                featured={preReading}
                 required={focus !== 'watch'}
                 hideProgram
                 onToggle={toggleReading}

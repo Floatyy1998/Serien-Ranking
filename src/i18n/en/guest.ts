@@ -83,6 +83,95 @@ const dict: Record<string, string> = {
   'Cloud-Sync': 'Cloud Sync',
   'Smart Notifications': 'Smart Notifications',
   'Deep Analytics': 'Deep Analytics',
+  // GuestMediaPage — Ausbau
+  '{n} Std. Laufzeit': '{n} hrs total',
+  'Folge für Folge abhaken': 'Check off every episode',
+  'Du weißt immer, wo du bei {title} stehst — auf jedem Gerät.':
+    'Always know where you are in {title} — on every device.',
+  'Neue Folgen sofort wissen': 'Know about new episodes first',
+  'Nie wieder vergessen': 'Never forget it again',
+  'Kalender und Erinnerung, sobald es weitergeht — mit deinem Streamingdienst.':
+    'Calendar and reminders as soon as it continues — with your streaming service.',
+  'Auf die Watchlist, und wir sagen dir, wo der Film gerade läuft.':
+    'Add it to your watchlist and we’ll tell you where the movie is streaming.',
+  'Mit Freunden schauen': 'Watch with friends',
+  'Sieh, wer {title} auch schaut, empfiehl Titel und diskutier ohne Spoiler.':
+    'See who else watches {title}, recommend titles and discuss spoiler-free.',
+  'Statistiken & Wrapped': 'Stats & Wrapped',
+  'Dein Jahr in Zahlen, Badges und ein Begleiter, der mit jeder Folge levelt.':
+    'Your year in numbers, badges and a companion that levels up with every episode.',
+  'Läuft bei': 'Streaming on',
+  Trailer: 'Trailer',
+  'Kostenlos · ohne Abo · in 30 Sekunden startklar': 'Free · no subscription · ready in 30 seconds',
+  'Worum geht’s': 'What it’s about',
+  'Neue Folge am {date}': 'New episode on {date}',
+  'Staffel {s}, Folge {e} — TV-RANK erinnert dich rechtzeitig.':
+    'Season {s}, episode {e} — TV-RANK reminds you in time.',
+  'Trailer abspielen': 'Play trailer',
+  'Warum TV-RANK': 'Why TV-RANK',
+  'Mehr als eine Liste: so schaust du {title}.': 'More than a list: this is how you watch {title}.',
+  'So sieht es in deiner App aus': 'This is how it looks in your app',
+  'Wenn dir {title} gefällt': 'If you like {title}',
+  'Bereit für {title}?': 'Ready for {title}?',
+  'Leg ein kostenloses Konto an — {title} steht dann schon auf deiner Liste.':
+    'Create a free account — {title} will already be on your list.',
+  'Daten und Bilder: TMDB': 'Data and images: TMDB',
+  'Kostenlos tracken': 'Track for free',
+  'Läuft noch': 'Still airing',
+  Abgesetzt: 'Canceled',
+  'In Produktion': 'In production',
+  // Gast-Seiten Bücher, Manga, Filme
+  '{h} Std. {m} Min.': '{h} h {m} min',
+  '{h} Std.': '{h} h',
+  'Erscheint am {date}': 'Out on {date}',
+  'Setz ihn auf deine Watchlist — TV-RANK sagt dir, wann und wo er läuft.':
+    'Add it to your watchlist — TV-RANK tells you when and where it’s on.',
+  'Teil {n}': 'Part {n}',
+  'Gesehen, bewertet, gemerkt': 'Watched, rated, remembered',
+  'Hak {title} ab, bewerte ihn und behalte jeden Rewatch im Blick.':
+    'Check off {title}, rate it and keep track of every rewatch.',
+  'Von {names}': 'By {names}',
+  'Regie: {names}': 'Directed by {names}',
+  'Die Reihe: {name}': 'The series: {name}',
+  '{n} Stimmen': '{n} votes',
+  'Teil der Reihe {name}': 'Part of the {name} series',
+  '{n} Bände — TV-RANK sagt dir, wenn der nächste erscheint.':
+    '{n} volumes — TV-RANK tells you when the next one comes out.',
+  Klappentext: 'Blurb',
+  Verfilmt: 'Adapted for the screen',
+  'Mehr als ein Regal: so liest du {title}.': 'More than a shelf: this is how you read {title}.',
+  'Seite {p} von {n}': 'Page {p} of {n}',
+  'Seite für Seite': 'Page by page',
+  'Lesestand, Lesetempo und wie lange du für {title} noch brauchst.':
+    'Progress, reading pace and how long {title} will still take you.',
+  'Der nächste Band kommt nicht ohne dich': 'The next volume won’t come out without you',
+  'Reihen im Blick: TV-RANK zeigt dir, was als Nächstes erscheint.':
+    'Series at a glance: TV-RANK shows you what comes out next.',
+  'Mit Freunden lesen': 'Read with friends',
+  'Sieh, was Freunde lesen, empfiehl Bücher und tausch dich aus.':
+    'See what your friends read, recommend books and talk about them.',
+  'Seiten, Bücher und Rekorde — dazu Serien, Filme und Manga in einer App.':
+    'Pages, books and records — plus shows, movies and manga in one app.',
+  'Mehr von {name}': 'More by {name}',
+  'Buchdaten: Hardcover, Open Library, Deutsche Nationalbibliothek':
+    'Book data: Hardcover, Open Library, German National Library',
+  'Erscheint noch': 'Still publishing',
+  'TV-RANK zeigt dir neue Kapitel und Bände, sobald sie erscheinen.':
+    'TV-RANK shows you new chapters and volumes as soon as they’re out.',
+  'Zur Geschichte': 'Same story',
+  'Auch als Anime': 'Also as anime',
+  'Mehr als eine Liste: so liest du {title}.': 'More than a list: this is how you read {title}.',
+  'Kapitel {c} von {n}': 'Chapter {c} of {n}',
+  'Kapitel oder Bände': 'Chapters or volumes',
+  'Zähl {title} so, wie du liest — nach Kapiteln oder nach Bänden im Regal.':
+    'Track {title} the way you read it — by chapter or by volume on your shelf.',
+  'Neue Kapitel sofort wissen': 'Know about new chapters first',
+  'Neue Kapitel und Bände landen direkt bei dir.':
+    'New chapters and volumes land straight with you.',
+  'Daten und Bilder: AniList': 'Data and images: AniList',
+  'Schau dir {title} auf TV-RANK an': 'Check out {title} on TV-RANK',
+  'Teilen hat nicht geklappt': 'Sharing didn’t work',
+  Angekündigt: 'Announced',
 };
 
 export default dict;

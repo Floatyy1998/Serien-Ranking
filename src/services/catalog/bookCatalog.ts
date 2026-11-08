@@ -129,6 +129,13 @@ export function loadBookCatalogItem(id: string, v?: number): Promise<BookSearchR
   return pending;
 }
 
+export function loadBookCatalogDescription(id: string, lang: string): Promise<string | null> {
+  return client
+    .item(id)
+    .then((item) => item?.descriptions?.[lang] ?? null)
+    .catch(() => null);
+}
+
 /** Treffer aus unserem Katalog: per ISBN exakt, sonst Titel/Autor wie bei der Suche; liefert die vollen Einträge. */
 export async function searchBookCatalog(
   query: string,

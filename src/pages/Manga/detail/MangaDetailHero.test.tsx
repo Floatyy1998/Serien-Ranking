@@ -6,6 +6,7 @@ import type { Manga } from '../../../types/Manga';
 import { buildHeroData } from './mangaDetailData';
 import { MangaDetailHero, type MangaHeroProgress } from './MangaDetailHero';
 
+vi.mock('../../../components/share/ShareTitleButton', () => ({ ShareTitleButton: () => null }));
 vi.mock('../../../components/ui', () => ({
   BackButton: () => <button type="button">back</button>,
 }));

@@ -41,6 +41,13 @@
   z-index: 5;
 }
 
+.mdh-share {
+  position: absolute;
+  top: var(--nav-top);
+  right: var(--nav-x);
+  z-index: 5;
+}
+
 .mdh-inner {
   position: relative;
   display: grid;

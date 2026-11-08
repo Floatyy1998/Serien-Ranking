@@ -19,9 +19,14 @@ vi.mock('../../hooks/platform/useDeviceType', () => ({
 }));
 
 const navigateMock = vi.hoisted(() => vi.fn());
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => navigateMock,
-}));
+vi.mock('react-router-dom', async () => {
+  const { createElement } = await import('react');
+  return {
+    useNavigate: () => navigateMock,
+    Link: ({ to, children, ...rest }: { to: string; children?: React.ReactNode }) =>
+      createElement('a', { href: to, ...rest }, children),
+  };
+});
 
 const addGuestPickMock = vi.hoisted(() => vi.fn());
 vi.mock('../../services/account/guestOnboarding', () => ({
@@ -58,6 +63,15 @@ const seriesDetail = {
   vote_average: 7.5,
   number_of_seasons: 1,
   genres: [{ name: 'Drama' }],
+  seasons: [
+    { id: 1, name: 'Specials', season_number: 0, episode_count: 2 },
+    { id: 2, name: 'Staffel 1', season_number: 1, episode_count: 8, air_date: '2026-07-27' },
+    { id: 3, name: 'Staffel 2', season_number: 2, episode_count: 8, air_date: '2027-07-27' },
+  ],
+  aggregate_credits: {
+    cast: [{ id: 7, name: 'Anna Beispiel', roles: [{ character: 'Mia' }] }],
+  },
+  recommendations: { results: [{ id: 42, name: 'Andere Serie', poster_path: '/x.jpg' }] },
 };
 
 afterEach(() => {
@@ -79,14 +93,21 @@ beforeEach(() => {
 describe('GuestMediaPage', () => {
   it('zeigt Titel, Meta und CTA nach dem TMDB-Load', async () => {
     render(<GuestMediaPage mediaType="tv" tmdbId={287238} />);
-    expect(await screen.findByText('Furious')).toBeInTheDocument();
-    expect(screen.getByText(/2026/)).toBeInTheDocument();
-    expect(screen.getByText('Jetzt tracken — kostenlos')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Furious', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText('2026')).toBeInTheDocument();
+    expect(screen.getAllByText('Jetzt tracken — kostenlos').length).toBeGreaterThan(0);
+  });
+
+  it('zeigt Besetzung, Staffeln und ähnliche Titel als Gast-Links', async () => {
+    render(<GuestMediaPage mediaType="tv" tmdbId={287238} />);
+    expect(await screen.findByText('Anna Beispiel')).toBeInTheDocument();
+    expect(screen.getByText('Staffel 1')).toBeInTheDocument();
+    expect(screen.getByText('Andere Serie').closest('a')).toHaveAttribute('href', '/series/42');
   });
 
   it('legt den Titel als Gast-Pick ab und geht ins /join-Onboarding', async () => {
     render(<GuestMediaPage mediaType="tv" tmdbId={287238} />);
-    fireEvent.click(await screen.findByText('Jetzt tracken — kostenlos'));
+    fireEvent.click((await screen.findAllByText('Jetzt tracken — kostenlos'))[0]);
     expect(addGuestPickMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 287238, type: 'series', title: 'Furious' })
     );

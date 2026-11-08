@@ -23,6 +23,7 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
   hideProgram?: boolean;
+  featured?: ReadingItem[];
 }
 
 const NEXT_STATUS: Record<ReadingPickStatus, ReadingPickStatus> = {
@@ -148,10 +149,11 @@ export const ReadingStep: React.FC<Props> = ({
   onNext,
   onBack,
   hideProgram = false,
+  featured,
 }) => {
   const actNum = useActNum('reading');
   const actCount = useActs().length;
-  const [kind, setKind] = useState<ReadingKind>('book');
+  const [kind, setKind] = useState<ReadingKind>(() => featured?.[0]?.kind ?? 'book');
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { suggestions, loading, results, searching, search } = useReadingPicks(genreSlugs);
@@ -162,7 +164,14 @@ export const ReadingStep: React.FC<Props> = ({
     return () => clearTimeout(timer);
   }, [kind, query, search]);
 
-  const items = isSearching ? results : suggestions[kind];
+  const items = useMemo(() => {
+    if (isSearching) return results;
+    const base = suggestions[kind];
+    const extra = (featured ?? []).filter(
+      (f) => f.kind === kind && !base.some((b) => b.key === f.key)
+    );
+    return extra.length ? [...extra, ...base] : base;
+  }, [isSearching, results, suggestions, kind, featured]);
   const busy = isSearching ? searching : loading[kind];
   const picked = useMemo(() => Array.from(picks.values()), [picks]);
   const wall = useMemo(
