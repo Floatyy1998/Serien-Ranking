@@ -910,6 +910,7 @@ export const BookDetailPage = () => {
               currentPosition={seriesPosition}
               library={allBookList}
               author={author}
+              canAddAll={!!uid && !mangaOffer}
             />
           )}
 

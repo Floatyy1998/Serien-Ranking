@@ -5,7 +5,12 @@ import type {
   BookSeriesPart,
 } from '../../types/Book';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
-import { mapDnbSeriesParts, mergeSeriesParts, seriesFromTitle } from '../../lib/books/dnbSeries';
+import {
+  mapDnbRecords,
+  mapDnbSeriesParts,
+  mergeSeriesParts,
+  seriesFromTitle,
+} from '../../lib/books/dnbSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
 import {
   coverAtSize,
@@ -26,6 +31,7 @@ import { searchMatch, titlePrefixQuery } from '../../lib/books/searchMatch';
 import { pickWorkHit } from '../../lib/books/workHit';
 import { cacheGet, cacheSet, cached } from '../books/bookCache';
 import { searchBookCatalog } from '../catalog/bookCatalog';
+import type { Locale } from '../../i18n/locales';
 import { appLocale } from '../i18n';
 import {
   hardcoverDetails,
@@ -164,17 +170,78 @@ export async function dnbSeriesByTitle(book: {
   return seriesFromTitle(book, await dnbSeriesParts(dnbSeriesKey(series)));
 }
 
-async function dnbQuery(query: string): Promise<string> {
+async function dnbPage(
+  query: string,
+  max: number,
+  start = 1,
+  signal?: AbortSignal
+): Promise<string> {
   const params = new URLSearchParams({
     version: '1.1',
     operation: 'searchRetrieve',
     query,
     recordSchema: 'MARC21-xml',
-    maximumRecords: '100',
+    maximumRecords: String(max),
+    startRecord: String(start),
   });
-  const res = await fetch(`${DNB_SRU}?${params.toString()}`);
+  const res = await fetch(`${DNB_SRU}?${params.toString()}`, { signal });
   if (!res.ok) throw new Error(`DNB ${res.status}`);
   return res.text();
+}
+
+/** Die SRU liefert höchstens 100 Datensätze je Abfrage — lange Reihen (Perry-Rhodan-Silberbände: 180) brauchen mehr Seiten. */
+const DNB_SERIES_PAGES = 3;
+
+async function dnbQuery(query: string): Promise<string[]> {
+  const first = await dnbPage(query, 100);
+  const total = Number(first.match(/<numberOfRecords>(\d+)</)?.[1] ?? 0);
+  const more = Math.min(DNB_SERIES_PAGES, Math.ceil(total / 100)) - 1;
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(0, more) }, (_, i) =>
+      dnbPage(query, 100, 101 + i * 100).catch(() => '')
+    )
+  );
+  return [first, ...rest.filter(Boolean)];
+}
+
+const SRU_RESERVED = /^(and|or|not|prox|all|any)$/i;
+
+/**
+ * Freitextsuche in der DNB: Hardcover liefert je Suche höchstens 25 Treffer, Band 165 einer Reihe mit 190 Bänden
+ * fehlt dann. Jedes Suchwort muss vorkommen (`woe` = alle Felder).
+ */
+async function searchDnbText(query: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
+  const words = query
+    .split(/\s+/)
+    .map((w) => w.replace(/["\\()=<>/*?^]/g, ''))
+    .filter((w) => w && !SRU_RESERVED.test(w))
+    .slice(0, 8);
+  if (!words.length) return [];
+  const xml = await dnbPage(words.map((w) => `woe="${w}"`).join(' and '), 30, 1, signal);
+  return mapDnbRecords(xml);
+}
+
+/** Nationalbibliothek je App-Sprache, die die Textsuche ergänzt (frei, ohne Kontingent). */
+const NATIONAL_TEXT_SEARCH: Partial<
+  Record<Locale, (query: string, signal?: AbortSignal) => Promise<BookSearchResult[]>>
+> = {
+  de: searchDnbText,
+};
+
+const NATIONAL_TIMEOUT_MS = 5000;
+
+/** Weniger passende Hardcover-Treffer als das: die Nationalbibliothek ergänzt auch ohne Bandnummer. */
+const FEW_HITS = 6;
+
+function nationalSearch(query: string, signal?: AbortSignal): Promise<BookSearchResult[]> | null {
+  const search = NATIONAL_TEXT_SEARCH[appLocale as Locale];
+  if (!search) return null;
+  return Promise.race([
+    search(query, signal),
+    new Promise<BookSearchResult[]>((resolve) =>
+      setTimeout(() => resolve([]), NATIONAL_TIMEOUT_MS)
+    ),
+  ]).catch(() => [] as BookSearchResult[]);
 }
 
 /**
@@ -185,7 +252,7 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
   const { name, parentId } = parseDnbSeriesKey(key);
   return cached<BookSeriesPart[]>(
     'dnbseries',
-    `${key.toLowerCase()}:2`,
+    `${key.toLowerCase()}:3`,
     7 * DAY,
     async () => {
       const queries = [
@@ -193,7 +260,9 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
         `tit="${name.replace(/["\\]/g, ' ')}"`,
       ];
       const lists = await Promise.all(
-        queries.map((q) => dnbQuery(q).then((xml) => mapDnbSeriesParts(xml, name)))
+        queries.map((q) =>
+          dnbQuery(q).then((pages) => pages.flatMap((xml) => mapDnbSeriesParts(xml, name)))
+        )
       );
       const parts = mergeSeriesParts(lists);
       if (!parts.length) throw NO_HITS;
@@ -294,9 +363,9 @@ export async function searchBooks(
 ): Promise<BookSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
-  // e3: Hardcover als erste Quelle (e2: Ausgaben zusammengefasst) — alte Listen im Cache verdrängt das LRU nach und nach.
+  // e4: DNB ergänzt (e3: Hardcover als erste Quelle) — alte Listen im Cache verdrängt das LRU nach und nach.
   const source = hardcoverReady() ? 'h' : hasGoogleBooks() ? 'g' : 'o';
-  const key = `e3:${appLocale}:${source}:${trimmed.toLowerCase()}`;
+  const key = `e4:${appLocale}:${source}:${trimmed.toLowerCase()}`;
   const results = await cached(
     'search',
     key,
@@ -342,13 +411,18 @@ async function runSearch(
   if (looksLikeIsbn(trimmed)) {
     return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
   }
+  // Läuft parallel an; zählt nur, wenn die Suche einen Band nennt oder Hardcover kaum etwas Passendes hat.
+  const national = options.background ? null : nationalSearch(trimmed, signal);
+  const withNational = async (list: BookSearchResult[]) =>
+    rankResults(national ? [...list, ...(await national)] : list, trimmed);
   let primary: BookSearchResult[] = [];
   if (options.hardcover !== false && hardcoverReady()) {
     try {
       primary = await hardcoverSearch(trimmed, signal, options.background);
       // Hardcover findet angefangene Wörter („fourth wi") nicht — dann ergänzen die anderen Quellen.
-      if (primary.some((r) => searchMatch(r, trimmed).matches))
-        return rankResults(primary, trimmed);
+      const fitting = primary.filter((r) => searchMatch(r, trimmed).matches).length;
+      if (fitting >= FEW_HITS && !/\d/.test(trimmed)) return rankResults(primary, trimmed);
+      if (fitting) return withNational(primary);
     } catch (err) {
       if ((err as Error).name === 'AbortError') throw err;
     }
@@ -356,7 +430,7 @@ async function runSearch(
   if (options.google !== false && hasGoogleBooks()) {
     try {
       const google = await searchGoogle(trimmed, signal);
-      if (google.length) return rankResults([...primary, ...google], trimmed);
+      if (google.length) return withNational([...primary, ...google]);
     } catch (err) {
       if ((err as Error).name === 'AbortError') throw err;
     }
@@ -369,7 +443,7 @@ async function runSearch(
       : Promise.resolve([] as BookSearchResult[]),
   ]);
   const generalFits = general.some((r) => searchMatch(r, trimmed).matches);
-  return rankResults([...primary, ...(generalFits ? general : [...byTitle, ...general])], trimmed);
+  return withNational([...primary, ...(generalFits ? general : [...byTitle, ...general])]);
 }
 
 async function loadDetails(ref: {

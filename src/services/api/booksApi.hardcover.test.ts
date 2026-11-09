@@ -20,7 +20,7 @@ vi.mock('./hardcoverApi', () => ({
   hardcoverAuthorBooks: vi.fn(),
 }));
 
-import { findBook, getBookDetails, searchBooks } from './booksApi';
+import { dnbSeriesParts, findBook, getBookDetails, searchBooks } from './booksApi';
 
 const hit = (over: Partial<BookSearchResult>): BookSearchResult => ({
   id: 'hc-1',
@@ -41,6 +41,21 @@ const DNB_RECORD = `<?xml version="1.0" encoding="UTF-8"?>
   <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Fourth Wing</subfield></datafield>
   <datafield tag="250" ind1=" " ind2=" "><subfield code="a">3. Auflage</subfield></datafield>
   <datafield tag="300" ind1=" " ind2=" "><subfield code="a">762 S.</subfield></datafield>
+</record></recordData></record></records></searchRetrieveResponse>`;
+
+const SILBERBAND_165 = `<?xml version="1.0" encoding="UTF-8"?>
+<searchRetrieveResponse xmlns="http://www.loc.gov/zing/srw/"><records><record><recordData>
+<record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">
+  <leader>00000nam a22000008c 4500</leader>
+  <datafield tag="020" ind1=" " ind2=" "><subfield code="a">9783845351285</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Perry Rhodan 165: Tod aus der Unendlichkeit (Silberband)</subfield><subfield code="c">Perry Rhodan</subfield></datafield>
+  <datafield tag="490" ind1="1" ind2=" "><subfield code="a">Perry Rhodan-Silberband</subfield><subfield code="v">165</subfield></datafield>
+</record></recordData></record>
+<record><recordData>
+<record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">
+  <leader>00000nrm a22000008c 4500</leader>
+  <datafield tag="020" ind1=" " ind2=" "><subfield code="a">9783845399999</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Perry Rhodan Silberband 165 Tasse</subfield></datafield>
 </record></recordData></record></records></searchRetrieveResponse>`;
 
 const olDocs = (titles: string[]) => ({
@@ -88,7 +103,41 @@ describe('Buchsuche mit Hardcover als erster Quelle', () => {
     const results = await searchBooks('fourth wing');
     expect(results[0].title).toBe('Fourth Wing');
     expect(results[0].source).toBe('hardcover');
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('openlibrary.org'))).toBe(
+      false
+    );
+  });
+
+  it('ergänzt einen Band, den Hardcover nicht liefert, aus der DNB', async () => {
+    hc.search.mockResolvedValue([
+      hit({
+        id: 'hc-17',
+        hardcoverId: 17,
+        title: 'Die Hundertsonnenwelt',
+        authors: ['Perry Rhodan'],
+      }),
+    ]);
+    const fetchMock = route({ dnb: SILBERBAND_165 });
+    vi.stubGlobal('fetch', fetchMock);
+    const results = await searchBooks('Perry Rhodan Silberband 165');
+    expect(results[0].title).toBe('Perry Rhodan 165: Tod aus der Unendlichkeit (Silberband)');
+    expect(results[0].source).toBe('dnb');
+    expect(results.some((r) => r.title.includes('Tasse'))).toBe(false);
+    const dnbUrl = fetchMock.mock.calls.map(([url]) => String(url)).find((u) => u.includes('dnb'));
+    expect(decodeURIComponent(dnbUrl ?? '').replace(/\+/g, ' ')).toContain(
+      'woe="Silberband" and woe="165"'
+    );
+  });
+
+  it('lässt die DNB bei vielen passenden Hardcover-Treffern ohne Bandnummer außen vor', async () => {
+    hc.search.mockResolvedValue(
+      Array.from({ length: 6 }, (_, i) =>
+        hit({ id: `hc-${i}`, hardcoverId: i, title: `Fourth Wing ${'I'.repeat(i + 1)}` })
+      )
+    );
+    vi.stubGlobal('fetch', route({ dnb: SILBERBAND_165 }));
+    const results = await searchBooks('fourth wing');
+    expect(results.every((r) => r.source === 'hardcover')).toBe(true);
   });
 
   it('fällt auf Open Library zurück, wenn Hardcover ausfällt', async () => {
@@ -152,5 +201,35 @@ describe('Buchsuche mit Hardcover als erster Quelle', () => {
     const calls = hc.search.mock.calls.length;
     expect(await findBook('Unbekannt', 'Niemand')).toBeNull();
     expect(hc.search.mock.calls.length).toBe(calls);
+  });
+});
+
+describe('DNB-Bandlisten', () => {
+  const volume = (n: number) => `<record><recordData>
+<record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">
+  <leader>00000nam a22000008c 4500</leader>
+  <datafield tag="020" ind1=" " ind2=" "><subfield code="a">978384535${String(n).padStart(4, '0')}</subfield></datafield>
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Perry Rhodan ${n}</subfield></datafield>
+  <datafield tag="490" ind1="1" ind2=" "><subfield code="a">Perry Rhodan-Silberband</subfield><subfield code="v">${n}</subfield></datafield>
+</record></recordData></record>`;
+  const page = (from: number, to: number) =>
+    `<searchRetrieveResponse xmlns="http://www.loc.gov/zing/srw/"><numberOfRecords>180</numberOfRecords><records>${Array.from(
+      { length: to - from + 1 },
+      (_, i) => volume(from + i)
+    ).join('')}</records></searchRetrieveResponse>`;
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('blättert über die ersten 100 Datensätze hinaus', async () => {
+    localStorage.clear();
+    const fetchMock = vi.fn(
+      async (url: string) =>
+        new Response(url.includes('startRecord=101') ? page(101, 180) : page(1, 100))
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const parts = await dnbSeriesParts('dnb:Perry Rhodan-Silberband');
+    expect(parts).toHaveLength(180);
+    expect(parts[parts.length - 1].position).toBe(180);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

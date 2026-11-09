@@ -9,8 +9,11 @@ import { MovieListContext } from '../../contexts/MovieListContext';
 import { SeriesListContext } from '../../contexts/SeriesListContext';
 import { tmdbFetch } from '../../services/api/tmdbClient';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
-import type { Book, BookSearchResult, BookStatus } from '../../types/Book';
+import type { Book, BookSearchResult, BookSeriesPart, BookStatus } from '../../types/Book';
 import { BookDetailPage } from '../Books/BookDetailPage';
+import { BookSeriesPanel } from '../Books/detail/BookLinksPanels';
+import { SeriesAddSheet } from '../Books/detail/SeriesAddSheet';
+import { seriesBulkSelection } from '../../lib/books/seriesBulk';
 import { BookImportPage } from '../Books/BookImportPage';
 import { BookSearchPage } from '../Books/BookSearchPage';
 import { ReadingLibraryPage } from '../Reading/library/ReadingLibraryPage';
@@ -513,5 +516,82 @@ export const IsbnScannerPreview = () => {
         }}
       />
     </div>
+  );
+};
+
+const SILBER_KEY = 'dnb:Perry Rhodan-Silberband';
+const SILBER_COVERS = [12619682, 14615813, 11182315, 15239396, 9354968];
+const SILBER_TITLES = [
+  'Die Gänger des Netzes',
+  'Tod aus der Unendlichkeit',
+  'Das Ende der Duplos',
+  'Kosmische Burgen',
+  'Der Kristallmond',
+  'Feuersturm',
+  'Erben der Posbis',
+  'Die Cantaro',
+];
+const silberParts = (): BookSeriesPart[] =>
+  Array.from({ length: 24 }, (_, i) => {
+    const position = 160 + i;
+    const id = `dnb-silber-${position}`;
+    return {
+      wikidataId: id,
+      title: `Perry Rhodan ${position}: ${SILBER_TITLES[i % SILBER_TITLES.length]} (Silberband)`,
+      position,
+      publishedDate: position > 181 ? '2027-03-01' : `${2020 + (i % 5)}-01-01`,
+      result: {
+        id,
+        title: `Perry Rhodan ${position}: ${SILBER_TITLES[i % SILBER_TITLES.length]} (Silberband)`,
+        authors: ['Perry Rhodan'],
+        cover: cover(SILBER_COVERS[i % SILBER_COVERS.length]),
+        pageCount: 420,
+        source: 'dnb',
+      },
+    };
+  });
+const silberOwned = (position: number, status: BookStatus): Book => ({
+  id: `dnb-silber-${position}`,
+  title: `Perry Rhodan ${position}: ${SILBER_TITLES[(position - 160) % SILBER_TITLES.length]} (Silberband)`,
+  authors: ['Perry Rhodan'],
+  cover: cover(SILBER_COVERS[(position - 160) % SILBER_COVERS.length]),
+  status,
+  currentPage: 0,
+  addedAt: '2026-10-01T10:00:00.000Z',
+  series: { name: 'Perry Rhodan-Silberband', position, wikidataId: SILBER_KEY },
+});
+
+export const BookSeriesAddPreview = ({ sheet }: { sheet?: boolean }) => {
+  const parts = useMemo(() => silberParts(), []);
+  const library = useMemo(() => [silberOwned(164, 'completed'), silberOwned(165, 'planned')], []);
+  const selection = useMemo(
+    () => seriesBulkSelection(parts, SILBER_KEY, library),
+    [parts, library]
+  );
+  return (
+    <BooksPreviewShell extra={library}>
+      <div className="bd-page" style={{ padding: '24px 16px' }}>
+        <BookSeriesPanel
+          seriesId={SILBER_KEY}
+          name="Perry Rhodan-Silberband"
+          parts={parts}
+          current={library[1]}
+          currentPosition={165}
+          library={library}
+          author="Perry Rhodan"
+          canAddAll
+        />
+      </div>
+      {sheet && (
+        <SeriesAddSheet
+          open
+          onClose={() => {}}
+          seriesId={SILBER_KEY}
+          name="Perry Rhodan-Silberband"
+          selection={selection}
+          currentPosition={165}
+        />
+      )}
+    </BooksPreviewShell>
   );
 };

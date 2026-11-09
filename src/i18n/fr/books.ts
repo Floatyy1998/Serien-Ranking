@@ -562,6 +562,20 @@ const dict: Record<string, string> = {
     "Note ce que tu as lu – c'est ici que ton classement prend forme.",
   'Buch oder Manga suchen...': 'Chercher un livre ou un manga...',
   'Buch oder Manga suchen': 'Chercher un livre ou un manga',
+  'Ganze Reihe hinzufügen': 'Ajouter toute la série',
+  '{n} Bände fehlen dir': 'Il te manque {n} tomes',
+  'Gelesen bis Band': "Lu jusqu'au tome",
+  Keinen: 'Aucun',
+  'Bis Band {n}': "Jusqu'au tome {n}",
+  '{n} als früher gelesen': '{n} comme lus avant',
+  '{n} auf die Leseliste': '{n} dans ta liste de lecture',
+  '{n} von deiner Leseliste als gelesen': '{n} de ta liste de lecture marqués comme lus',
+  '{n} angekündigte Bände bleiben draußen': '{n} tomes annoncés restent de côté',
+  '{n} Bände ohne Buchdaten übersprungen': '{n} tomes sans données ignorés',
+  '{n} Bände hinzufügen': 'Ajouter {n} tomes',
+  'Als gelesen markieren': 'Marquer comme lu',
+  '{n} Bände hinzugefügt': '{n} tomes ajoutés',
+  '{n} Bände als gelesen markiert': '{n} tomes marqués comme lus',
 };
 
 export default dict;

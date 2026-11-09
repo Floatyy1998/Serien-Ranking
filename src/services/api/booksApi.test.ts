@@ -253,7 +253,7 @@ describe('searchBooks per ISBN', () => {
     const fetchMock = route({});
     vi.stubGlobal('fetch', fetchMock);
     localStorage.setItem(
-      'bk:search:e3:de:o:9783963588850',
+      'bk:search:e4:de:o:9783963588850',
       JSON.stringify({
         at: Date.now(),
         value: [{ id: 'dnb-9783963588850', title: 'Ohne Autor', source: 'dnb' }],

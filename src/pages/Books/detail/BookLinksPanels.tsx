@@ -1,9 +1,10 @@
-import { Check, Movie, Tv, ViewWeek } from '@mui/icons-material';
-import React, { useMemo } from 'react';
+import { Check, LibraryAdd, Movie, Tv, ViewWeek } from '@mui/icons-material';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../../../components/ui';
 import { partPositionOf } from '../../../lib/books/bookSeries';
+import { seriesBulkSelection } from '../../../lib/books/seriesBulk';
 import { t } from '../../../services/i18n';
 import type { Book, BookSeriesPart } from '../../../types/Book';
 import { getImageUrl } from '../../../utils/imageUrl';
@@ -12,6 +13,7 @@ import { useOpenByTitle, useOpenResult } from '../discover/DiscoverParts';
 import { bookPath } from '../helpers';
 import type { AdaptationMeta } from '../hooks/useAdaptationMeta';
 import { useSeriesPartBooks } from '../hooks/useSeriesPartBooks';
+import { SeriesAddSheet } from './SeriesAddSheet';
 
 const ownedPart = (
   part: BookSeriesPart,
@@ -28,7 +30,9 @@ export const BookSeriesPanel: React.FC<{
   currentPosition?: number;
   library: Book[];
   author?: string;
-}> = ({ seriesId, name, parts, current, currentPosition, library, author }) => {
+  /** „Ganze Reihe hinzufügen" anbieten (angemeldet, Reihe läuft als Bücher). */
+  canAddAll?: boolean;
+}> = ({ seriesId, name, parts, current, currentPosition, library, author, canAddAll }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const openResult = useOpenResult();
@@ -43,7 +47,13 @@ export const BookSeriesPanel: React.FC<{
     [parts, seriesId, library, author]
   );
   const found = useSeriesPartBooks(lookups);
+  const [addAllOpen, setAddAllOpen] = useState(false);
+  const selection = useMemo(
+    () => seriesBulkSelection(parts, seriesId, library, found),
+    [parts, seriesId, library, found]
+  );
   if (parts.length < 2) return null;
+  const offerAddAll = canAddAll && selection.candidates.length >= 2;
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -130,6 +140,27 @@ export const BookSeriesPanel: React.FC<{
           );
         })}
       </HorizontalScrollContainer>
+      {offerAddAll && (
+        <button
+          type="button"
+          className="bk-cta bk-cta--ghost"
+          style={{ width: '100%', marginTop: 12, color: currentTheme.text.secondary }}
+          onClick={() => setAddAllOpen(true)}
+        >
+          <LibraryAdd style={{ fontSize: 18, color: currentTheme.primary }} />
+          {t('Ganze Reihe hinzufügen')}
+        </button>
+      )}
+      {offerAddAll && (
+        <SeriesAddSheet
+          open={addAllOpen}
+          onClose={() => setAddAllOpen(false)}
+          seriesId={seriesId}
+          name={name}
+          selection={selection}
+          currentPosition={currentPosition}
+        />
+      )}
     </div>
   );
 };

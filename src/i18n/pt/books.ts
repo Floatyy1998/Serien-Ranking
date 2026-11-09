@@ -562,6 +562,20 @@ const dict: Record<string, string> = {
     'Avalie o que você leu – é aqui que seu ranking toma forma.',
   'Buch oder Manga suchen...': 'Buscar livro ou mangá...',
   'Buch oder Manga suchen': 'Buscar livro ou mangá',
+  'Ganze Reihe hinzufügen': 'Adicionar a série inteira',
+  '{n} Bände fehlen dir': 'Faltam {n} volumes para você',
+  'Gelesen bis Band': 'Lido até o volume',
+  Keinen: 'Nenhum',
+  'Bis Band {n}': 'Até o volume {n}',
+  '{n} als früher gelesen': '{n} como lidos antes',
+  '{n} auf die Leseliste': '{n} para a sua lista de leitura',
+  '{n} von deiner Leseliste als gelesen': '{n} da sua lista de leitura marcados como lidos',
+  '{n} angekündigte Bände bleiben draußen': '{n} volumes anunciados ficam de fora',
+  '{n} Bände ohne Buchdaten übersprungen': '{n} volumes sem dados foram pulados',
+  '{n} Bände hinzufügen': 'Adicionar {n} volumes',
+  'Als gelesen markieren': 'Marcar como lido',
+  '{n} Bände hinzugefügt': '{n} volumes adicionados',
+  '{n} Bände als gelesen markiert': '{n} volumes marcados como lidos',
 };
 
 export default dict;

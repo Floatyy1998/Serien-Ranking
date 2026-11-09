@@ -558,6 +558,20 @@ const dict: Record<string, string> = {
     "Rate what you've read – this is where your ranking takes shape.",
   'Buch oder Manga suchen...': 'Search books or manga...',
   'Buch oder Manga suchen': 'Search books or manga',
+  'Ganze Reihe hinzufügen': 'Add the whole series',
+  '{n} Bände fehlen dir': "{n} books you don't have yet",
+  'Gelesen bis Band': 'Read up to book',
+  Keinen: 'None',
+  'Bis Band {n}': 'Up to book {n}',
+  '{n} als früher gelesen': '{n} as read before',
+  '{n} auf die Leseliste': '{n} to your reading list',
+  '{n} von deiner Leseliste als gelesen': '{n} from your reading list marked as read',
+  '{n} angekündigte Bände bleiben draußen': '{n} upcoming books left out',
+  '{n} Bände ohne Buchdaten übersprungen': '{n} books without details skipped',
+  '{n} Bände hinzufügen': 'Add {n} books',
+  'Als gelesen markieren': 'Mark as read',
+  '{n} Bände hinzugefügt': '{n} books added',
+  '{n} Bände als gelesen markiert': '{n} books marked as read',
 };
 
 export default dict;

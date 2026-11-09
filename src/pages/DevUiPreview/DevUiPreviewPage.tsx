@@ -96,6 +96,7 @@ import {
   BookDetailPreview,
   BookImportPreview,
   BookSearchPreview,
+  BookSeriesAddPreview,
   IsbnScannerPreview,
   BookShelfPreview,
   BookDetailMangaPreview,
@@ -398,6 +399,16 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <BookDetailBareMangaPreview />,
   },
   { id: 'book-search', label: 'Bücher: Suche', render: () => <BookSearchPreview /> },
+  {
+    id: 'book-series-add',
+    label: 'Bücher: Reihe hinzufügen',
+    render: () => <BookSeriesAddPreview />,
+  },
+  {
+    id: 'book-series-add-sheet',
+    label: 'Bücher: Reihe hinzufügen (Sheet)',
+    render: () => <BookSeriesAddPreview sheet />,
+  },
   { id: 'isbn-scanner', label: 'Bücher: ISBN-Scanner', render: () => <IsbnScannerPreview /> },
   {
     id: 'book-overlay-search',

@@ -80,6 +80,35 @@ export function mapDnbSeriesParts(xml: string, name: string, now = new Date()): 
   return [...byPosition.values()].sort((a, b) => a.position - b.position);
 }
 
+/** Leader/06 „a"/„t" = Textausgabe; Hörbücher, Filme und Fanartikel (Plüsch, Tassen) fallen weg. */
+const isTextRecord = (record: Element) => {
+  const leader = record.getElementsByTagNameNS(MARC_NS, 'leader')[0]?.textContent ?? '';
+  return leader.length < 7 || leader[6] === 'a' || leader[6] === 't';
+};
+
+/** Alle Bücher einer DNB-Suche (SRU, MARC21) mit ISBN als Treffer — für die Freitextsuche. */
+export function mapDnbRecords(xml: string): BookSearchResult[] {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const serializer = new XMLSerializer();
+  const out: BookSearchResult[] = [];
+  const seen = new Set<string>();
+  for (const record of [...doc.getElementsByTagNameNS(MARC_NS, 'record')]) {
+    if (!isTextRecord(record)) continue;
+    const isbns = [...record.getElementsByTagNameNS(MARC_NS, 'datafield')]
+      .filter((f) => f.getAttribute('tag') === '020')
+      .flatMap((f) => [...f.getElementsByTagNameNS(MARC_NS, 'subfield')])
+      .filter((s) => ['9', 'a'].includes(s.getAttribute('code') ?? ''))
+      .map((s) => s.textContent ?? '');
+    const isbn13 = pickIsbn13(isbns);
+    if (!isbn13 || seen.has(isbn13)) continue;
+    const result = mapDnbRecord(serializer.serializeToString(record), isbn13);
+    if (!result) continue;
+    seen.add(isbn13);
+    out.push(result);
+  }
+  return out;
+}
+
 /** Pro Band die Druckausgabe (mit Seitenzahl) vor dem E-Book; bei Gleichstand bleibt der erste Treffer. */
 function keepPrint(byPosition: Map<number, BookSeriesPart>, part: BookSeriesPart) {
   const existing = byPosition.get(part.position);

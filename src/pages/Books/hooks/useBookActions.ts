@@ -17,6 +17,7 @@ import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics
 import { showToast, showUndoToast } from '../../../lib/interaction/toast';
 import {
   addBook,
+  importBooks,
   removeBook,
   setBookHidden,
   setBookRating,
@@ -133,6 +134,31 @@ export function useBookActions() {
     [uid, ownedFor, mangaFor, addVolumeAsManga, allBookList]
   );
 
+  /** Ganze Reihe auf einmal: ein gebündelter Schreibvorgang, eigene Bände auf der Leseliste werden bei Bedarf gelesen. */
+  const addSeries = useCallback(
+    async (books: Book[], markRead: Book[] = []) => {
+      if (!uid) return 0;
+      const fresh = books.filter((b) => !ownedFor(b) && !mangaFor(b));
+      try {
+        if (fresh.length) await importBooks(uid, fresh);
+        for (const book of markRead) {
+          await setBookStatus(uid, book, 'completed', { finishedEarlier: true });
+        }
+        hapticSuccess();
+        showToast(
+          fresh.length
+            ? t('{n} Bände hinzugefügt', { n: fresh.length })
+            : t('{n} Bände als gelesen markiert', { n: markRead.length })
+        );
+        return fresh.length;
+      } catch {
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+        return 0;
+      }
+    },
+    [uid, ownedFor, mangaFor]
+  );
+
   const saveProgress = useCallback(
     async (book: Book, page: number, pageCount?: number) => {
       if (!uid) return;
@@ -246,6 +272,7 @@ export function useBookActions() {
   return useMemo(
     () => ({
       add,
+      addSeries,
       saveProgress,
       changeStatus,
       rate,
@@ -257,6 +284,7 @@ export function useBookActions() {
     }),
     [
       add,
+      addSeries,
       saveProgress,
       changeStatus,
       rate,
