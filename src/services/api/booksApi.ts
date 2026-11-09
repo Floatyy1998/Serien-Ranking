@@ -7,6 +7,7 @@ import type {
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import {
   mapDnbRecords,
+  mergeParentSeriesParts,
   mapDnbSeriesParts,
   mergeSeriesParts,
   seriesFromTitle,
@@ -252,7 +253,7 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
   const { name, parentId } = parseDnbSeriesKey(key);
   return cached<BookSeriesPart[]>(
     'dnbseries',
-    `${key.toLowerCase()}:3`,
+    `${key.toLowerCase()}:4`,
     7 * DAY,
     async () => {
       const queries = [
@@ -264,7 +265,9 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
           dnbQuery(q).then((pages) => pages.flatMap((xml) => mapDnbSeriesParts(xml, name)))
         )
       );
-      const parts = mergeSeriesParts(lists);
+      const parts = parentId
+        ? mergeParentSeriesParts(lists[0], lists[1], parentId)
+        : mergeSeriesParts(lists);
       if (!parts.length) throw NO_HITS;
       return parts;
     },

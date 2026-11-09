@@ -139,6 +139,34 @@ export function seriesFromTitle(
   return { name: series, position: volume, wikidataId: dnbSeriesKey(series, parentId) };
 }
 
+const parentOf = (part: BookSeriesPart): string | undefined => {
+  const key = part.result?.series?.wikidataId;
+  return key && isDnbSeriesKey(key) ? parseDnbSeriesKey(key).parentId : undefined;
+};
+
+/**
+ * Bandliste mit bekanntem Gesamttitel: Die Titelsuche findet auch gleichnamige andere Reihen (Manga und Light Novel
+ * von „Meine Wiedergeburt als Schleim in einer anderen Welt" heißen Band für Band gleich). Bände eines anderen
+ * Gesamttitels fallen weg, Bände ohne Gesamttitel (nur Feld 490) verlängern die Liste nur lückenlos.
+ */
+export function mergeParentSeriesParts(
+  byParent: BookSeriesPart[],
+  byTitle: BookSeriesPart[],
+  parentId: string
+): BookSeriesPart[] {
+  const own = mergeSeriesParts([byParent, byTitle.filter((p) => parentOf(p) === parentId)]);
+  const loose = mergeSeriesParts([byTitle.filter((p) => !parentOf(p))]);
+  if (!own.length) return loose;
+  let last = own[own.length - 1].position;
+  for (const part of loose) {
+    if (part.position <= last) continue;
+    if (part.position !== last + 1) break;
+    own.push(part);
+    last = part.position;
+  }
+  return own;
+}
+
 /** Bandlisten mehrerer DNB-Abfragen (`partof`, Titelsuche) zu einer zusammenführen. */
 export function mergeSeriesParts(lists: BookSeriesPart[][]): BookSeriesPart[] {
   const byPosition = new Map<number, BookSeriesPart>();

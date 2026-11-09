@@ -4,6 +4,7 @@ import { mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
 import {
   dnbPartDate,
   mapDnbSeriesParts,
+  mergeParentSeriesParts,
   mergeSeriesParts,
   plannedMonthOf,
   seriesFromTitle,
@@ -187,5 +188,37 @@ describe('Bände mit Untertitel im Titel', () => {
     );
     const parts = mapDnbSeriesParts(xml, 'Lady Eris', new Date('2026-11-08'));
     expect(parts.map((p) => p.position)).toEqual([1, 5]);
+  });
+});
+
+describe('mergeParentSeriesParts', () => {
+  const SLIME = 'Meine Wiedergeburt als Schleim in einer anderen Welt';
+  const vol = (n: number, parent?: string) =>
+    `<record xmlns="http://www.loc.gov/MARC21/slim">
+    ${field('020', sub('a', `97837539${String(n).padStart(4, '0')}${parent === 'LN' ? 1 : parent ? 2 : 3}`))}
+    ${field('245', sub('a', SLIME), sub('n', `${n} / aus dem Japanischen`))}
+    ${field('264', sub('b', 'Altraverse GmbH'), sub('c', '2024'))}
+    ${parent ? field('773', sub('w', `(DE-101)${parent === 'LN' ? '1192785169' : '117083941X'}`)) : ''}
+  </record>`;
+  const range = (from: number, to: number, parent?: string) =>
+    Array.from({ length: to - from + 1 }, (_, i) => vol(from + i, parent));
+
+  // Light Novel (Gesamttitel 1192785169) und Manga (117083941X) heißen Band für Band gleich.
+  const byParent = mapDnbSeriesParts(response(...range(1, 22, 'LN')), SLIME);
+  const byTitle = mapDnbSeriesParts(
+    response(...range(15, 22, 'LN'), ...range(20, 28, 'M'), ...range(29, 32)),
+    SLIME
+  );
+
+  it('lässt Bände eines anderen Gesamttitels weg', () => {
+    const parts = mergeParentSeriesParts(byParent, byTitle, '1192785169');
+    expect(parts.map((p) => p.position)).toEqual(range(1, 22).map((_, i) => i + 1));
+  });
+
+  it('verlängert nur lückenlos mit Bänden ohne Gesamttitel', () => {
+    const manga = mapDnbSeriesParts(response(...range(1, 28, 'M')), SLIME);
+    const parts = mergeParentSeriesParts(manga, byTitle, '117083941X');
+    expect(parts.map((p) => p.position)).toEqual(range(1, 32).map((_, i) => i + 1));
+    expect(parts[5].result?.series?.wikidataId).toBe(`dnb:117083941X:${SLIME}`);
   });
 });
