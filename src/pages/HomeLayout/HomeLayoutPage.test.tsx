@@ -48,6 +48,8 @@ vi.mock('framer-motion', async () => {
     motion,
     Reorder: { Group: make('div'), Item: make('div') },
     useDragControls: () => ({ start: () => {} }),
+    useMotionValue: (v: number) => ({ get: () => v, set: () => {} }),
+    animate: () => ({ stop: () => {} }),
     AnimatePresence: (p: { children?: unknown }) =>
       React.createElement(React.Fragment, null, p.children as never),
   };

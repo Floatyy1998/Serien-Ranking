@@ -41,6 +41,8 @@ vi.mock('framer-motion', async () => {
       React.createElement(React.Fragment, null, props.children as React.ReactNode),
     useReducedMotion: () => true,
     useDragControls: () => ({ start: () => {} }),
+    useMotionValue: (v: number) => ({ get: () => v, set: () => {} }),
+    animate: () => ({ stop: () => {} }),
   };
 });
 vi.mock('@mui/icons-material', () => ({

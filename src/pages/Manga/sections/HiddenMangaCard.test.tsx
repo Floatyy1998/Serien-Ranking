@@ -57,6 +57,6 @@ describe('HiddenMangaCard', () => {
     expect(screen.getByText('Versteckte Manga')).toBeInTheDocument();
     expect(screen.getByText('2 Manga pausiert')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Versteckte Manga'));
-    expect(navigate).toHaveBeenCalledWith('/reading/library?status=hidden');
+    expect(navigate).toHaveBeenCalledWith('/ratings?tab=books&status=hidden');
   });
 });

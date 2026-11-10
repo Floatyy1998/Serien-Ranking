@@ -156,7 +156,7 @@ describe('useProfileData - Menüs & Aktionen', () => {
     const { result } = renderHook(() => useProfileData());
     const paths = result.current.mangaMenuItems.map((i) => i.path);
     expect(paths).toEqual(
-      expect.arrayContaining(['/reading', '/reading/list', '/reading/library', '/reading/stats'])
+      expect.arrayContaining(['/reading', '/reading/list', '/ratings?tab=books', '/reading/stats'])
     );
     expect(paths).toContain('/books/import');
     expect(paths.some((p) => p.startsWith('/manga'))).toBe(false);
