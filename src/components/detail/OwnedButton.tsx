@@ -27,9 +27,16 @@ export const OwnedButton = ({
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  // Sofort umschalten, die Liste zieht über den Delta-Sync nach.
-  const [optimistic, setOptimistic] = useState<{ base: boolean; value: boolean } | null>(null);
-  const shown = optimistic && optimistic.base === owned ? optimistic.value : owned;
+  // Sofort umschalten, die Liste zieht über den Delta-Sync nach. Der Merker hängt am Titel: Die Detailseite
+  // bleibt beim Blättern durch eine Filmreihe dieselbe Komponente und zeigte sonst alle Teile als Besitz.
+  const key = `${target.type}-${target.id}`;
+  const [optimistic, setOptimistic] = useState<{
+    key: string;
+    base: boolean;
+    value: boolean;
+  } | null>(null);
+  const shown =
+    optimistic && optimistic.key === key && optimistic.base === owned ? optimistic.value : owned;
   const label = shown ? t('Im Besitz') : t('Als Besitz markieren');
   const color = currentTheme.status.success;
 
@@ -37,7 +44,7 @@ export const OwnedButton = ({
     if (!user) return;
     const next = !shown;
     hapticTap();
-    setOptimistic({ base: owned, value: next });
+    setOptimistic({ key, base: owned, value: next });
     try {
       await setMediaOwned(user.uid, [target], next);
       showToast(next ? t('Als Besitz markiert') : t('Nicht mehr im Besitz'), 1800);
