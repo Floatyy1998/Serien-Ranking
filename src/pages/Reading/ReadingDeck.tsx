@@ -122,7 +122,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
           key: 'books',
           value: bookList.length,
           label: t('Bücher'),
-          onClick: () => navigate('/reading/library'),
+          onClick: () => navigate('/ratings?tab=books'),
         },
         { key: 'manga', value: mangaList.length, label: 'Manga', onClick: onShowCollection },
       ];
@@ -146,7 +146,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
           key: 'shelf',
           value: bookList.length,
           label: t('Im Regal'),
-          onClick: () => navigate('/reading/library'),
+          onClick: () => navigate('/ratings?tab=books'),
         },
       ];
       sub = hasBooks

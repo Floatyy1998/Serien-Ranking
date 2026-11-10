@@ -1,6 +1,7 @@
-import { ChevronRight, Star } from '@mui/icons-material';
+import { Check, ChevronRight, Star } from '@mui/icons-material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLongPress } from '../../../hooks/ui/useLongPress';
 import { spineStyle, spineTitleLayout, type SpineMeasure } from '../../../lib/books/bookSpine';
 import { t } from '../../../services/i18n';
 import type { Book } from '../../../types/Book';
@@ -14,6 +15,10 @@ interface BookshelfProps {
   scale?: number;
   /** Ziel beim Antippen; Standard ist die Buch-Detailseite. */
   hrefFor?: (book: Book) => string;
+  /** Langer Druck auf einen Buchrücken (z. B. Mehrfachauswahl starten). */
+  onLongPress?: (book: Book) => void;
+  /** Mehrfachauswahl läuft: Antippen wählt aus statt zu öffnen. */
+  selection?: { isPicked: (book: Book) => boolean; toggle: (book: Book) => void };
 }
 
 let spineCanvas: CanvasRenderingContext2D | null | undefined;
@@ -51,13 +56,19 @@ export const BookSpine: React.FC<{
   onOpen: (el: HTMLElement) => void;
   lifted?: boolean;
   onPeek?: (el: HTMLElement | null) => void;
-}> = ({ book, scale = 1, onOpen, lifted = false, onPeek }) => {
+  pressProps?: React.HTMLAttributes<HTMLButtonElement>;
+  /** Gesetzt, solange die Mehrfachauswahl läuft. */
+  picked?: boolean;
+}> = ({ book, scale = 1, onOpen, lifted = false, onPeek, pressProps, picked }) => {
   const style = spineStyle(book, scale);
   const title = spineTitleLayout(book.title, style, spineMeasure());
   return (
     <button
+      {...pressProps}
       type="button"
-      className={`bk-spine${lifted ? ' bk-spine--lifted' : ''}`}
+      className={`bk-spine${lifted || picked ? ' bk-spine--lifted' : ''}${picked ? ' bk-spine--picked' : ''}`}
+      role={picked !== undefined ? 'checkbox' : undefined}
+      aria-checked={picked}
       onClick={(e) => onOpen(e.currentTarget)}
       onMouseEnter={onPeek ? (e) => canHover() && onPeek(e.currentTarget) : undefined}
       onMouseLeave={onPeek ? () => canHover() && onPeek(null) : undefined}
@@ -75,6 +86,11 @@ export const BookSpine: React.FC<{
           transformOrigin: 'bottom right',
         }}
       >
+        {picked !== undefined && (
+          <span className={`bk-spine-check${picked ? ' bk-spine-check--on' : ''}`} aria-hidden>
+            {picked && <Check style={{ fontSize: 13 }} />}
+          </span>
+        )}
         {style.bands > 0 && (
           <span className="bk-spine-band" style={{ top: 12, background: style.band }} />
         )}
@@ -120,10 +136,16 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
   ghostCount = 0,
   scale = 1,
   hrefFor,
+  onLongPress,
+  selection,
 }) => {
   const navigate = useNavigate();
   const shelfRef = useRef<HTMLDivElement>(null);
   const [peek, setPeek] = useState<Peek | null>(null);
+  const press = useLongPress<Book>((book) => {
+    setPeek(null);
+    onLongPress?.(book);
+  });
   const peekBook = peek ? books.find((b) => b.id === peek.id) : undefined;
 
   const open = (book: Book) =>
@@ -162,8 +184,16 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
           book={book}
           scale={scale}
           lifted={peek?.id === book.id}
+          picked={selection ? selection.isPicked(book) : undefined}
+          pressProps={onLongPress ? press(book) : undefined}
           onPeek={(el) => (el ? place(book, el, false) : setPeek((p) => (p?.pinned ? p : null)))}
           onOpen={(el) => {
+            if (selection) {
+              selection.toggle(book);
+              // Auf dem Handy gibt es kein Hover: das Kärtchen zeigt, welches Buch man erwischt hat.
+              if (!canHover()) place(book, el, true);
+              return;
+            }
             if (canHover() || (peek?.pinned && peek.id === book.id)) return open(book);
             place(book, el, true);
           }}
@@ -187,7 +217,7 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
           type="button"
           className={`bk-shelf-peek${peek.pinned ? ' bk-shelf-peek--pinned' : ''}`}
           style={{ left: peek.left, bottom: peek.bottom, width: PEEK_WIDTH }}
-          onClick={() => open(peekBook)}
+          onClick={() => (selection ? setPeek(null) : open(peekBook))}
           tabIndex={peek.pinned ? 0 : -1}
           aria-hidden={!peek.pinned}
         >
@@ -198,7 +228,11 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
               <span className="bk-shelf-peek-author">{peekBook.authors[0]}</span>
             )}
           </span>
-          {peek.pinned && <ChevronRight className="bk-shelf-peek-go" />}
+          {selection
+            ? selection.isPicked(peekBook) && (
+                <Check className="bk-shelf-peek-go" style={{ color: 'var(--theme-primary)' }} />
+              )
+            : peek.pinned && <ChevronRight className="bk-shelf-peek-go" />}
         </button>
       )}
     </div>

@@ -2,11 +2,13 @@ import { LibraryBooks } from '@mui/icons-material';
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
+import './WishToggle.css';
 
 /** „Im Besitz": Freunde sehen, dass du das Buch physisch besitzt. */
-export const OwnToggle: React.FC<{ owned: boolean; onToggle: () => void }> = ({
+export const OwnToggle: React.FC<{ owned: boolean; onToggle: () => void; hint?: string }> = ({
   owned,
   onToggle,
+  hint,
 }) => {
   const { currentTheme } = useTheme();
   const color = currentTheme.status.success;
@@ -30,9 +32,10 @@ export const OwnToggle: React.FC<{ owned: boolean; onToggle: () => void }> = ({
       <span className="bd-wish-text">
         <span className="bd-wish-label">{owned ? t('Im Besitz') : t('Als Besitz markieren')}</span>
         <span className="bd-wish-hint" style={{ color: currentTheme.text.muted }}>
-          {owned
-            ? t('Freunde sehen, dass du es besitzt · Tippen zum Entfernen')
-            : t('Freunde sehen, dass du es besitzt')}
+          {hint ??
+            (owned
+              ? t('Freunde sehen, dass du es besitzt · Tippen zum Entfernen')
+              : t('Freunde sehen, dass du es besitzt'))}
         </span>
       </span>
     </button>

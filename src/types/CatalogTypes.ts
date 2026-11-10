@@ -69,6 +69,7 @@ export interface UserSeriesRef {
   beschreibung?: string;
   hidden?: boolean;
   watchlist?: boolean;
+  ownedAt?: string;
   addedAt?: string;
   legacyNmr?: number;
   rewatch?: {
@@ -86,6 +87,7 @@ export interface UserMovieRef {
   begpirate?: string;
   beschreibung?: string;
   watchlist?: boolean;
+  ownedAt?: string;
   watched?: boolean;
   watchedAt?: string;
   ratedAt?: string;

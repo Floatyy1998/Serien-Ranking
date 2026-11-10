@@ -120,7 +120,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               }}
               placeholder={
                 activeTab === 'books'
-                  ? t('Bücher durchsuchen...')
+                  ? t('Bücher & Manga durchsuchen...')
                   : t('Serien & Filme durchsuchen...')
               }
             />
@@ -132,7 +132,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
             { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
             { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
             ...(booksCount > 0
-              ? [{ id: 'books', label: t('Bücher'), icon: LocalLibrary, count: booksCount }]
+              ? [{ id: 'books', label: t('Lesen'), icon: LocalLibrary, count: booksCount }]
               : []),
             { id: 'folders', label: t('Listen'), icon: ListAlt, count: folderCount },
           ]}

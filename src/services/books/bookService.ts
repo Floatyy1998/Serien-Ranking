@@ -110,12 +110,7 @@ export async function updateBookProgress(
   return result;
 }
 
-export async function setBookStatus(
-  uid: string,
-  book: Book,
-  status: BookStatus,
-  options: AddBookOptions = {}
-): Promise<Partial<Book>> {
+function statusPayload(book: Book, status: BookStatus, options: AddBookOptions = {}) {
   const updates = applyStatusChange(book, status, nowIso());
   const payload: Record<string, unknown> = { ...updates };
   if (status === 'completed' && options.finishedEarlier) payload.completedAt = null;
@@ -123,6 +118,48 @@ export async function setBookStatus(
     payload.completedAt = null;
   }
   if (book.wishedAt && (status === 'reading' || status === 'completed')) payload.wishedAt = null;
+  return { updates, payload };
+}
+
+/**
+ * Status vieler Bücher in Paketen à 150 setzen — ohne Lese-Ereignisse, also nur für „früher gelesen"
+ * und Statuswechsel ohne Abschluss (Abschluss heute läuft einzeln über setBookStatus).
+ */
+export async function setBooksStatus(
+  uid: string,
+  books: Book[],
+  status: BookStatus,
+  options: AddBookOptions = {}
+): Promise<void> {
+  await updateBooksBulk(
+    uid,
+    books.map((book) => ({ id: book.id, fields: statusPayload(book, status, options).payload }))
+  );
+}
+
+/** Felder vieler Bücher setzen (null löscht), je Buch nur die genannten Felder. */
+export async function updateBooksBulk(
+  uid: string,
+  changes: { id: string; fields: Record<string, unknown> }[]
+): Promise<void> {
+  for (let i = 0; i < changes.length; i += 150) {
+    const updates: Record<string, unknown> = {};
+    for (const { id, fields } of changes.slice(i, i + 150)) {
+      for (const [field, value] of Object.entries(fields)) {
+        if (value !== undefined) updates[`${paths.bookItem(uid, id)}/${field}`] = value;
+      }
+    }
+    if (Object.keys(updates).length) await dbUpdate(updates);
+  }
+}
+
+export async function setBookStatus(
+  uid: string,
+  book: Book,
+  status: BookStatus,
+  options: AddBookOptions = {}
+): Promise<Partial<Book>> {
+  const { updates, payload } = statusPayload(book, status, options);
   await dbRef(paths.bookItem(uid, book.id)).update(payload);
   if (status === 'completed' && !options.finishedEarlier && book.status !== 'completed') {
     const pagesLeft = book.pageCount ? book.pageCount - (book.currentPage || 0) : 0;

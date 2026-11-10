@@ -254,7 +254,7 @@ export const ReadingBody = ({ areas, bookYear, readingRef, onSearch }: ReadingBo
               icon={<LocalLibrary />}
               iconColor={currentTheme.status.warning}
               title={t('Dein Lese-Regal')}
-              onSeeAll={() => navigate('/reading/library')}
+              onSeeAll={() => navigate('/ratings?tab=books')}
               seeAllLabel={t('Ganzes Regal')}
             />
             <div className="bk-pad">

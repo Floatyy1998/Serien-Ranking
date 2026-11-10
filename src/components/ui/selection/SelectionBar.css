@@ -1,0 +1,212 @@
+.sel-bar {
+  position: fixed;
+  left: max(var(--page-x), var(--safe-left));
+  right: max(var(--page-x), var(--safe-right));
+  bottom: calc(var(--dock-top) + 10px);
+  z-index: var(--z-overlay);
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  border: 1px solid;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+.sel-bar-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sel-bar-count {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sel-bar .sel-bar-icon,
+.mobile-app .sel-bar button.sel-bar-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.sel-bar-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
+.sel-bar .sel-bar-all,
+.mobile-app .sel-bar button.sel-bar-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sel-bar-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sel-bar .sel-bar-action,
+.mobile-app .sel-bar button.sel-bar-action {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border: none;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.15;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.sel-bar-action span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sel-bar-action:disabled {
+  cursor: default;
+}
+
+.sel-bar-action:not(:disabled):active,
+.sel-bar-all:active,
+.sel-bar-icon:active {
+  opacity: 0.7;
+}
+
+/* Haken auf ausgewählten Karten */
+.sel-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.sel-check--on {
+  border-color: transparent;
+}
+
+/* box-shadow statt outline: die globale Regel *:focus:not(:focus-visible) nimmt jedem
+   gerade angetippten Element den outline — der Rahmen kam sonst erst nach dem Wegtippen. */
+.sel-picked {
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 2px var(--theme-background, #000),
+    0 0 0 5px var(--sel-color);
+}
+
+/* Auswahlliste einer Sammelaktion */
+.sel-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 20px calc(20px + var(--safe-bottom, 0px));
+}
+
+.sel-sheet-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.mobile-app .sel-sheet-title,
+.sel-sheet-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.sel-sheet-sub {
+  font-size: 13px;
+  text-align: center;
+}
+
+.sel-choice,
+.mobile-app button.sel-choice {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.sel-choice:active {
+  opacity: 0.7;
+}
+
+.sel-choice-icon {
+  display: flex;
+  flex: none;
+}
+
+.sel-choice-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.sel-choice-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sel-choice-hint {
+  font-size: 12.5px;
+  line-height: 1.35;
+}

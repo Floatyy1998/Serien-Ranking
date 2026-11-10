@@ -2,6 +2,7 @@ import { Redeem } from '@mui/icons-material';
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
+import './WishToggle.css';
 
 /** Wunschliste wie bei Steam: Freunde sehen gewünschte Bücher als Geschenkidee. */
 export const WishToggle: React.FC<{ wished: boolean; busy?: boolean; onToggle: () => void }> = ({

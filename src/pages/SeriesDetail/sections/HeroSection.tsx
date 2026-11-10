@@ -21,6 +21,7 @@ import {
 } from '../../../components/detail';
 import { RecommendButton } from '../../../components/recommendations/RecommendButton';
 import { AddToListButton } from '../../../components/detail/AddToListButton';
+import { OwnedButton } from '../../../components/detail/OwnedButton';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { applyOverrideToProviders, mergeProviders } from '../../../lib/provider/providerMerge';
@@ -327,6 +328,13 @@ export const HeroSection = memo<HeroSectionProps>(
         </Tooltip>
 
         {listButton}
+
+        <OwnedButton
+          className="hero-actions__btn"
+          iconSize={iconSize}
+          target={{ type: 'series', id: seriesId }}
+          owned={!!series.ownedAt}
+        />
 
         {recommendButton}
 

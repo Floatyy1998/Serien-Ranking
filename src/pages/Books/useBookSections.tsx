@@ -144,7 +144,7 @@ export function useBookSections({ bookYear }: BookSectionsOptions) {
         title={t('Im Besitz')}
         icon={<LibraryBooks />}
         iconColor={currentTheme.status.success}
-        onSeeAll={() => navigate('/reading/library?status=owned')}
+        onSeeAll={() => navigate('/ratings?tab=books&status=owned')}
         seeAllLabel={t('Alle')}
       />
     ),
@@ -164,7 +164,7 @@ export function useBookSections({ bookYear }: BookSectionsOptions) {
             icon={<LocalLibrary />}
             iconColor={currentTheme.status.warning}
             title={shelfIsYear ? t('Dein Regal {year}', { year }) : t('Dein Regal')}
-            onSeeAll={() => navigate('/reading/library')}
+            onSeeAll={() => navigate('/ratings?tab=books')}
             seeAllLabel={t('Ganzes Regal')}
           />
           <div className="bk-pad">

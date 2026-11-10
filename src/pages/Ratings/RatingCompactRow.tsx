@@ -21,6 +21,7 @@ import type { Series } from '../../types/Series';
 import { PLACEHOLDER_SVG, ProviderBadgeArea } from './RatingItemCard';
 import type { PreparedItem } from './useRatingsData';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import { SelectCheck } from '../../components/ui/selection/SelectionBar';
 
 interface RatingCompactRowProps {
   item: PreparedItem;
@@ -34,10 +35,12 @@ interface RatingCompactRowProps {
    * Nummer irreführend. Unbewertete Items zeigen keinen Rang.
    */
   rank?: number;
+  /** Gesetzt, solange die Mehrfachauswahl läuft. */
+  selected?: boolean;
 }
 
 export const RatingCompactRow = React.memo<RatingCompactRowProps>(
-  ({ item, series, uid, theme, rank }) => {
+  ({ item, series, uid, theme, rank, selected }) => {
     const [busy, setBusy] = useState(false);
 
     const next = useMemo(
@@ -63,10 +66,13 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
 
     return (
       <div
-        className="ratings-grid-item ratings-row"
+        className={`ratings-grid-item ratings-row${selected ? ' sel-picked' : ''}`}
         data-id={item.id}
         data-movie={item.isMovie || undefined}
         data-poster={item.posterUrl || undefined}
+        role={selected !== undefined ? 'checkbox' : undefined}
+        aria-checked={selected}
+        style={{ '--sel-color': theme.primary } as React.CSSProperties}
         {...mediaTargetProps({
           type: item.isMovie ? 'movie' : 'series',
           id: item.id,
@@ -101,7 +107,7 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
             </span>
           )}
 
-          {(next || isComplete || inProgress || item.watchlist) && (
+          {(next || isComplete || inProgress || item.watchlist || item.owned) && (
             <span className="ratings-row-status">
               {next && (
                 <span className="ratings-row-next" style={{ color: theme.text.muted }}>
@@ -125,6 +131,18 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
                   </span>
                 </>
               )}
+              {item.owned && (
+                <span
+                  className="ratings-row-watchlist"
+                  style={{
+                    color: theme.status.success,
+                    borderColor: `${theme.status.success}55`,
+                    background: `${theme.status.success}14`,
+                  }}
+                >
+                  {t('Im Besitz')}
+                </span>
+              )}
               {item.watchlist && (
                 <span
                   className="ratings-row-watchlist"
@@ -144,6 +162,11 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
         {/* Rechte Spalte: Anbieter ueber der Bewertung. In der engen Ansicht
             blieb frueher nur die Zahl — wo etwas laeuft, ist beim Stoebern
             genauso wichtig wie die Note. */}
+        {selected !== undefined && (
+          <span className="ratings-row-check">
+            <SelectCheck on={selected} />
+          </span>
+        )}
         <div className="ratings-row-right">
           {item.providers.length > 0 && (
             <div className="ratings-row-providers">

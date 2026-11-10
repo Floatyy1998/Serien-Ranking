@@ -2,8 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppFocus } from './useAppFocus';
 import { t } from '../../services/i18n';
 import { readsFirst } from '../../services/settings/appFocus';
-
-const READING_AREA = /^\/(manga|books|reading)(\/|$)/;
+import { READING_AREA, useRatingsFromReading } from './useRatingsOrigin';
 
 /** Zurück- und Home-Ziel der aktuellen Seite — geteilt von BackButton und der mitwandernden Leiste. */
 export const useBackNavigation = () => {
@@ -11,7 +10,11 @@ export const useBackNavigation = () => {
   const location = useLocation();
   const reader = readsFirst(useAppFocus().focus);
   // Lese-Seiten führen Home zur Lesen-Seite; beim Schwerpunkt Lesen ist das die Startseite.
-  const homePath = !reader && READING_AREA.test(location.pathname) ? '/reading' : '/';
+  // /ratings gehört zum Lesen, wenn man von einer Lese-Seite dorthin kam (Reiter „Lesen").
+  const fromReading = useRatingsFromReading();
+  const readingPage =
+    READING_AREA.test(location.pathname) || (location.pathname === '/ratings' && fromReading);
+  const homePath = !reader && readingPage ? '/reading' : '/';
   const homeLabel = homePath === '/reading' ? t('Zum Lesen') : t('Zur Startseite');
 
   const goBack = () => {

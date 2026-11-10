@@ -338,6 +338,8 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
     if (quickFilter === 'watchlist') {
       items = items.filter(({ s }) => s.watchlist === true);
+    } else if (quickFilter === 'owned') {
+      items = items.filter(({ s }) => !!s.ownedAt);
     } else if (quickFilter === 'unrated') {
       items = items.filter(({ r }) => r === 0);
     } else if (quickFilter === 'started') {
@@ -428,6 +430,8 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
     if (quickFilter === 'watchlist') {
       items = items.filter(({ m }) => m.watchlist === true);
+    } else if (quickFilter === 'owned') {
+      items = items.filter(({ m }) => !!m.ownedAt);
     } else if (quickFilter === 'unrated') {
       items = items.filter(({ r }) => r === 0);
     } else if (quickFilter === 'started') {

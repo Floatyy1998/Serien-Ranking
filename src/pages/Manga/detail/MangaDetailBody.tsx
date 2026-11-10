@@ -22,6 +22,7 @@ import { Section, SectionTitle } from './Section';
 import { VolumeShelf } from './VolumeShelf';
 import { BookSwitchPanel } from './BookSwitchPanel';
 import { ManageConfirm } from './ManageConfirm';
+import { OwnToggle } from '../../Books/detail/OwnToggle';
 
 const STATUS_OPTIONS: { value: Manga['readStatus']; label: string }[] = [
   { value: 'reading', label: t('Lese ich') },
@@ -95,6 +96,7 @@ interface MangaDetailBodyProps {
   onNotesBlur: () => void;
   onReread: () => void;
   onToggleHide: () => void;
+  onToggleOwned?: () => void;
   onDelete: () => void;
   /** Nur für Reihen mit Bänden: zurück zu den Büchern. */
   onMoveToBooks?: () => void;
@@ -133,6 +135,7 @@ export const MangaDetailBody = ({
   onNotesBlur,
   onReread,
   onToggleHide,
+  onToggleOwned,
   onDelete,
   onMoveToBooks,
   movingToBooks = false,
@@ -442,6 +445,19 @@ export const MangaDetailBody = ({
                 );
               })}
             </div>
+            {onToggleOwned && (
+              <div style={{ marginTop: 10 }}>
+                <OwnToggle
+                  owned={!!manga.ownedAt}
+                  onToggle={onToggleOwned}
+                  hint={
+                    manga.ownedAt
+                      ? t('Steht bei dir im Regal · Tippen zum Entfernen')
+                      : t('Steht bei dir im Regal')
+                  }
+                />
+              </div>
+            )}
           </div>
           <div className="md-sub" id="manga-rating">
             <SectionTitle

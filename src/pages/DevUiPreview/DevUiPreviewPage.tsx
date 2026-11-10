@@ -1,7 +1,5 @@
 import { ReadingListPage } from '../Reading/list/ReadingListPage';
-import { ReadingLibraryPage } from '../Reading/library/ReadingLibraryPage';
 import { ReadingDiscoverPage } from '../Reading/discover/ReadingDiscoverPage';
-import { ReadingRatingsPage } from '../Reading/ratings/ReadingRatingsPage';
 import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
 import { ReadingHistoryPage } from '../Reading/history/ReadingHistoryPage';
 import { ReadingCatchUpPage } from '../Reading/list/ReadingCatchUpPage';
@@ -108,6 +106,7 @@ import {
   CoinEggPreview,
   FriendBooksInsightsPreview,
   ReadingHubPreview,
+  ReadingLibraryTab,
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
 import { DuoShellPreview } from './DuoShellPreview';
@@ -445,17 +444,12 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   {
     id: 'reading-library',
     label: 'Lesen: Bibliothek',
-    render: () => <ReadingSubpagePreview page={<ReadingLibraryPage />} />,
+    render: () => <ReadingSubpagePreview page={<ReadingLibraryTab />} />,
   },
   {
     id: 'reading-discover',
     label: 'Lesen: Entdecken',
     render: () => <ReadingSubpagePreview page={<ReadingDiscoverPage />} />,
-  },
-  {
-    id: 'reading-ratings',
-    label: 'Lesen: Bewertungen',
-    render: () => <ReadingSubpagePreview page={<ReadingRatingsPage />} />,
   },
   {
     id: 'reading-stats',

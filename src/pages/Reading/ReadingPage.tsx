@@ -69,7 +69,7 @@ export const ReadingPage = () => {
         onNotificationsOpen={() => setShowNotifications(true)}
         onSearch={openSearch}
         onShowReading={() => scrollTo(readingRef)}
-        onShowCollection={() => navigate('/reading/library?medium=manga')}
+        onShowCollection={() => navigate('/ratings?tab=books&medium=manga')}
       />
 
       <ActivityMarquee scope="read" />

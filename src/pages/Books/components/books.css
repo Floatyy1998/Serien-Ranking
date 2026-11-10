@@ -548,6 +548,36 @@
   transform: translateY(-12px);
 }
 
+/* Mehrfachauswahl im Regal: gewählte Rücken stehen hoch, mit Ring und Haken */
+.bk-spine--picked .bk-spine-body {
+  box-shadow:
+    0 0 0 2px var(--theme-background, #000),
+    0 0 0 4px var(--theme-primary);
+}
+
+.bk-spine-check {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.bk-spine-check--on {
+  border-color: transparent;
+  background: var(--theme-primary);
+  color: var(--theme-background, #000);
+}
+
 .mobile-app .bk-shelf-peek,
 .bk-shelf-peek {
   position: absolute;

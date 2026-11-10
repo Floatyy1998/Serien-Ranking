@@ -5,7 +5,7 @@
  * Uses CSS classes for layout, inline styles ONLY for theme colors.
  */
 
-import { Star, WatchLater } from '@mui/icons-material';
+import { Album, Star, WatchLater } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,6 +23,7 @@ import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import { primaryGenre } from '../../lib/text/genreLabel';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import { SelectCheck } from '../../components/ui/selection/SelectionBar';
 export { PLACEHOLDER_SVG };
 
 // Provider-Badge mit Popup — auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
@@ -197,9 +198,11 @@ export function ProviderBadgeArea({
 interface RatingItemCardProps {
   item: PreparedItem;
   theme: ReturnType<typeof useTheme>['currentTheme'];
+  /** Gesetzt, solange die Mehrfachauswahl läuft. */
+  selected?: boolean;
 }
 
-export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => {
+export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme, selected }) => {
   // D1: --prog wird per rAF animiert ans Karten-Element geschrieben
   // (Draw-In des Fortschritts-Rings), nicht als statischer Inline-Style.
   const cardRef = useRef<HTMLDivElement>(null);
@@ -212,10 +215,13 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
     // data-poster is read by the grid's click handler so the Detail page poster
     // is already in the browser cache by the time React mounts the route.
     <div
-      className="ratings-grid-item"
+      className={`ratings-grid-item${selected ? ' sel-picked' : ''}`}
       data-id={item.id}
       data-movie={item.isMovie || undefined}
       data-poster={item.posterUrl || undefined}
+      role={selected !== undefined ? 'checkbox' : undefined}
+      aria-checked={selected}
+      style={{ '--sel-color': theme.primary } as React.CSSProperties}
       {...mediaTargetProps({
         type: item.isMovie ? 'movie' : 'series',
         id: item.id,
@@ -239,6 +245,7 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
           } as React.CSSProperties
         }
       >
+        {selected !== undefined && <SelectCheck on={selected} />}
         {/* Poster image — shared element for the View Transitions API.
           The `view-transition-name` must be unique per element, so we key it
           by media type + id. Browsers without VT support ignore the style.
@@ -275,7 +282,17 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
 
               {/* Right: watchlist badge */}
               <div className="ratings-card-top-right">
-                {item.watchlist && (
+                {item.owned && selected === undefined && (
+                  <Tooltip title={t('Im Besitz')} arrow>
+                    <div
+                      className="ratings-card-watchlist-badge"
+                      style={{ background: `${theme.status.success}dd` }}
+                    >
+                      <Album style={{ fontSize: '13px', color: '#fff' }} />
+                    </div>
+                  </Tooltip>
+                )}
+                {item.watchlist && selected === undefined && (
                   <Tooltip title={t('Auf deiner Watchlist')} arrow>
                     <div
                       className="ratings-card-watchlist-badge"

@@ -126,7 +126,7 @@ export function mangaItem(manga: Manga, uid: string | undefined): LibraryItem {
     title: manga.title,
     status: manga.readStatus,
     hidden: !!manga.hidden,
-    owned: false,
+    owned: !!manga.ownedAt,
     genres: (manga.genres ?? []).map((g) => g?.trim()).filter(Boolean),
     rating: uid ? manga.rating?.[uid] || 0 : 0,
     progress: mangaStand(manga).percent,

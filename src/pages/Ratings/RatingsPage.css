@@ -440,6 +440,12 @@
   height: 100%;
 }
 
+/* Manga-Poster (nacktes img, keine BookCover-Hülle): Rundung und Zuschnitt selbst. */
+.ratings-card img.ratings-book-cover {
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+}
+
 .ratings-card .ratings-book-cover .bk-cover-face {
   border-radius: var(--radius-lg);
   box-shadow: none;
@@ -890,4 +896,20 @@
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Mehrfachauswahl: Haken in der Listenansicht liegt auf dem Poster */
+.ratings-row-check {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 3;
+}
+
+.ratings-row-check .sel-check {
+  position: static;
+}
+
+.ratings-content--selecting .ratings-grid-item {
+  transform: none;
 }

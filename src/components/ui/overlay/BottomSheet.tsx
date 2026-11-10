@@ -1,12 +1,13 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PanInfo } from 'framer-motion';
-import { AnimatePresence, motion, useDragControls } from 'framer-motion';
+import { animate, AnimatePresence, motion, useDragControls, useMotionValue } from 'framer-motion';
 import { KeyboardArrowUp } from '@mui/icons-material';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAndroidBack } from '../../../hooks/ui/useAndroidBack';
 import { useFocusTrap } from '../../../hooks/ui/useFocusTrap';
 import { useReducedMotion } from '../../../hooks/ui/useReducedMotion';
+import { useSheetPullToClose } from '../../../hooks/ui/useSheetPullToClose';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -71,6 +72,28 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
   useFocusTrap(sheetRef, isOpen, onClose);
   useAndroidBack(isOpen, onClose);
+
+  // Zug im Inhalt: verschiebt über `top`, damit framer-motion den transform (Ein-/Ausblenden, Griff) behält.
+  const sheetY = useMotionValue(0);
+  // Nach dem Schließen per Zug steht der Wert noch unten — beim nächsten Öffnen von vorn.
+  useEffect(() => {
+    if (isOpen) sheetY.set(0);
+  }, [isOpen, sheetY]);
+  useSheetPullToClose(sheetRef, {
+    enabled: isOpen,
+    y: sheetY,
+    threshold: dragThreshold,
+    onActiveChange: setDragging,
+    onPullEnd: () => {
+      // Aufgeklappt fängt der erste Zug nach unten die Stufe ab — wie am Griff.
+      if (expandable && expanded) {
+        onExpandedChange?.(false);
+        void animate(sheetY, 0, { type: 'spring', damping: 30, stiffness: 400 });
+        return;
+      }
+      onClose();
+    },
+  });
 
   // Die zweite Stufe geht schon beim Ziehen auf, nicht erst beim Loslassen —
   // der Inhalt kommt also mit dem Finger hoch.
@@ -168,6 +191,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             onDragEnd={handleDragEnd}
             className="ui-sheet"
             style={{
+              position: 'relative',
+              top: sheetY,
               /* Ohne Blur (siehe Scrim) traegt die Flaeche selbst — knapp
                  deckend, Tiefe kommt aus Sheen, Rand und Schatten. */
               background: `

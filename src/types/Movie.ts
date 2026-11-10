@@ -27,6 +27,8 @@ export interface Movie {
     wo: string;
   };
   watchlist?: boolean;
+  /** Physisch im Regal (DVD, Blu-ray) seit. */
+  ownedAt?: string;
   status?: string;
   release_date?: string;
   collection_id?: number;

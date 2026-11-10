@@ -71,6 +71,31 @@ export async function setRatingFolderItem(
   await (included ? ref.set(true) : ref.remove());
 }
 
+/** Mehrere Titel auf einmal in eine Liste legen (die Rewatch-Liste entsteht dabei mit Namen). */
+export async function addRatingFolderItems(
+  uid: string,
+  folderId: string,
+  itemKeys: string[]
+): Promise<void> {
+  if (!itemKeys.length) return;
+  const update: Record<string, unknown> = {};
+  if (folderId === REWATCH_FOLDER_ID) update.name = REWATCH_FOLDER_NAME;
+  for (const key of itemKeys) update[`items/${key}`] = true;
+  await dbRef(folderPath(uid, folderId)).update(update);
+}
+
+/** Mehrere Titel auf einmal aus einer Liste nehmen. */
+export async function removeRatingFolderItems(
+  uid: string,
+  folderId: string,
+  itemKeys: string[]
+): Promise<void> {
+  if (!itemKeys.length) return;
+  const update: Record<string, null> = {};
+  for (const key of itemKeys) update[`items/${key}`] = null;
+  await dbRef(folderPath(uid, folderId)).update(update);
+}
+
 export async function setRewatchListItem(
   uid: string,
   itemKey: string,

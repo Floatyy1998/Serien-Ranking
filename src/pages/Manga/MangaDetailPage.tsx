@@ -43,6 +43,7 @@ import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { trackMangaDeleted } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
+import { setMangaOwned } from '../../services/manga/mangaBulk';
 
 const logMangaActivity = (uid: string, manga: Manga, type: 'manga_rated', rating?: number) =>
   void logReadingActivity(uid, {
@@ -485,6 +486,9 @@ export const MangaDetailPage = () => {
         onNotesBlur={handleNotesBlur}
         onReread={handleReread}
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
+        onToggleOwned={() => {
+          if (user) void setMangaOwned(user.uid, [manga], !manga.ownedAt);
+        }}
         onDelete={handleDelete}
         onMoveToBooks={hasVolumes ? () => void handleMoveToBooks() : undefined}
         movingToBooks={movingToBooks}

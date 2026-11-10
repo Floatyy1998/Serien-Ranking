@@ -67,7 +67,7 @@ export const ReadingQuickActions: React.FC<ReadingQuickActionsProps> = React.mem
       },
       library: {
         icon: <LocalLibrary />,
-        path: '/reading/library',
+        path: '/ratings?tab=books',
         hint: t('Dein Regal'),
         color: currentTheme.status.warning,
         stat: stats.titles ? t('{n} Titel', { n: stats.titles }) : undefined,
@@ -80,7 +80,7 @@ export const ReadingQuickActions: React.FC<ReadingQuickActionsProps> = React.mem
       },
       ratings: {
         icon: <Star />,
-        path: '/reading/ratings',
+        path: '/ratings?tab=books',
         hint: t('Wertungen'),
         color: currentTheme.status.warning,
         stat: stats.rated ? t('{n} bewertet', { n: stats.rated }) : undefined,

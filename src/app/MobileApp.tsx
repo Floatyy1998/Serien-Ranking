@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useRatingsOriginTracker } from '../hooks/ui/useRatingsOrigin';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Layout, ScrollEscapeHost, ScrollToTop } from '../components/layout';
 import { MainTabs } from '../components/layout/MainTabs';
@@ -55,10 +56,8 @@ import {
   ReadingLayoutPage,
   ReadingListPage,
   ReadingCatchUpPage,
-  ReadingRatingsPage,
   ReadingHistoryPage,
   ReadingStatsPage,
-  ReadingLibraryPage,
   ReadingDiscoverPage,
   ReadingGenrePage,
   BookSearchPage,
@@ -113,6 +112,7 @@ const PageLoader = () => (
 export const MobileApp = () => {
   const { onboardingComplete, user } = useAuth() || {};
   const location = useLocation();
+  useRatingsOriginTracker();
   const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } =
     useOptimizedFriends();
   const { unreadCount: notificationUnreadCount, notifications: generalNotifications } =
@@ -451,7 +451,10 @@ export const MobileApp = () => {
                 }
               />
               {/* Manga Pages - specific routes before :id */}
-              <Route path="/manga/ratings" element={<Navigate to="/reading/ratings" replace />} />
+              <Route
+                path="/manga/ratings"
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books" />}
+              />
               <Route
                 path="/manga/search"
                 element={
@@ -463,7 +466,7 @@ export const MobileApp = () => {
               <Route path="/manga/catch-up" element={<Navigate to="/reading/catch-up" replace />} />
               <Route
                 path="/manga/hidden"
-                element={<KeepSearchRedirect to="/reading/library" extra="status=hidden" />}
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books&status=hidden" />}
               />
               <Route
                 path="/manga/recently-read"
@@ -478,7 +481,7 @@ export const MobileApp = () => {
               <Route path="/manga/reading-list" element={<Navigate to="/reading/list" replace />} />
               <Route
                 path="/manga/collection"
-                element={<KeepSearchRedirect to="/reading/library" extra="medium=manga" />}
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books&medium=manga" />}
               />
               <Route
                 path="/reading/list"
@@ -498,11 +501,7 @@ export const MobileApp = () => {
               />
               <Route
                 path="/reading/ratings"
-                element={
-                  <Layout hideNav>
-                    <ReadingRatingsPage />
-                  </Layout>
-                }
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books" />}
               />
               <Route
                 path="/reading/history"
@@ -522,11 +521,7 @@ export const MobileApp = () => {
               />
               <Route
                 path="/reading/library"
-                element={
-                  <Layout hideNav>
-                    <ReadingLibraryPage />
-                  </Layout>
-                }
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books" />}
               />
               <Route
                 path="/reading/discover"
@@ -577,7 +572,10 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
-              <Route path="/books/shelf" element={<KeepSearchRedirect to="/reading/library" />} />
+              <Route
+                path="/books/shelf"
+                element={<KeepSearchRedirect to="/ratings" extra="tab=books" />}
+              />
               <Route path="/books/stats" element={<Navigate to="/reading/stats" replace />} />
               <Route
                 path="/books/import"

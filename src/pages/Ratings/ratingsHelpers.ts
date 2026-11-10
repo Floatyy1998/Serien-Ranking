@@ -17,6 +17,8 @@ export interface PreparedItem {
   watched: boolean;
   isMovie: boolean;
   watchlist: boolean;
+  /** Physisch im Regal (DVD, Blu-ray). */
+  owned?: boolean;
   releaseDate?: string;
   year?: string;
   genres?: string;
@@ -211,6 +213,7 @@ export function prepareSeriesItem(s: Series, r: number): PreparedItem {
     watched: progress === 100,
     isMovie: false,
     watchlist: s.watchlist === true,
+    owned: !!s.ownedAt,
     releaseDate: getSeriesReleaseDate(s),
     year: getSeriesYear(s),
     genres: extractGenres(s),
@@ -230,6 +233,7 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
     watched: isMovieWatched(m),
     isMovie: true,
     watchlist: m.watchlist === true,
+    owned: !!m.ownedAt,
     releaseDate: m.release_date,
     year: extractYear(m.release_date),
     genres: extractGenres(m),

@@ -4,7 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import { showCoinEgg } from '../../components/reading/coinEasterEgg';
 import { IsbnScanner } from '../../components/scanner/IsbnScanner';
 import { AuthContext, useAuth } from '../../contexts/AuthContext';
-import { BooksListContext } from '../../contexts/BooksListContext';
+import { BooksListContext, useBooksList } from '../../contexts/BooksListContext';
 import { MovieListContext } from '../../contexts/MovieListContext';
 import { SeriesListContext } from '../../contexts/SeriesListContext';
 import { tmdbFetch } from '../../services/api/tmdbClient';
@@ -16,7 +16,10 @@ import { SeriesAddSheet } from '../Books/detail/SeriesAddSheet';
 import { seriesBulkSelection } from '../../lib/books/seriesBulk';
 import { BookImportPage } from '../Books/BookImportPage';
 import { BookSearchPage } from '../Books/BookSearchPage';
-import { ReadingLibraryPage } from '../Reading/library/ReadingLibraryPage';
+import { ReadingLibrary } from '../Reading/library/ReadingLibrary';
+import { buildLibrary } from '../../lib/reading/library';
+import { useMangaList } from '../../contexts/MangaListContext';
+import '../Ratings/RatingsPage.css';
 import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
 import { FriendBooksInsights } from '../FriendProfile/FriendBooksInsights';
 import { ReadingPage } from '../Reading/ReadingPage';
@@ -430,9 +433,35 @@ export const BookSearchPreview = () => (
   </BooksPreviewShell>
 );
 
+/** Reiter „Lesen" der Bewertungsseite ohne den restlichen Seitenkopf. */
+export const ReadingLibraryTab = () => {
+  const { bookList, hiddenBookList } = useBooksList();
+  const { mangaList, hiddenMangaList } = useMangaList();
+  const items = useMemo(
+    () =>
+      buildLibrary({
+        books: bookList,
+        hiddenBooks: hiddenBookList,
+        manga: mangaList,
+        hiddenManga: hiddenMangaList,
+        showBooks: true,
+        showManga: true,
+        uid: 'preview',
+      }),
+    [bookList, hiddenBookList, mangaList, hiddenMangaList]
+  );
+  return (
+    <div className="ratings-page">
+      <div className="ratings-content">
+        <ReadingLibrary items={items} search="" />
+      </div>
+    </div>
+  );
+};
+
 export const BookShelfPreview = () => (
   <BooksPreviewShell>
-    <ReadingLibraryPage />
+    <ReadingLibraryTab />
   </BooksPreviewShell>
 );
 

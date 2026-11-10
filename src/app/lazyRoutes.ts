@@ -197,13 +197,6 @@ export const ReadingCatchUpPage = lazyWithRetry(() =>
     default: m.ReadingCatchUpPage,
   }))
 );
-export const ReadingRatingsPage = lazyWithRetry(() =>
-  import(
-    /* webpackChunkName: "reading-ratings" */ '../pages/Reading/ratings/ReadingRatingsPage'
-  ).then((m) => ({
-    default: m.ReadingRatingsPage,
-  }))
-);
 export const ReadingHistoryPage = lazyWithRetry(() =>
   import(
     /* webpackChunkName: "reading-history" */ '../pages/Reading/history/ReadingHistoryPage'
@@ -217,13 +210,6 @@ export const ReadingStatsPage = lazyWithRetry(() =>
       default: m.ReadingStatsPage,
     })
   )
-);
-export const ReadingLibraryPage = lazyWithRetry(() =>
-  import(
-    /* webpackChunkName: "reading-library" */ '../pages/Reading/library/ReadingLibraryPage'
-  ).then((m) => ({
-    default: m.ReadingLibraryPage,
-  }))
 );
 export const ReadingDiscoverPage = lazyWithRetry(() =>
   import(
@@ -333,10 +319,8 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('../pages/Reading/ReadingLayoutPage'),
     () => import('../pages/Reading/list/ReadingListPage'),
     () => import('../pages/Reading/list/ReadingCatchUpPage'),
-    () => import('../pages/Reading/ratings/ReadingRatingsPage'),
     () => import('../pages/Reading/history/ReadingHistoryPage'),
     () => import('../pages/Reading/stats/ReadingStatsPage'),
-    () => import('../pages/Reading/library/ReadingLibraryPage'),
     () => import('../pages/Reading/discover/ReadingDiscoverPage'),
     () => import('../pages/Reading/ReadingGenrePage'),
     () => import('../pages/Books/BookSearchPage'),

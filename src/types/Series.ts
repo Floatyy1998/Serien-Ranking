@@ -65,6 +65,8 @@ export interface Series {
   };
   watchlist?: boolean;
   hidden?: boolean;
+  /** Physisch im Regal (DVD, Blu-ray) seit. */
+  ownedAt?: string;
   rewatch?: {
     active: boolean;
     round: number;

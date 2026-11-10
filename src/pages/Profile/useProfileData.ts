@@ -253,7 +253,7 @@ export const useProfileData = (): UseProfileDataResult => {
         label: t('Bibliothek'),
         icon: LibraryBooks,
         color: currentTheme.status.warning,
-        path: '/reading/library',
+        path: '/ratings?tab=books',
       },
       {
         label: t('Lese-Statistik'),

@@ -1052,52 +1052,6 @@ export const PAGE_TOURS: readonly PageTour[] = [
     ],
   },
   {
-    path: '/reading/library',
-    version: 1,
-    title: 'Bibliothek',
-    intro: 'Alle deine Bücher und Manga in einem Regal.',
-    actions: [
-      {
-        icon: 'filter',
-        title: 'Filtern',
-        text: 'Nach Status, Medium und Genre eingrenzen oder im Bestand suchen.',
-      },
-      {
-        icon: 'sort',
-        title: 'Regal oder Raster',
-        text: 'Buchrücken im Regal oder Cover im Raster, sortiert wie du willst.',
-      },
-      {
-        icon: 'replay',
-        title: 'Versteckte zurückholen',
-        text: 'Unter „Versteckt" blendest du Titel wieder ein, der Fortschritt bleibt erhalten.',
-      },
-    ],
-  },
-  {
-    path: '/reading/ratings',
-    version: 2,
-    title: 'Bewertungen',
-    intro: 'Alles, was du gelesen und bewertet hast, und was noch offen ist.',
-    actions: [
-      {
-        icon: 'star',
-        title: 'Bewerten',
-        text: 'Tippe einen Titel an, um deine Wertung zu setzen oder zu ändern.',
-      },
-      {
-        icon: 'sort',
-        title: 'Sortieren',
-        text: 'Nach Bewertung auf- oder absteigend ordnen.',
-      },
-      {
-        icon: 'filter',
-        title: 'Unbewertetes finden',
-        text: 'Der Filter zeigt, wo noch eine Wertung fehlt.',
-      },
-    ],
-  },
-  {
     path: '/reading/discover',
     version: 2,
     title: 'Entdecken',

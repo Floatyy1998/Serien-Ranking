@@ -17,7 +17,7 @@ export const HiddenMangaCard: React.FC = React.memo(() => {
 
   return (
     <NavCard
-      onClick={() => navigate('/reading/library?status=hidden')}
+      onClick={() => navigate('/ratings?tab=books&status=hidden')}
       accentColor={currentTheme.text.secondary}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
