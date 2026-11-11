@@ -50,6 +50,7 @@ const MOVIE_TYPES = new Set([
   'movie_added',
   'movie_deleted',
   'movie_rated',
+  'movie_watched',
   'rating_updated_movie',
   'movie_added_to_watchlist',
   'movie_removed_from_watchlist',
@@ -140,6 +141,16 @@ export const getActivityMeta = (activity: FriendActivity): ActivityMeta => {
       return {
         verb: 'Folgen von',
         suffix: 'geschaut',
+        Icon: PlayArrowRounded,
+        color: (t) => t.status.success,
+        isMovie,
+        isRating: false,
+        subtle: false,
+      };
+
+    case 'movie_watched':
+      return {
+        verb: 'geschaut',
         Icon: PlayArrowRounded,
         color: (t) => t.status.success,
         isMovie,

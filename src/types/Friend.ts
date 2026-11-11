@@ -48,6 +48,7 @@ export interface FriendActivity {
     | 'rating_updated'
     | 'episode_watched'
     | 'episodes_watched'
+    | 'movie_watched'
     | 'rating_updated_movie'
     | 'series_rated'
     | 'movie_rated'

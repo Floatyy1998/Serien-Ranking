@@ -336,6 +336,7 @@ export const useMovieData = () => {
           runtime: movie.runtime,
           genres: movie.genre?.genres,
           providers: movie.provider?.provider?.map((p) => p.name),
+          feed: true,
         });
       } else if (!isMovieWatched({ ...movie, watched: false })) {
         // Bleibt der Film bewertet, gilt er weiter als gesehen — Ereignis behalten.

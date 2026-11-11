@@ -7,6 +7,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { NameBadges } from '../../../components/ui/display/NameBadges';
 import { t } from '../../../services/i18n';
 import type { FriendSeriesProgress } from '../hooks/useFriendsSeriesProgress';
+import '../../../components/detail/FriendsStrip.css';
 
 interface Props {
   entries: FriendSeriesProgress[];

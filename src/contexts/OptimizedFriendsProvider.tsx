@@ -26,6 +26,7 @@ import { OptimizedFriendsContext } from './OptimizedFriendsContext';
 import { clearFriendSeriesCache } from '../hooks/social/useFriendSeriesList';
 import { clearFriendTitleRatingsCache } from '../hooks/social/useFriendTitleRatings';
 import { onValue } from '../services/db/subscribeValue';
+import { isFeedOnlyActivity } from '../lib/social/activityBundles';
 
 /** Stabile, sortierte UID-Liste — der Rohknoten ist bei jedem Delta neu. */
 const friendIdsOf = (data: Record<string, Friend> | null | undefined): string[] =>
@@ -266,10 +267,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     setUnreadActivitiesCount(
       friendActivities.filter(
-        (a) =>
-          a.timestamp > lastReadActivitiesTime &&
-          a.type !== 'episode_watched' &&
-          a.type !== 'episodes_watched'
+        (a) => a.timestamp > lastReadActivitiesTime && !isFeedOnlyActivity(a.type)
       ).length
     );
   }, [friendActivities, lastReadActivitiesTime]);
@@ -396,8 +394,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
             (activity) =>
               activity.timestamp > lastReadActivitiesTimeRef.current &&
               // „Gesehen"-Aktivitäten zählen NICHT in den Bell-Badge.
-              activity.type !== 'episode_watched' &&
-              activity.type !== 'episodes_watched'
+              !isFeedOnlyActivity(activity.type)
           );
           setUnreadActivitiesCount(unreadActivities.length);
           return;
@@ -451,8 +448,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         (activity) =>
           activity.timestamp > lastReadActivitiesTimeRef.current &&
           // „Gesehen"-Aktivitäten zählen NICHT in den Bell-Badge.
-          activity.type !== 'episode_watched' &&
-          activity.type !== 'episodes_watched'
+          !isFeedOnlyActivity(activity.type)
       );
       setUnreadActivitiesCount(unreadActivities.length);
 

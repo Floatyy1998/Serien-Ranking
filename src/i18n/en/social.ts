@@ -33,6 +33,12 @@ const dict: Record<string, string> = {
 
   // Activity sentences (card, with "hat")
   'hat {title} bewertet': 'rated {title}',
+  'hat {title} geschaut': 'watched {title}',
+  '{title} geschaut': 'Watched {title}',
+  'Gesehen am {date}': 'Watched on {date}',
+  'Auf der Watchlist': 'On their watchlist',
+  'In der Liste': 'In their list',
+  '{n} von {total} gesehen': '{n} of {total} watched',
   'hat eine Folge von {title} geschaut': 'watched an episode of {title}',
   'hat Folgen von {title} geschaut': 'watched episodes of {title}',
   'hat {title} auf die Watchlist gesetzt': 'added {title} to their watchlist',

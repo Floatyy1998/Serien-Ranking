@@ -6,7 +6,7 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
-import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import { ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { AddToListButton } from '../../components/detail/AddToListButton';
 import { OwnedButton } from '../../components/detail/OwnedButton';
@@ -570,7 +570,6 @@ export const MovieHeroSection = memo(
                   padding: '16px 18px',
                 }}
               >
-                <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
                 <div className="md-hero__ratings" style={{ margin: 0 }}>
                   <a
                     href={`https://www.themoviedb.org/movie/${id}`}

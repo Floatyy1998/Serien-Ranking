@@ -45,6 +45,13 @@ describe('getActivityMeta', () => {
     expect(m.suffix).toBe('geschaut');
     expect(m.color(theme)).toBe('#s');
   });
+  it('movie_watched → "geschaut" ohne suffix, als Film, success-Farbe', () => {
+    const m = getActivityMeta(act({ type: 'movie_watched' }));
+    expect(m.verb).toBe('geschaut');
+    expect(m.suffix).toBeUndefined();
+    expect(m.isMovie).toBe(true);
+    expect(m.color(theme)).toBe('#s');
+  });
   it('episodes_watched → Plural-verb', () => {
     expect(getActivityMeta(act({ type: 'episodes_watched' })).verb).toBe('Folgen von');
   });

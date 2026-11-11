@@ -25,7 +25,7 @@ export const markMovieWatched = async (uid: string, movieId: number): Promise<vo
     [`${base}/watched`]: true,
     [`${base}/watchedAt`]: before?.watchedAt || new Date().toISOString(),
   });
-  void logMovieWatchIfNew(uid, movieId, before);
+  void logMovieWatchIfNew(uid, movieId, before, undefined, { feed: true });
 };
 
 /**

@@ -6,6 +6,7 @@ import {
   bundleActivities,
   countByAction,
   describeActivity,
+  isFeedOnlyActivity,
 } from './activityBundles';
 
 const MIN = 60_000;
@@ -37,7 +38,18 @@ describe('describeActivity', () => {
 
   it('lässt Gesehen- und Lösch-Einträge weg', () => {
     expect(describeActivity(act({ type: 'episodes_watched' }))).toBeNull();
+    expect(describeActivity(act({ type: 'movie_watched' }))).toBeNull();
     expect(describeActivity(act({ type: 'series_deleted' }))).toBeNull();
+  });
+});
+
+describe('isFeedOnlyActivity', () => {
+  it('nur Gesehen-Einträge bleiben aus Glocke und Zähler', () => {
+    expect(isFeedOnlyActivity('episode_watched')).toBe(true);
+    expect(isFeedOnlyActivity('episodes_watched')).toBe(true);
+    expect(isFeedOnlyActivity('movie_watched')).toBe(true);
+    expect(isFeedOnlyActivity('rating_updated_movie')).toBe(false);
+    expect(isFeedOnlyActivity('movie_added')).toBe(false);
   });
 });
 

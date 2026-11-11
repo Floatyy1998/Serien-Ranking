@@ -12,6 +12,8 @@ import { MovieActionButtons } from './MovieActionButtons';
 import { MovieInfoTab } from './MovieInfoTab';
 import { CollectionSection } from './CollectionSection';
 import { useMovieData } from './useMovieData';
+import { FriendsMovieStrip } from './FriendsMovieStrip';
+import { useFriendsMovieStatus } from './useFriendsMovieStatus';
 import { t } from '../../services/i18n';
 import './MovieDetailPage.css';
 
@@ -46,6 +48,7 @@ export const MovieDetailPage = memo(() => {
     getBackdropUrl,
     formatRuntime,
   } = useMovieData();
+  const friendsStatus = useFriendsMovieStatus(movie?.id);
 
   // --- Not found state ---
   if (!movie && !loading) {
@@ -115,6 +118,8 @@ export const MovieDetailPage = memo(() => {
         isAdding={isAdding}
         onAddMovie={handleAddMovie}
       />
+
+      <FriendsMovieStrip entries={friendsStatus.entries} isMobile={isMobile} />
 
       {/* Tab Navigation */}
       <MovieTabBar

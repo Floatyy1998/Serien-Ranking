@@ -147,6 +147,7 @@ const dict: Record<string, string> = {
     'Novo calendário, barras de progresso, filtro por plataforma e marcação rápida.',
   'Neu: KI-Empfehlungen': 'Novo: recomendações com IA',
   '{who} bingt gerade „{title}"': '{who} está maratonando "{title}"',
+  '{who} hat „{title}" gesehen': '{who} assistiu a "{title}"',
   'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!':
     'Sugestões personalizadas de séries e filmes com base no seu gosto. Experimente agora em "Para você", na tela inicial!',
   'Neues Design: Trending & Co.': 'Novo visual: Em alta e cia.',

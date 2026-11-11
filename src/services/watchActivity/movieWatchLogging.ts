@@ -2,7 +2,11 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { shouldLogMovieWatch, type MovieWatchState } from '../../lib/watch/movieWatchLog';
+import {
+  shouldLogMovieWatch,
+  wasMovieWatched,
+  type MovieWatchState,
+} from '../../lib/watch/movieWatchLog';
 import { fetchStaticCatalogMovies } from '../catalog/staticCatalog';
 import { getEventsPath } from './shared';
 import { logMovieWatch } from './watchActivityCore';
@@ -12,6 +16,8 @@ export interface MovieWatchInfo {
   runtime?: number;
   genres?: string[];
   providers?: string[];
+  /** Einzelnes Abhaken ohne Bewertung: auch im Freunde-Feed zeigen (nie bei Bulk). */
+  feed?: boolean;
 }
 
 export async function logMovieWatchIfNew(
@@ -32,10 +38,19 @@ export async function logMovieWatchIfNew(
     providers = providers?.length ? providers : entry?.providers?.map((p) => p.name);
   }
   await logMovieWatch(userId, movieId, title || '', runtime, rating, genres, providers);
+  if (info.feed && !rating && title && !wasMovieWatched(before)) {
+    const feedTitle = title;
+    void import('../../features/badges/minimalActivityLogger')
+      .then((m) => m.logMovieWatchedActivity(userId, feedTitle, movieId))
+      .catch(() => {});
+  }
 }
 
-/** „Gesehen" zurückgenommen: das Ereignis dieses Jahres wieder entfernen. */
+/** „Gesehen" zurückgenommen: das Ereignis dieses Jahres und den frischen Feed-Eintrag entfernen. */
 export async function removeMovieWatchEvent(userId: string, movieId: number): Promise<void> {
+  void import('../../features/badges/minimalActivityLogger')
+    .then((m) => m.removeMovieWatchedActivity(userId, movieId))
+    .catch(() => {});
   const ref = firebase.database().ref(getEventsPath(userId, new Date().getFullYear()));
   const snapshot = await ref.once('value');
   const events = (snapshot.val() || {}) as Record<string, Record<string, unknown>>;

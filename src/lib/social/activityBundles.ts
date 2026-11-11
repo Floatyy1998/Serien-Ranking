@@ -27,6 +27,16 @@ const TYPE_INFO: Partial<Record<FriendActivity['type'], Omit<ActivityInfo, 'id'>
   book_finished: { media: 'book', action: 'finished' },
 };
 
+const FEED_ONLY_TYPES = new Set<FriendActivity['type']>([
+  'episode_watched',
+  'episodes_watched',
+  'movie_watched',
+]);
+
+/** Gesehen-Einträge stehen nur im Feed — nicht in der Glocke und nicht im Ungelesen-Zähler. */
+export const isFeedOnlyActivity = (type: FriendActivity['type']): boolean =>
+  FEED_ONLY_TYPES.has(type);
+
 /** Was eine Aktivität bedeutet — null für Gesehen-, Lösch- und Entfernen-Einträge. */
 export function describeActivity(activity: FriendActivity): ActivityInfo | null {
   const info = TYPE_INFO[activity.type];

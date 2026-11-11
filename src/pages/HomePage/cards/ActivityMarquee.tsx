@@ -51,6 +51,8 @@ function formatActivity(a: FriendActivity): string | null {
       return t('{who} hat eine Folge von „{title}" gesehen', { who, title: a.itemTitle });
     case 'episodes_watched':
       return t('{who} bingt gerade „{title}"', { who, title: a.itemTitle });
+    case 'movie_watched':
+      return t('{who} hat „{title}" gesehen', { who, title: a.itemTitle });
     case 'series_rated':
     case 'movie_rated':
     case 'rating_updated':

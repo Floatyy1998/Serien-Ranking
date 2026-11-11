@@ -396,6 +396,69 @@ export const logEpisodeWatchedActivity = async (
   }
 };
 
+type ActivitiesRef = ReturnType<typeof dbRef>;
+
+/** „Film gesehen"-Einträge desselben Films aus den letzten 12 h. */
+const recentMovieWatchedKeys = async (
+  activitiesRef: ActivitiesRef,
+  tmdbId: number
+): Promise<string[]> => {
+  const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
+  const activities =
+    (snapshot.val() as Record<
+      string,
+      { type?: string; tmdbId?: number; timestamp?: number }
+    > | null) || {};
+  const now = Date.now();
+  return Object.entries(activities)
+    .filter(
+      ([, val]) =>
+        val.type === 'movie_watched' &&
+        val.tmdbId === tmdbId &&
+        typeof val.timestamp === 'number' &&
+        now - val.timestamp < EPISODE_COALESCE_WINDOW_MS
+    )
+    .map(([key]) => key);
+};
+
+/**
+ * Film gesehen (ohne Bewertung) – reiner Feed-Eintrag wie episode_watched.
+ * Nur beim ersten Sehen und nicht beim Bulk-Marking aufrufen; ein erneutes
+ * Abhaken innerhalb von 12 h schreibt keinen zweiten Eintrag.
+ */
+export const logMovieWatchedActivity = async (
+  userId: string,
+  movieTitle: string,
+  tmdbId: number,
+  posterPath?: string
+): Promise<void> => {
+  try {
+    const activitiesRef = dbRef(userPath(userId, 'activities'));
+    if ((await recentMovieWatchedKeys(activitiesRef, tmdbId)).length > 0) return;
+    await logFriendActivity(userId, {
+      type: 'movie_watched',
+      itemTitle: movieTitle,
+      tmdbId,
+      itemType: 'movie',
+      posterPath,
+    });
+  } catch {
+    /* ignore — non-critical Feed-Write */
+  }
+};
+
+/** „Gesehen" zurückgenommen: den frischen Feed-Eintrag wieder entfernen. */
+export const removeMovieWatchedActivity = async (userId: string, tmdbId: number): Promise<void> => {
+  try {
+    const activitiesRef = dbRef(userPath(userId, 'activities'));
+    const keys = await recentMovieWatchedKeys(activitiesRef, tmdbId);
+    if (keys.length === 0) return;
+    await activitiesRef.update(Object.fromEntries(keys.map((key) => [key, null])));
+  } catch {
+    /* ignore — non-critical Feed-Write */
+  }
+};
+
 export interface ReadingActivity {
   type:
     | 'manga_added'
@@ -432,13 +495,28 @@ export const logRatingAdded = async (
 ): Promise<EarnedBadge[]> => {
   try {
     const activityType = itemType === 'movie' ? 'rating_updated_movie' : 'rating_updated';
-    await logFriendActivity(userId, {
-      type: activityType,
-      itemTitle,
-      itemType,
-      rating,
-      tmdbId,
-    });
+    // Kurz vorher als gesehen markiert: den Eintrag zur Bewertung machen statt zwei Zeilen.
+    const activitiesRef = dbRef(userPath(userId, 'activities'));
+    const watchedKeys =
+      itemType === 'movie' ? await recentMovieWatchedKeys(activitiesRef, tmdbId) : [];
+    if (watchedKeys.length > 0) {
+      const [keep, ...rest] = watchedKeys;
+      await activitiesRef.update({
+        ...Object.fromEntries(rest.map((key) => [key, null])),
+        [`${keep}/type`]: activityType,
+        [`${keep}/itemTitle`]: itemTitle,
+        [`${keep}/rating`]: rating,
+        [`${keep}/timestamp`]: serverTimestamp(),
+      });
+    } else {
+      await logFriendActivity(userId, {
+        type: activityType,
+        itemTitle,
+        itemType,
+        rating,
+        tmdbId,
+      });
+    }
 
     // Badge-Check (Collector-Badges basieren auf echten Rating-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);

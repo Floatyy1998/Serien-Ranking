@@ -171,6 +171,7 @@ const dict: Record<string, string> = {
   '{who} hat „{title}" auf die Watchlist gesetzt': '{who} a mis « {title} » dans sa liste',
   '{who} hat eine Folge von „{title}" gesehen': '{who} a vu un épisode de « {title} »',
   '{who} bingt gerade „{title}"': '{who} binge « {title} »',
+  '{who} hat „{title}" gesehen': '{who} a vu « {title} »',
   '{who} hat „{title}" mit {rating} bewertet': '{who} a noté « {title} » {rating}',
   '{who} hat „{title}" bewertet': '{who} a noté « {title} »',
   'Aktivitäten deiner Freunde anzeigen': "Afficher l'activité de tes amis",
