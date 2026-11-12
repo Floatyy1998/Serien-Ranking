@@ -41,6 +41,11 @@ const dict: Record<string, string> = {
   'Leute mit Interesse {name}': 'Gente interesada en {name}',
   '1 öffentliches Profil': '1 perfil público',
   '{n} öffentliche Profile': '{n} perfiles públicos',
+  'Ins Profil übernehmen': 'Añadir al perfil',
+  'Zeig, was du gern schaust': 'Muestra lo que te gusta ver',
+  'Interessen stehen jetzt in deinem Profil': 'Tus intereses ya están en tu perfil',
+  'Leute mit denselben Interessen finden dich dann über die Suche.':
+    'Así la gente con los mismos intereses podrá encontrarte en la búsqueda.',
 };
 
 export default dict;

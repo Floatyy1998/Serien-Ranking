@@ -32,6 +32,9 @@ import type { ProactiveRecap } from '../../../hooks/watch/useProactiveRecaps';
 import type { UnsubscribedNewSeasonEntry } from '../../../hooks/watch/useUnsubscribedNewSeasons';
 import type { Series } from '../../../types/Series';
 import { ProactiveRecapCard } from '../cards/ProactiveRecapCard';
+import { InterestsHintCard } from '../cards/InterestsHintCard';
+import { useInterestsHint } from '../../../hooks/profile/useInterests';
+import LocalOfferRounded from '@mui/icons-material/LocalOfferRounded';
 import { t } from '../../../services/i18n';
 
 type CategoryKey =
@@ -43,7 +46,8 @@ type CategoryKey =
   | 'inactive'
   | 'inactive-rewatch'
   | 'unrated'
-  | 'anime-manga';
+  | 'anime-manga'
+  | 'interests';
 
 interface CategoryDef {
   key: CategoryKey;
@@ -87,6 +91,7 @@ const CATEGORY_DEFS: CategoryDef[] = [
     Icon: MenuBook,
     color: (t) => t.accent || t.primary,
   },
+  { key: 'interests', label: t('Interessen'), Icon: LocalOfferRounded, color: (t) => t.primary },
 ];
 
 interface SeriesNotificationHubProps {
@@ -135,9 +140,11 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   onDismissAnimeManga,
 }) => {
   const { currentTheme } = useTheme();
+  const interestsHint = useInterestsHint();
 
   const categoryCounts = useMemo<Partial<Record<CategoryKey, number>>>(
     () => ({
+      interests: interestsHint.suggestions.length > 0 ? 1 : 0,
       recap: proactiveRecaps.recaps.length,
       'new-season': seriesWithNewSeasons.length,
       provider: providerChanges.length,
@@ -158,6 +165,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       inactiveRewatches.length,
       unratedSeries.length,
       animeMangaHandoffs.length,
+      interestsHint.suggestions.length,
     ]
   );
 
@@ -258,6 +266,15 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             onDismiss={onDismissAnimeManga}
           />
         );
+      case 'interests':
+        return interestsHint.uid ? (
+          <InterestsHintCard
+            uid={interestsHint.uid}
+            suggestions={interestsHint.suggestions}
+            examples={interestsHint.examples}
+            onDismiss={interestsHint.dismiss}
+          />
+        ) : null;
       default:
         return null;
     }

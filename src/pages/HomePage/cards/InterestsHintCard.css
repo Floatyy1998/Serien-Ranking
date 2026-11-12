@@ -1,0 +1,46 @@
+.interests-hint-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.interests-hint-chip,
+.mobile-app button.interests-hint-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.75);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    opacity 0.15s var(--ease-default),
+    background 0.15s var(--ease-default);
+}
+
+.interests-hint-chip svg {
+  font-size: 15px;
+}
+
+.interests-hint-chip.is-on {
+  background: color-mix(in srgb, var(--hint-color) 24%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hint-color) 60%, transparent);
+  color: #fff;
+}
+
+.interests-hint-chip:active {
+  opacity: 0.7;
+}
