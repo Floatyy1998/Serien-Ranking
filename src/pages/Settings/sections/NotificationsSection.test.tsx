@@ -20,6 +20,7 @@ vi.mock('@mui/icons-material', () => ({
   NotificationsActive: () => null,
   PhoneIphone: () => null,
   SwapHoriz: () => null,
+  TimerOutlined: () => null,
 }));
 
 const { pushAvailableMock, enablePushMock, disablePushMock } = vi.hoisted(() => ({
@@ -79,7 +80,7 @@ afterEach(() => cleanup());
 describe('NotificationsSection', () => {
   it('renders the section title and threshold options', () => {
     render(<NotificationsSection />);
-    expect(screen.getByText('Benachrichtigungen')).toBeInTheDocument();
+    expect(screen.getByText('Inaktive Serien')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '14 T.' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aus' })).toBeInTheDocument();
   });

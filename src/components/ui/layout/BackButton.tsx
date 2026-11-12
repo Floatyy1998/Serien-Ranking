@@ -8,6 +8,7 @@ interface BackButtonProps {
   label?: string;
   style?: React.CSSProperties;
   showHome?: boolean;
+  onBack?: () => void;
 }
 
 export const HomeLogoIcon = () => (
@@ -28,7 +29,7 @@ export const HomeLogoIcon = () => (
   />
 );
 
-export const BackButton = ({ label, style, showHome = true }: BackButtonProps) => {
+export const BackButton = ({ label, style, showHome = true, onBack }: BackButtonProps) => {
   const { goBack, goHome, homeLabel } = useBackNavigation();
 
   return (
@@ -39,7 +40,7 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
     >
       <IconButton
         icon={<ArrowBack style={{ fontSize: '20px' }} />}
-        onClick={goBack}
+        onClick={onBack ?? goBack}
         size={40}
         borderRadius="14px"
         variant="glass"

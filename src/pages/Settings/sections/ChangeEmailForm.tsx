@@ -1,11 +1,9 @@
 import { Email } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleSmall } from '../../../lib/motion';
 import { requestEmailChange } from '../../../services/account/emailChange';
 import type { SocialProvider } from '../../../services/firebase/socialAuth';
 import { t } from '../../../services/i18n';
+import { SButton, SButtons, SRow } from '../kit/SettingsKit';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,7 +17,6 @@ export const ChangeEmailForm = ({
   currentEmail: string;
   socialProvider?: SocialProvider | null;
 }) => {
-  const { currentTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,97 +63,73 @@ export const ChangeEmailForm = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <p style={{ color: currentTheme.text.muted, margin: 0 }}>
-        {t('Aktuelle E-Mail-Adresse:')}{' '}
-        <strong style={{ color: currentTheme.text.primary, wordBreak: 'break-all' }}>
-          {currentEmail}
-        </strong>
-      </p>
-
-      {sentTo ? (
-        <p style={{ color: currentTheme.status.success, margin: 0 }}>
-          {t('Wir haben dir einen Bestätigungslink an {email} geschickt.', { email: sentTo })}{' '}
-          {socialProvider
-            ? t(
-                'Erst wenn du ihn öffnest, wird die Adresse geändert. Anmelden kannst du dich weiter wie gewohnt mit {provider}.',
-                { provider: PROVIDER_NAME[socialProvider] }
-              )
-            : t(
-                'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.'
-              )}
-        </p>
-      ) : (
-        <>
-          <motion.button
-            whileTap={tapScaleSmall}
+    <SRow
+      icon={Email}
+      title={t('E-Mail-Adresse')}
+      subtitle={currentEmail}
+      trailing={
+        sentTo ? undefined : (
+          <SButton
             onClick={() => {
               setOpen((v) => !v);
               setError('');
             }}
-            className="settings-nav-btn"
-            style={{ justifyContent: 'center', gap: 8, color: currentTheme.text.primary }}
           >
-            <Email style={{ fontSize: 20, color: currentTheme.primary }} />
             {t('E-Mail-Adresse ändern')}
-          </motion.button>
-
-          <AnimatePresence initial={false}>
-            {open && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                style={{ display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden' }}
-              >
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder={t('Neue E-Mail-Adresse')}
-                  className="glass-input"
-                  autoComplete="email"
-                  inputMode="email"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                />
-                {needsPassword ? (
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('Passwort zur Bestätigung')}
-                    className="glass-input"
-                    autoComplete="current-password"
-                  />
-                ) : (
-                  <p style={{ color: currentTheme.text.muted, margin: 0 }}>
-                    {t('Zur Bestätigung meldest du dich gleich noch einmal mit {provider} an.', {
-                      provider: PROVIDER_NAME[socialProvider],
-                    })}
-                  </p>
+          </SButton>
+        )
+      }
+      below={
+        sentTo ? (
+          <p className="st-form-ok">
+            {t('Wir haben dir einen Bestätigungslink an {email} geschickt.', { email: sentTo })}{' '}
+            {socialProvider
+              ? t(
+                  'Erst wenn du ihn öffnest, wird die Adresse geändert. Anmelden kannst du dich weiter wie gewohnt mit {provider}.',
+                  { provider: PROVIDER_NAME[socialProvider] }
+                )
+              : t(
+                  'Erst wenn du ihn öffnest, wird die Adresse geändert. Danach meldest du dich mit der neuen Adresse und deinem bisherigen Passwort an.'
                 )}
-
-                {error && <p style={{ color: currentTheme.status.error, margin: 0 }}>{error}</p>}
-
-                <motion.button
-                  whileTap={tapScaleSmall}
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className="settings-nav-btn"
-                  style={{
-                    justifyContent: 'center',
-                    color: canSubmit ? currentTheme.text.primary : currentTheme.text.muted,
-                    cursor: canSubmit ? 'pointer' : 'default',
-                  }}
-                >
-                  {busy ? t('Wird gesendet…') : t('Bestätigungslink senden')}
-                </motion.button>
-              </motion.div>
+          </p>
+        ) : open ? (
+          <div className="st-form">
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder={t('Neue E-Mail-Adresse')}
+              className="glass-input"
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            {needsPassword ? (
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t('Passwort zur Bestätigung')}
+                className="glass-input"
+                autoComplete="current-password"
+              />
+            ) : (
+              <p className="st-form-hint">
+                {t('Zur Bestätigung meldest du dich gleich noch einmal mit {provider} an.', {
+                  provider: PROVIDER_NAME[socialProvider],
+                })}
+              </p>
             )}
-          </AnimatePresence>
-        </>
-      )}
-    </div>
+            {error && <p className="st-form-error">{error}</p>}
+            <SButtons>
+              <SButton variant="primary" onClick={handleSubmit} disabled={!canSubmit}>
+                {busy ? t('Wird gesendet…') : t('Bestätigungslink senden')}
+              </SButton>
+            </SButtons>
+          </div>
+        ) : undefined
+      }
+    />
   );
 };

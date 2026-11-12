@@ -1,15 +1,12 @@
-import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
+import GroupAddRounded from '@mui/icons-material/GroupAddRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import { useState } from 'react';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
-import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
+import { SButton, SGroup, SRow } from '../kit/SettingsKit';
 
-/**
- * „Wer meinen Kalender sieht" — Liste der erteilten Freigaben mit Entzug, plus die
- * Abkürzung, allen bestehenden Freunden auf einmal freizugeben.
- */
 export const ShareAccessSection: React.FC = () => {
-  const { currentTheme } = useTheme();
   const { friends, shareIds, revokeShare, shareWithAllFriends } = useOptimizedFriends();
   const [busy, setBusy] = useState(false);
 
@@ -29,111 +26,40 @@ export const ShareAccessSection: React.FC = () => {
   };
 
   return (
-    <div className="settings-card">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-        <VisibilityRounded style={{ fontSize: 20, color: currentTheme.primary }} />
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 16,
-            fontWeight: 700,
-            color: currentTheme.text.primary,
-            fontFamily: 'var(--font-display)',
-          }}
-        >
-          {t('Wer meinen Kalender sieht')}
-        </h3>
-      </div>
-
-      <p
-        style={{
-          fontSize: 13,
-          color: currentTheme.text.muted,
-          margin: '0 0 14px',
-          lineHeight: 1.5,
-        }}
-      >
-        {t(
-          'Deinen Kalender sehen Freunde nur, wenn du es erlaubst. Serienliste, Fortschritt, Bewertungen und Verlauf sehen alle deine Freunde.'
-        )}
-      </p>
-
-      {withAccess.length === 0 ? (
-        <p style={{ fontSize: 13, color: currentTheme.text.secondary, margin: '0 0 14px' }}>
-          {t('Aktuell sieht niemand deinen Kalender.')}
-        </p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-          {withAccess.map((friend) => {
-            const name = friend.displayName || friend.username || t('Freund');
-            return (
-              <div
-                key={friend.uid}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background: currentTheme.background.surface,
-                }}
-              >
-                <span
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: currentTheme.text.primary,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {name}
-                </span>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => run(() => revokeShare(friend.uid))}
-                  style={{
-                    padding: '7px 13px',
-                    borderRadius: 'var(--radius-md)',
-                    border: `1px solid ${currentTheme.status.error}55`,
-                    background: 'transparent',
-                    color: currentTheme.status.error,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: busy ? 'default' : 'pointer',
-                  }}
-                >
-                  {t('Entziehen')}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+    <SGroup
+      title={t('Wer meinen Kalender sieht')}
+      description={t(
+        'Deinen Kalender sehen Freunde nur, wenn du es erlaubst. Serienliste, Fortschritt, Bewertungen und Verlauf sehen alle deine Freunde.'
       )}
-
+    >
+      {withAccess.length === 0 && (
+        <SRow icon={VisibilityOffRounded} title={t('Aktuell sieht niemand deinen Kalender.')} />
+      )}
+      {withAccess.map((friend) => (
+        <SRow
+          key={friend.uid}
+          icon={PersonRounded}
+          title={friend.displayName || friend.username || t('Freund')}
+          trailing={
+            <SButton
+              variant="danger"
+              disabled={busy}
+              onClick={() => void run(() => revokeShare(friend.uid))}
+            >
+              {t('Entziehen')}
+            </SButton>
+          }
+        />
+      ))}
       {!alleFreigegeben && (
-        <button
-          type="button"
+        <SRow
+          icon={GroupAddRounded}
+          title={t('Allen {n} Freunden freigeben', { n: friends.length })}
+          chevron
           disabled={busy}
-          onClick={() => run(shareWithAllFriends)}
-          style={{
-            padding: '11px 18px',
-            borderRadius: 'var(--radius-md)',
-            border: `1px solid ${currentTheme.primary}55`,
-            background: `${currentTheme.primary}18`,
-            color: currentTheme.primary,
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: busy ? 'default' : 'pointer',
-          }}
-        >
-          {t('Allen {n} Freunden freigeben', { n: friends.length })}
-        </button>
+          onClick={() => void run(shareWithAllFriends)}
+        />
       )}
-    </div>
+    </SGroup>
   );
 };

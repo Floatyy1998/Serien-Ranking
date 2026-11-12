@@ -333,6 +333,25 @@ const dict: Record<string, string> = {
   'Neue Bücher landen erst einmal auf der Leseliste, wie Serien auf der Watchlist':
     'Livros novos vão primeiro para a tua lista de leitura, como as séries para a watchlist',
   'Beim Hinzufügen wählst du den Lesestand': 'Ao adicionar escolhes o estado de leitura',
+  Darstellung: 'Aparência',
+  'Design, Startseite und Anzeige': 'Design, início e exibição',
+  'Apps & Hilfe': 'Apps e ajuda',
+  'Bereiche der Einstellungen': 'Seções das configurações',
+  'Profil & Community': 'Perfil e comunidade',
+  'Interessen, öffentliches Profil und Rangliste': 'Interesses, perfil público e ranking',
+  'Push, Erinnerungen und dein Pet': 'Push, lembretes e seu pet',
+  Allgemein: 'Geral',
+  'Sprache, Apps und Rechtliches': 'Idioma, apps e jurídico',
+  'Konto & Daten': 'Conta e dados',
+  'Anmeldung, Import, Export und Konto löschen': 'Login, importar, exportar e excluir conta',
+  'Startseite & Lesen': 'Início e leitura',
+  'Einstellung suchen': 'Buscar configuração',
+  'Sprache & Region': 'Idioma e região',
+  Rechtliches: 'Jurídico',
+  Exportieren: 'Exportar',
+  'Entfernt dein Konto und alle Daten endgültig':
+    'Remove sua conta e todos os dados permanentemente',
+  'E-Mail-Adresse': 'Endereço de e-mail',
 };
 
 export default dict;

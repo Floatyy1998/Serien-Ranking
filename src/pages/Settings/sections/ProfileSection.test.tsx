@@ -68,12 +68,11 @@ describe('ProfileSection', () => {
 
   it('shows an editable input and saves when display name is editable', () => {
     const props = { ...baseProps(), displayNameEditable: true };
-    const { container } = render(<ProfileSection {...props} />);
+    render(<ProfileSection {...props} />);
     const input = screen.getByPlaceholderText('Anzeigename eingeben');
     fireEvent.change(input, { target: { value: 'newname' } });
     expect(props.onDisplayNameChange).toHaveBeenCalledWith('newname');
-    const saveBtn = container.querySelector('.settings-field-save-btn') as HTMLElement;
-    fireEvent.click(saveBtn);
+    fireEvent.click(screen.getByLabelText('Speichern'));
     expect(props.onSaveDisplayName).toHaveBeenCalledTimes(1);
   });
 });

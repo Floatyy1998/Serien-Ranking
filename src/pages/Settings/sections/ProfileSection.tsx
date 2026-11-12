@@ -1,8 +1,5 @@
 import { Check, Edit, Person, PhotoCamera } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleTight } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 
 interface ProfileSectionProps {
@@ -31,51 +28,30 @@ export const ProfileSection = memo(
     onSaveDisplayName,
     onEditDisplayName,
   }: ProfileSectionProps) => {
-    const { currentTheme } = useTheme();
-
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="settings-card"
-      >
-        {/* Avatar */}
-        <div className="settings-avatar-wrapper">
-          <div className="settings-avatar-container">
-            {photoURL ? (
-              <img
-                src={photoURL}
-                alt={t('Profilbild von {name}', { name: displayName || t('Benutzer') })}
-                className="settings-avatar-image"
-                style={{ borderColor: currentTheme.primary }}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <div
-                className="settings-avatar-placeholder"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                }}
-              >
-                <Person style={{ fontSize: '40px', color: currentTheme.text.secondary }} />
-              </div>
-            )}
-            <motion.button
-              whileTap={tapScaleTight}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              aria-label={t('Profilbild hochladen')}
-              className="settings-avatar-upload-btn"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                borderColor: currentTheme.background.surface,
-              }}
-            >
-              {uploading ? '...' : <PhotoCamera style={{ fontSize: '16px' }} aria-hidden="true" />}
-            </motion.button>
-          </div>
+      <div className="st-identity">
+        <div className="st-identity-avatar">
+          {photoURL ? (
+            <img
+              src={photoURL}
+              alt={t('Profilbild von {name}', { name: displayName || t('Benutzer') })}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <span className="st-identity-placeholder" aria-hidden>
+              <Person />
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            aria-label={t('Profilbild hochladen')}
+            className="st-identity-camera"
+          >
+            {uploading ? '…' : <PhotoCamera aria-hidden="true" />}
+          </button>
           <input
             type="file"
             ref={fileInputRef}
@@ -83,80 +59,52 @@ export const ProfileSection = memo(
             accept="image/*"
             aria-hidden="true"
             tabIndex={-1}
-            style={{ display: 'none' }}
+            hidden
           />
-          <p className="settings-avatar-hint" style={{ color: currentTheme.text.muted }}>
-            {t('Tippe auf die Kamera um ein neues Profilbild hochzuladen')}
-          </p>
         </div>
 
-        {/* Display Name Field */}
-        <div className="settings-field settings-field--last">
-          <div className="settings-field-row">
-            <div className="settings-field-content">
-              <label className="settings-field-label" style={{ color: currentTheme.text.muted }}>
-                {t('Anzeigename')}
-              </label>
-              {displayNameEditable ? (
-                <>
-                  <div className="settings-field-edit-row">
-                    <input
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => onDisplayNameChange(e.target.value)}
-                      className="settings-field-input"
-                      style={{
-                        background: currentTheme.background.surface,
-                        borderColor: currentTheme.primary,
-                        color: currentTheme.text.primary,
-                      }}
-                      placeholder={t('Anzeigename eingeben')}
-                      autoFocus
-                    />
-                    <motion.button
-                      whileTap={tapScaleTight}
-                      onClick={onSaveDisplayName}
-                      disabled={saving}
-                      className="settings-field-save-btn"
-                      style={{
-                        background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
-                      }}
-                    >
-                      {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
-                    </motion.button>
-                  </div>
-                  <span
-                    style={{
-                      display: 'block',
-                      fontSize: 11,
-                      lineHeight: 1.4,
-                      color: currentTheme.text.muted,
-                      marginTop: 6,
-                    }}
-                  >
-                    {t('So heißt du in der App — andere Nutzer können diesen Namen sehen.')}
-                  </span>
-                </>
-              ) : (
-                <span className="settings-field-value" style={{ color: currentTheme.text.primary }}>
-                  {displayName || t('Nicht festgelegt')}
-                </span>
-              )}
-            </div>
-            {!displayNameEditable && (
-              <motion.button
-                whileTap={tapScaleTight}
+        <div className="st-identity-body">
+          <span className="st-identity-label">{t('Anzeigename')}</span>
+          {displayNameEditable ? (
+            <>
+              <div className="st-identity-edit">
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => onDisplayNameChange(e.target.value)}
+                  className="glass-input"
+                  placeholder={t('Anzeigename eingeben')}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={onSaveDisplayName}
+                  disabled={saving}
+                  aria-label={t('Speichern')}
+                  className="st-identity-save"
+                >
+                  {saving ? '…' : <Check />}
+                </button>
+              </div>
+              <span className="st-identity-hint">
+                {t('So heißt du in der App — andere Nutzer können diesen Namen sehen.')}
+              </span>
+            </>
+          ) : (
+            <div className="st-identity-name-row">
+              <span className="st-identity-name">{displayName || t('Nicht festgelegt')}</span>
+              <button
+                type="button"
                 onClick={onEditDisplayName}
                 aria-label={t('Anzeigename ändern')}
-                className="settings-field-edit-btn"
-                style={{ color: currentTheme.text.muted }}
+                className="st-identity-edit-btn"
               >
-                <Edit style={{ fontSize: '18px' }} aria-hidden="true" />
-              </motion.button>
-            )}
-          </div>
+                <Edit aria-hidden="true" />
+              </button>
+            </div>
+          )}
         </div>
-      </motion.div>
+      </div>
     );
   }
 );

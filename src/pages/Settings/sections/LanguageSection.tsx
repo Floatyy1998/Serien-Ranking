@@ -5,11 +5,8 @@
  */
 
 import { Language, Public, Translate } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ThemedSelect } from '../../../components/ui/input/ThemedSelect';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleSmall } from '../../../lib/motion';
 import type { AppLanguage } from '../../../services/i18n';
 import {
   LOCALES,
@@ -23,6 +20,7 @@ import {
   isAutoTranslateEnabled,
   setAutoTranslateEnabled,
 } from '../../../services/translation/commentTranslation';
+import { SRow, SSegment, SSwitch } from '../kit/SettingsKit';
 
 const OPTIONS: { value: AppLanguage; label: string }[] = [
   { value: 'auto', label: 'Auto' },
@@ -62,7 +60,6 @@ const REGIONS: { code: string; label: string }[] = [
 ];
 
 export const LanguageSection = () => {
-  const { currentTheme } = useTheme();
   const [selected, setSelected] = useState<AppLanguage>(getAppLanguageSetting());
   const [region, setRegion] = useState<string>(getWatchRegionSetting());
   const [autoTranslate, setAutoTranslate] = useState<boolean>(isAutoTranslateEnabled());
@@ -76,7 +73,6 @@ export const LanguageSection = () => {
     if (value === selected) return;
     setSelected(value);
     setAppLanguageSetting(value);
-    // Sprache ist beim Boot fixiert — Neuladen wendet sie überall an
     window.location.reload();
   };
 
@@ -84,166 +80,57 @@ export const LanguageSection = () => {
     if (value === region) return;
     setRegion(value);
     setWatchRegionSetting(value);
-    // Region ist wie die Sprache beim Boot fixiert
     window.location.reload();
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.23 }}
-      className="settings-card"
-    >
-      <h2
-        className="settings-section-title"
-        style={{
-          color: currentTheme.text.primary,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
-        <Language style={{ fontSize: 20, color: currentTheme.primary }} />
-        {t('Sprache')}
-      </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {OPTIONS.map((opt) => {
-          const active = selected === opt.value;
-          return (
-            <motion.button
-              key={opt.value}
-              whileTap={tapScaleSmall}
-              onClick={() => choose(opt.value)}
-              style={{
-                padding: '9px 18px',
-                borderRadius: 999,
-                border: `1px solid ${active ? currentTheme.primary : currentTheme.border.default}`,
-                background: active ? `${currentTheme.primary}22` : 'rgba(255,255,255,0.03)',
-                color: active ? currentTheme.primary : currentTheme.text.secondary,
-                fontWeight: 600,
-                fontSize: 14,
-                cursor: 'pointer',
-              }}
-            >
-              {opt.label}
-            </motion.button>
-          );
-        })}
-      </div>
-      <p
-        style={{
-          color: currentTheme.text.muted,
-          fontSize: '0.85rem',
-          lineHeight: 1.5,
-          margin: '10px 0 0 0',
-        }}
-      >
-        {t('Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.')}
-      </p>
-
-      <div
-        style={{
-          height: 1,
-          background: 'rgba(255,255,255,0.08)',
-          margin: '20px 0',
-        }}
+    <>
+      <SRow
+        icon={Language}
+        title={t('Sprache')}
+        subtitle={t(
+          'Auto nutzt die Gerätesprache. Sprechen wir sie nicht, erscheint die App auf Englisch.'
+        )}
+        below={
+          <SSegment
+            wrap
+            ariaLabel={t('Sprache')}
+            value={selected}
+            onChange={choose}
+            options={OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          />
+        }
       />
-
-      <h2
-        className="settings-section-title"
-        style={{
-          color: currentTheme.text.primary,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
-        <Translate style={{ fontSize: 20, color: currentTheme.primary }} />
-        {t('Kommentare automatisch übersetzen')}
-      </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {[
-          { value: true, label: t('An') },
-          { value: false, label: t('Aus') },
-        ].map((opt) => {
-          const active = autoTranslate === opt.value;
-          return (
-            <motion.button
-              key={String(opt.value)}
-              whileTap={tapScaleSmall}
-              onClick={() => chooseAutoTranslate(opt.value)}
-              style={{
-                padding: '9px 18px',
-                borderRadius: 999,
-                border: `1px solid ${active ? currentTheme.primary : currentTheme.border.default}`,
-                background: active ? `${currentTheme.primary}22` : 'rgba(255,255,255,0.03)',
-                color: active ? currentTheme.primary : currentTheme.text.secondary,
-                fontWeight: 600,
-                fontSize: 14,
-                cursor: 'pointer',
-              }}
-            >
-              {opt.label}
-            </motion.button>
-          );
-        })}
-      </div>
-      <p
-        style={{
-          color: currentTheme.text.muted,
-          fontSize: '0.85rem',
-          lineHeight: 1.5,
-          margin: '10px 0 0 0',
-        }}
-      >
-        {t(
+      <SRow
+        icon={Translate}
+        title={t('Kommentare automatisch übersetzen')}
+        subtitle={t(
           'Fremdsprachige Diskussionen und Antworten werden automatisch in deine Sprache übersetzt. Ausgeschaltet erscheint stattdessen ein Übersetzen-Button.'
         )}
-      </p>
-
-      <div
-        style={{
-          height: 1,
-          background: 'rgba(255,255,255,0.08)',
-          margin: '20px 0',
-        }}
+        trailing={
+          <SSwitch
+            checked={autoTranslate}
+            onChange={chooseAutoTranslate}
+            label={t('Kommentare automatisch übersetzen')}
+          />
+        }
       />
-
-      <h2
-        className="settings-section-title"
-        style={{
-          color: currentTheme.text.primary,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
-        <Public style={{ fontSize: 20, color: currentTheme.primary }} />
-        {t('Streaming-Land')}
-      </h2>
-      <ThemedSelect
-        value={region}
-        onChange={chooseRegion}
-        ariaLabel={t('Streaming-Land')}
-        options={[
-          { value: 'auto', label: t('Auto (aus Gerätesprache)') },
-          ...REGIONS.map((r) => ({ value: r.code, label: t(r.label) })),
-        ]}
+      <SRow
+        icon={Public}
+        title={t('Streaming-Land')}
+        subtitle={t('Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.')}
+        below={
+          <ThemedSelect
+            value={region}
+            onChange={chooseRegion}
+            ariaLabel={t('Streaming-Land')}
+            options={[
+              { value: 'auto', label: t('Auto (aus Gerätesprache)') },
+              ...REGIONS.map((r) => ({ value: r.code, label: t(r.label) })),
+            ]}
+          />
+        }
       />
-      <p
-        style={{
-          color: currentTheme.text.muted,
-          fontSize: '0.85rem',
-          lineHeight: 1.5,
-          margin: '10px 0 0 0',
-        }}
-      >
-        {t('Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.')}
-      </p>
-    </motion.div>
+    </>
   );
 };

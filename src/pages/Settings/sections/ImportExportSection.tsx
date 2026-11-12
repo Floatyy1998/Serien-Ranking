@@ -4,19 +4,17 @@
  * TMDB-Ids). Import (Phase 1): TV-Rank-JSON + Trakt-JSON, id-basiert —
  * Commit läuft über den Backend-Job (/import/commit, importJobs/$uid).
  */
-import { FileDownload, FileUpload, ImportExport } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { FileDownload, FileUpload } from '@mui/icons-material';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { useTheme } from '../../../contexts/ThemeContext';
 import { buildExportData, buildWatchCsv } from '../../../lib/export/buildExport';
 import { parseImportFile, type ParsedImport } from '../../../lib/import/parseImport';
-import { tapScaleSmall } from '../../../lib/motion';
 import { downloadFile } from '../../../services/export/downloadFile';
 import { t } from '../../../services/i18n';
 import { onValue } from '../../../services/db/subscribeValue';
+import { SButton, SButtons, SRow } from '../kit/SettingsKit';
 
 interface ImportJobState {
   status: 'running' | 'done' | 'error';
@@ -35,7 +33,6 @@ interface ImportJobState {
 }
 
 export const ImportExportSection = () => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { seriesList } = useSeriesList() || { seriesList: [] };
   const { movieList } = useMovieList() || { movieList: [] };
@@ -167,185 +164,126 @@ export const ImportExportSection = () => {
     ? parsed.series.filter((s) => s.tmdbId != null && !knownIds.has(s.tmdbId)).length
     : 0;
 
-  const buttonStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '10px 16px',
-    borderRadius: 12,
-    border: `1px solid ${currentTheme.border.default}`,
-    background: 'rgba(255,255,255,0.03)',
-    color: currentTheme.text.secondary,
-    fontWeight: 600,
-    fontSize: 14,
-    cursor: 'pointer',
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.24 }}
-      className="settings-card"
-    >
-      <h2
-        className="settings-section-title"
-        style={{
-          color: currentTheme.text.primary,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
-        <ImportExport style={{ fontSize: 20, color: currentTheme.primary }} />
-        {t('Import & Export')}
-      </h2>
-
-      {/* Export */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <motion.button whileTap={tapScaleSmall} onClick={exportJson} style={buttonStyle}>
-          <FileDownload style={{ fontSize: 18 }} />
-          {t('Export als JSON (Backup)')}
-        </motion.button>
-        <motion.button whileTap={tapScaleSmall} onClick={exportCsv} style={buttonStyle}>
-          <FileDownload style={{ fontSize: 18 }} />
-          {t('Export als CSV')}
-        </motion.button>
-      </div>
-      <p
-        style={{
-          color: currentTheme.text.muted,
-          fontSize: '0.85rem',
-          lineHeight: 1.5,
-          margin: '10px 0 0 0',
-        }}
-      >
-        {t(
+    <>
+      <SRow
+        icon={FileDownload}
+        title={t('Exportieren')}
+        subtitle={t(
           'JSON enthält deine komplette Watch-History (re-importierbar), CSV eine Zeile pro Folge/Film mit TMDB-Ids für andere Apps.'
         )}
-      </p>
-
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '20px 0' }} />
-
-      {/* Import */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json,application/json"
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) void handleFile(file);
-          e.target.value = '';
-        }}
+        below={
+          <SButtons>
+            <SButton icon={FileDownload} onClick={exportJson}>
+              {t('Export als JSON (Backup)')}
+            </SButton>
+            <SButton icon={FileDownload} onClick={exportCsv}>
+              {t('Export als CSV')}
+            </SButton>
+          </SButtons>
+        }
       />
-      <motion.button
-        whileTap={tapScaleSmall}
-        onClick={() => fileInputRef.current?.click()}
-        disabled={committing}
-        style={buttonStyle}
-      >
-        <FileUpload style={{ fontSize: 18 }} />
-        {t('Import (TV-Rank- oder Trakt-JSON)')}
-      </motion.button>
-
-      {parseError && (
-        <p style={{ color: currentTheme.status.error, fontSize: '0.85rem', margin: '10px 0 0' }}>
-          {t('Datei nicht erkannt. Unterstützt: TV-Rank-Export-JSON und Trakt-JSON.')}
-        </p>
-      )}
-
-      {parsed && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: '12px 14px',
-            borderRadius: 12,
-            background: `${currentTheme.primary}10`,
-            border: `1px solid ${currentTheme.primary}30`,
-          }}
-        >
-          <div style={{ color: currentTheme.text.primary, fontSize: 14, fontWeight: 600 }}>
-            {t('{n} Serien ({e} Folgen), {m} Filme erkannt', {
-              n: parsed.series.length,
-              e: totalEpisodes,
-              m: parsed.movies.length,
-            })}
-          </div>
-          <div style={{ color: currentTheme.text.muted, fontSize: 13, marginTop: 4 }}>
-            {t('{n} Serien davon neu — sie werden deiner Liste hinzugefügt.', {
-              n: newSeriesCount,
-            })}{' '}
-            {t('Bestehende Markierungen werden nie überschrieben.')}
-            {unresolvedCount > 0 &&
-              ` ${t('{n} Einträge ohne auflösbare TMDB-Id übersprungen.', { n: unresolvedCount })}`}
-          </div>
-          {job?.status === 'running' && (
-            <div style={{ color: currentTheme.primary, fontSize: 13, marginTop: 8 }}>
-              {t('Import läuft… {done}/{total}', {
-                done: job.done ?? 0,
-                total: job.total ?? '?',
-              })}
-              {job.currentTitle ? ` — ${job.currentTitle}` : ''}
-            </div>
-          )}
-          {!committing && (
-            <motion.button
-              whileTap={tapScaleSmall}
-              onClick={() => void commitImport()}
-              style={{
-                ...buttonStyle,
-                marginTop: 10,
-                background: currentTheme.primary,
-                color: '#fff',
-                border: 'none',
+      <SRow
+        icon={FileUpload}
+        title={t('Importieren')}
+        subtitle={t('Bestehende Markierungen werden nie überschrieben.')}
+        below={
+          <div className="st-form">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleFile(file);
+                e.target.value = '';
               }}
-            >
-              {t('Import starten')}
-            </motion.button>
-          )}
-        </div>
-      )}
+            />
+            <SButtons>
+              <SButton
+                icon={FileUpload}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={committing}
+              >
+                {t('Import (TV-Rank- oder Trakt-JSON)')}
+              </SButton>
+            </SButtons>
 
-      {job?.status === 'done' && (
-        <div style={{ margin: '10px 0 0' }}>
-          <p style={{ color: currentTheme.status.success, fontSize: '0.9rem', margin: 0 }}>
-            {t('Import abgeschlossen!')}
-          </p>
-          {job.report && (
-            <p
-              style={{
-                color: currentTheme.text.muted,
-                fontSize: '0.85rem',
-                lineHeight: 1.5,
-                margin: '6px 0 0',
-              }}
-            >
-              {t(
-                '{s} Serien neu, {e} Folgen importiert, {se} Folgen übersprungen (schon markiert), {m} Filme aktualisiert, {sm} Filme übersprungen.',
-                {
-                  s: job.report.addedSeries ?? 0,
-                  e: job.report.writtenEpisodes ?? 0,
-                  se: job.report.skippedExisting ?? 0,
-                  m: job.report.updatedMovies ?? 0,
-                  sm: job.report.skippedMovies ?? 0,
-                }
-              )}
-              {(job.report.failed?.length ?? 0) > 0 &&
-                ` ${t('{n} Einträge fehlgeschlagen:', { n: job.report.failed!.length })} ${job.report
-                  .failed!.slice(0, 5)
-                  .map((f) => f.title || '?')
-                  .join(', ')}${job.report.failed!.length > 5 ? '…' : ''}`}
-            </p>
-          )}
-        </div>
-      )}
-      {(commitError || job?.status === 'error') && (
-        <p style={{ color: currentTheme.status.error, fontSize: '0.85rem', margin: '10px 0 0' }}>
-          {commitError || job?.error || t('Import fehlgeschlagen')}
-        </p>
-      )}
-    </motion.div>
+            {parseError && (
+              <p className="st-form-error">
+                {t('Datei nicht erkannt. Unterstützt: TV-Rank-Export-JSON und Trakt-JSON.')}
+              </p>
+            )}
+
+            {parsed && (
+              <div className="st-import-preview">
+                <strong>
+                  {t('{n} Serien ({e} Folgen), {m} Filme erkannt', {
+                    n: parsed.series.length,
+                    e: totalEpisodes,
+                    m: parsed.movies.length,
+                  })}
+                </strong>
+                <p className="st-form-hint">
+                  {t('{n} Serien davon neu — sie werden deiner Liste hinzugefügt.', {
+                    n: newSeriesCount,
+                  })}{' '}
+                  {t('Bestehende Markierungen werden nie überschrieben.')}
+                  {unresolvedCount > 0 &&
+                    ` ${t('{n} Einträge ohne auflösbare TMDB-Id übersprungen.', { n: unresolvedCount })}`}
+                </p>
+                {job?.status === 'running' && (
+                  <p className="st-import-progress">
+                    {t('Import läuft… {done}/{total}', {
+                      done: job.done ?? 0,
+                      total: job.total ?? '?',
+                    })}
+                    {job.currentTitle ? ` — ${job.currentTitle}` : ''}
+                  </p>
+                )}
+                {!committing && (
+                  <SButtons>
+                    <SButton variant="primary" onClick={() => void commitImport()}>
+                      {t('Import starten')}
+                    </SButton>
+                  </SButtons>
+                )}
+              </div>
+            )}
+
+            {job?.status === 'done' && (
+              <div>
+                <p className="st-form-ok">{t('Import abgeschlossen!')}</p>
+                {job.report && (
+                  <p className="st-form-hint">
+                    {t(
+                      '{s} Serien neu, {e} Folgen importiert, {se} Folgen übersprungen (schon markiert), {m} Filme aktualisiert, {sm} Filme übersprungen.',
+                      {
+                        s: job.report.addedSeries ?? 0,
+                        e: job.report.writtenEpisodes ?? 0,
+                        se: job.report.skippedExisting ?? 0,
+                        m: job.report.updatedMovies ?? 0,
+                        sm: job.report.skippedMovies ?? 0,
+                      }
+                    )}
+                    {(job.report.failed?.length ?? 0) > 0 &&
+                      ` ${t('{n} Einträge fehlgeschlagen:', { n: job.report.failed!.length })} ${job.report
+                        .failed!.slice(0, 5)
+                        .map((f) => f.title || '?')
+                        .join(', ')}${job.report.failed!.length > 5 ? '…' : ''}`}
+                  </p>
+                )}
+              </div>
+            )}
+            {(commitError || job?.status === 'error') && (
+              <p className="st-form-error">
+                {commitError || job?.error || t('Import fehlgeschlagen')}
+              </p>
+            )}
+          </div>
+        }
+      />
+    </>
   );
 };

@@ -29,6 +29,7 @@ import '../Chats/ChatPages.css';
 import { PAGE_TOURS } from '../../features/tour/data/pageTours';
 import { showAvatar } from '../../lib/image/avatarViewer';
 import { ThemePage } from '../Theme/ThemePage';
+import { SettingsPage } from '../Settings/SettingsPage';
 import { HomeLayoutPage } from '../HomeLayout';
 import { PatchNotesPage } from '../PatchNotes/PatchNotesPage';
 import {
@@ -232,6 +233,7 @@ const LightboxPreview = () => {
 
 const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
+  { id: 'settings', label: 'Einstellungen', render: () => <SettingsPage /> },
   { id: 'admin-tickets', label: 'Admin: Tickets', render: () => <AdminTicketsPreview /> },
   { id: 'hint-single', label: 'Hinweis: eine Serie', render: () => <HintDeckSinglePreview /> },
   { id: 'hint-multi', label: 'Hinweis: mehrere Serien', render: () => <HintDeckMultiPreview /> },

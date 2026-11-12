@@ -369,6 +369,24 @@ const settings: Record<string, string> = {
   'Neue Bücher landen erst einmal auf der Leseliste, wie Serien auf der Watchlist':
     'New books go to your reading list first, like series go to the watchlist',
   'Beim Hinzufügen wählst du den Lesestand': 'You pick the reading status when adding',
+  Darstellung: 'Appearance',
+  'Design, Startseite und Anzeige': 'Design, home screen and display',
+  'Apps & Hilfe': 'Apps & help',
+  'Bereiche der Einstellungen': 'Settings sections',
+  'Profil & Community': 'Profile & community',
+  'Interessen, öffentliches Profil und Rangliste': 'Interests, public profile and leaderboard',
+  'Push, Erinnerungen und dein Pet': 'Push, reminders and your pet',
+  Allgemein: 'General',
+  'Sprache, Apps und Rechtliches': 'Language, apps and legal',
+  'Konto & Daten': 'Account & data',
+  'Anmeldung, Import, Export und Konto löschen': 'Sign-in, import, export and account deletion',
+  'Startseite & Lesen': 'Home & reading',
+  'Einstellung suchen': 'Search settings',
+  'Sprache & Region': 'Language & region',
+  Rechtliches: 'Legal',
+  Exportieren: 'Export',
+  'Entfernt dein Konto und alle Daten endgültig': 'Removes your account and all data permanently',
+  'E-Mail-Adresse': 'Email address',
 };
 
 export default settings;

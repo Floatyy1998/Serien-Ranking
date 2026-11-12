@@ -17,6 +17,8 @@ interface PageHeaderProps {
   actions?: React.ReactNode;
   sticky?: boolean;
   showBack?: boolean;
+  onBack?: () => void;
+  eyebrow?: string;
   style?: React.CSSProperties;
 }
 
@@ -43,6 +45,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   actions,
   sticky = true,
   showBack = true,
+  onBack,
+  eyebrow,
   style,
 }) => {
   const { currentTheme } = useTheme();
@@ -94,8 +98,23 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         transition={{ type: 'spring', stiffness: 250, damping: 22 }}
         className={`page-header__row${subtitle && actions ? ' page-header__row--stacked' : ''}`}
       >
-        {showBack && !isNavRoot && <BackButton />}
+        {showBack && (!isNavRoot || onBack) && <BackButton onBack={onBack} />}
         <div className="page-header__main">
+          {eyebrow && (
+            <span
+              style={{
+                display: 'block',
+                marginBottom: 2,
+                fontSize: 11.5,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: currentTheme.text.muted,
+              }}
+            >
+              {eyebrow}
+            </span>
+          )}
           <GradientText
             as="h1"
             from={gradientFrom}

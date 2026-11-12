@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 const { settingsData } = vi.hoisted(() => ({
   settingsData: {
@@ -107,29 +108,65 @@ vi.mock('./sections/PetSection', () => ({ PetSection: () => <div>PET_SECTION</di
 vi.mock('./sections/LeaderboardVisibilitySection', () => ({
   LeaderboardVisibilitySection: () => <div>LEADERBOARD_SECTION</div>,
 }));
+vi.mock('./sections/ShareAccessSection', () => ({ ShareAccessSection: () => null }));
+vi.mock('./sections/SecuritySection', () => ({ SecuritySection: () => <div>SECURITY</div> }));
+vi.mock('./sections/DeleteAccountSection', () => ({ DeleteAccountSection: () => null }));
+vi.mock('./sections/ImportExportSection', () => ({ ImportExportSection: () => <div>IMPORT</div> }));
+vi.mock('./sections/LanguageSection', () => ({ LanguageSection: () => <div>LANGUAGE</div> }));
+vi.mock('./sections/RateAppSection', () => ({ RateAppSection: () => null }));
+vi.mock('./sections/PageToursSection', () => ({ PageToursSection: () => null }));
 
 import { SettingsPage } from './SettingsPage';
 
 afterEach(() => cleanup());
 
+const renderAt = (url = '/settings') =>
+  render(
+    <MemoryRouter initialEntries={[url]}>
+      <SettingsPage />
+    </MemoryRouter>
+  );
+
 describe('SettingsPage', () => {
-  it('renders the header and all composed sections', () => {
-    render(<SettingsPage />);
+  it('zeigt Kopf, Profil, Kategorien und die erste Kategorie', () => {
+    renderAt();
     expect(screen.getByRole('heading', { name: 'Einstellungen' })).toBeInTheDocument();
     expect(screen.getByText('PROFILE_SECTION')).toBeInTheDocument();
-    expect(screen.getByText('APPEARANCE_SECTION')).toBeInTheDocument();
-    expect(screen.getByText('PUBLIC_SECTION')).toBeInTheDocument();
+    expect(screen.getAllByText('APPEARANCE_SECTION')).toHaveLength(2);
+    expect(screen.queryByText('NOTIF_SECTION')).not.toBeInTheDocument();
+  });
+
+  it('wechselt per Kategorie-Liste den Inhalt', () => {
+    renderAt();
+    fireEvent.click(screen.getByRole('button', { name: /Benachrichtigungen/ }));
     expect(screen.getByText('NOTIF_SECTION')).toBeInTheDocument();
+    expect(screen.getByText('PET_SECTION')).toBeInTheDocument();
+    expect(screen.queryByText('APPEARANCE_SECTION')).not.toBeInTheDocument();
+  });
+
+  it('öffnet die Kategorie aus der Adresse', () => {
+    renderAt('/settings?cat=profil');
+    expect(screen.getByText('INTERESTS')).toBeInTheDocument();
+    expect(screen.getByText('PUBLIC_SECTION')).toBeInTheDocument();
+  });
+
+  it('zeigt den Desktop-Download unter Allgemein', () => {
+    renderAt('/settings?cat=allgemein');
+    expect(screen.getByText('Desktop App')).toBeInTheDocument();
     expect(screen.getByText('LEGAL_SECTION')).toBeInTheDocument();
   });
 
-  it('shows the desktop download link in a web (non-electron) context', () => {
-    render(<SettingsPage />);
-    expect(screen.getByText('Desktop App')).toBeInTheDocument();
+  it('filtert die Kategorien über die Suche', () => {
+    renderAt();
+    fireEvent.change(screen.getByLabelText('Einstellung suchen'), {
+      target: { value: 'passwort' },
+    });
+    expect(screen.getByRole('button', { name: /Konto & Daten/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Darstellung/ })).not.toBeInTheDocument();
   });
 
   it('logs out when the logout button is clicked', () => {
-    render(<SettingsPage />);
+    renderAt();
     fireEvent.click(screen.getByText('Abmelden'));
     expect(settingsData.handleLogout).toHaveBeenCalledTimes(1);
   });

@@ -5,21 +5,18 @@
  */
 
 import { Key } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleSmall } from '../../../lib/motion';
 import {
   getSocialProvider,
   hasPasswordProvider,
   linkPasswordToAccount,
 } from '../../../services/firebase/socialAuth';
 import { t } from '../../../services/i18n';
+import { SButton, SButtons, SRow } from '../kit/SettingsKit';
 import { ChangeEmailForm } from './ChangeEmailForm';
 
 export const SecuritySection = () => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -61,40 +58,37 @@ export const SecuritySection = () => {
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.24 }}
-      className="settings-card"
-    >
-      <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
-        {t('Anmeldung & Sicherheit')}
-      </h2>
-
-      {done ? (
-        <p style={{ color: currentTheme.status.success, margin: 0 }}>
-          {t(
-            'Passwort gesetzt — du kannst dich jetzt zusätzlich mit E-Mail & Passwort anmelden (z. B. in der Browser-Extension).'
-          )}
-        </p>
-      ) : hasPassword ? (
-        <ChangeEmailForm currentEmail={user.email ?? ''} />
-      ) : (
-        <>
-          {user.email && socialProvider && (
-            <div style={{ marginBottom: 24 }}>
-              <ChangeEmailForm currentEmail={user.email} socialProvider={socialProvider} />
-            </div>
-          )}
-
-          <p style={{ color: currentTheme.text.muted, marginTop: 0 }}>
+  if (done) {
+    return (
+      <SRow
+        icon={Key}
+        title={t('Passwort festlegen')}
+        below={
+          <p className="st-form-ok">
             {t(
-              'Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.'
+              'Passwort gesetzt — du kannst dich jetzt zusätzlich mit E-Mail & Passwort anmelden (z. B. in der Browser-Extension).'
             )}
           </p>
+        }
+      />
+    );
+  }
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+  if (hasPassword) return <ChangeEmailForm currentEmail={user.email ?? ''} />;
+
+  return (
+    <>
+      {user.email && socialProvider && (
+        <ChangeEmailForm currentEmail={user.email} socialProvider={socialProvider} />
+      )}
+      <SRow
+        icon={Key}
+        title={t('Passwort festlegen')}
+        subtitle={t(
+          'Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.'
+        )}
+        below={
+          <div className="st-form">
             <input
               type="password"
               value={password}
@@ -111,30 +105,20 @@ export const SecuritySection = () => {
               className="glass-input"
               autoComplete="new-password"
             />
-
-            {error && <p style={{ color: currentTheme.status.error, margin: 0 }}>{error}</p>}
-
-            <motion.button
-              whileTap={tapScaleSmall}
-              onClick={handleSave}
-              disabled={!password || !confirm || busy}
-              className="settings-nav-btn"
-              style={{
-                justifyContent: 'center',
-                gap: 8,
-                color:
-                  password && confirm && !busy
-                    ? currentTheme.text.primary
-                    : currentTheme.text.muted,
-                cursor: password && confirm && !busy ? 'pointer' : 'default',
-              }}
-            >
-              <Key style={{ fontSize: 20, color: currentTheme.primary }} />
-              {busy ? t('Wird gespeichert…') : t('Passwort festlegen')}
-            </motion.button>
+            {error && <p className="st-form-error">{error}</p>}
+            <SButtons>
+              <SButton
+                variant="primary"
+                icon={Key}
+                onClick={handleSave}
+                disabled={!password || !confirm || busy}
+              >
+                {busy ? t('Wird gespeichert…') : t('Passwort festlegen')}
+              </SButton>
+            </SButtons>
           </div>
-        </>
-      )}
-    </motion.div>
+        }
+      />
+    </>
   );
 };

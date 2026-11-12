@@ -53,8 +53,8 @@ afterEach(() => cleanup());
 describe('PublicProfileSection', () => {
   it('renders the section title and hides the link block when disabled', () => {
     render(<PublicProfileSection {...baseProps()} />);
-    expect(screen.getByText('Öffentliches Profil')).toBeInTheDocument();
-    expect(screen.queryByText('Dein öffentlicher Link')).not.toBeInTheDocument();
+    expect(screen.getByText('Profil öffentlich teilen')).toBeInTheDocument();
+    expect(screen.queryByText('Neuer Link')).not.toBeInTheDocument();
   });
 
   it('calls onToggle when the switch is changed', () => {
@@ -67,7 +67,6 @@ describe('PublicProfileSection', () => {
   it('shows the link block and wires copy/regenerate actions when public', () => {
     const props = { ...baseProps(), isPublicProfile: true, publicProfileId: 'abc123' };
     render(<PublicProfileSection {...props} />);
-    expect(screen.getByText('Dein öffentlicher Link')).toBeInTheDocument();
     expect(screen.getByText(/\/public\/abc123$/)).toBeInTheDocument();
     fireEvent.click(screen.getByText('Teilen'));
     expect(props.onShareLink).toHaveBeenCalledTimes(1);

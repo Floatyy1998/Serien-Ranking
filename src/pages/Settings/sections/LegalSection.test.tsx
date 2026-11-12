@@ -16,7 +16,12 @@ vi.mock('framer-motion', async () => {
   };
 });
 
-vi.mock('@mui/icons-material', () => ({ ChevronRight: () => null }));
+vi.mock('@mui/icons-material', () => ({
+  ChevronRight: () => null,
+  Description: () => null,
+  Gavel: () => null,
+  Insights: () => null,
+}));
 
 vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>

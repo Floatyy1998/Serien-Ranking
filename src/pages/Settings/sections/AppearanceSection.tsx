@@ -1,19 +1,15 @@
 import {
   AutoStories,
-  ChevronRight,
-  LibraryBooks,
   FormatSize,
+  LibraryBooks,
   Palette,
   ViewQuilt,
   VisibilityOff,
   Weekend,
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleSmall } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 import {
   DISPLAY_SCALES,
@@ -26,7 +22,6 @@ import {
   useSpoilerLevel,
   type SpoilerLevel,
 } from '../../../services/settings/spoilerMode';
-import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { useAppFocus } from '../../../hooks/ui/useAppFocus';
 import { setAppFocus, type AppFocus } from '../../../services/settings/appFocus';
 import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
@@ -35,81 +30,46 @@ import { setReadingAreas } from '../../../services/settings/readingAreas';
 import { useBookAddPrompt } from '../../../hooks/ui/useBookAddPrompt';
 import { setBookAddPrompt } from '../../../services/settings/bookAddPrompt';
 import { showToast } from '../../../lib/interaction/toast';
+import { SRow, SSegment } from '../kit/SettingsKit';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
-  { scale: DISPLAY_SCALES[0], label: t('Klein'), a: 13 },
-  { scale: DISPLAY_SCALES[1], label: t('Standard'), a: 15 },
-  { scale: DISPLAY_SCALES[2], label: t('Groß'), a: 18 },
-  { scale: DISPLAY_SCALES[3], label: t('Sehr groß'), a: 22 },
+  { scale: DISPLAY_SCALES[0], label: t('Klein'), a: 12 },
+  { scale: DISPLAY_SCALES[1], label: t('Standard'), a: 14 },
+  { scale: DISPLAY_SCALES[2], label: t('Groß'), a: 17 },
+  { scale: DISPLAY_SCALES[3], label: t('Sehr groß'), a: 20 },
 ];
 
+const saveFailed = () => showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
+
 const DisplaySizeControl = memo(() => {
-  const { currentTheme } = useTheme();
   const [scale, setScale] = useState<DisplayScale>(() => getDisplayScale());
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
-
-  const choose = (s: DisplayScale) => {
-    setScale(s);
-    setDisplayScale(s);
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="settings-nav-btn settings-size-card"
-      style={{ color: currentTheme.text.primary }}
-    >
-      <div className="settings-size-head">
-        <div
-          className="settings-nav-btn-icon"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+    <SRow
+      icon={FormatSize}
+      title={t('Anzeigegröße')}
+      subtitle={t('Ganze App größer oder kleiner')}
+      below={
+        <SSegment
+          ariaLabel={t('Anzeigegröße')}
+          value={scale}
+          onChange={(s) => {
+            setScale(s);
+            setDisplayScale(s);
           }}
-        >
-          <FormatSize style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-        </div>
-        <div className="settings-nav-btn-text">
-          <h2 className="settings-nav-btn-title">{t('Anzeigegröße')}</h2>
-          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-            {t('Ganze App größer oder kleiner')}
-          </p>
-        </div>
-      </div>
-      <div className="settings-size-seg">
-        {SIZE_OPTIONS.map((o) => {
-          const active = scale === o.scale;
-          return (
-            <button
-              key={o.scale}
-              type="button"
-              onClick={() => choose(o.scale)}
-              aria-label={o.label}
-              aria-pressed={active}
-              className={active ? 'is-active' : ''}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                      color: onPrimary,
-                      borderColor: 'transparent',
-                    }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <span className="sz-a" style={{ fontSize: o.a }}>
+          options={SIZE_OPTIONS.map((o) => ({
+            value: o.scale,
+            label: o.label,
+            preview: (
+              <span className="st-size-a" style={{ fontSize: o.a }} aria-hidden>
                 A
               </span>
-              <span className="sz-lbl">{o.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
+            ),
+          }))}
+        />
+      }
+    />
   );
 });
-
 DisplaySizeControl.displayName = 'DisplaySizeControl';
 
 const focusOptions = (): { focus: AppFocus; label: string; hint: string }[] => [
@@ -118,160 +78,60 @@ const focusOptions = (): { focus: AppFocus; label: string; hint: string }[] => [
   { focus: 'both', label: t('Beides'), hint: t('Serien-Startseite, Lesen über das Dock') },
 ];
 
-/** Schwerpunkt der App — schaltet die Startseite zwischen Schauen und Lesen um. */
 const FocusControl = memo(() => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { focus } = useAppFocus();
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
   const options = focusOptions();
-  const current = options.find((o) => o.focus === focus);
-
-  const choose = (next: AppFocus) => {
-    if (!user || next === focus) return;
-    setAppFocus(user.uid, next).catch(() =>
-      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
-    );
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.16 }}
-      className="settings-nav-btn settings-size-card"
-      style={{ color: currentTheme.text.primary }}
-    >
-      <div className="settings-size-head">
-        <div
-          className="settings-nav-btn-icon"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.primary})`,
+    <SRow
+      icon={Weekend}
+      title={t('Schwerpunkt')}
+      subtitle={options.find((o) => o.focus === focus)?.hint}
+      below={
+        <SSegment
+          ariaLabel={t('Schwerpunkt')}
+          value={focus}
+          onChange={(next) => {
+            if (!user || next === focus) return;
+            setAppFocus(user.uid, next).catch(saveFailed);
           }}
-        >
-          <Weekend style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-        </div>
-        <div className="settings-nav-btn-text">
-          <h2 className="settings-nav-btn-title">{t('Schwerpunkt')}</h2>
-          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-            {current?.hint}
-          </p>
-        </div>
-      </div>
-      <div className="settings-size-seg">
-        {options.map((o) => {
-          const active = focus === o.focus;
-          return (
-            <button
-              key={o.focus}
-              type="button"
-              onClick={() => choose(o.focus)}
-              aria-pressed={active}
-              className={active ? 'is-active' : ''}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                      color: onPrimary,
-                      borderColor: 'transparent',
-                    }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <span className="sz-lbl" style={{ fontSize: 13 }}>
-                {o.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
+          options={options.map((o) => ({ value: o.focus, label: o.label }))}
+        />
+      }
+    />
   );
 });
-
 FocusControl.displayName = 'FocusControl';
 
 const readingAreaOptions = (): { areas: ReadingAreas; label: string; hint: string }[] => [
-  {
-    areas: 'both',
-    label: t('Beides'),
-    hint: t('Bücher und Manga auf einer Lesen-Seite'),
-  },
+  { areas: 'both', label: t('Beides'), hint: t('Bücher und Manga auf einer Lesen-Seite') },
   { areas: 'books', label: t('Bücher'), hint: t('Lesen zeigt nur Bücher') },
   { areas: 'manga', label: 'Manga', hint: t('Lesen zeigt nur Manga') },
 ];
 
-/** Welche Lesebereiche die Lesen-Seite zeigt — reine Buch- oder Manga-Leser blenden den anderen aus. */
 const ReadingAreasControl = memo(() => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const areas = useReadingAreas();
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
   const options = readingAreaOptions();
-  const current = options.find((o) => o.areas === areas);
-
-  const choose = (next: ReadingAreas) => {
-    if (!user || next === areas) return;
-    setReadingAreas(user.uid, next).catch(() =>
-      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
-    );
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.17 }}
-      className="settings-nav-btn settings-size-card"
-      style={{ color: currentTheme.text.primary }}
-    >
-      <div className="settings-size-head">
-        <div
-          className="settings-nav-btn-icon"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+    <SRow
+      icon={LibraryBooks}
+      title={t('Lesebereiche')}
+      subtitle={options.find((o) => o.areas === areas)?.hint}
+      below={
+        <SSegment
+          ariaLabel={t('Lesebereiche')}
+          value={areas}
+          onChange={(next) => {
+            if (!user || next === areas) return;
+            setReadingAreas(user.uid, next).catch(saveFailed);
           }}
-        >
-          <LibraryBooks style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-        </div>
-        <div className="settings-nav-btn-text">
-          <h2 className="settings-nav-btn-title">{t('Lesebereiche')}</h2>
-          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-            {current?.hint}
-          </p>
-        </div>
-      </div>
-      <div className="settings-size-seg">
-        {options.map((o) => {
-          const active = areas === o.areas;
-          return (
-            <button
-              key={o.areas}
-              type="button"
-              onClick={() => choose(o.areas)}
-              aria-pressed={active}
-              className={active ? 'is-active' : ''}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                      color: onPrimary,
-                      borderColor: 'transparent',
-                    }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <span className="sz-lbl" style={{ fontSize: 13 }}>
-                {o.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
+          options={options.map((o) => ({ value: o.areas, label: o.label }))}
+        />
+      }
+    />
   );
 });
-
 ReadingAreasControl.displayName = 'ReadingAreasControl';
 
 const bookAddOptions = (): { ask: boolean; label: string; hint: string }[] => [
@@ -283,77 +143,29 @@ const bookAddOptions = (): { ask: boolean; label: string; hint: string }[] => [
   { ask: true, label: t('Erst fragen'), hint: t('Beim Hinzufügen wählst du den Lesestand') },
 ];
 
-/** Bücher wie Serien ohne Nachfrage aufnehmen — oder beim Hinzufügen den Lesestand wählen. */
 const BookAddPromptControl = memo(() => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const ask = useBookAddPrompt();
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
   const options = bookAddOptions();
-  const current = options.find((o) => o.ask === ask);
-
-  const choose = (next: boolean) => {
-    if (!user || next === ask) return;
-    setBookAddPrompt(user.uid, next).catch(() =>
-      showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
-    );
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.19 }}
-      className="settings-nav-btn settings-size-card"
-      style={{ color: currentTheme.text.primary }}
-    >
-      <div className="settings-size-head">
-        <div
-          className="settings-nav-btn-icon"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+    <SRow
+      icon={LibraryBooks}
+      title={t('Bücher aufnehmen')}
+      subtitle={options.find((o) => o.ask === ask)?.hint}
+      below={
+        <SSegment
+          ariaLabel={t('Bücher aufnehmen')}
+          value={ask}
+          onChange={(next) => {
+            if (!user || next === ask) return;
+            setBookAddPrompt(user.uid, next).catch(saveFailed);
           }}
-        >
-          <LibraryBooks style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-        </div>
-        <div className="settings-nav-btn-text">
-          <h2 className="settings-nav-btn-title">{t('Bücher aufnehmen')}</h2>
-          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-            {current?.hint}
-          </p>
-        </div>
-      </div>
-      <div className="settings-size-seg">
-        {options.map((o) => {
-          const active = ask === o.ask;
-          return (
-            <button
-              key={String(o.ask)}
-              type="button"
-              onClick={() => choose(o.ask)}
-              aria-pressed={active}
-              className={active ? 'is-active' : ''}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                      color: onPrimary,
-                      borderColor: 'transparent',
-                    }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <span className="sz-lbl" style={{ fontSize: 13 }}>
-                {o.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
+          options={options.map((o) => ({ value: o.ask, label: o.label }))}
+        />
+      }
+    />
   );
 });
-
 BookAddPromptControl.displayName = 'BookAddPromptControl';
 
 const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = [
@@ -363,171 +175,71 @@ const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = 
 ];
 
 const SpoilerControl = memo(() => {
-  const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const level = useSpoilerLevel();
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
-  const current = SPOILER_OPTIONS.find((o) => o.level === level);
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.22 }}
-      className="settings-nav-btn settings-size-card"
-      style={{ color: currentTheme.text.primary }}
-    >
-      <div className="settings-size-head">
-        <div
-          className="settings-nav-btn-icon"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-          }}
-        >
-          <VisibilityOff style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-        </div>
-        <div className="settings-nav-btn-text">
-          <h2 className="settings-nav-btn-title">{t('Spoiler-Schutz')}</h2>
-          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-            {current?.hint || t('Bilder ungesehener Folgen blurren')}
-          </p>
-        </div>
-      </div>
-      <div className="settings-size-seg">
-        {SPOILER_OPTIONS.map((o) => {
-          const active = level === o.level;
-          return (
-            <button
-              key={o.level}
-              type="button"
-              onClick={() => setSpoilerLevel(user?.uid, o.level)}
-              aria-label={o.label}
-              aria-pressed={active}
-              className={active ? 'is-active' : ''}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                      color: onPrimary,
-                      borderColor: 'transparent',
-                    }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <span className="sz-lbl">{o.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
+    <SRow
+      icon={VisibilityOff}
+      title={t('Spoiler-Schutz')}
+      subtitle={SPOILER_OPTIONS.find((o) => o.level === level)?.hint}
+      below={
+        <SSegment
+          ariaLabel={t('Spoiler-Schutz')}
+          value={level}
+          onChange={(next) => setSpoilerLevel(user?.uid, next)}
+          options={SPOILER_OPTIONS.map((o) => ({ value: o.level, label: o.label }))}
+        />
+      }
+    />
   );
 });
-
 SpoilerControl.displayName = 'SpoilerControl';
 
 interface AppearanceSectionProps {
   onNavigateTheme: () => void;
   onNavigateLayout: () => void;
+  part?: 'design' | 'home';
 }
 
 export const AppearanceSection = memo(
-  ({ onNavigateTheme, onNavigateLayout }: AppearanceSectionProps) => {
-    const { currentTheme } = useTheme();
+  ({ onNavigateTheme, onNavigateLayout, part }: AppearanceSectionProps) => {
     const navigate = useNavigate();
+    const show = (p: 'design' | 'home') => !part || part === p;
 
     return (
       <>
-        {/* Theme Settings */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          whileTap={tapScaleSmall}
-          onClick={onNavigateTheme}
-          className="settings-nav-btn"
-          style={{ color: currentTheme.text.primary }}
-        >
-          <div
-            className="settings-nav-btn-icon"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-            }}
-          >
-            <Palette style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-          </div>
-          <div className="settings-nav-btn-text">
-            <h2 className="settings-nav-btn-title">{t('Design & Themes')}</h2>
-            <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-              {t('Farben und Aussehen anpassen')}
-            </p>
-          </div>
-          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
-        </motion.button>
-
-        <FocusControl />
-
-        <ReadingAreasControl />
-        <BookAddPromptControl />
-
-        {/* Homepage Layout */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
-          whileTap={tapScaleSmall}
-          onClick={onNavigateLayout}
-          className="settings-nav-btn"
-          style={{ color: currentTheme.text.primary }}
-        >
-          <div
-            className="settings-nav-btn-icon"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.primary})`,
-            }}
-          >
-            <ViewQuilt style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-          </div>
-          <div className="settings-nav-btn-text">
-            <h2 className="settings-nav-btn-title">{t('Homepage Layout')}</h2>
-            <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-              {t('Sektionen sortieren & ausblenden')}
-            </p>
-          </div>
-          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
-        </motion.button>
-
-        {/* Lesen-Seite: Bücher und Manga, gleicher Editor */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.19 }}
-          whileTap={tapScaleSmall}
-          onClick={() => navigate('/reading/layout')}
-          className="settings-nav-btn"
-          style={{ color: currentTheme.text.primary }}
-        >
-          <div
-            className="settings-nav-btn-icon"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-            }}
-          >
-            <AutoStories style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-          </div>
-          <div className="settings-nav-btn-text">
-            <h2 className="settings-nav-btn-title">{t('Lesen-Seite')}</h2>
-            <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-              {t('Sektionen sortieren & ausblenden')}
-            </p>
-          </div>
-          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
-        </motion.button>
-
-        {/* Anzeigegröße — skaliert die ganze UI proportional (Zoom) */}
-        <DisplaySizeControl />
-
-        {/* Spoiler-Schutz für ungesehene Folgen */}
-        <SpoilerControl />
+        {show('design') && (
+          <SRow
+            icon={Palette}
+            title={t('Design & Themes')}
+            subtitle={t('Farben und Aussehen anpassen')}
+            chevron
+            onClick={onNavigateTheme}
+          />
+        )}
+        {show('design') && <DisplaySizeControl />}
+        {show('design') && <SpoilerControl />}
+        {show('home') && <FocusControl />}
+        {show('home') && (
+          <SRow
+            icon={ViewQuilt}
+            title={t('Homepage Layout')}
+            subtitle={t('Sektionen sortieren & ausblenden')}
+            chevron
+            onClick={onNavigateLayout}
+          />
+        )}
+        {show('home') && <ReadingAreasControl />}
+        {show('home') && <BookAddPromptControl />}
+        {show('home') && (
+          <SRow
+            icon={AutoStories}
+            title={t('Lesen-Seite')}
+            subtitle={t('Sektionen sortieren & ausblenden')}
+            chevron
+            onClick={() => navigate('/reading/layout')}
+          />
+        )}
       </>
     );
   }
