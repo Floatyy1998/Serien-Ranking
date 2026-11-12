@@ -1,0 +1,46 @@
+/** Englische Übersetzungen: Profil-Interessen. */
+
+const dict: Record<string, string> = {
+  Marvel: 'Marvel',
+  DC: 'DC',
+  'Star Wars': 'Star Wars',
+  'Harry Potter': 'Harry Potter',
+  'Herr der Ringe': 'Lord of the Rings',
+  'Star Trek': 'Star Trek',
+  'James Bond': 'James Bond',
+  Disney: 'Disney',
+  Pixar: 'Pixar',
+  'Studio Ghibli': 'Studio Ghibli',
+  'K-Drama': 'K-drama',
+  Superhelden: 'Superheroes',
+  Zombies: 'Zombies',
+  Sitcoms: 'Sitcoms',
+  Dokus: 'Documentaries',
+  'Reality-TV': 'Reality TV',
+  Interessen: 'Interests',
+  'Profile mit Interesse {name} finden': 'Find profiles interested in {name}',
+  'Filmwelten & Studios': 'Franchises & studios',
+  'Genres & Themen': 'Genres & themes',
+  'Höchstens {n} Interessen': 'Up to {n} interests',
+  'Stehen in deinem Profil. Ist dein Profil öffentlich, finden dich Leute mit denselben Interessen über die Suche.':
+    'Shown on your profile. If your profile is public, people with the same interests can find you through search.',
+  'Deine Interessen': 'Your interests',
+  '{n} von {max}': '{n} of {max}',
+  'Noch keine ausgewählt': 'None selected yet',
+  'Vorschläge aus deiner Bibliothek': 'Suggestions from your library',
+  'Alle übernehmen': 'Add all',
+  'Alle Interessen': 'All interests',
+  'Passend zu dem, was du schaust: {list}': 'Based on what you watch: {list}',
+  'Zeig, was du gern schaust, und finde Leute mit denselben Interessen.':
+    'Show what you like to watch and find people with the same interests.',
+  '1 gemeinsam': '1 in common',
+  '{n} gemeinsam': '{n} in common',
+  'Nach Interesse filtern': 'Filter by interest',
+  'Noch niemand mit diesem Interesse': 'No one with this interest yet',
+  'Name oder Interesse, z. B. Marvel': 'Name or interest, e.g. Marvel',
+  'Leute mit Interesse {name}': 'People interested in {name}',
+  '1 öffentliches Profil': '1 public profile',
+  '{n} öffentliche Profile': '{n} public profiles',
+};
+
+export default dict;

@@ -23,6 +23,7 @@
  */
 
 import type { DropOffEntry } from '../../lib/watch/dropOff';
+import type { InterestTagMap } from '../../lib/interests/interests';
 import type { CatalogSeries, CatalogMovie, CatalogSeason } from '../../types/CatalogTypes';
 import {
   idbGetVersioned,
@@ -52,6 +53,7 @@ const LS_DROP_OFF_KEY = LS_PREFIX + 'dropOff';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 const LS_COMMUNITY_RATINGS_KEY = LS_PREFIX + 'communityRatings';
+const LS_INTEREST_TAGS_KEY = LS_PREFIX + 'interestTags';
 // Sprachabhaengige Schluessel: ohne die Sprache im Schluessel bekaeme ein
 // Nutzer nach dem Sprachwechsel die zwischengespeicherten Daten der alten.
 const LS_LANG_OVERLAY_PREFIX = LS_PREFIX + 'langOverlay:';
@@ -110,6 +112,7 @@ let memoryDropOff: Record<string, DropOffEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryCommunityRatings: CommunityRatings | null = null;
+let memoryInterestTags: InterestTagMap | null = null;
 const memoryEpisodeRatings = new Map<number, Record<string, CommunityRatingEntry> | null>();
 // Die Speicher oben werden erst NACH der Antwort gefuellt. Fragen zwei
 // Bauteile derselben Seite gleichzeitig (auf der Serien-Detailseite z. B.
@@ -253,6 +256,7 @@ async function invalidateLocalCaches(opts?: {
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemove(LS_COMMUNITY_RATINGS_KEY),
+    idbRemove(LS_INTEREST_TAGS_KEY),
     // Alle Sprachen, nicht nur die aktive: nach einem Sprachwechsel liegen
     // sonst die Overlays der alten Sprache dauerhaft im Speicher.
     idbRemovePrefix(LS_LANG_OVERLAY_PREFIX),
@@ -411,6 +415,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
+  memoryInterestTags = null;
   memoryEpisodeRatings.clear();
   laufendeCommunityRatings = null;
   laufendeEpisodeRatings.clear();
@@ -1220,6 +1225,32 @@ async function ladeCommunityRatings(): Promise<CommunityRatings | null> {
   }
 }
 
+/** catalog/interests.json (Cron build-interest-tags.js); null bei 404. */
+export async function fetchStaticInterestTags(): Promise<InterestTagMap | null> {
+  if (memoryInterestTags) return memoryInterestTags;
+
+  const cached = await idbGetAny<InterestTagMap>(LS_INTEREST_TAGS_KEY);
+  if (cached) {
+    memoryInterestTags = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<Partial<InterestTagMap>>('interests.json', { version });
+    const map: InterestTagMap = { series: data.series ?? {}, movies: data.movies ?? {} };
+    memoryInterestTags = map;
+    void idbSetVersioned(LS_INTEREST_TAGS_KEY, version, map);
+    return map;
+  } catch (e) {
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] interests fetch failed', e);
+    }
+    return null;
+  }
+}
+
 /**
  * Lädt catalog/episode-ratings/{seriesId}.json — anonyme Episoden-Durchschnitte
  * (nur Serien mit mindestens einer Episode über der Bewertungs-Schwelle;
@@ -1608,6 +1639,7 @@ export function clearStaticCatalogCache(): void {
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryCommunityRatings = null;
+  memoryInterestTags = null;
   memoryEpisodeRatings.clear();
   laufendeCommunityRatings = null;
   laufendeEpisodeRatings.clear();
@@ -1627,5 +1659,6 @@ export function clearStaticCatalogCache(): void {
   void idbRemove(LS_ANIME_FILLER_KEY);
   void idbRemove(LS_ANIME_MANGA_KEY);
   void idbRemove(LS_TV_PREMIERES_KEY);
+  void idbRemove(LS_INTEREST_TAGS_KEY);
   void idbRemovePrefix(LS_SEASONS_PREFIX);
 }

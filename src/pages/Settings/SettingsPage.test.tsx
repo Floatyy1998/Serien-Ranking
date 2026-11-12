@@ -95,6 +95,7 @@ vi.mock('./sections/ProfileSection', () => ({ ProfileSection: () => <div>PROFILE
 vi.mock('./sections/PublicProfileSection', () => ({
   PublicProfileSection: () => <div>PUBLIC_SECTION</div>,
 }));
+vi.mock('./sections/InterestsSection', () => ({ InterestsSection: () => <div>INTERESTS</div> }));
 vi.mock('./sections/AppearanceSection', () => ({
   AppearanceSection: () => <div>APPEARANCE_SECTION</div>,
 }));

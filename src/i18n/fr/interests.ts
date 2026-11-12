@@ -1,0 +1,46 @@
+/** Französische Übersetzungen: Profil-Interessen. */
+
+const dict: Record<string, string> = {
+  Marvel: 'Marvel',
+  DC: 'DC',
+  'Star Wars': 'Star Wars',
+  'Harry Potter': 'Harry Potter',
+  'Herr der Ringe': 'Le Seigneur des anneaux',
+  'Star Trek': 'Star Trek',
+  'James Bond': 'James Bond',
+  Disney: 'Disney',
+  Pixar: 'Pixar',
+  'Studio Ghibli': 'Studio Ghibli',
+  'K-Drama': 'K-drama',
+  Superhelden: 'Super-héros',
+  Zombies: 'Zombies',
+  Sitcoms: 'Sitcoms',
+  Dokus: 'Documentaires',
+  'Reality-TV': 'Téléréalité',
+  Interessen: 'Centres d’intérêt',
+  'Profile mit Interesse {name} finden': 'Trouver des profils intéressés par {name}',
+  'Filmwelten & Studios': 'Sagas et studios',
+  'Genres & Themen': 'Genres et thèmes',
+  'Höchstens {n} Interessen': '{n} centres d’intérêt maximum',
+  'Stehen in deinem Profil. Ist dein Profil öffentlich, finden dich Leute mit denselben Interessen über die Suche.':
+    'Affichés sur ton profil. Si ton profil est public, les personnes qui partagent tes centres d’intérêt peuvent te trouver via la recherche.',
+  'Deine Interessen': 'Tes centres d’intérêt',
+  '{n} von {max}': '{n} sur {max}',
+  'Noch keine ausgewählt': 'Aucun choisi pour l’instant',
+  'Vorschläge aus deiner Bibliothek': 'Suggestions d’après ta bibliothèque',
+  'Alle übernehmen': 'Tout ajouter',
+  'Alle Interessen': 'Tous les centres d’intérêt',
+  'Passend zu dem, was du schaust: {list}': 'D’après ce que tu regardes : {list}',
+  'Zeig, was du gern schaust, und finde Leute mit denselben Interessen.':
+    'Montre ce que tu aimes regarder et trouve des personnes qui partagent tes goûts.',
+  '1 gemeinsam': '1 en commun',
+  '{n} gemeinsam': '{n} en commun',
+  'Nach Interesse filtern': 'Filtrer par centre d’intérêt',
+  'Noch niemand mit diesem Interesse': 'Personne avec ce centre d’intérêt pour l’instant',
+  'Name oder Interesse, z. B. Marvel': 'Nom ou centre d’intérêt, p. ex. Marvel',
+  'Leute mit Interesse {name}': 'Personnes intéressées par {name}',
+  '1 öffentliches Profil': '1 profil public',
+  '{n} öffentliche Profile': '{n} profils publics',
+};
+
+export default dict;

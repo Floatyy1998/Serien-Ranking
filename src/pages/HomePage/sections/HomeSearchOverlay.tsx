@@ -45,6 +45,7 @@ import { useAppFocus } from '../../../hooks/ui/useAppFocus';
 import { useReadingAreas } from '../../../hooks/ui/useReadingAreas';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useBooksList } from '../../../contexts/BooksListContext';
+import { InterestPeopleHint } from '../../../components/search/InterestPeopleHint';
 import './HomeSearchOverlay.css';
 
 export type SearchFilter = 'all' | 'series' | 'movies' | 'people' | 'manga' | 'books';
@@ -677,6 +678,9 @@ export const HomeSearchOverlay = memo(
                   contentScroll.current = e.currentTarget.scrollTop;
                 }}
               >
+                {hasQuery && !reading && (filter === 'all' || filter === 'people') && (
+                  <InterestPeopleHint query={query} onOpen={() => remember('media')} />
+                )}
                 {/* Bewusst KEIN AnimatePresence mode="wait" hier: die Keys wechseln bei
                 jedem Tastendruck (loading/empty/results), und mode="wait" kann bei
                 schnellem Tippen im Exit hängen bleiben — dann klebt eine veraltete

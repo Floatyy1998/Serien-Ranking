@@ -1,5 +1,36 @@
 /* ProfilePage - Layout styles */
 
+.profile-interests__head,
+.mobile-app button.profile-interests__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-interests__head:active {
+  opacity: 0.7;
+}
+
+.profile-interests__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.profile-interests__edit {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .profile-page {
   min-height: var(--vh, 100vh);
   position: relative;

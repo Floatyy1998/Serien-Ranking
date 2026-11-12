@@ -26,6 +26,7 @@ const entry = (
   manga,
   books,
   watchtimeMinutes: series * 600 + movies * 120,
+  interests: series > 80 ? ['anime', 'marvel', 'krieg'] : ['marvel', 'true-crime'],
 });
 
 const ENTRIES = [

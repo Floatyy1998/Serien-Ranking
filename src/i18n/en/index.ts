@@ -35,6 +35,7 @@ import tour from './tour';
 import social from './social';
 import watchplan from './watchplan';
 import people from './people';
+import interests from './interests';
 
 const en: Record<string, string> = {
   ...analytics,
@@ -68,6 +69,7 @@ const en: Record<string, string> = {
   ...social,
   ...watchplan,
   ...people,
+  ...interests,
 };
 
 export default en;

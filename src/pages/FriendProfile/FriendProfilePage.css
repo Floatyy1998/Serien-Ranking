@@ -192,6 +192,17 @@
   margin-bottom: 22px;
 }
 
+.fp-interests {
+  padding: 0 var(--fp-x);
+  margin-bottom: 18px;
+}
+
+.fp-interests__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 /* ── Gesamtvergleich (kompakte Insight-Karte) ── */
 .fp-compare {
   display: flex;

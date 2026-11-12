@@ -18,7 +18,15 @@ vi.mock('framer-motion', async () => {
 });
 
 const navigateMock = vi.hoisted(() => vi.fn());
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
+const router = vi.hoisted(() => ({ params: new URLSearchParams(), setParams: vi.fn() }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+  useSearchParams: () => [router.params, router.setParams],
+}));
+const own = vi.hoisted(() => ({ interests: [] as string[] }));
+vi.mock('../../../hooks/profile/useInterests', () => ({
+  useOwnInterests: () => own.interests,
+}));
 
 const social = vi.hoisted(() => ({
   friends: [] as Array<{ uid: string }>,
@@ -65,6 +73,9 @@ const entry = (uid: string, name: string, extra: Partial<PublicDirectoryEntry> =
 
 beforeEach(() => {
   navigateMock.mockReset();
+  router.params = new URLSearchParams();
+  router.setParams.mockReset();
+  own.interests = [];
   social.friends = [];
   social.sentRequests = [];
   social.friendRequests = [];
@@ -129,6 +140,52 @@ describe('PublicProfilesList', () => {
 
     expect(screen.queryByText('Anna')).not.toBeInTheDocument();
     expect(screen.getByText('Ben')).toBeInTheDocument();
+  });
+
+  it('findet Profile über ein Interesse in der Suche', async () => {
+    directory.fetchPublicDirectory.mockResolvedValue([
+      entry('a', 'Anna', { interests: ['marvel'] }),
+      entry('b', 'Ben', { interests: ['anime'] }),
+    ]);
+    render(<PublicProfilesList saveScrollPosition={vi.fn()} />);
+    await screen.findByText('Anna');
+
+    fireEvent.change(screen.getByLabelText('Öffentliche Profile durchsuchen'), {
+      target: { value: 'avengers' },
+    });
+
+    expect(screen.getByText('Anna')).toBeInTheDocument();
+    expect(screen.queryByText('Ben')).not.toBeInTheDocument();
+  });
+
+  it('filtert über ?interest= und setzt den Filter per Chip zurück', async () => {
+    router.params = new URLSearchParams('interest=anime');
+    directory.fetchPublicDirectory.mockResolvedValue([
+      entry('a', 'Anna', { interests: ['marvel'] }),
+      entry('b', 'Ben', { interests: ['anime'] }),
+    ]);
+    render(<PublicProfilesList saveScrollPosition={vi.fn()} />);
+
+    expect(await screen.findByText('Ben')).toBeInTheDocument();
+    expect(screen.queryByText('Anna')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Anime', pressed: true }));
+    expect(router.setParams).toHaveBeenCalled();
+  });
+
+  it('sortiert Profile mit gemeinsamen Interessen nach vorn', async () => {
+    own.interests = ['krieg'];
+    directory.fetchPublicDirectory.mockResolvedValue([
+      entry('a', 'Anna', { interests: ['marvel'] }),
+      entry('b', 'Ben', { interests: ['krieg'] }),
+    ]);
+    render(<PublicProfilesList saveScrollPosition={vi.fn()} />);
+    await screen.findByText('Anna');
+
+    const names = screen
+      .getAllByRole('button', { name: /^Profil von/ })
+      .map((el) => el.getAttribute('aria-label'));
+    expect(names).toEqual(['Profil von Ben öffnen', 'Profil von Anna öffnen']);
   });
 
   it('zeigt einen Leerzustand ohne Profile', async () => {

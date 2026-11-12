@@ -1,0 +1,46 @@
+/** Spanische Übersetzungen: Profil-Interessen. */
+
+const dict: Record<string, string> = {
+  Marvel: 'Marvel',
+  DC: 'DC',
+  'Star Wars': 'Star Wars',
+  'Harry Potter': 'Harry Potter',
+  'Herr der Ringe': 'El Señor de los Anillos',
+  'Star Trek': 'Star Trek',
+  'James Bond': 'James Bond',
+  Disney: 'Disney',
+  Pixar: 'Pixar',
+  'Studio Ghibli': 'Studio Ghibli',
+  'K-Drama': 'K-drama',
+  Superhelden: 'Superhéroes',
+  Zombies: 'Zombis',
+  Sitcoms: 'Sitcoms',
+  Dokus: 'Documentales',
+  'Reality-TV': 'Telerrealidad',
+  Interessen: 'Intereses',
+  'Profile mit Interesse {name} finden': 'Buscar perfiles interesados en {name}',
+  'Filmwelten & Studios': 'Sagas y estudios',
+  'Genres & Themen': 'Géneros y temas',
+  'Höchstens {n} Interessen': 'Máximo {n} intereses',
+  'Stehen in deinem Profil. Ist dein Profil öffentlich, finden dich Leute mit denselben Interessen über die Suche.':
+    'Aparecen en tu perfil. Si tu perfil es público, la gente con los mismos intereses puede encontrarte en la búsqueda.',
+  'Deine Interessen': 'Tus intereses',
+  '{n} von {max}': '{n} de {max}',
+  'Noch keine ausgewählt': 'Aún no has elegido ninguno',
+  'Vorschläge aus deiner Bibliothek': 'Sugerencias de tu biblioteca',
+  'Alle übernehmen': 'Añadir todos',
+  'Alle Interessen': 'Todos los intereses',
+  'Passend zu dem, was du schaust: {list}': 'Según lo que ves: {list}',
+  'Zeig, was du gern schaust, und finde Leute mit denselben Interessen.':
+    'Muestra lo que te gusta ver y encuentra gente con los mismos intereses.',
+  '1 gemeinsam': '1 en común',
+  '{n} gemeinsam': '{n} en común',
+  'Nach Interesse filtern': 'Filtrar por interés',
+  'Noch niemand mit diesem Interesse': 'Aún nadie con este interés',
+  'Name oder Interesse, z. B. Marvel': 'Nombre o interés, p. ej. Marvel',
+  'Leute mit Interesse {name}': 'Gente interesada en {name}',
+  '1 öffentliches Profil': '1 perfil público',
+  '{n} öffentliche Profile': '{n} perfiles públicos',
+};
+
+export default dict;

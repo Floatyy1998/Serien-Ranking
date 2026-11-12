@@ -1,3 +1,4 @@
+import { normalizeInterestIds } from '../../lib/interests/interests';
 import { dbGet } from '../db/ref';
 import type { PublicDirectoryEntry } from '../../types/PublicDirectory';
 
@@ -26,6 +27,7 @@ function parseEntry(raw: unknown): PublicDirectoryEntry | null {
     manga: count(r.manga),
     books: count(r.books),
     watchtimeMinutes: count(r.watchtimeMinutes),
+    interests: normalizeInterestIds(r.interests),
   };
 }
 

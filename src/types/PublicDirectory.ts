@@ -10,4 +10,5 @@ export interface PublicDirectoryEntry {
   manga: number;
   books: number;
   watchtimeMinutes: number;
+  interests: string[];
 }

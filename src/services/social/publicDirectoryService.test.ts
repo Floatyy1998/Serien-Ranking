@@ -27,6 +27,7 @@ describe('fetchPublicDirectory', () => {
           movies: -3,
           manga: 4,
           watchtimeMinutes: 900,
+          interests: ['anime', 'quatsch', 'marvel'],
         },
         { uid: 'u2' },
         null,
@@ -46,6 +47,7 @@ describe('fetchPublicDirectory', () => {
         manga: 4,
         books: 0,
         watchtimeMinutes: 900,
+        interests: ['marvel', 'anime'],
       },
     ]);
     expect(dbGet).toHaveBeenCalledWith('publicProfileDirectory');

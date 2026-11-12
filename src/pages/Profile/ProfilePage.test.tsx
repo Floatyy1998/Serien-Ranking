@@ -12,6 +12,7 @@ vi.mock('./ProfileComponents', () => ({
   ProfileLogoutButton: () => <div data-testid="logout" />,
 }));
 vi.mock('./useProfileData', () => ({ useProfileData: useProfileDataMock }));
+vi.mock('./ProfileInterests', () => ({ ProfileInterests: () => null }));
 vi.mock('../../components/ui/overlay/ImageCropSheet', () => ({ ImageCropSheet: () => null }));
 vi.mock('../../hooks/profile/useAvatarUpload', () => ({
   useAvatarUpload: () => ({

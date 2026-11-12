@@ -38,6 +38,8 @@ import { useFriendManga } from '../FriendProfile/useFriendManga';
 import { useAuth } from '../../contexts/AuthContext';
 import { PublicBooksGrid, PublicMangaGrid } from './PublicReadingGrids';
 import { PublicProfileHeader } from './PublicProfileHeader';
+import { InterestChips } from '../../components/profile/InterestChips';
+import { useUserInterests } from '../../hooks/profile/useInterests';
 import type { PublicItem } from './publicProfileHelpers';
 import { userMangaRating } from '../../lib/manga/overview';
 import { calculatePublicRating, usePublicProfileData } from './usePublicProfileData';
@@ -194,6 +196,7 @@ export const PublicProfilePage: React.FC = () => {
   const manga = useFriendManga(ownerId);
   const books = useFriendBooks(ownerId);
   const { folders } = useFriendFolders(ownerId);
+  const interests = useUserInterests(ownerId);
   const openFolder = folders.find((f) => f.id === openFolderId) ?? null;
   const search = (filters.search || '').trim().toLowerCase();
   const mangaItems = useMemo(
@@ -298,6 +301,15 @@ export const PublicProfilePage: React.FC = () => {
           averageRating={averageRating}
           currentTheme={currentTheme}
         />
+
+        {interests.length > 0 && (
+          <section className="fp-interests" aria-label={t('Interessen')}>
+            <h2 className="fp-interests__title" style={{ color: currentTheme.text.primary }}>
+              {t('Interessen')}
+            </h2>
+            <InterestChips ids={interests} linkToDirectory={!!user} />
+          </section>
+        )}
 
         <div className="fp-search-wrap">
           <SearchInput

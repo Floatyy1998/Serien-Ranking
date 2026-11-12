@@ -4,7 +4,10 @@ import PublicRounded from '@mui/icons-material/PublicRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FilterPill } from '../../../components/ui/input/FilterPill';
+import { useOwnInterests } from '../../../hooks/profile/useInterests';
+import { interestById, matchInterests } from '../../../lib/interests/interests';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -32,6 +35,11 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
   const [query, setQuery] = useState('');
   const [sending, setSending] = useState<string | null>(null);
   const [sentNow, setSentNow] = useState<Set<string>>(() => new Set());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const interestParam = searchParams.get('interest');
+  const interestFilter = interestParam && interestById(interestParam) ? interestParam : null;
+  const ownInterests = useOwnInterests(user?.uid);
+  const ownInterestSet = useMemo(() => new Set(ownInterests ?? []), [ownInterests]);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,14 +71,55 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
     };
   }, [friends, sentRequests, friendRequests, sentNow]);
 
+  const others = useMemo(
+    () => (entries ?? []).filter((e) => e.uid !== user?.uid),
+    [entries, user?.uid]
+  );
+
+  const filterChips = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of others)
+      for (const id of e.interests ?? []) counts.set(id, (counts.get(id) ?? 0) + 1);
+    const mine = (ownInterests ?? []).filter((id) => counts.has(id));
+    const popular = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([id]) => id)
+      .filter((id) => !mine.includes(id));
+    const ids = [...mine, ...popular].slice(0, 10);
+    if (interestFilter && !ids.includes(interestFilter)) ids.unshift(interestFilter);
+    return ids.map((id) => ({ id, count: counts.get(id) ?? 0 }));
+  }, [others, ownInterests, interestFilter]);
+
   const visible = useMemo(() => {
-    const own = (entries ?? []).filter((e) => e.uid !== user?.uid);
+    const mine = new Set(ownInterests ?? []);
+    const sharedCount = (e: PublicDirectoryEntry) =>
+      (e.interests ?? []).filter((id) => mine.has(id)).length;
+    let list = interestFilter
+      ? others.filter((e) => (e.interests ?? []).includes(interestFilter))
+      : others;
     const q = query.trim().toLowerCase();
-    if (!q) return own;
-    return own.filter(
-      (e) => e.displayName.toLowerCase().includes(q) || (e.username ?? '').toLowerCase().includes(q)
+    if (q) {
+      const matched = new Set(matchInterests(q, t).map((i) => i.id));
+      list = list.filter(
+        (e) =>
+          e.displayName.toLowerCase().includes(q) ||
+          (e.username ?? '').toLowerCase().includes(q) ||
+          (e.interests ?? []).some((id) => matched.has(id))
+      );
+    }
+    return mine.size > 0 ? [...list].sort((a, b) => sharedCount(b) - sharedCount(a)) : list;
+  }, [others, query, interestFilter, ownInterests]);
+
+  const setInterestFilter = (id: string | null) =>
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        if (id) params.set('interest', id);
+        else params.delete('interest');
+        return params;
+      },
+      { replace: true }
     );
-  }, [entries, query, user?.uid]);
 
   // Eingeloggt immer ins Profil in der App; /public bleibt für Gäste mit Link.
   const openProfile = (entry: PublicDirectoryEntry) => {
@@ -97,7 +146,7 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
     );
   }
 
-  if (visible.length === 0 && !query) {
+  if (others.length === 0) {
     return (
       <EmptyState
         icon={<PublicRounded style={{ fontSize: 'inherit' }} />}
@@ -132,7 +181,7 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('Öffentliche Profile durchsuchen')}
+          placeholder={t('Name oder Interesse, z. B. Marvel')}
           aria-label={t('Öffentliche Profile durchsuchen')}
           style={{
             flex: 1,
@@ -145,6 +194,35 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
         />
       </div>
 
+      {filterChips.length > 0 && (
+        <div
+          role="group"
+          aria-label={t('Nach Interesse filtern')}
+          style={{
+            display: 'flex',
+            gap: 8,
+            overflowX: 'auto',
+            margin: '-4px 0 16px',
+            paddingBottom: 2,
+          }}
+        >
+          {filterChips.map(({ id, count }) => {
+            const interest = interestById(id);
+            if (!interest) return null;
+            const active = interestFilter === id;
+            return (
+              <FilterPill
+                key={id}
+                label={t(interest.label)}
+                active={active}
+                badge={active ? undefined : count}
+                onClick={() => setInterestFilter(active ? null : id)}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {visible.length === 0 ? (
         <div
           style={{
@@ -154,7 +232,9 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
             fontSize: '15px',
           }}
         >
-          {t('Keine Treffer für „{query}“', { query })}
+          {query
+            ? t('Keine Treffer für „{query}“', { query })
+            : t('Noch niemand mit diesem Interesse')}
         </div>
       ) : (
         <div
@@ -226,6 +306,38 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
                   <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
                     {meta || t('Öffentliches Profil')}
                   </p>
+                  {(entry.interests ?? []).length > 0 && (
+                    <p
+                      style={{
+                        fontSize: '12.5px',
+                        margin: '3px 0 0',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: currentTheme.text.muted,
+                      }}
+                    >
+                      {(entry.interests ?? []).slice(0, 4).map((id, i) => {
+                        const interest = interestById(id);
+                        if (!interest) return null;
+                        const shared = ownInterestSet.has(id) || id === interestFilter;
+                        return (
+                          <span key={id}>
+                            {i > 0 && ' · '}
+                            <span
+                              style={
+                                shared
+                                  ? { color: currentTheme.primary, fontWeight: 600 }
+                                  : undefined
+                              }
+                            >
+                              {t(interest.label)}
+                            </span>
+                          </span>
+                        );
+                      })}
+                    </p>
+                  )}
                 </div>
 
                 {relation === 'none' ? (

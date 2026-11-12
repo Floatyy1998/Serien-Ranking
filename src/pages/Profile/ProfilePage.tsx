@@ -12,6 +12,7 @@ import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
 import { useAvatarUpload } from '../../hooks/profile/useAvatarUpload';
 import { useOwnPhotoURL } from '../../services/profile/ownProfilePhoto';
 import { useProfileData } from './useProfileData';
+import { ProfileInterests } from './ProfileInterests';
 import { t } from '../../services/i18n';
 import './ProfilePage.css';
 
@@ -84,6 +85,8 @@ export const ProfilePage = memo(() => {
           <ProfileStats stats={stats} reading={reading} currentTheme={currentTheme} />
         </div>
       </div>
+
+      <ProfileInterests />
 
       <ProfileFeaturedNav
         title={t('Schnellzugriff')}

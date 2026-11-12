@@ -66,6 +66,8 @@ import { IncomingRequestActions } from './IncomingRequestActions';
 import { FriendComparisonCard } from './FriendComparisonCard';
 import { useFriendComparison } from './useFriendComparison';
 import { useFriendFolders } from './useFriendFolders';
+import { InterestChips } from '../../components/profile/InterestChips';
+import { useOwnInterests, useUserInterests } from '../../hooks/profile/useInterests';
 import { useFriendManga } from './useFriendManga';
 import { useFriendBooks } from './useFriendBooks';
 import { rankBooksByRating } from '../../lib/books/bookRanking';
@@ -217,6 +219,12 @@ export const FriendProfilePage = memo(() => {
   const comparison = useFriendComparison(restricted && !publicViewer ? undefined : friendId);
   const friendFolders = useFriendFolders(restricted || !darfSehen ? undefined : friendId);
   const folders = friendFolders.folders;
+  const friendInterests = useUserInterests(libraryVisible ? friendId : undefined);
+  const ownInterests = useOwnInterests(user?.uid);
+  const sharedInterests = useMemo(
+    () => new Set((ownInterests ?? []).filter((id) => friendInterests.includes(id))),
+    [ownInterests, friendInterests]
+  );
   const friendManga = useFriendManga(restricted || !darfSehen ? undefined : friendId);
   const { mangaList: ownManga, hiddenMangaList: ownHiddenManga } = useMangaList();
   const ownMangaIds = useMemo(
@@ -580,6 +588,23 @@ export const FriendProfilePage = memo(() => {
             </div>
           )}
         </header>
+
+        {friendInterests.length > 0 && (
+          <section className="fp-interests" aria-label={t('Interessen')}>
+            <h2 className="fp-interests__title" style={{ color: currentTheme.text.primary }}>
+              {t('Interessen')}
+              {sharedInterests.size > 0 && (
+                <span style={{ color: currentTheme.text.muted, fontWeight: 500 }}>
+                  {' · '}
+                  {sharedInterests.size === 1
+                    ? t('1 gemeinsam')
+                    : t('{n} gemeinsam', { n: sharedInterests.size })}
+                </span>
+              )}
+            </h2>
+            <InterestChips ids={friendInterests} shared={sharedInterests} linkToDirectory />
+          </section>
+        )}
 
         {/* Friend Insights — Currently Watching, Pet, Anticipation */}
         {friendId && (

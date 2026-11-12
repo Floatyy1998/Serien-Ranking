@@ -1,0 +1,46 @@
+/** Portugiesische Übersetzungen: Profil-Interessen. */
+
+const dict: Record<string, string> = {
+  Marvel: 'Marvel',
+  DC: 'DC',
+  'Star Wars': 'Star Wars',
+  'Harry Potter': 'Harry Potter',
+  'Herr der Ringe': 'O Senhor dos Anéis',
+  'Star Trek': 'Star Trek',
+  'James Bond': 'James Bond',
+  Disney: 'Disney',
+  Pixar: 'Pixar',
+  'Studio Ghibli': 'Studio Ghibli',
+  'K-Drama': 'K-drama',
+  Superhelden: 'Super-heróis',
+  Zombies: 'Zumbis',
+  Sitcoms: 'Sitcoms',
+  Dokus: 'Documentários',
+  'Reality-TV': 'Reality shows',
+  Interessen: 'Interesses',
+  'Profile mit Interesse {name} finden': 'Encontrar perfis interessados em {name}',
+  'Filmwelten & Studios': 'Franquias e estúdios',
+  'Genres & Themen': 'Gêneros e temas',
+  'Höchstens {n} Interessen': 'No máximo {n} interesses',
+  'Stehen in deinem Profil. Ist dein Profil öffentlich, finden dich Leute mit denselben Interessen über die Suche.':
+    'Aparecem no seu perfil. Se o seu perfil for público, pessoas com os mesmos interesses podem encontrar você pela busca.',
+  'Deine Interessen': 'Seus interesses',
+  '{n} von {max}': '{n} de {max}',
+  'Noch keine ausgewählt': 'Nenhum escolhido ainda',
+  'Vorschläge aus deiner Bibliothek': 'Sugestões da sua biblioteca',
+  'Alle übernehmen': 'Adicionar todos',
+  'Alle Interessen': 'Todos os interesses',
+  'Passend zu dem, was du schaust: {list}': 'Com base no que você assiste: {list}',
+  'Zeig, was du gern schaust, und finde Leute mit denselben Interessen.':
+    'Mostre o que você gosta de assistir e encontre pessoas com os mesmos interesses.',
+  '1 gemeinsam': '1 em comum',
+  '{n} gemeinsam': '{n} em comum',
+  'Nach Interesse filtern': 'Filtrar por interesse',
+  'Noch niemand mit diesem Interesse': 'Ainda ninguém com este interesse',
+  'Name oder Interesse, z. B. Marvel': 'Nome ou interesse, ex.: Marvel',
+  'Leute mit Interesse {name}': 'Pessoas interessadas em {name}',
+  '1 öffentliches Profil': '1 perfil público',
+  '{n} öffentliche Profile': '{n} perfis públicos',
+};
+
+export default dict;

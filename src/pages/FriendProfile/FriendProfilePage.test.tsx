@@ -123,6 +123,13 @@ const { foldersState } = vi.hoisted(() => ({
   },
 }));
 vi.mock('./useFriendFolders', () => ({ useFriendFolders: () => foldersState }));
+vi.mock('../../hooks/profile/useInterests', () => ({
+  useOwnInterests: () => ['anime'],
+  useUserInterests: (uid?: string) => (uid ? ['anime', 'krieg'] : []),
+}));
+vi.mock('../../components/profile/InterestChips', () => ({
+  InterestChips: ({ ids }: { ids: string[] }) => <div data-testid="interests">{ids.join(',')}</div>,
+}));
 vi.mock('../Ratings/RatingFolderGrid', () => ({
   RatingFolderGrid: ({
     folders,
@@ -263,6 +270,12 @@ describe('FriendProfilePage', () => {
     render(<FriendProfilePage />);
     expect(screen.getByText('Mia')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Fringe' })).toBeInTheDocument();
+  });
+
+  it('zeigt die Interessen des Freundes mit der Zahl gemeinsamer', () => {
+    render(<FriendProfilePage />);
+    expect(screen.getByTestId('interests')).toHaveTextContent('anime,krieg');
+    expect(screen.getByText(/1 gemeinsam/)).toBeInTheDocument();
   });
 
   it('triggers the taste-match navigation from the Match button', () => {

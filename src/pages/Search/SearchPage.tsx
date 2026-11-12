@@ -24,6 +24,7 @@ import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchPage } from './useSearchPage';
 import type { SearchTypeFilter } from './useSearchPage';
+import { InterestPeopleHint } from '../../components/search/InterestPeopleHint';
 import './SearchPage.css';
 
 export const SearchPage = memo(() => {
@@ -249,6 +250,9 @@ export const SearchPage = memo(() => {
 
       {/* Content */}
       <div className="search-content">
+        {hasQuery && (searchType === 'all' || peopleOnly) && (
+          <InterestPeopleHint query={searchQuery} />
+        )}
         <AnimatePresence mode="wait">
           {peopleOnly && !hasQuery ? (
             <motion.div key="people-popular" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
