@@ -130,6 +130,13 @@ export function sameAuthor(a: string[] | undefined, b: string[] | undefined): bo
   return !keysA.size || !keysB.size || sharesKey(keysA, keysB);
 }
 
+// Gleiche ISBN schlägt den Autorvergleich: Die DNB nennt bei Manhwa oft nur den Zeichner.
+function isPartOf(book: Book, part: BookSeriesPart | undefined): boolean {
+  if (!part) return true;
+  if (book.isbn13 && part.result?.isbn13 === book.isbn13) return true;
+  return sameAuthor(book.authors, part.result?.authors);
+}
+
 /**
  * Bandnummer für die Reihenfolge: Steht auf dem Platz des Buchs ein Band eines anderen Autors
  * (Romanvorlage, Sammelband), liegt das Buch vor diesem Band — sonst würde der Band übersprungen.
@@ -142,7 +149,18 @@ function orderPositionOf(
   const position = partPositionOf(book, parts, seriesId);
   if (position === undefined) return undefined;
   const part = parts.find((p) => p.position === position);
-  return part && !sameAuthor(book.authors, part.result?.authors) ? position - 0.5 : position;
+  return isPartOf(book, part) ? position : position - 0.5;
+}
+
+function certainPositionOf(
+  book: Book,
+  parts: BookSeriesPart[],
+  seriesId: string
+): number | undefined {
+  const own = book.series?.position;
+  if (typeof own === 'number' && sameSeriesKey(book.series?.wikidataId, seriesId)) return own;
+  if (!book.isbn13) return undefined;
+  return parts.find((p) => p.result?.isbn13 === book.isbn13)?.position;
 }
 
 /**
@@ -152,8 +170,10 @@ function orderPositionOf(
 export function fitsSeries(book: Book, parts: BookSeriesPart[], seriesId: string): boolean {
   const position = partPositionOf(book, parts, seriesId);
   if (position === undefined) return false;
-  const part = parts.find((p) => p.position === position);
-  return !part || sameAuthor(book.authors, part.result?.authors);
+  return isPartOf(
+    book,
+    parts.find((p) => p.position === position)
+  );
 }
 
 /**
@@ -221,6 +241,8 @@ export function seriesProgress(
 ): SeriesProgress[] {
   const out: SeriesProgress[] = [];
   const seen: string[] = [];
+  // Gleiches Buch auf gleichem Platz = dasselbe Werk unter zweitem Schlüssel; Unterreihen haben andere Plätze.
+  const claimed = new Set<string>();
   // Schlüssel mit Gesamttitel zuerst — ein älterer gleichwertiger Schlüssel ergäbe dieselbe Reihe ein zweites Mal.
   const entries = Object.entries(partsBySeries).sort(
     ([a], [b]) =>
@@ -236,6 +258,12 @@ export function seriesProgress(
         sameSeriesKey(b.series?.wikidataId, seriesId) ||
         partPositionOf(b, parts, seriesId) !== undefined
     );
+    const certain = inSeries.flatMap((b) => {
+      const position = certainPositionOf(b, parts, seriesId);
+      return position === undefined ? [] : [`${b.id}@${position}`];
+    });
+    if (certain.some((claim) => claimed.has(claim))) continue;
+    certain.forEach((claim) => claimed.add(claim));
     const positionsOf = (statuses: Book['status'][]) =>
       inSeries
         .filter((b) => statuses.includes(b.status))

@@ -392,3 +392,63 @@ describe('Lady Eris: das eigene Buch macht eine Originalliste nicht deutsch', ()
     ).toBe(true);
   });
 });
+
+describe('Omniscient Reader: DNB nennt den Zeichner, Hardcover führt dasselbe Werk', () => {
+  const DNB = "dnb:1325535427:Omniscient reader's viewpoint";
+  const HC = "hc:Omniscient Reader's Viewpoint (Manhwa)";
+  const isbnDe = ['9783551630063', '9783551630070', '9783551630087', '9783551630186'];
+  const dnbParts = isbnDe.map((isbn13, i) => ({
+    wikidataId: `dnb-${isbn13}`,
+    title: `Omniscient reader's viewpoint ${i + 1}`,
+    position: i + 1,
+    publishedDate: '2024-06-01',
+    result: {
+      id: `dnb-${isbn13}`,
+      title: `Omniscient reader's viewpoint ${i + 1}`,
+      authors: ['Seul li pi - C'],
+      isbn13,
+      source: 'dnb' as const,
+    },
+  }));
+  const hcParts = ['9798400901065', '9783551630070', '9798400901614', '9791164287048'].map(
+    (isbn13, i) => ({
+      wikidataId: `hc-${isbn13}`,
+      title: `Omniscient Reader's Viewpoint (Manhwa), Vol. ${i + 1}`,
+      position: i + 1,
+      publishedDate: '2022-01-01',
+      result: {
+        id: `hc-${isbn13}`,
+        title: `Omniscient Reader's Viewpoint (Manhwa), Vol. ${i + 1}`,
+        authors: ['singNsong', 'Sleepy-C'],
+        isbn13,
+        source: 'hardcover' as const,
+      },
+    })
+  );
+  const volume = (id: string, position: number, key: string, isbn13: string, title: string) =>
+    book({
+      id,
+      title,
+      authors: ['sing N song', 'Umi'],
+      isbn13,
+      series: { name: "Omniscient Reader's Viewpoint", position, wikidataId: key },
+    });
+  const books = [
+    volume('gb-3', 3, DNB, '9783551630087', 'The Omniscient Reader 3'),
+    volume('gb-1', 1, DNB, '9783551630063', "Omniscient Reader's Viewpoint 1"),
+    volume('hc-2', 2, HC, '9783551630070', 'The Omniscient Reader 2'),
+    volume('hc-en-1', 1, HC, '9798400901065', '전지적 독자 시점 1'),
+    volume('hc-en-3', 3, HC, '9798400901614', "Omniscient Reader's Viewpoint (Manhwa), Vol. 3"),
+  ];
+
+  it('erkennt den Band an der ISBN, auch wenn der Autor nicht passt', () => {
+    expect(fitsSeries(books[0], dnbParts, DNB)).toBe(true);
+  });
+
+  it('schlägt nach Band 3 den vierten deutschen Band vor, und die Reihe nur einmal', () => {
+    const out = seriesProgress(books, { [DNB]: dnbParts, [HC]: hcParts }, {}, NOW);
+    expect(out).toHaveLength(1);
+    expect(out[0].seriesId).toBe(DNB);
+    expect(out[0].next.part.result?.isbn13).toBe('9783551630186');
+  });
+});
