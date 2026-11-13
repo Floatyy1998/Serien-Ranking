@@ -28,6 +28,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 
   return (
     <div
+      className="ui-section-header"
       style={{
         display: 'flex',
         justifyContent: 'space-between',

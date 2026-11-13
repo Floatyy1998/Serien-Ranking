@@ -1487,3 +1487,23 @@ button:active:not(:disabled),
   color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
   white-space: nowrap;
 }
+
+/* Startseite breit: feine Linie über jeder Sektion, damit die Blöcke nicht ineinanderlaufen. */
+@media (min-width: 1100px) {
+  :root:not([data-layout='mobile']) section[style*='--home-section-gap'] > .ui-section-header {
+    position: relative;
+    padding-top: 26px !important;
+  }
+
+  :root:not([data-layout='mobile'])
+    section[style*='--home-section-gap']
+    > .ui-section-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: var(--hairline);
+  }
+}
