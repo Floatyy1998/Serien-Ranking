@@ -43,6 +43,9 @@ const compactWords = (value: string): string =>
 
 const SUBTITLE_SPLIT = /[:–—]| - /;
 
+/** „Band 01" und „Band 1" sind derselbe Band — die DNB schreibt Druckausgabe und E-Book verschieden. */
+const withoutLeadingZeros = (text: string): string => text.replace(/(^|\s)0+(?=\d)/g, '$1');
+
 /**
  * Haupttitel und Bandnummer aus dem Untertitel: „X: Bd. 5" und „X: Untertitel 5" tragen Band 5
  * (eine Zahl am Ende des Untertitels ist der Band — bis drei Stellen, damit Jahre nicht zählen).
@@ -51,7 +54,10 @@ function titleParts(title: string): { head: string; volume?: string } {
   const [head, ...rest] = normalizeBookText(title).split(SUBTITLE_SPLIT);
   const subtitle = compactWords(rest.join(' '));
   const volume = subtitle.match(/^(\d{1,4})$/)?.[1] ?? subtitle.match(/\s(\d{1,3})$/)?.[1];
-  return { head: compactWords(head), volume };
+  return {
+    head: withoutLeadingZeros(compactWords(head)),
+    volume: volume === undefined ? undefined : String(Number(volume)),
+  };
 }
 
 /** Titel ohne Untertitel, aber mit Bandnummer („X, Band 5", „X: Bd. 5", „X 5", „X: Untertitel 5" sind gleich). */

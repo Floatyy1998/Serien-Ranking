@@ -77,6 +77,40 @@ describe('bookIdentity', () => {
   });
 });
 
+describe('Bandnummer mit führender Null', () => {
+  it('behandelt „01" und „1" als denselben Band', () => {
+    expect(bookTitleKey('Dienerin des verfluchten Kindes 01')).toBe(
+      bookTitleKey('Dienerin des verfluchten Kindes 1')
+    );
+    expect(bookTitleKey('Lady Eris: Nur der Tod kann mich erlösen 05')).toBe(
+      bookTitleKey('Lady Eris: Nur der Tod kann mich erlösen 5')
+    );
+    expect(bookTitleKey('Dienerin des verfluchten Kindes 10')).not.toBe(
+      bookTitleKey('Dienerin des verfluchten Kindes 1')
+    );
+  });
+
+  // Ticket 13.11.2026: Die DNB führt jeden Band als Druckausgabe („… 1") und E-Book („… 01") mit anderer ISBN.
+  it('führt Druckausgabe und E-Book desselben Bands zusammen', () => {
+    const print = {
+      id: 'dnb-9783963587979',
+      title: 'Dienerin des verfluchten Kindes 1',
+      authors: ['Yuki Shibamiya'],
+      isbn13: '9783963587979',
+    };
+    const ebook = {
+      id: 'dnb-9783963587986',
+      title: 'Dienerin des verfluchten Kindes 01',
+      authors: ['Yuki Shibamiya'],
+      isbn13: '9783963587986',
+    };
+    expect(isSameBookIdentity(print, ebook)).toBe(true);
+    expect(
+      isSameBookIdentity(print, { ...ebook, title: 'Dienerin des verfluchten Kindes 02' })
+    ).toBe(false);
+  });
+});
+
 describe('isSameBookIdentity', () => {
   // Gemeldete Dublette (Ticket 30.10.2026): DNB nennt das Zeichenstudio, Google die Autorin in anderer Reihenfolge
   const dnb = {
