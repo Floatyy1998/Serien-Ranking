@@ -236,15 +236,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
         title={t('Weiterschauen')}
         onSeeAll={() => navigate('/watchlist')}
       />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          padding: '0 20px',
-          position: 'relative',
-        }}
-      >
+      <div className="home-row-list">
         <AnimatePresence mode="popLayout">
           {items
             .filter(

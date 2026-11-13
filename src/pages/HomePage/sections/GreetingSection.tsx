@@ -214,6 +214,16 @@ export const GreetingSection = React.memo(function GreetingSection({
     }
   }, [greetingInfo]);
 
+  const headerActions = (only?: 'bell' | 'avatar') => (
+    <HeaderActions
+      totalUnreadBadge={totalUnreadBadge}
+      onNotificationsOpen={onNotificationsOpen}
+      photoURL={photoURL}
+      displayName={displayName}
+      only={only}
+    />
+  );
+
   return (
     <>
       {/* Tooltip - shows language info and is clickable */}
@@ -250,7 +260,8 @@ export const GreetingSection = React.memo(function GreetingSection({
           }}
           style={{
             position: 'fixed',
-            top: '80px',
+            // Breit sitzt der Gruß ganz oben — der Hinweis steht dort auf seiner Höhe, nicht über dem Suchfeld.
+            top: isMobile ? '80px' : '26px',
             left: '50%',
             transform: 'translateX(-50%)',
             backgroundColor: currentTheme.primary,
@@ -278,35 +289,14 @@ export const GreetingSection = React.memo(function GreetingSection({
           Einzelteile — Begrüßung/Uhr/Actions oben, Suche + Daten-Pods darunter. */}
       <header
         style={{
-          padding: `calc(${isMobile ? '10px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '14px' : '20px'} 0`,
-          marginBottom: isMobile ? 'var(--home-row-gap)' : '24px',
+          padding: `calc(${isMobile ? '12px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '16px' : '20px'} 0`,
+          marginBottom: isMobile ? '20px' : '24px',
         }}
       >
         {above}
-        <div
-          className="liquid-glass"
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: isMobile ? '20px' : '24px',
-            padding: isMobile ? '12px 14px 14px' : '20px 24px',
-          }}
-        >
-          {/* Ambient-Glow im Deck */}
+        <div style={{ position: 'relative', padding: isMobile ? 0 : '8px 0 0' }}>
           <div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: '-160px',
-              left: '-100px',
-              width: '480px',
-              height: '340px',
-              background: `radial-gradient(ellipse, ${currentTheme.primary}30, transparent 70%)`,
-              filter: 'blur(40px)',
-              pointerEvents: 'none',
-            }}
-          />
-          <div
+            className="home-greet"
             style={{
               position: 'relative',
               display: 'flex',
@@ -315,7 +305,9 @@ export const GreetingSection = React.memo(function GreetingSection({
               gap: '12px',
             }}
           >
-            <div style={{ minWidth: 0, flex: 1 }}>
+            {/* Schmal: Avatar links, Datum + Gruß daneben, Glocke rechts. */}
+            {isMobile && headerActions('avatar')}
+            <div className="home-greet__text" style={{ minWidth: 0, flex: 1 }}>
               {title ?? (
                 <GradientText
                   as="h1"
@@ -326,10 +318,10 @@ export const GreetingSection = React.memo(function GreetingSection({
                     // stehen bei 412px nur 330px zur Verfuegung, dort brach der
                     // Gruss sonst auf drei Zeilen um.
                     fontSize: isMobile
-                      ? 'clamp(15px, calc(var(--effective-width, 412px) * 0.049), 20px)'
-                      : 'clamp(21px, 0.7vw + 17px, 26px)',
+                      ? 'clamp(18px, calc(var(--effective-width, 412px) * 0.054), 23px)'
+                      : 'clamp(28px, 1vw + 20px, 38px)',
                     fontWeight: 800,
-                    letterSpacing: '-0.02em',
+                    letterSpacing: '-0.03em',
                     lineHeight: 1.18,
                     margin: '0 0 2px 0',
                     // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
@@ -383,9 +375,10 @@ export const GreetingSection = React.memo(function GreetingSection({
                 </GradientText>
               )}
               <p
+                className="home-greet__clock"
                 style={{
                   color: currentTheme.text.secondary,
-                  fontSize: isMobile ? '12.5px' : '15px',
+                  fontSize: isMobile ? '13px' : '15px',
                   margin: 0,
                 }}
               >
@@ -393,12 +386,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               </p>
             </div>
 
-            <HeaderActions
-              totalUnreadBadge={totalUnreadBadge}
-              onNotificationsOpen={onNotificationsOpen}
-              photoURL={photoURL}
-              displayName={displayName}
-            />
+            {headerActions(isMobile ? 'bell' : undefined)}
           </div>
 
           {/* Suche + Daten-Pods — eine Zeile auf Desktop, gestapelt auf Mobile. */}
@@ -407,8 +395,8 @@ export const GreetingSection = React.memo(function GreetingSection({
               position: 'relative',
               display: 'flex',
               flexWrap: isMobile ? 'wrap' : 'nowrap',
-              gap: isMobile ? '8px' : '10px',
-              marginTop: isMobile ? '10px' : '16px',
+              gap: isMobile ? '18px 0' : '10px',
+              marginTop: isMobile ? '16px' : '16px',
               alignItems: 'stretch',
             }}
           >
@@ -422,16 +410,15 @@ export const GreetingSection = React.memo(function GreetingSection({
                 minWidth: 0,
                 font: 'inherit',
                 textAlign: 'left',
-                background: `linear-gradient(135deg, ${currentTheme.primary}14, transparent 45%), var(--glass-light)`,
-                border: `1px solid ${currentTheme.primary}33`,
+                background: 'var(--glass-medium)',
+                border: 'none',
                 borderRadius: '16px',
-                padding: isMobile ? '11px 14px' : '14px 18px',
+                padding: isMobile ? '13px 16px' : '15px 18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
                 gap: '12px',
                 cursor: 'pointer',
-                boxShadow: 'var(--glass-specular)',
               }}
             >
               <Search style={{ fontSize: '20px', color: currentTheme.primary, flexShrink: 0 }} />
@@ -451,7 +438,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               </span>
             </motion.button>
 
-            {(showStatPods ? statPods : []).map((pod) => (
+            {(showStatPods ? statPods : []).map((pod, index) => (
               <motion.button
                 key={pod.key}
                 type="button"
@@ -465,26 +452,23 @@ export const GreetingSection = React.memo(function GreetingSection({
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '2px',
-                  padding: isMobile ? '7px 8px' : '9px 14px',
-                  borderRadius: '14px',
-                  background: 'var(--glass-light)',
-                  border: pod.highlight
-                    ? `1px solid ${currentTheme.primary}59`
-                    : '1px solid var(--glass-border-light)',
-                  boxShadow: pod.highlight
-                    ? `var(--glass-specular), 0 0 18px -6px ${currentTheme.primary}66`
-                    : 'var(--glass-specular)',
+                  gap: '3px',
+                  padding: isMobile ? '2px 4px' : '2px 18px',
+                  borderRadius: 0,
+                  background: 'none',
+                  border: 'none',
+                  boxShadow: index > 0 ? 'inset 1px 0 0 var(--hairline)' : 'none',
                   cursor: 'pointer',
                 }}
               >
                 <span
                   style={{
-                    fontSize: isMobile ? '15px' : '17px',
+                    fontSize: isMobile ? '22px' : '26px',
                     fontWeight: 800,
-                    letterSpacing: '-0.01em',
+                    letterSpacing: '-0.03em',
                     fontFamily: 'var(--font-display)',
-                    color: pod.highlight ? currentTheme.primary : currentTheme.text.primary,
+                    fontVariantNumeric: 'tabular-nums',
+                    color: pod.highlight ? currentTheme.accent : currentTheme.text.secondary,
                     lineHeight: 1.1,
                     whiteSpace: 'nowrap',
                   }}
@@ -493,10 +477,8 @@ export const GreetingSection = React.memo(function GreetingSection({
                 </span>
                 <span
                   style={{
-                    fontSize: isMobile ? '9px' : '10px',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
+                    fontSize: isMobile ? '11.5px' : '12.5px',
+                    fontWeight: 600,
                     color: currentTheme.text.muted,
                     whiteSpace: 'nowrap',
                   }}

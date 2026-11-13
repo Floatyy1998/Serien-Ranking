@@ -158,7 +158,7 @@ export const BookOverlayIdle: React.FC<{ sheetZIndex?: number }> = ({ sheetZInde
             style={{
               color: '#fff',
               background: `linear-gradient(135deg, ${g.colors[0]}, ${g.colors[1]})`,
-              border: '1px solid rgba(255,255,255,0.14)',
+              border: '1px solid transparent',
             }}
           >
             {g.label()}

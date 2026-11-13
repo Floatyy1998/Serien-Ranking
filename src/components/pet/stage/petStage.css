@@ -241,7 +241,7 @@
   justify-content: center;
   gap: 5px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.05);
   color: inherit;

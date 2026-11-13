@@ -106,15 +106,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
         title={t('Heute Neu')}
         onSeeAll={() => navigate('/calendar')}
       />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          padding: '0 20px',
-          position: 'relative',
-        }}
-      >
+      <div className="home-row-list">
         <AnimatePresence mode="popLayout">
           {episodes
             .filter(

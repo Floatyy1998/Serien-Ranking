@@ -77,14 +77,15 @@ export const WatchNextHeader = ({
     >
       <div className="watch-next-header__top">
         <NavEscapeButtons />
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <GradientText
             as="h1"
-            to={currentTheme.status.success}
             style={{
-              fontSize: '22px',
+              fontSize: 'var(--page-title-size)',
               fontWeight: 800,
               fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.035em',
+              lineHeight: 1.1,
               margin: 0,
             }}
           >

@@ -1,3 +1,4 @@
+import { ScoreRow } from '../../components/detail/kit/DetailKit';
 import {
   ArrowBack,
   AutoStories,
@@ -482,7 +483,7 @@ export const FriendProfilePage = memo(() => {
     <PageLayout>
       <div ref={scrollRef} className="fp-page">
         {/* Profil-Kopf: Name links, Avatar rechts, Aktionen, Bewertungs-Stat */}
-        <header className="fp-hero">
+        <header className="fp-hero fp-hero--kit dk">
           <div
             className="fp-hero-glow"
             style={{
@@ -490,8 +491,20 @@ export const FriendProfilePage = memo(() => {
             }}
             aria-hidden
           />
-          <div className="fp-hero-top">
+          <div className="fp-hero-nav">
             <BackButton />
+          </div>
+          <div className="fp-hero-top">
+            <div className="fp-hero-avatar">
+              <UserAvatar
+                userId={friendId ?? ''}
+                username={friendName}
+                photoURL={friendEntry?.photoURL || restrictedProfile?.photoURL}
+                size={76}
+                navigable={false}
+              />
+              {friendEntry?.isOnline && <span className="fp-hero-dot" />}
+            </div>
             <h1 className="fp-hero-name">
               <span
                 style={{
@@ -505,29 +518,25 @@ export const FriendProfilePage = memo(() => {
               </span>
               <NameBadges uid={friendId} />
             </h1>
-            <div className="fp-hero-rating">
-              <span className="fp-hero-rating-val" style={{ color: currentTheme.text.secondary }}>
-                <span className="fp-hero-avg" style={{ color: currentTheme.text.muted }}>
-                  {'Ø'}
-                </span>
-                <Star style={{ fontSize: 15, color: currentTheme.accent }} />
-                {averageRating.toFixed(1)}
-              </span>
-              <span className="fp-hero-rating-cnt" style={{ color: currentTheme.text.muted }}>
-                {t('{n} bewertet', { n: itemsWithRatingCount })}
-              </span>
-            </div>
-            <div className="fp-hero-avatar">
-              <UserAvatar
-                userId={friendId ?? ''}
-                username={friendName}
-                photoURL={friendEntry?.photoURL || restrictedProfile?.photoURL}
-                size={40}
-                navigable={false}
-              />
-              {friendEntry?.isOnline && <span className="fp-hero-dot" />}
-            </div>
           </div>
+
+          <ScoreRow
+            items={[
+              {
+                key: 'avg',
+                label: t('Ø Wertung'),
+                value: averageRating > 0 ? averageRating.toFixed(1) : '–',
+                tone: currentTheme.accent,
+                own: true,
+              },
+              {
+                key: 'count',
+                label: t('Bewertet'),
+                value: String(itemsWithRatingCount),
+                tone: currentTheme.primary,
+              },
+            ]}
+          />
 
           {publicViewer && incomingRequest ? (
             <IncomingRequestActions

@@ -530,3 +530,24 @@
     font-size: 56px;
   }
 }
+
+/* ───────── Kopf im Detail-Baukasten ───────── */
+
+.pp .pp-hero__dates {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.pp .pp-bio {
+  max-width: 72ch;
+  text-align: left;
+}
+
+.pp .pp-filter {
+  border: none !important;
+}
+
+.pp .pp-seg {
+  border: none;
+  background: var(--glass-light);
+}

@@ -620,7 +620,7 @@
   cursor: pointer;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   transition:
     background-color 0.2s,
     border-color 0.2s,
@@ -1017,4 +1017,57 @@
   white-space: normal;
   font-size: 12px;
   line-height: 1.25;
+}
+
+/* ───────── Neuer Look: Kennzahlen ohne Kasten, Abos als ruhige Zeilen ───────── */
+
+.sub-insight-card {
+  padding: 2px 0 16px;
+  border: none !important;
+  border-radius: 0;
+  background: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.sub-insight-card + .sub-insight-card {
+  padding-left: 18px;
+  box-shadow: inset 1px 0 0 var(--hairline);
+}
+
+.sub-insight-label {
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sub-insight-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sub-threshold-row {
+  padding: 14px 0;
+  border: none !important;
+  border-top: 1px solid var(--hairline) !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  border-radius: 0;
+  background: none !important;
+}
+
+.sub-active-card {
+  border: none !important;
+  background: var(--glass-light) !important;
+}
+
+.sub-active-card:hover {
+  transform: none;
+}
+
+.sub-inactive-card {
+  border: none !important;
+  background: var(--glass-light);
 }

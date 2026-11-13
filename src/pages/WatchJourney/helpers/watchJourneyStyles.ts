@@ -14,29 +14,27 @@ interface ThemeLike {
   border: { default: string };
 }
 
-/** Standard-Analytics-Karte (Surface + Border). Ersetzt den wiederholten Block. */
-export const wjCard = (theme: ThemeLike): CSSProperties => ({
-  margin: '0 var(--space-5) var(--space-6)',
-  padding: 'var(--space-5)',
-  borderRadius: 'var(--radius-xl)',
-  background: theme.background.surface,
-  border: `1px solid ${theme.border.default}`,
+/** Standard-Abschnitt: frei auf der Seite, oben von einer Haarlinie getrennt — kein Kasten. */
+export const wjCard = (_theme: ThemeLike): CSSProperties => ({
+  margin: '0 var(--space-5)',
+  padding: 'var(--space-6) 0',
+  borderTop: '1px solid var(--hairline)',
 });
 
 /** Hero-Karte oben in jedem Tab (etwas groesser gerundet, mehr Innenabstand). */
-export const wjHero = (theme: ThemeLike): CSSProperties => ({
+export const wjHero = (_theme: ThemeLike): CSSProperties => ({
   margin: '0 var(--space-5) var(--space-6)',
-  padding: 'var(--space-6)',
-  borderRadius: 'var(--radius-2xl)',
-  background: theme.background.surface,
-  border: `1px solid ${theme.border.default}`,
+  padding: 'var(--space-5)',
+  borderRadius: 'var(--radius-xl)',
+  background: 'var(--glass-light)',
 });
 
 /** Sektions-Ueberschrift (Display-Font). */
 export const wjHeading = (color: string, marginBottom = 16): CSSProperties => ({
   color,
-  fontSize: 16,
+  fontSize: 20,
   fontFamily: 'var(--font-display)',
-  fontWeight: 700,
+  fontWeight: 800,
+  letterSpacing: '-0.02em',
   margin: `0 0 ${marginBottom}px`,
 });

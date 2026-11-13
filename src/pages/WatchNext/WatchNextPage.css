@@ -74,7 +74,7 @@
 .watch-next-filter {
   margin-top: 12px;
   border-radius: var(--radius-xl, 20px);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background:
     linear-gradient(160deg, color-mix(in srgb, var(--wn-primary) 7%, transparent), transparent 55%),
     var(--glass-light);
@@ -127,7 +127,7 @@
   height: 46px;
   padding: 0 44px;
   background: rgba(0, 0, 0, 0.18);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   color: var(--wn-text);
   font: inherit;
@@ -207,7 +207,7 @@
   display: flex;
   gap: 4px;
   padding: 4px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   background: rgba(0, 0, 0, 0.18);
 }
@@ -266,7 +266,7 @@
   min-height: 36px;
   min-width: 0;
   padding: 0 14px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.04);
   color: var(--wn-text-2);
@@ -436,7 +436,7 @@
   padding: 60px 30px;
   background: var(--glass-light);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.08);
@@ -524,4 +524,62 @@
   backdrop-filter: var(--blur-sm);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
+}
+
+/* ───────── Neuer Look: Tonflächen statt Rahmen, lesbare aktive Chips ───────── */
+
+.watch-next-header__btn {
+  border: none;
+  background: var(--glass-medium);
+}
+
+.watch-next-filter {
+  border: none;
+  background: var(--glass-light);
+}
+
+.watch-next-filter__input {
+  border: 1px solid transparent;
+  background: var(--glass-medium);
+}
+
+.wn-chips--segmented {
+  border: none;
+  background: var(--glass-light);
+}
+
+.mobile-app button.wn-chip {
+  border: none;
+  background: var(--glass-medium);
+}
+
+.mobile-app button.wn-chip--active,
+.mobile-app .wn-chips--segmented button.wn-chip--active {
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, var(--theme-accent))
+  );
+  color: var(--on-primary, #1a1016);
+  font-weight: 700;
+}
+
+.watch-next-empty {
+  border: none;
+  box-shadow: none;
+}
+
+/* Kopf wie auf den anderen Seiten: Titel links neben den Zurück-Knöpfen, Aktionen rechts. */
+.watch-next-header__top {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.watch-next-header__actions {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.watch-next-header {
+  border-bottom: none;
 }

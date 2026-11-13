@@ -51,7 +51,7 @@
         ]
       },
       {
-        "source": "/@(series|movie)/**",
+        "source": "/@(series|movie|episode)/**",
         "headers": [
           { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=3600" }
         ]
@@ -96,6 +96,10 @@
       },
       {
         "source": "/list/**",
+        "function": "ogRender"
+      },
+      {
+        "regex": "^/episode/\\d+/s/\\d+/e/\\d+$",
         "function": "ogRender"
       },
       {

@@ -6,6 +6,8 @@ interface DetailStageProps {
   /** Breitbild-Artwork; fehlt es, wird `wash` (Cover) zur Farbwolke. */
   art?: string;
   wash?: string;
+  /** Artwork unkenntlich machen (Spoiler-Schutz). */
+  veil?: boolean;
   poster: ReactNode;
   navEnd?: ReactNode;
   /** Titelblock neben dem Poster. */
@@ -14,10 +16,18 @@ interface DetailStageProps {
   below?: ReactNode;
 }
 
-export const DetailStage = ({ art, wash, poster, navEnd, children, below }: DetailStageProps) => {
+export const DetailStage = ({
+  art,
+  wash,
+  veil,
+  poster,
+  navEnd,
+  children,
+  below,
+}: DetailStageProps) => {
   const image = art || wash;
   return (
-    <header className={`dk-stage${art ? '' : ' dk-stage--wash'}`}>
+    <header className={`dk-stage${art ? '' : ' dk-stage--wash'}${veil ? ' dk-stage--veil' : ''}`}>
       <div
         className="dk-stage__art"
         style={image ? { backgroundImage: `url("${image}")` } : undefined}
@@ -116,6 +126,8 @@ export interface ProgressSegment {
   done: number;
   total: number;
   title?: string;
+  /** Markiert diesen Abschnitt (z. B. die aktuelle Folge). */
+  current?: boolean;
 }
 
 interface ProgressStripProps {
@@ -136,7 +148,7 @@ export const ProgressStrip = ({ segments, children, aside }: ProgressStripProps)
         {visible.map((s) => (
           <div
             key={s.key}
-            className="dk-progress__seg"
+            className={`dk-progress__seg${s.current ? ' dk-progress__seg--current' : ''}`}
             style={{ flexGrow: s.total }}
             title={s.title}
           >

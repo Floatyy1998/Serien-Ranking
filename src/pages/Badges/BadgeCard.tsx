@@ -5,7 +5,6 @@ import type { Badge, BadgeProgress } from '../../features/badges/badgeDefinition
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { getRarityColor } from './badgeCardHelpers';
-import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
@@ -53,26 +52,21 @@ export const BadgeCard = React.memo(
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.03 }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={tapScaleSmall}
+        whileTap={{ opacity: 0.75 }}
         onClick={() => {}}
         className="badge-card-wrapper"
         style={{
+          // Verdient: in der Badge-Farbe getönt. Nächste Stufe: feiner Ring. Sonst ruhige Tonfläche.
           background: earned
-            ? `linear-gradient(145deg, ${badge.color}25, ${theme.background.surface})`
-            : theme.background.surface,
-          border: earned
-            ? `2px solid ${badge.color}60`
-            : isNextTier
-              ? `2px solid ${badge.color}40`
-              : `1px solid ${theme.border.default}`,
+            ? `color-mix(in srgb, ${badge.color} 16%, transparent)`
+            : 'var(--glass-light)',
+          border: 'none',
+          outline: isNextTier && !earned ? `2px solid ${badge.color}55` : undefined,
+          outlineOffset: -2,
           borderRadius: '20px',
           padding: '20px',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: earned
-            ? `0 8px 32px ${badge.color}20`
-            : '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
           contentVisibility: 'auto',
         }}
       >

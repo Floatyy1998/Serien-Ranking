@@ -151,7 +151,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             style={{
               padding: '14px',
               background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid transparent',
               borderRadius: '12px',
               color: currentTheme.text.secondary,
               fontSize: '15px',

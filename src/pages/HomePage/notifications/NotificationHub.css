@@ -132,7 +132,7 @@
   padding: 4px;
   border-radius: 16px;
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
 }
 
 .nh-tab,
@@ -1037,7 +1037,7 @@
   width: 100%;
   min-height: 46px;
   margin-top: 18px;
-  border: 1px solid var(--glass-border-medium);
+  border: 1px solid transparent;
   border-radius: 14px;
   background: var(--glass-subtle);
   color: var(--theme-primary);
@@ -1108,4 +1108,54 @@
 
 .nh-sheet--narrow .nh-friend {
   padding: 12px 12px 14px;
+}
+
+/* ───────── Neuer Look: Reiter mit Unterstrich, Karten ohne Rahmen ───────── */
+
+.nh-tabs {
+  gap: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: inset 0 -1px 0 var(--hairline);
+}
+
+.nh-tab,
+.mobile-app button.nh-tab {
+  position: relative;
+  min-height: 46px;
+  border-radius: 0;
+}
+
+.nh-tab[aria-selected='true'] {
+  background: none;
+  box-shadow: none;
+  color: var(--color-text-secondary);
+}
+
+.nh-tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(
+    90deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, var(--theme-accent))
+  );
+}
+
+.nh-friend {
+  border: none;
+  background: var(--glass-light);
+}
+
+.nh-all-activity,
+.mobile-app button.nh-all-activity {
+  border: none;
+  background: var(--glass-light);
 }

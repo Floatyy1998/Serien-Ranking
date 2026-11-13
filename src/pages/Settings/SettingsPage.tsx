@@ -329,8 +329,6 @@ export const SettingsPage = () => {
         title={!split && category ? t(category.title) : t('Einstellungen')}
         eyebrow={!split && category ? t('Einstellungen') : undefined}
         onBack={!split && category ? backToList : undefined}
-        gradientFrom={currentTheme.text.secondary}
-        gradientTo={currentTheme.primary}
       />
 
       {split ? (

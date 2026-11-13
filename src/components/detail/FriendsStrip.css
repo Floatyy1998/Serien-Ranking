@@ -80,7 +80,7 @@
 
 .friend-progress-card:hover {
   background: var(--glass-medium);
-  border-color: var(--glass-border-light);
+  border-color: transparent;
 }
 
 .friend-progress-avatar {

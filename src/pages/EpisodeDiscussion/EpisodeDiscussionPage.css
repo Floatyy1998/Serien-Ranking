@@ -132,7 +132,7 @@
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(20, 20, 40, 0.5));
   -webkit-backdrop-filter: var(--blur-lg);
   backdrop-filter: var(--blur-lg);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   color: #fff;
   cursor: pointer;
@@ -619,4 +619,87 @@
 .ed-hero-topbar-end .ed-hero-series-btn {
   max-width: none;
   min-width: 0;
+}
+
+/* ───────── Neue Seite im Detail-Baukasten ───────── */
+
+.dk .ed-rail-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* Abschnitte frei auf der Seite: keine Kästen, Überschriften wie auf den Detailseiten. */
+.dk .ed-nav {
+  padding: 4px var(--dk-x) 20px;
+  border: none !important;
+  background: none !important;
+}
+
+.dk .ed-nav-btn {
+  border: none !important;
+  background: var(--glass-light) !important;
+  box-shadow: none !important;
+}
+
+.dk .ed-nav-label {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.dk .ed-content {
+  padding: 0 var(--dk-x) 24px;
+}
+
+.dk .ed-overview,
+.dk .ed-guest-stars {
+  padding: 0 0 22px;
+  margin-bottom: 22px;
+  border: none !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.dk .ed-overview-decoration {
+  display: none;
+}
+
+.dk .ed-overview-icon-wrap {
+  display: none;
+}
+
+.dk .ed-overview-header h2,
+.dk .ed-overview-header h3,
+.dk .ed-guest-stars-header h2,
+.dk .ed-guest-stars-header h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.dk .ed-overview-text {
+  max-width: 78ch;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* Gaststars: umbrechen statt seitlich scrollen. */
+.dk .ed-guest-stars-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 16px 10px;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.dk .ed-guest-stars-count {
+  border: none;
+  background: var(--glass-medium);
 }

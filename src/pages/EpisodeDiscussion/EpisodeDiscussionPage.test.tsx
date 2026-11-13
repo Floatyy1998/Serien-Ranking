@@ -119,14 +119,13 @@ vi.mock('./ShareEpisodeSheet', () => ({ ShareEpisodeSheet: () => null }));
 vi.mock('./EpisodeDiscussionComponents', () => ({
   LoadingState: () => <div data-testid="loading" />,
   NotFoundState: () => <div data-testid="not-found" />,
-  HeroSection: () => <div data-testid="hero" />,
-  QuickActions: () => <div data-testid="quick-actions" />,
   EpisodeNavigation: () => <div data-testid="nav" />,
   OverviewSection: () => <div data-testid="overview" />,
-  CrewSection: () => <div data-testid="crew" />,
   GuestStarsSection: () => <div data-testid="guests" />,
   DiscussionSection: () => <div data-testid="discussion" />,
 }));
+vi.mock('./EpisodeStage', () => ({ EpisodeStage: () => <div data-testid="hero" /> }));
+vi.mock('./SeasonEpisodeList', () => ({ SeasonEpisodeList: () => <div data-testid="season" /> }));
 
 import { EpisodeDiscussionPage } from './EpisodeDiscussionPage';
 
@@ -140,7 +139,7 @@ describe('EpisodeDiscussionPage', () => {
   it('renders the full layout in the normal state', () => {
     render(<EpisodeDiscussionPage />);
     expect(screen.getByTestId('hero')).toBeInTheDocument();
-    expect(screen.getByTestId('quick-actions')).toBeInTheDocument();
+    expect(screen.getByTestId('nav')).toBeInTheDocument();
     expect(screen.getByTestId('discussion')).toBeInTheDocument();
   });
 

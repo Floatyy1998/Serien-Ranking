@@ -119,3 +119,44 @@
   padding: 12px 0;
   font-size: 14px;
 }
+
+.se-links {
+  display: flex;
+  gap: 10px;
+}
+
+.se-link,
+.mobile-app button.se-link {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--glass-light, rgba(255, 255, 255, 0.06));
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.se-link:active {
+  opacity: 0.7;
+}
+
+.se-link--done,
+.mobile-app button.se-link--done {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+.se-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+}

@@ -872,3 +872,15 @@ button.st-row,
     padding: 10px 8px;
   }
 }
+
+/* ───────── Neuer Look: Karten ohne Rahmen, Titel wie auf den anderen Seiten ───────── */
+
+.st-card,
+.st-identity {
+  border-color: transparent;
+}
+
+.mobile-app button.st-chip {
+  border-color: transparent;
+  background: var(--glass-medium);
+}

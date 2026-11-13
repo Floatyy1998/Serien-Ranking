@@ -219,16 +219,8 @@ export const FriendsTab = ({
     <div
       role="tablist"
       aria-label={t('Ansicht')}
-      style={{
-        display: 'flex',
-        gap: '4px',
-        padding: '4px',
-        marginBottom: '16px',
-        maxWidth: 420,
-        borderRadius: '14px',
-        background: currentTheme.background.surface,
-        border: `1px solid ${currentTheme.border.default}`,
-      }}
+      className="ui-line-tabs"
+      style={{ marginBottom: 16, maxWidth: 420 }}
     >
       {(
         [
@@ -244,17 +236,7 @@ export const FriendsTab = ({
             role="tab"
             aria-selected={active}
             onClick={() => setView(id)}
-            style={{
-              flex: 1,
-              padding: '9px 12px',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 600,
-              background: active ? `${currentTheme.primary}26` : 'transparent',
-              color: active ? currentTheme.primary : currentTheme.text.muted,
-            }}
+            className="ui-line-tab"
           >
             {label}
           </button>

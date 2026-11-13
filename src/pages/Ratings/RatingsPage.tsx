@@ -27,6 +27,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/data/usePersistedState';
 import { useMangaList } from '../../contexts/MangaListContext';
@@ -74,6 +75,7 @@ import './RatingsPage.css';
 
 export const RatingsPage: React.FC = () => {
   const { currentTheme, getMobilePageBackground } = useTheme();
+  const { isMobile } = useDeviceType();
 
   const {
     user,
@@ -311,6 +313,58 @@ export const RatingsPage: React.FC = () => {
     );
   }
 
+  // Ansichts-Knöpfe: schmal über der Liste, breit rechts in der Reiter-Zeile des Kopfs.
+  const viewToggle =
+    itemsToRender.length > 0 ? (
+      <div className="ratings-density-toggle" role="group" aria-label={t('Ansicht')}>
+        {selectable && (
+          <button
+            type="button"
+            className={`ratings-density-btn${selecting ? ' active' : ''}`}
+            onClick={() => (selecting ? selection.exit() : selection.start())}
+            aria-pressed={selecting}
+            title={selecting ? t('Auswahl beenden') : t('Auswählen')}
+            aria-label={selecting ? t('Auswahl beenden') : t('Auswählen')}
+            style={
+              selecting
+                ? { background: currentTheme.primary, color: currentTheme.background.default }
+                : { color: currentTheme.text.muted }
+            }
+          >
+            <Checklist fontSize="small" />
+          </button>
+        )}
+        <button
+          type="button"
+          className={`ratings-density-btn${density === 'cinematic' ? ' active' : ''}`}
+          onClick={() => setDensity('cinematic')}
+          aria-pressed={density === 'cinematic'}
+          title={t('Cinematic-Ansicht')}
+          style={
+            density === 'cinematic'
+              ? { background: currentTheme.primary, color: currentTheme.background.default }
+              : { color: currentTheme.text.muted }
+          }
+        >
+          <GridView fontSize="small" />
+        </button>
+        <button
+          type="button"
+          className={`ratings-density-btn${density === 'compact' ? ' active' : ''}`}
+          onClick={() => setDensity('compact')}
+          aria-pressed={density === 'compact'}
+          title={t('Kompakte Listen-Ansicht')}
+          style={
+            density === 'compact'
+              ? { background: currentTheme.primary, color: currentTheme.background.default }
+              : { color: currentTheme.text.muted }
+          }
+        >
+          <ViewList fontSize="small" />
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div
       ref={scrollRef}
@@ -343,6 +397,7 @@ export const RatingsPage: React.FC = () => {
         searchValue={filters.search || ''}
         onSearchChange={(v) => handleQuickFilterChange({ search: v })}
         onTabChange={changeTab}
+        toolbar={isMobile ? undefined : viewToggle}
       />
 
       {/* Items Grid / Kompakt-Liste (D5) */}
@@ -369,55 +424,7 @@ export const RatingsPage: React.FC = () => {
           />
         )}
 
-        {itemsToRender.length > 0 && (
-          <div className="ratings-density-toggle" role="group" aria-label={t('Ansicht')}>
-            {selectable && (
-              <button
-                type="button"
-                className={`ratings-density-btn${selecting ? ' active' : ''}`}
-                onClick={() => (selecting ? selection.exit() : selection.start())}
-                aria-pressed={selecting}
-                title={selecting ? t('Auswahl beenden') : t('Auswählen')}
-                aria-label={selecting ? t('Auswahl beenden') : t('Auswählen')}
-                style={
-                  selecting
-                    ? { background: currentTheme.primary, color: currentTheme.background.default }
-                    : { color: currentTheme.text.muted }
-                }
-              >
-                <Checklist fontSize="small" />
-              </button>
-            )}
-            <button
-              type="button"
-              className={`ratings-density-btn${density === 'cinematic' ? ' active' : ''}`}
-              onClick={() => setDensity('cinematic')}
-              aria-pressed={density === 'cinematic'}
-              title={t('Cinematic-Ansicht')}
-              style={
-                density === 'cinematic'
-                  ? { background: currentTheme.primary, color: currentTheme.background.default }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <GridView fontSize="small" />
-            </button>
-            <button
-              type="button"
-              className={`ratings-density-btn${density === 'compact' ? ' active' : ''}`}
-              onClick={() => setDensity('compact')}
-              aria-pressed={density === 'compact'}
-              title={t('Kompakte Listen-Ansicht')}
-              style={
-                density === 'compact'
-                  ? { background: currentTheme.primary, color: currentTheme.background.default }
-                  : { color: currentTheme.text.muted }
-              }
-            >
-              <ViewList fontSize="small" />
-            </button>
-          </div>
-        )}
+        {isMobile && viewToggle}
 
         {onBooks ? (
           <ReadingLibrary items={readingItems} search={filters.search || ''} />

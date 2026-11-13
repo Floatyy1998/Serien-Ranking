@@ -73,7 +73,7 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
           flex: 1,
           padding: '12px 14px',
           background: currentTheme.background.surface,
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid transparent',
           borderRadius: '12px',
           color: currentTheme.text.secondary,
           fontSize: isMobile ? '14px' : '15px',

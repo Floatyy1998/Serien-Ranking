@@ -179,7 +179,7 @@ export const ThemedSelect = ({ value, options, onChange, ariaLabel, width }: The
                 background: 'rgba(12, 16, 26, 0.97)',
                 WebkitBackdropFilter: 'blur(16px)',
                 backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid transparent',
                 boxShadow: `0 18px 48px rgba(0,0,0,0.65), 0 0 24px ${currentTheme.primary}18`,
                 transformOrigin: 'top center',
               }}

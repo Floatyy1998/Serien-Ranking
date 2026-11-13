@@ -66,34 +66,19 @@ export const ActorUniversePage = () => {
         }}
       >
         <div className="au-header-row au-header-row--main">
-          <BackButton
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surfaceHover})`,
-              border: `1px solid ${currentTheme.border.default}`,
-              color: currentTheme.text.primary,
-              boxShadow: `0 2px 8px ${currentTheme.background.default}80`,
-            }}
-          />
+          <BackButton />
           <div style={{ flex: 1 }}>
             <GradientText
               as="h1"
               style={{
-                fontSize: '22px',
+                fontSize: 'var(--page-title-size)',
                 fontWeight: 800,
                 fontFamily: 'var(--font-display)',
+                letterSpacing: '-0.035em',
+                lineHeight: 1.1,
                 margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
               }}
             >
-              <AutoAwesome
-                style={{
-                  fontSize: '24px',
-                  color: currentTheme.accent,
-                  WebkitTextFillColor: currentTheme.accent,
-                }}
-              />
               Actor Universe
             </GradientText>
             <p className="au-subtitle" style={{ color: currentTheme.text.muted }}>
@@ -106,33 +91,24 @@ export const ActorUniversePage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="au-tabs">
+        <div className="au-tabs ui-line-tabs" role="tablist">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <motion.button
+              <button
                 key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => {
                   setActiveTab(tab.id);
                 }}
-                whileTap={tapScale}
-                className="au-tab-btn"
-                style={{
-                  background: isActive
-                    ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
-                    : `rgba(255,255,255,0.05)`,
-                  border: isActive
-                    ? `1px solid ${currentTheme.primary}55`
-                    : `1px solid ${currentTheme.border.default}`,
-                  color: isActive ? currentTheme.primary : currentTheme.text.muted,
-                  fontWeight: isActive ? 700 : 500,
-                  boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}22` : 'none',
-                }}
+                className="ui-line-tab au-line-tab"
               >
                 <Icon style={{ fontSize: '16px' }} />
                 {t(tab.label)}
-              </motion.button>
+              </button>
             );
           })}
 
@@ -146,11 +122,10 @@ export const ActorUniversePage = () => {
             className="au-voice-toggle"
             style={{
               background: hideVoiceActors
-                ? `rgba(255,255,255,0.05)`
+                ? 'var(--glass-medium)'
                 : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              border: hideVoiceActors ? `1px solid ${currentTheme.border.default}` : 'none',
-              color: hideVoiceActors ? currentTheme.text.muted : currentTheme.text.secondary,
-              boxShadow: !hideVoiceActors ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              border: 'none',
+              color: hideVoiceActors ? currentTheme.text.muted : 'var(--on-primary)',
             }}
           >
             <RecordVoiceOver style={{ fontSize: '18px' }} />

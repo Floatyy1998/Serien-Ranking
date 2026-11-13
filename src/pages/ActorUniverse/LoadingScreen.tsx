@@ -43,7 +43,7 @@ export const LoadingScreen = ({ progress }: LoadingScreenProps) => {
             <GradientText
               as="h1"
               style={{
-                fontSize: '22px',
+                fontSize: 'var(--page-title-size)',
                 fontWeight: 800,
                 fontFamily: 'var(--font-display)',
                 margin: 0,

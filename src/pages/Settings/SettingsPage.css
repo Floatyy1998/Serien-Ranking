@@ -393,3 +393,13 @@
 .settings-search-clear svg {
   font-size: 15px;
 }
+
+/* Abmelden: ruhige Pille statt umrandetem Balken. */
+.settings-logout-btn,
+.mobile-app button.settings-logout-btn {
+  width: auto;
+  margin: 0 auto;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 999px;
+}

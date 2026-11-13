@@ -128,7 +128,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
     // Border und Linien mit Theme-Farben
     border: {
-      default: withOpacity(backgroundTextColors.muted, 0.3),
+      default: withOpacity(backgroundTextColors.muted, 0.08),
       primary: primaryColor,
       light: withOpacity(primaryColor, 0.08),
       lighter: withOpacity(primaryColor, 0.05),

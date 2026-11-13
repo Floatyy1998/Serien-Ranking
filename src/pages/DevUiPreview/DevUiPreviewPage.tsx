@@ -45,7 +45,7 @@ import {
   SignatureStripPreview,
 } from './PetPreviews';
 import { SplashScreen } from '../../components/ui/overlay/SplashScreen';
-import { MoviePagePreview, SeriesPagePreview } from './DetailPreviews';
+import { AppPageByParam, MoviePagePreview, SeriesPagePreview } from './DetailPreviews';
 import { ScrollEscapeDetailPreview, ScrollEscapeHeaderPreview } from './ScrollEscapePreviews';
 import {
   ActivityHeaderPreview,
@@ -417,6 +417,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     label: 'Bücher: Such-Overlay',
     render: () => <BookOverlaySearchPreview />,
   },
+  { id: 'app-page', label: 'App-Seite (?p=home|ratings|…)', render: () => <AppPageByParam /> },
   { id: 'series-page', label: 'Serie: ganze Seite', render: () => <SeriesPagePreview /> },
   { id: 'movie-page', label: 'Film: ganze Seite', render: () => <MoviePagePreview /> },
   { id: 'person', label: 'Personen: Seite', render: () => <PersonPagePreview /> },

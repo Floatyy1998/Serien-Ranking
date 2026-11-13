@@ -39,10 +39,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     >
       <h2
         style={{
-          fontSize: '20px',
+          fontSize: '22px',
           fontFamily: 'var(--font-display)',
           fontWeight: 800,
-          letterSpacing: '-0.01em',
+          letterSpacing: '-0.025em',
           margin: 0,
           minWidth: 0,
           display: 'flex',
@@ -55,7 +55,6 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
             display: 'flex',
             flexShrink: 0,
             color: iconColor || currentTheme.primary,
-            filter: `drop-shadow(0 0 6px ${iconColor || currentTheme.primary}60)`,
           }}
         >
           {icon}
@@ -77,14 +76,17 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           <button
             onClick={onSeeAll}
             style={{
-              background: 'none',
+              background: 'var(--glass-light)',
               border: 'none',
+              borderRadius: 999,
               color: currentTheme.text.secondary,
-              fontSize: '15px',
+              fontSize: '13px',
+              fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              padding: 0,
+              padding: '0 8px 0 14px',
+              minHeight: 34,
               flexShrink: 0,
               whiteSpace: 'nowrap',
             }}

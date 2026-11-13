@@ -1,5 +1,6 @@
-import { Public, Star } from '@mui/icons-material';
+import { Public } from '@mui/icons-material';
 import { memo } from 'react';
+import { ScoreRow } from '../../components/detail/kit/DetailKit';
 import { BackButton, UserAvatar } from '../../components/ui';
 import { NameBadges } from '../../components/ui/display/NameBadges';
 import { t } from '../../services/i18n';
@@ -23,7 +24,7 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
     ) as string;
 
     return (
-      <header className="fp-hero">
+      <header className="fp-hero fp-hero--kit dk">
         <div
           className="fp-hero-glow"
           style={{
@@ -31,47 +32,56 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
           }}
           aria-hidden
         />
-        <div className="fp-hero-top">
+        <div className="fp-hero-nav">
           <BackButton />
-          <h1 className="fp-hero-name">
-            <span
-              style={{
-                backgroundImage: `linear-gradient(90deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
-            >
-              {profileName}
-            </span>
-            <NameBadges uid={profileUid} />
-          </h1>
-          <div className="fp-hero-rating">
-            <span className="fp-hero-rating-val" style={{ color: currentTheme.text.secondary }}>
-              <span className="fp-hero-avg" style={{ color: muted }}>
-                {'Ø'}
-              </span>
-              <Star style={{ fontSize: 15, color: accent }} />
-              {averageRating.toFixed(1)}
-            </span>
-            <span className="fp-hero-rating-cnt" style={{ color: muted }}>
-              {t('{n} bewertet', { n: itemsWithRatingCount })}
-            </span>
-          </div>
+        </div>
+        <div className="fp-hero-top">
           <div className="fp-hero-avatar">
             <UserAvatar
               userId={profileUid ?? ''}
               username={profileName}
               photoURL={photoURL}
-              size={40}
+              size={76}
               navigable={false}
             />
           </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h1 className="fp-hero-name">
+              <span
+                style={{
+                  backgroundImage: `linear-gradient(90deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                }}
+              >
+                {profileName}
+              </span>
+              <NameBadges uid={profileUid} />
+            </h1>
+            <div className="pp-public-pill" style={{ color: muted }}>
+              <Public style={{ fontSize: 14, color: currentTheme.primary }} />
+              {t('Öffentlich')}
+            </div>
+          </div>
         </div>
-        <div className="pp-public-pill" style={{ color: muted }}>
-          <Public style={{ fontSize: 14, color: currentTheme.primary }} />
-          {t('Öffentlich')}
-        </div>
+        <ScoreRow
+          items={[
+            {
+              key: 'avg',
+              label: t('Ø Wertung'),
+              value: averageRating > 0 ? averageRating.toFixed(1) : '–',
+              tone: accent,
+              own: true,
+            },
+            {
+              key: 'count',
+              label: t('Bewertet'),
+              value: String(itemsWithRatingCount),
+              tone: currentTheme.primary,
+            },
+          ]}
+        />
       </header>
     );
   }

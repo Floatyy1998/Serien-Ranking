@@ -213,10 +213,8 @@ export const BadgesPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           style={{
-            padding: '16px',
-            borderRadius: '16px',
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
+            padding: '0 0 16px',
+            borderBottom: '1px solid var(--hairline)',
             marginBottom: '16px',
             marginLeft: '20px',
             marginRight: '20px',

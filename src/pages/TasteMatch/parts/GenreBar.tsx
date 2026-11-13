@@ -31,7 +31,7 @@ export const GenreBar: React.FC<{
         padding: '16px',
         background: bgColor,
         borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: '1px solid transparent',
         boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
       }}
     >

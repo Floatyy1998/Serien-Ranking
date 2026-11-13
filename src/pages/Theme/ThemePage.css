@@ -216,3 +216,29 @@
   font-size: 12.5px;
   line-height: 1.45;
 }
+
+/* ───────── Neuer Look: Abschnitte ohne Kasten, Einträge als ruhige Tonflächen ───────── */
+
+.theme-section {
+  padding: 0 0 22px;
+  margin-bottom: 22px;
+  border: none !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  border-radius: 0;
+  background: none !important;
+}
+
+.theme-section:last-child {
+  border-bottom: none !important;
+}
+
+.theme-section-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.theme-color-row {
+  border: none !important;
+  background: var(--glass-light) !important;
+}

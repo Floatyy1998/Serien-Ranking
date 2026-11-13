@@ -445,3 +445,11 @@
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
+
+/* ───────── Neuer Look: Verlaufszeilen als ruhige Tonflächen ───────── */
+
+.rw-card {
+  border: none;
+  box-shadow: none;
+  background: var(--glass-light) !important;
+}

@@ -103,15 +103,7 @@ export const RewatchSection = React.memo(function RewatchSection({
         title="Rewatches"
         onSeeAll={() => navigate('/watchlist?rewatches=open')}
       />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          padding: '0 20px',
-          position: 'relative',
-        }}
-      >
+      <div className="home-row-list">
         <AnimatePresence mode="popLayout">
           {episodes
             .filter(

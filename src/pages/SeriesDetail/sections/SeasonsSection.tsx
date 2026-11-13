@@ -267,7 +267,7 @@ export function SeasonsSection({
         ref={swipeAreaRef}
         style={{
           background: currentTheme.background.paper,
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid transparent',
           borderRadius: '12px',
           padding: '16px',
           overflow: 'hidden',
@@ -325,7 +325,7 @@ export function SeasonsSection({
                 }
                 style={{
                   background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid transparent',
                   borderRadius: 'var(--radius-sm)',
                   padding: '4px',
                   minWidth: 44,

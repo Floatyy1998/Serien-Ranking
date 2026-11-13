@@ -250,6 +250,7 @@ const dict: Record<string, string> = {
   'Gesehen am': 'Watched on',
   '{done} von {total} Bänden': '{done} of {total} volumes',
   '{done} von {total} Kapiteln': '{done} of {total} chapters',
+  'Ø Wertung': 'Avg. rating',
 };
 
 export default dict;

@@ -585,3 +585,102 @@
   flex: 1;
   min-width: 0;
 }
+
+/* ───────── Neuer Look: große Zahlen frei auf der Seite, Haarlinien statt Kästen ───────── */
+
+.stats-bento .stats-pod {
+  padding: 22px 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.stats-bento .stats-pod--time {
+  padding-top: 4px;
+}
+
+.stats-bento .stats-pod--progress,
+.stats-bento .stats-panel {
+  border-top: 1px solid var(--hairline);
+}
+
+.stats-pod__orb {
+  display: none;
+}
+
+.stats-pod__label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.stats-time-medias {
+  gap: 0;
+}
+
+.stats-time-chip {
+  flex: 1 1 100%;
+  padding: 13px 0;
+  border-top: 1px solid var(--hairline);
+  border-radius: 0;
+  background: none;
+}
+
+.stats-time-chip__label,
+.stats-quick-label {
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.stats-time-chip__value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Kleine Kennzahlen bleiben Kacheln — ruhig getönt, ohne Rahmen und Geisterbild. */
+.stats-bento .stats-pod--quick {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-light);
+}
+
+.stats-quick-ghost {
+  display: none;
+}
+
+.stats-quick-icon {
+  width: auto;
+  height: auto;
+  background: none !important;
+}
+
+.stats-quick-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-friend-rank {
+  border: none;
+  background: var(--glass-light);
+}
+
+.stats-time-chip {
+  border: none !important;
+  border-top: 1px solid var(--hairline) !important;
+}
+
+.stats-quick-icon {
+  width: 28px;
+  height: 28px;
+  border: none !important;
+  justify-content: flex-start;
+}

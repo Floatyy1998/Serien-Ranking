@@ -2,7 +2,6 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleTight } from '../../../lib/motion';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -29,15 +28,16 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
   const variantStyles: Record<string, React.CSSProperties> = {
     glass: {
-      background: 'var(--glass-medium)',
-      border: '1px solid var(--glass-border-light)',
+      // Liegt oft auf Artwork: getönter Grund statt Glasrahmen.
+      background: `linear-gradient(var(--glass-medium), var(--glass-medium)), color-mix(in srgb, ${currentTheme.background.default} 62%, transparent)`,
+      border: 'none',
       backdropFilter: 'var(--blur-sm)',
       WebkitBackdropFilter: 'var(--blur-sm)',
-      color: 'white',
+      color: currentTheme.text.secondary,
     },
     surface: {
-      background: currentTheme.background.surface,
-      border: `1px solid ${currentTheme.border.default}`,
+      background: 'var(--glass-medium)',
+      border: 'none',
       color: currentTheme.text.secondary,
     },
     transparent: {
@@ -58,8 +58,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   const button = (
     <motion.button
       onClick={onClick}
-      whileTap={tapScaleTight}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      whileTap={{ opacity: 0.6 }}
       aria-label={effectiveAriaLabel}
       style={{
         width: size,

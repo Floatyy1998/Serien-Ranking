@@ -1,4 +1,10 @@
-import { Check, SendRounded, VisibilityOffOutlined } from '@mui/icons-material';
+import {
+  Check,
+  IosShare,
+  LinkRounded,
+  SendRounded,
+  VisibilityOffOutlined,
+} from '@mui/icons-material';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet, SearchInput } from '../../components/ui';
@@ -13,6 +19,8 @@ import {
   type SharedEpisode,
 } from '../../services/chat/chatService';
 import { t } from '../../services/i18n';
+import { canSystemShare, shareLink } from '../../services/share/shareLink';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import type { Friend } from '../../types/Friend';
 import { ChatAvatar } from '../Chats/ChatAvatar';
 import './ShareEpisodeSheet.css';
@@ -41,7 +49,32 @@ export const ShareEpisodeSheet = ({
   const [spoiler, setSpoiler] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
   const [sent, setSent] = useState<Set<string>>(new Set());
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [systemShare] = useState(canSystemShare);
   const myUid = user?.uid;
+  const shareUrl = `https://tv-rank.de/episode/${episode.seriesId}/s/${episode.season}/e/${episode.episode}`;
+  const shareTitle = `${episode.seriesTitle} · S${episode.season} E${episode.episode}`;
+
+  const confirmCopied = () => {
+    setLinkCopied(true);
+    window.setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const copyLink = async () => {
+    if (await copyTextToClipboard(shareUrl)) confirmCopied();
+    else showToast(t('Teilen hat nicht geklappt'), 2000, 'error');
+  };
+
+  const shareExternally = async () => {
+    const result = await shareLink({
+      url: shareUrl,
+      title: shareTitle,
+      text: t('Schau dir {title} auf TV-RANK an', { title: shareTitle }),
+    });
+    if (result === 'shared') onClose();
+    else if (result === 'copied') confirmCopied();
+    else if (result === 'failed') showToast(t('Teilen hat nicht geklappt'), 2000, 'error');
+  };
 
   useEffect(() => {
     if (!isOpen || !myUid) return;
@@ -93,11 +126,11 @@ export const ShareEpisodeSheet = ({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Folge schicken')}>
+    <BottomSheet isOpen={isOpen} onClose={onClose} maxWidth="560px" ariaLabel={t('Folge teilen')}>
       <div className="se-sheet">
         <div className="se-head">
           <div className="se-title" style={{ color: currentTheme.text.primary }}>
-            {t('Folge schicken')}
+            {t('Folge teilen')}
           </div>
           <div className="se-sub" style={{ color: currentTheme.text.muted }}>
             {episode.seriesTitle} ·{' '}
@@ -105,7 +138,32 @@ export const ShareEpisodeSheet = ({
           </div>
         </div>
 
-        <div className="se-note">
+        <div className="se-links">
+          <button
+            type="button"
+            className={`se-link${linkCopied ? ' se-link--done' : ''}`}
+            onClick={() => void copyLink()}
+          >
+            {linkCopied ? (
+              <Check style={{ fontSize: 18 }} />
+            ) : (
+              <LinkRounded style={{ fontSize: 18 }} />
+            )}
+            {linkCopied ? t('Link kopiert!') : t('Link kopieren')}
+          </button>
+          {systemShare && (
+            <button type="button" className="se-link" onClick={() => void shareExternally()}>
+              <IosShare style={{ fontSize: 18 }} />
+              {t('Extern teilen')}
+            </button>
+          )}
+        </div>
+
+        <div className="se-label" style={{ color: currentTheme.text.muted }}>
+          {t('An Freunde schicken')}
+        </div>
+
+        <div className="se-note" style={friends.length === 0 ? { display: 'none' } : undefined}>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}

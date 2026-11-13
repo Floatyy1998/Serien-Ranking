@@ -12,7 +12,6 @@ import { getNewChapterEntries } from '../../lib/manga/overview';
 import { tapScaleSmall } from '../../lib/motion';
 import { usesArea, type ReadingAreas } from '../../lib/reading/readingMedium';
 import { t } from '../../services/i18n';
-import { BookCover } from '../Books/components/BookCover';
 import '../Books/components/books.css';
 import type { BookYear } from '../Books/hooks/useBookYear';
 import './ReadingPage.css';
@@ -181,9 +180,6 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
         : t('Deine Manga-Sammlung');
     }
 
-    const showBanner = kind !== 'books' && !!manga.banner;
-    const showCovers = !showBanner && kind !== 'manga' && books.art.length > 0;
-
     return (
       <header
         className="bk-deck-wrap"
@@ -193,38 +189,22 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
         }}
       >
         <motion.div
-          className="bk-deck liquid-glass"
-          style={{
-            borderRadius: isMobile ? '20px' : '24px',
-            padding: isMobile ? '12px 14px 14px' : '20px 24px',
-          }}
+          className="bk-deck bk-deck--flat"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 26 }}
         >
-          {showBanner && (
-            <div
-              className="rd-deck-banner"
-              aria-hidden
-              style={{ backgroundImage: `url(${manga.banner})` }}
-            />
-          )}
-          {showCovers && (
-            <div className="bk-deck-art" aria-hidden>
-              {books.art.map((b) => (
-                <BookCover key={b.id} book={b} />
-              ))}
-            </div>
-          )}
-          <div
-            className="bk-deck-glow"
-            aria-hidden
-            style={{
-              background: `radial-gradient(ellipse, ${currentTheme.primary}33, transparent 70%)`,
-            }}
-          />
-
           <div className="bk-deck-top">
+            {/* Schmal wie auf der Startseite: Avatar links, Text daneben, Glocke rechts. */}
+            {isMobile && (
+              <HeaderActions
+                totalUnreadBadge={totalUnreadBadge}
+                onNotificationsOpen={onNotificationsOpen}
+                photoURL={photoURL}
+                displayName={displayName ?? undefined}
+                only="avatar"
+              />
+            )}
             <div className="rd-deck-title">
               <ReadingGreetingTitle
                 displayName={displayName}
@@ -241,6 +221,7 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
                 onNotificationsOpen={onNotificationsOpen}
                 photoURL={photoURL}
                 displayName={displayName ?? undefined}
+                only={isMobile ? 'bell' : undefined}
               />
             </div>
           </div>
@@ -258,10 +239,6 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
                     : t('Bücher und Manga suchen')
               }
               className="bk-deck-search"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}14, transparent 45%), var(--glass-light)`,
-                borderColor: `${currentTheme.primary}33`,
-              }}
             >
               <Search style={{ fontSize: 20, color: currentTheme.primary, flexShrink: 0 }} />
               <span className="bk-deck-search-hint" style={{ color: currentTheme.text.muted }}>
@@ -281,12 +258,11 @@ export const ReadingDeck: React.FC<ReadingDeckProps> = React.memo(
                   onClick={pod.onClick}
                   className="bk-pod"
                   aria-label={`${pod.value} ${pod.label}`}
-                  style={pod.highlight ? { borderColor: `${currentTheme.primary}59` } : undefined}
                 >
                   <span
                     className="bk-pod-value"
                     style={{
-                      color: pod.highlight ? currentTheme.primary : currentTheme.text.secondary,
+                      color: pod.highlight ? currentTheme.accent : currentTheme.text.secondary,
                     }}
                   >
                     {pod.value}

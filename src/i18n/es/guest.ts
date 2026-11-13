@@ -159,6 +159,17 @@ const dict: Record<string, string> = {
   'Schau dir {title} auf TV-RANK an': 'Mira {title} en TV-RANK',
   'Teilen hat nicht geklappt': 'No se pudo compartir',
   Angekündigt: 'Anunciada',
+  // Folgen-Seite + Gast-Folge
+  'Über diese Folge reden': 'Habla de este episodio',
+  'Bewerte jede Folge und diskutier sie mit anderen — ohne Spoiler.':
+    'Puntúa cada episodio y coméntalo con otros — sin spoilers.',
+  'Mal gesehen': 'Veces visto',
+  'Folgen dieser Staffel': 'Episodios de esta temporada',
+  'Folge {n} von {total}': 'Episodio {n} de {total}',
+  '{seen} von {total} gesehen': '{seen} de {total} vistos',
+  'Alle Folgen': 'Todos los episodios',
+  'Folge teilen': 'Compartir episodio',
+  'An Freunde schicken': 'Enviar a amigos',
 };
 
 export default dict;

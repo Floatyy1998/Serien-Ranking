@@ -70,7 +70,7 @@
   min-width: 0;
   padding: 20px 20px 18px;
   border-radius: 18px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background:
     radial-gradient(
       120% 90% at 0% 0%,

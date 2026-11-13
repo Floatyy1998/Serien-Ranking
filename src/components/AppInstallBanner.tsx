@@ -72,7 +72,7 @@ export const AppInstallBanner = () => {
             gap: 12,
             // Dezentes dunkles Glas statt grünem Klotz.
             background: 'rgba(18, 20, 26, 0.82)',
-            border: '1px solid rgba(255, 255, 255, 0.09)',
+            border: '1px solid transparent',
             WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
             backdropFilter: 'blur(20px) saturate(1.3)',
             boxShadow: '0 18px 50px rgba(0, 0, 0, 0.5)',
@@ -90,7 +90,7 @@ export const AppInstallBanner = () => {
               alignItems: 'center',
               justifyContent: 'center',
               background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              border: '1px solid transparent',
             }}
           >
             <img src="/tv-logo.svg" alt="" width={26} height={26} />

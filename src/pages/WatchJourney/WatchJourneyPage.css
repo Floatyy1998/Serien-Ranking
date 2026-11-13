@@ -329,3 +329,27 @@
   font-weight: 700;
   color: white;
 }
+
+/* ───────── Neuer Look: Reiterleiste mit Unterstrich, Abschnitte ohne Kasten ───────── */
+
+.wj-tabs-bar {
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: inset 0 -1px 0 var(--hairline);
+  overflow: visible;
+}
+
+.wj-tab-btn {
+  min-height: 46px;
+}
+
+@media (min-width: 768px) {
+  .wj-tabs-bar {
+    border-radius: 0;
+  }
+
+  .wj-tab-btn {
+    border-radius: 0;
+  }
+}

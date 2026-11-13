@@ -53,6 +53,11 @@ const GuestMediaPage = lazyWithRetry(() =>
     default: m.GuestMediaPage,
   }))
 );
+const GuestEpisodePage = lazyWithRetry(() =>
+  import('../pages/GuestMedia/GuestEpisodePage').then((m) => ({
+    default: m.GuestEpisodePage,
+  }))
+);
 const GuestBookPage = lazyWithRetry(() =>
   import('../pages/GuestMedia/GuestBookPage').then((m) => ({
     default: m.GuestBookPage,
@@ -98,6 +103,16 @@ const GuestRouteSwitch = () => {
   if (book) return <GuestBookPage bookId={book[1]} />;
   const manga = pathname.match(/^\/manga\/(-?\d+)$/);
   if (manga) return <GuestMangaPage anilistId={Number(manga[1])} />;
+  const episode = pathname.match(/^\/episode\/(\d+)\/s\/(\d+)\/e\/(\d+)$/);
+  if (episode) {
+    return (
+      <GuestEpisodePage
+        tmdbId={Number(episode[1])}
+        seasonNumber={Number(episode[2])}
+        episodeNumber={Number(episode[3])}
+      />
+    );
+  }
   const match = pathname.match(/^\/(series|movie)\/(\d+)/);
   if (match) {
     return (

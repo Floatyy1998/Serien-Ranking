@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
 }
 
 .pp-not-found__title {
@@ -166,7 +166,7 @@
   padding: 60px 30px;
   background: var(--glass-light);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   box-shadow: var(--shadow-md);
 }
 
@@ -321,4 +321,8 @@
   -webkit-box-orient: vertical;
   line-height: 1.3;
   min-height: 36px;
+}
+
+.fp-hero--kit .pp-public-pill {
+  margin-top: 6px;
 }

@@ -200,10 +200,10 @@ export const PublicProfilesList = ({ saveScrollPosition }: PublicProfilesListPro
           aria-label={t('Nach Interesse filtern')}
           style={{
             display: 'flex',
+            // Umbrechen statt seitlich scrollen: so sind alle Interessen sichtbar und es gibt keine Scroll-Leiste.
+            flexWrap: 'wrap',
             gap: 8,
-            overflowX: 'auto',
             margin: '-4px 0 16px',
-            paddingBottom: 2,
           }}
         >
           {filterChips.map(({ id, count }) => {

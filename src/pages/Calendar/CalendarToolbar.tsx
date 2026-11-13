@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Bookmark, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
 import { formatDate } from './useCalendarData';
 
@@ -34,11 +35,7 @@ export const WeekNav = memo(
           className={`cal-week-chip ${weekOffset === 0 ? 'is-current' : ''}`}
           onClick={onReset}
           aria-label={t('Zur aktuellen Woche')}
-          style={
-            weekOffset === 0
-              ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary }
-              : {}
-          }
+          style={weekOffset === 0 ? { color: currentTheme.text.secondary } : {}}
         >
           {t('KW {n}', { n: kwNumber })} &middot; {formatDate(monday)} – {formatDate(sunday)}
         </button>
@@ -65,12 +62,13 @@ const FilterChips = memo(({ watchlistOnly, onToggle }: FilterChipsProps) => {
             key={label}
             className="cal-filter-chip"
             onClick={() => onToggle(label === 'Watchlist')}
+            aria-pressed={isActive}
             style={
               isActive
                 ? {
-                    background: `${currentTheme.primary}20`,
-                    color: currentTheme.primary,
-                    borderColor: `${currentTheme.primary}50`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                    color: getOptimalTextColor(currentTheme.primary),
+                    fontWeight: 700,
                   }
                 : {}
             }

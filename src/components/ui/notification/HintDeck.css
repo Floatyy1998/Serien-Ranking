@@ -120,7 +120,7 @@
   padding: 6px;
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--hint-bg) 97%, #fff 3%);
-  border: 1px solid var(--glass-border-medium);
+  border: 1px solid transparent;
   box-shadow: var(--shadow-lg);
 }
 
@@ -752,4 +752,51 @@
 .hint-btn--compact {
   flex: 0 0 auto;
   padding: 0 16px;
+}
+
+/* Schmal: kompakte Karte — kleineres Poster, weniger Luft, flachere Knöpfe.
+   Die Karte ist ein Hinweis, kein Hauptinhalt, und soll die Startseite nicht dominieren. */
+@media (max-width: 767px) {
+  .hint-card {
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+  }
+
+  .hint-card-content {
+    gap: 12px;
+    padding: 12px 12px 0;
+  }
+
+  .hint-card-poster {
+    width: 54px;
+    height: 81px;
+    border-radius: 10px;
+  }
+
+  .hint-card-title {
+    -webkit-line-clamp: 1;
+    margin: 0 0 4px;
+    font-size: 0.98rem;
+  }
+
+  .hint-card-detail {
+    font-size: 0.78rem;
+  }
+
+  .hint-card-progress {
+    margin-top: 6px;
+  }
+
+  .hint-card-actions {
+    gap: 8px;
+    padding: 10px 12px 12px;
+  }
+
+  .hint-btn,
+  .mobile-app button.hint-btn {
+    height: 38px;
+    min-height: 38px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
 }

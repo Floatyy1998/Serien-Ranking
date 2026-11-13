@@ -363,7 +363,7 @@ export function GuestRail({
 }: {
   title: string;
   items: GuestRailItem[];
-  variant?: 'poster' | 'person';
+  variant?: 'poster' | 'person' | 'still';
   bare?: boolean;
 }) {
   const { currentTheme } = useTheme();
@@ -405,7 +405,12 @@ export function GuestRail({
                 {item.sub && <p className="gm-card__sub">{item.sub}</p>}
               </>
             );
-          const className = variant === 'person' ? 'gm-person' : 'gm-similar';
+          const className =
+            variant === 'person'
+              ? 'gm-person'
+              : variant === 'still'
+                ? 'gm-similar gm-similar--still'
+                : 'gm-similar';
           return item.to && !item.current ? (
             <Link key={item.key} to={item.to} className={className}>
               {content}

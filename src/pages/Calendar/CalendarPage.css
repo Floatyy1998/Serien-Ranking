@@ -86,7 +86,7 @@
 
 .cal-arrow-btn {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: inherit;
   padding: 6px;
@@ -115,7 +115,7 @@
 
 .cal-week-chip {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: inherit;
   padding: 6px 14px;
@@ -150,7 +150,7 @@
   padding: 5px 14px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   color: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -426,7 +426,7 @@
   background: var(--glass-light);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-left: 4px solid transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -678,7 +678,7 @@
 /* Group */
 .cal-ep-group {
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid transparent;
   border-left: 3px solid transparent;
   background: rgba(255, 255, 255, 0.04);
   overflow: hidden;
@@ -957,7 +957,7 @@ button.cal-ep-add--inline:active {
     border-top: none;
     border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid transparent;
     min-height: 80px;
   }
 
@@ -969,7 +969,7 @@ button.cal-ep-add--inline:active {
 
   .cal-day.is-empty {
     background: rgba(255, 255, 255, 0.01);
-    border-color: rgba(255, 255, 255, 0.04);
+    border-color: transparent;
   }
 
   .cal-day-label {
@@ -1345,7 +1345,7 @@ button.cal-ep-add--inline:active {
 
   .cal-ep-group .cal-ep-group-list {
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid transparent;
     border-top: none;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
@@ -1406,7 +1406,7 @@ button.cal-ep-add--inline:active {
 
   .cal-day.is-empty {
     background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.07);
+    border-color: transparent;
   }
   /* Leerer Tag: der Gedankenstrich wandert als ruhiges Zeichen in die Mitte. */
   .cal-day.is-empty .cal-day-none {
@@ -1579,7 +1579,7 @@ button.cal-ep-add--inline:active {
     justify-content: center;
     border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid transparent;
     color: var(--color-text-muted);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -1695,4 +1695,35 @@ button.cal-ep-add--inline:active {
 .cal-week-switcher .cal-week-chip {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* ───────── Neuer Look: Tonflächen statt Rahmen, Folgen als ruhige Zeilen ───────── */
+
+.cal-arrow-btn,
+.cal-week-chip,
+.cal-filter-chip,
+.cal-wl-toggle {
+  border: none !important;
+  background: var(--glass-medium);
+}
+
+.cal-week-chip {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.cal-ep {
+  border: none;
+  background: var(--glass-light);
+}
+
+.cal-ep-group {
+  border: none;
+  background: var(--glass-subtle);
+}
+
+.cal-entry-btn {
+  border: none;
+  background: var(--glass-light);
+  color: var(--color-text-secondary);
 }

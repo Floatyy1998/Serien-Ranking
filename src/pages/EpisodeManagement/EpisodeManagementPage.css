@@ -127,7 +127,7 @@
 
 .tab-nav-button {
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   padding: 10px;
@@ -176,7 +176,7 @@
 
 .season-tab {
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   padding: 10px 18px;
   color: var(--color-text-primary);
@@ -193,7 +193,7 @@
 
 .season-tab:hover {
   background: var(--glass-medium);
-  border-color: var(--glass-border-medium);
+  border-color: transparent;
 }
 
 .season-tab.active {
@@ -219,7 +219,7 @@
   padding: 20px;
   margin: 16px 16px 0;
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-xl);
   position: relative;
   z-index: var(--z-base);
@@ -322,7 +322,7 @@
   width: 100%;
   padding: 14px;
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   font-size: 15px;
@@ -393,7 +393,7 @@
   padding: 16px;
   margin-bottom: 10px;
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   transition: all var(--duration-normal) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
@@ -424,7 +424,7 @@
 
 .episode-item:hover {
   background: var(--glass-medium);
-  border-color: var(--glass-border-medium);
+  border-color: transparent;
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -587,7 +587,7 @@
   flex: 1;
   padding: 14px;
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   display: flex;
@@ -603,7 +603,7 @@
 
 .action-button:hover {
   background: var(--glass-medium);
-  border-color: var(--glass-border-medium);
+  border-color: transparent;
   transform: scale(1.02);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
@@ -636,7 +636,7 @@
 
 .watch-dialog {
   background: var(--color-background-surface);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: var(--radius-2xl);
   padding: 28px;
   width: 100%;
@@ -746,13 +746,13 @@
 
 .dialog-button.cancel {
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   color: var(--color-text-secondary);
 }
 
 .dialog-button.cancel:hover {
   background: var(--glass-medium);
-  border-color: var(--glass-border-medium);
+  border-color: transparent;
 }
 
 .dialog-button.cancel:active {
@@ -867,4 +867,237 @@
   font-size: 0.95rem;
   line-height: 1.5;
   color: var(--color-text-secondary);
+}
+
+/* ── Neuer Look: Staffeln als Unterstrich-Reiter, Fortschritt als Zahl, Folgen als eine Liste ── */
+.mobile-episode-page .season-tabs {
+  margin: 0;
+  padding: 0 var(--page-x, 16px);
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--hairline);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mobile-episode-page .tab-nav-button,
+.mobile-app .mobile-episode-page .tab-nav-button {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.mobile-episode-page .tabs-container {
+  gap: 2px;
+}
+
+.mobile-episode-page .season-tab,
+.mobile-app .mobile-episode-page button.season-tab {
+  position: relative;
+  min-width: 56px;
+  padding: 10px 12px 12px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.mobile-episode-page .season-tab .season-label {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.mobile-episode-page .season-tab.active {
+  background: none;
+  color: var(--color-text-secondary);
+}
+
+.mobile-episode-page .season-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+}
+
+.mobile-episode-page .season-progress,
+.mobile-episode-page .season-progress.em-bulk-highlight {
+  margin: 0;
+  padding: 20px var(--page-x, 16px) 18px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mobile-episode-page .progress-header {
+  align-items: baseline;
+}
+
+.mobile-episode-page .progress-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.mobile-episode-page .progress-text {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-episode-page .progress-bar {
+  height: 6px;
+  border-radius: 6px;
+  background: var(--glass-light, rgba(255, 255, 255, 0.07));
+}
+
+.mobile-episode-page .mark-all-button,
+.mobile-app .mobile-episode-page button.mark-all-button {
+  border: none;
+  border-radius: 14px;
+  min-height: 48px;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  color: var(--on-primary, #1a1016);
+  font-family: inherit;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.mobile-episode-page .mark-all-button.em-bulk-button-muted,
+.mobile-app .mobile-episode-page button.mark-all-button.em-bulk-button-muted {
+  background: var(--glass-light, rgba(255, 255, 255, 0.07));
+  color: var(--color-text-secondary);
+}
+
+.mobile-episode-page .catch-up-button,
+.mobile-app .mobile-episode-page button.catch-up-button {
+  border: none;
+  border-radius: 14px;
+  min-height: 44px;
+  background: var(--glass-light, rgba(255, 255, 255, 0.07));
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.mobile-episode-page .episodes-container {
+  padding: 0 var(--page-x, 16px) 32px;
+}
+
+.mobile-episode-page .episodes-list {
+  gap: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.mobile-episode-page .episode-item,
+.mobile-episode-page .episode-item.watched,
+.mobile-episode-page .episode-item:hover {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mobile-episode-page .episode-item__toggle {
+  padding: 12px 4px 12px 0;
+  gap: 14px;
+}
+
+.mobile-episode-page .episode-number {
+  width: 30px;
+  min-width: 30px;
+  height: auto;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.55));
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.mobile-episode-page .episode-item.watched .episode-number {
+  color: var(--theme-primary);
+}
+
+.mobile-episode-page .episode-details h3 {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.mobile-episode-page .episode-item.watched .episode-details h3 {
+  opacity: 0.72;
+}
+
+.mobile-episode-page .status-unwatched {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid color-mix(in srgb, var(--color-text-secondary) 38%, transparent);
+  box-shadow: none;
+}
+
+.mobile-episode-page .status-watched {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  color: var(--on-primary, #1a1016);
+  box-shadow: none;
+  border: none;
+}
+
+.mobile-episode-page .status-watched svg {
+  color: var(--on-primary, #1a1016);
+  font-size: 20px;
+}
+
+.mobile-episode-page .status-watched .watch-count {
+  color: var(--on-primary, #1a1016);
+  font-weight: 800;
+}
+
+.mobile-episode-page .episode-discussion-btn,
+.mobile-app .mobile-episode-page button.episode-discussion-btn {
+  background: none !important;
+  box-shadow: none;
+  min-width: 44px;
+}
+
+@media (min-width: 1100px) {
+  .mobile-episode-page .episodes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    column-gap: 40px;
+  }
 }

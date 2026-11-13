@@ -225,6 +225,7 @@ const dict: Record<string, string> = {
   'Gesehen am': 'Visto el',
   '{done} von {total} Bänden': '{done} de {total} tomos',
   '{done} von {total} Kapiteln': '{done} de {total} capítulos',
+  'Ø Wertung': 'Nota media',
 };
 
 export default dict;

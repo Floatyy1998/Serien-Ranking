@@ -10,6 +10,7 @@ import {
   generateDynamicTheme,
   validateThemeConfig,
 } from '../theme/dynamicTheme';
+import { getOptimalTextColor } from '../theme/colorUtils';
 import { setThemedPlaceholder } from '../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
 import { dbRef, paths } from '../services/db/ref';
@@ -42,6 +43,8 @@ function applyCSSVariables(
   root.style.setProperty('--theme-surface', theme.background.surface);
   root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
   root.style.setProperty('--theme-secondary-gradient', theme.secondary);
+  // Lesbare Schrift auf Primary-Flächen und -Verläufen — für reines CSS.
+  root.style.setProperty('--on-primary', getOptimalTextColor(theme.primary));
 
   // Hintergrundfarben
   root.style.setProperty('--color-background-default', theme.background.default);

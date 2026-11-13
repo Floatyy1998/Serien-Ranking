@@ -186,3 +186,28 @@
     font-size: 13px;
   }
 }
+
+/* ───────── Neuer Look: ruhige Kacheln ohne Rahmen und Icon-Kästchen ───────── */
+
+.mobile-app .rqa-tile,
+.rqa-tile {
+  padding: 10px;
+  border: none;
+  background: var(--glass-light);
+  box-shadow: none;
+}
+
+.rqa-icon {
+  width: 24px;
+  height: 24px;
+  background: none;
+  box-shadow: none;
+}
+
+.rqa-icon svg {
+  font-size: 20px;
+}
+
+.rqa-pill {
+  border: none !important;
+}

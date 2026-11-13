@@ -17,21 +17,23 @@ import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import { ShareEpisodeSheet } from './ShareEpisodeSheet';
 import {
-  CrewSection,
   DiscussionSection,
   EpisodeNavigation,
   GuestStarsSection,
-  HeroSection,
   LoadingState,
   NotFoundState,
   OverviewSection,
-  QuickActions,
 } from './EpisodeDiscussionComponents';
+import { EpisodeStage } from './EpisodeStage';
+import { SeasonEpisodeList } from './SeasonEpisodeList';
+import { FactList, RailSection } from '../../components/detail/kit/DetailKit';
+import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import './EpisodeDiscussionPage.css';
 
 export const EpisodeDiscussionPage = memo(() => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const { isMobile } = useDeviceType();
 
   const {
     seriesId,
@@ -172,6 +174,12 @@ export const EpisodeDiscussionPage = memo(() => {
     ? (crossovers.index?.entries.find((e) => e.id === crossoverView)?.entry ?? null)
     : null;
 
+  const season = localEpisode ? series?.seasons?.[localEpisode.seasonIndex] : undefined;
+  const seasonEpisodes = useMemo(
+    () => (season?.episodes ?? []).map((e) => ({ key: e.id, watched: !!e.watched })),
+    [season]
+  );
+
   if (loading) {
     return <LoadingState currentTheme={currentTheme} />;
   }
@@ -179,6 +187,37 @@ export const EpisodeDiscussionPage = memo(() => {
   if (isNotFound) {
     return <NotFoundState currentTheme={currentTheme} onGoBack={() => navigate(-1)} />;
   }
+
+  const facts = (
+    <RailSection title={t('Auf einen Blick')}>
+      <FactList
+        facts={[
+          { label: t('Erstausstrahlung'), value: episodeAirDate ? formattedAirDate : null },
+          { label: t('Regie'), value: directors.map((d) => d.name).join(', ') },
+          { label: t('Drehbuch'), value: writers.map((w) => w.name).join(', ') },
+          {
+            label: t('Laufzeit'),
+            value: episodeRuntime ? t('{n} Min.', { n: episodeRuntime }) : null,
+          },
+          { label: t('Erstmals gesehen'), value: isWatched ? formattedFirstWatchedAt : null },
+          { label: t('Zuletzt gesehen'), value: isWatched ? formattedLastWatchedAt : null },
+          { label: t('Mal gesehen'), value: watchCount > 1 ? `${watchCount}×` : null },
+        ]}
+      />
+    </RailSection>
+  );
+  const seasonList = season ? (
+    <SeasonEpisodeList
+      seasonNumber={Number(seasonNumber)}
+      currentEpisode={Number(episodeNumber)}
+      episodes={(season.episodes ?? []).map((e) => ({
+        id: e.id,
+        name: e.name,
+        watched: !!e.watched,
+      }))}
+      onOpen={(n) => navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${n}`)}
+    />
+  ) : null;
 
   return (
     <div className="ed-page" style={{ background: currentTheme.background.default }}>
@@ -270,27 +309,40 @@ export const EpisodeDiscussionPage = memo(() => {
         )}
       </AnimatePresence>
 
-      {/* Kein Swipe-Wechsel zur nächsten/vorigen Folge mehr — Navigation nur
-          über die Buttons (der Drag kollidierte mit Scroll und Sternen). */}
-      <div>
-        <HeroSection
+      <div className="dk">
+        <EpisodeStage
           currentTheme={currentTheme}
           stillPath={stillPath}
           backdropPath={seriesInfo?.backdrop_path}
+          posterPath={seriesInfo?.poster_path}
           episodeName={episodeName}
           seriesTitle={seriesTitle}
           seriesId={seriesId}
           seasonNumber={seasonNumber}
           episodeNumber={episodeNumber}
           episodeRating={episodeRating}
-          episodeAirDate={episodeAirDate}
+          ownRating={draft}
+          community={communityEntry}
           episodeRuntime={episodeRuntime}
-          formattedAirDate={formattedAirDate}
-          formattedFirstWatchedAt={formattedFirstWatchedAt}
-          formattedLastWatchedAt={formattedLastWatchedAt}
+          formattedAirDate={episodeAirDate ? formattedAirDate : null}
           watchCount={watchCount}
           isWatched={isWatched}
           fillerInfo={fillerInfo}
+          seasonEpisodes={seasonEpisodes}
+          canTrack={hasUser && hasSeries}
+          rating={
+            hasUser && hasSeries && localEpisode ? (
+              <StarRatingSlider
+                value={draft}
+                onChange={setDraft}
+                onCommit={handleCommitRating}
+                size={24}
+                showValue={false}
+              />
+            ) : undefined
+          }
+          onToggleWatched={handleToggleWatchedAndRating}
+          onOpenEpisode={(n) => navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${n}`)}
           onShare={hasUser ? () => setShareOpen(true) : undefined}
           getStillUrl={getStillUrl}
           navigate={navigate}
@@ -305,91 +357,47 @@ export const EpisodeDiscussionPage = memo(() => {
           onClose={() => setCrossoverView(null)}
         />
 
-        {/* Folgenbewertung: eigene Sterne + Community-Durchschnitt */}
-        {hasUser && hasSeries && localEpisode && (
-          <div
-            style={{
-              margin: '12px 16px',
-              padding: '14px 16px',
-              borderRadius: '16px',
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border?.default || 'rgba(255,255,255,0.1)'}`,
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: currentTheme.text.muted,
-                marginBottom: '8px',
-              }}
-            >
-              {t('Folge bewerten')}
-            </div>
-            <StarRatingSlider
-              value={draft}
-              onChange={setDraft}
-              onCommit={handleCommitRating}
-              size={22}
-            />
-            {communityEntry && (
-              <div
-                style={{
-                  marginTop: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: currentTheme.primary,
-                }}
-              >
-                {t('Community: {n}/10 ({c} Bewertungen)', {
-                  n: communityEntry.a,
-                  c: communityEntry.c,
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        <QuickActions
-          currentTheme={currentTheme}
-          hasUser={hasUser}
-          hasSeries={hasSeries}
-          isWatched={isWatched}
-          seriesId={seriesId}
-          onToggleWatched={handleToggleWatchedAndRating}
-          navigate={navigate}
-        />
-
         <EpisodeNavigation currentTheme={currentTheme} navigation={navigation} />
 
-        <div className="ed-content">
-          <OverviewSection
-            currentTheme={currentTheme}
-            episodeOverview={episodeOverview}
-            isWatched={isWatched}
-          />
+        <div className="dk-layout">
+          <div className="dk-main ed-content">
+            <OverviewSection
+              currentTheme={currentTheme}
+              episodeOverview={episodeOverview}
+              isWatched={isWatched}
+            />
 
-          <CrewSection currentTheme={currentTheme} directors={directors} writers={writers} />
+            <GuestStarsSection
+              currentTheme={currentTheme}
+              guestStars={guestStars}
+              getProfileUrl={getProfileUrl}
+              onPersonClick={(personId) => navigate(`/person/${personId}`)}
+            />
 
-          <GuestStarsSection
-            currentTheme={currentTheme}
-            guestStars={guestStars}
-            getProfileUrl={getProfileUrl}
-            onPersonClick={(personId) => navigate(`/person/${personId}`)}
-          />
+            {isMobile && (
+              <div className="ed-rail-inline">
+                {facts}
+                {seasonList}
+              </div>
+            )}
 
-          <DiscussionSection
-            seriesId={seriesId}
-            seasonNumber={seasonNumber}
-            episodeNumber={episodeNumber}
-            seriesTitle={seriesTitle}
-            episodeName={episodeName}
-            posterPath={seriesInfo?.poster_path}
-            isWatched={isWatched}
-          />
+            <DiscussionSection
+              seriesId={seriesId}
+              seasonNumber={seasonNumber}
+              episodeNumber={episodeNumber}
+              seriesTitle={seriesTitle}
+              episodeName={episodeName}
+              posterPath={seriesInfo?.poster_path}
+              isWatched={isWatched}
+            />
+          </div>
+
+          {!isMobile && (
+            <aside className="dk-rail">
+              {facts}
+              {seasonList}
+            </aside>
+          )}
         </div>
       </div>
       {hasUser && sharedEpisode.seriesTitle && (

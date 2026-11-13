@@ -128,17 +128,14 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
       </p>
 
       <div className="stats-time-medias">
-        <div
-          className="stats-time-chip"
-          style={{ boxShadow: `inset 0 0 0 1px ${theme.primary}2a` }}
-        >
+        <div className="stats-time-chip">
           <Tv style={{ fontSize: 18, color: theme.primary }} />
           <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
             {t('Serien')}
           </span>
           <span className="stats-time-chip__value">{formatTimeDetailed(stats.seriesMinutes)}</span>
         </div>
-        <div className="stats-time-chip" style={{ boxShadow: `inset 0 0 0 1px ${accent}2a` }}>
+        <div className="stats-time-chip">
           <Movie style={{ fontSize: 18, color: accent }} />
           <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
             {t('Filme')}

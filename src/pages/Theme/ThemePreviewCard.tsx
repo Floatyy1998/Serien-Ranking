@@ -40,10 +40,8 @@ export const ThemePreviewCard = memo(
         style={{
           background: isActive
             ? `linear-gradient(135deg, ${preset.primaryColor}25, ${preset.primaryColor}10)`
-            : currentTheme.background.default,
-          border: isActive
-            ? `2px solid ${preset.primaryColor}`
-            : `1px solid ${currentTheme.border.default}`,
+            : 'var(--glass-light)',
+          border: `2px solid ${isActive ? preset.primaryColor : 'transparent'}`,
         }}
       >
         {isActive && (

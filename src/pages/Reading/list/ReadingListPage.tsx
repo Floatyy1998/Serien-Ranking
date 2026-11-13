@@ -317,7 +317,7 @@ export const ReadingListPage = () => {
                   from={currentTheme.primary}
                   to={currentTheme.accent}
                   style={{
-                    fontSize: '22px',
+                    fontSize: 'var(--page-title-size)',
                     fontWeight: 800,
                     fontFamily: 'var(--font-display)',
                     margin: 0,
@@ -382,7 +382,7 @@ export const ReadingListPage = () => {
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid transparent',
                     background: 'rgba(255,255,255,0.05)',
                     color: currentTheme.text.primary,
                     fontSize: 14,
@@ -467,7 +467,7 @@ export const ReadingListPage = () => {
               />
             )
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="home-row-list" style={{ padding: 0 }}>
               <AnimatePresence mode="popLayout">
                 {items.map((entry) => {
                   const { key, planned } = entry;

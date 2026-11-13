@@ -22,7 +22,6 @@ import type {
   ProfileReadingStats,
   ProfileStats as ProfileStatsType,
 } from './useProfileData';
-import { tapScaleSmall } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -119,7 +118,12 @@ export const ProfileHeader = memo(
           as="h1"
           from={currentTheme.text.primary}
           to={currentTheme.primary}
-          style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 6px 0' }}
+          style={{
+            fontSize: '32px',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            margin: '0 0 4px 0',
+          }}
         >
           {displayName}
         </GradientText>
@@ -201,17 +205,19 @@ export const ProfileStats = memo(({ stats, reading, currentTheme }: ProfileStats
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
       className="profile-stats-card"
-      style={{
-        background: `${currentTheme.background.surface}cc`,
-        border: `1px solid ${currentTheme.border.default}`,
-      }}
     >
       {/* Time Hero */}
       <div className="profile-stats-time">
         <GradientText
           as="p"
           to={currentTheme.status.warning}
-          style={{ fontSize: '32px', fontWeight: 800, marginBottom: '4px' }}
+          style={{
+            fontSize: '44px',
+            fontWeight: 800,
+            letterSpacing: '-0.035em',
+            lineHeight: 1.05,
+            marginBottom: '4px',
+          }}
         >
           {stats.timeString}
         </GradientText>
@@ -223,23 +229,15 @@ export const ProfileStats = memo(({ stats, reading, currentTheme }: ProfileStats
       {/* Stats Grid */}
       <div className="profile-stats-grid">
         {statItems.map((item) => (
-          <motion.div
-            key={item.label}
-            whileHover={{ scale: 1.02 }}
-            className="profile-stat-item"
-            style={{
-              background: `linear-gradient(135deg, ${item.color}15, ${item.color}08)`,
-              border: `1px solid ${item.color}25`,
-            }}
-          >
+          <div key={item.label} className="profile-stat-item">
             <item.icon className="profile-stat-icon" style={{ color: item.color }} />
-            <div className="profile-stat-value" style={{ color: currentTheme.text.primary }}>
+            <div className="profile-stat-value" style={{ color: currentTheme.text.secondary }}>
               {item.value.toLocaleString(dateLocale())}
             </div>
             <div className="profile-stat-label" style={{ color: currentTheme.text.muted }}>
               {t(item.label)}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </motion.div>
@@ -274,24 +272,17 @@ export const ProfileFeaturedNav = memo(
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: animationDelay + 0.05 + index * 0.05 }}
-            whileTap={tapScaleSmall}
+            whileTap={{ opacity: 0.7 }}
             onClick={() => onNavigate(item.path)}
             className="profile-featured-item"
             style={{
               ['--tile-color' as string]: item.color,
-              background: `linear-gradient(135deg, ${item.color}18, ${item.color}08)`,
-              border: `1px solid ${item.color}30`,
-              color: currentTheme.text.primary,
+              color: currentTheme.text.secondary,
             }}
           >
             <div className="profile-featured-item-left">
-              <div
-                className="profile-featured-icon-wrap"
-                style={{
-                  background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)`,
-                }}
-              >
-                <item.icon style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
+              <div className="profile-featured-icon-wrap">
+                <item.icon style={{ fontSize: '24px', color: item.color }} />
               </div>
               <span className="profile-featured-label">{t(item.label)}</span>
             </div>
@@ -334,13 +325,7 @@ export const ProfileMenuGroup = memo(
       <h2 className="profile-section-title" style={{ color: currentTheme.text.primary }}>
         {title}
       </h2>
-      <div
-        className="profile-menu-group"
-        style={{
-          background: currentTheme.background.surface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
-      >
+      <div className="profile-menu-group">
         {items.map((item, index) => (
           <motion.button
             key={item.path}
@@ -352,14 +337,12 @@ export const ProfileMenuGroup = memo(
             className="profile-menu-item"
             style={{
               ['--tile-color' as string]: item.color,
-              borderBottom:
-                index < items.length - 1 ? `1px solid ${currentTheme.border.default}` : 'none',
-              color: currentTheme.text.primary,
+              color: currentTheme.text.secondary,
             }}
           >
             <div className="profile-menu-item-left">
-              <div className="profile-menu-icon-wrap" style={{ background: `${item.color}15` }}>
-                <item.icon style={{ fontSize: '20px', color: item.color }} />
+              <div className="profile-menu-icon-wrap">
+                <item.icon style={{ fontSize: '22px', color: item.color }} />
               </div>
               <span className="profile-menu-label">{item.label}</span>
             </div>
@@ -397,14 +380,10 @@ export const ProfileLogoutButton = memo(
       className="profile-logout-section"
     >
       <motion.button
-        whileTap={tapScaleSmall}
+        whileTap={{ opacity: 0.7 }}
         onClick={onLogout}
         className="profile-logout-btn"
-        style={{
-          background: `linear-gradient(135deg, ${currentTheme.status.error}15, ${currentTheme.status.error}08)`,
-          border: `1px solid ${currentTheme.status.error}30`,
-          color: currentTheme.status.error,
-        }}
+        style={{ color: currentTheme.status.error }}
       >
         <Logout style={{ fontSize: '20px' }} />
         {t('Abmelden')}

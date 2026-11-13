@@ -110,7 +110,7 @@
 
 .notif-hub-mini:hover {
   background: rgba(0, 0, 0, 0.4);
-  border-color: var(--glass-border-medium);
+  border-color: transparent;
 }
 
 .notif-hub-mini-dots {

@@ -187,8 +187,8 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: 12,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '14px 20px',
               }}
             >
               {[
@@ -213,17 +213,17 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                   color: ACCENT_COLORS.fire,
                 },
               ].map((stat) => (
-                <div
-                  key={stat.label}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '16px',
-                    background: `${stat.color}10`,
-                    border: `1px solid ${stat.color}25`,
-                    textAlign: 'center',
-                  }}
-                >
-                  <div style={{ color: stat.color, fontSize: 28, fontWeight: 800 }}>
+                <div key={stat.label} style={{ padding: '6px 0' }}>
+                  <div
+                    style={{
+                      color: stat.color,
+                      fontSize: 32,
+                      fontWeight: 800,
+                      fontFamily: 'var(--font-display)',
+                      letterSpacing: '-0.03em',
+                      lineHeight: 1.1,
+                    }}
+                  >
                     {stat.value}
                   </div>
                   <div style={{ color: textSecondary, fontSize: 12, marginTop: 4 }}>

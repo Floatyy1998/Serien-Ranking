@@ -11,6 +11,8 @@ interface HeaderActionsProps {
   onNotificationsOpen: () => void;
   photoURL: string | undefined | null;
   displayName?: string | null;
+  /** Nur eines der beiden Elemente zeigen — für Köpfe, die Avatar und Glocke trennen. */
+  only?: 'bell' | 'avatar';
 }
 
 export const HeaderActions = React.memo(function HeaderActions({
@@ -18,6 +20,7 @@ export const HeaderActions = React.memo(function HeaderActions({
   onNotificationsOpen,
   photoURL,
   displayName,
+  only,
 }: HeaderActionsProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -50,8 +53,8 @@ export const HeaderActions = React.memo(function HeaderActions({
   );
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      {totalUnreadBadge > 0 ? (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+      {only === 'avatar' ? null : totalUnreadBadge > 0 ? (
         <Badge
           badgeContent={totalUnreadBadge}
           color="error"
@@ -67,38 +70,40 @@ export const HeaderActions = React.memo(function HeaderActions({
         bellButton
       )}
 
-      <motion.button
-        whileTap={{ opacity: 0.7 }}
-        onClick={() => navigate('/profile')}
-        aria-label={t('Profil und weitere Bereiche öffnen')}
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: '50%',
-          background: photoURL ? `url(${photoURL}) center/cover` : `${currentTheme.primary}30`,
-          border: `2px solid ${currentTheme.primary}`,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {!photoURL &&
-          (initial ? (
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 800,
-                lineHeight: 1,
-                color: currentTheme.text.primary,
-              }}
-            >
-              {initial}
-            </span>
-          ) : (
-            <Person style={{ fontSize: 22, color: currentTheme.text.primary }} />
-          ))}
-      </motion.button>
+      {only !== 'bell' && (
+        <motion.button
+          whileTap={{ opacity: 0.7 }}
+          onClick={() => navigate('/profile')}
+          aria-label={t('Profil und weitere Bereiche öffnen')}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: photoURL ? `url(${photoURL}) center/cover` : `${currentTheme.primary}30`,
+            border: `2px solid ${currentTheme.primary}`,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {!photoURL &&
+            (initial ? (
+              <span
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  color: currentTheme.text.primary,
+                }}
+              >
+                {initial}
+              </span>
+            ) : (
+              <Person style={{ fontSize: 22, color: currentTheme.text.primary }} />
+            ))}
+        </motion.button>
+      )}
     </div>
   );
 });

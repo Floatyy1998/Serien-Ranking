@@ -201,7 +201,7 @@ export const DiscoverPage = memo(() => {
                 <GradientText
                   as="h1"
                   style={{
-                    fontSize: 'clamp(15px, calc(var(--effective-width, 412px) * 0.068), 28px)',
+                    fontSize: 'var(--page-title-size)',
                     fontWeight: 800,
                     fontFamily: 'var(--font-display)',
                     letterSpacing: '-0.03em',

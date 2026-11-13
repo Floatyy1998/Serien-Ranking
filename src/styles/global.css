@@ -36,15 +36,17 @@
   --text-xl: 24px;
   --text-2xl: 26px;
   --text-3xl: 32px;
+  /* Eine Größe für alle Seitentitel — an die nutzbare Breite gekoppelt (Anzeige-Zoom). */
+  --page-title-size: clamp(22px, calc(var(--effective-width, 412px) * 0.064), 28px);
 
   /* Design Tokens - Border Radius */
   --radius-xs: 6px;
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 28px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 26px;
+  --radius-3xl: 30px;
   --radius-full: 9999px;
 
   /* Design Tokens - Spacing (für Paddings/Gaps statt Augenmaß) */
@@ -177,18 +179,21 @@
   --shadow-glow: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 32px -6px var(--theme-primary-20);
   --focus-ring: 0 0 0 4px var(--theme-primary-15);
 
-  /* Glass-Stufen: minimal mit der Theme-Primary getönt — kaskadiert automatisch bei Theme-Wechsel */
-  --glass-subtle: color-mix(in srgb, var(--theme-primary) 2%, rgba(255, 255, 255, 0.02));
-  --glass-light: color-mix(in srgb, var(--theme-primary) 3%, rgba(255, 255, 255, 0.04));
-  --glass-medium: color-mix(in srgb, var(--theme-primary) 4%, rgba(255, 255, 255, 0.07));
-  --glass-heavy: color-mix(in srgb, var(--theme-primary) 5%, rgba(255, 255, 255, 0.11));
-  --glass-border-subtle: color-mix(in srgb, var(--theme-primary) 6%, rgba(255, 255, 255, 0.05));
-  --glass-border-light: color-mix(in srgb, var(--theme-primary) 8%, rgba(255, 255, 255, 0.08));
-  --glass-border-medium: color-mix(in srgb, var(--theme-primary) 10%, rgba(255, 255, 255, 0.13));
+  /* Flächen-Stufen (Namen historisch „glass"): matte Tonflächen aus der Schriftfarbe des Themes —
+     Tiefe entsteht durch Helligkeit, nicht durch Rahmen und Lichtkanten. */
+  --surface-ink: var(--color-text-secondary, #f1e8ee);
+  --glass-subtle: color-mix(in srgb, var(--surface-ink) 3.5%, transparent);
+  --glass-light: color-mix(in srgb, var(--surface-ink) 6%, transparent);
+  --glass-medium: color-mix(in srgb, var(--surface-ink) 9.5%, transparent);
+  --glass-heavy: color-mix(in srgb, var(--surface-ink) 14%, transparent);
+  --glass-border-subtle: transparent;
+  --glass-border-light: color-mix(in srgb, var(--surface-ink) 5%, transparent);
+  --glass-border-medium: color-mix(in srgb, var(--surface-ink) 11%, transparent);
+  /* Haarlinie zum Trennen von Inhalten ohne Kasten */
+  --hairline: color-mix(in srgb, var(--surface-ink) 13%, transparent);
 
-  /* Specular-Kanten: Lichtfang oben, Ablösung unten — unterscheidet Glas vom grauen Overlay */
-  --glass-specular:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  /* Keine Lichtkanten mehr — das Token bleibt, damit bestehende box-shadow-Listen gültig sind. */
+  --glass-specular: 0 0 0 0 transparent;
 
   /* Gradient-Tokens */
   --gradient-primary: linear-gradient(
@@ -218,40 +223,33 @@ a,
   touch-action: manipulation;
 }
 
-/* Glass-Utility-Klassen — statt background+backdrop-filter+border inline zu wiederholen */
+/* Flächen-Klassen — matte Tonflächen ohne Rahmen */
 .glass-card-light {
   background: var(--glass-light);
-  -webkit-backdrop-filter: var(--glass-filter-md);
-  backdrop-filter: var(--glass-filter-md);
-  border: 1px solid var(--glass-border-light);
-  box-shadow: var(--glass-specular);
+  border: 1px solid transparent;
 }
 .glass-card-medium {
   background: var(--glass-medium);
-  -webkit-backdrop-filter: var(--glass-filter-lg);
-  backdrop-filter: var(--glass-filter-lg);
-  border: 1px solid var(--glass-border-medium);
-  box-shadow: var(--glass-specular);
+  border: 1px solid transparent;
 }
 .glass-card-heavy {
   background: var(--glass-heavy);
-  -webkit-backdrop-filter: var(--glass-filter-xl);
-  backdrop-filter: var(--glass-filter-xl);
-  border: 1px solid var(--glass-border-medium);
-  box-shadow: var(--glass-specular);
+  border: 1px solid transparent;
 }
 
 /* Liquid Glass (Tint + Sheen + Specular + Tiefe) für prominente Flächen; für einfache Karten reichen .glass-card-* */
 .liquid-glass {
   position: relative;
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.015) 60%),
-    var(--glass-light);
+  /* Schwebende Fläche über Inhalt oder Artwork: getönter, fast deckender Grund statt Glanzkante. */
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--theme-background) 92%, var(--surface-ink)) 86%,
+    transparent
+  );
   -webkit-backdrop-filter: var(--glass-filter-lg);
   backdrop-filter: var(--glass-filter-lg);
-  border: 1px solid var(--glass-border-light);
-  border-top-color: rgba(255, 255, 255, 0.22);
-  box-shadow: var(--shadow-lg), var(--glass-specular);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-lg);
 }
 
 /* Glas-Inputs (native input/textarea) */
@@ -284,17 +282,14 @@ a,
   background: var(--glass-medium);
 }
 
-/* Geteilter TabSwitcher (components/ui): mobil volle Breite, ab Desktop kompakte Segmented-Control */
+/* Geteilter TabSwitcher (components/ui): Reiterleiste mit Unterstrich — mobil volle Breite, ab Desktop kompakt */
 .ui-tabs {
   display: flex;
-  gap: 6px;
-  margin: 0 var(--page-x) var(--space-3);
+  gap: 2px;
+  margin: 0 var(--page-x) var(--space-4);
   position: relative;
   z-index: 5;
-  border-radius: var(--radius-2xl);
-  padding: 4px;
-  -webkit-backdrop-filter: var(--blur-md);
-  backdrop-filter: var(--blur-md);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-text-secondary, #fff) 13%, transparent);
   /* Passen die Tabs (z. B. unter Anzeige-Zoom) nicht mehr nebeneinander,
      lieber horizontal scrollen als überlaufen. */
   overflow-x: auto;
@@ -305,13 +300,31 @@ a,
   display: none;
 }
 
+.ui-tabs__line {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(
+    90deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, var(--theme-accent))
+  );
+}
+
+.ui-tabs__tab:active {
+  transform: none;
+}
+
 .ui-tabs__tab {
   flex: 1 0 auto;
-  min-height: var(--control-md);
-  padding: 0 16px;
+  min-height: 46px;
+  padding: 0 14px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: 0;
   font-size: var(--text-sm);
   cursor: pointer;
   display: flex;
@@ -1285,4 +1298,136 @@ button:active:not(:disabled),
 :root[data-layout='mobile'] {
   --home-section-gap: 12px;
   --home-row-gap: 12px;
+}
+
+/* Startseite: Folgen-Zeilen (Weiterschauen, Heute neu, Rewatch) — breit zweispaltig statt Vollbreite-Streifen */
+.home-row-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 0 var(--page-x);
+  position: relative;
+}
+
+@media (min-width: 1100px) {
+  :root:not([data-layout='mobile']) .home-row-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+  }
+
+  /* Die Karte wird beim Wischen in ihrer Zelle beschnitten, statt über die Nachbarspalte zu rutschen. */
+  :root:not([data-layout='mobile']) .home-row-list > .cine-host {
+    overflow: clip;
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (min-width: 2200px) {
+  :root:not([data-layout='mobile']) .home-row-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home-quick-tile {
+  transition: background 0.15s ease;
+}
+
+.home-quick-tile:hover {
+  filter: brightness(1.25);
+}
+
+/* Reiter mit Unterstrich für handgebaute Umschalter (role="tab" + aria-selected) —
+   dieselbe Optik wie der geteilte TabSwitcher. */
+.ui-line-tabs {
+  display: flex;
+  gap: 2px;
+  box-shadow: inset 0 -1px 0 var(--hairline);
+}
+
+.ui-line-tab,
+.mobile-app button.ui-line-tab {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 46px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-line-tab:active {
+  transform: none;
+  opacity: 0.7;
+}
+
+.ui-line-tab[aria-selected='true'],
+.ui-line-tab[aria-pressed='true'] {
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.ui-line-tab[aria-selected='true']::after,
+.ui-line-tab[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(
+    90deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, var(--theme-accent))
+  );
+}
+
+/* Startseiten-Kopf schmal: Avatar links, daneben Datum (klein) über dem Gruß, Glocke rechts. */
+:root[data-layout='mobile'] .home-greet {
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+:root[data-layout='mobile'] .home-greet__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:root[data-layout='mobile'] .home-greet__clock {
+  order: -1;
+  font-size: 12.5px !important;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+:root[data-layout='mobile'] .home-greet__text > h1 {
+  margin: 0 !important;
+  font-size: clamp(16px, calc(var(--effective-width, 412px) * 0.046), 19px) !important;
+  line-height: 1.2 !important;
+  text-wrap: balance;
+}
+
+.au-line-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.au-tabs.ui-line-tabs {
+  align-items: center;
+  gap: 2px;
+}
+
+.mobile-app button.au-line-tab,
+.au-line-tab {
+  padding: 0 6px;
+  font-size: 13px;
 }

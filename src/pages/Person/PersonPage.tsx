@@ -1,5 +1,5 @@
 import { Person, PersonSearch } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { DetailStage, ScoreRow } from '../../components/detail/kit/DetailKit';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BackButton, PageState } from '../../components/ui';
@@ -31,18 +31,6 @@ type TypeFilter = 'all' | 'series' | 'movie';
 
 const PAGE_SIZE = 48;
 const BIO_CLAMP = 320;
-
-const withStrong = (text: string, value: string, color?: string) => {
-  const at = text.indexOf(value);
-  if (at < 0) return text;
-  return (
-    <>
-      {text.slice(0, at)}
-      <strong style={color ? { color } : undefined}>{value}</strong>
-      {text.slice(at + value.length)}
-    </>
-  );
-};
 
 const formatDate = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString(dateLocale(), {
@@ -219,127 +207,50 @@ export const PersonView = memo(({ personId }: { personId: number | null }) => {
   ];
 
   return (
-    <div className="pp">
-      <section className="pp-hero">
-        <div
-          className="pp-hero__backdrop"
-          style={{
-            backgroundImage: heroBackdrop
-              ? `url(${getImageUrl(heroBackdrop, 'w1280')})`
-              : `linear-gradient(135deg, ${currentTheme.primary}55, ${currentTheme.accent}33)`,
-          }}
-        />
-        <div
-          className="pp-hero__fade"
-          style={{
-            background: `linear-gradient(to top, ${currentTheme.background.default} 0%, ${currentTheme.background.default}cc 38%, transparent 100%)`,
-          }}
-        />
-        <div
-          className="pp-hero__side"
-          style={{
-            background: `linear-gradient(90deg, ${currentTheme.background.default}e6 0%, ${currentTheme.background.default}66 40%, transparent 70%)`,
-          }}
-        />
-        <div className="pp-topbar">
-          <BackButton
-            style={{ backdropFilter: 'var(--blur-sm)', WebkitBackdropFilter: 'var(--blur-sm)' }}
-          />
-        </div>
-
-        <motion.div
-          className="pp-hero__content"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-        >
-          <div
-            className="pp-hero__portrait-ring"
-            style={{
-              background: `linear-gradient(140deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              boxShadow: `0 24px 60px -18px ${currentTheme.primary}66`,
-            }}
-          >
-            {profile.profilePath ? (
-              <img
-                className="pp-hero__portrait"
-                src={getImageUrl(profile.profilePath, 'w500')}
-                alt={profile.name}
-              />
-            ) : (
-              <div
-                className="pp-hero__portrait pp-hero__portrait--empty"
-                style={{ background: currentTheme.background.surface }}
-              >
-                <Person style={{ fontSize: 64, color: currentTheme.text.muted }} />
-              </div>
-            )}
-          </div>
-
-          <div className="pp-hero__info">
-            {profile.department && (
-              <span className="pp-hero__eyebrow" style={{ color: currentTheme.primary }}>
-                {departmentLabel(profile.department)}
-              </span>
-            )}
-            <h1 className="pp-hero__name" style={{ color: currentTheme.text.primary }}>
-              {profile.name}
-            </h1>
-            {metaParts.length > 0 && (
-              <p className="pp-hero__meta" style={{ color: currentTheme.text.secondary }}>
-                {metaParts.join(' · ')}
-              </p>
-            )}
-            {(profile.birthday || profile.deathday) && (
-              <p className="pp-hero__dates" style={{ color: currentTheme.text.muted }}>
-                {profile.birthday &&
-                  t('Geboren am {datum}', { datum: formatDate(profile.birthday) })}
-                {profile.birthday && profile.deathday && ' · '}
-                {profile.deathday &&
-                  t('Gestorben am {datum}', { datum: formatDate(profile.deathday) })}
-              </p>
-            )}
-            <div className="pp-hero__stats">
-              <span
-                className="pp-stat"
-                style={{
-                  color: currentTheme.text.secondary,
-                  borderColor: 'var(--glass-border-light)',
-                }}
-              >
-                {withStrong(
-                  counts.all === 1 ? t('1 Titel') : t('{n} Titel', { n: counts.all }),
-                  String(counts.all),
-                  currentTheme.text.primary
-                )}
-              </span>
-              {ownedTotal > 0 && (
-                <span
-                  className="pp-stat pp-stat--accent"
-                  style={{
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                    color: onPrimary,
-                  }}
-                >
-                  {withStrong(t('{n} in deiner Liste', { n: ownedTotal }), String(ownedTotal))}
-                </span>
-              )}
-              {ownAverage > 0 && (
-                <span
-                  className="pp-stat"
-                  style={{
-                    color: currentTheme.text.secondary,
-                    borderColor: 'var(--glass-border-light)',
-                  }}
-                >
-                  {withStrong(
-                    t('Deine Ø {wert}', { wert: averageLabel }),
-                    averageLabel,
-                    currentTheme.text.primary
-                  )}
-                </span>
-              )}
+    <div className="pp dk">
+      <DetailStage
+        art={heroBackdrop ? getImageUrl(heroBackdrop, 'w1280') : undefined}
+        wash={profile.profilePath ? getImageUrl(profile.profilePath, 'w500') : undefined}
+        poster={
+          profile.profilePath ? (
+            <img src={getImageUrl(profile.profilePath, 'w500')} alt={profile.name} />
+          ) : (
+            <div
+              className="dk-poster pp-hero__portrait--empty"
+              style={{ background: currentTheme.background.surface }}
+            >
+              <Person style={{ fontSize: 64, color: currentTheme.text.muted }} />
             </div>
+          )
+        }
+        below={
+          <>
+            <ScoreRow
+              items={[
+                { key: 'all', label: t('Titel'), value: String(counts.all) },
+                ...(ownedTotal > 0
+                  ? [
+                      {
+                        key: 'owned',
+                        label: t('In deiner Liste'),
+                        value: String(ownedTotal),
+                        tone: currentTheme.accent,
+                      },
+                    ]
+                  : []),
+                ...(ownAverage > 0
+                  ? [
+                      {
+                        key: 'avg',
+                        label: t('Deine Wertung'),
+                        value: averageLabel,
+                        tone: currentTheme.accent,
+                        own: true,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
             {bio && (
               <div className="pp-bio">
                 <p
@@ -360,9 +271,30 @@ export const PersonView = memo(({ personId }: { personId: number | null }) => {
                 )}
               </div>
             )}
+          </>
+        }
+      >
+        {profile.department && (
+          <div className="dk-kicker">
+            <span className="dk-genre">{departmentLabel(profile.department)}</span>
           </div>
-        </motion.div>
-      </section>
+        )}
+        <h1 className="dk-title">{profile.name}</h1>
+        {metaParts.length > 0 && (
+          <div className="dk-meta">
+            {metaParts.map((part) => (
+              <span key={part}>{part}</span>
+            ))}
+          </div>
+        )}
+        {(profile.birthday || profile.deathday) && (
+          <p className="pp-hero__dates" style={{ color: currentTheme.text.muted }}>
+            {profile.birthday && t('Geboren am {datum}', { datum: formatDate(profile.birthday) })}
+            {profile.birthday && profile.deathday && ' · '}
+            {profile.deathday && t('Gestorben am {datum}', { datum: formatDate(profile.deathday) })}
+          </p>
+        )}
+      </DetailStage>
 
       <div className="pp-body">
         <div className="pp-controls">

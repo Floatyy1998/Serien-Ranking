@@ -92,7 +92,7 @@
   background: rgba(0, 0, 0, 0.45);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
   color: rgba(255, 255, 255, 0.86);
   font-size: 12px;
   font-weight: 700;
@@ -143,7 +143,7 @@
   padding: 4px 11px;
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   font-weight: 600;
@@ -235,7 +235,7 @@
   min-height: 42px;
   padding: 0;
   border-radius: 13px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: var(--glass-light);
   color: #fff;
   display: flex;
@@ -277,7 +277,7 @@
   margin-bottom: 6px;
   padding: 3px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -345,7 +345,7 @@
   padding: 8px 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
 }
 
 .mobile-app .mdh-pod--btn,
@@ -413,7 +413,7 @@
   padding: 12px 20px;
   border-radius: var(--radius-full);
   background: var(--glass-light);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   color: rgba(255, 255, 255, 0.86);
@@ -593,7 +593,7 @@
   min-height: 40px;
   padding: 8px 15px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: var(--glass-light);
   font: inherit;
   font-size: 13px;
@@ -667,7 +667,7 @@
   min-height: 110px;
   padding: 14px;
   border-radius: 14px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.92);
   font: inherit;
@@ -988,7 +988,7 @@
   gap: 6px;
   padding: 9px 14px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: var(--glass-light);
   color: var(--theme-text-secondary);
   font-size: 13px;
@@ -1062,7 +1062,7 @@
 .md-confirm .md-confirm-btn {
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: 10px;
   background: var(--glass-light);
   color: var(--theme-text-secondary);
@@ -1164,7 +1164,7 @@
 
 .mobile-app .md-book-switch-cta--ghost,
 .md-book-switch-cta--ghost {
-  border-color: var(--glass-border-light);
+  border-color: transparent;
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1238,7 +1238,7 @@
   min-height: 46px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: var(--glass-light);
   font-weight: 700;
 }
@@ -1391,7 +1391,7 @@
   min-height: 0;
   padding: 0;
   border-radius: 8px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.03);
   font: inherit;
   font-family: var(--font-display);

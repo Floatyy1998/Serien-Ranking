@@ -472,3 +472,58 @@
   flex-basis: 100%;
   order: 3;
 }
+
+/* ───────── Neuer Look: Kennzahlen frei, Karten ohne Rahmen und Schatten ───────── */
+
+.cu-hero {
+  margin: 4px 20px 20px;
+  padding: 0 0 18px;
+  border: none !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.cu-hero-icon {
+  display: none;
+}
+
+.cu-hero-stat + .cu-hero-stat {
+  box-shadow: inset 1px 0 0 var(--hairline);
+}
+
+.cu-hero-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cu-hero-label {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.cu-sort-track {
+  padding: 4px;
+  border: none !important;
+  background: var(--glass-light) !important;
+}
+
+.cu-card {
+  margin-bottom: 10px;
+  border: none !important;
+  box-shadow: none;
+  background: var(--glass-light) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.cu-card:hover {
+  transform: none;
+  box-shadow: none;
+}

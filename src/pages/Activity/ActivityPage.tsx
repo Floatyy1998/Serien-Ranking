@@ -268,12 +268,13 @@ export const ActivityPage = () => {
               onClick={() => selectTab(tab.id)}
               className={`activity-nav__tab${active ? ' is-active' : ''}`}
               style={{
+                // Aktiv: Verlauf mit lesbarer Schrift. Sonst ruhige Tonfläche ohne Rahmen.
                 background: active
-                  ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
-                  : currentTheme.background.surface,
-                border: `1px solid ${active ? `${currentTheme.primary}55` : currentTheme.border.default}`,
-                color: active ? currentTheme.primary : currentTheme.text.muted,
-                boxShadow: active ? `0 4px 18px ${currentTheme.primary}22` : 'none',
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  : 'var(--glass-medium)',
+                border: 'none',
+                color: active ? 'var(--on-primary)' : currentTheme.text.secondary,
+                fontWeight: active ? 700 : 600,
               }}
             >
               <span className="activity-nav__icon">

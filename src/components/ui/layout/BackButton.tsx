@@ -41,8 +41,8 @@ export const BackButton = ({ label, style, showHome = true, onBack }: BackButton
       <IconButton
         icon={<ArrowBack style={{ fontSize: '20px' }} />}
         onClick={onBack ?? goBack}
-        size={40}
-        borderRadius="14px"
+        size={42}
+        borderRadius="50%"
         variant="glass"
         ariaLabel={label || t('Zurück')}
         tooltip={t('Zurück')}
@@ -52,8 +52,8 @@ export const BackButton = ({ label, style, showHome = true, onBack }: BackButton
         <IconButton
           icon={<HomeLogoIcon />}
           onClick={goHome}
-          size={40}
-          borderRadius="14px"
+          size={42}
+          borderRadius="50%"
           variant="glass"
           ariaLabel={homeLabel}
           tooltip={homeLabel}

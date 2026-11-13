@@ -276,7 +276,8 @@ export const HomePage: React.FC = () => {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))',
                 gap: '12px 0',
-                alignItems: 'stretch',
+                // Jede Karte behält ihre eigene Höhe — sonst wächst die Nachbarkarte mit, wenn eine aufklappt.
+                alignItems: 'start',
               }}
             >
               {visible.map((id) => comps[id])}

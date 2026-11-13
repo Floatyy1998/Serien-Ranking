@@ -23,7 +23,7 @@ interface TabSwitcherProps {
 }
 
 /**
- * Segmented-Control mit gleitender Glas-Pille. Layout lebt in global.css
+ * Reiterleiste mit gleitendem Unterstrich. Layout lebt in global.css
  * (.ui-tabs) — mobil volle Breite, ab 768px kompakt (max-content).
  */
 export const TabSwitcher: React.FC<TabSwitcherProps> = ({
@@ -53,16 +53,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   });
 
   return (
-    <div
-      role="tablist"
-      className={classes.join(' ')}
-      onKeyDown={handleTabKeyDown}
-      style={{
-        background: `${currentTheme.text.muted}08`,
-        border: `1px solid ${currentTheme.border.default}`,
-        ...style,
-      }}
-    >
+    <div role="tablist" className={classes.join(' ')} onKeyDown={handleTabKeyDown} style={style}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -76,23 +67,16 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             onClick={() => onTabChange(tab.id)}
             className="ui-tabs__tab"
             style={{
-              color: isActive ? currentTheme.primary : currentTheme.text.muted,
+              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
               fontWeight: isActive ? 700 : 600,
               letterSpacing: isActive ? '-0.01em' : '0',
             }}
           >
-            {/* Morphing background indicator — getöntes Glas statt Neon */}
+            {/* Gleitender Unterstrich unter dem aktiven Reiter */}
             {isActive && (
               <motion.div
                 layoutId={indicatorLayoutId}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: 'var(--radius-xl)',
-                  background: `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`,
-                  boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${currentTheme.primary} 45%, transparent), 0 4px 18px ${currentTheme.primary}22`,
-                  zIndex: -1,
-                }}
+                className="ui-tabs__line"
                 transition={{
                   type: 'spring',
                   stiffness: 320,

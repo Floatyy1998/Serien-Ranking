@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { tapScaleSmall } from '../../../lib/motion';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 
 interface FilterPillProps {
   label: string;
@@ -21,23 +21,25 @@ export const FilterPill: React.FC<FilterPillProps> = ({
   style,
 }) => {
   const { currentTheme } = useTheme();
+  const activeInk = getOptimalTextColor(currentTheme.primary);
 
   return (
     <motion.button
-      whileTap={tapScaleSmall}
+      whileTap={{ opacity: 0.7 }}
       onClick={onClick}
       aria-pressed={active}
       style={{
         padding: icon ? '8px 14px' : '8px 16px',
         borderRadius: 'var(--radius-xl)',
-        border: active ? 'none' : `1px solid ${currentTheme.border.default}`,
+        border: 'none',
         background: active
           ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-          : currentTheme.background.surface,
-        color: active ? currentTheme.text.secondary : currentTheme.text.muted,
-        boxShadow: active ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+          : `color-mix(in srgb, ${currentTheme.text.secondary} 8%, transparent)`,
+        // Schrift passend zum Verlauf — helle Theme-Schrift auf hellem Verlauf war kaum lesbar.
+        color: active ? activeInk : currentTheme.text.secondary,
+        boxShadow: active ? `0 6px 16px -8px ${currentTheme.primary}` : 'none',
         fontSize: '13px',
-        fontWeight: 600,
+        fontWeight: active ? 700 : 600,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -56,8 +58,10 @@ export const FilterPill: React.FC<FilterPillProps> = ({
             minWidth: '18px',
             height: '18px',
             borderRadius: '9px',
-            background: active ? 'rgba(255,255,255,0.25)' : `${currentTheme.primary}20`,
-            color: active ? 'white' : currentTheme.primary,
+            background: active
+              ? `color-mix(in srgb, ${activeInk} 16%, transparent)`
+              : `${currentTheme.primary}20`,
+            color: active ? activeInk : currentTheme.primary,
             fontSize: '11px',
             fontWeight: 700,
             display: 'flex',

@@ -58,7 +58,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
     <div
       style={{
         minHeight: 'var(--vh, 100vh)',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+        background: currentTheme.background.default,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -91,7 +91,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '32px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2), 0 16px 48px rgba(102, 126, 234, 0.2)',
+          boxShadow: 'none',
           position: 'relative',
         }}
       >

@@ -11,6 +11,7 @@ interface PageHeaderProps {
   gradientFrom?: string;
   gradientTo?: string;
   subtitle?: string;
+  /** Wird nicht mehr gezeigt — Seitentitel stehen ohne Symbol. Bleibt für bestehende Aufrufer. */
   icon?: React.ReactNode;
   /** Kleines Element direkt hinter dem Titel (z. B. NameBadges) */
   titleBadge?: React.ReactNode;
@@ -22,25 +23,11 @@ interface PageHeaderProps {
   style?: React.CSSProperties;
 }
 
-/**
- * Uebersetzte Titel sind teils deutlich laenger als die deutschen Originale
- * („Serien-Kalender" → „Calendrier des séries"). Statt sie abzuschneiden,
- * ruecken lange Titel eine Stufe kleiner; die Ellipse bleibt als Notnagel.
- */
-const titleFontSize = (title: string): string => {
-  const byLength = title.length > 24 ? '20px' : title.length > 18 ? '23px' : '26px';
-  // Zusaetzlich an die NUTZBARE Breite koppeln. Unter Anzeige-Zoom stehen auf
-  // einem 412px-Geraet nur 330px zur Verfuegung — dort wurde selbst ein kurzer
-  // Titel wie „Countdown" abgeschnitten, weil Media Queries den Zoom nicht sehen.
-  return `min(${byLength}, calc(var(--effective-width, 412px) * 0.066))`;
-};
-
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   gradientFrom,
   gradientTo,
   subtitle,
-  icon,
   titleBadge,
   actions,
   sticky = true,
@@ -67,7 +54,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               position: 'sticky',
               top: 0,
               zIndex: 'var(--z-sticky)' as string,
-              background: `${currentTheme.background.default}e8`,
+              background: `${currentTheme.background.default}f2`,
               backdropFilter: 'var(--glass-filter-lg)',
               WebkitBackdropFilter: 'var(--glass-filter-lg)',
               borderBottom: 'none',
@@ -76,22 +63,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         ...style,
       }}
     >
-      {/* Subtle bottom edge light */}
-      {sticky && (
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: '5%',
-            right: '5%',
-            height: '1px',
-            background: `linear-gradient(90deg, transparent, ${currentTheme.primary}18, rgba(255, 255, 255, 0.06), ${currentTheme.primary}18, transparent)`,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-
       <motion.div
         initial={shouldReduceMotion ? false : { opacity: 0, y: -16 }}
         animate={shouldReduceMotion ? false : { opacity: 1, y: 0 }}
@@ -120,10 +91,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             from={gradientFrom}
             to={gradientTo}
             style={{
-              fontSize: titleFontSize(title),
+              // Eine Größe für alle Seitentitel (--page-title-size); lange Titel brechen um.
+              fontSize: 'var(--page-title-size)',
               fontFamily: 'var(--font-display)',
               fontWeight: 800,
-              letterSpacing: '-0.03em',
+              letterSpacing: '-0.035em',
+              lineHeight: 1.1,
               margin: 0,
               display: 'flex',
               alignItems: 'center',
@@ -131,17 +104,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               minWidth: 0,
             }}
           >
-            {icon}
-            <span
-              style={{
-                minWidth: 0,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {title}
-            </span>
+            <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{title}</span>
             {titleBadge}
           </GradientText>
           {subtitle && (

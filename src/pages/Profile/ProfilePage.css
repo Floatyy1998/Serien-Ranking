@@ -679,3 +679,229 @@
   z-index: 4;
   box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.6);
 }
+
+/* ───────── Neuer Look: flach, Haarlinien statt Kästen ───────── */
+
+@media (max-width: 1099px) {
+  .profile-stats-card {
+    padding: 4px 0 0;
+    border: none;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .profile-stats-grid {
+    gap: 0;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .profile-stat-item {
+    padding: 16px 6px;
+    border: none;
+    border-radius: 0;
+    background: none;
+  }
+
+  .profile-stat-item:hover {
+    transform: none;
+  }
+
+  .profile-stat-item:nth-child(3n + 2),
+  .profile-stat-item:nth-child(3n + 3) {
+    box-shadow: inset 1px 0 0 var(--hairline);
+  }
+
+  .profile-stat-item:nth-child(n + 4) {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .profile-stat-value {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .profile-stat-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .profile-section-title {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: none;
+  }
+
+  /* Schnellzugriff: beschriftete Kacheln im Raster statt gestapelter Balken */
+  .profile-featured-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .profile-page .profile-featured-item {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 104px;
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--tile-color) 11%, transparent);
+  }
+
+  .profile-featured-item:hover {
+    transform: none;
+    filter: brightness(1.2);
+  }
+
+  .profile-featured-item-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .profile-featured-icon-wrap {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  .profile-featured-label {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .profile-featured-item-right {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    margin: 0;
+  }
+
+  .profile-page .profile-featured-item {
+    position: relative;
+  }
+
+  /* Menügruppen: schlichte Liste mit Haarlinien */
+  .profile-menu-group {
+    border: none;
+    border-radius: 0;
+    background: none;
+    overflow: visible;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .profile-page .profile-menu-item {
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .profile-menu-item + .profile-menu-item {
+    border-top: none;
+  }
+
+  .profile-menu-icon-wrap {
+    width: 28px;
+    height: 28px;
+    background: none;
+  }
+
+  .profile-menu-label {
+    font-size: 15.5px;
+    font-weight: 600;
+  }
+
+  .profile-page .profile-logout-btn {
+    width: auto;
+    margin: 8px auto 0;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
+  }
+
+  .profile-logout-btn:hover {
+    box-shadow: none;
+    filter: brightness(1.2);
+  }
+}
+
+/* Breit: Schnellzugriff-Symbole tragen dieselbe Farbkachel wie die Menüzeilen. */
+@media (min-width: 1100px) {
+  .profile-featured-icon-wrap {
+    background: linear-gradient(
+      135deg,
+      var(--tile-color),
+      color-mix(in srgb, var(--tile-color) 72%, #000)
+    );
+  }
+}
+
+/* Breit: Interessen bekommen eine eigene Zeile zwischen Kopf und Link-Spalten
+   (sonst rutschen sie unter den Abmelden-Knopf), Abmelden bleibt eine ruhige Pille. */
+@media (min-width: 1100px) {
+  .profile-page {
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+  }
+
+  .profile-interests {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 18px 36px 0 !important;
+  }
+
+  .profile-menu-section {
+    grid-row: 3;
+  }
+
+  .profile-logout-section {
+    grid-row: 4;
+  }
+
+  .profile-page .profile-logout-btn {
+    width: auto;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
+  }
+
+  .profile-page .profile-logout-btn:hover {
+    box-shadow: none;
+    filter: brightness(1.2);
+  }
+}
+
+/* Breit: ein ruhiges Panel auf dem Bild, darin Zahlen ohne eigene Kästchen. */
+@media (min-width: 1100px) {
+  .profile-stats-card {
+    border: none !important;
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--theme-background) 78%, transparent) !important;
+  }
+
+  .profile-stats-grid {
+    gap: 0;
+  }
+
+  .profile-stat-item {
+    padding: 10px 22px;
+    border: none !important;
+    border-radius: 0;
+    background: none !important;
+    box-shadow: inset 1px 0 0 var(--hairline);
+  }
+
+  .profile-stat-item:hover {
+    transform: none;
+  }
+}

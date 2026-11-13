@@ -175,7 +175,7 @@
 
 .hero-section__genre-tag {
   background: var(--glass-medium);
-  border: 1px solid var(--glass-border-medium);
+  border: 1px solid transparent;
   border-radius: 9999px;
   padding: 4px 12px;
   font-size: 12px;
@@ -283,7 +283,7 @@
 
 .hero-actions__btn {
   height: 38px;
-  border: 1px solid var(--glass-border-light);
+  border: 1px solid transparent;
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 600;
@@ -671,7 +671,7 @@ button.episode-list-number:focus-visible {
 
 .episode-action-btn--discuss {
   background: var(--glass-medium);
-  border: 1px solid var(--glass-border-medium);
+  border: 1px solid transparent;
 }
 
 /* Section list container used in ContinueWatching, Rewatch, TodayEpisodes */

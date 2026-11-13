@@ -16,7 +16,7 @@ import { useDiscussionFeed } from '../../hooks/social/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import { t } from '../../services/i18n';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
-import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { tapScaleSmall } from '../../lib/motion';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
@@ -229,44 +229,29 @@ export const DiscussionFeedPage = () => {
 
       {/* Filter Tabs */}
       <div
+        className="ui-line-tabs"
+        role="group"
+        aria-label={t('Filter')}
         style={{
-          display: 'flex',
-          gap: '8px',
-          padding: '0 20px 20px',
+          margin: '0 20px 20px',
           position: 'relative',
           zIndex: 5,
+          width: isDesktop ? 'max-content' : undefined,
         }}
       >
         {FILTER_TABS.map((tab) => (
-          <motion.button
+          <button
             key={tab.id}
-            whileTap={tapScale}
+            type="button"
+            className="ui-line-tab"
+            aria-pressed={filter === tab.id}
             onClick={() => {
               setFilter(tab.id);
             }}
-            style={{
-              /* Desktop: kompakte Pills statt Vollbreite-Streifen */
-              flex: isDesktop ? 'none' : 1,
-              padding: isDesktop ? '12px 28px' : '12px',
-              background:
-                filter === tab.id
-                  ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
-                  : currentTheme.background.card,
-              border:
-                filter === tab.id
-                  ? `1px solid ${currentTheme.primary}55`
-                  : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '14px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: filter === tab.id ? currentTheme.primary : currentTheme.text.muted,
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: filter === tab.id ? `0 4px 15px ${currentTheme.primary}22` : 'none',
-            }}
+            style={isDesktop ? { flex: 'none', padding: '0 24px' } : undefined}
           >
             {tab.label}
-          </motion.button>
+          </button>
         ))}
       </div>
 

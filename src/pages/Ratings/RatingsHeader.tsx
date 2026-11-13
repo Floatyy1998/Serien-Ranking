@@ -24,6 +24,8 @@ interface RatingsHeaderProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   onTabChange: (id: string) => void;
+  /** Breit: Ansichts-Knöpfe rechts in der Reiter-Zeile. */
+  toolbar?: React.ReactNode;
 }
 
 export const RatingsHeader = React.memo<RatingsHeaderProps>(
@@ -38,6 +40,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
     searchValue,
     onSearchChange,
     onTabChange,
+    toolbar,
   }) => {
     // Lokaler Wert für sofortiges Tippen; die Filter-Pipeline läuft über eine
     // Transition und würde die Eingabe sonst nachziehen lassen.
@@ -59,25 +62,14 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               from={theme.text.primary}
               to={theme.accent}
               style={{
-                // Aus der NUTZBAREN Breite gerechnet (--effective-width), nicht
-                // aus vw: unter Anzeige-Zoom weicht beides voneinander ab.
-                fontSize: 'clamp(18px, calc(var(--effective-width, 412px) * 0.058), 26px)',
+                fontSize: 'var(--page-title-size)',
                 fontWeight: 800,
+                letterSpacing: '-0.035em',
+                lineHeight: 1.1,
                 margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
                 minWidth: 0,
               }}
             >
-              <Star
-                style={{
-                  fontSize: 'clamp(19px, calc(var(--effective-width, 412px) * 0.062), 28px)',
-                  color: theme.accent,
-                  WebkitTextFillColor: 'initial',
-                  flexShrink: 0,
-                }}
-              />
               {t('Meine Bewertungen')}
             </GradientText>
           </div>
@@ -127,21 +119,24 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           </div>
         </div>
 
-        <TabSwitcher
-          tabs={[
-            { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
-            { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
-            ...(booksCount > 0
-              ? [{ id: 'books', label: t('Lesen'), icon: LocalLibrary, count: booksCount }]
-              : []),
-            { id: 'folders', label: t('Listen'), icon: ListAlt, count: folderCount },
-          ]}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          className="ui-tabs--equal"
-          stackCounts={booksCount > 0}
-          style={{ margin: '0 20px 16px 20px' }}
-        />
+        <div className="ratings-tabs-row">
+          <TabSwitcher
+            tabs={[
+              { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
+              { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
+              ...(booksCount > 0
+                ? [{ id: 'books', label: t('Lesen'), icon: LocalLibrary, count: booksCount }]
+                : []),
+              { id: 'folders', label: t('Listen'), icon: ListAlt, count: folderCount },
+            ]}
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            className="ui-tabs--equal"
+            stackCounts={booksCount > 0}
+            style={{ margin: '0 20px 16px 20px' }}
+          />
+          {toolbar}
+        </div>
       </div>
     );
   }

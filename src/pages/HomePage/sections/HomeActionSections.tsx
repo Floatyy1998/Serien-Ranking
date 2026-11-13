@@ -11,7 +11,6 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { usePetEnabled } from '../../../hooks/pet/usePetEnabled';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { t } from '../../../services/i18n';
-import { tapScale } from '../../../lib/motion';
 
 interface QuickActionsProps {
   config: {
@@ -79,10 +78,10 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
           <motion.button
             key={id}
             whileTap={{ opacity: 0.7 }}
-            whileHover={{ y: -2 }}
             onClick={() => {
               navigate(a.path);
             }}
+            className="home-quick-tile"
             style={{
               display: 'flex',
               // Desktop: horizontale Glas-Buttons (Icon + Label nebeneinander) —
@@ -90,24 +89,19 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
               flexDirection: isMobile ? 'column' : 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: isMobile ? '4px' : '10px',
-              padding: isMobile ? '8px 4px' : '14px 12px',
-              borderRadius: isMobile ? '14px' : '16px',
-              background: `linear-gradient(160deg, ${a.color}16, transparent 60%), var(--glass-light)`,
-              border: `1px solid ${a.color}26`,
-              boxShadow: 'var(--glass-specular)',
+              gap: isMobile ? '3px' : '10px',
+              padding: isMobile ? '9px 4px 8px' : '12px',
+              borderRadius: '14px',
+              background: `color-mix(in srgb, ${currentTheme.text.secondary} 6%, transparent)`,
+              border: 'none',
               cursor: 'pointer',
-              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             <div
               style={{
                 position: 'relative',
-                width: isMobile ? '30px' : '44px',
-                height: isMobile ? '30px' : '44px',
-                borderRadius: isMobile ? '10px' : '14px',
-                background: `${a.color}1f`,
-                boxShadow: `inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 18px -8px ${a.color}66`,
+                width: isMobile ? '26px' : '28px',
+                height: isMobile ? '26px' : '28px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -176,8 +170,6 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
       icon: React.ReactElement;
       label: string;
       path: string;
-      bg: string;
-      border: string;
       color: string;
     }
   > = {
@@ -185,24 +177,18 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
       icon: <EmojiEvents style={{ fontSize: '22px' }} />,
       label: t('Rangliste'),
       path: '/leaderboard',
-      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
-      border: '1px solid rgba(245, 158, 11, 0.2)',
       color: currentTheme.status?.warning || '#f59e0b',
     },
     badges: {
       icon: <AutoAwesome style={{ fontSize: '22px' }} />,
       label: t('Badges'),
       path: '/badges',
-      bg: `linear-gradient(135deg, ${currentTheme.primary}1A 0%, ${currentTheme.accent}1A 100%)`,
-      border: `1px solid ${currentTheme.primary}33`,
       color: currentTheme.primary,
     },
     pets: {
       icon: <LocalFireDepartment style={{ fontSize: '22px' }} />,
       label: t('Pets'),
       path: '/pets',
-      bg: `linear-gradient(135deg, ${currentTheme.status.success}1A 0%, ${currentTheme.status.info.main}1A 100%)`,
-      border: `1px solid ${currentTheme.status.success}33`,
       color: currentTheme.status.success,
     },
   };
@@ -226,17 +212,16 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
         return (
           <motion.button
             key={id}
-            whileTap={tapScale}
-            whileHover={{ y: -2 }}
+            whileTap={{ opacity: 0.7 }}
             onClick={() => {
               navigate(a.path);
             }}
+            className="home-quick-tile"
             style={{
-              padding: isMobile ? '9px 10px' : '13px 10px',
-              background: a.bg,
-              border: a.border,
+              padding: isMobile ? '9px 10px' : '12px 10px',
+              background: `color-mix(in srgb, ${a.color} 9%, transparent)`,
+              border: 'none',
               borderRadius: '14px',
-              boxShadow: 'var(--glass-specular)',
               color: a.color,
               cursor: 'pointer',
               display: 'flex',

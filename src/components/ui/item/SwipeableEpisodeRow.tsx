@@ -287,7 +287,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     const borderColor = isCompleting
       ? `${color}50`
       : (staticBorder ??
-        (isDragTarget ? color : `rgba(255,255,255,${(0.07 + dragRatio * 0.15).toFixed(2)})`));
+        (isDragTarget ? color : `rgba(255,255,255,${(0.09 + dragRatio * 0.15).toFixed(2)})`));
 
     return (
       <motion.div
@@ -305,7 +305,8 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
         }}
         exit={{
           opacity: 0,
-          x: swipeDirection === 'left' ? -300 : 300,
+          // Breit liegen Zeilen nebeneinander — dort nur kurz ausweichen statt über die Nachbarspalte zu fliegen.
+          x: (swipeDirection === 'left' ? -1 : 1) * (window.innerWidth >= 1100 ? 40 : 300),
           transition: { duration: 0.28, ease: [0.32, 0, 0.67, 0] },
         }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -400,7 +401,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                   ? `0 4px 12px ${color}30`
                   : isSwiping
                     ? `0 12px 44px rgba(0,0,0,0.55), 0 0 20px ${color}30`
-                    : `0 6px 28px rgba(0,0,0,0.4), 0 0 12px ${color}15`,
+                    : 'none',
               cursor: isEditMode ? 'move' : undefined,
               opacity: isDragged ? 0.6 : 1,
               transform: isDragged ? 'scale(1.05)' : isDragTarget ? 'scale(1.02)' : undefined,

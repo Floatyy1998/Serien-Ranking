@@ -199,7 +199,10 @@ export const FeverCurveSection = memo(
         </div>
 
         {open && view === 'curve' && (
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div
+            className="hide-scrollbar"
+            style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}
+          >
             <LineChart
               width={chartWidth}
               height={190}
@@ -281,7 +284,10 @@ export const FeverCurveSection = memo(
           </div>
         )}
         {open && view === 'heat' && (
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div
+            className="hide-scrollbar"
+            style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}
+          >
             <div
               style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 'min-content' }}
             >

@@ -189,7 +189,7 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -232,7 +232,7 @@
 .ratings-row:hover {
   transform: none;
   background: var(--glass-medium);
-  border-color: var(--glass-border-light);
+  border-color: transparent;
 }
 
 /* Platzierung in der Rating-Rangliste (nur bei Sortierung nach Rating). */
@@ -912,4 +912,118 @@
 
 .ratings-content--selecting .ratings-grid-item {
   transform: none;
+}
+
+/* ───────── Neuer Look: Kennzahlen ohne Kasten, Listenzeilen mit Haarlinie ───────── */
+
+.ratings-stats-row {
+  display: flex;
+  gap: 0;
+  margin-top: var(--space-4);
+}
+
+.ratings-stat-card,
+.ratings-stat-card--average {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0 22px 0 0;
+  border: none !important;
+  border-radius: 0;
+  background: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.ratings-stat-card + .ratings-stat-card {
+  padding-left: 22px;
+  box-shadow: inset 1px 0 0 var(--hairline);
+}
+
+.ratings-stat-card--average {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 6px;
+  align-items: baseline;
+  justify-content: start;
+}
+
+.ratings-stat-card--average .ratings-stat-label {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.ratings-stat-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ratings-stat-star {
+  font-size: 20px;
+  align-self: center;
+}
+
+.ratings-density-btn {
+  border: none;
+  background: var(--glass-light);
+}
+
+.ratings-row {
+  border: none;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  background: none;
+}
+
+.ratings-row:hover {
+  background: var(--glass-subtle);
+}
+
+/* Breit: Titel, Kennzahlen und Suche teilen sich eine Zeile statt drei übereinander. */
+@media (min-width: 900px) {
+  :root:not([data-layout='mobile']) .ratings-header-inner {
+    display: grid;
+    grid-template-columns: auto auto minmax(260px, 1fr);
+    align-items: center;
+    column-gap: 36px;
+  }
+
+  :root:not([data-layout='mobile']) .ratings-stats-row {
+    margin-top: 0;
+  }
+
+  :root:not([data-layout='mobile']) .ratings-search-wrap {
+    margin-top: 0;
+    width: 100%;
+    max-width: 620px;
+    justify-self: end;
+  }
+}
+
+/* Reiter und Ansichts-Knöpfe teilen sich breit eine Zeile. */
+.ratings-tabs-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ratings-tabs-row > .ui-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .ratings-tabs-row > .ui-tabs {
+    flex: 0 1 auto;
+  }
+}
+
+.ratings-tabs-row .ratings-density-toggle {
+  flex-shrink: 0;
+  margin: 0 var(--page-x) 0 0;
 }

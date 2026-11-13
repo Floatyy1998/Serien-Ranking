@@ -1,6 +1,6 @@
 /**
  * OG-Renderer für geteilte Detail-Links (/series/:id, /movie/:id, /books/:id,
- * /manga/:id) und geteilte Listen (/list/:id). Vorschaubilder unter /og/list,
+ * /manga/:id), geteilte Folgen (/episode/:id/s/:s/e/:e) und geteilte Listen (/list/:id). Vorschaubilder unter /og/list,
  * /og/book und /og/manga.
  *
  * Firebase Hosting rewritet diese Routen hierher; die Function nimmt das
@@ -84,6 +84,29 @@ async function getTmdbDetail(mediaType, tmdbId) {
   }
 }
 
+async function getTmdbEpisode(tmdbId, season, episode) {
+  if (!TMDB_KEY) return null;
+  const key = `ep-${tmdbId}-${season}-${episode}`;
+  const cached = tmdbCache.get(key);
+  if (cached && Date.now() - cached.at < TMDB_TTL_MS) return cached.data;
+
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}/episode/${episode}?api_key=${TMDB_KEY}&language=de-DE`
+    );
+    const data = res.ok ? await res.json() : null;
+    if (tmdbCache.size >= TMDB_CACHE_MAX) {
+      const oldest = tmdbCache.keys().next().value;
+      if (oldest) tmdbCache.delete(oldest);
+    }
+    tmdbCache.set(key, { data, at: Date.now() });
+    return data;
+  } catch (err) {
+    logger.warn('TMDB-Fetch fehlgeschlagen', { key, message: err && err.message });
+    return null;
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -140,6 +163,47 @@ function injectOg(html, mediaType, tmdbId, detail) {
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:image" content="${image}" />`,
     ...imageDims,
+    `<meta property="og:url" content="${pageUrl}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${ogTitle}" />`,
+    `<meta name="twitter:description" content="${description}" />`,
+    `<meta name="twitter:image" content="${image}" />`,
+  ].join('\n    ');
+
+  return replaceHeadTags(html, tags);
+}
+
+// Geteilte Folge: Serientitel + Folge im Titel, Szenenbild als Karte. Die Handlung
+// bleibt bewusst draußen — eine Link-Vorschau im Chat soll nicht spoilern.
+function injectEpisodeOg(html, tmdbId, season, episode, series, detail) {
+  const seriesTitle = series.name || '';
+  if (!seriesTitle) return html;
+  const label = `S${season} E${episode}`;
+  const episodeName = detail && detail.name ? detail.name : '';
+  const rawTitle = `${seriesTitle} · ${label}${episodeName ? ` – ${episodeName}` : ''}`;
+  const pageTitle = escapeHtml(`${rawTitle} | TV-RANK`);
+  const ogTitle = escapeHtml(rawTitle);
+  const description = escapeHtml(
+    `Staffel ${season}, Folge ${episode} von ${seriesTitle} — abhaken, bewerten und ohne Spoiler diskutieren auf TV-RANK.`
+  );
+  const still = detail && detail.still_path;
+  const image = still
+    ? `https://image.tmdb.org/t/p/original${still}`
+    : series.backdrop_path
+      ? `https://image.tmdb.org/t/p/w1280${series.backdrop_path}`
+      : series.poster_path
+        ? `https://image.tmdb.org/t/p/w780${series.poster_path}`
+        : `${SITE_ORIGIN}/logo180.png`;
+  const pageUrl = `${SITE_ORIGIN}/episode/${tmdbId}/s/${season}/e/${episode}`;
+
+  const tags = [
+    `<title>${pageTitle}</title>`,
+    `<meta name="description" content="${description}" />`,
+    `<meta property="og:type" content="video.episode" />`,
+    `<meta property="og:site_name" content="TV-RANK" />`,
+    `<meta property="og:title" content="${ogTitle}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:image" content="${image}" />`,
     `<meta property="og:url" content="${pageUrl}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${ogTitle}" />`,
@@ -559,9 +623,17 @@ exports.ogRender = onRequest(
     const match = (req.path || '').match(/^\/(series|movie)\/(\d+)/);
     const listMatch = (req.path || '').match(/^\/list\/([\w-]{1,64})/);
     const readingMatch = (req.path || '').match(/^\/(books|manga)\/([^/]{1,140})\/?$/);
+    const episodeMatch = (req.path || '').match(/^\/episode\/(\d{1,9})\/s\/(\d{1,4})\/e\/(\d{1,5})\/?$/);
     let out = html;
     let cacheControl = 'public, max-age=300, s-maxage=3600';
-    if (listMatch) {
+    if (episodeMatch) {
+      const [, id, season, episode] = episodeMatch.map(Number);
+      const [series, detail] = await Promise.all([
+        getTmdbDetail('tv', id),
+        getTmdbEpisode(id, season, episode),
+      ]);
+      if (series) out = injectEpisodeOg(html, id, season, episode, series, detail);
+    } else if (listMatch) {
       const list = await getSharedList(listMatch[1]);
       if (list) out = injectListOg(html, listMatch[1], list);
       cacheControl = 'public, max-age=60, s-maxage=300';

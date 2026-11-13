@@ -54,8 +54,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           minHeight: 'var(--control-lg)',
           padding: '0 16px 0 48px',
           paddingRight: value || trailing ? '52px' : '16px',
-          background: currentTheme.background.surface,
-          border: `2px solid ${currentTheme.border.default}`,
+          background: 'var(--glass-medium)',
+          border: '2px solid transparent',
           borderRadius: 'var(--radius-lg)',
           color: currentTheme.text.primary,
           fontSize: '16px',
@@ -69,7 +69,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           e.target.style.boxShadow = `0 0 0 3px ${currentTheme.primary}20`;
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = currentTheme.border.default;
+          e.target.style.borderColor = 'transparent';
           e.target.style.boxShadow = 'none';
         }}
       />
