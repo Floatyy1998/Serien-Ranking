@@ -8,7 +8,7 @@
  * an document.body, damit kein transformierter Vorfahre das fixe Overlay schiebt.
  */
 import { Add, Close, Person, Search, Star, Visibility } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -304,6 +304,45 @@ export const HomeSearchOverlay = memo(
 
     const hasQuery = query.trim().length >= 2;
 
+    // Morph: das Suchfeld startet deckungsgleich auf der Suchleiste im Seitenkopf und
+    // wächst an seinen Platz im Overlay; beim Schließen läuft es dorthin zurück.
+    const slotRef = useRef<HTMLDivElement>(null);
+    const fieldControls = useAnimationControls();
+    const [morphBack, setMorphBack] = useState<{
+      left: number;
+      top: number;
+      width: number;
+      height: number;
+    } | null>(null);
+    useLayoutEffect(() => {
+      if (!open) return;
+      const slot = slotRef.current?.getBoundingClientRect();
+      const origin = [...document.querySelectorAll<HTMLElement>('[data-search-origin]')]
+        .map((el) => el.getBoundingClientRect())
+        .find((r) => r.width > 0 && r.height > 0);
+      if (!slot || !origin || slot.width === 0) {
+        setMorphBack(null);
+        return;
+      }
+      const from = {
+        left: origin.left - slot.left,
+        top: origin.top - slot.top,
+        width: origin.width,
+        height: origin.height,
+      };
+      setMorphBack(from);
+      fieldControls.set(from);
+      void fieldControls
+        .start({
+          left: 0,
+          top: 0,
+          width: slot.width,
+          height: slot.height,
+          transition: { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 },
+        })
+        .then(() => fieldControls.set({ width: '100%', height: '100%' }));
+    }, [open, fieldControls]);
+
     // Klick auf freie Fläche schließt. Interaktive Elemente (Suchfeld, Karten,
     // Chips, Buttons) sind ausgenommen — deren Klicks bubbeln zwar hierher,
     // treffen aber per closest() auf ein interaktives Ziel.
@@ -511,113 +550,80 @@ export const HomeSearchOverlay = memo(
             // Orbs darueber halten die Flaeche lebendig, damit es auf dunklen
             // Themes nicht wie eine schwarze Wand wirkt.
             style={{
-              background: `${currentTheme.background.default}eb`,
+              background: currentTheme.background.default,
               display: visible ? undefined : 'none',
             }}
           >
-            {/* Ambient-Licht unter dem Glas — eigene Lichtquelle, damit das Overlay
-              lebendig aussieht, egal wie dunkel/leer der Home-Inhalt dahinter ist. */}
-            <motion.div
-              className="hso__orb hso__orb--1"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6 }}
-              style={{
-                // Intensität via --hso-orb-strength (CSS), weil framer die
-                // Element-Opacity inline auf 1 animiert und CSS-opacity schluckt.
-                background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.primary} var(--hso-orb-strength, 40%), transparent), transparent 70%)`,
-              }}
-            />
-            <motion.div
-              className="hso__orb hso__orb--2"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, delay: 0.08 }}
-              style={{
-                background:
-                  'radial-gradient(circle, color-mix(in srgb, var(--theme-secondary-gradient) var(--hso-orb-strength, 40%), transparent), transparent 70%)',
-              }}
-            />
-            <motion.div
-              className="hso__orb hso__orb--3"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              style={{
-                background: `radial-gradient(circle, color-mix(in srgb, ${currentTheme.accent} calc(var(--hso-orb-strength, 40%) * 0.75), transparent), transparent 70%)`,
-              }}
-            />
+            <div className="hso__wash" aria-hidden />
 
             {/* Spotlight-Panel: auf Mobile full-bleed, auf Desktop zentrierte Palette. */}
             <div className="hso__panel">
               {/* Kopf */}
-              <motion.div
-                className="hso__head"
-                initial={{ y: -26, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -18, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 440, damping: 34 }}
-              >
+              <div className="hso__head">
                 <div className="hso__bar-row">
-                  <div
-                    className="hso__field"
-                    style={{
-                      background: `linear-gradient(135deg, ${currentTheme.primary}1f, transparent 45%), var(--glass-medium)`,
-                      borderColor: `${currentTheme.primary}59`,
-                      boxShadow: `0 10px 40px -10px ${currentTheme.primary}55, inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 0 1px ${currentTheme.primary}14`,
-                    }}
-                  >
-                    <Search
-                      style={{ fontSize: '22px', color: currentTheme.primary, flexShrink: 0 }}
-                    />
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') onEnter();
-                      }}
-                      placeholder={
-                        filter === 'books' || (reading && filter === 'all')
-                          ? t('Titel, Autor oder ISBN')
-                          : filter === 'manga'
-                            ? t('Titel oder ISBN')
-                            : t('Titel oder Schauspieler')
+                  <div className="hso__field-slot" ref={slotRef}>
+                    <motion.div
+                      className="hso__field"
+                      initial={false}
+                      animate={fieldControls}
+                      exit={
+                        morphBack
+                          ? {
+                              ...morphBack,
+                              transition: { type: 'spring', stiffness: 420, damping: 40 },
+                            }
+                          : undefined
                       }
-                      aria-label={
-                        reading
-                          ? t('Bücher und Manga suchen')
-                          : t('Serien, Filme und Personen suchen')
-                      }
-                      autoFocus
-                      className="hso__input"
-                      style={{ color: currentTheme.text.primary, outline: 'none' }}
-                    />
-                    {query && (
-                      <button
-                        type="button"
-                        className="hso__clear"
-                        aria-label={t('Suche leeren')}
-                        onClick={() => setQuery('')}
-                        style={{
-                          color: currentTheme.text.muted,
-                          background: `${currentTheme.text.muted}22`,
+                    >
+                      <Search
+                        style={{ fontSize: '22px', color: currentTheme.primary, flexShrink: 0 }}
+                      />
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') onEnter();
                         }}
-                      >
-                        <Close style={{ fontSize: '15px' }} />
-                      </button>
-                    )}
-                    <IsbnScanButton
-                      hidden={!!query || (!reading && filter !== 'books' && filter !== 'manga')}
-                      className="hso__scan"
-                      style={{ color: currentTheme.primary }}
-                      onIsbn={setQuery}
-                      onManual={() => inputRef.current?.focus()}
-                    />
+                        placeholder={
+                          filter === 'books' || (reading && filter === 'all')
+                            ? t('Titel, Autor oder ISBN')
+                            : filter === 'manga'
+                              ? t('Titel oder ISBN')
+                              : t('Titel oder Schauspieler')
+                        }
+                        aria-label={
+                          reading
+                            ? t('Bücher und Manga suchen')
+                            : t('Serien, Filme und Personen suchen')
+                        }
+                        autoFocus
+                        className="hso__input"
+                        style={{ color: currentTheme.text.primary, outline: 'none' }}
+                      />
+                      {query && (
+                        <button
+                          type="button"
+                          className="hso__clear"
+                          aria-label={t('Suche leeren')}
+                          onClick={() => setQuery('')}
+                          style={{
+                            color: currentTheme.text.muted,
+                            background: `${currentTheme.text.muted}22`,
+                          }}
+                        >
+                          <Close style={{ fontSize: '15px' }} />
+                        </button>
+                      )}
+                      <IsbnScanButton
+                        hidden={!!query || (!reading && filter !== 'books' && filter !== 'manga')}
+                        className="hso__scan"
+                        style={{ color: currentTheme.primary }}
+                        onIsbn={setQuery}
+                        onManual={() => inputRef.current?.focus()}
+                      />
+                    </motion.div>
                   </div>
                   <button
                     type="button"
@@ -639,7 +645,7 @@ export const HomeSearchOverlay = memo(
                         <button
                           key={f.key}
                           type="button"
-                          className="hso__filter"
+                          className={`hso__filter${active ? ' is-active' : ''}`}
                           onClick={(e) => {
                             setFilter(f.key);
                             e.currentTarget.scrollIntoView?.({
@@ -649,18 +655,6 @@ export const HomeSearchOverlay = memo(
                             });
                           }}
                           aria-pressed={active}
-                          style={{
-                            background: active
-                              ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                              : 'var(--glass-medium)',
-                            border: active ? 'none' : '1px solid var(--glass-border-light)',
-                            color: active ? onPrimary : currentTheme.text.muted,
-                            boxShadow: active
-                              ? `0 6px 18px -4px ${currentTheme.primary}66`
-                              : 'var(--glass-specular)',
-                            backdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                            WebkitBackdropFilter: active ? undefined : 'var(--glass-filter-sm)',
-                          }}
                         >
                           {f.label}
                         </button>
@@ -668,7 +662,7 @@ export const HomeSearchOverlay = memo(
                     })}
                   </div>
                 )}
-              </motion.div>
+              </div>
 
               {/* Inhalt */}
               <div
@@ -819,30 +813,32 @@ export const HomeSearchOverlay = memo(
                         >
                           {t('Zuletzt gesucht')}
                         </div>
-                        {recent.map((term) => (
-                          <div key={term} className="hso__recent-row">
-                            <button
-                              type="button"
-                              className="hso__recent"
-                              onClick={() => setQuery(term)}
-                              style={{ color: currentTheme.text.secondary }}
-                            >
-                              <Search
-                                style={{ fontSize: '18px', color: currentTheme.text.muted }}
-                              />
-                              {term}
-                            </button>
-                            <button
-                              type="button"
-                              className="hso__recent-remove"
-                              aria-label={t('„{term}" entfernen', { term })}
-                              onClick={() => removeRecentSearch(recentScope, term)}
-                              style={{ color: currentTheme.text.muted }}
-                            >
-                              <Close style={{ fontSize: '15px' }} />
-                            </button>
-                          </div>
-                        ))}
+                        <div className="hso__recents">
+                          {recent.map((term) => (
+                            <div key={term} className="hso__recent-row">
+                              <button
+                                type="button"
+                                className="hso__recent"
+                                onClick={() => setQuery(term)}
+                                style={{ color: currentTheme.text.secondary }}
+                              >
+                                <Search
+                                  style={{ fontSize: '18px', color: currentTheme.text.muted }}
+                                />
+                                {term}
+                              </button>
+                              <button
+                                type="button"
+                                className="hso__recent-remove"
+                                aria-label={t('„{term}" entfernen', { term })}
+                                onClick={() => removeRecentSearch(recentScope, term)}
+                                style={{ color: currentTheme.text.muted }}
+                              >
+                                <Close style={{ fontSize: '15px' }} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {(filter === 'books' || (reading && filter === 'all')) && (
@@ -875,7 +871,17 @@ export const HomeSearchOverlay = memo(
                           </div>
                           {shownPopular.length > 0 ? (
                             <div className="hso__pop-row">
-                              {shownPopular.map((item, i) => renderCard(item, i, 0.02))}
+                              {shownPopular.map((item, i) => (
+                                <div key={quickMediaKey(item)} className="hso__ranked">
+                                  <span
+                                    className={`hso__rank${i >= 9 ? ' hso__rank--wide' : ''}`}
+                                    aria-hidden
+                                  >
+                                    <span>{i + 1}</span>
+                                  </span>
+                                  {renderCard(item, i, 0.02)}
+                                </div>
+                              ))}
                             </div>
                           ) : (
                             <div className="hso__chips">
@@ -889,11 +895,6 @@ export const HomeSearchOverlay = memo(
                                   transition={{ delay: 0.05 + i * 0.04 }}
                                   whileTap={tapScale}
                                   onClick={() => setQuery(term)}
-                                  style={{
-                                    color: currentTheme.text.secondary,
-                                    background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
-                                    border: `1px solid ${currentTheme.primary}33`,
-                                  }}
                                 >
                                   {term}
                                 </motion.button>

@@ -192,6 +192,7 @@ vi.mock('framer-motion', () => ({
     { get: () => (props: Record<string, unknown>) => <div {...strip(props)} /> }
   ),
   AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  useAnimationControls: () => ({ set: vi.fn(), start: vi.fn(() => Promise.resolve()) }),
 }));
 
 afterEach(() => {

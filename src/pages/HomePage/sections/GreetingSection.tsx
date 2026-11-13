@@ -301,12 +301,15 @@ export const GreetingSection = React.memo(function GreetingSection({
         }}
       >
         {above}
-        <div style={{ position: 'relative', padding: isMobile ? 0 : '8px 0 0' }}>
+        <div
+          className={isMobile ? undefined : 'home-head-grid'}
+          style={{ position: 'relative', padding: isMobile ? 0 : '8px 0 0' }}
+        >
           <div
             className="home-greet"
             style={{
               position: 'relative',
-              display: 'flex',
+              display: isMobile ? 'flex' : 'contents',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               gap: '12px',
@@ -314,7 +317,10 @@ export const GreetingSection = React.memo(function GreetingSection({
           >
             {/* Schmal: Avatar links, Datum + Gruß daneben, Glocke rechts. */}
             {isMobile && headerActions('avatar')}
-            <div className="home-greet__text" style={{ minWidth: 0, flex: 1 }}>
+            <div
+              className="home-greet__text"
+              style={{ minWidth: 0, flex: 1, gridArea: isMobile ? undefined : 'greet' }}
+            >
               {title ?? (
                 <GradientText
                   as="h1"
@@ -381,19 +387,25 @@ export const GreetingSection = React.memo(function GreetingSection({
                   <span style={{ flexShrink: 0 }}>{shown.tail}</span>
                 </GradientText>
               )}
-              <p
-                className="home-greet__clock"
-                style={{
-                  color: currentTheme.text.secondary,
-                  fontSize: isMobile ? '13px' : '15px',
-                  margin: 0,
-                }}
-              >
-                <LiveClock />
-              </p>
+              {isMobile && (
+                <p
+                  className="home-greet__clock"
+                  style={{
+                    color: currentTheme.text.secondary,
+                    fontSize: '13px',
+                    margin: 0,
+                  }}
+                >
+                  <LiveClock />
+                </p>
+              )}
             </div>
 
-            {headerActions(isMobile ? 'bell' : undefined)}
+            {isMobile ? (
+              headerActions('bell')
+            ) : (
+              <div style={{ gridArea: 'actions' }}>{headerActions()}</div>
+            )}
           </div>
 
           {/* Suche + Daten-Pods — eine Zeile auf Desktop, gestapelt auf Mobile. */}
@@ -403,7 +415,9 @@ export const GreetingSection = React.memo(function GreetingSection({
               display: 'flex',
               flexWrap: isMobile ? 'wrap' : 'nowrap',
               gap: isMobile ? '18px 0' : '10px',
-              marginTop: isMobile ? '16px' : '16px',
+              marginTop: isMobile ? '16px' : 0,
+              minWidth: 0,
+              gridArea: isMobile ? undefined : 'deck',
               alignItems: 'stretch',
             }}
           >
@@ -412,6 +426,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               whileTap={tapScaleSmall}
               onClick={() => (onSearch ? onSearch() : setSearchOpen(true))}
               aria-label={t('Suche öffnen')}
+              data-search-origin
               style={{
                 flex: isMobile ? '1 1 100%' : '1 1 auto',
                 minWidth: 0,
@@ -445,6 +460,12 @@ export const GreetingSection = React.memo(function GreetingSection({
               </span>
             </motion.button>
 
+            {!isMobile && (
+              <div className="home-clock-pod">
+                <LiveClock variant="pod" />
+              </div>
+            )}
+
             {(showStatPods ? statPods : []).map((pod, index) => (
               <motion.button
                 key={pod.key}
@@ -464,7 +485,7 @@ export const GreetingSection = React.memo(function GreetingSection({
                   borderRadius: 0,
                   background: 'none',
                   border: 'none',
-                  boxShadow: index > 0 ? 'inset 1px 0 0 var(--hairline)' : 'none',
+                  boxShadow: index > 0 || !isMobile ? 'inset 1px 0 0 var(--hairline)' : 'none',
                   cursor: 'pointer',
                 }}
               >

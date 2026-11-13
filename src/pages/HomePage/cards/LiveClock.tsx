@@ -4,7 +4,7 @@ import { dateLocale as appDateLocale, t } from '../../../services/i18n';
 // Isolated clock component - updates every second without re-rendering parent.
 // We also pause the 1s ticker when the tab is hidden — a clock on a background
 // tab is invisible anyway and would just burn battery on mobile.
-export const LiveClock = () => {
+export const LiveClock = ({ variant = 'line' }: { variant?: 'line' | 'pod' }) => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
@@ -32,6 +32,18 @@ export const LiveClock = () => {
     };
   }, []);
   const locale = appDateLocale();
+  if (variant === 'pod') {
+    return (
+      <>
+        <span className="home-clock-pod__time">
+          {time.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+        </span>
+        <span className="home-clock-pod__date">
+          {time.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })}
+        </span>
+      </>
+    );
+  }
   return (
     <>
       {time.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
