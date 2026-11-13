@@ -49,9 +49,10 @@ vi.mock('@mui/icons-material', () => ({
   Add: () => null,
   BookmarkAdd: () => null,
   BookmarkRemove: () => null,
+  CheckCircle: () => null,
   Delete: () => null,
-  PlayCircle: () => null,
   Star: () => null,
+  ViewList: () => null,
   Visibility: () => null,
   VisibilityOff: () => null,
 }));
@@ -89,7 +90,7 @@ vi.mock('../../../hooks/provider/useActiveSubscriptions', () => ({
 vi.mock('../../../components/recommendations/RecommendButton', () => ({
   RecommendButton: () => <button aria-label="recommend" />,
 }));
-vi.mock('./RatingsCard', () => ({ RatingsCard: () => <div data-testid="ratings" /> }));
+vi.mock('../../../hooks/rating/useCommunityRatings', () => ({ useCommunityRating: () => null }));
 vi.mock('./StatusBadge', () => ({ StatusBadge: () => <span />, NextEpisodeChip: () => <span /> }));
 vi.mock('../../../lib/provider/providerMerge', () => ({
   mergeProviders: () => [],
@@ -133,7 +134,6 @@ const baseProps = {
   isAdding: false,
   isDeleting: false,
   isMobile: false,
-  currentTheme: { status: { success: '#22c55e' }, accent: '#00a0ff' },
   onAddSeries: vi.fn(),
   onNavigateEpisodes: vi.fn(),
   onNavigateRating: vi.fn(),

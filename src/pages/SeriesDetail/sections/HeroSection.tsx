@@ -2,27 +2,35 @@ import {
   Add,
   BookmarkAdd,
   BookmarkRemove,
+  CheckCircle,
   Delete,
-  PlayCircle,
   Star,
+  ViewList,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useDrawInProgress } from '../../../hooks/ui/useDrawInProgress';
-import { BackButton } from '../../../components/ui';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   FriendsWhoHaveThis,
   ProviderBadges,
   ProviderOverrideButton,
   VideoGallery,
 } from '../../../components/detail';
+import {
+  ActionTiles,
+  DetailStage,
+  ProgressStrip,
+  ScoreRow,
+  type ProgressSegment,
+  type ScoreItem,
+} from '../../../components/detail/kit/DetailKit';
+import { actionClass } from '../../../components/detail/kit/actionClass';
 import { RecommendButton } from '../../../components/recommendations/RecommendButton';
 import { AddToListButton } from '../../../components/detail/AddToListButton';
 import { OwnedButton } from '../../../components/detail/OwnedButton';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCommunityRating } from '../../../hooks/rating/useCommunityRatings';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { applyOverrideToProviders, mergeProviders } from '../../../lib/provider/providerMerge';
 import type { MergedProvider } from '../../../lib/provider/providerMerge';
@@ -33,15 +41,14 @@ import {
 } from '../../../services/api/anilistProviderFallback';
 import { fetchStaticCatalogSeries } from '../../../services/catalog/staticCatalog';
 import { showToast } from '../../../lib/interaction/toast';
-import type { WatchingPace } from '../../../lib/date/paceCalculation';
 import type { Series } from '../../../types/Series';
+import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import { buildThemedPlaceholderDataUrl } from '../../../utils/themedPlaceholder';
+import { formatVoteCount } from '../../../utils/voteCount';
 import type { TMDBWatchProvider } from '../../MovieDetail/useMovieData';
-import { RatingsCard } from './RatingsCard';
 import { StatusBadge, NextEpisodeChip } from './StatusBadge';
-import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 
 interface HeroSectionProps {
@@ -53,16 +60,19 @@ interface HeroSectionProps {
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
   providers: TMDBWatchProvider[] | null;
-  /** Beschreibungstext — Desktop zeigt ihn IM Hero (2050-Streaming-Layout). */
+  /** Beschreibungstext — breite Ansichten zeigen ihn auf der Bühne. */
   overview?: string;
   overallRating: string;
   progressStats: { watched: number; total: number; percentage: number };
-  paceInfo: { text: string; pace?: WatchingPace } | null;
+  paceInfo: { text: string } | null;
   isReadOnlyTmdbSeries: boolean;
   isAdding: boolean;
   isDeleting: boolean;
   isMobile: boolean;
-  currentTheme: { status: { success: string }; accent: string };
+  /** Nächste offene Folge — speist den Abhak-Knopf. */
+  nextEpisode?: { seasonNumber: number; episodeNumber: number; episodeName?: string } | null;
+  markingNext?: boolean;
+  onWatchNext?: () => void;
   onAddSeries: () => void;
   onNavigateEpisodes: () => void;
   onNavigateRating: () => void;
@@ -71,17 +81,13 @@ interface HeroSectionProps {
   onDelete: () => void;
 }
 
-const getBackdropUrl = (backdropPath: string | undefined): string => {
+const getBackdropUrl = (backdropPath: string | undefined, size: string): string => {
   if (!backdropPath) return '';
   if (backdropPath.startsWith('http')) return backdropPath;
-  return `https://image.tmdb.org/t/p/original${backdropPath}`;
+  return `https://image.tmdb.org/t/p/${size}${backdropPath}`;
 };
 
-const getPosterUrl = (posterPath: string | undefined, fallback: string): string => {
-  // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
-  // und greift dann auf den themed Placeholder zurueck.
-  return getImageUrl(posterPath, 'w500', fallback);
-};
+const tapDim = { opacity: 0.7 };
 
 export const HeroSection = memo<HeroSectionProps>(
   ({
@@ -101,7 +107,9 @@ export const HeroSection = memo<HeroSectionProps>(
     isAdding,
     isDeleting,
     isMobile,
-    currentTheme,
+    nextEpisode,
+    markingNext,
+    onWatchNext,
     onAddSeries,
     onNavigateEpisodes,
     onNavigateRating,
@@ -110,15 +118,9 @@ export const HeroSection = memo<HeroSectionProps>(
     onDelete,
   }) => {
     const { currentTheme: fullTheme } = useTheme();
-    // D1: Ring-Fortschritt wird per rAF animiert (--prog) an den Wrapper geschrieben.
-    const posterWrapRef = useRef<HTMLDivElement>(null);
-    useDrawInProgress(posterWrapRef, progressStats.percentage);
     const genres = (series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(
       (g) => g && g.trim() !== '' && g !== 'All'
     );
-    // Desktop: max. 2 Genres in der Meta-Zeile — vier Stück machen sie zur Wurst.
-    // Mobil nur zwei: drei Genres brachen die Faktenzeile auf zwei Zeilen um.
-    const maxGenres = 2;
     const themedPlaceholder = useMemo(
       () =>
         buildThemedPlaceholderDataUrl(fullTheme.primary, fullTheme.secondary || fullTheme.accent),
@@ -129,12 +131,14 @@ export const HeroSection = memo<HeroSectionProps>(
       (tmdbSeries?.poster && typeof tmdbSeries.poster === 'object'
         ? tmdbSeries.poster.poster
         : undefined);
-    const posterUrl = getPosterUrl(posterPath, themedPlaceholder);
-    const backdropUrl = getBackdropUrl(tmdbBackdrop || undefined);
-    const mobileBackdropUrl = backdropUrl || posterUrl;
+    // Zentrale Hilfe kennt kaputte „…w342null"-URLs (Backend-Altlast) und fällt auf den Platzhalter zurück.
+    const posterUrl = getImageUrl(posterPath, 'w500', themedPlaceholder);
+    const backdropUrl = getBackdropUrl(tmdbBackdrop || undefined, isMobile ? 'w780' : 'original');
     const seriesId = series.tmdb_id || series.id;
+    // Anonymer Community-Durchschnitt der TV-Rank-Nutzer (ab 5 Bewertungen).
+    const community = useCommunityRating('series', String(seriesId));
     const hasRating = parseFloat(overallRating) > 0;
-    const iconSize = isMobile ? 17 : 19;
+    const iconSize = isMobile ? 21 : 19;
     const warningColor = fullTheme.status?.warning || '#f59e0b';
     const copyTitle = () => {
       void copyTextToClipboard(series.title);
@@ -239,10 +243,78 @@ export const HeroSection = memo<HeroSectionProps>(
       [autoProviders, providerOverride]
     );
 
+    // Ein Abschnitt je Staffel, Breite nach Folgenzahl — der Streifen zeigt, WO man steht.
+    const segments = useMemo<ProgressSegment[]>(
+      () =>
+        (series.seasons ?? []).map((season, index) => {
+          const aired = (season?.episodes ?? []).filter((ep) => ep && hasEpisodeAired(ep));
+          const done = aired.filter((ep) => ep.watched).length;
+          return {
+            key: index,
+            done,
+            total: aired.length,
+            title: `${t('Staffel {n}', { n: (season?.seasonNumber ?? index) + 1 })}: ${done}/${aired.length}`,
+          };
+        }),
+      [series.seasons]
+    );
+
+    const ownValue = parseFloat(overallRating);
+    const imdbId = series.imdb?.imdb_id || localSeries?.imdb?.imdb_id || '';
+    const tmdbValue = tmdbRating?.vote_average || series.vote_average || localSeries?.vote_average;
+    const tmdbVotes = tmdbRating?.vote_count || series.vote_count || localSeries?.vote_count;
+    const scores: ScoreItem[] = [
+      ...(isReadOnlyTmdbSeries
+        ? []
+        : [
+            {
+              key: 'own',
+              label: t('Deine Wertung'),
+              value: ownValue > 0 ? ownValue.toFixed(2).replace(/\.?0+$/, '') : '–',
+              tone: fullTheme.accent,
+              own: true,
+              onClick: onNavigateRating,
+              ariaLabel: t('Deine Wertung'),
+            },
+          ]),
+      {
+        key: 'tmdb',
+        label: 'TMDB',
+        value: tmdbValue ? tmdbValue.toFixed(1) : '–',
+        sub: tmdbVotes ? formatVoteCount(tmdbVotes) : undefined,
+        tone: '#01b4e4',
+        href: `https://www.themoviedb.org/tv/${seriesId}`,
+      },
+      {
+        key: 'imdb',
+        label: 'IMDb',
+        value: imdbRating?.rating ? imdbRating.rating.toFixed(1) : '–',
+        sub: imdbRating ? formatVoteCount(imdbRating.votes) : undefined,
+        tone: '#f5c518',
+        href: imdbId ? `https://www.imdb.com/title/${imdbId}` : undefined,
+        dim: !imdbId,
+      },
+      ...(community
+        ? [
+            {
+              key: 'tvrank',
+              label: 'TV-Rank',
+              value: community.a.toFixed(1),
+              sub: String(community.c),
+              tone: fullTheme.primary,
+            },
+          ]
+        : []),
+    ];
+
+    const year = tmdbFirstAirDate || series.first_air_date || series.release_date;
+    const ctaInk = getOptimalTextColor(fullTheme.primary);
+
     const recommendButton = (
       <RecommendButton
-        className="hero-actions__btn"
+        className={actionClass()}
         iconSize={iconSize}
+        caption={t('Teilen')}
         media={{
           id: seriesId,
           type: 'series',
@@ -255,747 +327,247 @@ export const HeroSection = memo<HeroSectionProps>(
 
     const listButton = (
       <AddToListButton
-        className="hero-actions__btn"
+        className={actionClass()}
         iconSize={iconSize}
+        caption={t('Liste')}
         target={{ type: 'series', id: seriesId, title: series.title, poster: posterPath }}
       />
     );
 
-    // Read-only (nicht in der Liste): Teilen/Empfehlen bleibt verfügbar —
-    // braucht den Titel nicht in der Sammlung.
-    const actionButtons = isReadOnlyTmdbSeries ? (
-      <div className="hero-actions">
+    // Nicht in der Liste: Liste und Teilen bleiben — sie brauchen den Titel nicht in der Sammlung.
+    const actions = isReadOnlyTmdbSeries ? (
+      <ActionTiles>
         {listButton}
         {recommendButton}
-      </div>
+      </ActionTiles>
     ) : (
-      <div className="hero-actions">
-        <motion.button
-          whileTap={tapScale}
-          onClick={onNavigateEpisodes}
-          className="hero-actions__btn hero-actions__btn--primary"
-          style={{
-            background: `linear-gradient(135deg, ${fullTheme.primary}, ${fullTheme.accent})`,
-          }}
-        >
-          <PlayCircle style={{ fontSize: iconSize }} />
-          <span>{t('Episoden')}</span>
+      <ActionTiles>
+        <motion.button whileTap={tapDim} onClick={onNavigateEpisodes} className={actionClass()}>
+          <ViewList style={{ fontSize: iconSize }} />
+          <span className="dk-action__label">{t('Episoden')}</span>
         </motion.button>
 
         <motion.button
-          whileTap={tapScale}
+          whileTap={tapDim}
           onClick={onNavigateRating}
-          className="hero-actions__btn"
-          aria-label={t('Bewerten')}
-          style={
-            hasRating
-              ? {
-                  color: fullTheme.accent,
-                  borderColor: `${fullTheme.accent}33`,
-                  background: `${fullTheme.accent}0d`,
-                }
-              : undefined
-          }
+          className={actionClass(hasRating ? 'on' : undefined)}
         >
           <Star style={{ fontSize: iconSize }} />
-          {!isMobile && <span>{t('Bewerten')}</span>}
+          <span className="dk-action__label">{t('Bewerten')}</span>
         </motion.button>
 
-        <Tooltip title={series.watchlist ? t('Von Watchlist entfernen') : t('Watchlist')} arrow>
-          <motion.button
-            whileTap={tapScale}
-            onClick={onWatchlistToggle}
-            className="hero-actions__btn"
-            aria-label={
-              series.watchlist ? t('Von Watchlist entfernen') : t('Zur Watchlist hinzufügen')
-            }
-            style={
-              series.watchlist
-                ? {
-                    color: fullTheme.primary,
-                    borderColor: `${fullTheme.primary}33`,
-                    background: `${fullTheme.primary}0d`,
-                  }
-                : undefined
-            }
-          >
-            {series.watchlist ? (
-              <BookmarkRemove style={{ fontSize: iconSize }} />
-            ) : (
-              <BookmarkAdd style={{ fontSize: iconSize }} />
-            )}
-          </motion.button>
-        </Tooltip>
+        <motion.button
+          whileTap={tapDim}
+          onClick={onWatchlistToggle}
+          className={actionClass(series.watchlist ? 'on' : undefined)}
+          aria-pressed={!!series.watchlist}
+          aria-label={
+            series.watchlist ? t('Von Watchlist entfernen') : t('Zur Watchlist hinzufügen')
+          }
+        >
+          {series.watchlist ? (
+            <BookmarkRemove style={{ fontSize: iconSize }} />
+          ) : (
+            <BookmarkAdd style={{ fontSize: iconSize }} />
+          )}
+          <span className="dk-action__label">{t('Watchlist')}</span>
+        </motion.button>
 
         {listButton}
 
         <OwnedButton
-          className="hero-actions__btn"
+          className={actionClass()}
           iconSize={iconSize}
+          caption={t('Besitz')}
           target={{ type: 'series', id: seriesId }}
           owned={!!series.ownedAt}
         />
 
         {recommendButton}
 
-        <Tooltip title={series.hidden ? t('Einblenden') : t('Ausblenden')} arrow>
-          <motion.button
-            whileTap={tapScale}
-            onClick={onHideToggle}
-            className="hero-actions__btn"
-            aria-label={series.hidden ? t('Einblenden') : t('Ausblenden')}
-            style={
-              series.hidden
-                ? {
-                    color: warningColor,
-                    borderColor: `${warningColor}40`,
-                    background: `${warningColor}14`,
-                  }
-                : undefined
-            }
-          >
-            {series.hidden ? (
-              <Visibility style={{ fontSize: iconSize }} />
-            ) : (
-              <VisibilityOff style={{ fontSize: iconSize }} />
-            )}
-          </motion.button>
-        </Tooltip>
+        <motion.button
+          whileTap={tapDim}
+          onClick={onHideToggle}
+          className={actionClass()}
+          style={series.hidden ? { color: warningColor } : undefined}
+        >
+          {series.hidden ? (
+            <Visibility style={{ fontSize: iconSize }} />
+          ) : (
+            <VisibilityOff style={{ fontSize: iconSize }} />
+          )}
+          <span className="dk-action__label">
+            {series.hidden ? t('Einblenden') : t('Ausblenden')}
+          </span>
+        </motion.button>
 
-        <Tooltip title={t('Löschen')} arrow>
-          <motion.button
-            whileTap={{ opacity: isDeleting ? 1 : 0.7 }}
-            onClick={onDelete}
-            disabled={isDeleting}
-            aria-label={t('Löschen')}
-            className="hero-actions__btn hero-actions__btn--danger"
-            style={{ opacity: isDeleting ? 0.4 : 1 }}
-          >
-            <Delete style={{ fontSize: iconSize }} />
-          </motion.button>
-        </Tooltip>
+        <motion.button
+          whileTap={tapDim}
+          onClick={onDelete}
+          disabled={isDeleting}
+          className={actionClass('danger')}
+          style={{ opacity: isDeleting ? 0.4 : 1 }}
+        >
+          <Delete style={{ fontSize: iconSize }} />
+          <span className="dk-action__label">{t('Löschen')}</span>
+        </motion.button>
+      </ActionTiles>
+    );
+
+    const genreChips = genres.length > 0 && (
+      <div className="dk-genres">
+        {genres.slice(0, 5).map((g) => (
+          <span key={g} className="dk-genre">
+            {g}
+          </span>
+        ))}
+      </div>
+    );
+
+    const where = (
+      <div className="dk-where">
+        {displayProviders.length > 0 && (
+          <ProviderBadges
+            providers={displayProviders}
+            size={isMobile ? 'medium' : 'large'}
+            maxDisplay={isMobile ? 4 : 6}
+            showNames={false}
+            searchTitle={series.title || series.name}
+            tmdbId={seriesId}
+            mediaType="tv"
+          />
+        )}
+        <ProviderOverrideButton
+          seriesId={seriesId}
+          seriesTitle={series.title || series.name}
+          size={isMobile ? 'medium' : 'large'}
+          hasProviders={displayProviders.length > 0}
+          onChange={setProviderOverride}
+        />
+        <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="chip" />
+        {!isMobile && <FriendsWhoHaveThis itemId={series.id} mediaType="series" />}
       </div>
     );
 
     return (
-      <div className="hero-section" style={{ position: 'relative', overflow: 'hidden' }}>
-        {/* Backdrop */}
-        {isMobile ? (
-          <div
-            className="hero-section__backdrop-bg"
-            style={{
-              backgroundImage: mobileBackdropUrl ? `url(${mobileBackdropUrl})` : undefined,
-              filter: 'blur(50px) brightness(0.25) saturate(1.8)',
-              transform: 'scale(1.3)',
-            }}
+      <DetailStage
+        art={backdropUrl || undefined}
+        wash={posterUrl}
+        navEnd={
+          isReadOnlyTmdbSeries && (
+            <button
+              type="button"
+              onClick={onAddSeries}
+              disabled={isAdding}
+              aria-label={t('Zur Sammlung hinzufügen')}
+              className="hero-add-pill"
+              style={{
+                background: `linear-gradient(135deg, ${fullTheme.primary}, ${fullTheme.accent})`,
+                boxShadow: `0 6px 22px ${fullTheme.primary}66`,
+                color: ctaInk,
+              }}
+            >
+              <Add style={{ fontSize: 22 }} />
+              <span className="hero-add-pill__label">
+                {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
+              </span>
+            </button>
+          )
+        }
+        poster={
+          <img
+            src={posterUrl}
+            alt={series.title}
+            style={{ viewTransitionName: `poster-series-${series.id}` }}
           />
-        ) : (
-          <div
-            className="hero-section__backdrop-bg"
-            style={{
-              backgroundImage: backdropUrl ? `url(${backdropUrl})` : undefined,
-              filter: 'brightness(0.7) saturate(1.08)',
-            }}
-          />
-        )}
+        }
+        below={
+          <>
+            {isMobile && genreChips}
 
-        {/* Lesbarkeits-Verläufe: unten in den Seiten-Hintergrund, links (Desktop)
-            eine dunkle Zone unter Titel/Meta — statt einer Glas-Box davor. */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: isMobile ? '60%' : '70%',
-            zIndex: 1,
-            background: `linear-gradient(transparent, ${fullTheme.background.default})`,
-          }}
-        />
-        {!isMobile && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 1,
-              background: `linear-gradient(90deg, ${fullTheme.background.default}d9 0%, ${fullTheme.background.default}73 26%, transparent 48%)`,
-              pointerEvents: 'none',
-            }}
-          />
-        )}
+            <ScoreRow items={scores} />
 
-        {/* Vignette on desktop */}
-        {!isMobile && <div className="hero-section__vignette" />}
+            {!isReadOnlyTmdbSeries && progressStats.total > 0 && (
+              <ProgressStrip segments={segments} aside={paceInfo?.text}>
+                <strong>{progressStats.percentage}&thinsp;%</strong>
+                {' · '}
+                {t('{watched} von {total} Episoden', {
+                  watched: progressStats.watched,
+                  total: progressStats.total,
+                })}
+              </ProgressStrip>
+            )}
 
-        {/* Back Button */}
-        <div
-          className="hero-section__back-btn"
-          style={{
-            top: 'var(--nav-top)',
-            left: 'var(--nav-x)',
-          }}
-        >
-          <BackButton
-            style={{ backdropFilter: 'var(--blur-sm)', WebkitBackdropFilter: 'var(--blur-sm)' }}
-          />
+            <div className="dk-cta-row">
+              {nextEpisode && !series.hidden && onWatchNext && (
+                <motion.button
+                  type="button"
+                  whileTap={tapDim}
+                  className="dk-cta"
+                  onClick={onWatchNext}
+                  disabled={markingNext}
+                  style={{ color: ctaInk }}
+                  aria-label={t('Nächste Folge S{s} E{e} als gesehen markieren', {
+                    s: nextEpisode.seasonNumber,
+                    e: nextEpisode.episodeNumber,
+                  })}
+                >
+                  <CheckCircle style={{ fontSize: 26, flexShrink: 0 }} />
+                  <span className="dk-cta__text">
+                    <span className="dk-cta__main">{t('Als gesehen markieren')}</span>
+                    <span className="dk-cta__sub">
+                      S{nextEpisode.seasonNumber} E{nextEpisode.episodeNumber}
+                      {nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : ''}
+                    </span>
+                  </span>
+                </motion.button>
+              )}
+              {!isMobile && where}
+            </div>
+
+            {actions}
+
+            {isMobile && where}
+          </>
+        }
+      >
+        <div className="dk-kicker">
+          <StatusBadge series={series} />
+          <NextEpisodeChip series={series} upcomingOnly={!!nextEpisode} />
         </div>
 
-        {/* Add button for TMDB-only series */}
-        {isReadOnlyTmdbSeries && (
-          <button
-            type="button"
-            onClick={onAddSeries}
-            disabled={isAdding}
-            aria-label={t('Zur Sammlung hinzufügen')}
-            className="hero-section__add-btn hero-add-pill"
-            style={{
-              top: 'var(--nav-top)',
-              right: 'var(--nav-x)',
-              background: `linear-gradient(135deg, ${fullTheme.primary}, ${fullTheme.accent})`,
-              boxShadow: `0 6px 22px ${fullTheme.primary}66`,
-              color: getOptimalTextColor(fullTheme.primary),
-            }}
-          >
-            <Add style={{ fontSize: 22 }} />
-            <span className="hero-add-pill__label">
-              {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
+        <h1
+          className="dk-title"
+          tabIndex={0}
+          title={t('Titel kopieren')}
+          onClick={copyTitle}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              copyTitle();
+            }
+          }}
+        >
+          {series.title}
+        </h1>
+
+        <div className="dk-meta">
+          {year && <span>{new Date(year).getFullYear()}</span>}
+          {series.seasons && (
+            <span>
+              {series.seasons.length === 1
+                ? t('1 Staffel')
+                : t('{n} Staffeln', { n: series.seasons.length })}
             </span>
-          </button>
-        )}
-
-        {/* Content: Poster + Info */}
-        <div
-          className="hero-section__content-row"
-          style={
-            isMobile
-              ? {
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0,
-                  maxWidth: 'none',
-                  padding: 'var(--nav-clear) 0 20px',
-                }
-              : undefined
-          }
-        >
-          {/* Poster — shared view-transition target. Matches the listing
-              card's `poster-series-${id}` in RatingItemCard so chromium-based
-              browsers animate the morph automatically.
-              D1: Wrapper trägt den Fortschritts-Ring (conic ::before/::after),
-              gleiche Technik wie im Ratings-Grid. */}
-          {posterUrl && (
-            <div
-              ref={posterWrapRef}
-              className={`hero-section__poster-wrap${
-                progressStats.percentage > 0
-                  ? ` hero-section__poster-wrap--ring${
-                      progressStats.percentage >= 100 ? ' hero-section__poster-wrap--ring-done' : ''
-                    }`
-                  : ''
-              }`}
-              style={
-                {
-                  '--ring-color':
-                    progressStats.percentage >= 100
-                      ? currentTheme.status.success
-                      : fullTheme.primary,
-                  '--poster-radius': isMobile ? '14px' : '16px',
-                  // Mobile-Layout zentriert die Spalte — align-self aus der
-                  // Desktop-CSS (flex-start) hier wieder aufheben.
-                  ...(isMobile ? { marginBottom: 20, alignSelf: 'center' } : {}),
-                } as CSSProperties
-              }
-            >
-              <img
-                src={posterUrl}
-                alt={series.title}
-                className="hero-section__poster"
-                style={{
-                  viewTransitionName: `poster-series-${series.id}`,
-                  ...(isMobile ? { width: 150, height: 220, borderRadius: 14 } : {}),
-                }}
-              />
-            </div>
           )}
-
-          {/* Info */}
-          <div
-            className={isMobile ? 'hero-section__info' : 'hero-section__glass-card'}
-            style={isMobile ? { width: '100%' } : { position: 'relative' }}
-          >
-            <h1
-              className="hero-section__title"
-              tabIndex={0}
-              title={t('Titel kopieren')}
-              style={{
-                // Kino-Titel: groß, WEISS über dem Artwork (Poster-Logik) mit
-                // Theme-Glow — kein Fließtext-Grün in Link-Größe.
-                fontSize: isMobile ? '26px' : 'clamp(40px, 2.6vw + 18px, 68px)',
-                lineHeight: 1.1,
-                color: '#fff',
-                cursor: 'pointer',
-                textAlign: isMobile ? 'center' : 'left',
-                margin: isMobile ? '0 20px 4px' : '0 0 8px',
-                paddingRight: isMobile ? undefined : 80,
-                letterSpacing: '-0.025em',
-                textShadow: `0 2px 28px rgba(0,0,0,0.7), 0 0 80px ${fullTheme.primary}40`,
-              }}
-              onClick={copyTitle}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  copyTitle();
-                }
-              }}
-            >
-              {series.title}
-            </h1>
-
-            <div
-              className="hero-section__meta"
-              style={{
-                gap: isMobile ? '3px 8px' : '12px',
-                fontSize: isMobile ? '13px' : '16px',
-                justifyContent: isMobile ? 'center' : 'flex-start',
-                padding: isMobile ? '0 20px' : undefined,
-                marginTop: isMobile ? 8 : 12,
-                color: isMobile ? fullTheme.text.muted : fullTheme.text.secondary,
-              }}
-            >
-              {(tmdbFirstAirDate || series.first_air_date || series.release_date) && (
-                <span>
-                  {new Date(
-                    tmdbFirstAirDate || series.first_air_date || series.release_date
-                  ).getFullYear()}
-                </span>
-              )}
-              {series.seasons && (
-                <span>
-                  &bull;{' '}
-                  {series.seasons.length === 1
-                    ? t('1 Staffel')
-                    : t('{n} Staffeln', { n: series.seasons.length })}
-                </span>
-              )}
-              {/* Mobil steht der Status im StatusBadge darunter — der traegt
-                  mehr (z. B. „Freitags neue Folge"). Hier waere er nur eine
-                  aermere Dopplung direkt daneben. */}
-              {!isMobile && series.status && (
-                <span>
-                  &bull;{' '}
-                  {series.status === 'Returning Series' || series.status === 'ongoing'
-                    ? t('Wird fortgesetzt')
-                    : series.status === 'Ended' || series.status === 'Canceled'
-                      ? t('Beendet')
-                      : series.status}
-                </span>
-              )}
-              {parseFloat(overallRating) > 0 && (
-                <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
-              )}
-              {/* Genres als ruhiger Text in der Meta-Zeile — auch mobil.
-                  Als eigenes Chip-Band kosteten sie eine ganze Zeile und waren
-                  am rechten Rand angeschnitten. */}
-              {/* Genres stehen mobil in einer EIGENEN Zeile (siehe unten): am
-                  Ende dieser abkuerzenden Zeile fielen sie als Erstes weg. */}
-              {!isMobile && genres.length > 0 && (
-                <span style={{ color: fullTheme.text.muted }}>
-                  &bull; {genres.slice(0, maxGenres).join(', ')}
-                </span>
-              )}
-            </div>
-
-            {/* Ein einziger Akzent-Chip (nächste Folge); der Status steht als
-                Text in der Meta-Zeile — Desktop braucht keinen Doppel-Chip. */}
-            <div
-              className="hero-section__badges"
-              style={{
-                gap: isMobile ? '6px' : '8px',
-                justifyContent: isMobile ? 'center' : 'flex-start',
-                padding: isMobile ? '0 20px' : undefined,
-                marginTop: isMobile ? 12 : 18,
-              }}
-            >
-              {isMobile && <StatusBadge series={series} />}
-              <NextEpisodeChip series={series} />
-            </div>
-
-            {/* Genres: eigene Zeile, damit sie immer sichtbar bleiben. */}
-            {isMobile && genres.length > 0 && (
-              <div className="hero-section__genres-line">
-                {genres.slice(0, maxGenres).join(' · ')}
-                {genres.length > maxGenres && ` · +${genres.length - maxGenres}`}
-              </div>
-            )}
-
-            {/* Desktop: Beschreibung gehört IN den Hero (Streaming-Layout) —
-                3 Zeilen, Inhaltsbreite, statt einsamer Sektion darunter. */}
-            {!isMobile && overview && (
-              <p
-                style={{
-                  // Desktop zeigt den KOMPLETTEN Text (kein Clamp, kein „…") —
-                  // der Hero wächst mit; Platz ist genug da.
-                  margin: '16px 0 0',
-                  maxWidth: 1100,
-                  fontSize: 15.5,
-                  lineHeight: 1.65,
-                  color: fullTheme.text.secondary,
-                  textShadow: '0 1px 12px rgba(0,0,0,0.6)',
-                }}
-              >
-                {overview}
-              </p>
-            )}
-
-            {/* Ratings + Provider row */}
-            {/* EINE Faktenleiste statt zweier Baender: Wertungen, Trailer,
-                Anbieter und die Anbieter-Korrektur gehoeren zusammen —
-                „woher kommt die Zahl / wo laeuft es". Sie scrollt waagerecht,
-                wenn es eng wird, statt umzubrechen. */}
-            {isMobile ? (
-              <div className="hero-section__span hero-section__factbar">
-                {/* Zeile 1 — „wo laeuft es, was gibt es zu sehen" */}
-                <div className="hero-section__factbar-row">
-                  {displayProviders.length > 0 && (
-                    <ProviderBadges
-                      providers={displayProviders}
-                      size="medium"
-                      maxDisplay={4}
-                      showNames={false}
-                      searchTitle={series.title || series.name}
-                      tmdbId={seriesId}
-                      mediaType="tv"
-                    />
-                  )}
-                  <ProviderOverrideButton
-                    seriesId={seriesId}
-                    seriesTitle={series.title || series.name}
-                    size="medium"
-                    hasProviders={displayProviders.length > 0}
-                    onChange={setProviderOverride}
-                  />
-                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="chip" />
-                </div>
-
-                {/* Zeile 2 — Fremd-Wertungen, teilen sich die Breite */}
-                <div className="hero-section__factbar-row hero-section__factbar-row--ratings">
-                  <RatingsCard
-                    series={series}
-                    localSeries={localSeries}
-                    tmdbRating={tmdbRating}
-                    imdbRating={imdbRating}
-                    seriesId={String(seriesId)}
-                    isMobile
-                    noMargin
-                    plain
-                  />
-                </div>
-              </div>
-            ) : null}
-
-            {/* Bottom section: Progress + Actions (pushed to bottom on desktop) */}
-            <div className="hero-section__span" style={{ marginTop: isMobile ? 0 : 'auto' }}>
-              {/* Desktop: Stats-Band — Fortschritts-Ring + Glas-Pods füllen die
-                  Hero-Mitte mit echten Komponenten statt gequetschter Textzeilen. */}
-              {!isMobile && progressStats.total > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    flexWrap: 'wrap',
-                    gap: 10,
-                    marginTop: 22,
-                  }}
-                >
-                  {/* Ring-Pod */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '10px 18px 10px 12px',
-                      borderRadius: 16,
-                      background: 'var(--glass-light)',
-                      border: '1px solid var(--glass-border-light)',
-                      boxShadow: 'var(--glass-specular)',
-                      WebkitBackdropFilter: 'var(--glass-filter-sm)',
-                      backdropFilter: 'var(--glass-filter-sm)',
-                    }}
-                  >
-                    <div style={{ position: 'relative', width: 52, height: 52 }}>
-                      <svg width={52} height={52}>
-                        <defs>
-                          <linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor={fullTheme.primary} />
-                            <stop offset="100%" stopColor={fullTheme.accent} />
-                          </linearGradient>
-                        </defs>
-                        <circle
-                          cx={26}
-                          cy={26}
-                          r={22}
-                          fill="none"
-                          strokeWidth={4}
-                          style={{ stroke: 'var(--glass-border-light)' }}
-                        />
-                        <circle
-                          cx={26}
-                          cy={26}
-                          r={22}
-                          fill="none"
-                          stroke="url(#hero-ring-grad)"
-                          strokeWidth={4}
-                          strokeLinecap="round"
-                          strokeDasharray={2 * Math.PI * 22}
-                          strokeDashoffset={2 * Math.PI * 22 * (1 - progressStats.percentage / 100)}
-                          style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
-                        />
-                      </svg>
-                      <span
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 13,
-                          fontWeight: 800,
-                          fontFamily: 'var(--font-display)',
-                          color: fullTheme.text.primary,
-                        }}
-                      >
-                        {progressStats.percentage}%
-                      </span>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 17,
-                          fontWeight: 800,
-                          fontFamily: 'var(--font-display)',
-                          color: fullTheme.text.primary,
-                          lineHeight: 1.15,
-                        }}
-                      >
-                        {progressStats.watched} / {progressStats.total}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.06em',
-                          color: fullTheme.text.muted,
-                        }}
-                      >
-                        {t('Episoden')}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Pace-Pods */}
-                  {(() => {
-                    const pace = paceInfo?.pace;
-                    if (!pace) return null;
-                    const fmt = (d: Date | null) =>
-                      d
-                        ? d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
-                        : null;
-                    const pods: { value: string; label: string }[] = pace.isPaused
-                      ? [
-                          { value: t('Pausiert'), label: t('Status') },
-                          { value: String(pace.remainingEpisodes), label: t('Ep. offen') },
-                        ]
-                      : [
-                          { value: String(pace.remainingEpisodes), label: t('Ep. offen') },
-                          {
-                            value: t('~{h} Std.', { h: Math.round(pace.remainingHours) }),
-                            label: t('übrig'),
-                          },
-                          {
-                            value: `~${(pace.episodesPerWeek / 7).toFixed(1).replace('.', ',')}`,
-                            label: t('Ep. / Tag'),
-                          },
-                          ...(fmt(pace.estimatedCompletionDate)
-                            ? [
-                                {
-                                  value: fmt(pace.estimatedCompletionDate) as string,
-                                  label: t('Fertig ca.'),
-                                },
-                              ]
-                            : []),
-                        ];
-                    return pods.map((pod) => (
-                      <div
-                        key={pod.label}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 3,
-                          minWidth: 92,
-                          padding: '10px 18px',
-                          borderRadius: 16,
-                          background: 'var(--glass-light)',
-                          border: '1px solid var(--glass-border-light)',
-                          boxShadow: 'var(--glass-specular)',
-                          WebkitBackdropFilter: 'var(--glass-filter-sm)',
-                          backdropFilter: 'var(--glass-filter-sm)',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 17,
-                            fontWeight: 800,
-                            fontFamily: 'var(--font-display)',
-                            color: fullTheme.text.primary,
-                            lineHeight: 1.15,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {pod.value}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            color: fullTheme.text.muted,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {pod.label}
-                        </span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              )}
-
-              {/* Progress Bar (Mobile) */}
-              {isMobile && progressStats.total > 0 && (
-                <div
-                  style={{
-                    marginTop: isMobile ? 14 : 20,
-                    padding: isMobile ? '0 20px' : undefined,
-                    // Desktop: Balken gehört zur Inhaltsspalte, nicht bis zum
-                    // rechten Bildschirmrand.
-                    maxWidth: isMobile ? undefined : 560,
-                  }}
-                >
-                  <div className="hero-section__progress-track">
-                    <div
-                      className="hero-section__progress-fill"
-                      style={{ width: `${progressStats.percentage}%` }}
-                    />
-                  </div>
-                  <p
-                    className="hero-section__progress-text"
-                    style={{
-                      fontSize: isMobile ? '11px' : '12.5px',
-                      textAlign: isMobile ? 'center' : undefined,
-                      color: fullTheme.text.secondary,
-                      marginTop: 6,
-                    }}
-                  >
-                    {t('{watched} von {total} Episoden', {
-                      watched: progressStats.watched,
-                      total: progressStats.total,
-                    })}{' '}
-                    &middot; {progressStats.percentage}&thinsp;%
-                  </p>
-                  {paceInfo && (
-                    <p
-                      className="hero-section__pace-text"
-                      style={{
-                        fontSize: isMobile ? '10px' : '11.5px',
-                        textAlign: isMobile ? 'center' : undefined,
-                        color: fullTheme.text.muted,
-                        marginTop: 3,
-                      }}
-                    >
-                      {paceInfo.text}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              {actionButtons && (
-                <div
-                  style={{
-                    marginTop: isMobile ? 10 : 18,
-                    // Mobil traegt die Kopf-Zeile den Seitenrand — ein eigener
-                    // schob die Knoepfe gegenueber allem anderen ein.
-                    padding: isMobile ? 0 : undefined,
-                  }}
-                >
-                  {actionButtons}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Desktop: Signal-Zone unten rechts — Ratings, Provider, Trailer,
-              Freunde. Balanciert den Hero, statt alles links zu klumpen. */}
-          {!isMobile && (
-            <div
-              className="liquid-glass"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                gap: 12,
-                alignSelf: 'flex-end',
-                // Nicht mehr schrumpf-fest: sonst quetscht diese Karte bei
-                // Tablet-Breite die Textspalte links auf wenige Pixel.
-                flexShrink: 1,
-                maxWidth: '100%',
-                position: 'relative',
-                zIndex: 2,
-                borderRadius: 18,
-                padding: '16px 18px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
-                <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
-              </div>
-              <RatingsCard
-                series={series}
-                localSeries={localSeries}
-                tmdbRating={tmdbRating}
-                imdbRating={imdbRating}
-                seriesId={String(seriesId)}
-                isMobile={false}
-                noMargin
-              />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {displayProviders.length > 0 && (
-                  <ProviderBadges
-                    providers={displayProviders}
-                    size="large"
-                    maxDisplay={6}
-                    showNames={false}
-                    searchTitle={series.title || series.name}
-                    tmdbId={seriesId}
-                    mediaType="tv"
-                  />
-                )}
-                <ProviderOverrideButton
-                  seriesId={seriesId}
-                  seriesTitle={series.title || series.name}
-                  size="large"
-                  hasProviders={displayProviders.length > 0}
-                  onChange={setProviderOverride}
-                />
-              </div>
-            </div>
+          {series.episodeRuntime > 0 && (
+            <span>{t('{n} Min. pro Folge', { n: series.episodeRuntime })}</span>
           )}
         </div>
-      </div>
+
+        {!isMobile && genreChips}
+        {overview && <p className="dk-overview">{overview}</p>}
+      </DetailStage>
     );
   }
 );

@@ -1,6 +1,7 @@
 import Info from '@mui/icons-material/Info';
 import People from '@mui/icons-material/People';
 import { memo } from 'react';
+import { DetailTabs, FactList, RailSection } from '../../components/detail/kit/DetailKit';
 import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
@@ -14,7 +15,7 @@ import { CollectionSection } from './CollectionSection';
 import { useMovieData } from './useMovieData';
 import { FriendsMovieStrip } from './FriendsMovieStrip';
 import { useFriendsMovieStatus } from './useFriendsMovieStatus';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import './MovieDetailPage.css';
 
 export const MovieDetailPage = memo(() => {
@@ -87,9 +88,52 @@ export const MovieDetailPage = memo(() => {
     );
   }
 
+  const releaseDate = movie.release_date
+    ? new Date(movie.release_date).toLocaleDateString(dateLocale(), {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null;
+  const shortDate = (value: string | number | undefined) =>
+    value ? new Date(value).toLocaleDateString(dateLocale()) : null;
+  const genreNames = (
+    movie.genre?.genres?.length ? movie.genre.genres : (movie.genres?.map((g) => g.name) ?? [])
+  ).filter((g) => g && g !== 'All');
+  const friendsStrip = <FriendsMovieStrip entries={friendsStatus.entries} isMobile={isMobile} />;
+  // Buchvorlage aus Wikidata — rendert nur, wenn es eine gibt
+  const basedOnBook = (
+    <Deferred>
+      <BasedOnBookSection tmdbId={Number(movie.id)} kind="movie" isMobile />
+    </Deferred>
+  );
+  const facts = (
+    <div className={isMobile ? 'dk-slot' : undefined}>
+      <RailSection title={t('Auf einen Blick')}>
+        <FactList
+          facts={[
+            {
+              label: t('Status'),
+              value: isReadOnlyTmdbMovie
+                ? null
+                : isWatched
+                  ? t('Gesehen')
+                  : t('Noch nicht gesehen'),
+            },
+            { label: t('Kinostart'), value: releaseDate },
+            { label: t('Laufzeit'), value: movie.runtime ? formatRuntime(movie.runtime) : null },
+            { label: t('Genres'), value: genreNames.join(', ') },
+            { label: t('Gesehen am'), value: shortDate(movie.watchedAt) },
+            { label: t('Hinzugefügt'), value: shortDate(movie.addedAt) },
+          ]}
+        />
+      </RailSection>
+    </div>
+  );
+
   return (
-    <div>
-      {/* Hero Section with Backdrop */}
+    <div className="dk">
+      {/* Bühne */}
       <MovieHeroSection
         movie={movie}
         id={id}
@@ -111,7 +155,7 @@ export const MovieDetailPage = memo(() => {
         onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 
-      {/* Action Buttons (nur "Film hinzufügen" für Nur-Lese-TMDB-Filme) */}
+      {/* „Film hinzufügen" für Filme, die noch nicht in der Sammlung sind */}
       <MovieActionButtons
         isMobile={isMobile}
         isReadOnlyTmdbMovie={isReadOnlyTmdbMovie}
@@ -119,35 +163,60 @@ export const MovieDetailPage = memo(() => {
         onAddMovie={handleAddMovie}
       />
 
-      <FriendsMovieStrip entries={friendsStatus.entries} isMobile={isMobile} />
+      <div className="dk-layout">
+        <div className="dk-main">
+          {isMobile && friendsStrip}
 
-      {/* Tab Navigation */}
-      <MovieTabBar
-        activeTab={activeTab}
-        isMobile={isMobile}
-        currentTheme={currentTheme}
-        onTabChange={setActiveTab}
-      />
+          <DetailTabs
+            ariaLabel={t('Film-Bereiche')}
+            idPrefix="md"
+            active={activeTab}
+            onChange={setActiveTab}
+            tabs={[
+              {
+                key: 'info',
+                icon: <Info aria-hidden style={{ fontSize: 18 }} />,
+                label: t('Info'),
+              },
+              {
+                key: 'cast',
+                icon: <People aria-hidden style={{ fontSize: 18 }} />,
+                label: t('Besetzung'),
+              },
+            ]}
+          />
 
-      {/* Content based on active tab */}
-      {activeTab === 'cast' ? (
-        <div role="tabpanel" id="md-tabpanel-cast" aria-labelledby="md-tab-cast">
-          <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
+          {activeTab === 'cast' ? (
+            <div role="tabpanel" id="md-tabpanel-cast" aria-labelledby="md-tab-cast">
+              <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
+            </div>
+          ) : (
+            <div role="tabpanel" id="md-tabpanel-info" aria-labelledby="md-tab-info">
+              <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
+              <Deferred>
+                <CollectionSection movieId={Number(movie.id)} isMobile={isMobile} />
+              </Deferred>
+              {isMobile && (
+                <>
+                  {facts}
+                  {basedOnBook}
+                </>
+              )}
+              <Deferred>
+                <RecommendationsSection id={movie.id} mediaType="movie" />
+              </Deferred>
+            </div>
+          )}
         </div>
-      ) : (
-        <div role="tabpanel" id="md-tabpanel-info" aria-labelledby="md-tab-info">
-          <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
-          <Deferred>
-            <CollectionSection movieId={Number(movie.id)} isMobile={isMobile} />
-          </Deferred>
-          <Deferred>
-            <BasedOnBookSection tmdbId={Number(movie.id)} kind="movie" isMobile={isMobile} />
-          </Deferred>
-          <Deferred>
-            <RecommendationsSection id={movie.id} mediaType="movie" />
-          </Deferred>
-        </div>
-      )}
+
+        {!isMobile && (
+          <aside className="dk-rail">
+            {friendsStrip}
+            {facts}
+            <div className="dk-rail__bleed">{basedOnBook}</div>
+          </aside>
+        )}
+      </div>
 
       {/* Discussions Section */}
       <div className="md-discussion">
@@ -204,71 +273,3 @@ export const MovieDetailPage = memo(() => {
 });
 
 MovieDetailPage.displayName = 'MovieDetailPage';
-
-/* ─── Inline sub-component: Tab bar ─── */
-
-interface MovieTabBarProps {
-  activeTab: 'info' | 'cast';
-  isMobile: boolean;
-  currentTheme: ReturnType<typeof useTheme>['currentTheme'];
-  onTabChange: (tab: 'info' | 'cast') => void;
-}
-
-const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: MovieTabBarProps) => (
-  <div
-    role="tablist"
-    aria-label={t('Film-Bereiche')}
-    className={`md-tabs ${isMobile ? 'md-tabs--mobile' : ''}`}
-  >
-    <button
-      type="button"
-      role="tab"
-      id="md-tab-info"
-      aria-selected={activeTab === 'info'}
-      aria-controls="md-tabpanel-info"
-      tabIndex={activeTab === 'info' ? 0 : -1}
-      onClick={() => onTabChange('info')}
-      className={`md-tab-btn ${isMobile ? 'md-tab-btn--mobile' : ''} ${activeTab === 'info' ? 'md-tab-btn--active' : ''}`}
-      style={{
-        // Getöntes Glas statt Neon-Vollfüllung (Serien-Muster).
-        background:
-          activeTab === 'info'
-            ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
-            : 'rgba(255, 255, 255, 0.05)',
-        color: activeTab === 'info' ? currentTheme.primary : currentTheme.text.muted,
-        boxShadow: activeTab === 'info' ? 'var(--glass-specular)' : undefined,
-        outline: activeTab === 'info' ? `1px solid ${currentTheme.primary}40` : undefined,
-        outlineOffset: -1,
-      }}
-    >
-      <Info aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-      {t('Info')}
-    </button>
-
-    <button
-      type="button"
-      role="tab"
-      id="md-tab-cast"
-      aria-selected={activeTab === 'cast'}
-      aria-controls="md-tabpanel-cast"
-      tabIndex={activeTab === 'cast' ? 0 : -1}
-      onClick={() => onTabChange('cast')}
-      className={`md-tab-btn ${isMobile ? 'md-tab-btn--mobile' : ''} ${activeTab === 'cast' ? 'md-tab-btn--active' : ''}`}
-      style={{
-        background:
-          activeTab === 'cast'
-            ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
-            : 'rgba(255, 255, 255, 0.05)',
-        color: activeTab === 'cast' ? currentTheme.primary : currentTheme.text.muted,
-        boxShadow: activeTab === 'cast' ? 'var(--glass-specular)' : undefined,
-        outline: activeTab === 'cast' ? `1px solid ${currentTheme.primary}40` : undefined,
-        outlineOffset: -1,
-      }}
-    >
-      <People aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-      {t('Besetzung')}
-    </button>
-  </div>
-));
-
-MovieTabBar.displayName = 'MovieTabBar';

@@ -1,8 +1,13 @@
-import { Add, CheckCircle, LibraryAdd, OpenInNew, Remove, Star } from '@mui/icons-material';
+import { Add, CheckCircle, LibraryAdd, OpenInNew, Remove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ShareTitleButton } from '../../../components/share/ShareTitleButton';
-import { BackButton } from '../../../components/ui';
+import {
+  DetailStage,
+  ProgressStrip,
+  ScoreRow,
+  type ScoreItem,
+} from '../../../components/detail/kit/DetailKit';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { mangaSourceLink } from '../../../lib/manga/mangaSource';
 import type { MangaUnit } from '../../../lib/manga/progress';
@@ -37,47 +42,6 @@ interface MangaDetailHeroProps {
   adding?: boolean;
   onAdd?: () => void;
 }
-
-const RING = 76;
-const STROKE = 6;
-
-const ProgressRing = ({ percent }: { percent: number }) => {
-  const radius = (RING - STROKE) / 2;
-  const circumference = 2 * Math.PI * radius;
-  return (
-    <div className="mdh-ring">
-      <svg width={RING} height={RING} viewBox={`0 0 ${RING} ${RING}`} aria-hidden>
-        <defs>
-          <linearGradient id="mdh-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: 'var(--theme-primary)' }} />
-            <stop offset="100%" style={{ stopColor: 'var(--theme-accent)' }} />
-          </linearGradient>
-        </defs>
-        <circle
-          cx={RING / 2}
-          cy={RING / 2}
-          r={radius}
-          fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth={STROKE}
-        />
-        <circle
-          cx={RING / 2}
-          cy={RING / 2}
-          r={radius}
-          fill="none"
-          stroke="url(#mdh-ring-grad)"
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - Math.min(percent, 100) / 100)}
-          style={{ transition: 'stroke-dashoffset 0.6s var(--ease-out)' }}
-        />
-      </svg>
-      <span className="mdh-ring-value">{Math.round(percent)}%</span>
-    </div>
-  );
-};
 
 const unitText = (unit: MangaUnit) =>
   unit === 'volume'
@@ -218,13 +182,10 @@ export const MangaDetailHero = ({
     <motion.button
       type="button"
       whileTap={tapScale}
-      className="mdh-cta"
+      className={`dk-cta${caughtUp ? ' dk-cta--quiet' : ''}`}
       disabled={caughtUp}
       onClick={() => owned.onValueChange(owned.value + 1)}
       style={{
-        background: caughtUp
-          ? 'var(--glass-medium)'
-          : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
         color: caughtUp ? currentTheme.text.secondary : ctaText,
       }}
     >
@@ -239,11 +200,10 @@ export const MangaDetailHero = ({
     <motion.button
       type="button"
       whileTap={tapScale}
-      className="mdh-cta"
+      className="dk-cta"
       disabled={adding}
       onClick={onAdd}
       style={{
-        background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
         color: ctaText,
       }}
     >
@@ -252,139 +212,156 @@ export const MangaDetailHero = ({
     </motion.button>
   );
 
+  const sourceLink = mangaSourceLink(data.anilistId);
+  const scores: ScoreItem[] = [
+    ...(owned
+      ? [
+          {
+            key: 'own',
+            label: t('Deine Wertung'),
+            value: owned.userRating > 0 ? String(owned.userRating) : '–',
+            tone: currentTheme.accent,
+            own: true,
+            onClick: owned.onRate,
+            ariaLabel: t('Bewerten'),
+          },
+        ]
+      : []),
+    ...(data.score
+      ? [
+          {
+            key: 'anilist',
+            label: 'AniList',
+            value: (data.score / 10).toFixed(1),
+            tone: '#02a9ff',
+            href: sourceLink.url,
+          },
+        ]
+      : []),
+    ...(owned && unread !== null
+      ? [{ key: 'open', label: t('Offen'), value: String(unread), tone: currentTheme.primary }]
+      : []),
+    ...(nextLabel
+      ? [
+          {
+            key: 'next',
+            label: t('Nächstes Kap.'),
+            value: `~${nextLabel}`,
+            tone: currentTheme.primary,
+          },
+        ]
+      : []),
+  ];
+
+  const genreChips = data.genres.length > 0 && (
+    <div className="dk-genres">
+      {data.genres.slice(0, isMobile ? 4 : 6).map((g) => (
+        <span key={g} className="dk-genre">
+          {g}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
-    <section className={`mdh ${isMobile ? 'mdh--mobile' : ''}`}>
-      <div
-        className={`mdh-bg ${data.banner && !isMobile ? '' : 'mdh-bg--blur'}`}
-        style={{
-          backgroundImage: `url(${(!isMobile && data.banner) || data.poster})`,
-        }}
-      />
-      <div className="mdh-scrim" />
+    <div className="dk">
+      <DetailStage
+        art={data.banner || undefined}
+        wash={data.poster}
+        navEnd={<ShareTitleButton path={`/manga/${data.anilistId}`} title={data.title} />}
+        poster={
+          <img
+            src={data.poster}
+            alt={data.title}
+            style={{ viewTransitionName: `poster-manga-${data.anilistId}` }}
+          />
+        }
+        below={
+          <>
+            {isMobile && genreChips}
 
-      <div className="mdh-back">
-        <BackButton
-          style={{
-            backdropFilter: 'var(--blur-sm)',
-            WebkitBackdropFilter: 'var(--blur-sm)',
-          }}
-        />
-      </div>
+            <ScoreRow items={scores} />
 
-      <div className="mdh-share">
-        <ShareTitleButton path={`/manga/${data.anilistId}`} title={data.title} />
-      </div>
-
-      <div className="mdh-inner">
-        <img
-          className="mdh-poster"
-          src={data.poster}
-          alt={data.title}
-          style={{ viewTransitionName: `poster-manga-${data.anilistId}` }}
-        />
-
-        <div className="mdh-info">
-          <div className="mdh-kicker">
-            <span className="mdh-chip" style={{ color: formatColor }}>
-              {data.formatLabel}
-            </span>
-            {data.statusLabel && <span className="mdh-chip">{data.statusLabel}</span>}
-            {owned && (
-              <span className="mdh-chip" style={{ color: STATUS_COLORS[owned.manga.readStatus] }}>
-                <span className="mdh-chip-dot" />
-                {STATUS_LABELS[owned.manga.readStatus]}
-              </span>
+            {owned && !!owned.total && (
+              <ProgressStrip segments={[{ key: 'all', done: owned.value, total: owned.total }]}>
+                <strong>{Math.round(owned.progress)}%</strong>
+                {' · '}
+                {owned.unit === 'volume'
+                  ? t('{done} von {total} Bänden', { done: owned.value, total: owned.total })
+                  : t('{done} von {total} Kapiteln', { done: owned.value, total: owned.total })}
+              </ProgressStrip>
             )}
-            {data.score ? (
-              <span className="mdh-chip mdh-chip--score">
-                <Star style={{ fontSize: 13 }} />
-                {(data.score / 10).toFixed(1)}
-              </span>
-            ) : null}
-          </div>
 
-          <h1 className="mdh-title">{data.title}</h1>
-          {data.altTitle && <div className="mdh-alt">{data.altTitle}</div>}
-          {metaParts.length > 0 && <div className="mdh-meta">{metaParts.join(' · ')}</div>}
-          {data.genres.length > 0 && (
-            <div className="mdh-genres">
-              {data.genres.slice(0, isMobile ? 4 : 6).map((g) => (
-                <span key={g} className="mdh-genre">
-                  {g}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {!isMobile && data.description && (
-            <div className="mdh-desc-wrap">
-              <p className={`mdh-desc ${expanded ? 'mdh-desc--open' : ''}`}>{data.description}</p>
-              {data.description.length > 260 && (
-                <button
-                  type="button"
-                  className="mdh-desc-toggle"
-                  onClick={() => setExpanded((v) => !v)}
-                  style={{ color: currentTheme.primary }}
+            <div className="dk-cta-row">
+              {owned && (
+                <Stepper
+                  unit={owned.unit}
+                  value={owned.value}
+                  total={owned.total}
+                  canCountVolumes={owned.canCountVolumes}
+                  onValueChange={owned.onValueChange}
+                  onUnitChange={owned.onUnitChange}
+                />
+              )}
+              {primaryCta}
+              {!isMobile && (
+                <a
+                  href={sourceLink.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dk-action mdh-source"
                 >
-                  {expanded ? t('Weniger') : t('Mehr lesen')}
-                </button>
+                  {sourceLink.label}
+                  <OpenInNew style={{ fontSize: 15, opacity: 0.6 }} />
+                </a>
               )}
             </div>
-          )}
-
+          </>
+        }
+      >
+        <div className="dk-kicker">
+          <span className="mdh-chip" style={{ color: formatColor }}>
+            {data.formatLabel}
+          </span>
+          {data.statusLabel && <span className="mdh-chip">{data.statusLabel}</span>}
           {owned && (
-            <div className="mdh-band liquid-glass">
-              <ProgressRing percent={owned.progress} />
-              <Stepper
-                unit={owned.unit}
-                value={owned.value}
-                total={owned.total}
-                canCountVolumes={owned.canCountVolumes}
-                onValueChange={owned.onValueChange}
-                onUnitChange={owned.onUnitChange}
-              />
-              <div className="mdh-pods">
-                {unread !== null && (
-                  <div className="mdh-pod">
-                    <span className="mdh-pod-value">{unread}</span>
-                    <span className="mdh-pod-label">{t('Offen')}</span>
-                  </div>
-                )}
-                {nextLabel && (
-                  <div className="mdh-pod">
-                    <span className="mdh-pod-value">~{nextLabel}</span>
-                    <span className="mdh-pod-label">{t('Nächstes Kap.')}</span>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="mdh-pod mdh-pod--btn"
-                  onClick={owned.onRate}
-                  aria-label={t('Bewerten')}
-                >
-                  <span className="mdh-pod-value" style={{ color: '#fbbf24' }}>
-                    {owned.userRating > 0 ? `${owned.userRating}/10` : '–'}
-                  </span>
-                  <span className="mdh-pod-label">{t('Deine Wertung')}</span>
-                </button>
-              </div>
-            </div>
+            <span className="mdh-chip" style={{ color: STATUS_COLORS[owned.manga.readStatus] }}>
+              <span className="mdh-chip-dot" />
+              {STATUS_LABELS[owned.manga.readStatus]}
+            </span>
           )}
-
-          <div className="mdh-actions">
-            {primaryCta}
-            <a
-              href={mangaSourceLink(data.anilistId).url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mdh-ghost-btn"
-            >
-              {mangaSourceLink(data.anilistId).label}
-              <OpenInNew style={{ fontSize: 15, opacity: 0.6 }} />
-            </a>
-          </div>
         </div>
-      </div>
-    </section>
+
+        <h1 className="dk-title">{data.title}</h1>
+        {data.altTitle && <div className="dk-subtitle">{data.altTitle}</div>}
+        {metaParts.length > 0 && (
+          <div className="dk-meta">
+            {metaParts.map((part) => (
+              <span key={part}>{part}</span>
+            ))}
+          </div>
+        )}
+
+        {!isMobile && genreChips}
+
+        {!isMobile && data.description && (
+          <div className="mdh-desc-wrap">
+            <p className={`dk-overview mdh-desc ${expanded ? 'mdh-desc--open' : ''}`}>
+              {data.description}
+            </p>
+            {data.description.length > 260 && (
+              <button
+                type="button"
+                className="mdh-desc-toggle"
+                onClick={() => setExpanded((v) => !v)}
+                style={{ color: currentTheme.primary }}
+              >
+                {expanded ? t('Weniger') : t('Mehr lesen')}
+              </button>
+            )}
+          </div>
+        )}
+      </DetailStage>
+    </div>
   );
 };

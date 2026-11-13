@@ -1,17 +1,22 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import Check from '@mui/icons-material/Check';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import Delete from '@mui/icons-material/Delete';
 import Star from '@mui/icons-material/Star';
-import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
-import { BackButton } from '../../components/ui';
 import { ProviderBadges, VideoGallery } from '../../components/detail';
+import {
+  ActionTiles,
+  DetailStage,
+  ScoreRow,
+  type ScoreItem,
+} from '../../components/detail/kit/DetailKit';
+import { actionClass } from '../../components/detail/kit/actionClass';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { AddToListButton } from '../../components/detail/AddToListButton';
 import { OwnedButton } from '../../components/detail/OwnedButton';
 import { useTheme } from '../../contexts/ThemeContext';
-import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/provider/providerMerge';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
@@ -27,7 +32,7 @@ interface MovieHeroSectionProps {
   id: string | undefined;
   isMobile: boolean;
   tmdbBackdrop: string | null;
-  /** Handlungstext — Desktop zeigt ihn IM Hero (Serien-Muster). */
+  /** Handlungstext — breite Ansichten zeigen ihn auf der Bühne. */
   overview?: string;
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
@@ -44,11 +49,7 @@ interface MovieHeroSectionProps {
   onDeleteClick: () => void;
 }
 
-const getPosterUrl = (posterPath: string | undefined, fallback: string): string => {
-  // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
-  // und greift dann auf den themed Placeholder zurueck.
-  return getImageUrl(posterPath, 'w500', fallback);
-};
+const tapDim = { opacity: 0.7 };
 
 export const MovieHeroSection = memo(
   ({
@@ -74,32 +75,6 @@ export const MovieHeroSection = memo(
     const { currentTheme } = useTheme();
     // Anonymer Community-Durchschnitt der TV-Rank-Nutzer (ab 5 Bewertungen).
     const community = useCommunityRating('movies', id);
-    const renderCommunityBadge = (showCount: boolean, plain = false) =>
-      community ? (
-        <span
-          className={`md-rating-badge${plain ? ' md-rating-badge--plain' : ''}`}
-          style={
-            plain
-              ? undefined
-              : {
-                  background: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
-                  borderColor: `color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
-                }
-          }
-        >
-          <span
-            className="md-rating-label"
-            style={{
-              background: currentTheme.primary,
-              color: currentTheme.background.default,
-            }}
-          >
-            TV-RANK
-          </span>
-          <span className="md-rating-value">{community.a.toFixed(1)}/10</span>
-          {showCount && <span className="md-rating-count">({community.c})</span>}
-        </span>
-      ) : null;
     const themedPlaceholder = useMemo(
       () =>
         buildThemedPlaceholderDataUrl(
@@ -110,9 +85,9 @@ export const MovieHeroSection = memo(
     );
     const posterPath =
       movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined;
-    const posterUrl = getPosterUrl(posterPath, themedPlaceholder);
+    // Zentrale Hilfe kennt kaputte „…w342null"-URLs (Backend-Altlast) und fällt auf den Platzhalter zurück.
+    const posterUrl = getImageUrl(posterPath, 'w500', themedPlaceholder);
     const backdropUrl = tmdbBackdrop ? getBackdropUrl(tmdbBackdrop) : '';
-    const mobileBackdropUrl = backdropUrl || posterUrl;
 
     const genres = (movie.genre?.genres || []).filter((g) => g && g.trim() !== '' && g !== 'All');
     const tmdbGenres = movie.genres?.map((g) => g.name) || [];
@@ -127,501 +102,221 @@ export const MovieHeroSection = memo(
       [movie.provider, providers]
     );
 
-    return (
-      <>
-        <div
-          className="md-hero"
-          style={
-            isMobile
-              ? { position: 'relative', overflow: 'hidden' }
-              : { height: 'auto', minHeight: 420 }
-          }
-        >
-          {/* Backdrop */}
-          {isMobile ? (
-            <div
-              className="md-hero__backdrop-bg"
-              style={{
-                backgroundImage: mobileBackdropUrl ? `url(${mobileBackdropUrl})` : undefined,
-                background: !mobileBackdropUrl
-                  ? `linear-gradient(135deg, ${currentTheme.status.error}33 0%, ${currentTheme.status.warning}33 100%)`
-                  : undefined,
-                filter: 'blur(50px) brightness(0.25) saturate(1.8)',
-                transform: 'scale(1.3)',
-              }}
-            />
-          ) : tmdbBackdrop ? (
-            <div
-              className="md-hero__backdrop-bg"
-              style={{
-                backgroundImage: `url(${backdropUrl})`,
-                filter: 'brightness(0.7) saturate(1.08)',
-              }}
-            />
-          ) : (
-            <div
-              className="md-hero__backdrop-bg"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.status.error}33 0%, ${currentTheme.status.warning}33 100%)`,
-              }}
-            />
-          )}
+    const imdbId = movie?.imdb?.imdb_id || '';
+    const scores: ScoreItem[] = [
+      ...(isReadOnlyTmdbMovie
+        ? []
+        : [
+            {
+              key: 'own',
+              label: t('Deine Wertung'),
+              value: averageRating > 0 ? String(averageRating) : '–',
+              tone: currentTheme.accent,
+              own: true,
+              onClick: onNavigateRate,
+              ariaLabel: t('Deine Wertung'),
+            },
+          ]),
+      {
+        key: 'tmdb',
+        label: 'TMDB',
+        value: tmdbRating?.vote_average ? tmdbRating.vote_average.toFixed(1) : '–',
+        sub: tmdbRating?.vote_count ? formatVoteCount(tmdbRating.vote_count) : undefined,
+        tone: '#01b4e4',
+        href: `https://www.themoviedb.org/movie/${id}`,
+      },
+      {
+        key: 'imdb',
+        label: 'IMDb',
+        value: imdbRating?.rating ? imdbRating.rating.toFixed(1) : '–',
+        sub: imdbRating ? formatVoteCount(imdbRating.votes) : undefined,
+        tone: '#f5c518',
+        href: imdbId ? `https://www.imdb.com/title/${imdbId}` : undefined,
+        dim: !imdbId,
+      },
+      ...(community
+        ? [
+            {
+              key: 'tvrank',
+              label: 'TV-Rank',
+              value: community.a.toFixed(1),
+              sub: String(community.c),
+              tone: currentTheme.primary,
+            },
+          ]
+        : []),
+    ];
 
-          {/* Lesbarkeits-Verläufe: unten + links (Desktop) — statt Glas-Box. */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: isMobile ? '60%' : '70%',
-              zIndex: 1,
-              background: `linear-gradient(to top, ${currentTheme.background.default} 0%, transparent 100%)`,
-            }}
+    const iconSize = isMobile ? 21 : 19;
+    const ctaInk = getOptimalTextColor(currentTheme.primary);
+
+    const genreChips = allGenres.length > 0 && (
+      <div className="dk-genres">
+        {allGenres.slice(0, 5).map((genre) => (
+          <span key={genre} className="dk-genre">
+            {genre}
+          </span>
+        ))}
+      </div>
+    );
+
+    const where = (
+      <div className="dk-where">
+        {mergedDisplayProviders.length > 0 && (
+          <ProviderBadges
+            providers={mergedDisplayProviders}
+            size={isMobile ? 'medium' : 'large'}
+            maxDisplay={isMobile ? 4 : 6}
+            showNames={false}
+            searchTitle={movie.title}
+            tmdbId={movie.id}
+            mediaType="movie"
           />
-          {!isMobile && (
-            <div
+        )}
+        <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="chip" />
+      </div>
+    );
+
+    return (
+      <DetailStage
+        art={backdropUrl || undefined}
+        wash={posterUrl}
+        navEnd={
+          isReadOnlyTmdbMovie && (
+            <button
+              type="button"
+              onClick={onAddMovie}
+              disabled={isAdding}
+              aria-label={t('Zur Sammlung hinzufügen')}
+              className="hero-add-pill"
               style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 1,
-                background: `linear-gradient(90deg, ${currentTheme.background.default}d9 0%, ${currentTheme.background.default}73 26%, transparent 48%)`,
-                pointerEvents: 'none',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                boxShadow: `0 6px 22px ${currentTheme.primary}66`,
+                color: ctaInk,
               }}
-            />
-          )}
-
-          {/* Vignette on desktop */}
-          {!isMobile && <div className="md-hero__vignette" />}
-
-          {/* Header Buttons */}
-          <div className="md-hero__header-buttons">
-            <BackButton
-              style={{
-                backdropFilter: 'var(--blur-sm)',
-                WebkitBackdropFilter: 'var(--blur-sm)',
-              }}
-            />
-
-            {isReadOnlyTmdbMovie && (
-              <button
-                type="button"
-                onClick={onAddMovie}
-                disabled={isAdding}
-                aria-label={t('Zur Sammlung hinzufügen')}
-                className="hero-add-pill"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                  boxShadow: `0 6px 22px ${currentTheme.primary}66`,
-                  color: getOptimalTextColor(currentTheme.primary),
-                }}
-              >
-                <AddRounded style={{ fontSize: 22 }} />
-                <span className="hero-add-pill__label">
-                  {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
-                </span>
-              </button>
-            )}
-          </div>
-
-          {/* Content: Poster + Info */}
-          <div
-            className="md-hero__content-row"
-            style={
-              isMobile
-                ? {
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 0,
-                    maxWidth: 'none',
-                    padding: 'var(--nav-clear) 0 20px',
-                  }
-                : undefined
-            }
-          >
-            {/* Poster — shared view-transition target (matches the listing
-                card key). Browsers without VT support ignore the style. */}
-            {posterUrl && (
-              <img
-                src={posterUrl}
-                alt={movie.title}
-                className="md-hero__poster"
-                style={{
-                  viewTransitionName: `poster-movie-${movie.id}`,
-                  ...(isMobile
-                    ? { width: 150, height: 220, borderRadius: 14, marginBottom: 20 }
-                    : {}),
-                }}
-              />
-            )}
-
-            {/* Info */}
-            <div
-              className={isMobile ? undefined : 'md-hero__glass-card'}
-              style={isMobile ? { width: '100%' } : { position: 'relative' }}
             >
-              <h1
-                className="md-hero__title"
-                style={{
-                  // Kino-Titel: groß + WEISS über dem Artwork mit Theme-Glow.
-                  fontSize: isMobile ? 26 : 'clamp(40px, 2.6vw + 18px, 68px)',
-                  lineHeight: 1.1,
-                  color: '#fff',
-                  textAlign: isMobile ? 'center' : 'left',
-                  margin: isMobile ? '0 20px 4px' : '0 0 8px',
-                  paddingRight: isMobile ? undefined : 80,
-                  letterSpacing: '-0.025em',
-                  textShadow: `0 2px 28px rgba(0,0,0,0.7), 0 0 80px ${currentTheme.primary}40`,
-                }}
-              >
-                {movie.title}
-              </h1>
+              <AddRounded style={{ fontSize: 22 }} />
+              <span className="hero-add-pill__label">
+                {isAdding ? t('Wird hinzugefügt…') : t('Hinzufügen')}
+              </span>
+            </button>
+          )
+        }
+        poster={
+          <img
+            src={posterUrl}
+            alt={movie.title}
+            style={{ viewTransitionName: `poster-movie-${movie.id}` }}
+          />
+        }
+        below={
+          <>
+            {isMobile && genreChips}
 
-              <div
-                className="md-hero__meta"
-                style={{
-                  justifyContent: isMobile ? 'center' : undefined,
-                  padding: isMobile ? '0 20px' : undefined,
-                  gap: isMobile ? '3px 8px' : undefined,
-                  fontSize: isMobile ? 13 : undefined,
-                  color: isMobile ? currentTheme.text.muted : undefined,
-                  marginTop: isMobile ? 8 : undefined,
-                }}
-              >
-                {movie.release_date && <span>{new Date(movie.release_date).getFullYear()}</span>}
-                {movie.runtime && <span>&bull; {formatRuntime(movie.runtime)}</span>}
-                {movie.status && (
-                  <span>
-                    &bull;{' '}
-                    {isWatched
-                      ? t('Gesehen')
-                      : movie.status === 'Released'
-                        ? t('Veröffentlicht')
-                        : movie.status}
-                  </span>
-                )}
-                {averageRating > 0 && (
-                  <span style={{ color: currentTheme.accent }}>
-                    &bull; &#11088; {averageRating}
-                  </span>
-                )}
-                {/* Desktop: Genres als Text in der Meta-Zeile (Serien-Muster). */}
-                {!isMobile && allGenres.length > 0 && (
-                  <span style={{ color: currentTheme.text.muted }}>
-                    &bull; {allGenres.slice(0, 2).join(', ')}
-                  </span>
-                )}
-              </div>
+            <ScoreRow items={scores} />
 
-              {/* Genre Tags — nur Mobile */}
-              {isMobile && (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 6,
-                    marginTop: 10,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0 20px',
-                  }}
+            <div className="dk-cta-row">
+              {!isReadOnlyTmdbMovie && (
+                <motion.button
+                  type="button"
+                  whileTap={tapDim}
+                  onClick={onToggleWatched}
+                  aria-pressed={isWatched}
+                  aria-label={
+                    isWatched ? t('Als nicht gesehen markieren') : t('Als gesehen markieren')
+                  }
+                  className={`dk-cta${isWatched ? ' dk-cta--done' : ''}`}
+                  style={isWatched ? undefined : { color: ctaInk }}
                 >
-                  {allGenres.slice(0, 4).map((genre, i) => (
-                    <span key={i} className="md-genre-tag">
-                      {genre}
+                  {isWatched ? (
+                    <CheckCircle aria-hidden style={{ fontSize: 26, flexShrink: 0 }} />
+                  ) : (
+                    <Check aria-hidden style={{ fontSize: 26, flexShrink: 0 }} />
+                  )}
+                  <span className="dk-cta__text">
+                    <span className="dk-cta__main">
+                      {isWatched ? t('Gesehen') : t('Als gesehen')}
                     </span>
-                  ))}
-                </div>
+                  </span>
+                </motion.button>
               )}
-
-              {/* Desktop: Handlung IM Hero — voller Text, keine „…" */}
-              {!isMobile && overview && (
-                <p
-                  style={{
-                    margin: '16px 0 0',
-                    maxWidth: 1100,
-                    fontSize: 15.5,
-                    lineHeight: 1.65,
-                    color: currentTheme.text.secondary,
-                    textShadow: '0 1px 12px rgba(0,0,0,0.6)',
-                  }}
-                >
-                  {overview}
-                </p>
-              )}
-
-              {/* Ratings + Provider */}
-              {isMobile ? (
-                <div className="md-factbar">
-                  <div className="md-factbar__row">
-                    {mergedDisplayProviders.length > 0 && (
-                      <ProviderBadges
-                        providers={mergedDisplayProviders}
-                        size="medium"
-                        maxDisplay={4}
-                        showNames={false}
-                        searchTitle={movie.title}
-                        tmdbId={movie.id}
-                        mediaType="movie"
-                      />
-                    )}
-                    <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="chip" />
-                  </div>
-                  <div className="md-factbar__row md-factbar__row--ratings">
-                    <a
-                      href={`https://www.themoviedb.org/movie/${id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="md-rating-badge md-rating-badge--plain"
-                    >
-                      <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
-                      <span className="md-rating-value">
-                        {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
-                      </span>
-                      {tmdbRating?.vote_count ? (
-                        <span className="md-rating-count">
-                          ({formatVoteCount(tmdbRating.vote_count)})
-                        </span>
-                      ) : null}
-                    </a>
-                    <a
-                      href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="md-rating-badge md-rating-badge--plain"
-                      style={{
-                        opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
-                        pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
-                      }}
-                    >
-                      <span className="md-rating-label md-rating-label--imdb">IMDb</span>
-                      <span className="md-rating-value">
-                        {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-                      </span>
-                      {imdbRating ? (
-                        <span className="md-rating-count">
-                          ({formatVoteCount(imdbRating.votes)})
-                        </span>
-                      ) : null}
-                    </a>
-                    {renderCommunityBadge(true, true)}
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Actions: Gesehen/Bewerten/Löschen nur für eigene Filme —
-                  Empfehlen + Teilen immer (brauchen den Film nicht in der Liste). */}
-              <div
-                className="md-hero__actions"
-                style={{
-                  justifyContent: isMobile ? 'center' : 'flex-start',
-                  padding: isMobile ? '16px 20px 0' : undefined,
-                  marginTop: isMobile ? 0 : 16,
-                }}
-              >
-                {!isReadOnlyTmdbMovie && (
-                  <motion.button
-                    type="button"
-                    whileTap={tapScale}
-                    onClick={onToggleWatched}
-                    aria-pressed={isWatched}
-                    aria-label={
-                      isWatched ? t('Als nicht gesehen markieren') : t('Als gesehen markieren')
-                    }
-                    className={`md-rate-btn md-seen-btn ${isMobile ? 'md-rate-btn--mobile' : ''} ${
-                      isWatched ? 'md-seen-btn--active' : ''
-                    }`}
-                    style={{
-                      flex: isMobile ? 1 : '0 0 auto',
-                      minWidth: isMobile ? 0 : 140,
-                      minHeight: 44,
-                      background: isWatched
-                        ? `${currentTheme.status.success}22`
-                        : 'rgba(255, 255, 255, 0.05)',
-                      border: isWatched
-                        ? `1px solid ${currentTheme.status.success}`
-                        : '1px solid rgba(255, 255, 255, 0.1)',
-                      color: isWatched ? currentTheme.status.success : currentTheme.text.secondary,
-                    }}
-                  >
-                    <Check aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-                    {isWatched ? t('Gesehen') : t('Als gesehen')}
-                  </motion.button>
-                )}
-
-                {!isReadOnlyTmdbMovie && (
-                  <motion.button
-                    type="button"
-                    whileTap={tapScale}
-                    onClick={onNavigateRate}
-                    className={`md-rate-btn ${isMobile ? 'md-rate-btn--mobile' : ''}`}
-                    style={{
-                      flex: isMobile ? 1 : '0 0 auto',
-                      minWidth: isMobile ? 0 : 160,
-                      background: isWatched
-                        ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
-                        : 'rgba(255, 255, 255, 0.05)',
-                      border: isWatched
-                        ? '1px solid rgba(255, 215, 0, 0.3)'
-                        : '1px solid rgba(255, 255, 255, 0.1)',
-                    }}
-                  >
-                    <Star
-                      style={{
-                        fontSize: isMobile ? '16px' : '18px',
-                        color: isWatched ? currentTheme.accent : currentTheme.text.secondary,
-                      }}
-                    />
-                    {t('Bewerten')}
-                  </motion.button>
-                )}
-
-                <AddToListButton
-                  className="action-btn"
-                  iconSize={isMobile ? 18 : 20}
-                  target={{ type: 'movie', id: movie.id, title: movie.title, poster: posterPath }}
-                  style={{
-                    padding: isMobile ? '10px' : '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: isMobile ? '10px' : '12px',
-                    fontSize: isMobile ? '13px' : '16px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: currentTheme.text.secondary,
-                  }}
-                />
-
-                {!isReadOnlyTmdbMovie && (
-                  <OwnedButton
-                    className="action-btn"
-                    iconSize={isMobile ? 18 : 20}
-                    target={{ type: 'movie', id: movie.id }}
-                    owned={!!movie.ownedAt}
-                    style={{
-                      padding: isMobile ? '10px' : '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: isMobile ? '10px' : '12px',
-                      fontSize: isMobile ? '13px' : '16px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      color: currentTheme.text.secondary,
-                    }}
-                  />
-                )}
-
-                <RecommendButton
-                  className="action-btn"
-                  iconSize={isMobile ? 18 : 20}
-                  style={{
-                    padding: isMobile ? '10px' : '12px',
-                    border: `1px solid ${currentTheme.primary}33`,
-                    borderRadius: isMobile ? '10px' : '12px',
-                    fontSize: isMobile ? '13px' : '16px',
-                    background: `${currentTheme.primary}10`,
-                  }}
-                  media={{
-                    id: movie.id,
-                    type: 'movie',
-                    title: movie.title,
-                    posterPath,
-                    backdropPath: tmdbBackdrop || movie.backdrop || undefined,
-                  }}
-                />
-
-                {!isReadOnlyTmdbMovie && (
-                  <Tooltip title={t('Film löschen')} arrow>
-                    <motion.button
-                      whileTap={tapScale}
-                      onClick={onDeleteClick}
-                      className="action-btn"
-                      style={{
-                        padding: isMobile ? '10px' : '12px',
-                        background: 'rgba(220, 53, 69, 0.1)',
-                        border: '1px solid rgba(220, 53, 69, 0.3)',
-                        borderRadius: isMobile ? '10px' : '12px',
-                        fontSize: isMobile ? '13px' : '16px',
-                      }}
-                    >
-                      <Delete
-                        style={{
-                          fontSize: isMobile ? '18px' : '20px',
-                          color: currentTheme.status?.error || '#ef4444',
-                        }}
-                      />
-                    </motion.button>
-                  </Tooltip>
-                )}
-              </div>
+              {!isMobile && where}
             </div>
 
-            {/* Desktop: Signal-Zone unten rechts — Freunde, Ratings, Provider,
-                Videos in EINEM Glas-Panel (Serien-Muster). */}
-            {!isMobile && (
-              <div
-                className="liquid-glass"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  gap: 12,
-                  alignSelf: 'flex-end',
-                  flexShrink: 0,
-                  position: 'relative',
-                  zIndex: 2,
-                  borderRadius: 18,
-                  padding: '16px 18px',
+            {/* Gesehen/Bewerten/Löschen nur für eigene Filme — Liste und Teilen
+                immer (brauchen den Film nicht in der Sammlung). */}
+            <ActionTiles>
+              {!isReadOnlyTmdbMovie && (
+                <motion.button
+                  type="button"
+                  whileTap={tapDim}
+                  onClick={onNavigateRate}
+                  className={actionClass(averageRating > 0 ? 'on' : undefined)}
+                >
+                  <Star style={{ fontSize: iconSize }} />
+                  <span className="dk-action__label">{t('Bewerten')}</span>
+                </motion.button>
+              )}
+
+              <AddToListButton
+                className={actionClass()}
+                iconSize={iconSize}
+                caption={t('Liste')}
+                target={{ type: 'movie', id: movie.id, title: movie.title, poster: posterPath }}
+              />
+
+              {!isReadOnlyTmdbMovie && (
+                <OwnedButton
+                  className={actionClass()}
+                  iconSize={iconSize}
+                  caption={t('Besitz')}
+                  target={{ type: 'movie', id: movie.id }}
+                  owned={!!movie.ownedAt}
+                />
+              )}
+
+              <RecommendButton
+                className={actionClass()}
+                iconSize={iconSize}
+                caption={t('Teilen')}
+                media={{
+                  id: movie.id,
+                  type: 'movie',
+                  title: movie.title,
+                  posterPath,
+                  backdropPath: tmdbBackdrop || movie.backdrop || undefined,
                 }}
-              >
-                <div className="md-hero__ratings" style={{ margin: 0 }}>
-                  <a
-                    href={`https://www.themoviedb.org/movie/${id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="md-rating-badge md-rating-badge--tmdb"
-                  >
-                    <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
-                    <span className="md-rating-value">
-                      {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
-                    </span>
-                    <span className="md-rating-count">
-                      ({formatVoteCount(tmdbRating?.vote_count)})
-                    </span>
-                  </a>
-                  <a
-                    href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="md-rating-badge md-rating-badge--imdb"
-                    style={{
-                      opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
-                      pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
-                    }}
-                  >
-                    <span className="md-rating-label md-rating-label--imdb">IMDb</span>
-                    <span className="md-rating-value">
-                      {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-                    </span>
-                    <span className="md-rating-count">({formatVoteCount(imdbRating?.votes)})</span>
-                  </a>
-                  {renderCommunityBadge(true)}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {mergedDisplayProviders.length > 0 && (
-                    <ProviderBadges
-                      providers={mergedDisplayProviders}
-                      size="large"
-                      maxDisplay={6}
-                      showNames={false}
-                      searchTitle={movie.title}
-                      tmdbId={movie.id}
-                      mediaType="movie"
-                    />
-                  )}
-                  <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="compact" />
-                </div>
-              </div>
-            )}
-          </div>
+              />
+
+              {!isReadOnlyTmdbMovie && (
+                <motion.button
+                  type="button"
+                  whileTap={tapDim}
+                  onClick={onDeleteClick}
+                  className={actionClass('danger')}
+                  aria-label={t('Film löschen')}
+                >
+                  <Delete style={{ fontSize: iconSize }} />
+                  <span className="dk-action__label">{t('Löschen')}</span>
+                </motion.button>
+              )}
+            </ActionTiles>
+
+            {isMobile && where}
+          </>
+        }
+      >
+        <h1 className="dk-title">{movie.title}</h1>
+
+        <div className="dk-meta">
+          {movie.release_date && <span>{new Date(movie.release_date).getFullYear()}</span>}
+          {movie.runtime > 0 && <span>{formatRuntime(movie.runtime)}</span>}
+          {movie.status && movie.status !== 'Released' && <span>{movie.status}</span>}
         </div>
-      </>
+
+        {!isMobile && genreChips}
+        {overview && <p className="dk-overview">{overview}</p>}
+      </DetailStage>
     );
   }
 );

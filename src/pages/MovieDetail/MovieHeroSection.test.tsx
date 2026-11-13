@@ -120,8 +120,8 @@ describe('MovieHeroSection', () => {
     render(<MovieHeroSection {...baseProps} />);
     expect(screen.getByRole('heading', { name: 'Dune' })).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
-    // Genres werden seit dem Redesign gemeinsam in einem Span gerendert
-    expect(screen.getByText(/Sci-Fi, Drama/)).toBeInTheDocument();
+    expect(screen.getByText('Sci-Fi')).toBeInTheDocument();
+    expect(screen.getByText('Drama')).toBeInTheDocument();
   });
 
   it('shows the add button for a read-only tmdb movie and invokes onAddMovie', () => {
@@ -167,10 +167,8 @@ describe('MovieHeroSection', () => {
   });
 
   it('invokes onDeleteClick from the delete action', () => {
-    const { container } = render(<MovieHeroSection {...baseProps} />);
-    const actionBtns = container.querySelectorAll('.action-btn');
-    const deleteBtn = actionBtns[actionBtns.length - 1] as HTMLElement;
-    fireEvent.click(deleteBtn);
+    render(<MovieHeroSection {...baseProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Film löschen' }));
     expect(baseProps.onDeleteClick).toHaveBeenCalled();
   });
 });

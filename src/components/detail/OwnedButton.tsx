@@ -18,12 +18,15 @@ export const OwnedButton = ({
   className,
   iconSize,
   style,
+  caption,
 }: {
   target: MediaRef;
   owned: boolean;
   className: string;
   iconSize: number;
   style?: React.CSSProperties;
+  /** Sichtbare Beschriftung neben bzw. unter dem Symbol. */
+  caption?: string;
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -68,6 +71,7 @@ export const OwnedButton = ({
         }
       >
         <Album style={{ fontSize: iconSize }} />
+        {caption && <span className="dk-action__label">{caption}</span>}
       </motion.button>
     </Tooltip>
   );

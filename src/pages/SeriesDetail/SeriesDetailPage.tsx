@@ -1,6 +1,6 @@
-import CheckCircle from '@mui/icons-material/CheckCircle';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import History from '@mui/icons-material/History';
-import Info from '@mui/icons-material/Info';
 import List from '@mui/icons-material/List';
 import People from '@mui/icons-material/People';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { DetailTabs, FactList, RailSection } from '../../components/detail/kit/DetailKit';
 import { BasedOnBookSection } from '../Books/components/BasedOnBookSection';
 import { Deferred } from '../../components/ui/feedback/Deferred';
 import { AnimeFillerBanner } from './sections/AnimeFillerBanner';
@@ -41,9 +42,8 @@ import { SeriesDetailDialogs } from './dialogs/SeriesDetailDialogs';
 import { useFriendsSeriesProgress } from './hooks/useFriendsSeriesProgress';
 import { useSeriesActions } from './hooks/useSeriesActions';
 import { useSeriesData } from './hooks/useSeriesData';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
 import './SeriesDetailPage.css';
-import { tapScaleSmall } from '../../lib/motion';
 
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
@@ -300,9 +300,87 @@ export const SeriesDetailPage = memo(() => {
 
   const warningColor = currentTheme.accent;
 
+  const overview = series.beschreibung || series.overview || tmdbOverview || undefined;
+  const firstAired = tmdbFirstAirDate || series.first_air_date || series.release_date;
+  const genreNames = (series.genre?.genres ?? []).filter((g) => g && g !== 'All');
+  const statusLabel =
+    series.status === 'Returning Series' || series.status === 'ongoing'
+      ? t('Wird fortgesetzt')
+      : series.status === 'Ended' || series.status === 'Canceled'
+        ? t('Beendet')
+        : series.status;
+  const friendsStrip = friendsProgress.entries.length > 0 && (
+    <FriendsProgressStrip
+      entries={friendsProgress.entries}
+      userPercentage={progressStats.percentage}
+      userWatched={progressStats.watched}
+      isMobile={isMobile}
+    />
+  );
+  // Aussteiger-Radar — anonymes Abbruch-Aggregat (rendert nur mit Daten)
+  const dropOff = (
+    <Deferred>
+      <DropOffSection seriesId={series.id} currentTheme={currentTheme} isMobile />
+    </Deferred>
+  );
+  // Crossover — Mehrteiler über Serien hinweg, mit Sehstatus je Teil
+  const crossoverBlock = (
+    <CrossoverSection
+      seriesId={seriesTmdbId ?? series.id}
+      refs={crossovers.refs}
+      currentTheme={currentTheme}
+      isMobile
+      onOpen={setCrossoverView}
+      onAdd={() => setCrossoverEdit({ id: null })}
+    />
+  );
+  // Buchvorlage aus Wikidata — rendert nur, wenn es eine gibt
+  const basedOnBook = (
+    <Deferred>
+      <BasedOnBookSection tmdbId={Number(series.tmdb_id || series.id)} kind="series" isMobile />
+    </Deferred>
+  );
+  const facts = (
+    <div className={isMobile ? 'dk-slot' : undefined}>
+      <RailSection title={t('Auf einen Blick')}>
+        <FactList
+          facts={[
+            { label: t('Status'), value: statusLabel },
+            {
+              label: t('Erstausstrahlung'),
+              value: firstAired
+                ? new Date(firstAired).toLocaleDateString(dateLocale(), {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })
+                : null,
+            },
+            { label: t('Staffeln'), value: series.seasons?.length || null },
+            { label: t('Folgen'), value: progressStats.total || null },
+            {
+              label: t('Laufzeit'),
+              value: series.episodeRuntime
+                ? t('{n} Min. pro Folge', { n: series.episodeRuntime })
+                : null,
+            },
+            {
+              label: t('Originaltitel'),
+              value:
+                series.original_name && series.original_name !== series.title
+                  ? series.original_name
+                  : null,
+            },
+            { label: t('Genres'), value: genreNames.join(', ') },
+          ]}
+        />
+      </RailSection>
+    </div>
+  );
+
   return (
-    <div>
-      {/* Hero Section */}
+    <div className="dk">
+      {/* Bühne */}
       <HeroSection
         series={series}
         localSeries={localSeries}
@@ -315,12 +393,14 @@ export const SeriesDetailPage = memo(() => {
         overallRating={overallRating}
         progressStats={progressStats}
         paceInfo={paceInfo}
-        overview={series.beschreibung || series.overview || tmdbOverview || undefined}
+        overview={overview}
         isReadOnlyTmdbSeries={isReadOnlyTmdbSeries}
         isAdding={isAdding}
         isDeleting={isDeleting}
         isMobile={isMobile}
-        currentTheme={currentTheme}
+        nextEpisode={nextEpisode}
+        markingNext={markingNext}
+        onWatchNext={handleWatchNext}
         onAddSeries={handleAddSeries}
         onNavigateEpisodes={() => navigate(`/episodes/${series.id}`)}
         onNavigateRating={() => navigate(`/rating/series/${series.id}`)}
@@ -329,331 +409,168 @@ export const SeriesDetailPage = memo(() => {
         onDelete={handleDeleteSeries}
       />
 
-      {/* Weiterschauen-CTA: nächste ungesehene Folge mit einem Tap markieren */}
-      {nextEpisode && !series.hidden && (
-        <div style={{ margin: isMobile ? '0 12px 12px' : '0 20px 16px' }}>
-          <button
-            type="button"
-            onClick={handleWatchNext}
-            disabled={markingNext}
-            aria-label={t('Nächste Folge S{s} E{e} als gesehen markieren', {
-              s: nextEpisode.seasonNumber,
-              e: nextEpisode.episodeNumber,
-            })}
-            style={{
-              // Kompakter Pill-CTA statt 2500px-Streifen — DIE eine laute
-              // Aktion der Seite, links verankert. Mobile darf voll wachsen.
-              width: isMobile ? '100%' : 'auto',
-              maxWidth: '100%',
-              minHeight: 48,
-              padding: '12px 26px',
-              borderRadius: 999,
-              border: 'none',
-              cursor: markingNext ? 'default' : 'pointer',
-              fontSize: 15,
-              fontWeight: 700,
-              opacity: markingNext ? 0.6 : 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              color: getOptimalTextColor(currentTheme.primary),
-              boxShadow: `0 10px 30px -10px ${currentTheme.primary}80`,
-            }}
-          >
-            {/* Icon statt des Textzeichens „▶", und der Text benennt die Aktion:
-                „… — gesehen" las sich wie ein Zustand und widersprach dem
-                Fortschritt darüber, der 0 % anzeigen kann. */}
-            <CheckCircle style={{ fontSize: 20, flexShrink: 0 }} />
-            <span
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t('S{s} E{e}{name} als gesehen markieren', {
-                s: nextEpisode.seasonNumber,
-                e: nextEpisode.episodeNumber,
-                name: nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : '',
-              })}
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* Hidden series banner */}
       {series.hidden && !isReadOnlyTmdbSeries && (
-        <div
-          style={{
-            margin: isMobile ? '0 12px 12px' : '0 20px 20px',
-            padding: '10px 16px',
-            background: 'rgba(255, 152, 0, 0.15)',
-            border: '1px solid rgba(255, 152, 0, 0.3)',
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            color: currentTheme.status?.warning || '#f59e0b',
-          }}
-        >
+        <div className="dk-note">
           <VisibilityOff style={{ fontSize: '16px' }} />
           {t('Du schaust diese Serie nicht mehr')}
         </div>
       )}
 
-      {/* Friends Progress Strip — auch für nicht getrackte Serien: die
-          Freunde-Daten sind unabhängig von der eigenen Liste lesbar. */}
-      {friendsProgress.entries.length > 0 && (
-        <FriendsProgressStrip
-          entries={friendsProgress.entries}
-          userPercentage={progressStats.percentage}
-          userWatched={progressStats.watched}
-          isMobile={isMobile}
-        />
-      )}
+      <div className="dk-layout">
+        <div className="dk-main">
+          {/* Freunde — auch für nicht getrackte Serien: die Freunde-Daten sind
+              unabhängig von der eigenen Liste lesbar. Breit wandern sie in die Seitenleiste. */}
+          {isMobile && friendsStrip}
 
-      {/* Info/Cast Tab Switcher */}
-      <div
-        className="detail-tab-switcher"
-        style={{ margin: isMobile ? '8px 12px 12px' : '12px 20px 20px' }}
-      >
-        {(
-          [
-            {
-              key: 'info' as const,
-              icon: <List style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-              label: t('Info & Episoden'),
-            },
-            {
-              key: 'cast' as const,
-              icon: <People style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-              label: t('Besetzung'),
-            },
-            ...(!isReadOnlyTmdbSeries && characterGuide.userProgress
-              ? [
-                  {
-                    key: 'characters' as const,
-                    icon: <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-                    label: t('KI-Guide'),
-                  },
-                ]
-              : []),
-          ] as const
-        ).map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => {
-              setActiveTab(tab.key);
-            }}
-            className="detail-tab-btn"
-            style={{
-              background:
-                activeTab === tab.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
-                  : undefined,
-              color: activeTab === tab.key ? currentTheme.primary : undefined,
-              boxShadow: activeTab === tab.key ? 'var(--glass-specular)' : undefined,
-              outline: activeTab === tab.key ? `1px solid ${currentTheme.primary}40` : undefined,
-              outlineOffset: -1,
-              fontSize: isMobile ? '12px' : '13px',
-              fontWeight: activeTab === tab.key ? 700 : 500,
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'characters' ? (
-        <CharacterGuide
-          characters={characterGuide.characters}
-          loading={characterGuide.loading}
-          error={characterGuide.error}
-          onGenerate={characterGuide.generate}
-          userProgress={characterGuide.userProgress}
-          isMobile={isMobile}
-          onAskQuestion={characterGuide.askQuestion}
-          questionAnswer={characterGuide.questionAnswer}
-          questionLoading={characterGuide.questionLoading}
-        />
-      ) : activeTab === 'cast' ? (
-        <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
-      ) : (
-        <>
-          {/* Recap Trigger – only when user tracks the series and has watched episodes */}
-          {!isReadOnlyTmdbSeries && recap.recapEpisodes.length > 0 && (
-            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 16px' }}>
-              <motion.button
-                onClick={() => setShowRecap(true)}
-                whileTap={tapScaleSmall}
-                whileHover={{ y: -1 }}
-                disabled={recap.loading}
-                style={{
-                  // Kompakter Inline-Button statt Vollbreite-Streifen.
-                  width: isMobile ? '100%' : 'auto',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: isMobile ? '10px 14px' : '12px 22px',
-                  background: `linear-gradient(135deg, color-mix(in srgb, ${currentTheme.primary} 12%, transparent), color-mix(in srgb, ${currentTheme.accent} 8%, transparent)), var(--glass-light)`,
-                  border: `1px solid color-mix(in srgb, ${currentTheme.primary} 28%, transparent)`,
-                  boxShadow: 'var(--glass-specular)',
-                  borderRadius: '999px',
-                  color: currentTheme.text.primary,
-                  fontSize: isMobile ? '13px' : '14px',
-                  fontWeight: 600,
-                  cursor: recap.loading ? 'wait' : 'pointer',
-                  textAlign: 'left',
-                  opacity: recap.loading ? 0.7 : 1,
-                  transition: 'background var(--duration-fast) var(--ease-default)',
-                }}
-              >
-                <History
-                  style={{ fontSize: isMobile ? '18px' : '20px', color: currentTheme.primary }}
-                />
-                <span style={{ flex: 1 }}>
-                  {recap.recapEpisodes.length === 1
-                    ? t('Recap der letzten Folge')
-                    : t('Recap der letzten {n} Folgen', { n: recap.recapEpisodes.length })}
-                  {recap.daysSinceLastWatch > 0 && (
-                    <span
-                      style={{
-                        color: currentTheme.text.secondary,
-                        fontWeight: 400,
-                        marginLeft: 6,
-                      }}
-                    >
-                      {recap.daysSinceLastWatch === 1
-                        ? t('· zuletzt vor 1 Tag')
-                        : t('· zuletzt vor {n} Tagen', { n: recap.daysSinceLastWatch })}
-                    </span>
-                  )}
-                </span>
-                <span style={{ color: currentTheme.primary, fontSize: '18px' }}>→</span>
-              </motion.button>
-            </div>
-          )}
-
-          {/* Description — Desktop zeigt sie bereits im Hero */}
-          {isMobile && (series.beschreibung || series.overview || tmdbOverview) && (
-            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
-              <h3
-                style={{
-                  fontSize: isMobile ? '14px' : '18px',
-                  fontWeight: 600,
-                  margin: isMobile ? '0 0 8px' : '0 0 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <Info
-                  style={{ fontSize: isMobile ? '16px' : '20px', color: currentTheme.accent }}
-                />
-                <span style={{ color: currentTheme.text.primary }}>{t('Beschreibung')}</span>
-              </h3>
-              <p
-                style={{
-                  fontSize: isMobile ? '12px' : '14px',
-                  lineHeight: isMobile ? 1.4 : 1.5,
-                  color: currentTheme.text.secondary,
-                  margin: 0,
-                }}
-              >
-                {series.beschreibung || series.overview || tmdbOverview}
-              </p>
-            </div>
-          )}
-
-          {/* Anime Filler / Recap Info – only renders for Japanese animation */}
-          <AnimeFillerBanner
-            enabled={animeFiller.enabled}
-            loading={animeFiller.loading}
-            data={animeFiller.data}
-            isMobile={isMobile}
-            onReload={animeFiller.reload}
+          <DetailTabs
+            ariaLabel={t('Serien-Bereiche')}
+            active={activeTab}
+            onChange={setActiveTab}
+            tabs={[
+              { key: 'info', icon: <List style={{ fontSize: 18 }} />, label: t('Info & Episoden') },
+              { key: 'cast', icon: <People style={{ fontSize: 18 }} />, label: t('Besetzung') },
+              ...(!isReadOnlyTmdbSeries && characterGuide.userProgress
+                ? [
+                    {
+                      key: 'characters' as const,
+                      icon: <AutoAwesome style={{ fontSize: 18 }} />,
+                      label: t('KI-Guide'),
+                    },
+                  ]
+                : []),
+            ]}
           />
 
-          {/* Fieberkurve — Community-Folgenbewertungen (rendert nur mit Daten) */}
-          <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
-            <Deferred>
-              <FeverCurveSection
-                series={series}
-                currentTheme={currentTheme}
-                isMobile={isMobile}
-                navigate={navigate}
-              />
-            </Deferred>
-          </div>
-
-          {/* Aussteiger-Radar — anonymes Abbruch-Aggregat (rendert nur mit Daten) */}
-          <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
-            <Deferred>
-              <DropOffSection
-                seriesId={series.id}
-                currentTheme={currentTheme}
-                isMobile={isMobile}
-              />
-            </Deferred>
-          </div>
-
-          {/* Crossover — Mehrteiler über Serien hinweg, mit Sehstatus je Teil */}
-          <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
-            <CrossoverSection
-              seriesId={seriesTmdbId ?? series.id}
-              refs={crossovers.refs}
-              currentTheme={currentTheme}
+          {activeTab === 'characters' ? (
+            <CharacterGuide
+              characters={characterGuide.characters}
+              loading={characterGuide.loading}
+              error={characterGuide.error}
+              onGenerate={characterGuide.generate}
+              userProgress={characterGuide.userProgress}
               isMobile={isMobile}
-              onOpen={setCrossoverView}
-              onAdd={() => setCrossoverEdit({ id: null })}
+              onAskQuestion={characterGuide.askQuestion}
+              questionAnswer={characterGuide.questionAnswer}
+              questionLoading={characterGuide.questionLoading}
             />
-          </div>
+          ) : activeTab === 'cast' ? (
+            <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
+          ) : (
+            <>
+              {/* Mobil steht die Handlung hier — breite Ansichten zeigen sie auf der Bühne. */}
+              {isMobile && overview && (
+                <section className="dk-slot">
+                  <h2 className="dk-section__title">{t('Handlung')}</h2>
+                  <p className="dk-text">{overview}</p>
+                </section>
+              )}
 
-          {/* Seasons Overview */}
-          {series.seasons && series.seasons.length > 0 && (
-            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
+              {/* Recap — nur wenn die Serie getrackt ist und es gesehene Folgen gibt */}
+              {!isReadOnlyTmdbSeries && recap.recapEpisodes.length > 0 && (
+                <div className="dk-slot">
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowRecap(true)}
+                    whileTap={{ opacity: 0.7 }}
+                    disabled={recap.loading}
+                    className="dk-recap"
+                    style={{ cursor: recap.loading ? 'wait' : 'pointer' }}
+                  >
+                    <History style={{ fontSize: 20, color: currentTheme.primary }} />
+                    <span className="dk-recap__text">
+                      <strong>
+                        {recap.recapEpisodes.length === 1
+                          ? t('Recap der letzten Folge')
+                          : t('Recap der letzten {n} Folgen', { n: recap.recapEpisodes.length })}
+                      </strong>
+                      {recap.daysSinceLastWatch > 0 && (
+                        <span>
+                          {recap.daysSinceLastWatch === 1
+                            ? t('· zuletzt vor 1 Tag')
+                            : t('· zuletzt vor {n} Tagen', { n: recap.daysSinceLastWatch })}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronRight style={{ fontSize: 20, opacity: 0.6 }} />
+                  </motion.button>
+                </div>
+              )}
+
+              {/* Anime-Filler/Recap — rendert nur für japanische Animation */}
+              <AnimeFillerBanner
+                enabled={animeFiller.enabled}
+                loading={animeFiller.loading}
+                data={animeFiller.data}
+                isMobile={isMobile}
+                onReload={animeFiller.reload}
+              />
+
+              {/* Staffeln + Folgen: das Herz der Seite, deshalb ganz oben. */}
+              {series.seasons && series.seasons.length > 0 && (
+                <div className="dk-slot">
+                  <Deferred>
+                    <SeasonsSection
+                      series={series}
+                      selectedSeasonIndex={selectedSeasonIndex}
+                      setSelectedSeasonIndex={setSelectedSeasonIndex}
+                      setShowRewatchDialog={setShowRewatchDialog}
+                      episodeDiscussionCounts={episodeDiscussionCounts}
+                      warningColor={warningColor}
+                      currentTheme={currentTheme}
+                      handleStopRewatch={handleStopRewatch}
+                      handleStartRewatch={handleStartRewatch}
+                      handleEpisodeQuickToggle={handleEpisodeQuickToggle}
+                      onMarkSeasonWatched={(idx) => void handleSeasonMarkWatched(idx)}
+                      navigate={navigate}
+                      fillerByKey={animeFiller.fillerByKey}
+                      crossoverByKey={crossovers.byEpisodeKey}
+                      onOpenCrossover={setCrossoverView}
+                    />
+                  </Deferred>
+                </div>
+              )}
+
+              {/* Fieberkurve — Community-Folgenbewertungen (rendert nur mit Daten) */}
+              <div className="dk-slot">
+                <Deferred>
+                  <FeverCurveSection
+                    series={series}
+                    currentTheme={currentTheme}
+                    isMobile={isMobile}
+                    navigate={navigate}
+                  />
+                </Deferred>
+              </div>
+
+              {/* Schmal stehen Radar, Crossover, Fakten und Buchvorlage im Fluss —
+                  breit trägt sie die Seitenleiste. */}
+              {isMobile && (
+                <>
+                  <div className="dk-slot">{dropOff}</div>
+                  <div className="dk-slot">{crossoverBlock}</div>
+                  {facts}
+                  {basedOnBook}
+                </>
+              )}
+
+              {/* TMDB-Empfehlungen */}
               <Deferred>
-                <SeasonsSection
-                  series={series}
-                  selectedSeasonIndex={selectedSeasonIndex}
-                  setSelectedSeasonIndex={setSelectedSeasonIndex}
-                  setShowRewatchDialog={setShowRewatchDialog}
-                  episodeDiscussionCounts={episodeDiscussionCounts}
-                  warningColor={warningColor}
-                  currentTheme={currentTheme}
-                  handleStopRewatch={handleStopRewatch}
-                  handleStartRewatch={handleStartRewatch}
-                  handleEpisodeQuickToggle={handleEpisodeQuickToggle}
-                  onMarkSeasonWatched={(idx) => void handleSeasonMarkWatched(idx)}
-                  navigate={navigate}
-                  fillerByKey={animeFiller.fillerByKey}
-                  crossoverByKey={crossovers.byEpisodeKey}
-                  onOpenCrossover={setCrossoverView}
-                />
+                <RecommendationsSection id={series.tmdb_id || series.id} mediaType="tv" />
               </Deferred>
-            </div>
+            </>
           )}
+        </div>
 
-          {/* Buchvorlage aus Wikidata — rendert nur, wenn es eine gibt */}
-          <Deferred>
-            <BasedOnBookSection
-              tmdbId={Number(series.tmdb_id || series.id)}
-              kind="series"
-              isMobile={isMobile}
-            />
-          </Deferred>
-
-          {/* TMDB-Empfehlungen */}
-          <Deferred>
-            <RecommendationsSection id={series.tmdb_id || series.id} mediaType="tv" />
-          </Deferred>
-        </>
-      )}
+        {!isMobile && (
+          <aside className="dk-rail">
+            {friendsStrip}
+            {facts}
+            <div className="dk-rail__slot">{dropOff}</div>
+            <div className="dk-rail__slot">{crossoverBlock}</div>
+            <div className="dk-rail__bleed">{basedOnBook}</div>
+          </aside>
+        )}
+      </div>
 
       {/* Add Button for TMDB-only series */}
       {isReadOnlyTmdbSeries && (

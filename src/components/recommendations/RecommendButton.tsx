@@ -18,6 +18,8 @@ interface RecommendButtonProps {
   iconSize?: number;
   className?: string;
   style?: React.CSSProperties;
+  /** Sichtbare Beschriftung neben bzw. unter dem Symbol. */
+  caption?: string;
 }
 
 export const RecommendButton: React.FC<RecommendButtonProps> = ({
@@ -25,6 +27,7 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
   iconSize = 18,
   className,
   style,
+  caption,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -41,6 +44,7 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
           style={{ ...style }}
         >
           <Send style={{ fontSize: iconSize }} />
+          {caption && <span className="dk-action__label">{caption}</span>}
         </motion.button>
       </Tooltip>
       <RecommendSheet isOpen={open} onClose={() => setOpen(false)} media={media} />

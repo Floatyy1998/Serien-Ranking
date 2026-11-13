@@ -215,6 +215,16 @@ const dict: Record<string, string> = {
   'Den Rest dieser Staffel kannst du auf einmal abhaken.':
     'Tu peux cocher le reste de cette saison en une fois.',
   'Rest abhaken': 'Cocher le reste',
+  Besitz: 'Possédé',
+  '{n} Min. pro Folge': '{n} min par épisode',
+  'Auf einen Blick': "En un coup d'œil",
+  Laufzeit: 'Durée',
+  Originaltitel: 'Titre original',
+  'Serien-Bereiche': 'Sections de la série',
+  Kinostart: 'Sortie',
+  'Gesehen am': 'Vu le',
+  '{done} von {total} Bänden': '{done} tomes sur {total}',
+  '{done} von {total} Kapiteln': '{done} chapitres sur {total}',
 };
 
 export default dict;

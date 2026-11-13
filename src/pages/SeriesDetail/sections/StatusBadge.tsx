@@ -9,6 +9,11 @@ interface StatusBadgeProps {
   series: Series;
 }
 
+interface NextEpisodeChipProps extends StatusBadgeProps {
+  /** Nur kommende Folgen zeigen — die nächste offene nennt dann schon der Abhak-Knopf. */
+  upcomingOnly?: boolean;
+}
+
 /** Detect airing rhythm from recent episode air dates */
 function detectAiringRhythm(series: Series): string | null {
   if (!series.seasons || series.seasons.length === 0) return null;
@@ -159,11 +164,12 @@ export const StatusBadge = memo<StatusBadgeProps>(({ series }) => {
 StatusBadge.displayName = 'StatusBadge';
 
 /** Separate chip showing next episode info */
-export const NextEpisodeChip = memo<StatusBadgeProps>(({ series }) => {
+export const NextEpisodeChip = memo<NextEpisodeChipProps>(({ series, upcomingOnly }) => {
   const { currentTheme } = useTheme();
   const nextEp = useMemo(() => getNextEpisodeInfo(series), [series]);
 
   if (!nextEp) return null;
+  if (upcomingOnly && nextEp.color !== 'upcoming') return null;
 
   const isUpcoming = nextEp.color === 'upcoming';
   const color = isUpcoming ? currentTheme.accent : currentTheme.primary;

@@ -17,11 +17,14 @@ export const AddToListButton = ({
   className,
   iconSize,
   style,
+  caption,
 }: {
   target: MediaTarget;
   className: string;
   iconSize: number;
   style?: React.CSSProperties;
+  /** Sichtbare Beschriftung neben bzw. unter dem Symbol. */
+  caption?: string;
 }) => {
   const { currentTheme } = useTheme();
   const { folders } = useRatingFolders();
@@ -58,6 +61,7 @@ export const AddToListButton = ({
         ) : (
           <PlaylistAdd style={{ fontSize: iconSize }} />
         )}
+        {caption && <span className="dk-action__label">{caption}</span>}
         {count > 1 && (
           <span
             className="add-to-list-btn__count"

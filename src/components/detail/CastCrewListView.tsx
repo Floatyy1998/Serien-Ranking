@@ -1,6 +1,8 @@
 import { ChevronRight, OpenInNew, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
+import './kit/detailKit.css';
 import type { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
 import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -31,75 +33,36 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
   return (
     <div>
       {/* Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          padding: '0 20px',
-          marginBottom: '16px',
-        }}
-      >
-        {isAnime && animeCharacters.length > 0 && (
-          <button
-            onClick={() => setActiveTab('characters')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background:
-                activeTab === 'characters'
-                  ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
-                  : `rgba(255,255,255,0.05)`,
-              border: 'none',
-              borderRadius: '12px',
-              color: currentTheme.text.primary,
-              fontSize: '15px',
-              fontWeight: activeTab === 'characters' ? 600 : 500,
-              cursor: 'pointer',
-            }}
-          >
-            {t('Charaktere')} ({animeCharacters.length})
-          </button>
-        )}
-
-        <button
-          onClick={() => setActiveTab('cast')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'cast'
-                ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
-                : `rgba(255,255,255,0.05)`,
-            border: 'none',
-            borderRadius: '12px',
-            color: currentTheme.text.primary,
-            fontSize: '15px',
-            fontWeight: activeTab === 'cast' ? 600 : 500,
-            cursor: 'pointer',
-          }}
-        >
-          {t('Besetzung')} ({cast.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('crew')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'crew'
-                ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
-                : `rgba(255,255,255,0.05)`,
-            border: 'none',
-            borderRadius: '12px',
-            color: currentTheme.text.primary,
-            fontSize: '15px',
-            fontWeight: activeTab === 'crew' ? 600 : 500,
-            cursor: 'pointer',
-          }}
-        >
-          Crew ({crew.length})
-        </button>
+      <div className="cast-subtabs">
+        {(
+          [
+            ...(isAnime && animeCharacters.length > 0
+              ? [
+                  {
+                    key: 'characters' as const,
+                    label: `${t('Charaktere')} (${animeCharacters.length})`,
+                  },
+                ]
+              : []),
+            { key: 'cast' as const, label: `${t('Besetzung')} (${cast.length})` },
+            { key: 'crew' as const, label: `Crew (${crew.length})` },
+          ] as const
+        ).map((tab) => {
+          const active = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setActiveTab(tab.key)}
+              className={`cast-subtabs__btn${active ? ' cast-subtabs__btn--active' : ''}`}
+              // Schrift passend zum Verlauf: Theme-Textfarbe auf Theme-Verlauf war unlesbar.
+              style={active ? { color: getOptimalTextColor(currentTheme.primary) } : undefined}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* List */}

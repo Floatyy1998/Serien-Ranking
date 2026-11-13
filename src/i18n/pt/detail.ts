@@ -215,6 +215,16 @@ const dict: Record<string, string> = {
   'Den Rest dieser Staffel kannst du auf einmal abhaken.':
     'Você pode marcar o resto desta temporada de uma vez.',
   'Rest abhaken': 'Marcar o resto',
+  Besitz: 'Tenho',
+  '{n} Min. pro Folge': '{n} min por episódio',
+  'Auf einen Blick': 'Em resumo',
+  Laufzeit: 'Duração',
+  Originaltitel: 'Título original',
+  'Serien-Bereiche': 'Secções da série',
+  Kinostart: 'Estreia',
+  'Gesehen am': 'Visto em',
+  '{done} von {total} Bänden': '{done} de {total} volumes',
+  '{done} von {total} Kapiteln': '{done} de {total} capítulos',
 };
 
 export default dict;

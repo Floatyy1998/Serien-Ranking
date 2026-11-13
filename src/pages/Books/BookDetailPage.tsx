@@ -46,6 +46,7 @@ import {
   withSourceBook,
 } from '../../lib/books/mangaBooks';
 import { ShareTitleButton } from '../../components/share/ShareTitleButton';
+import { DetailStage } from '../../components/detail/kit/DetailKit';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   moveMangaToBooks,
@@ -589,74 +590,53 @@ export const BookDetailPage = () => {
   }
 
   return (
-    <div className="bd-page" style={{ background: currentTheme.background.default }}>
-      <div className="bd-backdrop" aria-hidden>
-        {(view.cover || coverFallback) && (
-          <div
-            className="bd-backdrop-img"
-            style={{ backgroundImage: `url(${coverAtSize(view.cover || coverFallback, 'M')})` }}
-          />
-        )}
-        <div
-          className="bd-backdrop-fade"
-          style={{
-            background: `linear-gradient(180deg, ${currentTheme.background.default}40 0%, ${currentTheme.background.default}b3 55%, ${currentTheme.background.default} 100%)`,
-          }}
-        />
-      </div>
-
-      <div className="bd-topbar">
-        <BackButton />
-        <ShareTitleButton path={bookPath(view.id)} title={view.title} />
-      </div>
-
-      <header className="bd-hero">
-        <div className="bd-hero-cover">
-          <BookCover book={view} fallbackSrc={coverFallback} depth eager />
-        </div>
-        <div className="bd-hero-info">
-          {seriesName && (
+    <div className="bd-page dk" style={{ background: currentTheme.background.default }}>
+      <DetailStage
+        wash={
+          view.cover || coverFallback ? coverAtSize(view.cover || coverFallback, 'M') : undefined
+        }
+        navEnd={<ShareTitleButton path={bookPath(view.id)} title={view.title} />}
+        poster={<BookCover book={view} fallbackSrc={coverFallback} depth eager />}
+        below={
+          categories.length > 0 && (
+            <div className="dk-genres">
+              {categories.slice(0, 3).map((c) => (
+                <span key={c} className="dk-genre">
+                  {c}
+                </span>
+              ))}
+            </div>
+          )
+        }
+      >
+        {seriesName && (
+          <div className="dk-kicker">
             <div className="dsc-kicker" style={{ color: '#fff' }}>
               <ViewWeek style={{ fontSize: 14, color: currentTheme.accent }} />
               {seriesPosition
                 ? t('Band {n} · {series}', { n: seriesPosition, series: seriesName })
                 : seriesName}
             </div>
-          )}
-          <h1 className="bd-title" style={{ color: currentTheme.text.secondary }}>
-            {view.title}
-          </h1>
-          {view.subtitle && (
-            <p className="bd-subtitle" style={{ color: currentTheme.text.muted }}>
-              {view.subtitle}
-            </p>
-          )}
-          {view.authors?.length ? (
-            <div className="bd-authors" style={{ color: currentTheme.primary }}>
-              {view.authors.join(', ')}
-            </div>
-          ) : null}
-          {(facts.length > 0 || categories.length > 0) && (
-            <div className="bd-facts">
-              {facts.map((f) => (
-                <span
-                  key={f.key}
-                  className="bd-fact"
-                  style={{ color: currentTheme.text.secondary }}
-                >
-                  {f.icon}
-                  {f.label}
-                </span>
-              ))}
-              {categories.slice(0, 3).map((c) => (
-                <span key={c} className="bd-fact" style={{ color: currentTheme.text.muted }}>
-                  {c}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </header>
+          </div>
+        )}
+        <h1 className="dk-title">{view.title}</h1>
+        {view.subtitle && <p className="dk-subtitle">{view.subtitle}</p>}
+        {view.authors?.length ? (
+          <div className="bd-authors" style={{ color: currentTheme.primary }}>
+            {view.authors.join(', ')}
+          </div>
+        ) : null}
+        {facts.length > 0 && (
+          <div className="dk-meta">
+            {facts.map((f) => (
+              <span key={f.key}>
+                {f.icon}
+                {f.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </DetailStage>
 
       <div className="bd-layout">
         <aside className="bd-side">

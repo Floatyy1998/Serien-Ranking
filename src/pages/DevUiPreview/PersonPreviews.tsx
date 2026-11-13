@@ -192,7 +192,6 @@ export const SeriesHeroPreview = () => {
       isAdding={false}
       isDeleting={false}
       isMobile={isMobile}
-      currentTheme={{ status: { success: '#4ade80' }, accent: '#f2a648' }}
       onAddSeries={noop}
       onNavigateEpisodes={noop}
       onNavigateRating={noop}
