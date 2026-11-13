@@ -96,7 +96,7 @@ describe('GreetingSection', () => {
     expect(screen.getByText('7')).toBeInTheDocument();
     expect(screen.getByText('Filme')).toBeInTheDocument();
     expect(screen.getByText('85%')).toBeInTheDocument();
-    expect(screen.getByText('Aktiv')).toBeInTheDocument();
+    expect(screen.getByText('Gesehen')).toBeInTheDocument();
     expect(screen.getByTestId('header-actions')).toBeInTheDocument();
     expect(screen.getByTestId('clock')).toBeInTheDocument();
   });

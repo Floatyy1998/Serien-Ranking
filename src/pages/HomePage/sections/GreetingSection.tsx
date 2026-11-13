@@ -146,7 +146,13 @@ export const GreetingSection = React.memo(function GreetingSection({
           to: '/ratings?tab=movies',
           highlight: false,
         },
-        { key: 'active', value: `${progress}%`, label: t('Aktiv'), to: '/stats', highlight: false },
+        {
+          key: 'active',
+          value: `${progress}%`,
+          label: t('Gesehen'),
+          to: '/stats',
+          highlight: false,
+        },
         ...(todayEpisodes > 0
           ? [
               {
@@ -221,6 +227,7 @@ export const GreetingSection = React.memo(function GreetingSection({
       photoURL={photoURL}
       displayName={displayName}
       only={only}
+      size={isMobile && only === 'avatar' ? 54 : 44}
     />
   );
 

@@ -13,6 +13,8 @@ interface HeaderActionsProps {
   displayName?: string | null;
   /** Nur eines der beiden Elemente zeigen — für Köpfe, die Avatar und Glocke trennen. */
   only?: 'bell' | 'avatar';
+  /** Kantenlänge von Avatar und Glocke in px. */
+  size?: number;
 }
 
 export const HeaderActions = React.memo(function HeaderActions({
@@ -21,6 +23,7 @@ export const HeaderActions = React.memo(function HeaderActions({
   photoURL,
   displayName,
   only,
+  size = 44,
 }: HeaderActionsProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -36,8 +39,8 @@ export const HeaderActions = React.memo(function HeaderActions({
           : t('Benachrichtigungen öffnen')
       }
       style={{
-        width: 44,
-        height: 44,
+        width: size,
+        height: size,
         borderRadius: '50%',
         background: `${currentTheme.primary}1A`,
         border: `1px solid ${currentTheme.primary}33`,
@@ -48,7 +51,7 @@ export const HeaderActions = React.memo(function HeaderActions({
         cursor: 'pointer',
       }}
     >
-      <Notifications style={{ fontSize: 20 }} />
+      <Notifications style={{ fontSize: Math.round(size * 0.46) }} />
     </motion.button>
   );
 
@@ -76,8 +79,8 @@ export const HeaderActions = React.memo(function HeaderActions({
           onClick={() => navigate('/profile')}
           aria-label={t('Profil und weitere Bereiche öffnen')}
           style={{
-            width: 44,
-            height: 44,
+            width: size,
+            height: size,
             borderRadius: '50%',
             background: photoURL ? `url(${photoURL}) center/cover` : `${currentTheme.primary}30`,
             border: `2px solid ${currentTheme.primary}`,
@@ -91,7 +94,7 @@ export const HeaderActions = React.memo(function HeaderActions({
             (initial ? (
               <span
                 style={{
-                  fontSize: 18,
+                  fontSize: Math.round(size * 0.41),
                   fontWeight: 800,
                   lineHeight: 1,
                   color: currentTheme.text.primary,
@@ -100,7 +103,9 @@ export const HeaderActions = React.memo(function HeaderActions({
                 {initial}
               </span>
             ) : (
-              <Person style={{ fontSize: 22, color: currentTheme.text.primary }} />
+              <Person
+                style={{ fontSize: Math.round(size * 0.5), color: currentTheme.text.primary }}
+              />
             ))}
         </motion.button>
       )}
