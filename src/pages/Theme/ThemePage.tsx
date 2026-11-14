@@ -4,7 +4,7 @@ import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mu
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getContrastRatio } from '../../theme/colorUtils';
+import { createAccessibleTextColors, getContrastRatio } from '../../theme/colorUtils';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { hapticTap } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
@@ -36,6 +36,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#030d18', // Deep ocean black
     surfaceColor: '#060f20', // Very dark blue
     accentColor: '#7c3aed', // Deep violet
+    textColor: '#e6f6fb', // zum Theme passende Schrift
   },
   {
     name: 'Inferno',
@@ -43,6 +44,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#14050a', // Deep dark warm black
     surfaceColor: '#200810', // Dark crimson-black
     accentColor: '#ffd700', // Gold
+    textColor: '#fbeee6', // zum Theme passende Schrift
   },
   {
     name: 'Sakura',
@@ -50,6 +52,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#0d0614', // Deep purple-black
     surfaceColor: '#160a1f', // Dark purple
     accentColor: '#7b61ff', // Indigo-violet
+    textColor: '#f7e9f1', // zum Theme passende Schrift
   },
   {
     name: 'Glacier',
@@ -57,6 +60,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#0c1220', // Deep slate
     surfaceColor: '#111828', // Dark slate
     accentColor: '#a78bfa', // Soft violet
+    textColor: '#e8f1fb', // zum Theme passende Schrift
   },
   {
     name: 'Emerald',
@@ -64,6 +68,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#031209', // Deep forest black
     surfaceColor: '#051a0d', // Very dark green
     accentColor: '#f59e0b', // Amber
+    textColor: '#e6f5ec', // zum Theme passende Schrift
   },
   {
     name: 'Cosmic',
@@ -71,6 +76,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#07040e', // Deep space black
     surfaceColor: '#0e0919', // Very dark purple
     accentColor: '#22d3ee', // Cyan
+    textColor: '#ecebfb', // zum Theme passende Schrift
   },
   {
     name: 'Neon',
@@ -78,6 +84,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#0a0415', // Deep purple-black
     surfaceColor: '#110720', // Dark purple
     accentColor: '#67e8f9', // Ice cyan
+    textColor: '#f6ebfb', // zum Theme passende Schrift
   },
   {
     name: 'Ember',
@@ -85,6 +92,7 @@ const presetThemes: PresetTheme[] = [
     backgroundColor: '#100806', // Deep brown-black
     surfaceColor: '#1a0e08', // Dark brown
     accentColor: '#fbbf24', // Warm yellow
+    textColor: '#fbf0e4', // zum Theme passende Schrift
   },
 ];
 
@@ -118,6 +126,17 @@ const colorCategories: ColorCategory[] = [
 
 const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
+/**
+ * Fertige Themes bringen keine Textfarbe mit. Passt die aktuelle Schrift nicht zu ihrem
+ * Hintergrund (helles Theme aktiv, dunkles Theme gewählt), liefert das eine lesbare Farbe.
+ */
+const textFor = (background: string, current: string): string => {
+  if (!isHexColor(background) || !isHexColor(current)) return current;
+  return getContrastRatio(current, background) >= 4.5
+    ? current
+    : createAccessibleTextColors(background).secondary;
+};
+
 export const ThemePage = () => {
   const { userConfig, updateTheme, resetTheme, currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -150,7 +169,11 @@ export const ThemePage = () => {
     accent: shown?.accentColor ?? draft?.accentColor ?? currentTheme.accent,
     background: shown?.backgroundColor ?? draft?.backgroundColor ?? currentTheme.background.default,
     surface: shown?.surfaceColor ?? draft?.surfaceColor ?? currentTheme.background.surface,
-    text: shown?.textColor ?? draft?.textColor ?? currentTheme.text.secondary,
+    text:
+      shown?.textColor ??
+      (shown
+        ? textFor(shown.backgroundColor, currentTheme.text.secondary)
+        : (draft?.textColor ?? currentTheme.text.secondary)),
   };
 
   // Kontrast-Schutz: warnt, wenn die gewählte Text/Hintergrund-Kombination unter
@@ -197,7 +220,13 @@ export const ThemePage = () => {
         backgroundColor: preset.backgroundColor,
         surfaceColor: preset.surfaceColor,
         accentColor: preset.accentColor,
-        ...(preset.textColor ? { textColor: preset.textColor } : {}),
+        // Ohne eigene Textfarbe: die bisherige behalten, solange sie auf dem neuen Grund lesbar ist.
+        textColor:
+          preset.textColor ??
+          textFor(
+            preset.backgroundColor,
+            (userConfig.textColor as string) || currentTheme.text.secondary
+          ),
         seasons: withActiveSeasonOff(userConfig),
       });
     },
@@ -225,7 +254,6 @@ export const ThemePage = () => {
   // anderen Gerät übernommen), gilt es hier als dessen Nutzer — sonst könnte es sich nie abmelden.
   const activeCommunityId = community.themes.find(
     (theme) =>
-      theme.uid !== user?.uid &&
       !season &&
       userConfig.primaryColor === theme.primaryColor &&
       userConfig.backgroundColor === theme.backgroundColor &&

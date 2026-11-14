@@ -306,7 +306,6 @@ const dict: Record<string, string> = {
   'Aus der Community entfernen': 'Remover da comunidade',
   'wird geprüft': 'em revisão',
   'Wie soll dein Design heißen?': 'Como se vai chamar o teu design?',
-  'Deine Designs nutzen gerade {n} andere.': '{n} pessoas usam os teus designs neste momento.',
   'Helle Hintergründe dunkelt TV-Rank ab: Flächen, Linien und Glas-Effekte der App sind für dunklen Grund gebaut und würden auf Weiß verschwinden.':
     'O TV-Rank escurece fundos claros: as superfícies, linhas e efeitos de vidro da app foram feitos para fundo escuro e desapareceriam no branco.',
   Umbenennen: 'Renomear',
@@ -321,6 +320,8 @@ const dict: Record<string, string> = {
     'As tuas alterações de cor ainda não foram aplicadas.',
   'Farben übernehmen': 'Aplicar cores',
   '{n} nutzen es': '{n} usam',
+  'Deine Designs werden gerade {n}× genutzt.':
+    'Os teus designs estão a ser usados {n}× neste momento.',
 };
 
 export default dict;

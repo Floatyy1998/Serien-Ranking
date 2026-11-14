@@ -123,7 +123,7 @@ export const deleteCommunityTheme = (id: string): Promise<void> => dbRef(`${ROOT
 
 /**
  * Meldet ein Konto als aktuellen Nutzer eines Designs an. Die Regeln lassen das je Konto
- * und Design nur einmal zu und nie für das eigene Design; dann bleibt der Zähler stehen.
+ * und Design nur einmal zu; dann bleibt der Zähler stehen.
  */
 export async function joinCommunityTheme(id: string, uid: string): Promise<boolean> {
   try {
@@ -238,7 +238,7 @@ async function writeUse(uid: string, use: CommunityThemeUse | null): Promise<voi
 }
 
 /**
- * Das Konto trägt jetzt dieses fremde Design (oder keins mehr). Meldet das vorherige ab und
+ * Das Konto trägt jetzt dieses Design (oder keins mehr). Meldet das vorherige ab und
  * das neue an.
  */
 export async function setCommunityThemeUse(

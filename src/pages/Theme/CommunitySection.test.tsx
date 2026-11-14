@@ -100,7 +100,7 @@ describe('CommunitySection', () => {
         ],
       })
     );
-    expect(screen.getByText('Deine Designs nutzen gerade 6 andere.')).toBeInTheDocument();
+    expect(screen.getByText('Deine Designs werden gerade 6× genutzt.')).toBeInTheDocument();
   });
 
   it('teilt das eigene Design mit bereinigtem Namen', async () => {

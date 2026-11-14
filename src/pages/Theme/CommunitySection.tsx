@@ -93,7 +93,7 @@ export const CommunitySection = memo(
 
         <p className="theme-community__lead" style={{ color: currentTheme.text.muted }}>
           {mine.length > 0
-            ? t('Deine Designs nutzen gerade {n} andere.', { n: myUses })
+            ? t('Deine Designs werden gerade {n}× genutzt.', { n: myUses })
             : t('Designs von anderen — und deins für alle, wenn du magst.')}
         </p>
 

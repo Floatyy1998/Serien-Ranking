@@ -18,7 +18,7 @@ export interface CommunityThemesState {
   remove: (id: string) => Promise<void>;
   /**
    * Welches Community-Design das Konto jetzt nutzt (null = keins mehr). Meldet das
-   * vorherige ab und das neue an; eigene Designs zählen nicht mit.
+   * vorherige ab und das neue an; auch das eigene Design zählt.
    */
   setUse: (theme: CommunityTheme | null) => void;
 }
@@ -85,10 +85,7 @@ export function useCommunityThemes(uid: string | undefined, author: string): Com
   const setUse = useCallback(
     (theme: CommunityTheme | null) => {
       if (!uid) return;
-      void setCommunityThemeUse(
-        uid,
-        theme && theme.uid !== uid ? { id: theme.id, colors: theme } : null
-      );
+      void setCommunityThemeUse(uid, theme ? { id: theme.id, colors: theme } : null);
     },
     [uid]
   );

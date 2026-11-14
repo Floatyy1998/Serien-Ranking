@@ -57,7 +57,10 @@ vi.mock('../../contexts/ThemeContext', () => ({
     currentTheme: theme,
   }),
 }));
-vi.mock('../../theme/colorUtils', () => ({ getContrastRatio: () => contrastRef.current }));
+vi.mock('../../theme/colorUtils', () => ({
+  getContrastRatio: () => contrastRef.current,
+  createAccessibleTextColors: () => ({ secondary: '#e0e0e0' }),
+}));
 vi.mock('../../lib/interaction/haptics', () => ({ hapticTap: vi.fn(), hapticSelect: vi.fn() }));
 vi.mock('../../components/ui', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
@@ -157,6 +160,7 @@ describe('ThemePage', () => {
       backgroundColor: '#030d18',
       surfaceColor: '#060f20',
       accentColor: '#7c3aed',
+      textColor: '#e6f6fb',
       seasons: { spooky: false },
     });
   });
