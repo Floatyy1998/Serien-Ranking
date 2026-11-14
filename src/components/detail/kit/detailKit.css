@@ -97,7 +97,7 @@
     'poster below';
   grid-template-rows: auto 1fr;
   column-gap: clamp(28px, 2.6vw, 48px);
-  padding: calc(var(--nav-clear) + 28px) clamp(20px, 3vw, 64px) 36px;
+  padding: calc(var(--nav-clear) + 4px) clamp(20px, 3vw, 64px) 36px;
 }
 
 .dk-stage__poster {
