@@ -57,8 +57,9 @@ const makeState = (over: Partial<CommunityThemesState> = {}): CommunityThemesSta
   loading: false,
   failed: false,
   share: vi.fn(async () => true),
+  rename: vi.fn(async () => true),
   remove: vi.fn(async () => undefined),
-  countUse: vi.fn(),
+  setUse: vi.fn(),
   ...over,
 });
 
@@ -82,15 +83,15 @@ const renderSection = (state: CommunityThemesState, ownColors: typeof colors | n
 afterEach(() => cleanup());
 
 describe('CommunitySection', () => {
-  it('zeigt fremde Designs mit Urheber und Zahl der Übernahmen', () => {
+  it('zeigt fremde Designs mit Urheber und Zahl der aktuellen Nutzer', () => {
     const { onPick } = renderSection(makeState({ themes: [theme({})] }));
     expect(screen.getByText('von Frank')).toBeInTheDocument();
-    expect(screen.getByText('3×')).toBeInTheDocument();
+    expect(screen.getByText('3 aktiv')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Mitternacht'));
     expect(onPick).toHaveBeenCalledTimes(1);
   });
 
-  it('summiert die Übernahmen der eigenen Designs', () => {
+  it('summiert die aktuellen Nutzer der eigenen Designs', () => {
     renderSection(
       makeState({
         themes: [
@@ -99,7 +100,7 @@ describe('CommunitySection', () => {
         ],
       })
     );
-    expect(screen.getByText('Deine Designs wurden 6× von anderen übernommen.')).toBeInTheDocument();
+    expect(screen.getByText('Deine Designs nutzen gerade 6 andere.')).toBeInTheDocument();
   });
 
   it('teilt das eigene Design mit bereinigtem Namen', async () => {

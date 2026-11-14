@@ -315,8 +315,6 @@ const dict: Record<string, string> = {
   // Community-Designs
   Community: 'Community',
   'Mein Design teilen': 'Share my design',
-  'Deine Designs wurden {n}× von anderen übernommen.':
-    'Your designs have been adopted {n}× by others.',
   'Designs von anderen — und deins für alle, wenn du magst.':
     'Designs by others — and yours for everyone, if you like.',
   'Name deines Designs': 'Name of your design',
@@ -332,6 +330,20 @@ const dict: Record<string, string> = {
   'Aus der Community entfernen': 'Remove from community',
   'wird geprüft': 'under review',
   'Wie soll dein Design heißen?': 'What should your design be called?',
+  'Deine Designs nutzen gerade {n} andere.': '{n} others are using your designs right now.',
+  '{n} aktiv': '{n} active',
+  'Helle Hintergründe dunkelt TV-Rank ab: Flächen, Linien und Glas-Effekte der App sind für dunklen Grund gebaut und würden auf Weiß verschwinden.':
+    'TV-Rank darkens light backgrounds: the app’s surfaces, lines and glass effects are built for a dark ground and would vanish on white.',
+  Umbenennen: 'Rename',
+  'Dieses Design wird gerade zurückgehalten. Gib ihm einen anderen Namen, dann wird es neu geprüft.':
+    'This design is currently being held back. Give it a different name and it will be reviewed again.',
+  'Neuer Name': 'New name',
+  'Der Name konnte nicht gespeichert werden.': 'The name could not be saved.',
+  'Bitte benenne dein Design um': 'Please rename your design',
+  'Der Name deines geteilten Designs passt nicht zu unseren Community-Regeln. Es ist so lange nicht sichtbar, bis du ihm unter Design einen anderen Namen gibst.':
+    'The name of your shared design does not fit our community rules. It stays hidden until you give it a different name under Design.',
+  'Deine Farbänderungen sind noch nicht übernommen.': 'Your colour changes are not applied yet.',
+  'Farben übernehmen': 'Apply colours',
 };
 
 export default dict;

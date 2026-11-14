@@ -149,7 +149,7 @@
   font-size: clamp(38px, 2.7vw + 16px, 72px);
   line-height: 1.02;
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--dk-ink);
   text-wrap: balance;
   overflow-wrap: break-word;
   text-shadow: 0 2px 30px rgba(0, 0, 0, 0.55);

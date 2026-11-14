@@ -432,6 +432,42 @@ const dict: Record<string, string> = {
   'Dir fällt ein Film ein, den du schon lange mal wieder sehen wolltest? Halt ihn gedrückt und wähl „Nochmal schauen“, schon steht er auf deiner Rewatch-Liste. Du findest sie bei den Bewertungen unter Listen und als eigene Reihe auf der Startseite, solange etwas drauf steht. Startest du bei einer Serie den Rewatch, verschwindet sie von selbst wieder von der Liste.':
     'Just remembered a movie you have been meaning to watch again for ages? Press and hold it and pick “Watch again”, and it goes straight onto your rewatch list. You will find it under Lists in your ratings and as its own row on the home screen while there is something on it. Start a rewatch of a show and it drops off the list by itself.',
   'Zur Rewatch-Liste': 'Open the rewatch list',
+  'November 2026 – Neuer Look, Community-Designs und helle Themes':
+    'November 2026 – New look, community designs and light themes',
+  'Ein neuer Look für die ganze App': 'A new look for the whole app',
+  'TV-Rank ist aufgeräumt: ruhigere Flächen, große Zahlen statt Kästchen und klar beschriftete Knöpfe. Serien, Filme, Manga und Bücher haben neue Detailseiten mit dem Artwork groß im Kopf. Startseite, Einstellungen, Folgen-Seite und Suche sind im selben Stil neu gebaut.':
+    'TV-Rank has been tidied up: calmer surfaces, big numbers instead of boxes and clearly labelled buttons. Series, movies, manga and books have new detail pages with the artwork large at the top. The home screen, settings, episode page and search are rebuilt in the same style.',
+  'Design-Studio mit Live-Vorschau': 'Design studio with live preview',
+  'Die Design-Seite zeigt jetzt eine kleine Ausgabe der App mit deinen eigenen Serien. Tipp ein Theme an oder dreh an einer Farbe, und die Vorschau zieht sofort mit. Gespeichert wird erst, wenn du auf „übernehmen“ gehst.':
+    'The design page now shows a small edition of the app with your own series. Tap a theme or change a colour and the preview follows instantly. Nothing is saved until you choose “apply”.',
+  'Zum Design-Studio': 'Open the design studio',
+  'Community-Designs': 'Community designs',
+  'Stolz auf deine Farben? Gib deinem Design einen Namen und teil es mit allen. Unter „Community“ findest du die Designs der anderen, kannst sie in der Vorschau ausprobieren und mit einem Klick übernehmen. An jedem Design steht, wie viele es gerade nutzen.':
+    'Proud of your colours? Give your design a name and share it with everyone. Under “Community” you find other people’s designs, try them in the preview and adopt them with one click. Each design shows how many people are using it right now.',
+  'Community-Designs ansehen': 'View community designs',
+  'Helle Themes': 'Light themes',
+  'Ein heller Hintergrund bleibt jetzt wirklich hell. Flächen, Schrift, Signalfarben und das Dock stellen sich darauf ein, damit alles lesbar bleibt. Wer es lieber dunkel mag, merkt keinen Unterschied.':
+    'A light background now really stays light. Surfaces, text, signal colours and the dock adapt so everything stays readable. If you prefer dark, nothing changes for you.',
+  'Bewerten mit Blick auf deine Rangliste': 'Rating with your ranking in view',
+  'Die Bewertungsseite zeigt die Wertung als große Zahl über dem Artwork. Über der Skala siehst du, wie du sonst bewertest, und daneben live, auf welchem Platz der Titel in deiner Rangliste landet, samt Nachbarn davor und dahinter.':
+    'The rating page shows your score as a big number over the artwork. Above the scale you see how you usually rate, and next to it, live, where the title lands in your ranking, with its neighbours before and after.',
+  'Statistik, die man auf einen Blick versteht': 'Statistics you understand at a glance',
+  'Deine Schauzeit steht groß oben, darunter Fortschritt, Kennzahlen und deine liebsten Genres und Streaming-Dienste. Neu ist der Abschnitt „So wird gezählt“: Er zeigt offen, was ausgeblendete Serien zu den Zahlen beitragen.':
+    'Your watch time sits large at the top, followed by progress, key figures and your favourite genres and streaming services. New is the section “How we count”: it shows openly what hidden series contribute to the numbers.',
+  'Zur Statistik': 'Open statistics',
+  'Suche, die aufgeht': 'A search that opens up',
+  'Die Suchleiste der Startseite wächst beim Antippen fließend zur Suche heran. Beliebte Titel tragen ihren Platz als Ecke auf dem Poster. Am Computer öffnet die Taste / die Suche, ohne dass du zur Maus greifen musst.':
+    'The search bar on the home screen grows smoothly into the search when you tap it. Popular titles carry their rank as a corner on the poster. On a computer the / key opens the search without reaching for the mouse.',
+  'Folgen: Staffel wechseln, zurücknehmen, IMDb': 'Episodes: switch season, undo, IMDb',
+  'Auf der Folgen-Seite wechselst du die Staffel direkt im Kopf und siehst die ganze Staffel in der Liste. Hast du eine Folge versehentlich abgewählt, holt „Rückgängig“ sie mit Anzahl und Datum zurück. Neben TMDB steht jetzt auch die IMDb-Wertung der einzelnen Folge.':
+    'On the episode page you switch seasons right in the header and see the whole season in the list. If you unmark an episode by mistake, “Undo” brings it back with count and date. Next to TMDB you now also see the IMDb rating of the individual episode.',
+  'Bücher: ganze Reihen und der nächste Band': 'Books: whole series and the next volume',
+  'Eine Buchreihe fügst du jetzt auf einmal hinzu. TV-Rank kennt den nächsten Band, auch für deutsche Ausgaben und Manga-Bände, und zeigt ihn schon beim Lesen an. In der Bibliothek kannst du mehrere Titel gleichzeitig auswählen und bearbeiten.':
+    'You can now add a whole book series at once. TV-Rank knows the next volume, also for German editions and manga volumes, and shows it while you are still reading. In the library you can select and edit several titles at the same time.',
+  'TV-Rank auf all deinen Geräten': 'TV-Rank on all your devices',
+  'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
+    'Your account runs everywhere with the same progress: as an app for iPhone, iPad and Android, on a computer in the browser at tv-rank.de and as a Windows app. All options are now gathered in Settings under “General”.',
+  'Geräte ansehen': 'View devices',
 };
 
 export default dict;

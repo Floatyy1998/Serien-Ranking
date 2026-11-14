@@ -183,3 +183,23 @@
     max-width: 1200px;
   }
 }
+
+/* Helles Theme: das Dock als helles Milchglas mit dunklen Symbolen. */
+:root[data-tone='light'] .mobile-bottom-navigation {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-primary) 8%, rgba(255, 255, 255, 0.78)) 0%,
+    color-mix(in srgb, var(--theme-primary) 4%, rgba(255, 255, 255, 0.68)) 100%
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-text-secondary) 12%, transparent),
+    0 14px 34px -14px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-tone='light'] .mobile-bottom-navigation .nav-item {
+  color: color-mix(in srgb, var(--color-text-secondary) 62%, transparent);
+}
+
+:root[data-tone='light'] .mobile-bottom-navigation .nav-item.active {
+  color: var(--color-primary);
+}

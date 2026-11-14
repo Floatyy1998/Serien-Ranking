@@ -93,7 +93,7 @@ export const CommunitySection = memo(
 
         <p className="theme-community__lead" style={{ color: currentTheme.text.muted }}>
           {mine.length > 0
-            ? t('Deine Designs wurden {n}× von anderen übernommen.', { n: myUses })
+            ? t('Deine Designs nutzen gerade {n} andere.', { n: myUses })
             : t('Designs von anderen — und deins für alle, wenn du magst.')}
         </p>
 
@@ -201,7 +201,7 @@ export const CommunitySection = memo(
                       {theme.uid === uid ? t('von dir') : t('von {name}', { name: theme.author })}
                     </span>
                     <span className="theme-preset-meta__uses">
-                      {theme.hidden ? t('wird geprüft') : `${theme.uses}×`}
+                      {theme.hidden ? t('wird geprüft') : t('{n} aktiv', { n: theme.uses })}
                     </span>
                   </>
                 }
@@ -215,3 +215,77 @@ export const CommunitySection = memo(
 );
 
 CommunitySection.displayName = 'CommunitySection';
+
+interface RenameThemeFormProps {
+  initial: string;
+  /** Von der Moderation zurückgehalten: ein neuer Name gibt das Design wieder frei. */
+  hidden: boolean;
+  onRename: (name: string) => Promise<boolean>;
+}
+
+/** Umbenennen des eigenen, gerade gewählten Designs — steht bei den Knöpfen unter der Vorschau. */
+export const RenameThemeForm = ({ initial, hidden, onRename }: RenameThemeFormProps) => {
+  const [open, setOpen] = useState(hidden);
+  const [name, setName] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const clean = cleanThemeName(name);
+
+  if (!open) {
+    return (
+      <button type="button" className="theme-apply-btn" onClick={() => setOpen(true)}>
+        {t('Umbenennen')}
+      </button>
+    );
+  }
+
+  return (
+    <form
+      className="theme-rename"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!clean || clean === initial || busy) return;
+        setBusy(true);
+        setFailed(false);
+        void onRename(clean).then((ok) => {
+          setBusy(false);
+          if (!ok) setFailed(true);
+        });
+      }}
+    >
+      {hidden && (
+        <p className="theme-share__note">
+          {t(
+            'Dieses Design wird gerade zurückgehalten. Gib ihm einen anderen Namen, dann wird es neu geprüft.'
+          )}
+        </p>
+      )}
+      <div className="theme-share__field">
+        <input
+          type="text"
+          value={name}
+          maxLength={COMMUNITY_THEME_NAME_MAX}
+          onChange={(e) => setName(e.target.value)}
+          aria-label={t('Neuer Name')}
+          className="theme-share__input"
+          autoFocus
+        />
+        <span className="theme-share__count">
+          {name.length}/{COMMUNITY_THEME_NAME_MAX}
+        </span>
+      </div>
+      <button
+        type="submit"
+        className="theme-share__btn theme-share__btn--primary"
+        disabled={busy || !clean || clean === initial}
+      >
+        {t('Speichern')}
+      </button>
+      {failed && (
+        <p className="theme-share__note theme-share__note--error" role="alert">
+          {t('Der Name konnte nicht gespeichert werden.')}
+        </p>
+      )}
+    </form>
+  );
+};

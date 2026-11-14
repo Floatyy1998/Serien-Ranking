@@ -290,8 +290,6 @@ const dict: Record<string, string> = {
   // Community-Designs
   Community: 'Communauté',
   'Mein Design teilen': 'Partager mon design',
-  'Deine Designs wurden {n}× von anderen übernommen.':
-    'Tes designs ont été adoptés {n}× par d’autres.',
   'Designs von anderen — und deins für alle, wenn du magst.':
     'Les designs des autres — et le tien pour tous, si tu veux.',
   'Name deines Designs': 'Nom de ton design',
@@ -307,6 +305,21 @@ const dict: Record<string, string> = {
   'Aus der Community entfernen': 'Retirer de la communauté',
   'wird geprüft': 'en cours de vérification',
   'Wie soll dein Design heißen?': 'Comment s’appelle ton design ?',
+  'Deine Designs nutzen gerade {n} andere.': '{n} personnes utilisent tes designs en ce moment.',
+  '{n} aktiv': '{n} actifs',
+  'Helle Hintergründe dunkelt TV-Rank ab: Flächen, Linien und Glas-Effekte der App sind für dunklen Grund gebaut und würden auf Weiß verschwinden.':
+    'TV-Rank assombrit les fonds clairs : les surfaces, lignes et effets de verre de l’appli sont conçus pour un fond sombre et disparaîtraient sur du blanc.',
+  Umbenennen: 'Renommer',
+  'Dieses Design wird gerade zurückgehalten. Gib ihm einen anderen Namen, dann wird es neu geprüft.':
+    'Ce design est retenu pour le moment. Donne-lui un autre nom et il sera vérifié à nouveau.',
+  'Neuer Name': 'Nouveau nom',
+  'Der Name konnte nicht gespeichert werden.': 'Le nom n’a pas pu être enregistré.',
+  'Bitte benenne dein Design um': 'Merci de renommer ton design',
+  'Der Name deines geteilten Designs passt nicht zu unseren Community-Regeln. Es ist so lange nicht sichtbar, bis du ihm unter Design einen anderen Namen gibst.':
+    'Le nom de ton design partagé ne respecte pas les règles de la communauté. Il reste masqué tant que tu ne lui donnes pas un autre nom dans Design.',
+  'Deine Farbänderungen sind noch nicht übernommen.':
+    'Tes changements de couleur ne sont pas encore appliqués.',
+  'Farben übernehmen': 'Appliquer les couleurs',
 };
 
 export default dict;

@@ -1613,3 +1613,51 @@ button:active:not(:disabled),
     background: var(--hairline);
   }
 }
+
+/* ───────── Helle Themes ─────────
+   Der Hintergrund ist hell, die Schrift dunkel. Alles, was fest auf „dunkler Grund" gebaut war,
+   wird hier umgestellt. */
+
+/* Artwork hinter Listenzeilen: aufgehellt statt abgedunkelt, damit dunkle Schrift lesbar bleibt. */
+:root[data-tone='light'] .cine-art {
+  filter: blur(18px) saturate(1.1) brightness(1.25);
+  opacity: 0.38;
+}
+
+@media (hover: hover) {
+  :root[data-tone='light'] .cine-host:hover .cine-art {
+    filter: blur(0px) saturate(1.05) brightness(1.1);
+    opacity: 0.5;
+  }
+}
+
+/* Schatten und Verläufe, die auf Schwarz zielen, wirken auf hellem Grund wie Schmutz. */
+:root[data-tone='light'] {
+  --shadow-glow: 0 8px 28px -12px rgba(0, 0, 0, 0.22);
+}
+
+/* Hinweis-Leiste der Startseite: war fest schwarz hinterlegt. */
+:root[data-tone='light'] .notif-hub-mini {
+  background: var(--glass-medium) !important;
+}
+
+/* Countdown-Karte im hellen Theme: Artwork nur als zarter Farbschleier, Schrift in Theme-Farbe —
+   sonst steht ein dunkler Balken mitten auf der hellen Seite. */
+:root[data-tone='light'] .countdown-banner {
+  --cd-ink: var(--color-text-secondary);
+  box-shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.25) !important;
+}
+
+:root[data-tone='light'] .countdown-banner__art {
+  filter: blur(30px) saturate(1.2) brightness(1.2) !important;
+  opacity: 0.4;
+}
+
+:root[data-tone='light'] .countdown-banner__veil {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-background) 58%, transparent),
+    color-mix(in srgb, var(--theme-background) 82%, transparent)
+  ) !important;
+  border: 1px solid var(--hairline) !important;
+}

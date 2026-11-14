@@ -46,7 +46,8 @@ export const sendNotificationToUser = async (
       | 'spoiler_flag'
       | 'bug_ticket_reply'
       | 'bug_ticket_status'
-      | 'moderation_ban';
+      | 'moderation_ban'
+      | 'moderation_notice';
     title: string;
     message: string;
     titleL?: LocalizedMap;

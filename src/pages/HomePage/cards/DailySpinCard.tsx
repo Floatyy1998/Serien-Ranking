@@ -1,3 +1,4 @@
+import { toneColor } from '../../../theme/toneColor';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type firebase from 'firebase/compat/app';
@@ -151,7 +152,7 @@ export const DailySpinCard: React.FC = () => {
               style={{
                 margin: '1px 0 0',
                 fontSize: 12,
-                color: available ? SPIN_GOLD : currentTheme.text.secondary,
+                color: available ? toneColor(SPIN_GOLD) : currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -169,7 +170,7 @@ export const DailySpinCard: React.FC = () => {
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: SPIN_GOLD,
+                  color: toneColor(SPIN_GOLD),
                   background: `${SPIN_GOLD}18`,
                   padding: '2px 6px',
                   borderRadius: 4,

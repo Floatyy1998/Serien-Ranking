@@ -10,7 +10,7 @@ import {
   generateDynamicTheme,
   validateThemeConfig,
 } from '../theme/dynamicTheme';
-import { getOptimalTextColor } from '../theme/colorUtils';
+import { getOptimalTextColor, getRelativeLuminance } from '../theme/colorUtils';
 import { setThemedPlaceholder } from '../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
 import { dbRef, paths } from '../services/db/ref';
@@ -40,6 +40,8 @@ function applyCSSVariables(
   root.style.setProperty('--theme-primary', theme.primary);
   root.style.setProperty('--theme-primary-hover', theme.primaryHover);
   root.style.setProperty('--theme-background', theme.background.default);
+  // Helle Themes: CSS kann Stellen umschalten, die sonst nur auf dunklem Grund funktionieren.
+  root.dataset.tone = getRelativeLuminance(theme.background.default) > 0.5 ? 'light' : 'dark';
   root.style.setProperty('--theme-surface', theme.background.surface);
   root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
   root.style.setProperty('--theme-secondary-gradient', theme.secondary);
@@ -247,6 +249,29 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     },
     [flushPendingSave]
   );
+
+  // Community-Design: prüfen, ob das Konto das übernommene Design noch trägt — bei jedem Start
+  // und nach jeder Farbänderung, egal von welcher Seite sie kommt. Verzögert, damit ein Ziehen
+  // im Farbwähler nicht bei jedem Zwischenwert schreibt.
+  const reconcileUid = user?.uid;
+  const reconcileSig = [
+    userConfig.primaryColor,
+    userConfig.backgroundColor,
+    userConfig.surfaceColor,
+    userConfig.accentColor,
+    userConfig.textColor,
+  ].join('|');
+  useEffect(() => {
+    if (!reconcileUid) return;
+    const timer = setTimeout(() => {
+      void import('../services/theme/communityThemes').then((mod) =>
+        mod.reconcileCommunityThemeUse(reconcileUid, userConfig, syncMode === 'cloud')
+      );
+    }, 4000);
+    return () => clearTimeout(timer);
+    // userConfig steckt in reconcileSig; das Objekt selbst wechselt auch ohne Farbänderung.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reconcileUid, reconcileSig, syncMode]);
 
   // Ausstehende Änderung nicht verlieren, wenn die App weggeht oder unmountet
   useEffect(() => {

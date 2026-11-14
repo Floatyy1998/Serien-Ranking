@@ -5,7 +5,6 @@
 // Configs bleiben unangetastet.
 import { describe, expect, it } from 'vitest';
 import {
-  clampBackgroundForGlass,
   ensurePrimaryReadability,
   getContrastRatio,
   getRelativeLuminance,
@@ -47,25 +46,6 @@ describe('ensurePrimaryReadability (Primary-Lesbarkeits-Guard)', () => {
   });
 });
 
-describe('clampBackgroundForGlass (Glass-Schutz-Klemme)', () => {
-  it('lässt dunkle Hintergründe (Luminanz ≤ 0.5) unverändert', () => {
-    expect(clampBackgroundForGlass('#000000')).toBe('#000000');
-    expect(clampBackgroundForGlass('#101418')).toBe('#101418');
-  });
-
-  it('klemmt einen weißen Hintergrund auf ≤ ~0.35 Luminanz', () => {
-    const clamped = clampBackgroundForGlass('#ffffff');
-    expect(getRelativeLuminance(clamped)).toBeLessThanOrEqual(0.35);
-  });
-
-  it('klemmt einen hellen farbigen Hintergrund und erhält den Farbton grob', () => {
-    const clamped = clampBackgroundForGlass('#cfe8cf'); // helles Pastellgrün
-    expect(getRelativeLuminance('#cfe8cf')).toBeGreaterThan(0.5);
-    expect(getRelativeLuminance(clamped)).toBeLessThanOrEqual(0.35);
-    expect(clamped).not.toBe('#cfe8cf');
-  });
-});
-
 describe('normalizeThemeColors (Verdrahtung der Guards)', () => {
   it('gute Kombi (Default Grün/Schwarz) bleibt unverändert', () => {
     const result = normalizeThemeColors({
@@ -84,14 +64,30 @@ describe('normalizeThemeColors (Verdrahtung der Guards)', () => {
     expect(getContrastRatio(result.primaryColor, result.backgroundColor)).toBeGreaterThanOrEqual(3);
   });
 
-  it('klemmt hellen Hintergrund fürs Rendering dunkel (Glass-Schutz) und mutiert die Config nicht', () => {
+  it('lässt einen hellen Hintergrund hell und mutiert die Config nicht', () => {
     const config = { primaryColor: '#00d123', backgroundColor: '#ffffff' };
     const result = normalizeThemeColors(config);
-    // Rendering-Wert ist dunkel genug für weiß-alpha Glass-Tokens
-    expect(getRelativeLuminance(result.backgroundColor)).toBeLessThanOrEqual(0.35);
-    // Gespeicherte Config bleibt unangetastet
+    expect(result.backgroundColor).toBe('#ffffff');
     expect(config.backgroundColor).toBe('#ffffff');
     expect(config.primaryColor).toBe('#00d123');
+  });
+
+  it('ersetzt praktisch unsichtbaren Text durch eine lesbare Farbe', () => {
+    const result = normalizeThemeColors({
+      primaryColor: '#b0124a',
+      backgroundColor: '#ffffff',
+      textColor: '#f1e8ee',
+    });
+    expect(getContrastRatio(result.textColor as string, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('lässt lesbaren Text unangetastet', () => {
+    const result = normalizeThemeColors({
+      primaryColor: '#b0124a',
+      backgroundColor: '#ffffff',
+      textColor: '#221a24',
+    });
+    expect(result.textColor).toBe('#221a24');
   });
 
   it('ist idempotent: zweite Normalisierung ändert nichts mehr', () => {

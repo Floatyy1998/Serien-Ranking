@@ -416,6 +416,42 @@ const dict: Record<string, string> = {
   'Dir fällt ein Film ein, den du schon lange mal wieder sehen wolltest? Halt ihn gedrückt und wähl „Nochmal schauen“, schon steht er auf deiner Rewatch-Liste. Du findest sie bei den Bewertungen unter Listen und als eigene Reihe auf der Startseite, solange etwas drauf steht. Startest du bei einer Serie den Rewatch, verschwindet sie von selbst wieder von der Liste.':
     'Lembrou de um filme que queria rever há tempo? Segure o título, escolha “Rever” e pronto, ele vai para a sua lista. Você a encontra em Listas, nas avaliações, e como uma fileira própria na tela inicial enquanto houver algo nela. Ao começar a rever uma série, ela sai da lista sozinha.',
   'Zur Rewatch-Liste': 'Ver a lista',
+  'November 2026 – Neuer Look, Community-Designs und helle Themes':
+    'Novembro de 2026 – Novo visual, designs da comunidade e temas claros',
+  'Ein neuer Look für die ganze App': 'Um novo visual para toda a app',
+  'TV-Rank ist aufgeräumt: ruhigere Flächen, große Zahlen statt Kästchen und klar beschriftete Knöpfe. Serien, Filme, Manga und Bücher haben neue Detailseiten mit dem Artwork groß im Kopf. Startseite, Einstellungen, Folgen-Seite und Suche sind im selben Stil neu gebaut.':
+    'O TV-Rank ficou mais arrumado: superfícies mais calmas, números grandes em vez de caixinhas e botões com texto claro. Séries, filmes, manga e livros têm novas páginas de detalhe com a imagem em grande no topo. O início, as definições, a página de episódios e a pesquisa foram refeitos no mesmo estilo.',
+  'Design-Studio mit Live-Vorschau': 'Estúdio de design com pré-visualização',
+  'Die Design-Seite zeigt jetzt eine kleine Ausgabe der App mit deinen eigenen Serien. Tipp ein Theme an oder dreh an einer Farbe, und die Vorschau zieht sofort mit. Gespeichert wird erst, wenn du auf „übernehmen“ gehst.':
+    'A página de design mostra agora uma pequena versão da app com as tuas próprias séries. Toca num tema ou muda uma cor e a pré-visualização acompanha de imediato. Nada é guardado até escolheres «aplicar».',
+  'Zum Design-Studio': 'Abrir o estúdio de design',
+  'Community-Designs': 'Designs da comunidade',
+  'Stolz auf deine Farben? Gib deinem Design einen Namen und teil es mit allen. Unter „Community“ findest du die Designs der anderen, kannst sie in der Vorschau ausprobieren und mit einem Klick übernehmen. An jedem Design steht, wie viele es gerade nutzen.':
+    'Orgulhoso das tuas cores? Dá um nome ao teu design e partilha-o com todos. Em «Comunidade» encontras os designs dos outros, experimentas na pré-visualização e adotas com um clique. Em cada design vês quantas pessoas o usam neste momento.',
+  'Community-Designs ansehen': 'Ver designs da comunidade',
+  'Helle Themes': 'Temas claros',
+  'Ein heller Hintergrund bleibt jetzt wirklich hell. Flächen, Schrift, Signalfarben und das Dock stellen sich darauf ein, damit alles lesbar bleibt. Wer es lieber dunkel mag, merkt keinen Unterschied.':
+    'Um fundo claro agora fica mesmo claro. As superfícies, o texto, as cores de aviso e a dock adaptam-se para que tudo se leia bem. Se preferes o escuro, não notas diferença.',
+  'Bewerten mit Blick auf deine Rangliste': 'Avaliar a ver o teu ranking',
+  'Die Bewertungsseite zeigt die Wertung als große Zahl über dem Artwork. Über der Skala siehst du, wie du sonst bewertest, und daneben live, auf welchem Platz der Titel in deiner Rangliste landet, samt Nachbarn davor und dahinter.':
+    'A página de avaliação mostra a tua nota como um número grande sobre a imagem. Por cima da escala vês como costumas avaliar e, ao lado e em direto, em que lugar do teu ranking o título fica, com os vizinhos antes e depois.',
+  'Statistik, die man auf einen Blick versteht': 'Estatísticas que se percebem num relance',
+  'Deine Schauzeit steht groß oben, darunter Fortschritt, Kennzahlen und deine liebsten Genres und Streaming-Dienste. Neu ist der Abschnitt „So wird gezählt“: Er zeigt offen, was ausgeblendete Serien zu den Zahlen beitragen.':
+    'O teu tempo visto aparece em grande no topo, seguido do progresso, dos números principais e dos teus géneros e plataformas favoritos. Nova é a secção «Como contamos»: mostra com clareza o que as séries ocultas contribuem para os números.',
+  'Zur Statistik': 'Abrir estatísticas',
+  'Suche, die aufgeht': 'Uma pesquisa que se abre',
+  'Die Suchleiste der Startseite wächst beim Antippen fließend zur Suche heran. Beliebte Titel tragen ihren Platz als Ecke auf dem Poster. Am Computer öffnet die Taste / die Suche, ohne dass du zur Maus greifen musst.':
+    'A barra de pesquisa do início cresce suavemente até se tornar a pesquisa quando lhe tocas. Os títulos populares levam o seu lugar como canto no póster. No computador, a tecla / abre a pesquisa sem pegar no rato.',
+  'Folgen: Staffel wechseln, zurücknehmen, IMDb': 'Episódios: mudar de temporada, desfazer, IMDb',
+  'Auf der Folgen-Seite wechselst du die Staffel direkt im Kopf und siehst die ganze Staffel in der Liste. Hast du eine Folge versehentlich abgewählt, holt „Rückgängig“ sie mit Anzahl und Datum zurück. Neben TMDB steht jetzt auch die IMDb-Wertung der einzelnen Folge.':
+    'Na página do episódio mudas de temporada logo no topo e vês a temporada inteira na lista. Se desmarcares um episódio por engano, «Desfazer» recupera-o com a contagem e a data. Ao lado do TMDB vês agora também a nota do IMDb de cada episódio.',
+  'Bücher: ganze Reihen und der nächste Band': 'Livros: séries inteiras e o próximo volume',
+  'Eine Buchreihe fügst du jetzt auf einmal hinzu. TV-Rank kennt den nächsten Band, auch für deutsche Ausgaben und Manga-Bände, und zeigt ihn schon beim Lesen an. In der Bibliothek kannst du mehrere Titel gleichzeitig auswählen und bearbeiten.':
+    'Agora podes adicionar uma série de livros inteira de uma vez. O TV-Rank conhece o próximo volume, também em edições alemãs e volumes de manga, e mostra-o enquanto ainda lês. Na biblioteca podes selecionar e editar vários títulos ao mesmo tempo.',
+  'TV-Rank auf all deinen Geräten': 'TV-Rank em todos os teus dispositivos',
+  'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
+    'A tua conta funciona em todo o lado com o mesmo progresso: como app para iPhone, iPad e Android, no computador no navegador em tv-rank.de e como app para Windows. Todas as opções estão agora reunidas nas Definições, em «Geral».',
+  'Geräte ansehen': 'Ver dispositivos',
 };
 
 export default dict;

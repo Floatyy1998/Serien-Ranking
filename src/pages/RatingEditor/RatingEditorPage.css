@@ -49,7 +49,7 @@
   line-height: 0.82;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
-  color: #fff;
+  color: var(--dk-ink);
   text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
 }
 

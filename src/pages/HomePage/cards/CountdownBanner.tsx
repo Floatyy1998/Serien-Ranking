@@ -5,6 +5,10 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
 import { t } from '../../../services/i18n';
 
+// Dunkle Themes: helle Schrift auf abgedunkeltem Artwork. Helle Themes stellen die Karte per
+// CSS auf aufgehelltes Artwork und Theme-Schrift um (--cd-ink, siehe global.css).
+const ON_ART = 'var(--cd-ink, #f4eef2)';
+
 interface CountdownBannerProps {
   countdown: { title: string; posterUrl?: string; daysUntil: number; seasonNumber: number };
   totalCount: number;
@@ -39,6 +43,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           navigate('/countdowns');
         }
       }}
+      className="countdown-banner"
       style={{
         margin: '0 20px var(--home-row-gap)',
         borderRadius: '18px',
@@ -54,6 +59,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
     >
       {countdown.posterUrl && (
         <div
+          className="countdown-banner__art"
           style={{
             position: 'absolute',
             inset: 0,
@@ -66,6 +72,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
         />
       )}
       <div
+        className="countdown-banner__veil"
         style={{
           position: 'absolute',
           inset: 0,
@@ -130,7 +137,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             fontSize: isDesktop ? '16px' : '15px',
             fontWeight: 700,
             fontFamily: 'var(--font-display)',
-            color: _ct.text.secondary,
+            color: ON_ART,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -142,7 +149,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           style={{
             margin: 0,
             fontSize: isDesktop ? '14px' : '13px',
-            color: _ct.text.secondary,
+            color: ON_ART,
           }}
         >
           {t('Staffel {n}', { n: countdown.seasonNumber })} &middot; {daysText}
@@ -168,7 +175,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             style={{
               fontSize: '11px',
               fontWeight: 800,
-              color: _ct.text.secondary,
+              color: ON_ART,
               lineHeight: 1,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
@@ -182,7 +189,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
               style={{
                 fontSize: isDesktop ? '18px' : '16px',
                 fontWeight: 800,
-                color: _ct.text.secondary,
+                color: ON_ART,
                 lineHeight: 1,
               }}
             >
@@ -192,7 +199,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
               style={{
                 fontSize: 'var(--text-xs)',
                 fontWeight: 600,
-                color: _ct.text.secondary,
+                color: ON_ART,
                 textTransform: 'uppercase',
               }}
             >

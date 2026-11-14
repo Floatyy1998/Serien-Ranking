@@ -107,15 +107,19 @@ vi.mock('./ResetSection', () => ({
   ),
 }));
 
-vi.mock('./CommunitySection', () => ({ CommunitySection: () => null }));
+vi.mock('./CommunitySection', () => ({
+  CommunitySection: () => null,
+  RenameThemeForm: () => null,
+}));
 vi.mock('./useCommunityThemes', () => ({
   useCommunityThemes: () => ({
     themes: [],
     loading: false,
     failed: false,
     share: vi.fn(),
+    rename: vi.fn(),
     remove: vi.fn(),
-    countUse: vi.fn(),
+    setUse: vi.fn(),
   }),
 }));
 
@@ -160,6 +164,8 @@ describe('ThemePage', () => {
   it('updates a single color from a color editor', () => {
     render(<ThemePage />);
     fireEvent.click(screen.getByText('Primär'));
+    expect(updateTheme).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Farben übernehmen'));
     expect(updateTheme).toHaveBeenCalledWith({
       primaryColor: '#00ff00',
       seasons: { spooky: false },

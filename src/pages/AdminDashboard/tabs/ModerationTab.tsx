@@ -247,6 +247,31 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
     [deleteContent, banReason]
   );
 
+  // Community-Design mit unpassendem Namen: Urheber bitten, es umzubenennen. Das Design
+  // bleibt zurückgehalten, bis der neue Name die Prüfung besteht.
+  const askRename = useCallback(
+    async (flag: ModerationFlag) => {
+      try {
+        await dbRef(`${flag.path}/hidden`).set(true);
+        const title = 'Bitte benenne dein Design um';
+        const message =
+          'Der Name deines geteilten Designs passt nicht zu unseren Community-Regeln. Es ist so lange nicht sichtbar, bis du ihm unter Design einen anderen Namen gibst.';
+        await sendNotificationToUser(flag.userId, {
+          type: 'moderation_notice',
+          title,
+          titleL: await localizedVariants(title),
+          message,
+          messageL: await localizedVariants(message),
+          data: { navigateTo: '/theme' },
+        });
+      } catch (err) {
+        console.error('[moderation] rename request failed', err);
+      }
+      await dismissFlag(flag);
+    },
+    [dismissFlag]
+  );
+
   const unbanUser = useCallback(async (uid: string) => {
     await dbRef(`moderation/bans/${uid}`)
       .remove()
@@ -451,6 +476,11 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
                   <button onClick={() => approveFlag(flag)} style={actionBtn(theme.status.success)}>
                     <Done style={{ fontSize: 14 }} /> Freigeben
                   </button>
+                  {flag.kind === 'theme' && (
+                    <button onClick={() => askRename(flag)} style={actionBtn(theme.primary)}>
+                      <Translate style={{ fontSize: 14 }} /> Umbenennen lassen
+                    </button>
+                  )}
                   <button
                     onClick={() => deleteContent(flag)}
                     style={actionBtn(theme.status.warning)}

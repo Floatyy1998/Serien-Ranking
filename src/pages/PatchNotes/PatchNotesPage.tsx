@@ -108,6 +108,96 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('November 2026 – Neuer Look, Community-Designs und helle Themes'),
+      date: '2026-11-14',
+      features: [
+        {
+          icon: <ViewQuilt />,
+          color: currentTheme.primary,
+          title: t('Ein neuer Look für die ganze App'),
+          description: t(
+            'TV-Rank ist aufgeräumt: ruhigere Flächen, große Zahlen statt Kästchen und klar beschriftete Knöpfe. Serien, Filme, Manga und Bücher haben neue Detailseiten mit dem Artwork groß im Kopf. Startseite, Einstellungen, Folgen-Seite und Suche sind im selben Stil neu gebaut.'
+          ),
+        },
+        {
+          icon: <Palette />,
+          color: currentTheme.accent,
+          title: t('Design-Studio mit Live-Vorschau'),
+          description: t(
+            'Die Design-Seite zeigt jetzt eine kleine Ausgabe der App mit deinen eigenen Serien. Tipp ein Theme an oder dreh an einer Farbe, und die Vorschau zieht sofort mit. Gespeichert wird erst, wenn du auf „übernehmen“ gehst.'
+          ),
+          link: { label: t('Zum Design-Studio'), path: '/theme' },
+        },
+        {
+          icon: <Public />,
+          color: currentTheme.status.success,
+          title: t('Community-Designs'),
+          description: t(
+            'Stolz auf deine Farben? Gib deinem Design einen Namen und teil es mit allen. Unter „Community“ findest du die Designs der anderen, kannst sie in der Vorschau ausprobieren und mit einem Klick übernehmen. An jedem Design steht, wie viele es gerade nutzen.'
+          ),
+          link: { label: t('Community-Designs ansehen'), path: '/theme' },
+        },
+        {
+          icon: <AutoAwesome />,
+          color: currentTheme.status.warning,
+          title: t('Helle Themes'),
+          description: t(
+            'Ein heller Hintergrund bleibt jetzt wirklich hell. Flächen, Schrift, Signalfarben und das Dock stellen sich darauf ein, damit alles lesbar bleibt. Wer es lieber dunkel mag, merkt keinen Unterschied.'
+          ),
+        },
+        {
+          icon: <Equalizer />,
+          color: currentTheme.primary,
+          title: t('Bewerten mit Blick auf deine Rangliste'),
+          description: t(
+            'Die Bewertungsseite zeigt die Wertung als große Zahl über dem Artwork. Über der Skala siehst du, wie du sonst bewertest, und daneben live, auf welchem Platz der Titel in deiner Rangliste landet, samt Nachbarn davor und dahinter.'
+          ),
+        },
+        {
+          icon: <Insights />,
+          color: currentTheme.accent,
+          title: t('Statistik, die man auf einen Blick versteht'),
+          description: t(
+            'Deine Schauzeit steht groß oben, darunter Fortschritt, Kennzahlen und deine liebsten Genres und Streaming-Dienste. Neu ist der Abschnitt „So wird gezählt“: Er zeigt offen, was ausgeblendete Serien zu den Zahlen beitragen.'
+          ),
+          link: { label: t('Zur Statistik'), path: '/stats' },
+        },
+        {
+          icon: <Search />,
+          color: currentTheme.status.success,
+          title: t('Suche, die aufgeht'),
+          description: t(
+            'Die Suchleiste der Startseite wächst beim Antippen fließend zur Suche heran. Beliebte Titel tragen ihren Platz als Ecke auf dem Poster. Am Computer öffnet die Taste / die Suche, ohne dass du zur Maus greifen musst.'
+          ),
+        },
+        {
+          icon: <History />,
+          color: currentTheme.status.warning,
+          title: t('Folgen: Staffel wechseln, zurücknehmen, IMDb'),
+          description: t(
+            'Auf der Folgen-Seite wechselst du die Staffel direkt im Kopf und siehst die ganze Staffel in der Liste. Hast du eine Folge versehentlich abgewählt, holt „Rückgängig“ sie mit Anzahl und Datum zurück. Neben TMDB steht jetzt auch die IMDb-Wertung der einzelnen Folge.'
+          ),
+        },
+        {
+          icon: <MenuBook />,
+          color: currentTheme.primary,
+          title: t('Bücher: ganze Reihen und der nächste Band'),
+          description: t(
+            'Eine Buchreihe fügst du jetzt auf einmal hinzu. TV-Rank kennt den nächsten Band, auch für deutsche Ausgaben und Manga-Bände, und zeigt ihn schon beim Lesen an. In der Bibliothek kannst du mehrere Titel gleichzeitig auswählen und bearbeiten.'
+          ),
+        },
+        {
+          icon: <PhoneIphone />,
+          color: currentTheme.accent,
+          title: t('TV-Rank auf all deinen Geräten'),
+          description: t(
+            'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.'
+          ),
+          link: { label: t('Geräte ansehen'), path: '/settings?cat=allgemein' },
+        },
+      ],
+    },
+    {
       version: t('November 2026 – Nochmal schauen'),
       date: '2026-11-01',
       features: [

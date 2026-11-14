@@ -123,7 +123,7 @@ export class ErrorBoundary extends Component<Props, State> {
               fontWeight: 800,
               letterSpacing: '-0.02em',
               margin: '0 0 8px',
-              color: '#fff',
+              color: 'var(--color-text-secondary, #fff)',
               fontFamily: 'var(--font-display, inherit)',
             }}
           >
@@ -146,8 +146,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <pre
             style={{
               fontSize: '11px',
-              color: '#f87171',
-              background: 'rgba(0, 0, 0, 0.35)',
+              color: 'var(--color-error, #f87171)',
+              background: 'color-mix(in srgb, var(--color-text-secondary, #fff) 7%, transparent)',
               border: '1px solid color-mix(in srgb, #ef4444 18%, transparent)',
               borderRadius: 'var(--radius-md, 12px)',
               padding: '12px',
@@ -191,7 +191,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 borderRadius: 'var(--radius-md, 12px)',
                 border: 'none',
                 background: 'var(--theme-primary, #ef6f8a)',
-                color: 'var(--theme-background, #000)',
+                color: 'var(--on-primary, #fff)',
                 fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer',

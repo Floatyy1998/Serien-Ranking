@@ -112,7 +112,9 @@ describe('PatchNotesPage', () => {
   it('zeigt das neueste Update offen und ältere als Zeitleiste', () => {
     render(<PatchNotesPage />);
     expect(screen.getByText('Patch Notes')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Nochmal schauen' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Neuer Look, Community-Designs und helle Themes' })
+    ).toBeInTheDocument();
     const older = screen.getByRole('button', { name: /Anime-Season-Kalender/ });
     expect(older).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('Neue Seite: Anime-Season-Kalender')).toBeNull();
@@ -127,8 +129,8 @@ describe('PatchNotesPage', () => {
 
   it('navigiert über den Link-Knopf einer Karte', () => {
     render(<PatchNotesPage />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Zu den Büchern' })[0]);
-    expect(navigateMock).toHaveBeenCalledWith('/books');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zur Statistik' })[0]);
+    expect(navigateMock).toHaveBeenCalledWith('/stats');
     expect(navigateMock).toHaveBeenCalledTimes(1);
   });
 });

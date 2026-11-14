@@ -1,3 +1,4 @@
+import { toneColor } from '../theme/toneColor';
 import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { getEpisodeAirDate } from './episodeDate';
 
@@ -89,10 +90,10 @@ export function chipColor(type: EpisodeChipType): string {
   switch (type) {
     case 'season-start':
     case 'mid-season-return':
-      return '#f59e0b'; // warning/amber
+      return toneColor('#f59e0b'); // warning/amber
     case 'season-finale':
-      return '#7c3aed'; // deep violet
+      return toneColor('#7c3aed'); // deep violet
     case 'season-break':
-      return '#a78bfa'; // lavender
+      return toneColor('#a78bfa'); // lavender
   }
 }

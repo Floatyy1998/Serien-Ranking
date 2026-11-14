@@ -8,6 +8,8 @@ import {
   generateHoverColor,
   generateComplementaryColor,
   normalizeThemeColors,
+  ensurePrimaryReadability,
+  getRelativeLuminance,
 } from './colorUtils';
 import { sanitizeSeasonFlags, type SeasonFlags } from './seasonalThemes';
 
@@ -55,7 +57,12 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   const autoSurfaceColor = surfaceColor || lightenColor(backgroundColor, 0.1);
 
   // Accent-Farbe als Fallback auf aufgehellte Primärfarbe
-  const finalAccentColor = accentColor || lightenColor(primaryColor, 0.2);
+  // Auf hellem Grund sind leuchtende Akzent- und Signalfarben (Gelb, Orange, Hellgruen) als
+  // Schrift zu blass — dort werden sie abgedunkelt, bis sie lesbar sind. Dunkle Themes bleiben.
+  const lightTone = getRelativeLuminance(backgroundColor) > 0.5;
+  const onBackground = (color: string) =>
+    lightTone ? ensurePrimaryReadability(color, backgroundColor, 3.5) : color;
+  const finalAccentColor = onBackground(accentColor || lightenColor(primaryColor, 0.2));
 
   // Komplementärfarbe für Gradients (immer berechnet, nie gespeichert)
   const secondaryColor = generateComplementaryColor(primaryColor);
@@ -113,13 +120,13 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
     // Statusfarben - bleiben konsistent aber mit Theme-Anpassung
     status: {
-      error: '#ff4444',
+      error: onBackground('#ff4444'),
       errorHover: '#cc3333',
-      warning: '#FFC107', // Gelb für Warnungen
-      warningDark: '#ffd700', // Dunkleres Gelb
-      success: '#4caf50',
-      successLight: '#42d10f', // Helles Grün
-      purple: '#b103fc', // Lila für besondere Hervorhebungen
+      warning: onBackground('#FFC107'), // Gelb für Warnungen
+      warningDark: onBackground('#ffd700'), // Dunkleres Gelb
+      success: onBackground('#4caf50'),
+      successLight: onBackground('#42d10f'), // Helles Grün
+      purple: onBackground('#b103fc'), // Lila für besondere Hervorhebungen
       info: {
         main: primaryColor,
         gradient: `linear-gradient(135deg, ${withOpacity(primaryColor, 0.1)} 0%, ${withOpacity(primaryColor, 0.05)} 100%)`,

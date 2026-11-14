@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,7 +11,7 @@ import { t } from '../../services/i18n';
 import { ThemePreview, type PreviewTitle } from './ThemePreview';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
-import { CommunitySection } from './CommunitySection';
+import { CommunitySection, RenameThemeForm } from './CommunitySection';
 import { useCommunityThemes } from './useCommunityThemes';
 import {
   isShareableColors,
@@ -126,9 +126,14 @@ export const ThemePage = () => {
   // Angetipptes Theme: erst ansehen, dann übernehmen. Gespeichert wird erst mit dem Knopf.
   const [picked, setPicked] = useState<PresetTheme | null>(null);
   const previewRef = useRef<HTMLElement>(null);
+  // Einzelne Farben, die geändert, aber noch nicht übernommen sind.
+  const [draft, setDraft] = useState<Record<string, string> | null>(null);
+  const colorOf = (key: string): string | undefined =>
+    draft?.[key] ?? (userConfig[key as keyof typeof userConfig] as string | undefined);
   const shown = hovered ?? picked;
   const community = useCommunityThemes(user?.uid, user?.displayName || t('Unbekannt'));
   const pickedCommunity = picked && 'id' in picked ? (picked as CommunityTheme) : null;
+  const setCommunityUse = community.setUse;
 
   // Eigene Titel in der Vorschau: so sieht man die Farben an etwas Vertrautem.
   const previewTitles = useMemo<PreviewTitle[]>(
@@ -141,35 +146,44 @@ export const ThemePage = () => {
   );
 
   const previewColors = {
-    primary: shown?.primaryColor ?? currentTheme.primary,
-    accent: shown?.accentColor ?? currentTheme.accent,
-    background: shown?.backgroundColor ?? currentTheme.background.default,
-    surface: shown?.surfaceColor ?? currentTheme.background.surface,
-    text: shown?.textColor ?? currentTheme.text.secondary,
+    primary: shown?.primaryColor ?? draft?.primaryColor ?? currentTheme.primary,
+    accent: shown?.accentColor ?? draft?.accentColor ?? currentTheme.accent,
+    background: shown?.backgroundColor ?? draft?.backgroundColor ?? currentTheme.background.default,
+    surface: shown?.surfaceColor ?? draft?.surfaceColor ?? currentTheme.background.surface,
+    text: shown?.textColor ?? draft?.textColor ?? currentTheme.text.secondary,
   };
 
   // Kontrast-Schutz: warnt, wenn die gewählte Text/Hintergrund-Kombination unter
   // WCAG-AA (4.5:1) fällt, damit man sich nicht versehentlich „unsichtbar" macht.
   const contrastWarning = useMemo(() => {
-    const textColor = (userConfig.textColor as string) || '';
-    const bgColor = (userConfig.backgroundColor as string) || '';
+    const textColor = draft?.textColor ?? ((userConfig.textColor as string) || '');
+    const bgColor = draft?.backgroundColor ?? ((userConfig.backgroundColor as string) || '');
     if (!isHexColor(textColor) || !isHexColor(bgColor)) return null;
     const ratio = getContrastRatio(textColor, bgColor);
     if (ratio >= 4.5) return null;
     return ratio < 3
       ? t('Sehr geringer Kontrast zwischen Text und Hintergrund – Text ist kaum lesbar.')
       : t('Geringer Kontrast zwischen Text und Hintergrund (unter WCAG-AA 4.5:1).');
-  }, [userConfig.textColor, userConfig.backgroundColor]);
+  }, [userConfig.textColor, userConfig.backgroundColor, draft]);
 
-  const handleColorChange = useCallback(
-    (key: string, value: string) => {
-      updateTheme({ [key]: value, seasons: withActiveSeasonOff(userConfig) });
-    },
-    [updateTheme, userConfig]
-  );
+  // Farbänderungen sind erst ein Entwurf: nur die Vorschau zeigt sie, bis man sie übernimmt.
+  const handleColorChange = useCallback((key: string, value: string) => {
+    setPicked(null);
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const applyDraft = useCallback(() => {
+    if (!draft) return;
+    hapticTap();
+    updateTheme({ ...draft, seasons: withActiveSeasonOff(userConfig) });
+    // Eine eigene Farbe heißt: das übernommene Community-Design ist es nicht mehr.
+    setCommunityUse(null);
+    setDraft(null);
+  }, [draft, updateTheme, userConfig, setCommunityUse]);
 
   const pickPreset = useCallback((preset: PresetTheme) => {
     hapticTap();
+    setDraft(null);
     setPicked((prev) => (prev === preset ? null : preset));
     // Schmal steht die Vorschau über der Liste: dorthin rollen, damit man das Theme auch sieht.
     previewRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
@@ -206,6 +220,26 @@ export const ThemePage = () => {
     userConfig.surfaceColor === preset.surfaceColor &&
     userConfig.accentColor === preset.accentColor &&
     (!preset.textColor || userConfig.textColor === preset.textColor);
+
+  // Abgleich beim Öffnen: trägt das Konto gerade ein fremdes Community-Design (z. B. von einem
+  // anderen Gerät übernommen), gilt es hier als dessen Nutzer — sonst könnte es sich nie abmelden.
+  const activeCommunityId = community.themes.find(
+    (theme) =>
+      theme.uid !== user?.uid &&
+      !season &&
+      userConfig.primaryColor === theme.primaryColor &&
+      userConfig.backgroundColor === theme.backgroundColor &&
+      userConfig.surfaceColor === theme.surfaceColor &&
+      userConfig.accentColor === theme.accentColor &&
+      userConfig.textColor === theme.textColor
+  )?.id;
+  useEffect(() => {
+    if (!activeCommunityId) return;
+    const active = community.themes.find((theme) => theme.id === activeCommunityId);
+    if (active) setCommunityUse(active);
+    // Nur beim Wechsel des aktiven Designs, nicht bei jeder Zähler-Änderung der Liste.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCommunityId, setCommunityUse]);
 
   // Teilen geht nur mit fünf vollständigen Farben und ohne Saison-Design darüber.
   const ownColors = useMemo<CommunityThemeColors | null>(() => {
@@ -249,7 +283,7 @@ export const ThemePage = () => {
                   className="theme-apply-btn theme-apply-btn--primary"
                   onClick={() => {
                     applyPresetTheme(picked);
-                    if (pickedCommunity) community.countUse(pickedCommunity);
+                    community.setUse(pickedCommunity);
                     setPicked(null);
                   }}
                 >
@@ -258,6 +292,18 @@ export const ThemePage = () => {
                 <button type="button" className="theme-apply-btn" onClick={() => setPicked(null)}>
                   {t('Verwerfen')}
                 </button>
+                {pickedCommunity && pickedCommunity.uid === user?.uid && (
+                  <RenameThemeForm
+                    key={pickedCommunity.id}
+                    initial={pickedCommunity.name}
+                    hidden={!!pickedCommunity.hidden}
+                    onRename={async (name) => {
+                      const ok = await community.rename(pickedCommunity.id, name);
+                      if (ok) setPicked(null);
+                      return ok;
+                    }}
+                  />
+                )}
                 {pickedCommunity && pickedCommunity.uid === user?.uid && (
                   <button
                     type="button"
@@ -373,7 +419,7 @@ export const ThemePage = () => {
                     key={category.key}
                     category={category}
                     color={
-                      (userConfig[category.key as keyof typeof userConfig] as string) ||
+                      colorOf(category.key) ||
                       (category.key === 'textColor'
                         ? currentTheme.text.secondary
                         : currentTheme.accent)
@@ -385,9 +431,33 @@ export const ThemePage = () => {
               </div>
             </motion.div>
 
-            <ResetSection currentTheme={currentTheme} onReset={resetTheme} />
+            <ResetSection
+              currentTheme={currentTheme}
+              onReset={() => {
+                resetTheme();
+                setCommunityUse(null);
+                setDraft(null);
+              }}
+            />
           </div>
         </div>
+        {draft && (
+          <div className="theme-draft-bar" role="status">
+            <span className="theme-draft-bar__text">
+              {t('Deine Farbänderungen sind noch nicht übernommen.')}
+            </span>
+            <button type="button" className="theme-apply-btn" onClick={() => setDraft(null)}>
+              {t('Verwerfen')}
+            </button>
+            <button
+              type="button"
+              className="theme-apply-btn theme-apply-btn--primary"
+              onClick={applyDraft}
+            >
+              {t('Farben übernehmen')}
+            </button>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

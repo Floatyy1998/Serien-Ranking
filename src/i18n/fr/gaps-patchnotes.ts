@@ -417,6 +417,42 @@ const dict: Record<string, string> = {
   'Dir fällt ein Film ein, den du schon lange mal wieder sehen wolltest? Halt ihn gedrückt und wähl „Nochmal schauen“, schon steht er auf deiner Rewatch-Liste. Du findest sie bei den Bewertungen unter Listen und als eigene Reihe auf der Startseite, solange etwas drauf steht. Startest du bei einer Serie den Rewatch, verschwindet sie von selbst wieder von der Liste.':
     'Un film te revient en tête que tu voulais revoir depuis longtemps ? Appuie longuement dessus, choisis « À revoir » et il atterrit sur ta liste. Tu la retrouves dans Listes, côté notes, et comme rangée à part sur l’accueil tant qu’elle contient quelque chose. Si tu relances une série, elle quitte la liste toute seule.',
   'Zur Rewatch-Liste': 'Voir la liste',
+  'November 2026 – Neuer Look, Community-Designs und helle Themes':
+    'Novembre 2026 – Nouveau look, designs de la communauté et thèmes clairs',
+  'Ein neuer Look für die ganze App': 'Un nouveau look pour toute l’appli',
+  'TV-Rank ist aufgeräumt: ruhigere Flächen, große Zahlen statt Kästchen und klar beschriftete Knöpfe. Serien, Filme, Manga und Bücher haben neue Detailseiten mit dem Artwork groß im Kopf. Startseite, Einstellungen, Folgen-Seite und Suche sind im selben Stil neu gebaut.':
+    'TV-Rank a fait le ménage : des surfaces plus calmes, de grands chiffres à la place des petites cases et des boutons clairement libellés. Séries, films, mangas et livres ont de nouvelles pages de détail avec l’illustration en grand en haut. L’accueil, les réglages, la page des épisodes et la recherche sont refaits dans le même style.',
+  'Design-Studio mit Live-Vorschau': 'Studio de design avec aperçu en direct',
+  'Die Design-Seite zeigt jetzt eine kleine Ausgabe der App mit deinen eigenen Serien. Tipp ein Theme an oder dreh an einer Farbe, und die Vorschau zieht sofort mit. Gespeichert wird erst, wenn du auf „übernehmen“ gehst.':
+    'La page Design affiche maintenant une petite version de l’appli avec tes propres séries. Touche un thème ou change une couleur, et l’aperçu suit aussitôt. Rien n’est enregistré tant que tu ne choisis pas « appliquer ».',
+  'Zum Design-Studio': 'Ouvrir le studio de design',
+  'Community-Designs': 'Designs de la communauté',
+  'Stolz auf deine Farben? Gib deinem Design einen Namen und teil es mit allen. Unter „Community“ findest du die Designs der anderen, kannst sie in der Vorschau ausprobieren und mit einem Klick übernehmen. An jedem Design steht, wie viele es gerade nutzen.':
+    'Fier de tes couleurs ? Donne un nom à ton design et partage-le avec tout le monde. Sous « Communauté », tu trouves les designs des autres, tu les essaies dans l’aperçu et tu les adoptes en un clic. Chaque design indique combien de personnes l’utilisent en ce moment.',
+  'Community-Designs ansehen': 'Voir les designs de la communauté',
+  'Helle Themes': 'Thèmes clairs',
+  'Ein heller Hintergrund bleibt jetzt wirklich hell. Flächen, Schrift, Signalfarben und das Dock stellen sich darauf ein, damit alles lesbar bleibt. Wer es lieber dunkel mag, merkt keinen Unterschied.':
+    'Un fond clair reste désormais vraiment clair. Les surfaces, le texte, les couleurs de signal et le dock s’adaptent pour que tout reste lisible. Si tu préfères le sombre, rien ne change pour toi.',
+  'Bewerten mit Blick auf deine Rangliste': 'Noter en voyant ton classement',
+  'Die Bewertungsseite zeigt die Wertung als große Zahl über dem Artwork. Über der Skala siehst du, wie du sonst bewertest, und daneben live, auf welchem Platz der Titel in deiner Rangliste landet, samt Nachbarn davor und dahinter.':
+    'La page de notation affiche ta note en grand chiffre sur l’illustration. Au-dessus de l’échelle, tu vois comment tu notes d’habitude et, à côté, en direct, à quelle place le titre arrive dans ton classement, avec ses voisins avant et après.',
+  'Statistik, die man auf einen Blick versteht': 'Des statistiques qu’on comprend d’un coup d’œil',
+  'Deine Schauzeit steht groß oben, darunter Fortschritt, Kennzahlen und deine liebsten Genres und Streaming-Dienste. Neu ist der Abschnitt „So wird gezählt“: Er zeigt offen, was ausgeblendete Serien zu den Zahlen beitragen.':
+    'Ton temps de visionnage s’affiche en grand en haut, suivi de la progression, des chiffres clés et de tes genres et plateformes préférés. Nouveauté : la section « Comment on compte » montre clairement ce que les séries masquées apportent aux chiffres.',
+  'Zur Statistik': 'Ouvrir les statistiques',
+  'Suche, die aufgeht': 'Une recherche qui s’ouvre',
+  'Die Suchleiste der Startseite wächst beim Antippen fließend zur Suche heran. Beliebte Titel tragen ihren Platz als Ecke auf dem Poster. Am Computer öffnet die Taste / die Suche, ohne dass du zur Maus greifen musst.':
+    'La barre de recherche de l’accueil grandit en douceur pour devenir la recherche quand tu la touches. Les titres populaires portent leur rang en coin sur l’affiche. Sur ordinateur, la touche / ouvre la recherche sans toucher à la souris.',
+  'Folgen: Staffel wechseln, zurücknehmen, IMDb': 'Épisodes : changer de saison, annuler, IMDb',
+  'Auf der Folgen-Seite wechselst du die Staffel direkt im Kopf und siehst die ganze Staffel in der Liste. Hast du eine Folge versehentlich abgewählt, holt „Rückgängig“ sie mit Anzahl und Datum zurück. Neben TMDB steht jetzt auch die IMDb-Wertung der einzelnen Folge.':
+    'Sur la page d’un épisode, tu changes de saison directement en haut et tu vois toute la saison dans la liste. Si tu décoches un épisode par erreur, « Annuler » le rétablit avec son compteur et sa date. À côté de TMDB, tu vois maintenant aussi la note IMDb de chaque épisode.',
+  'Bücher: ganze Reihen und der nächste Band': 'Livres : séries entières et tome suivant',
+  'Eine Buchreihe fügst du jetzt auf einmal hinzu. TV-Rank kennt den nächsten Band, auch für deutsche Ausgaben und Manga-Bände, und zeigt ihn schon beim Lesen an. In der Bibliothek kannst du mehrere Titel gleichzeitig auswählen und bearbeiten.':
+    'Tu peux maintenant ajouter une série de livres entière d’un coup. TV-Rank connaît le tome suivant, aussi pour les éditions allemandes et les tomes de manga, et te l’indique pendant ta lecture. Dans la bibliothèque, tu peux sélectionner et modifier plusieurs titres à la fois.',
+  'TV-Rank auf all deinen Geräten': 'TV-Rank sur tous tes appareils',
+  'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
+    'Ton compte fonctionne partout avec la même progression : en appli pour iPhone, iPad et Android, sur ordinateur dans le navigateur sur tv-rank.de et en appli Windows. Toutes les options sont réunies dans les Réglages, sous « Général ».',
+  'Geräte ansehen': 'Voir les appareils',
 };
 
 export default dict;

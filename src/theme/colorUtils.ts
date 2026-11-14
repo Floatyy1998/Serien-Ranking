@@ -235,46 +235,12 @@ export function ensurePrimaryReadability(
 }
 
 /**
- * Glass-Schutz-Klemme: Alle --glass-*-Tokens des Design-Systems sind
- * weiß-alpha (rgba(255,255,255,…)). Auf einem hellen Hintergrund kollabiert
- * diese weiß-alpha-Glassprache – Glass-Flächen, Borders und Frosted-Surfaces
- * werden unsichtbar bzw. verschmelzen mit dem Hintergrund. Deshalb wird ein
- * heller Hintergrund (relative Luminanz > 0.5) fürs Rendering auf eine
- * abgedunkelte Variante geklemmt (Ziel-Luminanz ~0.35), Hue und Sättigung
- * bleiben erhalten. Gespeicherte Configs bleiben unangetastet.
- */
-export function clampBackgroundForGlass(
-  backgroundColor: string,
-  maxLuminance: number = 0.35
-): string {
-  try {
-    if (getRelativeLuminance(backgroundColor) <= 0.5) {
-      return backgroundColor;
-    }
-    const { h, s } = hexToHsl(backgroundColor);
-    let { l } = hexToHsl(backgroundColor);
-    let clamped = backgroundColor;
-    while (l > 0) {
-      l = Math.max(0, l - 5);
-      clamped = hslToHex(h, s, l);
-      if (getRelativeLuminance(clamped) <= maxLuminance) {
-        return clamped;
-      }
-    }
-    return clamped;
-  } catch {
-    return backgroundColor;
-  }
-}
-
-/**
  * Normalisiert Farben für optimale Darstellung – wird beim Rendern angewendet,
  * der gespeicherte Config bleibt unverändert.
  *
  * Constraints:
- * 1. Background: heller Hintergrund (rel. Luminanz > 0.5) wird für die
- *    weiß-alpha --glass-*-Tokens auf ~0.35 Luminanz geklemmt (Glass-Schutz)
- * 2. Background: max Luminance L=22% (Glow-Effekte brauchen dunklen BG)
+ * 1. Hintergrund bleibt, wie gewählt — auch hell: die Flächen leiten sich aus der Schriftfarbe ab.
+ * 2. Text: praktisch unsichtbarer Text wird durch eine lesbare Farbe ersetzt.
  * 3. Primary: min Sättigung 40% (für sichtbare Glow-Effekte)
  * 4. Primary: min Kontrast 3.5:1 gegen Background (Lesbarkeit; GradientText
  *    und Überschriften nutzen die Primärfarbe roh)
@@ -287,23 +253,9 @@ export function normalizeThemeColors(config: {
   accentColor?: string;
   textColor?: string;
 }): typeof config {
-  let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
+  let { primaryColor, backgroundColor, surfaceColor, accentColor, textColor } = config;
   if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#ef6f8a';
   if (!backgroundColor || !/^#?[0-9a-fA-F]{6}$/.test(backgroundColor)) backgroundColor = '#000000';
-
-  // 1. Glass-Schutz: heller Hintergrund kollabiert die weiß-alpha
-  //    --glass-*-Tokens → fürs Rendering auf ~0.35 Luminanz abdunkeln
-  backgroundColor = clampBackgroundForGlass(backgroundColor);
-
-  // 2. Background darf maximal L=22% haben (cinematic dark look)
-  try {
-    const bgHsl = hexToHsl(backgroundColor);
-    if (bgHsl.l > 22) {
-      backgroundColor = hslToHex(bgHsl.h, bgHsl.s, 22);
-    }
-  } catch {
-    /* ignore */
-  }
 
   // 3. Primary braucht min 40% Sättigung für sichtbare Glow-Effekte
   try {
@@ -319,7 +271,18 @@ export function normalizeThemeColors(config: {
   //    (aufhellen bei dunklem, abdunkeln bei hellem Hintergrund)
   primaryColor = ensurePrimaryReadability(primaryColor, backgroundColor, 3.5);
 
-  return { ...config, primaryColor, backgroundColor, surfaceColor, accentColor };
+  // Sicherheitsnetz: Text, der auf dem Hintergrund praktisch unsichtbar wäre (heller Text auf
+  // hellem Grund oder umgekehrt), wird fürs Rendering durch eine lesbare Farbe ersetzt — sonst
+  // käme man aus einem solchen Theme nicht mehr heraus.
+  try {
+    if (textColor && getContrastRatio(textColor, backgroundColor) < 2.5) {
+      textColor = createAccessibleTextColors(backgroundColor).secondary;
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return { ...config, primaryColor, backgroundColor, surfaceColor, accentColor, textColor };
 }
 
 // --- HSL Utilities ---

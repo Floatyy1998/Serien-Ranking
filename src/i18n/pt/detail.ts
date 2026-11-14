@@ -291,8 +291,6 @@ const dict: Record<string, string> = {
   // Community-Designs
   Community: 'Comunidade',
   'Mein Design teilen': 'Partilhar o meu design',
-  'Deine Designs wurden {n}× von anderen übernommen.':
-    'Os teus designs foram adotados {n}× por outros.',
   'Designs von anderen — und deins für alle, wenn du magst.':
     'Designs de outros — e o teu para todos, se quiseres.',
   'Name deines Designs': 'Nome do teu design',
@@ -308,6 +306,21 @@ const dict: Record<string, string> = {
   'Aus der Community entfernen': 'Remover da comunidade',
   'wird geprüft': 'em revisão',
   'Wie soll dein Design heißen?': 'Como se vai chamar o teu design?',
+  'Deine Designs nutzen gerade {n} andere.': '{n} pessoas usam os teus designs neste momento.',
+  '{n} aktiv': '{n} ativos',
+  'Helle Hintergründe dunkelt TV-Rank ab: Flächen, Linien und Glas-Effekte der App sind für dunklen Grund gebaut und würden auf Weiß verschwinden.':
+    'O TV-Rank escurece fundos claros: as superfícies, linhas e efeitos de vidro da app foram feitos para fundo escuro e desapareceriam no branco.',
+  Umbenennen: 'Renomear',
+  'Dieses Design wird gerade zurückgehalten. Gib ihm einen anderen Namen, dann wird es neu geprüft.':
+    'Este design está retido de momento. Dá-lhe outro nome e será verificado de novo.',
+  'Neuer Name': 'Novo nome',
+  'Der Name konnte nicht gespeichert werden.': 'Não foi possível guardar o nome.',
+  'Bitte benenne dein Design um': 'Por favor, muda o nome do teu design',
+  'Der Name deines geteilten Designs passt nicht zu unseren Community-Regeln. Es ist so lange nicht sichtbar, bis du ihm unter Design einen anderen Namen gibst.':
+    'O nome do teu design partilhado não respeita as regras da comunidade. Fica oculto até lhe dares outro nome em Design.',
+  'Deine Farbänderungen sind noch nicht übernommen.':
+    'As tuas alterações de cor ainda não foram aplicadas.',
+  'Farben übernehmen': 'Aplicar cores',
 };
 
 export default dict;

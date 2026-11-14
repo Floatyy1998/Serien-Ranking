@@ -1,3 +1,4 @@
+import { toneColor } from '../../theme/toneColor';
 import { Lock } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -201,7 +202,7 @@ export const BadgeCard = React.memo(
             fontWeight: 700,
             margin: '0 0 6px 0',
             textAlign: 'center',
-            color: earned ? badge.color : theme.text.primary,
+            color: earned ? toneColor(badge.color) : theme.text.primary,
             position: 'relative',
             zIndex: 1,
           }}
@@ -258,7 +259,7 @@ export const BadgeCard = React.memo(
               <span
                 style={{
                   fontSize: '12px',
-                  color: progress.sessionActive ? badge.color : theme.text.muted,
+                  color: progress.sessionActive ? toneColor(badge.color) : theme.text.muted,
                   fontWeight: progress.sessionActive ? 600 : 400,
                 }}
               >
