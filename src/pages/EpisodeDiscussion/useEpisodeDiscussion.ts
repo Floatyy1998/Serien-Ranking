@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { serverTimestamp } from '../../services/db/ref';
+import { dbGet, serverTimestamp } from '../../services/db/ref';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -8,6 +8,7 @@ import { getEpisodeAirDateStr } from '../../utils/episodeDate';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { getTmdbApiKey, tmdbFetch } from '../../services/api/tmdbClient';
+import { showToast, showUndoToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 
@@ -289,6 +290,13 @@ export const useEpisodeDiscussion = () => {
       // ginge ein Offline-„Entmarkieren" verloren, ein gequeuter Mark würde
       // nach Reconnect trotzdem angewendet).
       if (isCurrentlyWatched) {
+        // Stand vor dem Entfernen merken: Anzahl und beide Daten kommen beim Rückgängigmachen genau so zurück.
+        let previous: Record<string, unknown> | null = null;
+        try {
+          previous = await dbGet<Record<string, unknown>>(epPath);
+        } catch {
+          previous = null;
+        }
         await applyUserUpdate(
           user.uid,
           {
@@ -297,6 +305,32 @@ export const useEpisodeDiscussion = () => {
           },
           queueLabel
         );
+        if (previous) {
+          const uid = user.uid;
+          const restore = previous;
+          showUndoToast(
+            t('S{s}E{e} als nicht gesehen markiert', {
+              s: seasonNumber ?? '',
+              e: episodeNumber ?? '',
+            }),
+            async () => {
+              try {
+                await applyUserUpdate(
+                  uid,
+                  {
+                    [epPath]: restore,
+                    [`users/${uid}/meta/serienVersion`]: serverTimestamp(),
+                  },
+                  `${queueLabel} Undo`
+                );
+                refetchSeries();
+              } catch {
+                showToast(t('Undo fehlgeschlagen'), 2000, 'error');
+              }
+            },
+            6000
+          );
+        }
       } else {
         // Date.now() im async callback nach await — Lint kann den
         // Render-Path nicht von Event-Handler-Path unterscheiden.

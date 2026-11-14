@@ -266,6 +266,9 @@ const dict: Record<string, string> = {
   'In der Sammlung': 'In their collection',
   'Noch nicht begonnen': 'Not started yet',
   'Bewertung: {wert}': 'Rating: {wert}',
+  'Staffel wechseln': 'Switch season',
+  'S{n}': 'S{n}',
+  'S{s}E{e} auf {n}x reduziert': 'S{s}E{e} reduced to {n}x',
 };
 
 export default dict;

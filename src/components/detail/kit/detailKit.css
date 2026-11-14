@@ -691,6 +691,53 @@ button.dk-score:hover .dk-score__label {
   gap: 8px;
 }
 
+.dk-seasons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dk-seasons::-webkit-scrollbar {
+  display: none;
+}
+
+.dk-season,
+.mobile-app button.dk-season {
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
+  height: 34px;
+  padding: 0 13px;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dk-ink) 9%, transparent);
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--dk-ink-2);
+  cursor: pointer;
+}
+
+.dk-season:hover {
+  color: var(--dk-ink);
+  background: color-mix(in srgb, var(--dk-ink) 16%, transparent);
+}
+
+.dk-season.is-complete,
+.mobile-app button.dk-season.is-complete {
+  color: color-mix(in srgb, var(--theme-primary) 85%, var(--dk-ink));
+}
+
+.dk-season.is-current,
+.mobile-app button.dk-season.is-current {
+  color: var(--on-primary, #fff);
+  background: var(--theme-primary);
+  cursor: default;
+}
+
 .dk-list--scroll {
   position: relative;
   max-height: min(620px, 70vh);

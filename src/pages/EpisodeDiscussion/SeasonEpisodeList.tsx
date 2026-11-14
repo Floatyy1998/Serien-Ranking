@@ -1,5 +1,5 @@
 import Check from '@mui/icons-material/Check';
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, type ReactNode } from 'react';
 import { RailSection } from '../../components/detail/kit/DetailKit';
 import { t } from '../../services/i18n';
 
@@ -9,11 +9,13 @@ interface SeasonEpisodeListProps {
   currentEpisode: number;
   episodes: { id: number | string; name?: string; watched: boolean }[];
   onOpen: (episodeNumber: number) => void;
+  /** Staffel-Umschalter unter der Überschrift. */
+  switcher?: ReactNode;
 }
 
 /** Die Folgen der Staffel als kompakte Liste — die aktuelle hervorgehoben, ein Tipp wechselt die Folge. */
 export const SeasonEpisodeList = memo(
-  ({ seasonNumber, currentEpisode, episodes, onOpen }: SeasonEpisodeListProps) => {
+  ({ seasonNumber, currentEpisode, episodes, onOpen, switcher }: SeasonEpisodeListProps) => {
     const listRef = useRef<HTMLDivElement>(null);
 
     // Die ganze Staffel steht in der Liste; lange Staffeln rollen in sich und starten bei der aktuellen Folge.
@@ -32,6 +34,7 @@ export const SeasonEpisodeList = memo(
         title={t('Staffel {n}', { n: seasonNumber })}
         hint={episodes.length === 1 ? t('1 Folge') : t('{n} Folgen', { n: episodes.length })}
       >
+        {switcher}
         <div className="dk-list dk-list--scroll" ref={listRef}>
           {episodes.map((episode, index) => {
             const number = index + 1;

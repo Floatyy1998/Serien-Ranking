@@ -49,6 +49,8 @@ interface EpisodeStageProps {
   /** Folgen der Staffel für den Streifen: gesehen ja/nein, in Reihenfolge. */
   seasonEpisodes: { key: number | string; watched: boolean }[];
   canTrack: boolean;
+  /** Staffel-Umschalter über dem Folgen-Streifen. */
+  seasonSwitch?: ReactNode;
   /** Sterne-Regler — nur, wenn die Serie in der eigenen Liste ist. */
   rating?: ReactNode;
   onToggleWatched: () => void;
@@ -85,6 +87,7 @@ export const EpisodeStage = memo(
     fillerInfo,
     seasonEpisodes,
     canTrack,
+    seasonSwitch,
     rating,
     onToggleWatched,
     onOpenEpisode,
@@ -206,6 +209,7 @@ export const EpisodeStage = memo(
 
             {total > 1 && (
               <div className="dk-eps">
+                {seasonSwitch}
                 <div className="dk-eps__cells" role="group" aria-label={t('Folgen dieser Staffel')}>
                   {seasonEpisodes.slice(from, to).map((e, offset) => {
                     const number = from + offset + 1;

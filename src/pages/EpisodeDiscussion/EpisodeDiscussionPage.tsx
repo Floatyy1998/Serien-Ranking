@@ -27,6 +27,7 @@ import {
 } from './EpisodeDiscussionComponents';
 import { EpisodeStage } from './EpisodeStage';
 import { SeasonEpisodeList } from './SeasonEpisodeList';
+import { SeasonSwitch } from './SeasonSwitch';
 import { FactList, RailSection } from '../../components/detail/kit/DetailKit';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
 import './EpisodeDiscussionPage.css';
@@ -197,6 +198,28 @@ export const EpisodeDiscussionPage = memo(() => {
     [season]
   );
 
+  const seasonItems = useMemo(
+    () =>
+      (series?.seasons ?? [])
+        .filter((s) => (s.episodes?.length ?? 0) > 0)
+        .map((s) => ({
+          number: (s.seasonNumber ?? 0) + 1,
+          complete: (s.episodes ?? []).every((e) => !!e.watched),
+          firstOpen: (s.episodes ?? []).findIndex((e) => !e.watched) + 1,
+        })),
+    [series?.seasons]
+  );
+  const openSeason = useCallback(
+    (number: number) => {
+      const target = seasonItems.find((s) => s.number === number);
+      navigate(`/episode/${seriesId}/s/${number}/e/${target?.firstOpen || 1}`);
+    },
+    [seasonItems, navigate, seriesId]
+  );
+  const seasonSwitch = (
+    <SeasonSwitch seasons={seasonItems} current={Number(seasonNumber)} onSelect={openSeason} />
+  );
+
   if (loading) {
     return <LoadingState currentTheme={currentTheme} />;
   }
@@ -233,6 +256,7 @@ export const EpisodeDiscussionPage = memo(() => {
         watched: !!e.watched,
       }))}
       onOpen={(n) => navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${n}`)}
+      switcher={seasonSwitch}
     />
   ) : null;
 
@@ -347,6 +371,7 @@ export const EpisodeDiscussionPage = memo(() => {
           isWatched={isWatched}
           fillerInfo={fillerInfo}
           seasonEpisodes={seasonEpisodes}
+          seasonSwitch={seasonSwitch}
           canTrack={hasUser && hasSeries}
           rating={
             hasUser && hasSeries && localEpisode ? (

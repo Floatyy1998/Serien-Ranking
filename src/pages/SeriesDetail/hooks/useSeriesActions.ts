@@ -406,7 +406,13 @@ export function useSeriesActions(
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
         showUndoToast(
-          t('S{s}E{e} als nicht gesehen markiert', { s: seasonNumber, e: episodeIndex + 1 }),
+          prevWatchCount > 1
+            ? t('S{s}E{e} auf {n}x reduziert', {
+                s: seasonNumber,
+                e: episodeIndex + 1,
+                n: prevWatchCount - 1,
+              })
+            : t('S{s}E{e} als nicht gesehen markiert', { s: seasonNumber, e: episodeIndex + 1 }),
           async () => {
             try {
               const undoUpdates: Record<string, unknown> = {
@@ -426,7 +432,8 @@ export function useSeriesActions(
             } catch {
               showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
-          }
+          },
+          6000
         );
       } catch {
         setDialog({

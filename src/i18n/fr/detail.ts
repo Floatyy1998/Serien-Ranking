@@ -241,6 +241,9 @@ const dict: Record<string, string> = {
   'In der Sammlung': 'Dans sa collection',
   'Noch nicht begonnen': 'Pas encore commencé',
   'Bewertung: {wert}': 'Note : {wert}',
+  'Staffel wechseln': 'Changer de saison',
+  'S{n}': 'S{n}',
+  'S{s}E{e} auf {n}x reduziert': 'S{s}E{e} réduit à {n}x',
 };
 
 export default dict;
