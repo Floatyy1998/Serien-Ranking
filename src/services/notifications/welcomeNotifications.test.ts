@@ -21,12 +21,13 @@ beforeEach(() => {
 });
 
 describe('writeWelcomeNotifications', () => {
-  it('schreibt beide Meldungen unter festen Schlüsseln', async () => {
+  it('schreibt die Meldungen unter festen Schlüsseln', async () => {
     await writeWelcomeNotifications('abc');
     const pfade = fb.sets.map((s) => s.path);
     expect(pfade).toEqual([
       'users/abc/notifications/welcome',
       'users/abc/notifications/customizeHint',
+      'users/abc/notifications/devicesHint',
     ]);
   });
 
@@ -52,6 +53,6 @@ describe('writeWelcomeNotifications', () => {
   it('verdoppelt nichts bei zweimaligem Aufruf (feste Schlüssel)', async () => {
     await writeWelcomeNotifications('abc');
     await writeWelcomeNotifications('abc');
-    expect(new Set(fb.sets.map((s) => s.path)).size).toBe(2);
+    expect(new Set(fb.sets.map((s) => s.path)).size).toBe(3);
   });
 });

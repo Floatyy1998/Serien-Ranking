@@ -114,6 +114,7 @@ vi.mock('./sections/DeleteAccountSection', () => ({ DeleteAccountSection: () => 
 vi.mock('./sections/ImportExportSection', () => ({ ImportExportSection: () => <div>IMPORT</div> }));
 vi.mock('./sections/LanguageSection', () => ({ LanguageSection: () => <div>LANGUAGE</div> }));
 vi.mock('./sections/RateAppSection', () => ({ RateAppSection: () => null }));
+vi.mock('./sections/DevicesSection', () => ({ DevicesSection: () => <div>DEVICES</div> }));
 vi.mock('./sections/PageToursSection', () => ({ PageToursSection: () => null }));
 
 import { SettingsPage } from './SettingsPage';
@@ -150,9 +151,9 @@ describe('SettingsPage', () => {
     expect(screen.getByText('PUBLIC_SECTION')).toBeInTheDocument();
   });
 
-  it('zeigt den Desktop-Download unter Allgemein', () => {
+  it('zeigt die Geräte-Übersicht unter Allgemein', () => {
     renderAt('/settings?cat=allgemein');
-    expect(screen.getByText('Desktop App')).toBeInTheDocument();
+    expect(screen.getByText('DEVICES')).toBeInTheDocument();
     expect(screen.getByText('LEGAL_SECTION')).toBeInTheDocument();
   });
 

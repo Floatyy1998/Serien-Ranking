@@ -1,4 +1,5 @@
 /** Willkommens-Meldungen fuer frisch angelegte Konten. */
+import { nativePlatform } from '../app/nativeShell';
 import { dbRef, userPath } from '../db/ref';
 import { localizedVariants } from '../i18n';
 
@@ -8,6 +9,12 @@ const WELCOME_MESSAGE =
 const CUSTOMIZE_TITLE = 'Mach TV-Rank zu deinem';
 const CUSTOMIZE_MESSAGE =
   'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.';
+const APP_HINT_TITLE = 'TV-Rank gibt es auch als App';
+const APP_HINT_MESSAGE =
+  'Für iPhone, iPad und Android — im App Store und bei Google Play. Dein Konto und dein Stand kommen automatisch mit. Die Links findest du in den Einstellungen unter „Allgemein".';
+const WEB_HINT_TITLE = 'TV-Rank gibt es auch als Website';
+const WEB_HINT_MESSAGE =
+  'Auf tv-rank.de läuft dein Konto in jedem Browser — am Computer, Tablet oder Fernseher, mit demselben Stand wie in der App.';
 
 /**
  * Feste Schluessel statt push(): der Aufruf kommt aus der Registrierung UND aus
@@ -39,6 +46,20 @@ export const writeWelcomeNotifications = async (uid: string): Promise<void> => {
       timestamp: Date.now() - 1000,
       read: false,
       data: { navigateTo: '/profile' },
+    });
+    // Wer in der App startet, erfährt von der Website; wer im Browser startet, von den Apps.
+    const inApp = nativePlatform() !== null;
+    const hintTitle = inApp ? WEB_HINT_TITLE : APP_HINT_TITLE;
+    const hintMessage = inApp ? WEB_HINT_MESSAGE : APP_HINT_MESSAGE;
+    void dbRef(userPath(uid, 'notifications', 'devicesHint')).set({
+      type: 'welcome',
+      title: hintTitle,
+      message: hintMessage,
+      titleL: await localizedVariants(hintTitle),
+      messageL: await localizedVariants(hintMessage),
+      timestamp: Date.now() - 2000,
+      read: false,
+      data: { navigateTo: '/settings?cat=allgemein' },
     });
   } catch {
     /* best-effort */

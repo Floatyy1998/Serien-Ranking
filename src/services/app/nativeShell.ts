@@ -52,6 +52,12 @@ const getCapacitor = (): CapacitorGlobal | null => {
 /** True, wenn die App gerade in der nativen iOS/Android-Hülle läuft. */
 export const isNativeApp = (): boolean => getCapacitor() !== null;
 
+/** Plattform der nativen Hülle; null im Browser und in der Desktop-App. */
+export const nativePlatform = (): 'ios' | 'android' | null => {
+  const platform = getCapacitor()?.getPlatform?.();
+  return platform === 'ios' || platform === 'android' ? platform : null;
+};
+
 /** Plattform + Build-Nummer der Hülle (iOS: CI-Laufnummer, Android: versionCode); null im Browser. */
 export const nativeAppBuild = async (): Promise<{ platform: string; build: number } | null> => {
   const cap = getCapacitor();

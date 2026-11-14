@@ -269,6 +269,25 @@ const dict: Record<string, string> = {
   'Staffel wechseln': 'Switch season',
   'S{n}': 'S{n}',
   'S{s}E{e} auf {n}x reduziert': 'S{s}E{e} reduced to {n}x',
+  // Geräte-Übersicht + Hinweis nach der Registrierung
+  'TV-Rank gibt es auch als App': 'TV-Rank is also available as an app',
+  'Für iPhone, iPad und Android — im App Store und bei Google Play. Dein Konto und dein Stand kommen automatisch mit. Die Links findest du in den Einstellungen unter „Allgemein".':
+    'For iPhone, iPad and Android — on the App Store and Google Play. Your account and progress come along automatically. You find the links in Settings under "General".',
+  'TV-Rank gibt es auch als Website': 'TV-Rank is also available as a website',
+  'Auf tv-rank.de läuft dein Konto in jedem Browser — am Computer, Tablet oder Fernseher, mit demselben Stand wie in der App.':
+    'At tv-rank.de your account runs in any browser — on a computer, tablet or TV, with the same progress as in the app.',
+  'iPhone & iPad': 'iPhone & iPad',
+  Android: 'Android',
+  Windows: 'Windows',
+  'App herunterladen': 'Download the app',
+  'Link zu tv-rank.de kopieren': 'Copy link to tv-rank.de',
+  'TV-Rank auf all deinen Geräten': 'TV-Rank on all your devices',
+  'Ein Konto, überall derselbe Stand — Handy, Tablet, Computer.':
+    'One account, the same progress everywhere — phone, tablet, computer.',
+  'Android ohne Play Store: APK direkt herunterladen':
+    'Android without Play Store: download the APK directly',
+  'Hier bist du gerade': 'You are here right now',
+  Website: 'Website',
 };
 
 export default dict;

@@ -1,4 +1,4 @@
-import { Android, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
+import { Logout, PowerSettingsNew } from '@mui/icons-material';
 import { currentScroller } from '../../components/layout/pageScroller';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
@@ -9,7 +9,7 @@ import { Dialog, PageHeader } from '../../components/ui';
 import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
 import { useSettingsData } from './useSettingsData';
 import { t } from '../../services/i18n';
-import { isNativeApp } from '../../services/app/nativeShell';
+import { DevicesSection } from './sections/DevicesSection';
 import { effectiveWidth, getDisplayScale } from '../../services/settings/displayScale';
 import { ProfileSection } from './sections/ProfileSection';
 import { PublicProfileSection } from './sections/PublicProfileSection';
@@ -196,29 +196,9 @@ export const SettingsPage = () => {
       ),
       right: (
         <>
+          <DevicesSection isElectron={isElectron} />
           <SGroup title={t('Apps & Hilfe')}>
-            {isElectron ? (
-              <AutoStartToggle />
-            ) : (
-              <SRow
-                icon={DesktopWindows}
-                title={t('Desktop App')}
-                subtitle={t('TV-Rank für Windows herunterladen')}
-                href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank-Setup.exe"
-                download
-                chevron
-              />
-            )}
-            {!isNativeApp() && !isElectron && (
-              <SRow
-                icon={Android}
-                title={t('Android App')}
-                subtitle={t('APK direkt herunterladen und installieren')}
-                href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank.apk"
-                download
-                chevron
-              />
-            )}
+            {isElectron && <AutoStartToggle />}
             <RateAppSection />
             <PageToursSection />
           </SGroup>
