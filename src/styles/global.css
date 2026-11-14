@@ -1436,59 +1436,157 @@ button:active:not(:disabled),
 }
 
 /* Startseiten-Kopf breit: Gruß, Suche + Kennzahlen und Glocke/Profil in einer Zeile; schmaler rutscht die Suche darunter. */
-.home-head-grid {
+.home-head {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 40vw, 900px) auto;
   grid-template-areas:
-    'greet actions'
-    'deck deck';
-  gap: 16px 28px;
+    'greet search actions'
+    'meta meta meta';
   align-items: center;
+  gap: 0 24px;
 }
 
-@media (min-width: 1700px) {
-  .home-head-grid {
-    grid-template-columns: minmax(0, max-content) minmax(560px, 1fr) auto;
-    grid-template-areas: 'greet deck actions';
-  }
+.home-head__top {
+  display: contents;
 }
 
-/* Der Gruß steht allein; Unterlängen (y, g) brauchen Platz unter der Zeile. */
-.home-head-grid .home-greet__text > h1 {
+.home-head__greet {
+  grid-area: greet;
+  min-width: 0;
+}
+
+.home-head__search {
+  grid-area: search;
+}
+
+.home-head__top > :last-child {
+  grid-area: actions;
+}
+
+.home-header:has(.home-head) {
+  position: relative;
+}
+
+/* Sanfter Schimmer in den Akzentfarben hinter dem Gruß: der Kopf soll nicht im Dunkel verschwinden. */
+.home-header:has(.home-head)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 260px;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      900px 240px at 6% 0%,
+      color-mix(in srgb, var(--theme-primary) 16%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      700px 200px at 92% 0%,
+      color-mix(in srgb, var(--theme-accent) 9%, transparent),
+      transparent 70%
+    );
+  z-index: 0;
+}
+
+.home-head__greet > h1 {
   margin: 0 !important;
   line-height: 1.3 !important;
-  /* Kleinbuchstaben sitzen unter der Zeilenmitte — optisch auf die Mitte der Suchleiste heben. */
-  position: relative;
-  top: -0.07em;
+  /* Platz für Unterlängen; hebt die Zeile zugleich optisch auf die Mitte der Suchleiste. */
+  padding-bottom: 0.14em;
+  text-wrap: balance;
 }
 
-/* Uhr als Kennzahl: Zeit groß, Datum klein darunter — wie die Zahlen daneben. */
-.home-clock-pod {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
+/* Der Gruß ist kein Textfeld: keine Auswahl, kein Textcursor. */
+.home-greet__text > h1 {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+  caret-color: transparent;
+}
+
+.home-head__search > button {
+  width: 100%;
+  height: 52px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 26%, transparent);
+  transition:
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.home-head__search > button:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 60%, transparent);
+}
+
+.home-head__key {
+  flex-shrink: 0;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 2px 18px 2px 8px;
-}
-
-.home-clock-pod__time {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-.home-clock-pod__date {
-  font-size: 12.5px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-text-secondary) 10%, transparent);
+  font: inherit;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.home-head__meta {
+  grid-area: meta;
+  min-width: 0;
+  margin-top: -6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 26px;
+}
+
+.home-head__date {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
   white-space: nowrap;
+}
+
+.home-head__stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.home-head__stat > strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.home-head__stat > span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.home-head__stat.is-hot > strong {
+  color: var(--theme-accent);
+}
+
+.home-head__stat:hover > span {
+  color: var(--color-text-secondary);
 }
 
 /* Startseite breit: feine Linie über jeder Sektion, damit die Blöcke nicht ineinanderlaufen. */

@@ -388,7 +388,7 @@ export const HomeSearchOverlay = memo(
 
     // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.
     // Rating-Badge und Zur-Liste-Button), damit beide Grids gleich mächtig sind.
-    const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
+    const renderCard = (item: QuickResult, idx: number, delayStep: number, rank?: number) => {
       const { added, ownRating, watched, busyAction } = statusOf(item);
       const showWatched = item.type === 'movie' && !watched;
       const busy = busyAction !== null;
@@ -424,6 +424,11 @@ export const HomeSearchOverlay = memo(
           }}
         >
           <div className="hso__poster-wrap">
+            {rank !== undefined && (
+              <span className={`hso__rank${rank >= 10 ? ' hso__rank--wide' : ''}`} aria-hidden>
+                <span>{rank}</span>
+              </span>
+            )}
             {item.poster_path ? (
               <img
                 className="hso__poster"
@@ -873,13 +878,7 @@ export const HomeSearchOverlay = memo(
                             <div className="hso__pop-row">
                               {shownPopular.map((item, i) => (
                                 <div key={quickMediaKey(item)} className="hso__ranked">
-                                  <span
-                                    className={`hso__rank${i >= 9 ? ' hso__rank--wide' : ''}`}
-                                    aria-hidden
-                                  >
-                                    <span>{i + 1}</span>
-                                  </span>
-                                  {renderCard(item, i, 0.02)}
+                                  {renderCard(item, i, 0.02, i + 1)}
                                 </div>
                               ))}
                             </div>

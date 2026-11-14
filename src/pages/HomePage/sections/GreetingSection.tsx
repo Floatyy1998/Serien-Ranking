@@ -121,6 +121,24 @@ export const GreetingSection = React.memo(function GreetingSection({
     };
   }, [onSearch]);
 
+  // Schrägstrich öffnet die Suche, solange die Startseite sichtbar ist und nirgends getippt wird.
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (isMobile) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      if (el && (el.matches('input, textarea, select') || el.isContentEditable)) return;
+      if (!headerRef.current || headerRef.current.offsetParent === null) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      if (onSearch) onSearch();
+      else setSearchOpen(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobile, onSearch]);
+
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
   const shown = greetingWithName(
     greeting.text,
@@ -231,6 +249,120 @@ export const GreetingSection = React.memo(function GreetingSection({
     />
   );
 
+  const greetingTitle = title ?? (
+    <GradientText
+      as="h1"
+      from={currentTheme.primary}
+      to={currentTheme.accent}
+      style={{
+        // Aus der nutzbaren Breite gerechnet: unter Anzeige-Zoom
+        // stehen bei 412px nur 330px zur Verfuegung, dort brach der
+        // Gruss sonst auf drei Zeilen um.
+        fontSize: isMobile
+          ? 'clamp(18px, calc(var(--effective-width, 412px) * 0.054), 23px)'
+          : 'clamp(30px, 1.3vw + 18px, 46px)',
+        fontWeight: 800,
+        letterSpacing: '-0.03em',
+        lineHeight: 1.18,
+        margin: '0 0 2px 0',
+        // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
+        // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
+        // sind dort nicht lesbar.
+        display: 'block',
+        alignItems: 'baseline',
+        whiteSpace: 'normal',
+        overflow: 'visible',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <span
+        className="greeting-text"
+        role="button"
+        tabIndex={0}
+        aria-label={t('Sprache des Grußes anzeigen')}
+        onClick={(e) => {
+          e.stopPropagation();
+          setGreetingInfo(greetingInfo ? null : greeting.lang);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            setGreetingInfo(greetingInfo ? null : greeting.lang);
+          }
+        }}
+        style={{
+          cursor: 'pointer',
+          // Nur Einzel-Properties: textDecoration wechselt mit dem Gruß, und
+          // React warnt bei Kurz- und Einzelschreibweise auf demselben Element.
+          textDecorationLine: greeting.title ? 'underline' : 'none',
+          textDecorationStyle: 'dotted',
+          textDecorationColor: currentTheme.primary,
+          textUnderlineOffset: '3px',
+          overflow: 'visible',
+          textOverflow: 'clip',
+          flexShrink: 1,
+          minWidth: 0,
+          // Tap-Highlight/Selektion übermalen den geclippten Gradient
+          // (text-fill transparent) — Text wäre beim Tippen unsichtbar
+          WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+        }}
+      >
+        {shown.text}
+      </span>
+      <span style={{ flexShrink: 0 }}>{shown.tail}</span>
+    </GradientText>
+  );
+
+  const searchButton = (
+    <motion.button
+      type="button"
+      whileTap={tapScaleSmall}
+      onClick={() => (onSearch ? onSearch() : setSearchOpen(true))}
+      aria-label={t('Suche öffnen')}
+      data-search-origin
+      style={{
+        flex: isMobile ? '1 1 100%' : undefined,
+        minWidth: 0,
+        font: 'inherit',
+        textAlign: 'left',
+        background: 'var(--glass-medium)',
+        border: 'none',
+        borderRadius: '16px',
+        padding: isMobile ? '13px 16px' : '0 12px 0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: '12px',
+        cursor: 'pointer',
+      }}
+    >
+      <Search style={{ fontSize: '20px', color: currentTheme.primary, flexShrink: 0 }} />
+      <span
+        style={{
+          flex: 1,
+          color: currentTheme.text.muted,
+          fontSize: '15px',
+          // Einzeilig halten: der Hinweis brach sonst um und machte aus
+          // dem Suchfeld einen doppelt hohen Kasten.
+          minWidth: 0,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {searchHint ?? t('Titel oder Schauspieler')}
+      </span>
+      {!isMobile && (
+        <kbd className="home-head__key" aria-hidden>
+          /
+        </kbd>
+      )}
+    </motion.button>
+  );
+
   return (
     <>
       {/* Tooltip - shows language info and is clickable */}
@@ -295,99 +427,56 @@ export const GreetingSection = React.memo(function GreetingSection({
       {/* Kommando-Deck: EIN zusammenhängendes Glas-Panel statt gestapelter
           Einzelteile — Begrüßung/Uhr/Actions oben, Suche + Daten-Pods darunter. */}
       <header
+        ref={headerRef}
+        className="home-header"
         style={{
           padding: `calc(${isMobile ? '12px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '16px' : '20px'} 0`,
-          marginBottom: isMobile ? '20px' : '24px',
+          marginBottom: isMobile ? '20px' : '10px',
         }}
       >
         {above}
-        <div
-          className={isMobile ? undefined : 'home-head-grid'}
-          style={{ position: 'relative', padding: isMobile ? 0 : '8px 0 0' }}
-        >
-          <div
-            className="home-greet"
-            style={{
-              position: 'relative',
-              display: isMobile ? 'flex' : 'contents',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              gap: '12px',
-            }}
-          >
-            {/* Schmal: Avatar links, Datum + Gruß daneben, Glocke rechts. */}
-            {isMobile && headerActions('avatar')}
-            <div
-              className="home-greet__text"
-              style={{ minWidth: 0, flex: 1, gridArea: isMobile ? undefined : 'greet' }}
-            >
-              {title ?? (
-                <GradientText
-                  as="h1"
-                  from={currentTheme.primary}
-                  to={currentTheme.accent}
-                  style={{
-                    // Aus der nutzbaren Breite gerechnet: unter Anzeige-Zoom
-                    // stehen bei 412px nur 330px zur Verfuegung, dort brach der
-                    // Gruss sonst auf drei Zeilen um.
-                    fontSize: isMobile
-                      ? 'clamp(18px, calc(var(--effective-width, 412px) * 0.054), 23px)'
-                      : 'clamp(28px, 1vw + 20px, 38px)',
-                    fontWeight: 800,
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1.18,
-                    margin: '0 0 2px 0',
-                    // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
-                    // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
-                    // sind dort nicht lesbar.
-                    display: isMobile ? 'block' : 'flex',
-                    alignItems: 'baseline',
-                    whiteSpace: isMobile ? 'normal' : 'nowrap',
-                    overflow: 'hidden',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}
+        {!isMobile && (
+          <div className="home-head">
+            <div className="home-head__top">
+              <div className="home-greet__text home-head__greet">{greetingTitle}</div>
+              <div className="home-head__search">{searchButton}</div>
+              {headerActions()}
+            </div>
+            <div className="home-head__meta">
+              <span className="home-head__date">
+                <LiveClock />
+              </span>
+              {(showStatPods ? statPods : []).map((pod) => (
+                <button
+                  key={pod.key}
+                  type="button"
+                  className={`home-head__stat${pod.highlight ? ' is-hot' : ''}`}
+                  onClick={() => navigate(pod.to)}
+                  aria-label={`${pod.value} ${pod.label}`}
                 >
-                  <span
-                    className="greeting-text"
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('Sprache des Grußes anzeigen')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setGreetingInfo(greetingInfo ? null : greeting.lang);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setGreetingInfo(greetingInfo ? null : greeting.lang);
-                      }
-                    }}
-                    style={{
-                      cursor: 'pointer',
-                      // Nur Einzel-Properties: textDecoration wechselt mit dem Gruß, und
-                      // React warnt bei Kurz- und Einzelschreibweise auf demselben Element.
-                      textDecorationLine: greeting.title ? 'underline' : 'none',
-                      textDecorationStyle: 'dotted',
-                      textDecorationColor: currentTheme.primary,
-                      textUnderlineOffset: '3px',
-                      overflow: isMobile ? 'visible' : 'hidden',
-                      textOverflow: isMobile ? 'clip' : 'ellipsis',
-                      flexShrink: 1,
-                      minWidth: 0,
-                      // Tap-Highlight/Selektion übermalen den geclippten Gradient
-                      // (text-fill transparent) — Text wäre beim Tippen unsichtbar
-                      WebkitTapHighlightColor: 'transparent',
-                      userSelect: 'none',
-                      WebkitUserSelect: 'none',
-                    }}
-                  >
-                    {shown.text}
-                  </span>
-                  <span style={{ flexShrink: 0 }}>{shown.tail}</span>
-                </GradientText>
-              )}
-              {isMobile && (
+                  <strong>{pod.value}</strong>
+                  <span>{pod.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {isMobile && (
+          <div style={{ position: 'relative' }}>
+            <div
+              className="home-greet"
+              style={{
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '12px',
+              }}
+            >
+              {/* Schmal: Avatar links, Datum + Gruß daneben, Glocke rechts. */}
+              {headerActions('avatar')}
+              <div className="home-greet__text" style={{ minWidth: 0, flex: 1 }}>
+                {greetingTitle}
                 <p
                   className="home-greet__clock"
                   style={{
@@ -398,125 +487,76 @@ export const GreetingSection = React.memo(function GreetingSection({
                 >
                   <LiveClock />
                 </p>
-              )}
+              </div>
+
+              {headerActions('bell')}
             </div>
 
-            {isMobile ? (
-              headerActions('bell')
-            ) : (
-              <div style={{ gridArea: 'actions' }}>{headerActions()}</div>
-            )}
-          </div>
-
-          {/* Suche + Daten-Pods — eine Zeile auf Desktop, gestapelt auf Mobile. */}
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              flexWrap: isMobile ? 'wrap' : 'nowrap',
-              gap: isMobile ? '18px 0' : '10px',
-              marginTop: isMobile ? '16px' : 0,
-              minWidth: 0,
-              gridArea: isMobile ? undefined : 'deck',
-              alignItems: 'stretch',
-            }}
-          >
-            <motion.button
-              type="button"
-              whileTap={tapScaleSmall}
-              onClick={() => (onSearch ? onSearch() : setSearchOpen(true))}
-              aria-label={t('Suche öffnen')}
-              data-search-origin
+            <div
               style={{
-                flex: isMobile ? '1 1 100%' : '1 1 auto',
-                minWidth: 0,
-                font: 'inherit',
-                textAlign: 'left',
-                background: 'var(--glass-medium)',
-                border: 'none',
-                borderRadius: '16px',
-                padding: isMobile ? '13px 16px' : '15px 18px',
+                position: 'relative',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: '12px',
-                cursor: 'pointer',
+                flexWrap: 'wrap',
+                gap: '18px 0',
+                marginTop: '16px',
+                minWidth: 0,
+                alignItems: 'stretch',
               }}
             >
-              <Search style={{ fontSize: '20px', color: currentTheme.primary, flexShrink: 0 }} />
-              <span
-                style={{
-                  color: currentTheme.text.muted,
-                  fontSize: '15px',
-                  // Einzeilig halten: der Hinweis brach sonst um und machte aus
-                  // dem Suchfeld einen doppelt hohen Kasten.
-                  minWidth: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {searchHint ?? t('Titel oder Schauspieler')}
-              </span>
-            </motion.button>
+              {searchButton}
 
-            {!isMobile && (
-              <div className="home-clock-pod">
-                <LiveClock variant="pod" />
-              </div>
-            )}
-
-            {(showStatPods ? statPods : []).map((pod, index) => (
-              <motion.button
-                key={pod.key}
-                type="button"
-                whileTap={tapScaleSmall}
-                onClick={() => navigate(pod.to)}
-                aria-label={`${pod.value} ${pod.label}`}
-                style={{
-                  flex: isMobile ? '1 1 0' : '0 0 auto',
-                  minWidth: isMobile ? 0 : '86px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '3px',
-                  padding: isMobile ? '2px 4px' : '2px 18px',
-                  borderRadius: 0,
-                  background: 'none',
-                  border: 'none',
-                  boxShadow: index > 0 || !isMobile ? 'inset 1px 0 0 var(--hairline)' : 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <span
+              {(showStatPods ? statPods : []).map((pod, index) => (
+                <motion.button
+                  key={pod.key}
+                  type="button"
+                  whileTap={tapScaleSmall}
+                  onClick={() => navigate(pod.to)}
+                  aria-label={`${pod.value} ${pod.label}`}
                   style={{
-                    fontSize: isMobile ? '22px' : '26px',
-                    fontWeight: 800,
-                    letterSpacing: '-0.03em',
-                    fontFamily: 'var(--font-display)',
-                    fontVariantNumeric: 'tabular-nums',
-                    color: pod.highlight ? currentTheme.accent : currentTheme.text.secondary,
-                    lineHeight: 1.1,
-                    whiteSpace: 'nowrap',
+                    flex: '1 1 0',
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '3px',
+                    padding: '2px 4px',
+                    borderRadius: 0,
+                    background: 'none',
+                    border: 'none',
+                    boxShadow: index > 0 ? 'inset 1px 0 0 var(--hairline)' : 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  {pod.value}
-                </span>
-                <span
-                  style={{
-                    fontSize: isMobile ? '11.5px' : '12.5px',
-                    fontWeight: 600,
-                    color: currentTheme.text.muted,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {pod.label}
-                </span>
-              </motion.button>
-            ))}
+                  <span
+                    style={{
+                      fontSize: '22px',
+                      fontWeight: 800,
+                      letterSpacing: '-0.03em',
+                      fontFamily: 'var(--font-display)',
+                      fontVariantNumeric: 'tabular-nums',
+                      color: pod.highlight ? currentTheme.accent : currentTheme.text.secondary,
+                      lineHeight: 1.1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {pod.value}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      fontWeight: 600,
+                      color: currentTheme.text.muted,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {pod.label}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {!onSearch && <HomeSearchOverlay open={searchOpen} onClose={closeSearch} />}
