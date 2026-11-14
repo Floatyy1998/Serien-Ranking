@@ -92,8 +92,8 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
               gap: isMobile ? '3px' : '10px',
               padding: isMobile ? '9px 4px 8px' : '12px',
               borderRadius: '14px',
-              background: `color-mix(in srgb, ${currentTheme.text.secondary} 6%, transparent)`,
-              border: 'none',
+              background: `linear-gradient(160deg, color-mix(in srgb, ${a.color} 9%, transparent), transparent 60%), var(--glass-light)`,
+              border: `1px solid color-mix(in srgb, ${a.color} 10%, transparent)`,
               cursor: 'pointer',
             }}
           >
@@ -219,8 +219,8 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
             className="home-quick-tile"
             style={{
               padding: isMobile ? '9px 10px' : '12px 10px',
-              background: `color-mix(in srgb, ${a.color} 9%, transparent)`,
-              border: 'none',
+              background: `linear-gradient(160deg, color-mix(in srgb, ${a.color} 10%, transparent), transparent 60%), var(--glass-light)`,
+              border: `1px solid color-mix(in srgb, ${a.color} 12%, transparent)`,
               borderRadius: '14px',
               color: a.color,
               cursor: 'pointer',
