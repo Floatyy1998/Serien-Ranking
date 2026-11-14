@@ -1,6 +1,5 @@
 /**
- * Bento-Grid-Komposition. Logik in useStatsData,
- * Pods in StatsComponents/StatsDetailSections, Layout in StatsPage.css.
+ * Statistikseite. Logik in useStatsData, Bausteine in StatsBoard.
  */
 
 import { ReadingStatsBanner } from '../Books/components/ReadingStatsBanner';
@@ -11,15 +10,8 @@ import { EmptyState, IconButton, PageHeader, PageLayout } from '../../components
 import { useTheme } from '../../contexts/ThemeContext';
 import { useFriendTotalsRank } from '../../hooks/social/useFriendTotalsRank';
 import { hapticTap } from '../../lib/interaction/haptics';
-import {
-  ActorUniverseBanner,
-  ProgressPod,
-  QuickPods,
-  RatingsSection,
-  TopGenresSection,
-  TopProvidersSection,
-  WatchtimePod,
-} from './StatsComponents';
+import { ActorUniverseBanner } from './StatsComponents';
+import { StatsCounting, StatsFigures, StatsHero, StatsProgress, StatsRanking } from './StatsBoard';
 import { StatsShareSheet } from './StatsShareCard';
 import { formatTime, useStatsData } from './useStatsData';
 import { t } from '../../services/i18n';
@@ -105,27 +97,21 @@ export const StatsPage = () => {
         </button>
       )}
 
-      <div className="stats-bento">
-        <WatchtimePod stats={stats} timeData={timeData} theme={currentTheme} />
-        <ProgressPod stats={stats} theme={currentTheme} />
-        <QuickPods stats={stats} theme={currentTheme} />
-        <RatingsSection
-          avgSeriesRating={stats.avgSeriesRating}
-          avgMovieRating={stats.avgMovieRating}
-          theme={currentTheme}
-        />
-        <TopGenresSection
-          genres={stats.topGenres}
-          theme={currentTheme}
-          wide={stats.topProviders.length === 0}
-        />
-        <TopProvidersSection
-          providers={stats.topProviders}
-          theme={currentTheme}
-          wide={stats.topGenres.length === 0}
-        />
-        <ActorUniverseBanner theme={currentTheme} onNavigate={navigateToActors} />
-        <ReadingStatsBanner />
+      <div className="sb">
+        <StatsHero stats={stats} timeData={timeData} />
+        <StatsProgress stats={stats} color={currentTheme.primary} />
+        <StatsFigures stats={stats} />
+        {(stats.topGenres.length > 0 || stats.topProviders.length > 0) && (
+          <div className="sb-lists">
+            <StatsRanking title={t('Top Genres')} items={stats.topGenres} translate />
+            <StatsRanking title={t('Streaming-Dienste')} items={stats.topProviders} />
+          </div>
+        )}
+        <StatsCounting stats={stats} onOpenHidden={() => navigate('/hidden-series')} />
+        <div className="sb-more">
+          <ActorUniverseBanner theme={currentTheme} onNavigate={navigateToActors} />
+          <ReadingStatsBanner />
+        </div>
       </div>
 
       <StatsShareSheet

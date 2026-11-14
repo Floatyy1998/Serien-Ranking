@@ -264,6 +264,50 @@ const dict: Record<string, string> = {
     'Android sem Play Store: descarregar o APK diretamente',
   'Hier bist du gerade': 'Estás aqui agora',
   Website: 'Site',
+  // Statistik: Zählweise
+  'So wird gezählt': 'Como contamos',
+  'Du hast {n} Serien ausgeblendet. Was du davon gesehen hast, bleibt gesehen — deine Sammlung beschreiben sie aber nicht mehr.':
+    'Ocultaste {n} séries. O que viste delas continua visto — mas já não descrevem a tua coleção.',
+  'Mit ausgeblendeten': 'Com as ocultas',
+  'Schauzeit, gesehene Folgen ({n} davon aus ausgeblendeten Serien), letzte Woche':
+    'Tempo visto, episódios vistos ({n} deles de séries ocultas), última semana',
+  'Nur sichtbare': 'Só as visíveis',
+  'Anzahl Serien, Fortschritt, abgeschlossen, Bewertungen, Genres, Anbieter':
+    'Número de séries, progresso, concluídas, avaliações, géneros, plataformas',
+  'Ausgeblendete Serien ansehen': 'Ver séries ocultas',
+  'Folgen deiner begonnenen Serien gesehen': 'Episódios vistos das tuas séries começadas',
+  '{done} von {total} Serien fertig': '{done} de {total} séries concluídas',
+  'Folgen gesehen': 'Episódios vistos',
+  'Folgen diese Woche': 'Episódios esta semana',
+  'Ø Serien-Wertung': 'Média das séries',
+  'Ø Film-Wertung': 'Média dos filmes',
+  // Design-Seite
+  'Vorschau: {name}': 'Pré-visualização: {name}',
+  Vorschau: 'Pré-visualização',
+  '{name} übernehmen': 'Aplicar {name}',
+  'So sieht TV-Rank mit deinen Farben aus. Wähl ein Theme, um es hier zu testen — gespeichert wird erst, wenn du es übernimmst.':
+    'É assim que o TV-Rank fica com as tuas cores. Escolhe um tema para o testar aqui — nada é guardado até o aplicares.',
+  Verwerfen: 'Descartar',
+  // Community-Designs
+  Community: 'Comunidade',
+  'Mein Design teilen': 'Partilhar o meu design',
+  'Deine Designs wurden {n}× von anderen übernommen.':
+    'Os teus designs foram adotados {n}× por outros.',
+  'Designs von anderen — und deins für alle, wenn du magst.':
+    'Designs de outros — e o teu para todos, se quiseres.',
+  'Name deines Designs': 'Nome do teu design',
+  'Geteilt werden deine fünf Farben, der Name und dein Anzeigename. Du kannst das Design jederzeit wieder entfernen.':
+    'São partilhadas as tuas cinco cores, o nome e o teu nome visível. Podes remover o design a qualquer momento.',
+  'Das Design konnte nicht geteilt werden.': 'Não foi possível partilhar o design.',
+  'Die Community-Designs sind gerade nicht erreichbar.':
+    'Os designs da comunidade não estão disponíveis de momento.',
+  'Noch hat niemand ein Design geteilt. Mach den Anfang.':
+    'Ainda ninguém partilhou um design. Sê o primeiro.',
+  'von dir': 'teu',
+  'von {name}': 'de {name}',
+  'Aus der Community entfernen': 'Remover da comunidade',
+  'wird geprüft': 'em revisão',
+  'Wie soll dein Design heißen?': 'Como se vai chamar o teu design?',
 };
 
 export default dict;

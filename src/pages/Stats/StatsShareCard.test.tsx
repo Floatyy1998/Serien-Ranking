@@ -30,6 +30,9 @@ import { StatsShareSheet } from './StatsShareCard';
 
 const stats = {
   watchedEpisodes: 1200,
+  watchedEpisodesAll: 1200,
+  hiddenSeries: 0,
+  hiddenWatchedEpisodes: 0,
   totalSeries: 40,
   totalMovies: 12,
   topGenres: [{ name: 'Drama', count: 5 }],

@@ -161,7 +161,7 @@ const StatsShareCard: React.FC<StatsShareCardProps> = ({ stats, timeData }) => {
 
       {/* Kern-Zahlen */}
       <div style={{ display: 'flex', gap: 24 }}>
-        <StatTile value={stats.watchedEpisodes.toLocaleString('de-DE')} label={t('Episoden')} />
+        <StatTile value={stats.watchedEpisodesAll.toLocaleString('de-DE')} label={t('Episoden')} />
         <StatTile value={stats.totalSeries.toLocaleString('de-DE')} label={t('Serien')} />
         <StatTile value={stats.totalMovies.toLocaleString('de-DE')} label={t('Filme')} />
       </div>
@@ -192,7 +192,7 @@ export const StatsShareSheet: React.FC<StatsShareSheetProps> = ({
   const shareText = t(
     'Meine TV-Rank Stats: {episodes} Episoden, {time} Watchtime, {series} Serien & {movies} Filme. tv-rank.de',
     {
-      episodes: stats.watchedEpisodes.toLocaleString('de-DE'),
+      episodes: stats.watchedEpisodesAll.toLocaleString('de-DE'),
       time: `${timeData.value} ${timeData.unit}`,
       series: stats.totalSeries,
       movies: stats.totalMovies,

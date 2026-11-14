@@ -18,7 +18,12 @@ import { t } from '../../services/i18n';
 
 export interface StatsData {
   totalSeries: number;
+  /** Gesehene Folgen der sichtbaren Serien — Zähler des Fortschritts. */
   watchedEpisodes: number;
+  /** Alle gesehenen Folgen, ausgeblendete Serien eingeschlossen — passt zur Schauzeit. */
+  watchedEpisodesAll: number;
+  hiddenSeries: number;
+  hiddenWatchedEpisodes: number;
   totalEpisodes: number;
   totalMovies: number;
   watchedMovies: number;
@@ -37,6 +42,9 @@ export interface StatsData {
 const EMPTY_STATS: StatsData = {
   totalSeries: 0,
   watchedEpisodes: 0,
+  watchedEpisodesAll: 0,
+  hiddenSeries: 0,
+  hiddenWatchedEpisodes: 0,
   totalEpisodes: 0,
   totalMovies: 0,
   watchedMovies: 0,
@@ -181,6 +189,19 @@ export const useStatsData = (): StatsData => {
       }
     });
 
+    // Ausgeblendet heißt „nicht mehr zeigen", nicht „nie gesehen": geschaute Folgen zählen weiter.
+    let hiddenSeries = 0;
+    let hiddenWatchedEpisodes = 0;
+    allSeriesList.forEach((series) => {
+      if (!series?.hidden) return;
+      hiddenSeries++;
+      normalizeSeasons(series.seasons).forEach((season) => {
+        normalizeEpisodes(season.episodes).forEach((ep) => {
+          if (countsAsAired(ep) && isEpisodeWatched(ep)) hiddenWatchedEpisodes++;
+        });
+      });
+    });
+
     // Watch time: ALL series including hidden (you watched those episodes)
     const lifetime = computeLibraryTotals(allSeriesList, movieList);
     const seriesMinutes = lifetime.seriesMinutes;
@@ -283,6 +304,9 @@ export const useStatsData = (): StatsData => {
     return {
       totalSeries,
       watchedEpisodes,
+      watchedEpisodesAll: watchedEpisodes + hiddenWatchedEpisodes,
+      hiddenSeries,
+      hiddenWatchedEpisodes,
       totalEpisodes: totalAiredEpisodes,
       totalMovies,
       watchedMovies,

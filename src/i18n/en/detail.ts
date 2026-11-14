@@ -288,6 +288,50 @@ const dict: Record<string, string> = {
     'Android without Play Store: download the APK directly',
   'Hier bist du gerade': 'You are here right now',
   Website: 'Website',
+  // Statistik: Zählweise
+  'So wird gezählt': 'How we count',
+  'Du hast {n} Serien ausgeblendet. Was du davon gesehen hast, bleibt gesehen — deine Sammlung beschreiben sie aber nicht mehr.':
+    'You have hidden {n} series. What you watched of them stays watched — but they no longer describe your collection.',
+  'Mit ausgeblendeten': 'Including hidden',
+  'Schauzeit, gesehene Folgen ({n} davon aus ausgeblendeten Serien), letzte Woche':
+    'Watch time, watched episodes ({n} of them from hidden series), last week',
+  'Nur sichtbare': 'Visible only',
+  'Anzahl Serien, Fortschritt, abgeschlossen, Bewertungen, Genres, Anbieter':
+    'Number of series, progress, completed, ratings, genres, providers',
+  'Ausgeblendete Serien ansehen': 'View hidden series',
+  'Folgen deiner begonnenen Serien gesehen': 'Episodes of your started series watched',
+  '{done} von {total} Serien fertig': '{done} of {total} series finished',
+  'Folgen gesehen': 'Episodes watched',
+  'Folgen diese Woche': 'Episodes this week',
+  'Ø Serien-Wertung': 'Avg. series rating',
+  'Ø Film-Wertung': 'Avg. movie rating',
+  // Design-Seite
+  'Vorschau: {name}': 'Preview: {name}',
+  Vorschau: 'Preview',
+  '{name} übernehmen': 'Apply {name}',
+  'So sieht TV-Rank mit deinen Farben aus. Wähl ein Theme, um es hier zu testen — gespeichert wird erst, wenn du es übernimmst.':
+    'This is how TV-Rank looks with your colours. Pick a theme to try it here — nothing is saved until you apply it.',
+  Verwerfen: 'Discard',
+  // Community-Designs
+  Community: 'Community',
+  'Mein Design teilen': 'Share my design',
+  'Deine Designs wurden {n}× von anderen übernommen.':
+    'Your designs have been adopted {n}× by others.',
+  'Designs von anderen — und deins für alle, wenn du magst.':
+    'Designs by others — and yours for everyone, if you like.',
+  'Name deines Designs': 'Name of your design',
+  'Geteilt werden deine fünf Farben, der Name und dein Anzeigename. Du kannst das Design jederzeit wieder entfernen.':
+    'Shared are your five colours, the name and your display name. You can remove the design again at any time.',
+  'Das Design konnte nicht geteilt werden.': 'The design could not be shared.',
+  'Die Community-Designs sind gerade nicht erreichbar.':
+    'The community designs are not reachable right now.',
+  'Noch hat niemand ein Design geteilt. Mach den Anfang.':
+    'Nobody has shared a design yet. Be the first.',
+  'von dir': 'by you',
+  'von {name}': 'by {name}',
+  'Aus der Community entfernen': 'Remove from community',
+  'wird geprüft': 'under review',
+  'Wie soll dein Design heißen?': 'What should your design be called?',
 };
 
 export default dict;

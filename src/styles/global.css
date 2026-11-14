@@ -929,6 +929,11 @@ button:active:not(:disabled),
 }
 
 /* Kind mit eigener Opacity fällt aus der background-clip:text-Maske und wird unsichtbar */
+/* Verlaufsschrift wird nur innerhalb ihrer Box gemalt: ohne Luft nach unten fehlen g, y, p die Enden. */
+.gradient-text {
+  padding-bottom: 0.16em;
+}
+
 .gradient-text [role='button']:active {
   opacity: 1;
 }

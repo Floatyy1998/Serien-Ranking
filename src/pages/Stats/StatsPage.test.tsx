@@ -30,12 +30,13 @@ vi.mock('./useStatsData', () => ({
 }));
 vi.mock('./StatsComponents', () => ({
   ActorUniverseBanner: () => <div data-testid="actor-banner" />,
-  WatchtimePod: () => <div data-testid="watchtime" />,
-  ProgressPod: () => null,
-  QuickPods: () => null,
-  RatingsSection: () => null,
-  TopGenresSection: () => null,
-  TopProvidersSection: () => null,
+}));
+vi.mock('./StatsBoard', () => ({
+  StatsHero: () => <div data-testid="watchtime" />,
+  StatsProgress: () => null,
+  StatsFigures: () => null,
+  StatsRanking: () => null,
+  StatsCounting: () => null,
 }));
 vi.mock('./StatsShareCard', () => ({
   StatsShareSheet: ({ isOpen }: { isOpen: boolean }) =>

@@ -684,3 +684,68 @@
   border: none !important;
   justify-content: flex-start;
 }
+
+/* Zählweise offenlegen: was ausgeblendete Serien beitragen und was nicht. */
+.stats-counting {
+  grid-column: 1 / -1;
+  padding: 22px 0 6px;
+  border-top: 1px solid var(--hairline);
+}
+
+.stats-counting__title {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}
+
+.stats-counting__lead {
+  max-width: 68ch;
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.stats-counting__rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px 40px;
+  margin: 0 0 16px;
+}
+
+.stats-counting__rows dt {
+  margin-bottom: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--theme-primary);
+}
+
+.stats-counting__rows dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.stats-counting__link,
+.mobile-app button.stats-counting__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.stats-counting__link:hover {
+  color: var(--theme-primary);
+}

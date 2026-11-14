@@ -1,0 +1,428 @@
+/* Statistikseite: große Zahlen frei auf der Fläche, Haarlinien statt Kästen. */
+
+.sb {
+  --sb-ink: var(--color-text-secondary, #fff);
+  --sb-ink-2: color-mix(in srgb, var(--color-text-secondary, #fff) 72%, transparent);
+  --sb-ink-3: color-mix(in srgb, var(--color-text-secondary, #fff) 50%, transparent);
+  --sb-line: color-mix(in srgb, var(--color-text-secondary, #fff) 12%, transparent);
+  --sb-soft: color-mix(in srgb, var(--color-text-secondary, #fff) 8%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 0 var(--page-x, 16px) var(--page-bottom-gap, 24px);
+  color: var(--sb-ink);
+}
+
+.sb > * {
+  min-width: 0;
+  padding: 26px 0;
+  border-top: 1px solid var(--sb-line);
+}
+
+.sb > *:last-child {
+  padding-bottom: 0;
+}
+
+.sb > *:first-child {
+  border-top: none;
+  padding-top: 6px;
+}
+
+.sb-label {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--sb-ink);
+}
+
+/* ───────── Schauzeit ───────── */
+
+.sb-hero__time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 clamp(16px, 2.4vw, 40px);
+  margin: 0 0 22px;
+}
+
+.sb-hero__part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sb-hero__num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(56px, 5.4vw, 100px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, var(--theme-primary), var(--theme-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-right: 0.04em;
+}
+
+.sb-hero__unit {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.3vw, 23px);
+  font-weight: 700;
+  color: var(--sb-ink-2);
+}
+
+.sb-split {
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--theme-accent);
+}
+
+.sb-split__series {
+  display: block;
+  height: 100%;
+  background: var(--theme-primary);
+  box-shadow: 2px 0 0 var(--theme-background, #1c1320);
+}
+
+.sb-split__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin-top: 12px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--sb-ink-2);
+}
+
+.sb-split__legend > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.sb-split__legend strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink);
+}
+
+.sb-split__legend em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink-3);
+}
+
+.sb-dot {
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.sb-dot--series {
+  background: var(--theme-primary);
+}
+
+.sb-dot--movies {
+  background: var(--theme-accent);
+}
+
+/* ───────── Fortschritt ───────── */
+
+.sb-progress__body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.sb-ring {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.sb-ring__value {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-progress__text {
+  min-width: 0;
+}
+
+.sb-progress__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+}
+
+.sb-progress__count strong {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 2.6vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-progress__count span {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink-3);
+}
+
+.sb-progress__note {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--sb-ink-2);
+}
+
+.sb-progress__done {
+  margin: 14px 0 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--sb-ink);
+}
+
+/* ───────── Kennzahlen ───────── */
+
+.sb-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 22px 0;
+}
+
+.sb-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 20px;
+  border-left: 1px solid var(--sb-line);
+}
+
+.sb-figure__value {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 2.5vw, 46px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-figure.is-hot .sb-figure__value {
+  color: var(--theme-accent);
+}
+
+.sb-figure__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sb-ink-2);
+}
+
+.sb-figure__sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink-3);
+}
+
+/* ───────── Ranglisten ───────── */
+
+.sb-lists {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 34px;
+}
+
+.sb-rank__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sb-rank__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0 13px;
+}
+
+.sb-rank__pos {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink-3);
+}
+
+.sb-rank__row:first-child .sb-rank__pos {
+  color: var(--theme-accent);
+}
+
+.sb-rank__name {
+  font-size: 15.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sb-rank__count {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-ink-2);
+}
+
+.sb-rank__bar {
+  position: absolute;
+  left: 36px;
+  right: 0;
+  bottom: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--theme-primary) var(--sb-fill, 0%),
+    var(--sb-soft) var(--sb-fill, 0%)
+  );
+}
+
+/* ───────── Zählweise ───────── */
+
+.sb-counting__lead {
+  max-width: 70ch;
+  margin: -6px 0 20px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--sb-ink-2);
+}
+
+.sb-counting__rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px 40px;
+  margin: 0 0 10px;
+}
+
+.sb-counting__rows dt {
+  margin-bottom: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--theme-primary);
+}
+
+.sb-counting__rows dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+.sb-counting__link,
+.mobile-app button.sb-counting__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sb-ink);
+  cursor: pointer;
+}
+
+.sb-counting__link:hover {
+  color: var(--theme-primary);
+}
+
+.sb-more {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.sb-more > * {
+  grid-column: auto !important;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* ───────── Breit ───────── */
+
+@media (min-width: 1100px) {
+  :root:not([data-layout='mobile']) .sb {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    column-gap: clamp(32px, 4vw, 80px);
+  }
+
+  :root:not([data-layout='mobile']) .sb > * {
+    grid-column: 1 / -1;
+    padding: 32px 0;
+  }
+
+  :root:not([data-layout='mobile']) .sb > .sb-hero {
+    grid-column: 1;
+    padding-top: 10px;
+  }
+
+  :root:not([data-layout='mobile']) .sb > .sb-progress {
+    grid-column: 2;
+    border-top: none;
+    padding-top: 10px;
+  }
+
+  :root:not([data-layout='mobile']) .sb-lists {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(32px, 4vw, 80px);
+  }
+
+  :root:not([data-layout='mobile']) .sb-more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :root:not([data-layout='mobile']) .sb-figure:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+/* ───────── Schmal ───────── */
+
+:root[data-layout='mobile'] .sb-figures {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 0;
+}
+
+:root[data-layout='mobile'] .sb-figure {
+  padding: 0 14px;
+}
+
+:root[data-layout='mobile'] .sb-figure:nth-child(odd) {
+  padding-left: 0;
+  border-left: none;
+}
+
+:root[data-layout='mobile'] .sb-progress__body {
+  gap: 18px;
+}
