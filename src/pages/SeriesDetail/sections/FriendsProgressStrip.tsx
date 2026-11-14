@@ -1,5 +1,6 @@
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import Star from '@mui/icons-material/Star';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +66,7 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
         style={{ color: currentTheme.text.primary }}
         aria-expanded={open}
       >
-        <span className="friends-progress-title">{t('Freunde')}</span>
+        <span className="friends-progress-title">{t('So weit sind deine Freunde')}</span>
         <span className="friends-progress-count-inline" style={{ color: currentTheme.text.muted }}>
           {entries.length}
         </span>
@@ -90,31 +91,36 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
               {entries.map((entry, idx) => {
                 const pctDiff = entry.percentage - userPercentage;
                 const epDiff = entry.watched - userWatched;
-                const tint = entry.completed
-                  ? currentTheme.accent
-                  : pctDiff > 0
-                    ? currentTheme.status?.warning || '#ffb15c'
-                    : pctDiff === 0
-                      ? currentTheme.secondary
-                      : currentTheme.primary;
+                const tint = !entry.hasStarted
+                  ? currentTheme.text.muted
+                  : entry.completed
+                    ? currentTheme.accent
+                    : pctDiff > 0
+                      ? currentTheme.status?.warning || '#ffb15c'
+                      : pctDiff === 0
+                        ? currentTheme.secondary
+                        : currentTheme.primary;
 
                 const position =
                   entry.latestSeason != null && entry.latestEpisode != null
-                    ? `S${entry.latestSeason}E${entry.latestEpisode}`
+                    ? t('Zuletzt S{s} E{e}', { s: entry.latestSeason, e: entry.latestEpisode })
                     : null;
 
-                const diffLabel =
-                  epDiff === 0
-                    ? entry.completed
-                      ? t('Beide durch')
-                      : t('Gleichauf')
-                    : epDiff > 0
-                      ? epDiff === 1
-                        ? t('1 Folge voraus')
-                        : t('{n} Folgen voraus', { n: epDiff })
-                      : Math.abs(epDiff) === 1
-                        ? t('1 Folge hinter')
-                        : t('{n} Folgen hinter', { n: Math.abs(epDiff) });
+                const diffLabel = entry.progressUnknown
+                  ? t('In der Sammlung')
+                  : !entry.hasStarted
+                    ? t('Noch nicht begonnen')
+                    : epDiff === 0
+                      ? entry.completed
+                        ? t('Beide durch')
+                        : t('Gleichauf mit dir')
+                      : epDiff > 0
+                        ? epDiff === 1
+                          ? t('1 Folge vor dir')
+                          : t('{n} Folgen vor dir', { n: epDiff })
+                        : Math.abs(epDiff) === 1
+                          ? t('1 Folge hinter dir')
+                          : t('{n} Folgen hinter dir', { n: Math.abs(epDiff) });
 
                 return (
                   <motion.button
@@ -150,6 +156,15 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
                       >
                         {entry.displayName}
                         <NameBadges uid={entry.uid} />
+                        {entry.rating > 0 && (
+                          <span
+                            className="friend-progress-rating"
+                            aria-label={t('Bewertung: {wert}', { wert: entry.rating.toFixed(1) })}
+                          >
+                            <Star aria-hidden style={{ fontSize: 13 }} />
+                            {entry.rating.toFixed(1)}
+                          </span>
+                        )}
                       </div>
                       <div
                         className="friend-progress-status"
@@ -167,10 +182,14 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
 
                     <div
                       className="friend-progress-pct"
-                      style={{ color: currentTheme.text.primary }}
+                      style={{
+                        color: currentTheme.text.primary,
+                        visibility: entry.progressUnknown ? 'hidden' : undefined,
+                      }}
                     >
                       {entry.percentage}
                       <span className="friend-progress-pct-unit">%</span>
+                      <span className="friend-progress-pct-label">{t('gesehen')}</span>
                     </div>
 
                     <div className="friend-progress-bar-rail">

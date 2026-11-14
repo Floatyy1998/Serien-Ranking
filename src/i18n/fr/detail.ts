@@ -33,6 +33,7 @@ const dict: Record<string, string> = {
   'Recap der letzten {n} Folgen': 'Résumé des {n} derniers épisodes',
   '· zuletzt vor 1 Tag': '· vu il y a 1 jour',
   'Von Watchlist entfernen': 'Retirer de ma liste',
+  'Auf Watchlist': 'Dans ma liste',
   Watchlist: 'Ma liste',
   'Zur Watchlist hinzufügen': 'Ajouter à ma liste',
   '· zuletzt vor {n} Tagen': '· vu il y a {n} jours',
@@ -226,6 +227,20 @@ const dict: Record<string, string> = {
   '{done} von {total} Bänden': '{done} tomes sur {total}',
   '{done} von {total} Kapiteln': '{done} chapitres sur {total}',
   'Ø Wertung': 'Note moy.',
+  // Freunde-Fortschritt + Staffel abhaken, klarer benannt
+  'So weit sind deine Freunde': 'Où en sont tes amis',
+  'Zuletzt S{s} E{e}': 'Dernier vu S{s} E{e}',
+  'Gleichauf mit dir': 'Au même point que toi',
+  '1 Folge vor dir': '1 épisode d’avance sur toi',
+  '{n} Folgen vor dir': '{n} épisodes d’avance sur toi',
+  '1 Folge hinter dir': '1 épisode de retard sur toi',
+  '{n} Folgen hinter dir': '{n} épisodes de retard sur toi',
+  'Alle {n} erschienenen Folgen als gesehen markieren': 'Marquer les {n} épisodes sortis comme vus',
+  'Restliche {n} erschienenen Folgen als gesehen markieren':
+    'Marquer les {n} épisodes sortis restants comme vus',
+  'In der Sammlung': 'Dans sa collection',
+  'Noch nicht begonnen': 'Pas encore commencé',
+  'Bewertung: {wert}': 'Note : {wert}',
 };
 
 export default dict;

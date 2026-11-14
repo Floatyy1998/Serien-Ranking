@@ -1,7 +1,7 @@
 import {
   Add,
   BookmarkAdd,
-  BookmarkRemove,
+  BookmarkAdded,
   CheckCircle,
   Delete,
   Star,
@@ -11,12 +11,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
-import {
-  FriendsWhoHaveThis,
-  ProviderBadges,
-  ProviderOverrideButton,
-  VideoGallery,
-} from '../../../components/detail';
+import { ProviderBadges, ProviderOverrideButton, VideoGallery } from '../../../components/detail';
 import {
   ActionTiles,
   DetailStage,
@@ -344,7 +339,7 @@ export const HeroSection = memo<HeroSectionProps>(
       <ActionTiles>
         <motion.button whileTap={tapDim} onClick={onNavigateEpisodes} className={actionClass()}>
           <ViewList style={{ fontSize: iconSize }} />
-          <span className="dk-action__label">{t('Episoden')}</span>
+          <span className="dk-action__label">{t('Alle Folgen')}</span>
         </motion.button>
 
         <motion.button
@@ -366,11 +361,13 @@ export const HeroSection = memo<HeroSectionProps>(
           }
         >
           {series.watchlist ? (
-            <BookmarkRemove style={{ fontSize: iconSize }} />
+            <BookmarkAdded style={{ fontSize: iconSize }} />
           ) : (
             <BookmarkAdd style={{ fontSize: iconSize }} />
           )}
-          <span className="dk-action__label">{t('Watchlist')}</span>
+          <span className="dk-action__label">
+            {series.watchlist ? t('Auf Watchlist') : t('Watchlist')}
+          </span>
         </motion.button>
 
         {listButton}
@@ -445,7 +442,6 @@ export const HeroSection = memo<HeroSectionProps>(
           onChange={setProviderOverride}
         />
         <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="chip" />
-        {!isMobile && <FriendsWhoHaveThis itemId={series.id} mediaType="series" />}
       </div>
     );
 

@@ -48,7 +48,7 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => ({
   Add: () => null,
   BookmarkAdd: () => null,
-  BookmarkRemove: () => null,
+  BookmarkAdded: () => null,
   CheckCircle: () => null,
   Delete: () => null,
   Star: () => null,
@@ -158,7 +158,7 @@ describe('HeroSection', () => {
   it('renders the series title and primary action', () => {
     render(<HeroSection {...baseProps} />);
     expect(screen.getByRole('heading', { name: 'Lost' })).toBeInTheDocument();
-    expect(screen.getByText('Episoden')).toBeInTheDocument();
+    expect(screen.getByText('Alle Folgen')).toBeInTheDocument();
   });
 
   it('copies the title to the clipboard when the heading is clicked', () => {
@@ -170,7 +170,7 @@ describe('HeroSection', () => {
 
   it('invokes the episodes and rating navigation callbacks', () => {
     render(<HeroSection {...baseProps} />);
-    fireEvent.click(screen.getByText('Episoden'));
+    fireEvent.click(screen.getByText('Alle Folgen'));
     expect(baseProps.onNavigateEpisodes).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByText('Bewerten'));
     expect(baseProps.onNavigateRating).toHaveBeenCalledTimes(1);

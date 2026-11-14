@@ -172,12 +172,12 @@ describe('SeasonsSection', () => {
     render(
       <SeasonsSection {...baseProps} series={fresh} onMarkSeasonWatched={onMarkSeasonWatched} />
     );
-    fireEvent.click(screen.getByText('Alle 2 Folgen abhaken'));
+    fireEvent.click(screen.getByText('Alle 2 erschienenen Folgen als gesehen markieren'));
     expect(onMarkSeasonWatched).toHaveBeenCalledWith(0);
   });
 
   it('blendet das Staffel-Abhaken aus, wenn nur noch eine Folge offen ist', () => {
     render(<SeasonsSection {...baseProps} onMarkSeasonWatched={vi.fn()} />);
-    expect(screen.queryByText(/Folgen abhaken/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/als gesehen markieren/)).not.toBeInTheDocument();
   });
 });

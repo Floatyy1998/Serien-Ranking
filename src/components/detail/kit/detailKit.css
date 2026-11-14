@@ -498,10 +498,16 @@ button.dk-score:hover .dk-score__label {
   white-space: nowrap;
 }
 
-.dk-action--on {
+.dk-action--on,
+.mobile-app button.dk-action--on {
   color: var(--theme-primary);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 45%, transparent);
-  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--theme-primary) 80%, transparent);
+  background: color-mix(in srgb, var(--theme-primary) 24%, var(--dk-bg));
+}
+
+.dk-action--on:hover {
+  color: var(--theme-primary);
+  background: color-mix(in srgb, var(--theme-primary) 32%, var(--dk-bg));
 }
 
 .dk-action--danger {
@@ -685,6 +691,18 @@ button.dk-score:hover .dk-score__label {
   gap: 8px;
 }
 
+.dk-list--scroll {
+  position: relative;
+  max-height: min(620px, 70vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.dk-list--scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .dk-note {
   display: flex;
   align-items: center;
@@ -837,9 +855,10 @@ button.dk-score:hover .dk-score__label {
   backdrop-filter: none;
 }
 
-:root[data-layout='mobile'] .dk-action--on {
-  background: color-mix(in srgb, var(--theme-primary) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+:root[data-layout='mobile'] .dk-action--on,
+:root[data-layout='mobile'] .mobile-app button.dk-action--on {
+  background: color-mix(in srgb, var(--theme-primary) 24%, var(--dk-bg));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--theme-primary) 80%, transparent);
 }
 
 :root[data-layout='mobile'] .dk-action__label {

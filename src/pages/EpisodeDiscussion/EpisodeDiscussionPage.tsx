@@ -13,6 +13,7 @@ import { StarRatingSlider } from '../../components/ui/input/StarRatingSlider';
 import { setEpisodeRating } from '../../services/rating/episodeRatingService';
 import { showToast } from '../../lib/interaction/toast';
 import { fillerLookupKey } from '../../services/catalog/animeFillerService';
+import { fetchEpisodeImdbRating } from '../../services/api/omdbClient';
 import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import { ShareEpisodeSheet } from './ShareEpisodeSheet';
@@ -67,6 +68,22 @@ export const EpisodeDiscussionPage = memo(() => {
     getStillUrl,
     getProfileUrl,
   } = useEpisodeDiscussion();
+
+  const imdbId = series?.imdb?.imdb_id;
+  const [imdbRating, setImdbRating] = useState<number | null>(null);
+  useEffect(() => {
+    setImdbRating(null);
+    const sn = Number(seasonNumber);
+    const en = Number(episodeNumber);
+    if (!imdbId || !sn || !en) return;
+    let cancelled = false;
+    void fetchEpisodeImdbRating(imdbId, sn, en, episodeAirDate).then((value) => {
+      if (!cancelled) setImdbRating(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [imdbId, seasonNumber, episodeNumber, episodeAirDate]);
 
   // Folgenbewertung: lokale Episode (userRating + id + seasonIndex) auflösen.
   const localEpisode = useMemo(() => {
@@ -321,6 +338,7 @@ export const EpisodeDiscussionPage = memo(() => {
           seasonNumber={seasonNumber}
           episodeNumber={episodeNumber}
           episodeRating={episodeRating}
+          imdbRating={imdbRating}
           ownRating={draft}
           community={communityEntry}
           episodeRuntime={episodeRuntime}

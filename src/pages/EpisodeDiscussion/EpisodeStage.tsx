@@ -36,6 +36,8 @@ interface EpisodeStageProps {
   episodeNumber: string | undefined;
   /** TMDB-Wertung der Folge. */
   episodeRating: number | undefined;
+  /** IMDb-Wertung der Folge, falls bekannt. */
+  imdbRating?: number | null;
   /** Eigene Wertung (0 = keine). */
   ownRating: number;
   community: { a: number; c: number } | null;
@@ -73,6 +75,7 @@ export const EpisodeStage = memo(
     seasonNumber,
     episodeNumber,
     episodeRating,
+    imdbRating,
     ownRating,
     community,
     episodeRuntime,
@@ -118,13 +121,25 @@ export const EpisodeStage = memo(
               label: t('Deine Wertung'),
               value: ownRating > 0 ? ownRating.toFixed(1) : '–',
               tone: currentTheme.accent,
-              own: true,
+              own: ownRating > 0,
+              dim: !(ownRating > 0),
             },
           ]
         : []),
-      ...(episodeRating && episodeRating > 0
-        ? [{ key: 'tmdb', label: 'TMDB', value: episodeRating.toFixed(1), tone: '#01b4e4' }]
-        : []),
+      {
+        key: 'tmdb',
+        label: 'TMDB',
+        value: episodeRating && episodeRating > 0 ? episodeRating.toFixed(1) : '–',
+        tone: '#01b4e4',
+        dim: !(episodeRating && episodeRating > 0),
+      },
+      {
+        key: 'imdb',
+        label: 'IMDb',
+        value: imdbRating && imdbRating > 0 ? imdbRating.toFixed(1) : '–',
+        tone: '#f5c518',
+        dim: !(imdbRating && imdbRating > 0),
+      },
       ...(community
         ? [
             {

@@ -7,6 +7,8 @@ import {
   type EpPosition,
   type SeriesWatchSnap,
 } from '../../../lib/series/friendWatchProgress';
+import { calculateOverallRating } from '../../../lib/rating/rating';
+import { readFriendItem } from '../../../services/social/friendItemRead';
 import type { Series } from '../../../types/Series';
 
 export interface FriendSeriesProgress {
@@ -19,16 +21,36 @@ export interface FriendSeriesProgress {
   latestEpisode: number | null;
   hasStarted: boolean;
   completed: boolean;
+  /** Gesamtwertung des Freundes, 0 = nicht bewertet. */
+  rating: number;
+  /** Fortschritt ließ sich nicht lesen — nur die Sammlung ist bekannt. */
+  progressUnknown: boolean;
 }
 
 /**
  * Loads each friend's progress for a given series in parallel.
- * Returns only friends who have watched at least one episode, sorted
- * descending by progress.
+ * Returns friends who have the series in their collection or watched at
+ * least one episode, sorted descending by progress.
  */
 interface RawFriendResult {
   watched: number;
   latest: EpPosition | null;
+  inCollection: boolean;
+  rating: number;
+  unknown?: boolean;
+}
+
+async function readCollectionEntry(uid: string, seriesId: number) {
+  try {
+    const item = await readFriendItem(uid, 'series', seriesId);
+    if (!item) return { inCollection: false, rating: 0 };
+    return {
+      inCollection: true,
+      rating: parseFloat(calculateOverallRating(item as unknown as Series)) || 0,
+    };
+  } catch {
+    return { inCollection: false, rating: 0 };
+  }
 }
 
 export function useFriendsSeriesProgress(
@@ -51,15 +73,19 @@ export function useFriendsSeriesProgress(
     (async () => {
       const results = await Promise.all(
         friends.map(async (f) => {
+          const entry = readCollectionEntry(f.uid, seriesId);
           try {
             const analyzed = analyzeFriendWatch(
               await dbGet<SeriesWatchSnap>(paths.seriesWatchItem(f.uid, seriesId)),
               maps
             );
-            return [f.uid, analyzed] as const;
+            return [f.uid, { ...analyzed, ...(await entry) } as RawFriendResult] as const;
           } catch (err) {
             console.error(`[FriendsSeriesProgress] read failed for ${f.uid}`, err);
-            return [f.uid, { watched: 0, latest: null } as RawFriendResult] as const;
+            return [
+              f.uid,
+              { watched: 0, latest: null, unknown: true, ...(await entry) } as RawFriendResult,
+            ] as const;
           }
         })
       );
@@ -79,7 +105,7 @@ export function useFriendsSeriesProgress(
     const list: FriendSeriesProgress[] = [];
     for (const friend of friends) {
       const raw = rawByUid[friend.uid];
-      if (!raw || raw.watched === 0) continue;
+      if (!raw || (raw.watched === 0 && !raw.inCollection)) continue;
       const percentage =
         totalEpisodes > 0 ? Math.min(100, Math.round((raw.watched / totalEpisodes) * 100)) : 0;
       list.push({
@@ -92,6 +118,8 @@ export function useFriendsSeriesProgress(
         latestEpisode: raw.latest?.episodeNumber ?? null,
         hasStarted: raw.watched > 0,
         completed: totalEpisodes > 0 && raw.watched >= totalEpisodes,
+        rating: raw.rating,
+        progressUnknown: raw.unknown === true,
       });
     }
     list.sort((a, b) => b.percentage - a.percentage || b.watched - a.watched);

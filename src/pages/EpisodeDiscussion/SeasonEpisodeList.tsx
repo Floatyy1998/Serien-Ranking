@@ -1,5 +1,5 @@
 import Check from '@mui/icons-material/Check';
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { RailSection } from '../../components/detail/kit/DetailKit';
 import { t } from '../../services/i18n';
 
@@ -11,28 +11,30 @@ interface SeasonEpisodeListProps {
   onOpen: (episodeNumber: number) => void;
 }
 
-const BEFORE = 4;
-const AFTER = 8;
-const WINDOW_FROM = 16;
-
 /** Die Folgen der Staffel als kompakte Liste — die aktuelle hervorgehoben, ein Tipp wechselt die Folge. */
 export const SeasonEpisodeList = memo(
   ({ seasonNumber, currentEpisode, episodes, onOpen }: SeasonEpisodeListProps) => {
-    if (episodes.length < 2) return null;
+    const listRef = useRef<HTMLDivElement>(null);
 
-    // Lange Staffeln (Anime): nur den Ausschnitt um die aktuelle Folge zeigen.
-    const windowed = episodes.length > WINDOW_FROM;
-    const from = windowed ? Math.max(0, currentEpisode - 1 - BEFORE) : 0;
-    const to = windowed ? Math.min(episodes.length, currentEpisode + AFTER) : episodes.length;
+    // Die ganze Staffel steht in der Liste; lange Staffeln rollen in sich und starten bei der aktuellen Folge.
+    useEffect(() => {
+      const list = listRef.current;
+      const row = list?.querySelector<HTMLElement>('[aria-current="true"]');
+      if (!list || !row) return;
+      list.scrollTop =
+        row.offsetTop - list.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2;
+    }, [currentEpisode, episodes.length]);
+
+    if (episodes.length < 2) return null;
 
     return (
       <RailSection
         title={t('Staffel {n}', { n: seasonNumber })}
         hint={episodes.length === 1 ? t('1 Folge') : t('{n} Folgen', { n: episodes.length })}
       >
-        <div className="dk-list">
-          {episodes.slice(from, to).map((episode, offset) => {
-            const number = from + offset + 1;
+        <div className="dk-list dk-list--scroll" ref={listRef}>
+          {episodes.map((episode, index) => {
+            const number = index + 1;
             const current = number === currentEpisode;
             return (
               <button

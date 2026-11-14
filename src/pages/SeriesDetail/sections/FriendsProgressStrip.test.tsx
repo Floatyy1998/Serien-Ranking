@@ -71,6 +71,8 @@ const entry: FriendSeriesProgress = {
   latestEpisode: 3,
   hasStarted: true,
   completed: false,
+  rating: 0,
+  progressUnknown: false,
 };
 
 beforeEach(() => {
@@ -102,7 +104,7 @@ describe('FriendsProgressStrip', () => {
       />
     );
     expect(screen.getByText('Frank')).toBeInTheDocument();
-    expect(screen.getByText('S1E3')).toBeInTheDocument();
+    expect(screen.getByText('Zuletzt S1 E3')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();
   });
 

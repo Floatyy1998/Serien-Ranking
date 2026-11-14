@@ -41,6 +41,7 @@ const dict: Record<string, string> = {
   'Titel kopieren': 'Copiar título',
   Episoden: 'Episodios',
   'Von Watchlist entfernen': 'Quitar de la lista',
+  'Auf Watchlist': 'En la lista',
   Watchlist: 'Lista',
   'Zur Watchlist hinzufügen': 'Añadir a la lista',
   Einblenden: 'Mostrar',
@@ -226,6 +227,21 @@ const dict: Record<string, string> = {
   '{done} von {total} Bänden': '{done} de {total} tomos',
   '{done} von {total} Kapiteln': '{done} de {total} capítulos',
   'Ø Wertung': 'Nota media',
+  // Freunde-Fortschritt + Staffel abhaken, klarer benannt
+  'So weit sind deine Freunde': 'Hasta dónde han llegado tus amigos',
+  'Zuletzt S{s} E{e}': 'Último visto T{s} E{e}',
+  'Gleichauf mit dir': 'Igual que tú',
+  '1 Folge vor dir': '1 episodio por delante de ti',
+  '{n} Folgen vor dir': '{n} episodios por delante de ti',
+  '1 Folge hinter dir': '1 episodio por detrás de ti',
+  '{n} Folgen hinter dir': '{n} episodios por detrás de ti',
+  'Alle {n} erschienenen Folgen als gesehen markieren':
+    'Marcar los {n} episodios emitidos como vistos',
+  'Restliche {n} erschienenen Folgen als gesehen markieren':
+    'Marcar los {n} episodios emitidos restantes como vistos',
+  'In der Sammlung': 'En su colección',
+  'Noch nicht begonnen': 'Aún sin empezar',
+  'Bewertung: {wert}': 'Valoración: {wert}',
 };
 
 export default dict;

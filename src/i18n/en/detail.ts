@@ -44,6 +44,7 @@ const dict: Record<string, string> = {
   'Titel kopieren': 'Copy title',
   Episoden: 'Episodes',
   'Von Watchlist entfernen': 'Remove from watchlist',
+  'Auf Watchlist': 'On watchlist',
   Watchlist: 'Watchlist',
   'Zur Watchlist hinzufügen': 'Add to watchlist',
   Einblenden: 'Unhide',
@@ -251,6 +252,20 @@ const dict: Record<string, string> = {
   '{done} von {total} Bänden': '{done} of {total} volumes',
   '{done} von {total} Kapiteln': '{done} of {total} chapters',
   'Ø Wertung': 'Avg. rating',
+  // Freunde-Fortschritt + Staffel abhaken, klarer benannt
+  'So weit sind deine Freunde': 'How far friends are',
+  'Zuletzt S{s} E{e}': 'Last watched S{s} E{e}',
+  'Gleichauf mit dir': 'Level with you',
+  '1 Folge vor dir': '1 episode ahead of you',
+  '{n} Folgen vor dir': '{n} episodes ahead of you',
+  '1 Folge hinter dir': '1 episode behind you',
+  '{n} Folgen hinter dir': '{n} episodes behind you',
+  'Alle {n} erschienenen Folgen als gesehen markieren': 'Mark all {n} released episodes as watched',
+  'Restliche {n} erschienenen Folgen als gesehen markieren':
+    'Mark the remaining {n} released episodes as watched',
+  'In der Sammlung': 'In their collection',
+  'Noch nicht begonnen': 'Not started yet',
+  'Bewertung: {wert}': 'Rating: {wert}',
 };
 
 export default dict;

@@ -375,8 +375,8 @@ export function SeasonsSection({
                 minHeight: 44,
                 padding: '10px 16px',
                 marginBottom: '12px',
-                background: `${currentTheme.primary}1f`,
-                border: `1px solid ${currentTheme.primary}55`,
+                background: `${currentTheme.primary}2e`,
+                border: `1px solid ${currentTheme.primary}80`,
                 borderRadius: '10px',
                 color: currentTheme.primary,
                 fontSize: '14px',
@@ -390,8 +390,10 @@ export function SeasonsSection({
             >
               <DoneAll style={{ fontSize: '18px' }} />
               {watchedEpisodes === 0
-                ? t('Alle {n} Folgen abhaken', { n: remainingMarkable })
-                : t('Restliche {n} Folgen abhaken', { n: remainingMarkable })}
+                ? t('Alle {n} erschienenen Folgen als gesehen markieren', { n: remainingMarkable })
+                : t('Restliche {n} erschienenen Folgen als gesehen markieren', {
+                    n: remainingMarkable,
+                  })}
             </motion.button>
           )}
 

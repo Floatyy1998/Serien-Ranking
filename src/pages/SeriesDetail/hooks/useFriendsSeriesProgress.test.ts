@@ -61,7 +61,8 @@ function routeSnapshots(byUid: Record<string, unknown>) {
     const calls = fb.refMock.mock.calls;
     const lastRef = calls.length > 0 ? (calls[calls.length - 1][0] as string) : '';
     const uid = lastRef.split('/')[1] ?? '';
-    return Promise.resolve({ val: () => byUid[uid] ?? null });
+    const isWatch = lastRef.includes('/seriesWatch/');
+    return Promise.resolve({ val: () => (isWatch ? (byUid[uid] ?? null) : null) });
   });
 }
 
