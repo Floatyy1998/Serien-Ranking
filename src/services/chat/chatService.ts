@@ -209,6 +209,30 @@ export async function ensureChat(myUid: string, friendUid: string): Promise<stri
   return pairId;
 }
 
+const senderNames = new Map<string, string>();
+
+/**
+ * Titel der Push beim Empfänger. Konten ohne Anzeigenamen im Login geben hier „Ich" herein —
+ * das darf nie beim Gegenüber ankommen, also den Namen aus dem eigenen Profil lesen.
+ */
+async function pushSenderName(myUid: string, myName: string): Promise<string> {
+  const given = myName.trim();
+  if (given && given !== t('Ich')) return given;
+  const cached = senderNames.get(myUid);
+  if (cached) return cached;
+  const read = async (field: string) => {
+    try {
+      const value = await dbGet<string>(userPath(myUid, field));
+      return typeof value === 'string' ? value.trim() : '';
+    } catch {
+      return '';
+    }
+  };
+  const name = (await read('displayName')) || (await read('username')) || 'TV-Rank';
+  senderNames.set(myUid, name);
+  return name;
+}
+
 export async function sendMessage(
   myUid: string,
   friendUid: string,
@@ -256,7 +280,7 @@ export async function sendMessage(
   });
 
   void queuePush(friendUid, {
-    title: myName,
+    title: await pushSenderName(myUid, myName),
     body: preview,
     url: `/chat/${myUid}`,
     mid: msgId,
@@ -309,7 +333,7 @@ export async function sendImageMessage(
   });
 
   void queuePush(friendUid, {
-    title: myName,
+    title: await pushSenderName(myUid, myName),
     body: preview,
     // Bildnachrichten haben statt Text ein Token („Bild"/„GIF") — nur das
     // gehört übersetzt, eine echte Bildunterschrift bleibt wie geschrieben.
