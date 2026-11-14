@@ -86,7 +86,7 @@ describe('CommunitySection', () => {
   it('zeigt fremde Designs mit Urheber und Zahl der aktuellen Nutzer', () => {
     const { onPick } = renderSection(makeState({ themes: [theme({})] }));
     expect(screen.getByText('von Frank')).toBeInTheDocument();
-    expect(screen.getByText('3 aktiv')).toBeInTheDocument();
+    expect(screen.getByText('3 nutzen es')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Mitternacht'));
     expect(onPick).toHaveBeenCalledTimes(1);
   });

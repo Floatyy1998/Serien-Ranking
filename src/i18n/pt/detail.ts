@@ -307,7 +307,6 @@ const dict: Record<string, string> = {
   'wird geprüft': 'em revisão',
   'Wie soll dein Design heißen?': 'Como se vai chamar o teu design?',
   'Deine Designs nutzen gerade {n} andere.': '{n} pessoas usam os teus designs neste momento.',
-  '{n} aktiv': '{n} ativos',
   'Helle Hintergründe dunkelt TV-Rank ab: Flächen, Linien und Glas-Effekte der App sind für dunklen Grund gebaut und würden auf Weiß verschwinden.':
     'O TV-Rank escurece fundos claros: as superfícies, linhas e efeitos de vidro da app foram feitos para fundo escuro e desapareceriam no branco.',
   Umbenennen: 'Renomear',
@@ -321,6 +320,7 @@ const dict: Record<string, string> = {
   'Deine Farbänderungen sind noch nicht übernommen.':
     'As tuas alterações de cor ainda não foram aplicadas.',
   'Farben übernehmen': 'Aplicar cores',
+  '{n} nutzen es': '{n} usam',
 };
 
 export default dict;

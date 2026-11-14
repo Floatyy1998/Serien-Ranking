@@ -201,7 +201,7 @@ export const CommunitySection = memo(
                       {theme.uid === uid ? t('von dir') : t('von {name}', { name: theme.author })}
                     </span>
                     <span className="theme-preset-meta__uses">
-                      {theme.hidden ? t('wird geprüft') : t('{n} aktiv', { n: theme.uses })}
+                      {theme.hidden ? t('wird geprüft') : t('{n} nutzen es', { n: theme.uses })}
                     </span>
                   </>
                 }
