@@ -178,6 +178,22 @@ const dict: Record<string, string> = {
     'A tua lista integrada para rever. Escolhe pelo menos um título.',
   'Nochmal schauen': 'Rever',
   vorgemerkt: 'na sua lista',
+  // Bewertungsseite
+  Bisher: 'Antes',
+  'Dein Schnitt': 'A tua média',
+  'Art der Bewertung': 'Tipo de avaliação',
+  'Wie gut war es?': 'Quão bom foi?',
+  'Die Balken zeigen, wie du deine {n} anderen Wertungen verteilt hast.':
+    'As barras mostram como distribuíste as tuas outras {n} avaliações.',
+  'Ein Zehntel weniger': 'Uma décima a menos',
+  'Ein Zehntel mehr': 'Uma décima a mais',
+  'In deiner Film-Rangliste': 'No teu ranking de filmes',
+  'In deiner Serien-Rangliste': 'No teu ranking de séries',
+  Platz: 'Lugar',
+  'von {total}': 'de {total}',
+  'Wähl eine Wertung — dann siehst du hier, zwischen welchen Titeln er landet.':
+    'Escolhe uma nota — aqui vês entre que títulos fica.',
+  'Genres dieses Titels': 'Géneros deste título',
 };
 
 export default dict;

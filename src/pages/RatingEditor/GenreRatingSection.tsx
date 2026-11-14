@@ -1,100 +1,72 @@
-import {
-  AutoAwesome,
-  Bolt,
-  Favorite,
-  Star,
-  TheaterComedy,
-  TrendingUp,
-  Mood,
-} from '@mui/icons-material';
+import type { CSSProperties } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-
-const ICON_SIZE = { fontSize: 20 };
-
-const genreIcons: Record<string, React.ReactNode> = {
-  Action: <Bolt style={ICON_SIZE} />,
-  Comedy: <Mood style={ICON_SIZE} />,
-  Drama: <TheaterComedy style={ICON_SIZE} />,
-  Romance: <Favorite style={ICON_SIZE} />,
-  'Sci-Fi': <AutoAwesome style={ICON_SIZE} />,
-  Fantasy: <AutoAwesome style={ICON_SIZE} />,
-  Thriller: <TrendingUp style={ICON_SIZE} />,
-};
-
-const getGenreColors = (accent: string): Record<string, string> => ({
-  Action: '#ff6b6b',
-  Comedy: '#ffd43b',
-  Drama: accent,
-  Romance: '#f06292',
-  'Sci-Fi': '#4ecdc4',
-  Fantasy: accent,
-  Thriller: '#e74c3c',
-});
 
 interface GenreRatingSectionProps {
   genreRatings: Record<string, number>;
   onGenreRatingChange: (genre: string, value: number) => void;
+  /** Genres des Titels — stehen vorn, der Rest folgt darunter. */
+  ownGenres?: string[];
 }
+
+const byName = (a: string, b: string) => {
+  if (a === 'All') return -1;
+  if (b === 'All') return 1;
+  return a.localeCompare(b);
+};
 
 export const GenreRatingSection = ({
   genreRatings,
   onGenreRatingChange,
+  ownGenres = [],
 }: GenreRatingSectionProps) => {
-  const { currentTheme } = useTheme();
-  const genreColors = getGenreColors(currentTheme.accent);
+  const all = Object.keys(genreRatings).sort(byName);
+  const own = all.filter((genre) => ownGenres.includes(genre));
+  const rest = all.filter((genre) => !ownGenres.includes(genre));
+
+  const row = (genre: string) => {
+    const value = genreRatings[genre];
+    return (
+      <div key={genre} className={`re-genre${value > 0 ? ' is-rated' : ''}`}>
+        <div className="re-genre__head">
+          <span className="re-genre__name">{genre}</span>
+          <span className="re-genre__value">{value.toFixed(1)}</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="0.1"
+          value={value}
+          onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
+          className="re-genre__range"
+          aria-label={t('Bewertung {genre}', { genre })}
+          aria-valuetext={t('{value} von 10', { value: value.toFixed(1) })}
+          style={{ '--re-fill': `${value * 10}%` } as CSSProperties}
+        />
+      </div>
+    );
+  };
+
   return (
     <motion.div
       key="genre"
-      initial={{ x: 100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: -100, opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="rate-genre-list"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="re-genres"
     >
-      {Object.keys(genreRatings)
-        .sort((a, b) => {
-          if (a === 'All') return -1;
-          if (b === 'All') return 1;
-          return a.localeCompare(b);
-        })
-        .map((genre) => {
-          const color = genreColors[genre] || currentTheme.accent;
-          return (
-            <div key={genre} className="rate-genre-item">
-              <div className="rate-genre-header">
-                <div className="rate-genre-info">
-                  <div
-                    className="rate-genre-icon"
-                    style={{
-                      background: `${color}20`,
-                      color: color,
-                    }}
-                  >
-                    {genreIcons[genre] || <Star />}
-                  </div>
-                  <span className="rate-genre-name">{genre}</span>
-                </div>
-                <span className="rate-genre-value">{genreRatings[genre].toFixed(1)}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.1"
-                value={genreRatings[genre]}
-                onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
-                className="rate-genre-range"
-                aria-label={t('Bewertung {genre}', { genre })}
-                aria-valuetext={t('{value} von 10', { value: genreRatings[genre].toFixed(1) })}
-                style={{
-                  background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
-                }}
-              />
-            </div>
-          );
-        })}
+      {own.length > 0 && (
+        <section className="re-panel">
+          <h2 className="re-h">{t('Genres dieses Titels')}</h2>
+          <div className="re-genre-grid">{own.map(row)}</div>
+        </section>
+      )}
+      <section className="re-panel">
+        {own.length > 0 && <h2 className="re-h">{t('Weitere Genres')}</h2>}
+        <div className="re-genre-grid">{rest.map(row)}</div>
+      </section>
     </motion.div>
   );
 };

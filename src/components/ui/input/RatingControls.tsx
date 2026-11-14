@@ -8,7 +8,7 @@ import {
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { hapticSelect } from '../../../lib/interaction/haptics';
-import '../../../pages/RatingEditor/RatingEditorPage.css';
+import './ratingRange.css';
 import { tapScaleTight } from '../../../lib/motion';
 
 interface RatingControlsProps {

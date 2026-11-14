@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect } from '../../lib/interaction/haptics';
@@ -14,6 +14,7 @@ import type { Movie as MovieType } from '../../types/Movie';
 import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import type { Series } from '../../types/Series';
 import { dbRef, paths } from '../../services/db/ref';
+import type { RatedPeer } from './ratingRanking';
 
 export interface UseRatingDataResult {
   item: (Series | MovieType) | undefined;
@@ -21,6 +22,8 @@ export interface UseRatingDataResult {
   activeTab: 'overall' | 'genre';
   setActiveTab: React.Dispatch<React.SetStateAction<'overall' | 'genre'>>;
   overallRating: number;
+  savedRating: number;
+  peers: RatedPeer[];
   genreRatings: Record<string, number>;
   isSaving: boolean;
   snackbar: { open: boolean; message: string };
@@ -41,6 +44,7 @@ export const useRatingEditorData = (): UseRatingDataResult => {
 
   const [activeTab, setActiveTab] = useState<'overall' | 'genre'>('overall');
   const [overallRating, setOverallRating] = useState(0);
+  const [savedRating, setSavedRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -54,6 +58,23 @@ export const useRatingEditorData = (): UseRatingDataResult => {
     type === 'series'
       ? seriesList.find((s: Series) => s.id && s.id.toString() === id)
       : movieList.find((m: MovieType) => m.id && m.id.toString() === id);
+
+  const peers = useMemo<RatedPeer[]>(() => {
+    const list: (Series | MovieType)[] = type === 'series' ? seriesList : movieList;
+    const result: RatedPeer[] = [];
+    for (const entry of list) {
+      if (!entry.id || entry.id.toString() === id) continue;
+      const rating = parseFloat(calculateOverallRating(entry)) || 0;
+      if (rating <= 0) continue;
+      result.push({
+        id: entry.id,
+        title: entry.title || '',
+        poster: entry.poster?.poster || '',
+        rating,
+      });
+    }
+    return result;
+  }, [type, seriesList, movieList, id]);
 
   // Initialize ratings from Firebase genre-based structure
   useEffect(() => {
@@ -69,8 +90,9 @@ export const useRatingEditorData = (): UseRatingDataResult => {
       });
 
       if (item.rating && typeof item.rating === 'object') {
-        const overall = calculateOverallRating(item);
-        setOverallRating(parseFloat(overall) || 0);
+        const overall = parseFloat(calculateOverallRating(item)) || 0;
+        setOverallRating(overall);
+        setSavedRating(overall);
 
         const validGenres = new Set(allPossibleGenres);
         Object.keys(item.rating).forEach((genre) => {
@@ -80,6 +102,7 @@ export const useRatingEditorData = (): UseRatingDataResult => {
         });
       } else {
         setOverallRating(0);
+        setSavedRating(0);
       }
 
       setGenreRatings(loadedRatings);
@@ -227,6 +250,8 @@ export const useRatingEditorData = (): UseRatingDataResult => {
     activeTab,
     setActiveTab,
     overallRating,
+    savedRating,
+    peers,
     genreRatings,
     isSaving,
     snackbar,

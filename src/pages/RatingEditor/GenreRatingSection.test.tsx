@@ -48,7 +48,7 @@ describe('GenreRatingSection', () => {
     render(
       <GenreRatingSection genreRatings={{ Comedy: 6, All: 7 }} onGenreRatingChange={vi.fn()} />
     );
-    const names = Array.from(document.querySelectorAll('.rate-genre-name')).map(
+    const names = Array.from(document.querySelectorAll('.re-genre__name')).map(
       (el) => el.textContent
     );
     expect(names[0]).toBe('All');

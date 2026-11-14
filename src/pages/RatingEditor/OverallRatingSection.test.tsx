@@ -39,9 +39,10 @@ import { OverallRatingSection } from './OverallRatingSection';
 afterEach(() => cleanup());
 
 describe('OverallRatingSection', () => {
-  it('renders the current rating value', () => {
+  it('reflects the current rating on the scale', () => {
     render(<OverallRatingSection overallRating={7.4} onRatingChange={vi.fn()} />);
-    expect(screen.getByText('7.4')).toBeInTheDocument();
+    const slider = document.querySelector('input[type="range"]') as HTMLInputElement;
+    expect(slider.value).toBe('7.4');
   });
 
   it('calls onRatingChange when a quick-select button is clicked', () => {

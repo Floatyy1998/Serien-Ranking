@@ -188,6 +188,22 @@ const dict: Record<string, string> = {
     'Your built-in rewatch list. Pick at least one title.',
   'Nochmal schauen': 'Watch again',
   vorgemerkt: 'on your list',
+  // Bewertungsseite
+  Bisher: 'Before',
+  'Dein Schnitt': 'Your average',
+  'Art der Bewertung': 'Kind of rating',
+  'Wie gut war es?': 'How good was it?',
+  'Die Balken zeigen, wie du deine {n} anderen Wertungen verteilt hast.':
+    'The bars show how you spread your {n} other ratings.',
+  'Ein Zehntel weniger': 'One tenth less',
+  'Ein Zehntel mehr': 'One tenth more',
+  'In deiner Film-Rangliste': 'In your movie ranking',
+  'In deiner Serien-Rangliste': 'In your series ranking',
+  Platz: 'Rank',
+  'von {total}': 'of {total}',
+  'Wähl eine Wertung — dann siehst du hier, zwischen welchen Titeln er landet.':
+    'Pick a rating — then you see here which titles it lands between.',
+  'Genres dieses Titels': 'Genres of this title',
 };
 
 export default dict;

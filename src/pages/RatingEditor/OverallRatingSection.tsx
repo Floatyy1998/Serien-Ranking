@@ -1,143 +1,103 @@
-import {
-  SentimentDissatisfied,
-  SentimentNeutral,
-  SentimentSatisfied,
-  SentimentVeryDissatisfied,
-  SentimentVerySatisfied,
-} from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { tapScale, tapScaleTight } from '../../lib/motion';
+import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
+import { getImageUrl } from '../../utils/imageUrl';
+import { bucketOf, type RankingView, type RatedPeer } from './ratingRanking';
+import { verdictIndex, verdicts } from './verdicts';
 
 interface OverallRatingSectionProps {
   overallRating: number;
   onRatingChange: (value: number) => void;
+  ranking?: RankingView;
+  poster?: string;
+  title?: string;
+  mediaType?: 'series' | 'movie';
 }
+
+const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+const clampRating = (value: number) => Math.round(Math.min(10, Math.max(0, value)) * 10) / 10;
+
+const Neighbour = ({ peer, far }: { peer: RatedPeer; far?: boolean }) => (
+  <li className={`re-rank__item${far ? ' is-far' : ''}`}>
+    <img src={getImageUrl(peer.poster, 'w185')} alt="" loading="lazy" />
+    <span className="re-rank__score">{peer.rating.toFixed(1)}</span>
+    <span className="re-rank__name">{peer.title}</span>
+  </li>
+);
 
 export const OverallRatingSection = ({
   overallRating,
   onRatingChange,
+  ranking,
+  poster,
+  title,
+  mediaType,
 }: OverallRatingSectionProps) => {
-  const { currentTheme } = useTheme();
-
-  const ratingEmojis = [
-    {
-      value: 2,
-      min: 0.1,
-      max: 3,
-      icon: <SentimentVeryDissatisfied />,
-      label: t('Schrecklich'),
-      color: currentTheme.status?.error || '#e74c3c',
-    },
-    {
-      value: 4,
-      min: 3.1,
-      max: 5,
-      icon: <SentimentDissatisfied />,
-      label: t('Schlecht'),
-      color: currentTheme.status?.error || '#ff6b6b',
-    },
-    {
-      value: 6,
-      min: 5.1,
-      max: 6.5,
-      icon: <SentimentNeutral />,
-      label: t('Okay'),
-      color: currentTheme.accent,
-    },
-    {
-      value: 8,
-      min: 6.6,
-      max: 8.5,
-      icon: <SentimentSatisfied />,
-      label: t('Gut'),
-      color: currentTheme.status?.success || '#4cd137',
-    },
-    {
-      value: 10,
-      min: 8.6,
-      max: 10,
-      icon: <SentimentVerySatisfied />,
-      label: t('Meisterwerk'),
-      color: currentTheme.primary,
-    },
-  ];
-
-  const activeEmojiIndex = ratingEmojis.findIndex(
-    (e) => overallRating >= e.min && overallRating <= e.max
-  );
+  const activeVerdict = verdictIndex(overallRating);
+  const peak = ranking ? Math.max(1, ...ranking.buckets) : 1;
+  const currentBucket = overallRating > 0 ? bucketOf(overallRating) : -1;
+  const rated = ranking ? ranking.total - 1 : 0;
 
   return (
     <motion.div
       key="overall"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="rate-overall-section"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="re-overall"
     >
-      {/* Main Rating Display */}
-      <div className="rate-main-display">
-        <div className="rate-circle">
-          <span className="rate-circle-number">{overallRating.toFixed(1)}</span>
-          <span className="rate-circle-label">{t('von 10')}</span>
+      <section className="re-panel">
+        <h2 className="re-h">{t('Wie gut war es?')}</h2>
+
+        {ranking && rated > 0 && (
+          <div className="re-histo" aria-hidden>
+            {ranking.buckets.map((count, i) => (
+              <span
+                key={i}
+                className={`re-histo__bar${i === currentBucket ? ' is-current' : ''}`}
+                style={{ height: `${count === 0 ? 0 : Math.max(8, (count / peak) * 100)}%` }}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="re-scale">
+          <div className="re-scale__track" aria-hidden>
+            {STEPS.map((step) => (
+              <span key={step} className="re-scale__seg">
+                <span
+                  className="re-scale__fill"
+                  style={{
+                    width: `${Math.min(1, Math.max(0, overallRating - (step - 1))) * 100}%`,
+                  }}
+                />
+              </span>
+            ))}
+            {overallRating > 0 && (
+              <span className="re-scale__marker" style={{ left: `${overallRating * 10}%` }} />
+            )}
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="0.1"
+            value={overallRating}
+            onChange={(e) => onRatingChange(parseFloat(e.target.value))}
+            className="re-scale__input"
+            aria-label={t('Gesamtbewertung')}
+            aria-valuetext={t('{value} von 10', { value: overallRating.toFixed(1) })}
+          />
         </div>
 
-        {/* Emoji Indicators */}
-        <div className="rate-emoji-row">
-          {ratingEmojis.map((emoji, i) => (
-            <motion.button
-              key={emoji.value}
-              type="button"
-              aria-label={emoji.label}
-              aria-pressed={activeEmojiIndex === i}
-              className={`rate-emoji ${activeEmojiIndex === i ? 'active' : ''}`}
-              onClick={() => onRatingChange(emoji.value)}
-              whileTap={tapScaleTight}
-              style={{
-                opacity: activeEmojiIndex === i ? 1 : 0.3,
-                color: emoji.color,
-              }}
-            >
-              {emoji.icon}
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
-      {/* Rating Slider */}
-      <div className="rate-slider-card">
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="0.1"
-          value={overallRating}
-          onChange={(e) => onRatingChange(parseFloat(e.target.value))}
-          className="rate-range"
-          aria-label={t('Gesamtbewertung')}
-          aria-valuetext={t('{value} von 10', { value: overallRating.toFixed(1) })}
-          style={{
-            background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, var(--color-background-surface) ${overallRating * 10}%, var(--color-background-surface) 100%)`,
-          }}
-        />
-        <div className="rate-slider-marks">
-          {[0, 2, 4, 6, 8, 10].map((value) => (
-            <span key={value} className="rate-mark">
-              {value}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick Select Grid */}
-      <div className="rate-quick-card">
-        <div className="rate-quick-grid">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+        <div className="re-nums">
+          {STEPS.map((value) => (
             <motion.button
               key={value}
-              className={`rate-quick-btn ${Math.round(overallRating) === value ? 'active' : ''}`}
+              type="button"
+              className={`re-num${Math.round(overallRating) === value ? ' is-active' : ''}`}
               onClick={() => onRatingChange(value)}
               whileTap={tapScale}
             >
@@ -145,7 +105,90 @@ export const OverallRatingSection = ({
             </motion.button>
           ))}
         </div>
-      </div>
+
+        {ranking && rated > 0 && (
+          <p className="re-note">
+            {t('Die Balken zeigen, wie du deine {n} anderen Wertungen verteilt hast.', {
+              n: rated,
+            })}
+          </p>
+        )}
+
+        <div className="re-fine">
+          <div className="re-verdicts">
+            {verdicts.map((verdict, i) => (
+              <motion.button
+                key={verdict.value}
+                type="button"
+                aria-pressed={activeVerdict === i}
+                className={`re-verdict${activeVerdict === i ? ' is-active' : ''}`}
+                onClick={() => onRatingChange(verdict.value)}
+                whileTap={tapScale}
+              >
+                {t(verdict.label)}
+              </motion.button>
+            ))}
+          </div>
+          <div className="re-stepper">
+            <motion.button
+              type="button"
+              className="re-step"
+              aria-label={t('Ein Zehntel weniger')}
+              disabled={overallRating <= 0}
+              onClick={() => onRatingChange(clampRating(overallRating - 0.1))}
+              whileTap={tapScale}
+            >
+              − 0.1
+            </motion.button>
+            <motion.button
+              type="button"
+              className="re-step"
+              aria-label={t('Ein Zehntel mehr')}
+              disabled={overallRating >= 10}
+              onClick={() => onRatingChange(clampRating(overallRating + 0.1))}
+              whileTap={tapScale}
+            >
+              + 0.1
+            </motion.button>
+          </div>
+        </div>
+      </section>
+
+      {ranking && rated > 0 && (
+        <section className="re-panel">
+          <h2 className="re-h">
+            {mediaType === 'movie'
+              ? t('In deiner Film-Rangliste')
+              : t('In deiner Serien-Rangliste')}
+          </h2>
+          {overallRating > 0 ? (
+            <>
+              <p className="re-place">
+                <span className="re-place__of">{t('Platz')}</span>
+                <span className="re-place__num">{ranking.place}</span>
+                <span className="re-place__of">{t('von {total}', { total: ranking.total })}</span>
+              </p>
+              <ol className="re-rank">
+                {ranking.above.map((peer, i) => (
+                  <Neighbour key={peer.id} peer={peer} far={ranking.above.length > 2 && i === 0} />
+                ))}
+                <li className="re-rank__item is-self">
+                  <img src={getImageUrl(poster, 'w185')} alt="" />
+                  <span className="re-rank__score">{overallRating.toFixed(1)}</span>
+                  <span className="re-rank__name">{title}</span>
+                </li>
+                {ranking.below.map((peer, i) => (
+                  <Neighbour key={peer.id} peer={peer} far={i === 2} />
+                ))}
+              </ol>
+            </>
+          ) : (
+            <p className="re-empty">
+              {t('Wähl eine Wertung — dann siehst du hier, zwischen welchen Titeln er landet.')}
+            </p>
+          )}
+        </section>
+      )}
     </motion.div>
   );
 };
