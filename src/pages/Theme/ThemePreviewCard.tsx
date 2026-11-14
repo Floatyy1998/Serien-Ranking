@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContext';
@@ -10,66 +10,80 @@ export interface PresetTheme {
   backgroundColor: string;
   surfaceColor: string;
   accentColor: string;
+  /** Nur geteilte Designs bringen eine Textfarbe mit. */
+  textColor?: string;
 }
 
 interface ThemePreviewCardProps {
   preset: PresetTheme;
   index: number;
   isActive: boolean;
+  /** Zum Ansehen gewählt, aber noch nicht übernommen. */
+  isPicked?: boolean;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   onApply: (preset: PresetTheme) => void;
+  /** Zeiger oder Fokus auf der Karte: das Theme in der großen Vorschau zeigen (null = zurück). */
+  onPreview?: (preset: PresetTheme | null) => void;
+  /** Zweite Zeile unter dem Namen (Urheber, Zahl der Übernahmen). */
+  meta?: ReactNode;
 }
 
+/** Ein fertiges Theme als kleines Bild der App in seinen Farben. */
 export const ThemePreviewCard = memo(
-  ({ preset, index, isActive, currentTheme, onApply }: ThemePreviewCardProps) => {
-    const colors = [
-      preset.primaryColor,
-      preset.backgroundColor,
-      preset.surfaceColor,
-      preset.accentColor,
-    ];
-
-    return (
-      <motion.button
-        whileTap={tapScale}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: index * 0.03 }}
-        onClick={() => onApply(preset)}
-        className="theme-preset-btn"
-        style={{
-          background: isActive
-            ? `linear-gradient(135deg, ${preset.primaryColor}25, ${preset.primaryColor}10)`
-            : 'var(--glass-light)',
-          border: `2px solid ${isActive ? preset.primaryColor : 'transparent'}`,
-        }}
-      >
-        {isActive && (
-          <div className="theme-preset-check" style={{ background: currentTheme.status.success }}>
-            <Check style={{ fontSize: 11, color: currentTheme.text.secondary }} />
-          </div>
-        )}
-        <div className="theme-preset-dots">
-          {colors.map((color, i) => (
-            <div
-              key={i}
-              className="theme-preset-dot"
-              style={{
-                backgroundColor: color,
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            />
+  ({
+    preset,
+    isActive,
+    isPicked,
+    currentTheme,
+    onApply,
+    onPreview,
+    meta,
+  }: ThemePreviewCardProps) => (
+    <motion.button
+      type="button"
+      whileTap={tapScale}
+      onClick={() => onApply(preset)}
+      onMouseEnter={() => onPreview?.(preset)}
+      onMouseLeave={() => onPreview?.(null)}
+      onFocus={() => onPreview?.(preset)}
+      onBlur={() => onPreview?.(null)}
+      aria-pressed={isActive}
+      className={`theme-preset-btn${isActive ? ' is-active' : ''}${isPicked ? ' is-picked' : ''}`}
+      style={{ borderColor: isActive || isPicked ? preset.primaryColor : undefined }}
+    >
+      <span className="theme-preset-art" style={{ background: preset.backgroundColor }}>
+        <span
+          className="theme-preset-art__title"
+          style={{
+            background: `linear-gradient(90deg, ${preset.primaryColor}, ${preset.accentColor})`,
+          }}
+        />
+        <span className="theme-preset-art__tiles">
+          {[0, 1, 2, 3].map((i) => (
+            <i key={i} style={{ background: preset.surfaceColor }} />
           ))}
-        </div>
+        </span>
+        <span className="theme-preset-art__foot">
+          <b style={{ background: preset.primaryColor }} />
+          <em style={{ background: preset.accentColor }} />
+        </span>
+      </span>
+      <span className="theme-preset-row">
         <span
           className="theme-preset-name"
-          style={{ color: isActive ? preset.primaryColor : currentTheme.text.primary }}
+          style={{ color: isActive ? preset.primaryColor : currentTheme.text.secondary }}
         >
           {preset.name}
         </span>
-      </motion.button>
-    );
-  }
+        {isActive && (
+          <span className="theme-preset-check" style={{ background: preset.primaryColor }}>
+            <Check style={{ fontSize: 13, color: preset.backgroundColor }} />
+          </span>
+        )}
+      </span>
+      {meta && <span className="theme-preset-meta">{meta}</span>}
+    </motion.button>
+  )
 );
 
 ThemePreviewCard.displayName = 'ThemePreviewCard';

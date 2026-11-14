@@ -107,6 +107,18 @@ vi.mock('./ResetSection', () => ({
   ),
 }));
 
+vi.mock('./CommunitySection', () => ({ CommunitySection: () => null }));
+vi.mock('./useCommunityThemes', () => ({
+  useCommunityThemes: () => ({
+    themes: [],
+    loading: false,
+    failed: false,
+    share: vi.fn(),
+    remove: vi.fn(),
+    countUse: vi.fn(),
+  }),
+}));
+
 import { ThemePage } from './ThemePage';
 
 beforeEach(() => {
@@ -134,6 +146,8 @@ describe('ThemePage', () => {
   it('applies a preset theme via updateTheme', () => {
     render(<ThemePage />);
     fireEvent.click(screen.getByText('Abyss'));
+    expect(updateTheme).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Abyss übernehmen'));
     expect(updateTheme).toHaveBeenCalledWith({
       primaryColor: '#00e5ff',
       backgroundColor: '#030d18',

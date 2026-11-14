@@ -1,13 +1,23 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
+import { useAuth } from '../../contexts/AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getContrastRatio } from '../../theme/colorUtils';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { hapticTap } from '../../lib/interaction/haptics';
 import { t } from '../../services/i18n';
+import { ThemePreview, type PreviewTitle } from './ThemePreview';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
+import { CommunitySection } from './CommunitySection';
+import { useCommunityThemes } from './useCommunityThemes';
+import {
+  isShareableColors,
+  type CommunityTheme,
+  type CommunityThemeColors,
+} from '../../services/theme/communityThemes';
 import { ResetSection } from './ResetSection';
 import { SeasonCard } from './SeasonCard';
 import {
@@ -110,6 +120,33 @@ const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
 export const ThemePage = () => {
   const { userConfig, updateTheme, resetTheme, currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const { seriesList } = useSeriesList();
+  const [hovered, setHovered] = useState<PresetTheme | null>(null);
+  // Angetipptes Theme: erst ansehen, dann übernehmen. Gespeichert wird erst mit dem Knopf.
+  const [picked, setPicked] = useState<PresetTheme | null>(null);
+  const previewRef = useRef<HTMLElement>(null);
+  const shown = hovered ?? picked;
+  const community = useCommunityThemes(user?.uid, user?.displayName || t('Unbekannt'));
+  const pickedCommunity = picked && 'id' in picked ? (picked as CommunityTheme) : null;
+
+  // Eigene Titel in der Vorschau: so sieht man die Farben an etwas Vertrautem.
+  const previewTitles = useMemo<PreviewTitle[]>(
+    () =>
+      (seriesList ?? [])
+        .filter((s) => s?.poster?.poster)
+        .slice(0, 7)
+        .map((s) => ({ title: s.title || '', poster: s.poster.poster })),
+    [seriesList]
+  );
+
+  const previewColors = {
+    primary: shown?.primaryColor ?? currentTheme.primary,
+    accent: shown?.accentColor ?? currentTheme.accent,
+    background: shown?.backgroundColor ?? currentTheme.background.default,
+    surface: shown?.surfaceColor ?? currentTheme.background.surface,
+    text: shown?.textColor ?? currentTheme.text.secondary,
+  };
 
   // Kontrast-Schutz: warnt, wenn die gewählte Text/Hintergrund-Kombination unter
   // WCAG-AA (4.5:1) fällt, damit man sich nicht versehentlich „unsichtbar" macht.
@@ -131,6 +168,13 @@ export const ThemePage = () => {
     [updateTheme, userConfig]
   );
 
+  const pickPreset = useCallback((preset: PresetTheme) => {
+    hapticTap();
+    setPicked((prev) => (prev === preset ? null : preset));
+    // Schmal steht die Vorschau über der Liste: dorthin rollen, damit man das Theme auch sieht.
+    previewRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+  }, []);
+
   const applyPresetTheme = useCallback(
     (preset: PresetTheme) => {
       hapticTap();
@@ -139,6 +183,7 @@ export const ThemePage = () => {
         backgroundColor: preset.backgroundColor,
         surfaceColor: preset.surfaceColor,
         accentColor: preset.accentColor,
+        ...(preset.textColor ? { textColor: preset.textColor } : {}),
         seasons: withActiveSeasonOff(userConfig),
       });
     },
@@ -159,7 +204,20 @@ export const ThemePage = () => {
     userConfig.primaryColor === preset.primaryColor &&
     userConfig.backgroundColor === preset.backgroundColor &&
     userConfig.surfaceColor === preset.surfaceColor &&
-    userConfig.accentColor === preset.accentColor;
+    userConfig.accentColor === preset.accentColor &&
+    (!preset.textColor || userConfig.textColor === preset.textColor);
+
+  // Teilen geht nur mit fünf vollständigen Farben und ohne Saison-Design darüber.
+  const ownColors = useMemo<CommunityThemeColors | null>(() => {
+    const colors = {
+      primaryColor: userConfig.primaryColor as string,
+      backgroundColor: userConfig.backgroundColor as string,
+      surfaceColor: userConfig.surfaceColor as string,
+      accentColor: userConfig.accentColor as string,
+      textColor: (userConfig.textColor as string) || currentTheme.text.secondary,
+    };
+    return !season && isShareableColors(colors) ? colors : null;
+  }, [userConfig, currentTheme.text.secondary, season]);
 
   return (
     <PageLayout
@@ -174,95 +232,162 @@ export const ThemePage = () => {
       />
 
       <div className="theme-content">
-        {runningSeason && (
-          <SeasonCard
-            season={runningSeason}
-            active={season === runningSeason}
-            onToggle={toggleSeason}
-          />
-        )}
-        {season && (
-          <p className="theme-season-note" style={{ color: currentTheme.text.muted }}>
-            {t(
-              'Das Saison-Design liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet es.'
+        <div className="theme-studio">
+          <aside className="theme-studio__preview" ref={previewRef}>
+            <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
+              {shown ? t('Vorschau: {name}', { name: shown.name }) : t('Vorschau')}
+            </h2>
+            <ThemePreview
+              colors={previewColors}
+              titles={previewTitles}
+              name={user?.displayName?.split(' ')[0]}
+            />
+            {picked ? (
+              <div className="theme-studio__apply">
+                <button
+                  type="button"
+                  className="theme-apply-btn theme-apply-btn--primary"
+                  onClick={() => {
+                    applyPresetTheme(picked);
+                    if (pickedCommunity) community.countUse(pickedCommunity);
+                    setPicked(null);
+                  }}
+                >
+                  {t('{name} übernehmen', { name: picked.name })}
+                </button>
+                <button type="button" className="theme-apply-btn" onClick={() => setPicked(null)}>
+                  {t('Verwerfen')}
+                </button>
+                {pickedCommunity && pickedCommunity.uid === user?.uid && (
+                  <button
+                    type="button"
+                    className="theme-apply-btn theme-apply-btn--danger"
+                    onClick={() => {
+                      void community.remove(pickedCommunity.id);
+                      setPicked(null);
+                    }}
+                  >
+                    {t('Aus der Community entfernen')}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="theme-studio__hint" style={{ color: currentTheme.text.muted }}>
+                {t(
+                  'So sieht TV-Rank mit deinen Farben aus. Wähl ein Theme, um es hier zu testen — gespeichert wird erst, wenn du es übernimmst.'
+                )}
+              </p>
             )}
-          </p>
-        )}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="theme-section"
-          style={{
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-          }}
-        >
-          <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-            Themes
-          </h2>
-          <div className="theme-preset-grid">
-            {presetThemes.map((preset, index) => (
-              <ThemePreviewCard
-                key={preset.name}
-                preset={preset}
-                index={index}
-                isActive={isPresetActive(preset)}
-                currentTheme={currentTheme}
-                onApply={applyPresetTheme}
+          </aside>
+          <div className="theme-studio__controls">
+            {runningSeason && (
+              <SeasonCard
+                season={runningSeason}
+                active={season === runningSeason}
+                onToggle={toggleSeason}
               />
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="theme-section"
-          style={{
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-          }}
-        >
-          <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-            {t('Farben anpassen')}
-          </h2>
-          {contrastWarning && (
-            <div
-              role="alert"
+            )}
+            {season && (
+              <p className="theme-season-note" style={{ color: currentTheme.text.muted }}>
+                {t(
+                  'Das Saison-Design liegt gerade über deinen Farben. Wählst du ein Theme oder eine Farbe, endet es.'
+                )}
+              </p>
+            )}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="theme-section"
               style={{
-                margin: '0 0 12px',
-                padding: '10px 14px',
-                borderRadius: 12,
-                fontSize: 13,
-                fontWeight: 600,
-                lineHeight: 1.4,
-                background: `${currentTheme.status.warning}1f`,
-                color: currentTheme.status.warning,
-                border: `1px solid ${currentTheme.status.warning}55`,
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
               }}
             >
-              ⚠️ {contrastWarning}
-            </div>
-          )}
-          <div className="theme-color-list">
-            {colorCategories.map((category) => (
-              <ColorEditor
-                key={category.key}
-                category={category}
-                color={
-                  (userConfig[category.key as keyof typeof userConfig] as string) ||
-                  (category.key === 'textColor' ? currentTheme.text.secondary : currentTheme.accent)
-                }
-                currentTheme={currentTheme}
-                onColorChange={handleColorChange}
-              />
-            ))}
-          </div>
-        </motion.div>
+              <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
+                Themes
+              </h2>
+              <div className="theme-preset-grid">
+                {presetThemes.map((preset, index) => (
+                  <ThemePreviewCard
+                    key={preset.name}
+                    preset={preset}
+                    index={index}
+                    isActive={isPresetActive(preset)}
+                    isPicked={picked === preset}
+                    currentTheme={currentTheme}
+                    onApply={pickPreset}
+                    onPreview={setHovered}
+                  />
+                ))}
+              </div>
+            </motion.div>
 
-        <ResetSection currentTheme={currentTheme} onReset={resetTheme} />
+            {user?.uid && (
+              <CommunitySection
+                state={community}
+                uid={user.uid}
+                ownColors={ownColors}
+                pickedId={pickedCommunity?.id}
+                currentTheme={currentTheme}
+                isActive={isPresetActive}
+                onPick={pickPreset}
+                onPreview={setHovered}
+              />
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="theme-section"
+              style={{
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+              }}
+            >
+              <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
+                {t('Farben anpassen')}
+              </h2>
+              {contrastWarning && (
+                <div
+                  role="alert"
+                  style={{
+                    margin: '0 0 12px',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    lineHeight: 1.4,
+                    background: `${currentTheme.status.warning}1f`,
+                    color: currentTheme.status.warning,
+                    border: `1px solid ${currentTheme.status.warning}55`,
+                  }}
+                >
+                  {contrastWarning}
+                </div>
+              )}
+              <div className="theme-color-list">
+                {colorCategories.map((category) => (
+                  <ColorEditor
+                    key={category.key}
+                    category={category}
+                    color={
+                      (userConfig[category.key as keyof typeof userConfig] as string) ||
+                      (category.key === 'textColor'
+                        ? currentTheme.text.secondary
+                        : currentTheme.accent)
+                    }
+                    currentTheme={currentTheme}
+                    onColorChange={handleColorChange}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            <ResetSection currentTheme={currentTheme} onReset={resetTheme} />
+          </div>
+        </div>
       </div>
     </PageLayout>
   );

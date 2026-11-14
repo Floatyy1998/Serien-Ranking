@@ -6,7 +6,7 @@
  */
 import { dbRef, serverTimestamp } from '../db/ref';
 
-export type ModerationKind = 'discussion' | 'reply' | 'ticket' | 'ticket_comment';
+export type ModerationKind = 'discussion' | 'reply' | 'ticket' | 'ticket_comment' | 'theme';
 
 export const queueModerationScan = async (scan: {
   kind: ModerationKind;

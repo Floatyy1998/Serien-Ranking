@@ -19,7 +19,7 @@ import { onValue } from '../../../services/db/subscribeValue';
 
 interface ModerationFlag {
   id: string;
-  kind: 'discussion' | 'reply' | 'ticket' | 'ticket_comment';
+  kind: 'discussion' | 'reply' | 'ticket' | 'ticket_comment' | 'theme';
   path: string;
   contextPath?: string;
   text: string;
@@ -50,6 +50,7 @@ const KIND_LABEL: Record<ModerationFlag['kind'], string> = {
   reply: 'Antwort',
   ticket: 'Ticket',
   ticket_comment: 'Ticket-Kommentar',
+  theme: 'Community-Design',
 };
 
 /** Scope, den ein Ban für diesen Inhaltstyp sperren soll. */
@@ -69,6 +70,7 @@ const BAN_DURATIONS: { label: string; ms: number | null }[] = [
 
 /** Route zum gemeldeten Inhalt — für den Kontext-Blick des Admins. */
 const contentRouteFor = (flag: ModerationFlag): string | null => {
+  if (flag.kind === 'theme') return '/theme';
   if (flag.kind === 'ticket' || flag.kind === 'ticket_comment') {
     const ticketId = flag.path.split('/')[1];
     return ticketId ? `/admin?tab=tickets&ticket=${ticketId}` : null;
