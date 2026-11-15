@@ -331,6 +331,9 @@ const dict: Record<string, string> = {
     'Huit univers de couleurs prêts à l’emploi. Touche-en un pour le voir dans l’aperçu.',
   'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
     'Cinq couleurs dont TV-Rank déduit le reste.',
+  'Du hast {n} Designs geteilt — mehr geht nicht. Entferne eins, um ein neues zu teilen.':
+    'Tu as partagé {n} designs — c’est le maximum. Retires-en un pour en partager un nouveau.',
+  'Deine aktuellen Farben hast du schon geteilt.': 'Tu as déjà partagé tes couleurs actuelles.',
 };
 
 export default dict;

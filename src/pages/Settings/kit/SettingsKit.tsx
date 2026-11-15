@@ -74,7 +74,14 @@ export function SRow({
 
   if (href && !below) {
     return (
-      <a className={`${cls} st-row--action`} href={href} download={download}>
+      <a
+        className={`${cls} st-row--action`}
+        href={href}
+        download={download}
+        // Fremde Seiten öffnen daneben, sonst verlässt man die App (in der Desktop-Hülle ohne Rückweg).
+        target={!download && /^https?:/.test(href) ? '_blank' : undefined}
+        rel={!download && /^https?:/.test(href) ? 'noopener noreferrer' : undefined}
+      >
         <span className="st-row-main">{main}</span>
       </a>
     );

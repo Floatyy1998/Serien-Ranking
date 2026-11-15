@@ -387,6 +387,11 @@ const settings: Record<string, string> = {
   Exportieren: 'Export',
   'Entfernt dein Konto und alle Daten endgültig': 'Removes your account and all data permanently',
   'E-Mail-Adresse': 'Email address',
+  'TV-Rank ist ein privates Projekt ohne Werbung. Wer es unterstützen möchte, findet den Weg dazu auf tv-rank.de in den Einstellungen.':
+    'TV-Rank is a private project without ads. If you would like to support it, you find the way at tv-rank.de in the settings.',
+  'TV-Rank unterstützen': 'Support TV-Rank',
+  'Ein privates Projekt ohne Werbung — freiwillig und ohne Gegenleistung':
+    'A private project without ads — voluntary and with nothing in return',
 };
 
 export default settings;

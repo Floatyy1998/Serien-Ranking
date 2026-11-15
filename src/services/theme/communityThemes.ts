@@ -6,7 +6,7 @@ const USES = 'communityThemeUses';
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 export const COMMUNITY_THEME_NAME_MAX = 24;
-export const COMMUNITY_THEMES_PER_USER = 5;
+export const COMMUNITY_THEMES_PER_USER = 10;
 
 export interface CommunityThemeColors {
   primaryColor: string;

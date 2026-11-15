@@ -97,6 +97,17 @@ export const CommunitySection = memo(
             : t('Designs von anderen — und deins für alle, wenn du magst.')}
         </p>
 
+        {!formOpen && !state.loading && !state.failed && (atLimit || alreadyShared) && (
+          <p className="theme-community__lead" style={{ color: currentTheme.text.muted }}>
+            {atLimit
+              ? t(
+                  'Du hast {n} Designs geteilt — mehr geht nicht. Entferne eins, um ein neues zu teilen.',
+                  { n: mine.length }
+                )
+              : t('Deine aktuellen Farben hast du schon geteilt.')}
+          </p>
+        )}
+
         {formOpen && ownColors && (
           <form
             className="theme-share"

@@ -10,6 +10,7 @@ import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
 import { useSettingsData } from './useSettingsData';
 import { t } from '../../services/i18n';
 import { DevicesSection } from './sections/DevicesSection';
+import { SupportSection } from './sections/SupportSection';
 import { effectiveWidth, getDisplayScale } from '../../services/settings/displayScale';
 import { ProfileSection } from './sections/ProfileSection';
 import { PublicProfileSection } from './sections/PublicProfileSection';
@@ -202,6 +203,7 @@ export const SettingsPage = () => {
             <RateAppSection />
             <PageToursSection />
           </SGroup>
+          <SupportSection />
           <SGroup title={t('Rechtliches')}>
             <LegalSection
               onNavigatePrivacy={() => navigate('/privacy')}

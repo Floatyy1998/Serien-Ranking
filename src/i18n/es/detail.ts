@@ -332,6 +332,9 @@ const dict: Record<string, string> = {
     'Ocho mundos de color ya hechos. Al tocar uno lo ves en la vista previa.',
   'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
     'Cinco colores de los que TV-Rank deriva el resto.',
+  'Du hast {n} Designs geteilt — mehr geht nicht. Entferne eins, um ein neues zu teilen.':
+    'Has compartido {n} diseños: es el máximo. Quita uno para compartir otro.',
+  'Deine aktuellen Farben hast du schon geteilt.': 'Ya has compartido tus colores actuales.',
 };
 
 export default dict;

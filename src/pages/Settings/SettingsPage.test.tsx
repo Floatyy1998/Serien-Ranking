@@ -115,6 +115,7 @@ vi.mock('./sections/ImportExportSection', () => ({ ImportExportSection: () => <d
 vi.mock('./sections/LanguageSection', () => ({ LanguageSection: () => <div>LANGUAGE</div> }));
 vi.mock('./sections/RateAppSection', () => ({ RateAppSection: () => null }));
 vi.mock('./sections/DevicesSection', () => ({ DevicesSection: () => <div>DEVICES</div> }));
+vi.mock('./sections/SupportSection', () => ({ SupportSection: () => null }));
 vi.mock('./sections/PageToursSection', () => ({ PageToursSection: () => null }));
 
 import { SettingsPage } from './SettingsPage';

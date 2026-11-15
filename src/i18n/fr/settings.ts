@@ -353,6 +353,11 @@ const dict: Record<string, string> = {
   'Entfernt dein Konto und alle Daten endgültig':
     'Supprime définitivement ton compte et toutes tes données',
   'E-Mail-Adresse': 'Adresse e-mail',
+  'TV-Rank ist ein privates Projekt ohne Werbung. Wer es unterstützen möchte, findet den Weg dazu auf tv-rank.de in den Einstellungen.':
+    'TV-Rank est un projet privé sans publicité. Si tu veux le soutenir, tu trouveras comment sur tv-rank.de, dans les réglages.',
+  'TV-Rank unterstützen': 'Soutenir TV-Rank',
+  'Ein privates Projekt ohne Werbung — freiwillig und ohne Gegenleistung':
+    'Un projet privé sans publicité — volontaire et sans contrepartie',
 };
 
 export default dict;
