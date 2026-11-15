@@ -168,7 +168,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
       // Sort cast by order
       const sortedCast = (data.cast || [])
-        .sort((a: CastMember, b: CastMember) => (a.order || 999) - (b.order || 999))
+        .sort((a: CastMember, b: CastMember) => (a.order ?? 999) - (b.order ?? 999))
         .slice(0, 20);
 
       // Group crew by department and get important roles
