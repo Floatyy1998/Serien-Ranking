@@ -351,13 +351,13 @@ const dict: Record<string, string> = {
   'Tipp ein Design an oder ändere eine Farbe. Gespeichert wird erst beim Übernehmen.':
     'Tap a design or change a colour. Nothing is saved until you apply it.',
   'Design wählen': 'Choose a design',
-  'Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
-    'Eight ready-made colour worlds. Tapping one shows it in the preview.',
   'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
     'Five colours from which TV-Rank derives the rest.',
   'Du hast {n} Designs geteilt — mehr geht nicht. Entferne eins, um ein neues zu teilen.':
     'You have shared {n} designs — that is the limit. Remove one to share a new one.',
   'Deine aktuellen Farben hast du schon geteilt.': 'You have already shared your current colours.',
+  'Fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
+    'Ready-made colour worlds. Tapping one shows it in the preview.',
 };
 
 export default dict;

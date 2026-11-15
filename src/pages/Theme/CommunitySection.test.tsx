@@ -54,6 +54,7 @@ const currentTheme = { text: { primary: '#fff', muted: '#999' } } as never;
 
 const makeState = (over: Partial<CommunityThemesState> = {}): CommunityThemesState => ({
   themes: [],
+  presets: {},
   loading: false,
   failed: false,
   share: vi.fn(async () => true),

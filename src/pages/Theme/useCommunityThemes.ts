@@ -11,6 +11,8 @@ import {
 
 export interface CommunityThemesState {
   themes: CommunityTheme[];
+  /** Zähl-Einträge der fertigen Themes, nach Namen. */
+  presets: Record<string, CommunityTheme>;
   loading: boolean;
   failed: boolean;
   share: (name: string, colors: CommunityThemeColors) => Promise<boolean>;
@@ -26,6 +28,7 @@ export interface CommunityThemesState {
 /** Die Liste läuft live mit: neue Designs und Nutzerzahlen erscheinen ohne Neuladen. */
 export function useCommunityThemes(uid: string | undefined, author: string): CommunityThemesState {
   const [themes, setThemes] = useState<CommunityTheme[]>([]);
+  const [presets, setPresets] = useState<Record<string, CommunityTheme>>({});
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
@@ -37,7 +40,12 @@ export function useCommunityThemes(uid: string | undefined, author: string): Com
     return watchCommunityThemes(
       uid,
       (list) => {
-        setThemes(list);
+        setThemes(list.filter((theme) => !theme.preset));
+        setPresets(
+          Object.fromEntries(
+            list.filter((theme) => theme.preset).map((theme) => [theme.name, theme])
+          )
+        );
         setFailed(false);
         setLoading(false);
       },
@@ -85,10 +93,13 @@ export function useCommunityThemes(uid: string | undefined, author: string): Com
   const setUse = useCallback(
     (theme: CommunityTheme | null) => {
       if (!uid) return;
-      void setCommunityThemeUse(uid, theme ? { id: theme.id, colors: theme } : null);
+      void setCommunityThemeUse(
+        uid,
+        theme ? { id: theme.id, colors: theme, noText: !!theme.preset } : null
+      );
     },
     [uid]
   );
 
-  return { themes, loading, failed, share, rename, remove, setUse };
+  return { themes, presets, loading, failed, share, rename, remove, setUse };
 }

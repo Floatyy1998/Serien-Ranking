@@ -25,6 +25,11 @@ export interface CommunityTheme extends CommunityThemeColors {
   uses: number;
   /** Von der Moderation zurückgehalten, bis der Admin freigibt. */
   hidden?: boolean;
+  /**
+   * Zähl-Eintrag eines fertigen Themes (Abyss, Ember …): steht nicht in der Community-Liste,
+   * liefert aber die Nutzerzahl für die Theme-Karte.
+   */
+  preset?: boolean;
 }
 
 export const cleanThemeName = (raw: string): string =>
@@ -58,7 +63,7 @@ export function watchCommunityThemes(
   viewerUid: string | undefined,
   onChange: (themes: CommunityTheme[]) => void,
   onError: () => void,
-  limit = 60
+  limit = 80
 ): () => void {
   const query = dbRef(ROOT).orderByChild('uses').limitToLast(limit);
   const handler = query.on(
@@ -67,6 +72,24 @@ export function watchCommunityThemes(
     () => onError()
   );
   return () => query.off('value', handler);
+}
+
+/**
+ * Name, unter dem ein Design geteilt wird. Die Anmeldung kennt nicht bei jedem Konto einen
+ * Anzeigenamen — dann den aus dem Profil nehmen, damit nie „von Unbekannt" dasteht.
+ */
+async function resolveAuthor(uid: string, given: string): Promise<string> {
+  const direct = given.trim();
+  if (direct) return direct.slice(0, 40);
+  const read = async (field: string) => {
+    try {
+      const value: unknown = (await dbRef(`users/${uid}/${field}`).once('value')).val();
+      return typeof value === 'string' ? value.trim() : '';
+    } catch {
+      return '';
+    }
+  };
+  return ((await read('displayName')) || (await read('username')) || 'TV-Rank').slice(0, 40);
 }
 
 export async function shareCommunityTheme(
@@ -84,7 +107,7 @@ export async function shareCommunityTheme(
     accentColor: colors.accentColor,
     textColor: colors.textColor,
     uid,
-    author: author.trim().slice(0, 40),
+    author: await resolveAuthor(uid, author),
     createdAt: Date.now(),
     uses: 0,
   };
@@ -115,7 +138,7 @@ export async function renameCommunityTheme(
     path: `${ROOT}/${id}`,
     text: clean,
     userId: uid,
-    username: author,
+    username: await resolveAuthor(uid, author),
   });
 }
 
@@ -170,15 +193,21 @@ export interface CommunityThemeUse {
   /** Farben des Designs zum Zeitpunkt der Übernahme. */
   sig: string;
   device: string;
+  /** Fingerabdruck ohne Textfarbe (fertige Themes). */
+  noText?: boolean;
 }
 
-export const themeSignature = (colors: Partial<CommunityThemeColors>): string =>
+/**
+ * Fingerabdruck der Farben. Fertige Themes zählen ohne Textfarbe: wer eins schon länger trägt,
+ * hat noch die frühere Schrift und soll trotzdem mitgezählt werden.
+ */
+export const themeSignature = (colors: Partial<CommunityThemeColors>, withText = true): string =>
   [
     colors.primaryColor,
     colors.backgroundColor,
     colors.surfaceColor,
     colors.accentColor,
-    colors.textColor,
+    withText ? colors.textColor : '',
   ]
     .map((value) => String(value ?? '').toLowerCase())
     .join('|');
@@ -249,14 +278,19 @@ async function writeUse(uid: string, use: CommunityThemeUse | null): Promise<voi
  */
 export async function setCommunityThemeUse(
   uid: string,
-  next: { id: string; colors: Partial<CommunityThemeColors> } | null
+  next: { id: string; colors: Partial<CommunityThemeColors>; noText?: boolean } | null
 ): Promise<void> {
   const previous = await readUse(uid);
   if ((previous?.id ?? null) === (next?.id ?? null)) return;
   if (previous) await leaveCommunityTheme(previous.id, uid);
   if (next) {
     await joinCommunityTheme(next.id, uid);
-    await writeUse(uid, { id: next.id, sig: themeSignature(next.colors), device: deviceId() });
+    await writeUse(uid, {
+      id: next.id,
+      sig: themeSignature(next.colors, !next.noText),
+      device: deviceId(),
+      ...(next.noText ? { noText: true } : {}),
+    });
   } else {
     await writeUse(uid, null);
   }
@@ -274,7 +308,7 @@ export async function reconcileCommunityThemeUse(
 ): Promise<void> {
   const use = await readUse(uid);
   if (!use) return;
-  if (use.sig === themeSignature(currentColors)) return;
+  if (use.sig === themeSignature(currentColors, !use.noText)) return;
   if (!sharedAcrossDevices && use.device !== deviceId()) return;
   await leaveCommunityTheme(use.id, uid);
   await writeUse(uid, null);

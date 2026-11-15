@@ -117,6 +117,7 @@ vi.mock('./CommunitySection', () => ({
 vi.mock('./useCommunityThemes', () => ({
   useCommunityThemes: () => ({
     themes: [],
+    presets: {},
     loading: false,
     failed: false,
     share: vi.fn(),

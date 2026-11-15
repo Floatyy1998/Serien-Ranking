@@ -30,6 +30,15 @@ import './ThemePage.css';
 
 const presetThemes: PresetTheme[] = [
   {
+    // Das Standard-Design: trägt jeder, der nie etwas umgestellt hat.
+    name: 'TV-Rank',
+    primaryColor: '#ef6f8a', // Rosé
+    backgroundColor: '#2b1a2e', // Plum
+    surfaceColor: '#3a2640',
+    accentColor: '#f2a648', // Amber
+    textColor: '#f1e8ee',
+  },
+  {
     name: 'Abyss',
     primaryColor: '#00e5ff', // Electric Cyan
     backgroundColor: '#030d18', // Deep ocean black
@@ -151,7 +160,7 @@ export const ThemePage = () => {
   const colorOf = (key: string): string | undefined =>
     draft?.[key] ?? (userConfig[key as keyof typeof userConfig] as string | undefined);
   const shown = hovered ?? picked;
-  const community = useCommunityThemes(user?.uid, user?.displayName || t('Unbekannt'));
+  const community = useCommunityThemes(user?.uid, user?.displayName || '');
   const pickedCommunity = picked && 'id' in picked ? (picked as CommunityTheme) : null;
   const setCommunityUse = community.setUse;
 
@@ -249,8 +258,9 @@ export const ThemePage = () => {
     userConfig.accentColor === preset.accentColor &&
     (!preset.textColor || userConfig.textColor === preset.textColor);
 
-  // Abgleich beim Öffnen: trägt das Konto gerade ein fremdes Community-Design (z. B. von einem
-  // anderen Gerät übernommen), gilt es hier als dessen Nutzer — sonst könnte es sich nie abmelden.
+  // Abgleich beim Öffnen: trägt das Konto gerade ein Community-Design oder ein fertiges Theme
+  // (z. B. auf einem anderen Gerät übernommen oder schon vor der Zählung), gilt es hier als
+  // dessen Nutzer. Fertige Themes zählen ohne Textfarbe.
   const activeCommunityId = community.themes.find(
     (theme) =>
       !season &&
@@ -260,13 +270,26 @@ export const ThemePage = () => {
       userConfig.accentColor === theme.accentColor &&
       userConfig.textColor === theme.textColor
   )?.id;
+  const wornPreset = season
+    ? undefined
+    : presetThemes.find(
+        (preset) =>
+          userConfig.primaryColor === preset.primaryColor &&
+          userConfig.backgroundColor === preset.backgroundColor &&
+          userConfig.surfaceColor === preset.surfaceColor &&
+          userConfig.accentColor === preset.accentColor
+      );
+  const wornPresetId = wornPreset ? community.presets[wornPreset.name]?.id : undefined;
+  const countedId = activeCommunityId ?? wornPresetId;
   useEffect(() => {
-    if (!activeCommunityId) return;
-    const active = community.themes.find((theme) => theme.id === activeCommunityId);
+    if (!countedId) return;
+    const active =
+      community.themes.find((theme) => theme.id === countedId) ??
+      Object.values(community.presets).find((theme) => theme.id === countedId);
     if (active) setCommunityUse(active);
     // Nur beim Wechsel des aktiven Designs, nicht bei jeder Zähler-Änderung der Liste.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCommunityId, setCommunityUse]);
+  }, [countedId, setCommunityUse]);
 
   // Teilen geht nur mit fünf vollständigen Farben und ohne Saison-Design darüber.
   const ownColors = useMemo<CommunityThemeColors | null>(() => {
@@ -338,7 +361,7 @@ export const ThemePage = () => {
                     className="ts-btn ts-btn--primary"
                     onClick={() => {
                       applyPresetTheme(picked);
-                      community.setUse(pickedCommunity);
+                      community.setUse(pickedCommunity ?? community.presets[picked.name] ?? null);
                       setPicked(null);
                     }}
                   >
@@ -425,7 +448,7 @@ export const ThemePage = () => {
             {tab === 'themes' && (
               <div className="ts-pane">
                 <p className="ts-pane__lead">
-                  {t('Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.')}
+                  {t('Fertige Farbwelten. Antippen zeigt sie in der Vorschau.')}
                 </p>
                 <div className="theme-preset-grid">
                   {presetThemes.map((preset, index) => (
@@ -438,6 +461,13 @@ export const ThemePage = () => {
                       currentTheme={currentTheme}
                       onApply={pickPreset}
                       onPreview={setHovered}
+                      meta={
+                        community.presets[preset.name] ? (
+                          <span className="theme-preset-meta__uses">
+                            {t('{n} nutzen es', { n: community.presets[preset.name].uses })}
+                          </span>
+                        ) : undefined
+                      }
                     />
                   ))}
                 </div>

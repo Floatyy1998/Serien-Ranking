@@ -327,13 +327,13 @@ const dict: Record<string, string> = {
   'Tipp ein Design an oder ändere eine Farbe. Gespeichert wird erst beim Übernehmen.':
     'Touche un design ou change une couleur. Rien n’est enregistré tant que tu ne l’appliques pas.',
   'Design wählen': 'Choisir un design',
-  'Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
-    'Huit univers de couleurs prêts à l’emploi. Touche-en un pour le voir dans l’aperçu.',
   'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
     'Cinq couleurs dont TV-Rank déduit le reste.',
   'Du hast {n} Designs geteilt — mehr geht nicht. Entferne eins, um ein neues zu teilen.':
     'Tu as partagé {n} designs — c’est le maximum. Retires-en un pour en partager un nouveau.',
   'Deine aktuellen Farben hast du schon geteilt.': 'Tu as déjà partagé tes couleurs actuelles.',
+  'Fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
+    'Des univers de couleurs prêts à l’emploi. Touche-en un pour le voir dans l’aperçu.',
 };
 
 export default dict;
