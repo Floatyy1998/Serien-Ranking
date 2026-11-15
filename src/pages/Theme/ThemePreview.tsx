@@ -57,7 +57,7 @@ export const ThemePreview = memo(({ colors, titles, name }: ThemePreviewProps) =
         <span className="tp-avatar" />
       </div>
 
-      <div className="tp-figures">
+      <div className="tp-figures tp-full">
         <span>
           <strong>1.284</strong>
           {t('Episoden')}
@@ -72,8 +72,8 @@ export const ThemePreview = memo(({ colors, titles, name }: ThemePreviewProps) =
         </span>
       </div>
 
-      <p className="tp-h">{t('Weiterschauen')}</p>
-      <div className="tp-rows">
+      <p className="tp-h tp-full">{t('Weiterschauen')}</p>
+      <div className="tp-rows tp-full">
         {rows.map((item, i) => (
           <div key={i} className="tp-row">
             <span className="tp-row__poster">

@@ -944,27 +944,27 @@
 
 .theme-preset-meta {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   padding: 0 4px;
   margin-top: -4px;
+  text-align: left;
   font-size: 12px;
   font-weight: 500;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
 }
 
 .theme-preset-meta__author {
-  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .theme-preset-meta__uses {
-  flex-shrink: 0;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--theme-accent);
@@ -1024,4 +1024,294 @@
 
 .theme-draft-bar .theme-apply-btn--primary {
   flex: 0 0 auto;
+}
+
+/* ═════════ Design-Studio (Neuaufbau) ═════════
+   Vorschau immer im Blick, die Auswahl in Reitern, ein Übernehmen-Knopf an fester Stelle. */
+
+.theme-content.ts {
+  padding: 0 var(--page-x, 20px) var(--page-bottom-gap);
+  scrollbar-width: none;
+}
+
+.theme-content.ts::-webkit-scrollbar {
+  display: none;
+}
+
+.ts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Bühne: Vorschau + Aktion. Bleibt beim Rollen stehen. */
+.ts-stage {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin: 0 calc(var(--page-x, 20px) * -1);
+  padding: 4px var(--page-x, 20px) 12px;
+  background: var(--theme-background);
+  box-shadow: 0 1px 0 var(--hairline);
+}
+
+.ts-stage__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ts-stage__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}
+
+.ts-stage__chip {
+  min-width: 0;
+  max-width: 70%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--glass-light);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ts-stage__chip.is-pending {
+  background: color-mix(in srgb, var(--theme-primary) 18%, transparent);
+  color: var(--theme-primary);
+}
+
+.ts-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  margin-top: 12px;
+}
+
+.ts-action__hint {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.ts-action__own {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ts-btn,
+.mobile-app button.ts-btn {
+  min-height: 48px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--glass-light);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ts-btn--primary,
+.mobile-app button.ts-btn--primary {
+  flex: 1 1 auto;
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  color: var(--on-primary, #fff);
+}
+
+.ts-btn--danger,
+.mobile-app button.ts-btn--danger {
+  background: none;
+  color: var(--color-error, #ef4444);
+}
+
+.ts-action__own .theme-apply-btn,
+.mobile-app .ts-action__own button.theme-apply-btn {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+/* Reiter als ruhige Dreiteilung */
+.ts-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  background: var(--glass-light);
+}
+
+.ts-tab,
+.mobile-app button.ts-tab {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ts-tab:hover {
+  color: var(--color-text-secondary);
+}
+
+.ts-tab.is-active,
+.mobile-app button.ts-tab.is-active {
+  background: var(--theme-background);
+  color: var(--theme-primary);
+  box-shadow: 0 1px 0 var(--hairline);
+}
+
+.ts-pane__lead {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.ts-warning {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 14%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-warning, #f59e0b);
+}
+
+/* Karten: zwei Spalten am Handy, mehr Luft am Desktop */
+.ts .theme-preset-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ts .theme-community {
+  padding: 0;
+  margin: 0;
+  border: none !important;
+}
+
+.ts .theme-community .theme-section-title {
+  display: none;
+}
+
+.ts .theme-community__head {
+  justify-content: flex-end;
+  float: right;
+  margin: -4px 0 6px 12px;
+}
+
+.ts .theme-community__lead {
+  margin-top: 0;
+  min-height: 34px;
+}
+
+.ts .theme-preset-grid,
+.ts .theme-share {
+  clear: both;
+}
+
+.ts .theme-section {
+  padding: 0;
+  margin: 18px 0 0;
+  border: none !important;
+}
+
+/* Schmal: die Vorschau schrumpft auf Kopf, Poster und Knöpfe, damit darunter Platz bleibt. */
+:root[data-layout='mobile'] .ts .tp {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+}
+
+:root[data-layout='mobile'] .ts .tp .tp-full {
+  display: none;
+}
+
+:root[data-layout='mobile'] .ts .tp .tp-h {
+  display: none;
+}
+
+:root[data-layout='mobile'] .ts .tp-rail {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+:root[data-layout='mobile'] .ts .tp-actions .tp-btn:last-child {
+  display: none;
+}
+
+:root[data-layout='mobile'] .ts-action__hint {
+  font-size: 12.5px;
+}
+
+:root[data-layout='mobile'] .ts-btn,
+:root[data-layout='mobile'] .mobile-app button.ts-btn {
+  padding: 0 16px;
+}
+
+/* Breit: Auswahl links, Bühne rechts */
+@media (min-width: 1100px) {
+  :root:not([data-layout='mobile']) .ts-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(32px, 3.5vw, 72px);
+    align-items: start;
+  }
+
+  :root:not([data-layout='mobile']) .ts-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  :root:not([data-layout='mobile']) .ts-stage {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    padding: 0 0 12px;
+    box-shadow: none;
+  }
+
+  :root:not([data-layout='mobile']) .ts-stage__title {
+    font-size: 22px;
+  }
+
+  :root:not([data-layout='mobile']) .ts .theme-preset-grid {
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 14px;
+  }
+
+  :root:not([data-layout='mobile']) .ts-btn--primary {
+    flex: 0 1 auto;
+    min-width: 260px;
+  }
 }

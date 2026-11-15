@@ -321,6 +321,17 @@ const dict: Record<string, string> = {
   'Farben übernehmen': 'Aplicar colores',
   '{n} nutzen es': '{n} lo usan',
   'Deine Designs werden gerade {n}× genutzt.': 'Tus diseños se usan {n}× ahora mismo.',
+  // Design-Studio
+  'Saison-Design': 'Diseño de temporada',
+  '{name} von {author}': '{name} de {author}',
+  'Deine Änderung': 'Tu cambio',
+  'Tipp ein Design an oder ändere eine Farbe. Gespeichert wird erst beim Übernehmen.':
+    'Toca un diseño o cambia un color. No se guarda nada hasta que lo apliques.',
+  'Design wählen': 'Elegir diseño',
+  'Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
+    'Ocho mundos de color ya hechos. Al tocar uno lo ves en la vista previa.',
+  'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
+    'Cinco colores de los que TV-Rank deriva el resto.',
 };
 
 export default dict;

@@ -147,6 +147,7 @@ describe('ThemePage', () => {
     expect(screen.getByText('Design')).toBeInTheDocument();
     expect(screen.getByText('Themes')).toBeInTheDocument();
     expect(screen.getByText('Abyss')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Eigene Farben' }));
     expect(screen.getByText('Primär')).toBeInTheDocument();
   });
 
@@ -167,6 +168,7 @@ describe('ThemePage', () => {
 
   it('updates a single color from a color editor', () => {
     render(<ThemePage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Eigene Farben' }));
     fireEvent.click(screen.getByText('Primär'));
     expect(updateTheme).not.toHaveBeenCalled();
     fireEvent.click(screen.getByText('Farben übernehmen'));
@@ -194,6 +196,7 @@ describe('ThemePage', () => {
   it('shows a contrast warning when the ratio is too low', () => {
     contrastRef.current = 2;
     render(<ThemePage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Eigene Farben' }));
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });

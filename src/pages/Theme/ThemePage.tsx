@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -124,6 +123,8 @@ const colorCategories: ColorCategory[] = [
   { key: 'accentColor', name: t('Akzent'), icon: <Palette />, description: t('Akzentfarbe') },
 ];
 
+type StudioTab = 'themes' | 'community' | 'colors';
+
 const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
 /**
@@ -144,7 +145,7 @@ export const ThemePage = () => {
   const [hovered, setHovered] = useState<PresetTheme | null>(null);
   // Angetipptes Theme: erst ansehen, dann übernehmen. Gespeichert wird erst mit dem Knopf.
   const [picked, setPicked] = useState<PresetTheme | null>(null);
-  const previewRef = useRef<HTMLElement>(null);
+  const [tab, setTab] = useState<StudioTab>('themes');
   // Einzelne Farben, die geändert, aber noch nicht übernommen sind.
   const [draft, setDraft] = useState<Record<string, string> | null>(null);
   const colorOf = (key: string): string | undefined =>
@@ -208,8 +209,6 @@ export const ThemePage = () => {
     hapticTap();
     setDraft(null);
     setPicked((prev) => (prev === preset ? null : preset));
-    // Schmal steht die Vorschau über der Liste: dorthin rollen, damit man das Theme auch sieht.
-    previewRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
   }, []);
 
   const applyPresetTheme = useCallback(
@@ -230,7 +229,7 @@ export const ThemePage = () => {
         seasons: withActiveSeasonOff(userConfig),
       });
     },
-    [updateTheme, userConfig]
+    [updateTheme, userConfig, currentTheme.text.secondary]
   );
 
   const toggleSeason = useCallback(
@@ -281,6 +280,30 @@ export const ThemePage = () => {
     return !season && isShareableColors(colors) ? colors : null;
   }, [userConfig, currentTheme.text.secondary, season]);
 
+  // Wie das gerade getragene Design heißt — Orientierung über den Reitern und in der Vorschau.
+  const activeCommunity = community.themes.find((theme) => theme.id === activeCommunityId);
+  const activePreset = presetThemes.find((preset) => isPresetActive(preset));
+  const currentName = season
+    ? t('Saison-Design')
+    : activeCommunity
+      ? t('{name} von {author}', { name: activeCommunity.name, author: activeCommunity.author })
+      : activePreset
+        ? activePreset.name
+        : t('Eigene Farben');
+  const shownName =
+    shown && 'author' in shown
+      ? t('{name} von {author}', {
+          name: shown.name,
+          author: (shown as CommunityTheme).author,
+        })
+      : shown?.name;
+
+  const tabs: { key: StudioTab; label: string }[] = [
+    { key: 'themes', label: 'Themes' },
+    ...(user?.uid ? [{ key: 'community' as const, label: t('Community') }] : []),
+    { key: 'colors', label: t('Eigene Farben') },
+  ];
+
   return (
     <PageLayout
       gradientColors={[currentTheme.primary, currentTheme.accent]}
@@ -293,67 +316,82 @@ export const ThemePage = () => {
         gradientTo={currentTheme.accent}
       />
 
-      <div className="theme-content">
-        <div className="theme-studio">
-          <aside className="theme-studio__preview" ref={previewRef}>
-            <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-              {shown ? t('Vorschau: {name}', { name: shown.name }) : t('Vorschau')}
-            </h2>
+      <div className="theme-content ts">
+        <div className="ts-grid">
+          <section className="ts-stage" aria-label={t('Vorschau')}>
+            <div className="ts-stage__head">
+              <h2 className="ts-stage__title">{t('Vorschau')}</h2>
+              <span className={`ts-stage__chip${shown || draft ? ' is-pending' : ''}`}>
+                {shown ? shownName : draft ? t('Deine Änderung') : currentName}
+              </span>
+            </div>
             <ThemePreview
               colors={previewColors}
               titles={previewTitles}
               name={user?.displayName?.split(' ')[0]}
             />
-            {picked ? (
-              <div className="theme-studio__apply">
-                <button
-                  type="button"
-                  className="theme-apply-btn theme-apply-btn--primary"
-                  onClick={() => {
-                    applyPresetTheme(picked);
-                    community.setUse(pickedCommunity);
-                    setPicked(null);
-                  }}
-                >
-                  {t('{name} übernehmen', { name: picked.name })}
-                </button>
-                <button type="button" className="theme-apply-btn" onClick={() => setPicked(null)}>
-                  {t('Verwerfen')}
-                </button>
-                {pickedCommunity && pickedCommunity.uid === user?.uid && (
-                  <RenameThemeForm
-                    key={pickedCommunity.id}
-                    initial={pickedCommunity.name}
-                    hidden={!!pickedCommunity.hidden}
-                    onRename={async (name) => {
-                      const ok = await community.rename(pickedCommunity.id, name);
-                      if (ok) setPicked(null);
-                      return ok;
-                    }}
-                  />
-                )}
-                {pickedCommunity && pickedCommunity.uid === user?.uid && (
+            <div className="ts-action">
+              {picked ? (
+                <>
                   <button
                     type="button"
-                    className="theme-apply-btn theme-apply-btn--danger"
+                    className="ts-btn ts-btn--primary"
                     onClick={() => {
-                      void community.remove(pickedCommunity.id);
+                      applyPresetTheme(picked);
+                      community.setUse(pickedCommunity);
                       setPicked(null);
                     }}
                   >
-                    {t('Aus der Community entfernen')}
+                    {t('{name} übernehmen', { name: picked.name })}
                   </button>
-                )}
-              </div>
-            ) : (
-              <p className="theme-studio__hint" style={{ color: currentTheme.text.muted }}>
-                {t(
-                  'So sieht TV-Rank mit deinen Farben aus. Wähl ein Theme, um es hier zu testen — gespeichert wird erst, wenn du es übernimmst.'
-                )}
-              </p>
-            )}
-          </aside>
-          <div className="theme-studio__controls">
+                  <button type="button" className="ts-btn" onClick={() => setPicked(null)}>
+                    {t('Verwerfen')}
+                  </button>
+                  {pickedCommunity && pickedCommunity.uid === user?.uid && (
+                    <div className="ts-action__own">
+                      <RenameThemeForm
+                        key={pickedCommunity.id}
+                        initial={pickedCommunity.name}
+                        hidden={!!pickedCommunity.hidden}
+                        onRename={async (name) => {
+                          const ok = await community.rename(pickedCommunity.id, name);
+                          if (ok) setPicked(null);
+                          return ok;
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="ts-btn ts-btn--danger"
+                        onClick={() => {
+                          void community.remove(pickedCommunity.id);
+                          setPicked(null);
+                        }}
+                      >
+                        {t('Aus der Community entfernen')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : draft ? (
+                <>
+                  <button type="button" className="ts-btn ts-btn--primary" onClick={applyDraft}>
+                    {t('Farben übernehmen')}
+                  </button>
+                  <button type="button" className="ts-btn" onClick={() => setDraft(null)}>
+                    {t('Verwerfen')}
+                  </button>
+                </>
+              ) : (
+                <p className="ts-action__hint">
+                  {t(
+                    'Tipp ein Design an oder ändere eine Farbe. Gespeichert wird erst beim Übernehmen.'
+                  )}
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className="ts-panel">
             {runningSeason && (
               <SeasonCard
                 season={runningSeason}
@@ -368,124 +406,97 @@ export const ThemePage = () => {
                 )}
               </p>
             )}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="theme-section"
-              style={{
-                background: currentTheme.background.surface,
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-                Themes
-              </h2>
-              <div className="theme-preset-grid">
-                {presetThemes.map((preset, index) => (
-                  <ThemePreviewCard
-                    key={preset.name}
-                    preset={preset}
-                    index={index}
-                    isActive={isPresetActive(preset)}
-                    isPicked={picked === preset}
-                    currentTheme={currentTheme}
-                    onApply={pickPreset}
-                    onPreview={setHovered}
-                  />
-                ))}
-              </div>
-            </motion.div>
 
-            {user?.uid && (
-              <CommunitySection
-                state={community}
-                uid={user.uid}
-                ownColors={ownColors}
-                pickedId={pickedCommunity?.id}
-                currentTheme={currentTheme}
-                isActive={isPresetActive}
-                onPick={pickPreset}
-                onPreview={setHovered}
-              />
+            <div className="ts-tabs" role="tablist" aria-label={t('Design wählen')}>
+              {tabs.map((entry) => (
+                <button
+                  key={entry.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === entry.key}
+                  className={`ts-tab${tab === entry.key ? ' is-active' : ''}`}
+                  onClick={() => setTab(entry.key)}
+                >
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'themes' && (
+              <div className="ts-pane">
+                <p className="ts-pane__lead">
+                  {t('Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.')}
+                </p>
+                <div className="theme-preset-grid">
+                  {presetThemes.map((preset, index) => (
+                    <ThemePreviewCard
+                      key={preset.name}
+                      preset={preset}
+                      index={index}
+                      isActive={isPresetActive(preset)}
+                      isPicked={picked === preset}
+                      currentTheme={currentTheme}
+                      onApply={pickPreset}
+                      onPreview={setHovered}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="theme-section"
-              style={{
-                background: currentTheme.background.surface,
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-                {t('Farben anpassen')}
-              </h2>
-              {contrastWarning && (
-                <div
-                  role="alert"
-                  style={{
-                    margin: '0 0 12px',
-                    padding: '10px 14px',
-                    borderRadius: 12,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    lineHeight: 1.4,
-                    background: `${currentTheme.status.warning}1f`,
-                    color: currentTheme.status.warning,
-                    border: `1px solid ${currentTheme.status.warning}55`,
-                  }}
-                >
-                  {contrastWarning}
-                </div>
-              )}
-              <div className="theme-color-list">
-                {colorCategories.map((category) => (
-                  <ColorEditor
-                    key={category.key}
-                    category={category}
-                    color={
-                      colorOf(category.key) ||
-                      (category.key === 'textColor'
-                        ? currentTheme.text.secondary
-                        : currentTheme.accent)
-                    }
-                    currentTheme={currentTheme}
-                    onColorChange={handleColorChange}
-                  />
-                ))}
+            {tab === 'community' && user?.uid && (
+              <div className="ts-pane">
+                <CommunitySection
+                  state={community}
+                  uid={user.uid}
+                  ownColors={ownColors}
+                  pickedId={pickedCommunity?.id}
+                  currentTheme={currentTheme}
+                  isActive={isPresetActive}
+                  onPick={pickPreset}
+                  onPreview={setHovered}
+                />
               </div>
-            </motion.div>
+            )}
 
-            <ResetSection
-              currentTheme={currentTheme}
-              onReset={() => {
-                resetTheme();
-                setCommunityUse(null);
-                setDraft(null);
-              }}
-            />
-          </div>
+            {tab === 'colors' && (
+              <div className="ts-pane">
+                <p className="ts-pane__lead">
+                  {t('Fünf Farben, aus denen TV-Rank den Rest ableitet.')}
+                </p>
+                {contrastWarning && (
+                  <div className="ts-warning" role="alert">
+                    {contrastWarning}
+                  </div>
+                )}
+                <div className="theme-color-list">
+                  {colorCategories.map((category) => (
+                    <ColorEditor
+                      key={category.key}
+                      category={category}
+                      color={
+                        colorOf(category.key) ||
+                        (category.key === 'textColor'
+                          ? currentTheme.text.secondary
+                          : currentTheme.accent)
+                      }
+                      currentTheme={currentTheme}
+                      onColorChange={handleColorChange}
+                    />
+                  ))}
+                </div>
+                <ResetSection
+                  currentTheme={currentTheme}
+                  onReset={() => {
+                    resetTheme();
+                    setCommunityUse(null);
+                    setDraft(null);
+                  }}
+                />
+              </div>
+            )}
+          </section>
         </div>
-        {draft && (
-          <div className="theme-draft-bar" role="status">
-            <span className="theme-draft-bar__text">
-              {t('Deine Farbänderungen sind noch nicht übernommen.')}
-            </span>
-            <button type="button" className="theme-apply-btn" onClick={() => setDraft(null)}>
-              {t('Verwerfen')}
-            </button>
-            <button
-              type="button"
-              className="theme-apply-btn theme-apply-btn--primary"
-              onClick={applyDraft}
-            >
-              {t('Farben übernehmen')}
-            </button>
-          </div>
-        )}
       </div>
     </PageLayout>
   );

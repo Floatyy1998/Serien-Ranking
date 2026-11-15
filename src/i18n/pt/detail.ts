@@ -322,6 +322,17 @@ const dict: Record<string, string> = {
   '{n} nutzen es': '{n} usam',
   'Deine Designs werden gerade {n}× genutzt.':
     'Os teus designs estão a ser usados {n}× neste momento.',
+  // Design-Studio
+  'Saison-Design': 'Design de estação',
+  '{name} von {author}': '{name} de {author}',
+  'Deine Änderung': 'A tua alteração',
+  'Tipp ein Design an oder ändere eine Farbe. Gespeichert wird erst beim Übernehmen.':
+    'Toca num design ou muda uma cor. Nada é guardado até aplicares.',
+  'Design wählen': 'Escolher design',
+  'Acht fertige Farbwelten. Antippen zeigt sie in der Vorschau.':
+    'Oito mundos de cor prontos. Tocar num mostra-o na pré-visualização.',
+  'Fünf Farben, aus denen TV-Rank den Rest ableitet.':
+    'Cinco cores das quais o TV-Rank deriva o resto.',
 };
 
 export default dict;

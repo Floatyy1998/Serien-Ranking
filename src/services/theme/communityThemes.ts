@@ -146,6 +146,12 @@ export async function leaveCommunityTheme(id: string, uid: string): Promise<bool
     });
     return true;
   } catch {
+    // Design inzwischen gelöscht: es gibt keinen Zähler mehr, nur die eigene Markierung räumen.
+    try {
+      await dbRef(`${USES}/${id}/${uid}`).remove();
+    } catch {
+      /* bleibt für das Nachzähl-Skript */
+    }
     return false;
   }
 }

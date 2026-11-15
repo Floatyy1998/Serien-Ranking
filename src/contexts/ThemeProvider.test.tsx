@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('DynamicThemeProvider', () => {
-  it('mounts and exposes a generated theme + default sync mode', () => {
+  it('mounts and exposes a generated theme + account sync mode', () => {
     render(
       <DynamicThemeProvider>
         <Consumer />
@@ -55,7 +55,7 @@ describe('DynamicThemeProvider', () => {
     );
 
     const value = screen.getByTestId('theme-value').textContent ?? '';
-    expect(value).toContain('|local');
+    expect(value).toContain('|cloud');
     // Generated theme primary is a hex color string
     expect(value.startsWith('#')).toBe(true);
   });

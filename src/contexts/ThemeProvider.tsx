@@ -90,6 +90,10 @@ function applyCSSVariables(
   }
 }
 
+const THEME_STAMP_KEY = 'customThemeAt';
+// Wessen Theme im Gerätespeicher liegt — nach einem Kontowechsel darf es nicht ins neue Konto wandern.
+const THEME_OWNER_KEY = 'customThemeUid';
+
 const buildTheme = (config: UserThemeConfig) => generateDynamicTheme(resolveThemeConfig(config));
 
 function isMobile(): boolean {
@@ -168,15 +172,9 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     }
   });
 
-  const [syncMode, setSyncModeState] = useState<'local' | 'cloud'>(() => {
-    // Lade Sync-Mode aus localStorage (default: local); Storage kann werfen
-    try {
-      const savedMode = localStorage.getItem('themeSyncMode');
-      return (savedMode as 'local' | 'cloud') || 'local';
-    } catch {
-      return 'local';
-    }
-  });
+  // Das Theme hängt am Konto: jedes Gerät trägt dasselbe. Der Modus bleibt nur für die
+  // Schnittstelle des Contexts bestehen.
+  const syncMode = 'cloud' as const;
 
   // CSS-Variablen für globale Verwendung setzen
   const updateCSSVariables = useCallback(
@@ -193,24 +191,27 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       // WICHTIG: Verwende 'customTheme' als Key, genau wie Desktop!
       // setItem in try/catch — auf iOS Safari kann das Quota voll sein, dann
       // soll es nicht den Save-Flow oder andere Theme-Logik unterbrechen.
+      const stamp = Date.now();
       try {
         localStorage.setItem('customTheme', JSON.stringify(config));
+        localStorage.setItem(THEME_STAMP_KEY, String(stamp));
+        if (user?.uid) localStorage.setItem(THEME_OWNER_KEY, user.uid);
       } catch {
         // ignore — Theme bleibt im React-State, Cloud-Save unten greift evtl.
       }
 
-      // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
-      if (syncMode === 'cloud' && user?.uid) {
+      // Am Konto speichern, damit alle Geräte dasselbe Theme tragen
+      if (user?.uid) {
         try {
           // RTDB lehnt undefined-Felder (z. B. backgroundImage) mit einem Throw ab
           const cloudConfig = JSON.parse(JSON.stringify(config)) as UserThemeConfig;
-          await dbRef(paths.theme(user.uid)).set(cloudConfig); // Gleicher Pfad wie Desktop!
+          await dbRef(paths.theme(user.uid)).set({ ...cloudConfig, updatedAt: stamp });
         } catch {
           // ignore — theme is persisted in localStorage too, cloud sync is best-effort
         }
       }
     },
-    [syncMode, user?.uid]
+    [user?.uid]
   );
 
   // Persistenz wird gebündelt: der Farbwähler feuert beim Ziehen im Sekundentakt
@@ -265,13 +266,13 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     if (!reconcileUid) return;
     const timer = setTimeout(() => {
       void import('../services/theme/communityThemes').then((mod) =>
-        mod.reconcileCommunityThemeUse(reconcileUid, userConfig, syncMode === 'cloud')
+        mod.reconcileCommunityThemeUse(reconcileUid, userConfig, true)
       );
     }, 4000);
     return () => clearTimeout(timer);
     // userConfig steckt in reconcileSig; das Objekt selbst wechselt auch ohne Farbänderung.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reconcileUid, reconcileSig, syncMode]);
+  }, [reconcileUid, reconcileSig]);
 
   // Ausstehende Änderung nicht verlieren, wenn die App weggeht oder unmountet
   useEffect(() => {
@@ -294,12 +295,19 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     const newTheme = generateDynamicTheme(defaultThemeConfig);
     setCurrentTheme(newTheme);
     updateCSSVariables(newTheme, defaultThemeConfig);
-    localStorage.removeItem('customTheme'); // Gleicher Key wie Desktop!
+    const stamp = Date.now();
+    try {
+      localStorage.removeItem('customTheme'); // Gleicher Key wie Desktop!
+      localStorage.setItem(THEME_STAMP_KEY, String(stamp));
+    } catch {
+      // ignore
+    }
 
-    // Lösche auch aus Firebase
+    // Standard am Konto ablegen: die anderen Geräte setzen dann ebenfalls zurück
     if (user?.uid) {
       try {
-        await dbRef(paths.theme(user.uid)).remove(); // Gleicher Pfad wie Desktop!
+        const cloudDefault = JSON.parse(JSON.stringify(defaultThemeConfig)) as UserThemeConfig;
+        await dbRef(paths.theme(user.uid)).set({ ...cloudDefault, updatedAt: stamp });
       } catch {
         // ignore — local reset is what the user actually sees, cloud cleanup is best-effort
       }
@@ -326,27 +334,6 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       }
     }
 
-    // Falls kein lokales Theme, Cloud-Theme als Fallback
-    if (!loadedConfig && user?.uid) {
-      try {
-        const snapshot = await dbRef(paths.theme(user.uid)).once('value'); // Gleicher Pfad wie Desktop!
-
-        if (snapshot.exists()) {
-          loadedConfig = snapshot.val();
-          // Cloud-Theme im localStorage spiegeln — best-effort. Quota-Fehler
-          // hier darf NICHT das Cloud-Theme zerstoeren (frueher loeschte der
-          // generische Catch resetTheme das auch aus Firebase!).
-          try {
-            localStorage.setItem('customTheme', JSON.stringify(loadedConfig));
-          } catch {
-            // ignore — in-memory + Cloud reichen
-          }
-        }
-      } catch {
-        // Firebase-Read fehlgeschlagen — Default-Theme wird unten gesetzt
-      }
-    }
-
     // Wende das geladene Theme an
     if (loadedConfig) {
       const validatedConfig = validateThemeConfig(loadedConfig);
@@ -369,6 +356,72 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     void loadTheme();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Live-Abgleich mit dem Konto: das neuere Theme gewinnt. Ändert man es am Handy, zieht der
+  // PC ohne Neustart nach. Gibt es am Konto noch keins, lädt dieses Gerät seines hoch.
+  const themeUid = user?.uid;
+  useEffect(() => {
+    if (!themeUid) return;
+    const ref = dbRef(paths.theme(themeUid));
+    const readLocal = () => {
+      try {
+        const owner = localStorage.getItem(THEME_OWNER_KEY);
+        // Ohne Vermerk (Bestand vor der Umstellung) gilt das Theme als das eigene.
+        const mine = owner === null || owner === themeUid;
+        return {
+          raw: mine ? localStorage.getItem('customTheme') : null,
+          at: mine ? Number(localStorage.getItem(THEME_STAMP_KEY)) || 0 : 0,
+        };
+      } catch {
+        return { raw: null, at: 0 };
+      }
+    };
+    const upload = (raw: string) => {
+      try {
+        const stamp = Date.now();
+        localStorage.setItem(THEME_STAMP_KEY, String(stamp));
+        localStorage.setItem(THEME_OWNER_KEY, themeUid);
+        void ref.set({ ...(JSON.parse(raw) as object), updatedAt: stamp }).catch(() => {});
+      } catch {
+        // ignore
+      }
+    };
+    const handler = ref.on(
+      'value',
+      (snapshot) => {
+        const cloud = snapshot.val() as (Partial<UserThemeConfig> & { updatedAt?: number }) | null;
+        const local = readLocal();
+        if (!cloud) {
+          if (local.raw) upload(local.raw);
+          return;
+        }
+        const cloudAt = Number(cloud.updatedAt) || 0;
+        if (local.raw && cloudAt < local.at) {
+          upload(local.raw);
+          return;
+        }
+        if (local.raw && cloudAt === local.at) {
+          // Gleicher Stand; ohne Zeitstempel auf beiden Seiten gewinnt dieses Gerät einmalig.
+          if (cloudAt === 0) upload(local.raw);
+          return;
+        }
+        const validated = validateThemeConfig(cloud);
+        try {
+          localStorage.setItem('customTheme', JSON.stringify(validated));
+          localStorage.setItem(THEME_STAMP_KEY, String(cloudAt));
+          localStorage.setItem(THEME_OWNER_KEY, themeUid);
+        } catch {
+          // ignore — in-memory reicht
+        }
+        setUserConfig(validated);
+        const next = buildTheme(validated);
+        setCurrentTheme(next);
+        applyCSSVariables(next, validated, isMobile());
+      },
+      () => {}
+    );
+    return () => ref.off('value', handler);
+  }, [themeUid]);
 
   // Theme aktualisieren
   const updateTheme = useCallback(
@@ -395,13 +448,8 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   }, [saveThemeConfig, userConfig, cancelPendingSave]);
 
   // Sync-Mode setzen und speichern
-  const setSyncMode = useCallback((mode: 'local' | 'cloud') => {
-    setSyncModeState(mode);
-    try {
-      localStorage.setItem('themeSyncMode', mode);
-    } catch {
-      // ignore — Mode bleibt im React-State, Persistenz best-effort
-    }
+  const setSyncMode = useCallback((_mode: 'local' | 'cloud') => {
+    // Das Theme hängt immer am Konto — es gibt nichts mehr umzuschalten.
   }, []);
 
   // Funktion für dynamische Mobile-Hintergründe
