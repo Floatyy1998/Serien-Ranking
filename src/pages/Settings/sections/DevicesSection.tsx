@@ -8,7 +8,7 @@ import { showToast } from '../../../lib/interaction/toast';
 import { ANDROID_STORE_URL, IOS_STORE_URL } from '../../../lib/platform/appInstallTarget';
 import { nativePlatform } from '../../../services/app/nativeShell';
 import { t } from '../../../services/i18n';
-import { copyTextToClipboard } from '../../../utils/clipboard';
+import { shareLink } from '../../../services/share/shareLink';
 import { SGroup } from '../kit/SettingsKit';
 
 const WEB_URL = 'https://tv-rank.de';
@@ -29,9 +29,10 @@ interface Device {
   onClick?: () => void;
 }
 
-const copyWebLink = async () => {
-  const ok = await copyTextToClipboard(WEB_URL);
-  showToast(ok ? t('Link kopiert!') : WEB_URL, 2500, ok ? 'success' : 'info');
+const shareWebLink = async () => {
+  const result = await shareLink({ url: WEB_URL, title: 'TV-Rank' });
+  if (result === 'copied') showToast(t('Link kopiert!'), 2500, 'success');
+  else if (result === 'failed') showToast(WEB_URL, 4000, 'info');
 };
 
 /** Alle Wege zu TV-Rank auf einen Blick; das Gerät, auf dem man gerade ist, wird markiert. */
@@ -75,8 +76,8 @@ export const DevicesSection = memo(({ isElectron }: { isElectron: boolean }) => 
           id: 'web',
           icon: Language,
           name: t('Website'),
-          action: t('Link zu tv-rank.de kopieren'),
-          onClick: () => void copyWebLink(),
+          action: t('Link zu tv-rank.de teilen'),
+          onClick: () => void shareWebLink(),
         }
       : {
           id: 'web',

@@ -256,7 +256,7 @@ const dict: Record<string, string> = {
   Android: 'Android',
   Windows: 'Windows',
   'App herunterladen': 'Descarregar a app',
-  'Link zu tv-rank.de kopieren': 'Copiar link para tv-rank.de',
+  'Link zu tv-rank.de teilen': 'Partilhar link para tv-rank.de',
   'TV-Rank auf all deinen Geräten': 'TV-Rank em todos os teus dispositivos',
   'Ein Konto, überall derselbe Stand — Handy, Tablet, Computer.':
     'Uma conta, o mesmo progresso em todo o lado — telemóvel, tablet, computador.',
