@@ -145,11 +145,19 @@ export async function renameCommunityTheme(
 export const deleteCommunityTheme = (id: string): Promise<void> => dbRef(`${ROOT}/${id}`).remove();
 
 /**
+ * Ist das Konto bei dem Design schon angemeldet? Die Regeln prüfen das zwar selbst, lassen
+ * dem Admin-Konto aber alles durch — ohne diese Abfrage zählte es dort doppelt.
+ */
+const hasMarker = async (id: string, uid: string): Promise<boolean> =>
+  (await dbRef(`${USES}/${id}/${uid}`).once('value')).exists();
+
+/**
  * Meldet ein Konto als aktuellen Nutzer eines Designs an. Die Regeln lassen das je Konto
  * und Design nur einmal zu; dann bleibt der Zähler stehen.
  */
 export async function joinCommunityTheme(id: string, uid: string): Promise<boolean> {
   try {
+    if (await hasMarker(id, uid)) return true;
     await dbUpdate({
       [`${ROOT}/${id}/uses`]: serverIncrement(1),
       [`${USES}/${id}/${uid}`]: true,
@@ -163,6 +171,7 @@ export async function joinCommunityTheme(id: string, uid: string): Promise<boole
 /** Meldet das Konto wieder ab — der Zähler zeigt nur, wer das Design gerade nutzt. */
 export async function leaveCommunityTheme(id: string, uid: string): Promise<boolean> {
   try {
+    if (!(await hasMarker(id, uid))) return true;
     await dbUpdate({
       [`${ROOT}/${id}/uses`]: serverIncrement(-1),
       [`${USES}/${id}/${uid}`]: null,

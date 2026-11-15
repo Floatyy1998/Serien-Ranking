@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   deleteCommunityTheme,
   renameCommunityTheme,
@@ -29,6 +29,7 @@ export interface CommunityThemesState {
 export function useCommunityThemes(uid: string | undefined, author: string): CommunityThemesState {
   const [themes, setThemes] = useState<CommunityTheme[]>([]);
   const [presets, setPresets] = useState<Record<string, CommunityTheme>>({});
+  const [removed, setRemoved] = useState<ReadonlySet<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
@@ -83,12 +84,22 @@ export function useCommunityThemes(uid: string | undefined, author: string): Com
   );
 
   const remove = useCallback(async (id: string) => {
+    setRemoved((prev) => new Set(prev).add(id));
     try {
       await deleteCommunityTheme(id);
     } catch {
-      /* bleibt in der Liste */
+      setRemoved((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }, []);
+
+  const visible = useMemo(
+    () => (removed.size ? themes.filter((theme) => !removed.has(theme.id)) : themes),
+    [themes, removed]
+  );
 
   const setUse = useCallback(
     (theme: CommunityTheme | null) => {
@@ -101,5 +112,5 @@ export function useCommunityThemes(uid: string | undefined, author: string): Com
     [uid]
   );
 
-  return { themes, presets, loading, failed, share, rename, remove, setUse };
+  return { themes: visible, presets, loading, failed, share, rename, remove, setUse };
 }
