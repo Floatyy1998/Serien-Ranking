@@ -20,7 +20,7 @@ describe('WrappedNotAvailablePage', () => {
   it('renders the year badge and coming-soon copy', () => {
     render(<WrappedNotAvailablePage year={2026} onBack={vi.fn()} />);
     expect(screen.getByText('Wrapped 2026')).toBeInTheDocument();
-    expect(screen.getByText('Kommt bald')).toBeInTheDocument();
+    expect(screen.getByText('Ab 6. Dezember')).toBeInTheDocument();
   });
 
   it('calls onBack when the back button is clicked', () => {

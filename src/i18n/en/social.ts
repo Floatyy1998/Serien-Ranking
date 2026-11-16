@@ -385,6 +385,30 @@ const dict: Record<string, string> = {
   'Link per WhatsApp, Mail oder SMS verschicken': 'Send the link via WhatsApp, email or text',
   'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Kostenlos für iPhone, Android und im Browser:':
     'I track my shows, movies and books with TV-Rank. Free for iPhone, Android and in the browser:',
+
+  // --- Einladungen ---
+  'Kleiner Kumpel': 'Little Buddy',
+  'Ihr bekommt beide ein exklusives Accessoire': 'You both get an exclusive accessory',
+  'Eingelöst! Dein Geschenk wartet in den Benachrichtigungen.':
+    'Redeemed! Your gift is waiting in your notifications.',
+  'Diesen Code gibt es nicht': 'This code does not exist',
+  'Das ist dein eigener Code': 'That is your own code',
+  'Einladungen gelten nur für neue Konten': 'Invites only work for new accounts',
+  'Du hast schon einen Code eingelöst': 'You have already redeemed a code',
+  'Schließe zuerst die Einrichtung ab': 'Finish the setup first',
+  'Einlösen hat nicht geklappt': 'Redeeming did not work',
+  'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Mit meinem Code {code} bekommen wir beide ein exklusives Accessoire fürs Pet:':
+    'I track my shows, movies and books with TV-Rank. With my code {code} we both get an exclusive pet accessory:',
+  'Sobald sich jemand mit deinem Code anmeldet, bekommt ihr beide den „Kleinen Kumpel“ für eure Pets. Ihn gibt es nur über Einladungen.':
+    'As soon as someone signs up with your code, you both get the “Little Buddy” for your pets. It is only available through invites.',
+  'Dein Einladungscode': 'Your invite code',
+  'Code kopieren': 'Copy code',
+  'Code kopiert!': 'Code copied!',
+  'Angenommene Einladungen: {n}': 'Accepted invites: {n}',
+  'Einladung verschicken': 'Send invite',
+  'Du wurdest eingeladen?': 'Were you invited?',
+  'Code eingeben': 'Enter code',
+  Einlösen: 'Redeem',
 };
 
 export default dict;

@@ -57,6 +57,13 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
     icon: '\uD83D\uDC7D',
     rarity: 'legendary',
   },
+  buddySprite: {
+    slot: 'head',
+    name: t('Kleiner Kumpel'),
+    icon: '\u2728',
+    rarity: 'legendary',
+    source: 'invite',
+  },
 
   // ── FACE SLOT ──────────────────────────────────────────
   // Common

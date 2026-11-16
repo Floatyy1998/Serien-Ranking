@@ -3088,3 +3088,142 @@ export function drawGalaxyCrown(
   ctx.fillRect((cx + hw * 0.4) * ps, (ty - 0.2) * ps + off, ps * 0.3, ps * 0.3);
   ctx.fillRect((cx - 0.2) * ps, (ty + 0.2) * ps + off, ps * 0.2, ps * 0.2);
 }
+
+export function drawBuddySprite(
+  ctx: CanvasRenderingContext2D,
+  ps: number,
+  off: number,
+  a: PetAnchors
+): void {
+  const cx = a.headCenterX + a.headHalfWidth * 0.18;
+  const r = 2.7;
+  const cy = Math.max(a.headTopY - 2.5, r * 1.5 + 1.2);
+  const px = (x: number) => x * ps;
+  const py = (y: number) => y * ps + off;
+
+  const glow = ctx.createRadialGradient(px(cx), py(cy), ps * 0.5, px(cx), py(cy), ps * 5.2);
+  glow.addColorStop(0, 'rgba(255, 196, 120, 0.5)');
+  glow.addColorStop(0.55, 'rgba(255, 120, 170, 0.2)');
+  glow.addColorStop(1, 'rgba(255, 120, 170, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(px(cx), py(cy), ps * 5.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+  ctx.beginPath();
+  ctx.ellipse(px(cx), py(cy + r * 0.95), ps * r * 0.8, ps * 0.45, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let side = -1; side <= 1; side += 2) {
+    ctx.fillStyle = '#FF8FB4';
+    ctx.beginPath();
+    ctx.ellipse(
+      px(cx + side * r * 0.98),
+      py(cy + (side < 0 ? 0.5 : -0.9)),
+      ps * 0.62,
+      ps * 0.9,
+      side * (side < 0 ? 0.7 : -0.6),
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  }
+
+  const body = ctx.createLinearGradient(0, py(cy - r), 0, py(cy + r));
+  body.addColorStop(0, '#FFE3A6');
+  body.addColorStop(0.5, '#FFB56B');
+  body.addColorStop(1, '#FF7FA8');
+  ctx.fillStyle = body;
+  ctx.beginPath();
+  ctx.moveTo(px(cx - r), py(cy + 0.2));
+  ctx.bezierCurveTo(
+    px(cx - r),
+    py(cy - r * 1.25),
+    px(cx + r),
+    py(cy - r * 1.25),
+    px(cx + r),
+    py(cy + 0.2)
+  );
+  ctx.bezierCurveTo(
+    px(cx + r),
+    py(cy + r * 1.05),
+    px(cx - r),
+    py(cy + r * 1.05),
+    px(cx - r),
+    py(cy + 0.2)
+  );
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(150, 50, 90, 0.55)';
+  ctx.lineWidth = ps * 0.22;
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  ctx.beginPath();
+  ctx.ellipse(px(cx - r * 0.42), py(cy - r * 0.62), ps * 0.85, ps * 0.42, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let side = -1; side <= 1; side += 2) {
+    const ex = cx + side * r * 0.4;
+    ctx.fillStyle = '#3A1830';
+    ctx.beginPath();
+    ctx.ellipse(px(ex), py(cy - 0.05), ps * 0.42, ps * 0.56, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(px(ex + 0.12), py(cy - 0.24), ps * 0.17, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 90, 130, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(px(cx + side * r * 0.68), py(cy + 0.62), ps * 0.42, ps * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = '#3A1830';
+  ctx.lineWidth = ps * 0.22;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(px(cx), py(cy + 0.5), ps * 0.48, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FFB56B';
+  ctx.lineWidth = ps * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(px(cx + 0.2), py(cy - r * 1.02));
+  ctx.quadraticCurveTo(px(cx + 0.8), py(cy - r * 1.25), px(cx + 0.45), py(cy - r * 1.4));
+  ctx.stroke();
+  ctx.fillStyle = '#FFF3B0';
+  sparkle(ctx, px(cx + 0.45), py(cy - r * 1.5), ps * 0.7);
+
+  const hx = cx + r * 1.75;
+  const hy = cy - r * 1.05;
+  ctx.fillStyle = '#FF5C8A';
+  ctx.beginPath();
+  ctx.moveTo(px(hx), py(hy + 0.75));
+  ctx.bezierCurveTo(
+    px(hx - 1.15),
+    py(hy - 0.05),
+    px(hx - 0.55),
+    py(hy - 0.95),
+    px(hx),
+    py(hy - 0.3)
+  );
+  ctx.bezierCurveTo(
+    px(hx + 0.55),
+    py(hy - 0.95),
+    px(hx + 1.15),
+    py(hy - 0.05),
+    px(hx),
+    py(hy + 0.75)
+  );
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.beginPath();
+  ctx.arc(px(hx - 0.3), py(hy - 0.25), ps * 0.14, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+  sparkle(ctx, px(cx - r * 1.55), py(cy - r * 0.75), ps * 0.42);
+  sparkle(ctx, px(cx - r * 1.2), py(cy + r * 0.7), ps * 0.28);
+  sparkle(ctx, px(cx + r * 1.5), py(cy + r * 0.55), ps * 0.3);
+}

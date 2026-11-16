@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type firebase from 'firebase/compat/app';
-import { showToast } from '../../lib/interaction/toast';
-import { copyTextToClipboard } from '../../utils/clipboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWrappedConfig } from '../../hooks/wrapped/useWrappedConfig';
 import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
@@ -18,9 +16,7 @@ import { calculateBookWrappedStats } from '../../services/wrapped/books';
 import type { CompactBookEvent } from '../../lib/books/bookEvents';
 import type { WrappedMangaEvent } from '../../services/wrapped/manga';
 import { t } from '../../services/i18n';
-
-// Standard-Jahr (jedes Jahr hier ändern)
-const DEFAULT_YEAR = 2025;
+import { countsForWrapped, wrappedCutoff } from '../../lib/wrapped/wrappedPeriod';
 
 async function fetchPosterForSeries(seriesId: number): Promise<string | undefined> {
   if (!getTmdbApiKey()) return undefined;
@@ -65,10 +61,34 @@ async function enrichStatsWithPosters(stats: WrappedStats): Promise<WrappedStats
     })
   );
 
+  // Erstes/letztes Mal und die längste Session zeigen ebenfalls ein Poster. Was
+  // schon in den Top-Listen steckt, wird wiederverwendet statt neu geladen.
+  const known = new Map<string, string>();
+  for (const s of enrichedSeries) if (s.poster) known.set(`tv:${s.id}`, s.poster);
+  for (const m of enrichedMovies) if (m.poster) known.set(`movie:${m.id}`, m.poster);
+  const posterFor = async (kind: 'tv' | 'movie', id: number): Promise<string | undefined> => {
+    const key = `${kind}:${id}`;
+    const hit = known.get(key);
+    if (hit) return hit;
+    const poster = kind === 'tv' ? await fetchPosterForSeries(id) : await fetchPosterForMovie(id);
+    if (poster) known.set(key, poster);
+    return poster;
+  };
+  const withPoster = async (watch: WrappedStats['firstWatch']) =>
+    !watch || watch.poster
+      ? watch
+      : { ...watch, poster: await posterFor(watch.type === 'movie' ? 'movie' : 'tv', watch.id) };
+
+  const binge = stats.longestBingeSession;
+
   return {
     ...stats,
     topSeries: enrichedSeries,
     topMovies: enrichedMovies,
+    firstWatch: await withPoster(stats.firstWatch),
+    lastWatch: await withPoster(stats.lastWatch),
+    longestBingeSession:
+      binge && !binge.poster ? { ...binge, poster: await posterFor('tv', binge.seriesId) } : binge,
   };
 }
 
@@ -96,7 +116,6 @@ export interface UseWrappedDataResult {
   handleTouchEnd: (e: React.TouchEvent) => void;
 
   // Share
-  handleShare: () => Promise<void>;
 }
 
 export const useWrappedData = (): UseWrappedDataResult => {
@@ -114,7 +133,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
-  const year = yearParam ? parseInt(yearParam) : wrappedConfig.year || DEFAULT_YEAR;
+  const year = yearParam ? parseInt(yearParam) : wrappedConfig.year;
 
   // Aktivierte Slides basierend auf Konfiguration. Memoisiert, sonst wechselt die
   // Referenz bei jedem Render → goToSlide/next/prev bekommen neue Identität → die
@@ -123,8 +142,17 @@ export const useWrappedData = (): UseWrappedDataResult => {
   const { allBookList } = useBooksList();
   const [bookEvents, setBookEvents] = useState<CompactBookEvent[]>([]);
   const [now] = useState(() => Date.now());
+  // Auch die Buchliste endet am Stichtag: ein danach beendetes Buch zählt nicht mehr mit.
   const bookStats = useMemo(
-    () => calculateBookWrappedStats(allBookList, bookEvents, year, now),
+    () =>
+      calculateBookWrappedStats(
+        allBookList.filter(
+          (book) => !book.completedAt || countsForWrapped(Date.parse(book.completedAt), year)
+        ),
+        bookEvents,
+        year,
+        Math.min(now, wrappedCutoff(year) - 1)
+      ),
     [allBookList, bookEvents, year, now]
   );
   const hasBooks = !!bookStats;
@@ -164,12 +192,20 @@ export const useWrappedData = (): UseWrappedDataResult => {
       try {
         setLoading(true);
 
-        const [events, bingeSessions, mangaEvents, readEvents] = await Promise.all([
+        const [allEvents, allBinges, allMangaEvents, allReadEvents] = await Promise.all([
           WatchActivityService.getEventsForYear(user.uid, year),
           WatchActivityService.getBingeSessionsForYear(user.uid, year),
           fetchMangaEvents(user.uid, year).catch(() => []),
           fetchBookEvents(user.uid, year).catch(() => []),
         ]);
+        // Stichtag: gezählt wird bis einschließlich 5.12., damit der Rückblick
+        // während seiner Laufzeit (6.12. bis 31.12.) immer denselben Stand zeigt.
+        const events = allEvents.filter((e) => countsForWrapped(Date.parse(e.timestamp), year));
+        const bingeSessions = allBinges.filter((b) =>
+          countsForWrapped(Date.parse(b.startedAt), year)
+        );
+        const mangaEvents = allMangaEvents.filter((e) => countsForWrapped(e.ts * 1000, year));
+        const readEvents = allReadEvents.filter((e) => countsForWrapped(e.ts * 1000, year));
         setBookEvents(readEvents);
 
         if (events.length === 0 && mangaEvents.length === 0 && readEvents.length === 0) {
@@ -271,43 +307,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
     }
   }, [handleWheel, loading]);
 
-  const handleShare = async () => {
-    if (!stats) return;
-
-    const shareText =
-      t('Mein {year} in Zahlen:', { year }) +
-      '\n' +
-      t('{n} Episoden', { n: stats.totalEpisodesWatched }) +
-      '\n' +
-      t('{n} Filme', { n: stats.totalMoviesWatched }) +
-      '\n' +
-      (stats.manga?.totalChapters
-        ? t('{n} Manga-Kapitel', { n: stats.manga.totalChapters }) + '\n'
-        : '') +
-      (stats.manga?.totalVolumes
-        ? t('{n} Manga-Bände', { n: stats.manga.totalVolumes }) + '\n'
-        : '') +
-      t('{n} Stunden', { n: Math.round(stats.totalHoursWatched) });
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: t('Mein Jahresrückblick {year}', { year }),
-          text: shareText,
-        });
-      } catch {
-        // User cancelled or share failed
-      }
-    } else {
-      const copied = await copyTextToClipboard(shareText);
-      if (copied) {
-        showToast(t('In die Zwischenablage kopiert!'), 2500, 'success');
-      } else {
-        showToast(t('Kopieren fehlgeschlagen'), 2500, 'error');
-      }
-    }
-  };
-
   return {
     year,
     wrappedConfig,
@@ -323,6 +322,5 @@ export const useWrappedData = (): UseWrappedDataResult => {
     containerRef,
     handleTouchStart,
     handleTouchEnd,
-    handleShare,
   };
 };

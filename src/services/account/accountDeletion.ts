@@ -8,6 +8,10 @@ import { analyticsService } from '../firebase/analyticsService';
 import { backendFetch } from '../api/backendApi';
 import { dbRef, userPath } from '../db/ref';
 import { reauthenticateSocial } from '../firebase/socialAuth';
+import { isDeletionPhase, type DeletionPhase } from '../../lib/account/deletionPhases';
+
+const STATUS_POLL_MS = 1500;
+const DELETION_TIMEOUT_MS = 10 * 60000;
 
 /**
  * password = null → Social-Only-Konto, Re-Auth läuft über den Google/Apple-Provider.
@@ -18,7 +22,10 @@ import { reauthenticateSocial } from '../firebase/socialAuth';
  * `moderationQueue` sind für ihn nicht einmal lesbar, fremde Benachrichtigungen
  * erst recht nicht. Das Backend nimmt die uid nur aus dem verifizierten Token.
  */
-export async function deleteAccount(password: string | null): Promise<void> {
+export async function deleteAccount(
+  password: string | null,
+  onPhase: (phase: DeletionPhase) => void = () => {}
+): Promise<void> {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error('Kein angemeldeter Nutzer.');
 
@@ -58,6 +65,17 @@ export async function deleteAccount(password: string | null): Promise<void> {
     throw new Error(`Löschung fehlgeschlagen (${response.status})`);
   }
 
+  const started = (await response.json().catch(() => ({}))) as { started?: boolean };
+  if (started.started) {
+    try {
+      await waitForDeletion(user, onPhase);
+    } catch (err) {
+      endAccountDeletion();
+      throw err;
+    }
+  }
+  onPhase('done');
+
   // Das Backend hat das Auth-Konto zuletzt mitgelöscht — die lokale Sitzung
   // zeigt ins Leere und muss weg, sonst startet die App mit einem toten Nutzer.
   await firebase
@@ -72,6 +90,58 @@ export async function deleteAccount(password: string | null): Promise<void> {
   } catch {
     /* ignore */
   }
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Ist das Anmeldekonto schon weg? Dann ist die Löschung durch, auch wenn der Stand verloren ging. */
+async function authAccountGone(user: firebase.User): Promise<boolean> {
+  try {
+    await user.reload();
+    return false;
+  } catch (err) {
+    const code = (err as { code?: string }).code || '';
+    return code === 'auth/user-not-found' || code === 'auth/user-token-expired';
+  }
+}
+
+/**
+ * Das Backend löscht im Hintergrund und nennt auf Nachfrage den aktuellen
+ * Schritt. Verbindungsfehler beim Nachfragen brechen nichts ab — die Löschung
+ * läuft unabhängig davon weiter.
+ */
+async function waitForDeletion(
+  user: firebase.User,
+  onPhase: (phase: DeletionPhase) => void
+): Promise<void> {
+  const deadline = Date.now() + DELETION_TIMEOUT_MS;
+  let unknownInARow = 0;
+  while (Date.now() < deadline) {
+    await sleep(STATUS_POLL_MS);
+    let phase: string | undefined;
+    try {
+      const response = await backendFetch(
+        '/account-deletion/status',
+        {},
+        { quietStatuses: [401, 403, 429], quietConnectionErrors: true }
+      );
+      if (response.status === 401 && (await authAccountGone(user))) return;
+      if (response.ok) phase = ((await response.json()) as { phase?: string }).phase;
+    } catch {
+      continue;
+    }
+    if (phase === 'done') return;
+    if (phase === 'failed') throw new Error('Löschung fehlgeschlagen');
+    if (isDeletionPhase(phase)) {
+      unknownInARow = 0;
+      onPhase(phase);
+      continue;
+    }
+    // Stand unbekannt: das Backend wurde neu gestartet oder hat den Auftrag schon vergessen.
+    if (await authAccountGone(user)) return;
+    if (++unknownInARow >= 3) throw new Error('Löschung unterbrochen');
+  }
+  throw new Error('Löschung dauert zu lange');
 }
 
 /** Sonst schreibt der Verbindungsabbruch nach der Löschung wieder einen Stub. */

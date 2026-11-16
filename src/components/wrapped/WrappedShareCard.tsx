@@ -13,6 +13,12 @@ import type { WrappedStats } from '../../types/Wrapped';
 import { ShareCardFrame } from '../share/ShareCardFrame';
 import { ShareCardSheet } from '../share/ShareCardSheet';
 import { dateLocale as appDateLocale, t } from '../../services/i18n';
+import {
+  pickYearHighlights,
+  yearFacts,
+  type YearHighlight,
+} from '../../lib/wrapped/yearHighlights';
+import { factLabel, highlightImage, highlightKindLabel, highlightMeta } from './yearLabels';
 
 // Karten-Bausteine
 
@@ -56,12 +62,13 @@ const StatTile: React.FC<{ value: string; label: string }> = ({ value, label }) 
 };
 
 const PosterSlot: React.FC<{
-  rank: number;
+  /** Rang oder, bei gemischten Medien, die Art des Titels. */
+  badge: string;
   title: string;
   meta: string;
   src?: string;
   showImages: boolean;
-}> = ({ rank, title, meta, src, showImages }) => {
+}> = ({ badge, title, meta, src, showImages }) => {
   const { currentTheme } = useTheme();
   return (
     <div style={{ minWidth: 0 }}>
@@ -95,19 +102,21 @@ const PosterSlot: React.FC<{
             position: 'absolute',
             top: 14,
             left: 14,
-            width: 52,
+            minWidth: 52,
             height: 52,
-            borderRadius: '50%',
+            padding: badge.length > 2 ? '0 18px' : 0,
+            boxSizing: 'border-box',
+            borderRadius: 26,
             background: 'rgba(0,0,0,0.65)',
             color: 'white',
-            fontSize: 28,
+            fontSize: badge.length > 2 ? 22 : 28,
             fontWeight: 900,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          {rank}
+          {badge}
         </span>
       </div>
       <div
@@ -172,6 +181,19 @@ const Highlight: React.FC<{ title: string; value: string }> = ({ title, value })
   );
 };
 
+const sameKindHeading = (kind: YearHighlight['kind']): string => {
+  switch (kind) {
+    case 'series':
+      return t('Meine Top Serien');
+    case 'movie':
+      return t('Meine Top Filme');
+    case 'manga':
+      return t('Meine Top Manga');
+    default:
+      return t('Meine Top Bücher');
+  }
+};
+
 // Karte
 
 interface WrappedShareCardProps {
@@ -186,16 +208,12 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
   const topGenre = stats.topGenres[0];
   const topProvider = stats.topProviders[0];
 
-  const tiles = [
-    { value: number(stats.totalEpisodesWatched), label: t('Episoden') },
-    { value: number(stats.totalMoviesWatched), label: t('Filme') },
-    { value: number(stats.uniqueSeriesWatched), label: t('Serien') },
-    stats.manga
-      ? stats.manga.totalChapters > 0
-        ? { value: number(stats.manga.totalChapters), label: t('Manga-Kapitel') }
-        : { value: number(stats.manga.totalVolumes ?? 0), label: t('Manga-Bände') }
-      : { value: number(stats.longestStreak), label: t('Tage Streak') },
-  ];
+  // Die Karte zeigt, was dieses Konto wirklich nutzt: wer nur liest, bekommt
+  // Seiten und Bücher statt einer Null bei den Stunden.
+  const [hero, ...restFacts] = yearFacts(stats);
+  const tiles = restFacts.slice(0, 4);
+  const picks = pickYearHighlights(stats);
+  const mixed = new Set(picks.map((pick) => pick.kind)).size > 1;
 
   const highlights = [
     topGenre && { title: t('Lieblings-Genre'), value: t(topGenre.genre) },
@@ -205,42 +223,53 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
   return (
     <ShareCardFrame
       title={t('Mein {year}', { year: stats.year })}
-      subtitle={t('Mein Jahr in Serien & Filmen')}
+      subtitle={t('Mein Jahr im Rückblick')}
     >
-      {/* Hero: Stunden */}
-      <div style={{ textAlign: 'center' }}>
+      {hero && (
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              fontSize: 150,
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              lineHeight: 1,
+              color: currentTheme.text.secondary,
+            }}
+          >
+            {number(hero.value)}
+          </div>
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 32,
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: currentTheme.text.muted,
+            }}
+          >
+            {hero.key === 'hours'
+              ? t('Stunden · ≈ {n} Tage', { n: stats.totalDaysEquivalent })
+              : factLabel(hero.key)}
+          </div>
+        </div>
+      )}
+
+      {tiles.length > 0 && (
         <div
           style={{
-            fontSize: 150,
-            fontWeight: 900,
-            letterSpacing: '-0.03em',
-            lineHeight: 1,
-            color: currentTheme.text.secondary,
+            display: 'grid',
+            gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))`,
+            gap: 18,
           }}
         >
-          {number(Math.round(stats.totalHoursWatched))}
+          {tiles.map((tile) => (
+            <StatTile key={tile.key} value={number(tile.value)} label={factLabel(tile.key)} />
+          ))}
         </div>
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 32,
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color: currentTheme.text.muted,
-          }}
-        >
-          {t('Stunden · ≈ {n} Tage', { n: stats.totalDaysEquivalent })}
-        </div>
-      </div>
+      )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 18 }}>
-        {tiles.map((tile) => (
-          <StatTile key={tile.label} value={tile.value} label={tile.label} />
-        ))}
-      </div>
-
-      {stats.topSeries.length > 0 && (
+      {picks.length > 0 && (
         <div>
           <div
             style={{
@@ -252,18 +281,22 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
               marginBottom: 18,
             }}
           >
-            {t('Meine Top Serien')}
+            {mixed ? t('Meine Highlights') : sameKindHeading(picks[0].kind)}
           </div>
           <div
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${Math.max(3, picks.length)}, minmax(0, 1fr))`,
+              gap: picks.length > 3 ? 18 : 24,
+            }}
           >
-            {stats.topSeries.slice(0, 3).map((serie, index) => (
+            {picks.map((pick, index) => (
               <PosterSlot
-                key={serie.id}
-                rank={index + 1}
-                title={serie.title}
-                meta={t('{n} Episoden', { n: serie.episodesWatched })}
-                src={serie.poster ? `https://image.tmdb.org/t/p/w342${serie.poster}` : undefined}
+                key={pick.key}
+                badge={mixed ? highlightKindLabel(pick.kind) : String(index + 1)}
+                title={pick.title}
+                meta={highlightMeta(pick)}
+                src={highlightImage(pick)}
                 showImages={showImages}
               />
             ))}
@@ -297,15 +330,13 @@ interface WrappedShareSheetProps {
 }
 
 export const WrappedShareSheet: React.FC<WrappedShareSheetProps> = ({ isOpen, onClose, stats }) => {
-  const shareText = t(
-    'Mein {year} in Zahlen: {episodes} Episoden, {movies} Filme, {hours} Stunden. tv-rank.de',
-    {
-      year: stats.year,
-      episodes: stats.totalEpisodesWatched,
-      movies: stats.totalMoviesWatched,
-      hours: Math.round(stats.totalHoursWatched),
-    }
-  );
+  // Der Begleittext nennt, was dieses Konto wirklich hat (Leser: Bücher und Seiten).
+  const locale = appDateLocale();
+  const facts = yearFacts(stats)
+    .slice(0, 3)
+    .map((fact) => `${fact.value.toLocaleString(locale)} ${factLabel(fact.key)}`)
+    .join(', ');
+  const shareText = `${t('Mein {year} in Zahlen:', { year: stats.year })} ${facts}. https://tv-rank.de`;
 
   return (
     <ShareCardSheet

@@ -1,265 +1,72 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import type { TopGenreEntry } from '../../../types/Wrapped';
 import { t } from '../../../services/i18n';
-import { GenreIcon } from './GenreIcon';
+import type { TopGenreEntry } from '../../../types/Wrapped';
+import { EmptyStage, Stage, type SlideProps } from '../kit';
+import { step } from '../kitHelpers';
 
-interface TopGenresSlideProps {
+interface TopGenresSlideProps extends SlideProps {
   topGenres: TopGenreEntry[];
-  maxItems?: number;
+  maxDisplay?: number;
 }
 
-// Farben für Genre-Balken
-const GENRE_COLORS = [
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-];
-
-export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxItems = 5 }) => {
-  const displayGenres = topGenres.slice(0, maxItems);
-
-  if (displayGenres.length === 0) {
+export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({
+  topGenres,
+  maxDisplay = 5,
+  active,
+  posters,
+}) => {
+  const genres = topGenres.slice(0, maxDisplay);
+  if (genres.length === 0) {
     return (
-      <div
-        style={{
-          minHeight: 'var(--vh, 100vh)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(180deg, #1a1a2e 0%, #2d1f3d 100%)',
-          color: 'white',
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200 }}
-            style={{ marginBottom: '20px' }}
-          >
-            <GenreIcon genre="" style={{ fontSize: '4rem' }} />
-          </motion.div>
-          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>{t('Keine Genre-Daten')}</h2>
-          <p style={{ opacity: 0.6, marginTop: '10px' }}>{t('Schau mehr Serien und Filme!')}</p>
-        </div>
-      </div>
+      <EmptyStage
+        active={active}
+        posters={posters}
+        title={t('Keine Genre-Daten')}
+        hint={t('Schau mehr Serien und Filme!')}
+      />
     );
   }
-
-  const topGenre = displayGenres[0];
-
+  const top = genres[0];
+  const topName = t(top.genre);
+  const max = top.percentage || 1;
   return (
-    <div
-      style={{
-        minHeight: 'var(--vh, 100vh)',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(180deg, #1f1135 0%, #2d1f4a 50%, #1a1a2e 100%)',
-        position: 'relative',
-        overflow: 'hidden',
-        padding: '40px 20px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* Animated Background */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
-        {displayGenres.slice(0, 3).map((genre, i) => (
-          <motion.div
-            key={genre.genre}
-            animate={{
-              x: [0, 30, 0],
-              y: [0, -20, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            style={{
-              position: 'absolute',
-              left: `${20 + i * 30}%`,
-              top: `${30 + i * 20}%`,
-              fontSize: '8rem',
-              opacity: 0.15,
-              filter: 'blur(2px)',
-            }}
-          >
-            <GenreIcon genre={genre.genre} style={{ fontSize: '8rem' }} />
-          </motion.div>
-        ))}
+    <Stage active={active} posters={posters}>
+      <div className="w-copy w-stack">
+        <p className="w-kicker w-in" style={step(0)}>
+          {t('Dein Lieblings-Genre')}
+        </p>
+        {/* Lange Namen bekommen eine kleinere Schrift, damit sie höchstens zwei Zeilen brauchen. */}
+        <h2
+          className="w-title w-slam w-pop"
+          style={{
+            fontSize: `calc(var(--u) * ${Math.min(17, 190 / Math.max(8, topName.length))})`,
+          }}
+        >
+          {topName}
+        </h2>
+        <p className="w-line w-in" style={step(3)}>
+          {Math.round(top.percentage)}% {t('deiner Watchtime')}
+        </p>
       </div>
-
-      <motion.p
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 0.6, y: 0 }}
-        transition={{ delay: 0.2 }}
-        style={{
-          color: 'white',
-          textAlign: 'center',
-          fontSize: '0.9rem',
-          letterSpacing: '3px',
-          textTransform: 'uppercase',
-          marginBottom: '30px',
-          zIndex: 1,
-        }}
-      >
-        {t('Dein Lieblings-Genre')}
-      </motion.p>
-
-      {/* Top Genre - Hero */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginBottom: '40px',
-          zIndex: 1,
-        }}
-      >
-        <motion.div
-          animate={{
-            rotate: [0, 5, -5, 0],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          style={{
-            width: 'clamp(104px, 28vw, 136px)',
-            height: 'clamp(104px, 28vw, 136px)',
-            marginBottom: '18px',
-            borderRadius: '32px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06))',
-            border: '1px solid rgba(255,255,255,0.25)',
-            boxShadow: '0 18px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.35)',
-          }}
-        >
-          <GenreIcon
-            genre={topGenre.genre}
-            style={{ fontSize: 'clamp(3.2rem, 14vw, 4.4rem)', color: 'white' }}
-          />
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          style={{
-            color: 'white',
-            fontSize: 'clamp(1.8rem, 6vw, 3rem)',
-            fontWeight: 700,
-            fontFamily: 'var(--font-display)',
-            textAlign: 'center',
-            textShadow: '0 4px 20px rgba(0,0,0,0.5)',
-          }}
-        >
-          {t(topGenre.genre)}
-        </motion.h2>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7, type: 'spring' }}
-          style={{
-            background: 'var(--glass-heavy)',
-            backdropFilter: 'var(--blur-sm)',
-            WebkitBackdropFilter: 'var(--blur-sm)',
-            borderRadius: '20px',
-            padding: '10px 25px',
-            marginTop: '15px',
-          }}
-        >
-          <span style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>
-            {topGenre.percentage}%
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginLeft: '8px' }}>
-            {t('deiner Watchtime')}
-          </span>
-        </motion.div>
-      </motion.div>
-
-      {/* Rest der Genres als animierte Balken */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        style={{
-          width: '100%',
-          maxWidth: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          zIndex: 1,
-        }}
-      >
-        {displayGenres.map((genre, index) => (
-          <motion.div
-            key={genre.genre}
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9 + index * 0.1 }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '6px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <GenreIcon
-                  genre={genre.genre}
-                  style={{ fontSize: '1.3rem', color: 'rgba(255,255,255,0.85)' }}
-                />
-                <span style={{ color: 'white', fontWeight: index === 0 ? 'bold' : 'normal' }}>
-                  {t(genre.genre)}
-                </span>
-              </div>
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>
-                {genre.percentage}%
-              </span>
+      <ol className="w-bars w-visual">
+        {genres.map((genre, i) => (
+          <li key={genre.genre} className="w-side" style={step(i + 3)}>
+            <div className="w-bar__head">
+              <span>{t(genre.genre)}</span>
+              <span>{Math.round(genre.percentage)}%</span>
             </div>
-            <div
-              style={{
-                width: '100%',
-                height: '10px',
-                background: 'rgba(255,255,255,0.1)',
-                borderRadius: '5px',
-                overflow: 'hidden',
-              }}
-            >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${genre.percentage}%` }}
-                transition={{ delay: 1 + index * 0.1, duration: 0.8, ease: 'easeOut' }}
-                style={{
-                  height: '100%',
-                  background: GENRE_COLORS[index % GENRE_COLORS.length],
-                  borderRadius: '5px',
-                  boxShadow: '0 2px 10px rgba(255,255,255,0.2)',
-                }}
+            <div className="w-bar__track">
+              <div
+                className="w-bar__fill"
+                style={step(i + 3, {
+                  '--w': `${(genre.percentage / max) * 100}%`,
+                } as React.CSSProperties)}
               />
             </div>
-          </motion.div>
+          </li>
         ))}
-      </motion.div>
-    </div>
+      </ol>
+    </Stage>
   );
 };
 

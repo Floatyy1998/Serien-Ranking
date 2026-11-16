@@ -1,3 +1,6 @@
+import { DeleteAccountSection } from '../Settings/sections/DeleteAccountSection';
+import '../Settings/kit/SettingsKit.css';
+import { InviteSheet } from '../../components/invite/InviteSheet';
 import { useState } from 'react';
 import { CarouselNotification } from '../../components/ui/notification/CarouselNotification';
 import '../../components/ui/notification/CarouselNotification.css';
@@ -287,4 +290,24 @@ export const HintRecapPreview = () => (
       ]}
     />
   </PreviewPage>
+);
+
+const INVITE_STATUS = {
+  code: 'K7M2XP',
+  count: 2,
+  rewarded: true,
+  redeemed: false,
+  canRedeem: true,
+};
+
+export const InviteSheetPreview = () => (
+  <div style={{ minHeight: '100vh' }}>
+    <InviteSheet isOpen onClose={() => {}} fixedStatus={INVITE_STATUS} />
+  </div>
+);
+
+export const DeleteProgressPreview = () => (
+  <div style={{ padding: 16 }}>
+    <DeleteAccountSection previewPhase="chats" />
+  </div>
 );

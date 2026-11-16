@@ -11,7 +11,8 @@ import Theaters from '@mui/icons-material/Theaters';
 import TrendingUp from '@mui/icons-material/TrendingUp';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
-import { t } from '../../services/i18n';
+import { dateLocale, t } from '../../services/i18n';
+import { wrappedCutoff } from '../../lib/wrapped/wrappedPeriod';
 
 interface Props {
   year: number;
@@ -140,7 +141,12 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           letterSpacing: '-0.5px',
         }}
       >
-        {t('Kommt bald')}
+        {t('Ab {date}', {
+          date: new Date(wrappedCutoff(year)).toLocaleDateString(dateLocale(), {
+            day: 'numeric',
+            month: 'long',
+          }),
+        })}
       </motion.h1>
 
       {/* Description */}
@@ -157,7 +163,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         }}
       >
         {t(
-          'Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende des Jahres zeigen wir dir deine persönlichen Highlights!'
+          'Dein Jahresrückblick läuft vom 6. bis 31. Dezember. Gezählt wird alles vom 1. Januar bis 5. Dezember.'
         )}
       </motion.p>
 

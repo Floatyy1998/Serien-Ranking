@@ -9,18 +9,25 @@
  * der Export wiederholt; erst danach gibt es einen Fehler-Toast.
  */
 
-import { IosShare } from '@mui/icons-material';
+import { ContentCopyRounded, DownloadRounded, IosShare } from '@mui/icons-material';
 import { LoadingSpinner } from '../ui/feedback/LoadingSpinner';
 import { motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticError, hapticTap } from '../../lib/interaction/haptics';
 import { tapScale } from '../../lib/motion';
-import { exportNodeAsImage, shareOrDownload } from '../../services/share/shareCard';
+import {
+  canCopyImage,
+  copyImage,
+  downloadImage,
+  exportNodeAsImage,
+  shareOrDownload,
+} from '../../services/share/shareCard';
 import { showToast } from '../../lib/interaction/toast';
 import { BottomSheet } from '../ui';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from './ShareCardFrame';
 import { t } from '../../services/i18n';
+import './ShareCardSheet.css';
 
 /** Vorschau-Maßstab: 1080×1920 → 216×384, passt auch auf kleine Phones. */
 const PREVIEW_SCALE = 0.2;
@@ -32,7 +39,7 @@ interface ShareCardSheetProps {
   sheetTitle: string;
   /** Dateiname des exportierten PNGs. */
   filename: string;
-  /** Begleittext für navigator.share. */
+  /** Begleittext, den Messenger als Bildunterschrift übernehmen können. */
   shareText: string;
   /** Rendert die Karte; bei showImages=false ohne externe Bilder (CORS-Fallback). */
   renderCard: (showImages: boolean) => React.ReactNode;
@@ -56,38 +63,50 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
     if (isOpen) setShowImages(true);
   }, [isOpen]);
 
-  const doExport = async (): Promise<void> => {
+  const exportBlob = async (): Promise<Blob> => {
     if (!cardRef.current) throw new Error('Karte nicht gerendert');
-    const blob = await exportNodeAsImage(cardRef.current, filename);
-    await shareOrDownload(blob, filename, shareText);
+    return exportNodeAsImage(cardRef.current, filename);
   };
 
-  const handleShare = async () => {
+  /** Erstellt das Bild und übergibt es an `action` (teilen, kopieren, speichern). */
+  const run = async (action: (blob: Blob) => Promise<void> | void) => {
     if (sharing) return;
     hapticTap();
     setSharing(true);
     try {
-      await doExport();
-    } catch {
-      if (showImages) {
+      let blob: Blob;
+      try {
+        blob = await exportBlob();
+      } catch (err) {
+        if (!showImages) throw err;
         // Externe Bilder (Poster/Avatare) könnten der Grund sein:
         // Karte ohne Bilder neu rendern und einmal erneut versuchen.
         setShowImages(false);
         await new Promise((resolve) => setTimeout(resolve, 120));
-        try {
-          await doExport();
-        } catch {
-          hapticError();
-          showToast(t('Bild konnte nicht erstellt werden'), 2500, 'error');
-        }
-      } else {
-        hapticError();
-        showToast('Bild konnte nicht erstellt werden', 2500, 'error');
+        blob = await exportBlob();
       }
+      await action(blob);
+    } catch {
+      hapticError();
+      showToast(t('Bild konnte nicht erstellt werden'), 2500, 'error');
     } finally {
       setSharing(false);
     }
   };
+
+  const handleShare = () => run((blob) => shareOrDownload(blob, filename, shareText));
+
+  const handleCopy = () =>
+    run(async (blob) => {
+      const copied = await copyImage(blob);
+      showToast(
+        copied ? t('Bild kopiert') : t('Kopieren fehlgeschlagen'),
+        2500,
+        copied ? 'success' : 'error'
+      );
+    });
+
+  const handleSave = () => run((blob) => downloadImage(blob, filename));
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={sheetTitle} maxWidth="480px">
@@ -126,9 +145,20 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
             flexShrink: 0,
           }}
         >
-          <div style={{ transform: `scale(${PREVIEW_SCALE})`, transformOrigin: 'top left' }}>
-            {/* Dieser unskalierte Knoten wird exportiert */}
-            <div ref={cardRef}>{renderCard(showImages)}</div>
+          <div
+            style={{
+              width: SHARE_CARD_WIDTH,
+              height: SHARE_CARD_HEIGHT,
+              transform: `scale(${PREVIEW_SCALE})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            {/* Dieser unskalierte Knoten wird exportiert. Er braucht feste Maße:
+                ohne sie erbt er die Breite der verkleinerten Vorschau, und das
+                exportierte Bild zeigt nur einen schmalen Streifen der Karte. */}
+            <div ref={cardRef} style={{ width: SHARE_CARD_WIDTH, height: SHARE_CARD_HEIGHT }}>
+              {renderCard(showImages)}
+            </div>
           </div>
         </div>
 
@@ -177,6 +207,29 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
             </>
           )}
         </motion.button>
+
+        <div style={{ display: 'flex', gap: 'var(--space-2)', width: '100%' }}>
+          {canCopyImage() && (
+            <button
+              type="button"
+              className="share-card-secondary"
+              onClick={handleCopy}
+              disabled={sharing}
+            >
+              <ContentCopyRounded style={{ fontSize: 18 }} />
+              <span>{t('Bild kopieren')}</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="share-card-secondary"
+            onClick={handleSave}
+            disabled={sharing}
+          >
+            <DownloadRounded style={{ fontSize: 18 }} />
+            <span>{t('Bild speichern')}</span>
+          </button>
+        </div>
       </div>
     </BottomSheet>
   );

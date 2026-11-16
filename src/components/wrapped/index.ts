@@ -1,8 +1,5 @@
 // Jahr-agnostische Wrapped-Slides — werden jedes Jahr wiederverwendet.
 
-export { WrappedSlide } from './WrappedSlide';
-export { getSlideThemes } from './slides/wrappedSlideThemes';
-
 export { IntroSlide } from './slides/IntroSlide';
 export { TotalTimeSlide } from './slides/TotalTimeSlide';
 export { TopSeriesSlide } from './slides/TopSeriesSlide';

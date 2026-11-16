@@ -304,7 +304,7 @@ async function pickAccessoryReward(
 
   // Fall back to regular accessories of that rarity
   const regularCandidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === targetRarity && !owned.has(id)
+    ([id, def]) => def.rarity === targetRarity && !def.source && !owned.has(id)
   );
 
   if (regularCandidates.length === 0) return null;

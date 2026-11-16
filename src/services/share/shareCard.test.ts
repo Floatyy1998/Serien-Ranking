@@ -103,8 +103,11 @@ describe('shareOrDownload', () => {
     expect(canShare).toHaveBeenCalled();
     expect(share).toHaveBeenCalledTimes(1);
     const arg = share.mock.calls[0][0];
+    // Bild und Text in einem Aufruf, ohne title/url: beste Chance auf eine Bildunterschrift.
+    expect(arg.files).toHaveLength(1);
     expect(arg.text).toBe('Schau dir das an');
-    expect(arg.title).toBe('TV-Rank');
+    expect(arg.title).toBeUndefined();
+    expect(arg.url).toBeUndefined();
     // Kein Download-Fallback
     expect(env.link.click).not.toHaveBeenCalled();
     expect(toastMod.showToast).not.toHaveBeenCalled();

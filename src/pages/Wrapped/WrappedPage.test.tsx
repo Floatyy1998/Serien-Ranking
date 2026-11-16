@@ -32,7 +32,6 @@ const baseReturn = () => ({
   containerRef: { current: null },
   handleTouchStart: vi.fn(),
   handleTouchEnd: vi.fn(),
-  handleShare: vi.fn<() => Promise<void>>(),
 });
 
 beforeEach(() => useWrappedDataMock.mockReset());

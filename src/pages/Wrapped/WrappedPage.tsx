@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { WrappedNotAvailablePage } from '../../components/wrapped';
+import { ADMIN_UID } from '../../config/admin';
 import { useWrappedData } from './useWrappedData';
 import {
   WrappedLoadingState,
@@ -30,10 +31,11 @@ export const WrappedPage: React.FC = () => {
     containerRef,
     handleTouchStart,
     handleTouchEnd,
-    handleShare,
   } = useWrappedData();
 
-  if (!wrappedConfig.loading && !wrappedConfig.enabled) {
+  // Vor dem Start sieht nur der Admin den Rückblick, um ihn zu prüfen.
+  const preview = user?.uid === ADMIN_UID;
+  if (!wrappedConfig.loading && !wrappedConfig.enabled && !preview) {
     return <WrappedNotAvailablePage year={wrappedConfig.year} onBack={() => navigate('/')} />;
   }
 
@@ -56,7 +58,7 @@ export const WrappedPage: React.FC = () => {
         className="wrapped-slide-track"
         style={{ transform: `translateY(-${currentSlide * 100}%)` }}
       >
-        {enabledSlides.map((slide) => (
+        {enabledSlides.map((slide, index) => (
           <div key={slide.type} className="wrapped-slide">
             {stats && (
               <WrappedSlideRenderer
@@ -64,7 +66,7 @@ export const WrappedPage: React.FC = () => {
                 stats={stats}
                 year={year}
                 username={user?.displayName || user?.email?.split('@')[0]}
-                onShare={handleShare}
+                active={index === currentSlide}
               />
             )}
           </div>

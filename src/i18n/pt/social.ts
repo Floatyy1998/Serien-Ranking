@@ -350,6 +350,30 @@ const dict: Record<string, string> = {
   'Link per WhatsApp, Mail oder SMS verschicken': 'Envie o link por WhatsApp, e-mail ou SMS',
   'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Kostenlos für iPhone, Android und im Browser:':
     'Acompanho minhas séries, filmes e livros com o TV-Rank. Grátis para iPhone, Android e no navegador:',
+
+  // --- Einladungen ---
+  'Kleiner Kumpel': 'Pequeno Parceiro',
+  'Ihr bekommt beide ein exklusives Accessoire': 'Vocês dois ganham um acessório exclusivo',
+  'Eingelöst! Dein Geschenk wartet in den Benachrichtigungen.':
+    'Resgatado! Seu presente está esperando nas notificações.',
+  'Diesen Code gibt es nicht': 'Este código não existe',
+  'Das ist dein eigener Code': 'Esse é o seu próprio código',
+  'Einladungen gelten nur für neue Konten': 'Convites só valem para contas novas',
+  'Du hast schon einen Code eingelöst': 'Você já resgatou um código',
+  'Schließe zuerst die Einrichtung ab': 'Conclua a configuração primeiro',
+  'Einlösen hat nicht geklappt': 'Não foi possível resgatar',
+  'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Mit meinem Code {code} bekommen wir beide ein exklusives Accessoire fürs Pet:':
+    'Eu acompanho minhas séries, filmes e livros com o TV-Rank. Com meu código {code}, nós dois ganhamos um acessório exclusivo para o pet:',
+  'Sobald sich jemand mit deinem Code anmeldet, bekommt ihr beide den „Kleinen Kumpel“ für eure Pets. Ihn gibt es nur über Einladungen.':
+    'Assim que alguém se cadastrar com seu código, vocês dois ganham o “Pequeno Parceiro” para seus pets. Ele só existe por convite.',
+  'Dein Einladungscode': 'Seu código de convite',
+  'Code kopieren': 'Copiar código',
+  'Code kopiert!': 'Código copiado!',
+  'Angenommene Einladungen: {n}': 'Convites aceitos: {n}',
+  'Einladung verschicken': 'Enviar convite',
+  'Du wurdest eingeladen?': 'Você foi convidado?',
+  'Code eingeben': 'Digite o código',
+  Einlösen: 'Resgatar',
 };
 
 export default dict;

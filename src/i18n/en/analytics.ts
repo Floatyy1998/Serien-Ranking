@@ -129,6 +129,7 @@ const dict: Record<string, string> = {
 
   // --- Share-Cards ---
   'Dein Serien-Tracker': 'Your TV show tracker',
+  'Kostenlos für iPhone, Android & Web': 'Free for iPhone, Android & web',
   'Bild konnte nicht erstellt werden': 'Could not create image',
   'Karte als Bild teilen': 'Share as image',
   'Bild wird erstellt…': 'Creating image…',
@@ -357,6 +358,27 @@ const dict: Record<string, string> = {
   // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
   Watchtime: 'Watch time',
   Trends: 'Trends',
+
+  // --- Wrapped: Neugestaltung ---
+  'Hey {name}!': 'Hey {name}!',
+  'Das sind {n} Tage am Stück.': 'That is {n} days straight.',
+  'So fing dein Jahr an': 'How your year began',
+  'Und das lief zuletzt': 'And what you watched last',
+  'Dein Film des Jahres': 'Your movie of the year',
+  'nach 22 Uhr': 'after 10 pm',
+  'Folie {n} von {total}': 'Slide {n} of {total}',
+  'Bild kopieren': 'Copy image',
+  'Bild kopiert': 'Image copied',
+  'Bild speichern': 'Save image',
+  'Bild gespeichert': 'Image saved',
+  'Mein Jahr im Rückblick': 'My year in review',
+  'Meine Highlights': 'My highlights',
+  'Meine Top Filme': 'My top movies',
+  'Meine Top Manga': 'My top manga',
+  'Meine Top Bücher': 'My top books',
+  'Ab {date}': 'From {date}',
+  'Dein Jahresrückblick läuft vom 6. bis 31. Dezember. Gezählt wird alles vom 1. Januar bis 5. Dezember.':
+    'Your year in review runs from December 6 to 31. Everything from January 1 to December 5 counts.',
 };
 
 export default dict;

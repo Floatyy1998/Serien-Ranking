@@ -32,9 +32,31 @@ export function wornSlots(pet: Pick<Pet, 'accessories' | 'level'>): Set<Accessor
   return new Set(wornAccessories(pet).map((a) => slotOf(a.id) as AccessorySlot));
 }
 
-const DRAGON_OPEN_CROWN = new Set(['headband', 'bandana', 'halo']);
+// Schmale Teile, die nur auf dem Scheitel sitzen: Hörner und Kamm passen daneben.
+const DRAGON_OPEN_CROWN = new Set([
+  'headband',
+  'bandana',
+  'halo',
+  'buddySprite',
+  'flowerCrown',
+  'partyHat',
+  'crown',
+  'unicornHorn',
+  'alienAntenna',
+  'diamondTiara',
+  'phoenixFeather',
+  'ancientCrown',
+  'celestialCrown',
+  'lotusHelm',
+  'glitchCrown',
+  'sproutHat',
+  'popcornHat',
+  'winterCrown',
+  'jellyfishCrown',
+  'galaxyCrown',
+]);
 
-/** Plätze, deren eingebaute Körper-Deko das Sprite weglassen muss. Stirnbänder lassen Drachenhörner frei. */
+/** Plätze, deren eingebaute Körper-Deko das Sprite weglassen muss. Schmale Kopfteile lassen Drachenhörner frei. */
 export function coveredSlots(pet: Pick<Pet, 'accessories' | 'level' | 'type'>): Set<AccessorySlot> {
   const worn = wornAccessories(pet);
   const slots = new Set(worn.map((a) => slotOf(a.id) as AccessorySlot));

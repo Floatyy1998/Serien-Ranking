@@ -1,212 +1,52 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import type { MangaWrappedStats, TopMangaEntry } from '../../../types/Wrapped';
 import { dateLocale, t } from '../../../services/i18n';
-
-interface TopMangaSlideProps {
-  manga: MangaWrappedStats;
-}
+import type { MangaWrappedStats, TopMangaEntry } from '../../../types/Wrapped';
+import { TopList, type SlideProps } from '../kit';
+import { fmt } from '../kitHelpers';
 
 const monthName = (month: number) =>
   new Date(2000, month, 1).toLocaleDateString(dateLocale(), { month: 'long' });
 
-const amountLabel = (entry: TopMangaEntry): string =>
+const amount = (entry: TopMangaEntry): string =>
   [
     entry.chapters > 0 ? t('{n} Kapitel', { n: entry.chapters }) : '',
     entry.volumes ? (entry.volumes === 1 ? t('1 Band') : t('{n} Bände', { n: entry.volumes })) : '',
   ]
     .filter(Boolean)
-    .join(' · ');
+    .join(', ');
 
-export const TopMangaSlide: React.FC<TopMangaSlideProps> = ({ manga }) => {
-  const [top, ...rest] = manga.topManga;
-  const volumes = manga.totalVolumes ?? 0;
+export const TopMangaSlide: React.FC<{ manga: MangaWrappedStats } & SlideProps> = ({
+  manga,
+  active,
+}) => {
+  const [top, ...rest] = manga.topManga.slice(0, 5);
+  if (!top) return null;
   const byChapters = manga.totalChapters > 0;
-
+  const total = byChapters
+    ? `${fmt(manga.totalChapters)} ${t('Kapitel aus {n} Manga gelesen', { n: manga.uniqueManga })}`
+    : `${fmt(manga.totalVolumes ?? 0)} ${t('Bände aus {n} Manga gelesen', { n: manga.uniqueManga })}`;
+  const month = byChapters
+    ? t('Lesemonat: {month} mit {n} Kapiteln', {
+        month: monthName(manga.mostReadMonth),
+        n: manga.mostReadMonthChapters,
+      })
+    : t('Lesemonat: {month} mit {n} Bänden', {
+        month: monthName(manga.mostReadMonth),
+        n: manga.mostReadMonthVolumes ?? 0,
+      });
   return (
-    <div
-      style={{
-        minHeight: 'var(--vh, 100vh)',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(180deg, #1b1030 0%, #2d1449 50%, #4a1d5e 100%)',
-        position: 'relative',
-        overflow: 'hidden',
-        padding: '40px 20px',
-        boxSizing: 'border-box',
-        color: 'white',
-        textAlign: 'center',
-      }}
-    >
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: '12%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 360,
-          height: 360,
-          background: 'radial-gradient(circle, rgba(232,121,249,0.35) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
-
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 0.7, y: 0 }}
-        transition={{ delay: 0.2 }}
-        style={{
-          fontSize: '1rem',
-          letterSpacing: '3px',
-          textTransform: 'uppercase',
-          marginBottom: 18,
-          zIndex: 1,
-        }}
-      >
-        {t('Deine Top Manga')}
-      </motion.p>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.85 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.35, type: 'spring', stiffness: 110 }}
-        style={{ zIndex: 1, marginBottom: 24 }}
-      >
-        <div
-          style={{
-            fontSize: 'clamp(3rem, 14vw, 5.5rem)',
-            fontWeight: 900,
-            fontFamily: 'var(--font-display)',
-            lineHeight: 1,
-            background: 'linear-gradient(135deg, #f0abfc 0%, #e879f9 50%, #c084fc 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          {(byChapters ? manga.totalChapters : volumes).toLocaleString()}
-        </div>
-        <div style={{ fontSize: '1.1rem', opacity: 0.85, marginTop: 6 }}>
-          {byChapters
-            ? t('Kapitel aus {n} Manga gelesen', { n: manga.uniqueManga })
-            : t('Bände aus {n} Manga gelesen', { n: manga.uniqueManga })}
-        </div>
-        {byChapters && volumes > 0 && (
-          <div style={{ fontSize: '0.95rem', opacity: 0.7, marginTop: 4 }}>
-            {volumes === 1 ? t('und 1 Band') : t('und {n} Bände', { n: volumes })}
-          </div>
-        )}
-      </motion.div>
-
-      {top && (
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 16, zIndex: 1, marginBottom: 22 }}
-        >
-          {top.poster && (
-            <img
-              src={top.poster}
-              alt={top.title}
-              style={{
-                width: 110,
-                borderRadius: 12,
-                boxShadow: '0 18px 50px rgba(0,0,0,0.5), 0 0 34px rgba(232,121,249,0.35)',
-              }}
-            />
-          )}
-          <div style={{ textAlign: 'left', maxWidth: 220 }}>
-            <div style={{ fontSize: '0.8rem', letterSpacing: '2px', opacity: 0.6 }}>
-              {t('Am meisten gelesen')}
-            </div>
-            <div
-              style={{
-                fontSize: 'clamp(1.2rem, 5vw, 1.6rem)',
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                lineHeight: 1.2,
-                margin: '4px 0',
-              }}
-            >
-              {top.title}
-            </div>
-            <div style={{ color: '#f0abfc', fontWeight: 700 }}>{amountLabel(top)}</div>
-          </div>
-        </motion.div>
-      )}
-
-      {rest.length > 0 && (
-        <motion.ol
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75 }}
-          style={{
-            listStyle: 'none',
-            margin: 0,
-            padding: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            width: 'min(340px, 100%)',
-            zIndex: 1,
-          }}
-        >
-          {rest.map((entry, index) => (
-            <li
-              key={entry.anilistId}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '8px 12px',
-                borderRadius: 12,
-                background: 'rgba(255,255,255,0.07)',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ fontWeight: 800, opacity: 0.6, width: 18 }}>{index + 2}</span>
-              <span
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  fontWeight: 600,
-                }}
-              >
-                {entry.title}
-              </span>
-              <span style={{ color: '#f0abfc', fontWeight: 700, fontSize: '0.9rem' }}>
-                {entry.chapters > 0 ? entry.chapters : t('{n} Bd.', { n: entry.volumes ?? 0 })}
-              </span>
-            </li>
-          ))}
-        </motion.ol>
-      )}
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.7 }}
-        transition={{ delay: 0.95 }}
-        style={{ marginTop: 22, fontSize: '0.95rem', zIndex: 1 }}
-      >
-        {byChapters
-          ? t('Lesemonat: {month} mit {n} Kapiteln', {
-              month: monthName(manga.mostReadMonth),
-              n: manga.mostReadMonthChapters,
-            })
-          : t('Lesemonat: {month} mit {n} Bänden', {
-              month: monthName(manga.mostReadMonth),
-              n: manga.mostReadMonthVolumes ?? 0,
-            })}
-      </motion.p>
-    </div>
+    <TopList
+      active={active}
+      kicker={t('Deine Top Manga')}
+      hero={{ key: top.anilistId, title: top.title, heroImage: top.poster, value: amount(top) }}
+      rest={rest.map((m) => ({
+        key: m.anilistId,
+        title: m.title,
+        image: m.poster,
+        value: amount(m),
+      }))}
+      note={`${total}. ${month}`}
+    />
   );
 };
 

@@ -185,6 +185,8 @@ export interface BingeSessionStats {
   episodeCount: number;
   totalMinutes: number;
   date: string;
+  /** TMDB-Posterpfad, nachgeladen für die Wrapped-Folie. */
+  poster?: string;
 }
 
 // Geräte-Statistiken

@@ -38,6 +38,7 @@ import {
   drawCosmicHelm,
   drawShadowHood,
   drawCelestialCrown,
+  drawBuddySprite,
   drawVolcanoHelm,
   drawLotusHelm,
   drawGlitchCrown,
@@ -444,6 +445,9 @@ export const drawAccessory = (
       break;
     case 'halo':
       drawHalo(ctx, ps, offset, a);
+      break;
+    case 'buddySprite':
+      drawBuddySprite(ctx, ps, offset, a);
       break;
     case 'devilHorns':
       drawDevilHorns(ctx, ps, offset, a);

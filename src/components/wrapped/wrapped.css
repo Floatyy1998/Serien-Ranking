@@ -1,0 +1,928 @@
+/* Wrapped — dunkle Bühne, eigene Poster als Kulisse, Riesenzahlen im Vordergrund.
+   Alle Regeln hängen an .w-stage: die App setzt Absätze global auf 14 px
+   (.mobile-app p), eine einzelne Klasse verliert dagegen. */
+
+.w-stage {
+  --w-bg: #0d070f;
+  --w-ink: #ffffff;
+  --w-soft: rgba(255, 255, 255, 0.8);
+  --w-line: rgba(255, 255, 255, 0.2);
+  --w-a: var(--theme-primary, #ef6f8a);
+  --w-b: var(--theme-accent, #f2a648);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  container-type: size;
+  background: var(--w-bg);
+  color: var(--w-ink);
+  font-family: var(--font-display);
+}
+
+/* ── Kulisse ─────────────────────────────────────────── */
+
+.w-stage .w-art {
+  position: absolute;
+  inset: -12%;
+  z-index: 0;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  filter: blur(36px) saturate(1.35);
+  opacity: 0.62;
+  transform: scale(1.06);
+  will-change: transform;
+}
+
+.w-stage.is-active .w-art {
+  animation: w-kenburns 26s ease-in-out infinite alternate;
+}
+
+@keyframes w-kenburns {
+  from {
+    transform: scale(1.06) translate(-2%, -1.5%);
+  }
+  to {
+    transform: scale(1.22) translate(2.5%, 2%);
+  }
+}
+
+.w-stage .w-wall {
+  position: absolute;
+  inset: -20% -40%;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.6cqh;
+  transform: rotate(-9deg);
+  opacity: 0.36;
+  pointer-events: none;
+}
+
+.w-stage .w-wall__row {
+  display: flex;
+  gap: 1.6cqh;
+  width: max-content;
+  animation: w-wall 52s linear infinite;
+  will-change: transform;
+}
+
+.w-stage .w-wall__row:nth-child(even) {
+  animation-direction: reverse;
+  animation-duration: 64s;
+}
+
+.w-stage .w-wall__row img {
+  width: 15cqh;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 1.2cqh;
+}
+
+.w-stage:not(.is-active) .w-wall__row {
+  animation-play-state: paused;
+}
+
+@keyframes w-wall {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Abdunklung: hält jede Schrift lesbar, egal welches Poster dahinter liegt. */
+.w-stage .w-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 7, 15, 0.4) 0%,
+    rgba(13, 7, 15, 0.74) 46%,
+    rgba(13, 7, 15, 0.93) 100%
+  );
+}
+
+.w-stage .w-glow {
+  position: absolute;
+  z-index: 0;
+  width: 70cqh;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.w-stage .w-glow--a {
+  top: -28cqh;
+  left: -22cqh;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--w-a) 46%, transparent),
+    transparent 68%
+  );
+}
+
+.w-stage .w-glow--b {
+  right: -26cqh;
+  bottom: -30cqh;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--w-b) 40%, transparent),
+    transparent 68%
+  );
+}
+
+.w-stage.is-active .w-glow--a {
+  animation: w-drift 14s ease-in-out infinite alternate;
+}
+
+.w-stage.is-active .w-glow--b {
+  animation: w-drift 18s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes w-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(9cqh, 7cqh) scale(1.18);
+  }
+}
+
+/* ── Raster ──────────────────────────────────────────── */
+
+/* Eine Einheit = 1 % der schmaleren Bühne. Hält Hochkant und Breitbild im selben Raster. */
+.w-stage .w-body {
+  --u: calc(min(100cqw, 46cqh) / 100);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  gap: calc(var(--u) * 6);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: calc(var(--u) * 15 + env(safe-area-inset-top)) calc(var(--u) * 7)
+    calc(var(--u) * 13 + env(safe-area-inset-bottom));
+  transition:
+    opacity 0.45s ease,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Folien außerhalb des Blicks liegen etwas zurück: beim Wechsel fährt die neue nach vorn. */
+.w-stage:not(.is-active) .w-body {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+@container (min-aspect-ratio: 5 / 4) {
+  .w-stage .w-body {
+    --u: calc(min(50cqw, 70cqh) / 100);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: calc(var(--u) * 12);
+    padding-left: max(calc(var(--u) * 12), 6cqw);
+    padding-right: max(calc(var(--u) * 12), 6cqw);
+  }
+
+  .w-stage .w-body--single {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+}
+
+.w-stage .w-copy,
+.w-stage .w-visual {
+  min-width: 0;
+}
+
+.w-stage .w-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 3);
+}
+
+/* ── Schrift ─────────────────────────────────────────── */
+
+.w-stage .w-kicker {
+  margin: 0;
+  font-size: calc(var(--u) * 5.6);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--w-soft);
+}
+
+.w-stage .w-giant {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  font-family: 'Fraunces', 'Satoshi', serif;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 0;
+  font-weight: 900;
+  font-size: calc(var(--u) * min(58, 142 / var(--len, 3)));
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+  color: var(--w-ink);
+}
+
+.w-stage .w-giant::before {
+  content: '';
+  position: absolute;
+  inset: -30% -10%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--w-a) 60%, transparent),
+    transparent
+  );
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.w-stage .w-title {
+  margin: 0;
+  font-family: 'Fraunces', 'Satoshi', serif;
+  font-variation-settings:
+    'opsz' 144,
+    'SOFT' 0;
+  font-weight: 900;
+  font-size: calc(var(--u) * 14);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  color: var(--w-ink);
+}
+
+.w-stage .w-title--sm {
+  font-size: calc(var(--u) * 10.5);
+}
+
+.w-stage .w-line {
+  margin: 0;
+  font-size: calc(var(--u) * 6.2);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--w-ink);
+}
+
+.w-stage .w-note {
+  margin: 0;
+  font-size: calc(var(--u) * 4.9);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--w-soft);
+}
+
+.w-stage .w-pop {
+  color: var(--w-a);
+}
+
+.w-stage .w-pop-b {
+  color: var(--w-b);
+}
+
+/* ── Zählwerk: jede Ziffer rollt einzeln ein ─────────── */
+
+.w-stage .w-odo__col {
+  display: inline-block;
+  height: 1.1em;
+  padding: 0 0.015em;
+  overflow: hidden;
+}
+
+.w-stage .w-odo__strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+  transition: transform 1.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i, 0) * 110ms + 250ms);
+  will-change: transform;
+}
+
+.w-stage .w-odo__strip span {
+  display: block;
+  height: 1.1em;
+  line-height: 1.1;
+}
+
+.w-stage.is-active .w-odo__strip {
+  transform: translateY(calc((10 + var(--d, 0)) * -5%));
+}
+
+.w-stage .w-odo__sep {
+  display: inline-block;
+  line-height: 1.1;
+}
+
+/* ── Auftritte ───────────────────────────────────────── */
+
+.w-stage .w-slam,
+.w-stage .w-in,
+.w-stage .w-side,
+.w-stage .w-throw {
+  opacity: 0;
+}
+
+.w-stage.is-active .w-slam {
+  animation: w-slam 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 150ms);
+}
+
+.w-stage.is-active .w-in {
+  animation: w-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 100ms + 350ms);
+}
+
+.w-stage.is-active .w-side {
+  animation: w-side 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 500ms);
+}
+
+.w-stage.is-active .w-throw {
+  animation:
+    w-throw 1s cubic-bezier(0.2, 1.25, 0.3, 1) both,
+    w-float 5.5s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * 120ms + 150ms), calc(var(--i, 0) * 120ms + 1150ms);
+}
+
+@keyframes w-slam {
+  from {
+    opacity: 0;
+    transform: translateY(40%) scale(1.25);
+    clip-path: inset(0 0 100% 0);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(-30% -30% -30% -30%);
+  }
+}
+
+@keyframes w-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--u) * 6));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes w-side {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--u) * 14));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes w-throw {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translate(var(--from-x, 60%), 70%)
+      rotate(calc(var(--tilt, 0deg) + 28deg)) rotateY(55deg) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(900px) rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes w-float {
+  from {
+    transform: perspective(900px) rotate(var(--tilt, 0deg)) translateY(0);
+  }
+  to {
+    transform: perspective(900px) rotate(calc(var(--tilt, 0deg) * 0.5))
+      translateY(calc(var(--u) * -2.4));
+  }
+}
+
+/* ── Poster als Karte ────────────────────────────────── */
+
+.w-stage .w-poster {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: calc(var(--u) * 3);
+  background: #1c1220;
+  box-shadow:
+    0 calc(var(--u) * 5) calc(var(--u) * 12) rgba(0, 0, 0, 0.6),
+    0 0 calc(var(--u) * 16) color-mix(in srgb, var(--w-a) 45%, transparent);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.w-stage .w-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Lichtreflex, der einmal über das Poster zieht */
+.w-stage .w-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.34) 50%,
+    transparent 65%
+  );
+  transform: translateX(-120%);
+}
+
+.w-stage.is-active .w-poster::after {
+  animation: w-shine 1.1s ease-out 1.2s both;
+}
+
+@keyframes w-shine {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.w-stage .w-poster__fallback {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 10%;
+  background: linear-gradient(160deg, var(--w-a), var(--w-b));
+  color: #150a16;
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: calc(var(--u) * 5);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+/* ── Held: Poster + Riesenziffer ─────────────────────── */
+
+.w-stage .w-hero {
+  position: relative;
+  width: calc(var(--u) * 40);
+  margin: 0 auto;
+}
+
+.w-stage .w-hero__no {
+  position: absolute;
+  left: calc(var(--u) * -10);
+  bottom: calc(var(--u) * -7);
+  z-index: 2;
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: calc(var(--u) * 36);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: var(--w-b);
+  text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 8) rgba(0, 0, 0, 0.7);
+}
+
+/* ── Rangliste ───────────────────────────────────────── */
+
+.w-stage .w-rank {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.w-stage .w-rank__row {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 8) calc(var(--u) * 9.5) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: calc(var(--u) * 3.4);
+  padding: calc(var(--u) * 1.5) 0;
+  border-top: 1px solid var(--w-line);
+}
+
+.w-stage .w-rank__no {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: calc(var(--u) * 8.5);
+  line-height: 1;
+  color: var(--w-b);
+}
+
+.w-stage .w-rank__thumb {
+  display: block;
+  width: calc(var(--u) * 9.5);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: calc(var(--u) * 1.4);
+  background: linear-gradient(160deg, var(--w-a), var(--w-b));
+  box-shadow: 0 calc(var(--u) * 1) calc(var(--u) * 3) rgba(0, 0, 0, 0.5);
+}
+
+.w-stage .w-rank__name {
+  font-size: calc(var(--u) * 5.4);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.w-stage .w-rank__val {
+  font-size: calc(var(--u) * 4.6);
+  font-weight: 700;
+  color: var(--w-soft);
+  white-space: nowrap;
+}
+
+/* ── Kennzahlen-Zeilen ───────────────────────────────── */
+
+.w-stage .w-facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.w-stage .w-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 2.6) 0;
+  border-top: 1px solid var(--w-line);
+}
+
+.w-stage .w-fact__val {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: calc(var(--u) * 12);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.w-stage .w-fact__val--text {
+  font-size: calc(var(--u) * 8);
+}
+
+.w-stage .w-fact__label {
+  font-size: calc(var(--u) * 5);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--w-soft);
+  text-align: right;
+}
+
+/* ── Balken ──────────────────────────────────────────── */
+
+.w-stage .w-bars {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 3.6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.w-stage .w-bar__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--u) * 3);
+  font-size: calc(var(--u) * 5.2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.w-stage .w-bar__head span:last-child {
+  flex-shrink: 0;
+  color: var(--w-soft);
+}
+
+.w-stage .w-bar__track {
+  height: calc(var(--u) * 3.6);
+  margin-top: calc(var(--u) * 1.4);
+  border-radius: calc(var(--u) * 2);
+  background: var(--w-line);
+  overflow: hidden;
+}
+
+.w-stage .w-bar__fill {
+  width: var(--w, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.7);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.w-stage .w-bars li:first-child .w-bar__fill {
+  background: linear-gradient(90deg, var(--w-a), var(--w-b));
+}
+
+.w-stage.is-active .w-bar__fill {
+  animation: w-grow 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 600ms);
+}
+
+@keyframes w-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Monats-Säulen ───────────────────────────────────── */
+
+.w-stage .w-months {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: calc(var(--u) * 1.6);
+  height: calc(var(--u) * 52);
+}
+
+.w-stage .w-month {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: calc(var(--u) * 1.6);
+  height: 100%;
+  font-size: calc(var(--u) * 3.8);
+  font-weight: 700;
+  color: var(--w-soft);
+}
+
+.w-stage .w-month__col {
+  width: 100%;
+  height: var(--h, 2%);
+  min-height: calc(var(--u) * 1);
+  border-radius: calc(var(--u) * 1.6) calc(var(--u) * 1.6) 0 0;
+  background: rgba(255, 255, 255, 0.55);
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+
+.w-stage .w-month.is-top .w-month__col {
+  background: linear-gradient(180deg, var(--w-b), var(--w-a));
+  box-shadow: 0 0 calc(var(--u) * 8) color-mix(in srgb, var(--w-a) 70%, transparent);
+}
+
+.w-stage .w-month.is-top {
+  color: var(--w-ink);
+}
+
+.w-stage.is-active .w-month__col {
+  animation: w-rise-col 1s cubic-bezier(0.2, 1.3, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 500ms);
+}
+
+@keyframes w-rise-col {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ── Heatmap ─────────────────────────────────────────── */
+
+.w-stage .w-heat {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 8) repeat(24, minmax(0, 1fr));
+  gap: calc(var(--u) * 0.7);
+  align-items: center;
+  font-size: calc(var(--u) * 3.8);
+  font-weight: 700;
+  color: var(--w-soft);
+}
+
+.w-stage .w-heat__cell {
+  aspect-ratio: 1;
+  border-radius: calc(var(--u) * 0.7);
+  background: color-mix(in srgb, var(--w-b) calc(var(--v, 0) * 100%), rgba(255, 255, 255, 0.1));
+  transform: scale(0);
+}
+
+.w-stage.is-active .w-heat__cell {
+  animation: w-pop-cell 0.5s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+  animation-delay: calc(var(--col, 0) * 28ms + var(--row, 0) * 40ms + 500ms);
+}
+
+@keyframes w-pop-cell {
+  to {
+    transform: scale(1);
+  }
+}
+
+.w-stage .w-heat__cell.is-peak {
+  background: var(--w-a);
+  box-shadow: 0 0 calc(var(--u) * 4) var(--w-a);
+}
+
+.w-stage .w-heat__hours {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 8) repeat(4, minmax(0, 1fr));
+  margin-top: calc(var(--u) * 1.6);
+  font-size: calc(var(--u) * 3.8);
+  font-weight: 600;
+  color: var(--w-soft);
+}
+
+/* ── Uhr für die Lieblingszeit ───────────────────────── */
+
+.w-stage .w-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--u) * 62);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(13, 7, 15, 0.92) 0 40%, transparent 41%),
+    conic-gradient(
+      from var(--from, 0deg),
+      var(--w-a) 0deg,
+      var(--w-b) 90deg,
+      rgba(255, 255, 255, 0.16) 90deg 360deg
+    );
+  box-shadow: 0 0 calc(var(--u) * 16) color-mix(in srgb, var(--w-a) 45%, transparent);
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: calc(var(--u) * 12);
+  letter-spacing: -0.03em;
+}
+
+.w-stage.is-active .w-clock {
+  animation: w-spin-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.w-stage .w-clock span {
+  display: block;
+}
+
+.w-stage.is-active .w-clock span {
+  animation: w-unspin 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes w-spin-in {
+  from {
+    opacity: 0;
+    transform: rotate(-200deg) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes w-unspin {
+  from {
+    transform: rotate(200deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ── Mond für die Nacht-Folie ────────────────────────── */
+
+.w-stage .w-moon {
+  position: absolute;
+  top: -7cqh;
+  right: -9cqh;
+  z-index: 0;
+  width: 28cqh;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff7d6, #ffcf7a 58%, #c9781f);
+  box-shadow: 0 0 14cqh rgba(255, 190, 90, 0.45);
+}
+
+.w-stage.is-active .w-moon {
+  animation: w-moonrise 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes w-moonrise {
+  from {
+    transform: translate(18cqh, 40cqh) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ── Echo-Schrift, wenn es keine Poster gibt ─────────── */
+
+.w-stage .w-echo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: 34cqh;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 0.25cqh rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Knöpfe ──────────────────────────────────────────── */
+
+.w-stage .w-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 3);
+  margin-top: calc(var(--u) * 2);
+}
+
+.w-stage .w-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 2);
+  min-height: 54px;
+  padding: 0 calc(var(--u) * 8);
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(100deg, var(--w-a), var(--w-b));
+  color: #150a16;
+  font-family: var(--font-display);
+  font-size: max(17px, calc(var(--u) * 4.8));
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 8)
+    color-mix(in srgb, var(--w-a) 50%, transparent);
+}
+
+.w-stage .w-btn--ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--w-ink);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.w-stage .w-btn:active {
+  filter: brightness(0.75);
+}
+
+.w-stage .w-btn:focus-visible {
+  outline: 3px solid var(--w-ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w-stage .w-slam,
+  .w-stage .w-in,
+  .w-stage .w-side,
+  .w-stage .w-throw,
+  .w-stage .w-bar__fill,
+  .w-stage .w-month__col,
+  .w-stage .w-heat__cell,
+  .w-stage .w-clock,
+  .w-stage .w-clock span,
+  .w-stage .w-moon {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+
+  .w-stage .w-poster {
+    transform: rotate(var(--tilt, 0deg));
+  }
+
+  .w-stage .w-art,
+  .w-stage .w-wall__row,
+  .w-stage .w-glow {
+    animation: none !important;
+  }
+
+  .w-stage .w-odo__strip {
+    transition: none;
+  }
+}

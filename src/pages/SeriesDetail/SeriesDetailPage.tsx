@@ -183,37 +183,55 @@ export const SeriesDetailPage = memo(() => {
   }, [series]);
 
   const progressStats = useMemo(() => {
-    if (!series?.seasons) return { watched: 0, total: 0, percentage: 0 };
+    if (!series?.seasons) return { watched: 0, total: 0, percentage: 0, seasonsDone: 0 };
     let watchedCount = 0;
     let airedCount = 0;
+    let seasonsDone = 0;
     series.seasons.forEach((season) => {
       if (!season) return;
+      let seasonEpisodes = 0;
+      let seasonWatched = 0;
       season.episodes?.forEach((episode) => {
         if (!episode || !episode.episode_number) return;
+        seasonEpisodes++;
         if (hasEpisodeAired(episode)) {
           airedCount++;
-          if (episode.watched) watchedCount++;
+          if (episode.watched) {
+            watchedCount++;
+            seasonWatched++;
+          }
         }
       });
+      if (seasonEpisodes > 0 && seasonWatched === seasonEpisodes) seasonsDone++;
     });
     return {
       watched: watchedCount,
       total: airedCount,
+      seasonsDone,
       percentage: airedCount > 0 ? Math.round((watchedCount / airedCount) * 100) : 0,
     };
   }, [series]);
 
-  // Erfolgsmoment „Serie durch": nur die Flanke innerhalb dieser Sitzung zählt,
-  // sonst feuert jeder erneute Aufruf einer längst beendeten Serie mit.
-  const prevPercentageRef = useRef<number | null>(null);
+  // Erfolgsmoment „Serie durch" oder „Staffel durch": nur die Flanke innerhalb dieser
+  // Sitzung zählt, sonst feuert jeder erneute Aufruf einer längst beendeten Serie mit.
+  const prevProgressRef = useRef<{
+    id: string | undefined;
+    percentage: number;
+    seasonsDone: number;
+  } | null>(null);
   useEffect(() => {
     if (progressStats.total === 0) return;
-    const prev = prevPercentageRef.current;
-    prevPercentageRef.current = progressStats.percentage;
-    if (prev !== null && prev < 100 && progressStats.percentage === 100) {
-      notePositiveMoment();
-    }
-  }, [progressStats]);
+    const prev = prevProgressRef.current;
+    prevProgressRef.current = {
+      id,
+      percentage: progressStats.percentage,
+      seasonsDone: progressStats.seasonsDone,
+    };
+    if (!prev || prev.id !== id) return;
+    const seriesDone = prev.percentage < 100 && progressStats.percentage === 100;
+    const seasonDone = progressStats.seasonsDone > prev.seasonsDone;
+    if (seriesDone || seasonDone) notePositiveMoment();
+  }, [progressStats, id]);
 
   const paceInfo = useMemo(() => {
     if (!series?.seasons) return null;

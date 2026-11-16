@@ -1,3 +1,4 @@
+import { WrappedPreview } from './WrappedPreview';
 import { ReadingListPage } from '../Reading/list/ReadingListPage';
 import { ReadingDiscoverPage } from '../Reading/discover/ReadingDiscoverPage';
 import { ReadingStatsPage } from '../Reading/stats/ReadingStatsPage';
@@ -19,6 +20,8 @@ import {
   HintUnsubscribedPreview,
   HintDeckNewSeasonPreview,
   HintDeckSinglePreview,
+  InviteSheetPreview,
+  DeleteProgressPreview,
   HintDeckUnratedPreview,
 } from './HintDeckPreviews';
 import { ImageCropSheet } from '../../components/ui/overlay/ImageCropSheet';
@@ -236,6 +239,9 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   { id: 'theme', label: 'Design', render: () => <ThemePage /> },
   { id: 'settings', label: 'Einstellungen', render: () => <SettingsPage /> },
   { id: 'admin-tickets', label: 'Admin: Tickets', render: () => <AdminTicketsPreview /> },
+  { id: 'wrapped', label: 'Wrapped', render: () => <WrappedPreview /> },
+  { id: 'invite-sheet', label: 'Einladen', render: () => <InviteSheetPreview /> },
+  { id: 'delete-progress', label: 'Konto löschen', render: () => <DeleteProgressPreview /> },
   { id: 'hint-single', label: 'Hinweis: eine Serie', render: () => <HintDeckSinglePreview /> },
   { id: 'hint-multi', label: 'Hinweis: mehrere Serien', render: () => <HintDeckMultiPreview /> },
   { id: 'hint-new', label: 'Hinweis: neue Staffel', render: () => <HintDeckNewSeasonPreview /> },

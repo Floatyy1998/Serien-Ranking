@@ -214,7 +214,7 @@
 
 .wrapped-slide-track {
   height: 100%;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .wrapped-slide {
@@ -224,55 +224,49 @@
   height: 100%;
 }
 
-/* Progress indicator */
+/* Fortschritt: Segmente am oberen Rand, damit nichts über dem Inhalt liegt */
 
 .wrapped-progress {
   position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(12px + env(safe-area-inset-top));
+  left: calc(var(--safe-left, 0px) + 16px);
+  right: calc(var(--safe-right, 0px) + 72px);
   z-index: 100;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
-  background: rgba(0, 0, 0, 0.3);
-  -webkit-backdrop-filter: var(--blur-sm);
-  backdrop-filter: var(--blur-sm);
-  border-radius: 30px;
-  border: 1px solid var(--glass-border-light);
+  gap: 4px;
+  pointer-events: none;
 }
 
-.wrapped-progress-text {
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.wrapped-progress-text span {
-  opacity: 0.5;
-}
-
-.wrapped-progress-bar {
-  width: 100px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
+.wrapped-progress-seg {
+  flex: 1;
+  height: 3px;
   border-radius: 2px;
+  background: rgba(255, 255, 255, 0.26);
   overflow: hidden;
 }
 
-.wrapped-progress-fill {
+.wrapped-progress-seg::after {
+  content: '';
+  display: block;
+  width: 100%;
   height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wrapped-progress-seg.is-done::after,
+.wrapped-progress-seg.is-current::after {
+  transform: scaleX(1);
 }
 
 /* Close button */
 
 .wrapped-close-btn {
   position: fixed;
-  top: calc(16px + env(safe-area-inset-top));
+  top: calc(22px + env(safe-area-inset-top));
   right: calc(var(--safe-right) + 16px);
   width: 44px;
   height: 44px;
@@ -288,19 +282,17 @@
   align-items: center;
   justify-content: center;
   z-index: 100;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.wrapped-close-btn:hover {
-  background: var(--glass-heavy);
-  transform: scale(1.05);
+.wrapped-close-btn:active {
+  filter: brightness(0.7);
 }
 
 /* Navigation hint */
 
 .wrapped-nav-hint {
   position: fixed;
-  bottom: 90px;
+  bottom: calc(28px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   color: white;

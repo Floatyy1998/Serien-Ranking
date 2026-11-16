@@ -12,6 +12,7 @@ import { installDomTranslationGuard } from './services/app/domTranslationGuard';
 import { installNativeUpdateCheck } from './services/app/nativeUpdateCheck';
 import { installStylesheetRetry } from './services/app/stylesheetRetry';
 import { installSeasonPreview } from './services/app/seasonPreview';
+import { captureInviteFromUrl } from './services/invite/pendingInvite';
 import './styles/index.css';
 // Die Anzeigegröße (zoom) wird in AppWithSplash gesetzt — erst NACHDEM der
 // Splash verschwunden ist, damit der Splash nie mitskaliert.
@@ -26,6 +27,7 @@ import './services/app/nativeShell';
 // werden. Geschrieben wird erst, sobald der Nutzer feststeht (authProvider).
 // Der Dev-Server meldet nicht: HMR/Dep-Neuoptimierung erzeugen Fehler, die es im Build nicht gibt.
 if (!import.meta.env.DEV) installErrorReporting();
+captureInviteFromUrl();
 installStylesheetRetry();
 installNativeUpdateCheck();
 

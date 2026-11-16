@@ -964,3 +964,71 @@ button.st-device:hover {
 .st-devices-alt:hover {
   color: var(--color-text-secondary);
 }
+
+.st-delete-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.st-delete-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.st-delete-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.st-delete-step.is-active,
+.st-delete-step.is-done {
+  opacity: 1;
+}
+
+.st-delete-step.is-active {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.st-delete-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.st-delete-mark svg {
+  font-size: 14px;
+}
+
+.st-delete-step.is-active .st-delete-mark {
+  border-color: var(--glass-border-medium, rgba(255, 255, 255, 0.25));
+  border-top-color: var(--theme-primary, #fff);
+  animation: st-delete-spin 0.9s linear infinite;
+}
+
+.st-delete-step.is-done .st-delete-mark {
+  border-color: var(--theme-primary, #fff);
+  color: var(--theme-primary, #fff);
+}
+
+@keyframes st-delete-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

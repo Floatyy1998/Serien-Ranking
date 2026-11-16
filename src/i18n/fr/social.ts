@@ -350,6 +350,32 @@ const dict: Record<string, string> = {
   'Link per WhatsApp, Mail oder SMS verschicken': 'Envoyer le lien par WhatsApp, e-mail ou SMS',
   'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Kostenlos für iPhone, Android und im Browser:':
     'Je suis mes séries, films et livres avec TV-Rank. Gratuit sur iPhone, Android et dans le navigateur :',
+
+  // --- Einladungen ---
+  'Kleiner Kumpel': 'Petit Pote',
+  'Ihr bekommt beide ein exklusives Accessoire':
+    'Vous recevez tous les deux un accessoire exclusif',
+  'Eingelöst! Dein Geschenk wartet in den Benachrichtigungen.':
+    'Code validé ! Ton cadeau t’attend dans les notifications.',
+  'Diesen Code gibt es nicht': 'Ce code n’existe pas',
+  'Das ist dein eigener Code': 'C’est ton propre code',
+  'Einladungen gelten nur für neue Konten':
+    'Les invitations ne valent que pour les nouveaux comptes',
+  'Du hast schon einen Code eingelöst': 'Tu as déjà utilisé un code',
+  'Schließe zuerst die Einrichtung ab': 'Termine d’abord la configuration',
+  'Einlösen hat nicht geklappt': 'La validation a échoué',
+  'Ich tracke meine Serien, Filme und Bücher mit TV-Rank. Mit meinem Code {code} bekommen wir beide ein exklusives Accessoire fürs Pet:':
+    'Je suis mes séries, films et livres avec TV-Rank. Avec mon code {code}, on reçoit tous les deux un accessoire exclusif pour notre compagnon :',
+  'Sobald sich jemand mit deinem Code anmeldet, bekommt ihr beide den „Kleinen Kumpel“ für eure Pets. Ihn gibt es nur über Einladungen.':
+    'Dès que quelqu’un s’inscrit avec ton code, vous recevez tous les deux le « Petit Pote » pour vos compagnons. Il ne s’obtient que par invitation.',
+  'Dein Einladungscode': 'Ton code d’invitation',
+  'Code kopieren': 'Copier le code',
+  'Code kopiert!': 'Code copié !',
+  'Angenommene Einladungen: {n}': 'Invitations acceptées : {n}',
+  'Einladung verschicken': 'Envoyer l’invitation',
+  'Du wurdest eingeladen?': 'Tu as été invité ?',
+  'Code eingeben': 'Saisir le code',
+  Einlösen: 'Valider',
 };
 
 export default dict;

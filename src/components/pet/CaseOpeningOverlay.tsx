@@ -37,6 +37,7 @@ const allAccessories = Object.entries(ACCESSORIES).map(([id, def]) => ({
   id,
   ...def,
 }));
+const stripAccessories = allAccessories.filter((a) => !a.source);
 
 /** Build a strip of accessories with the target at TARGET_INDEX */
 function buildStrip(targetId: string, seed: number) {
@@ -51,11 +52,11 @@ function buildStrip(targetId: string, seed: number) {
       // Weight by rarity for realism
       const r = rand();
       let pick;
-      if (r < 0.45) pick = allAccessories.filter((a) => a.rarity === 'common');
-      else if (r < 0.75) pick = allAccessories.filter((a) => a.rarity === 'uncommon');
-      else if (r < 0.9) pick = allAccessories.filter((a) => a.rarity === 'rare');
-      else if (r < 0.98) pick = allAccessories.filter((a) => a.rarity === 'epic');
-      else pick = allAccessories.filter((a) => a.rarity === 'legendary');
+      if (r < 0.45) pick = stripAccessories.filter((a) => a.rarity === 'common');
+      else if (r < 0.75) pick = stripAccessories.filter((a) => a.rarity === 'uncommon');
+      else if (r < 0.9) pick = stripAccessories.filter((a) => a.rarity === 'rare');
+      else if (r < 0.98) pick = stripAccessories.filter((a) => a.rarity === 'epic');
+      else pick = stripAccessories.filter((a) => a.rarity === 'legendary');
       strip.push(pick[Math.floor(rand() * pick.length)] || allAccessories[0]);
     }
   }

@@ -1,0 +1,26 @@
+.share-card-secondary {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid var(--glass-border-medium);
+  border-radius: var(--radius-md);
+  background: var(--glass-light);
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.share-card-secondary:active {
+  filter: brightness(0.75);
+}
+
+.share-card-secondary:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

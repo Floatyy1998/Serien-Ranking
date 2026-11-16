@@ -176,6 +176,18 @@ export const ShareCardFrame: React.FC<ShareCardFrameProps> = ({ title, subtitle,
             {t('Dein Serien-Tracker')}
           </span>
         </div>
+        <div
+          style={{
+            marginTop: 14,
+            textAlign: 'center',
+            fontSize: 26,
+            fontWeight: 500,
+            letterSpacing: '0.04em',
+            color: currentTheme.text.muted,
+          }}
+        >
+          {t('Kostenlos für iPhone, Android & Web')}
+        </div>
       </div>
     </div>
   );

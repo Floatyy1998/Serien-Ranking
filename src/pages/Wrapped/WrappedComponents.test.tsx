@@ -52,10 +52,12 @@ describe('WrappedComponents', () => {
     expect(screen.getByText('Lade deinen Jahresrückblick...')).toBeInTheDocument();
   });
 
-  it('WrappedProgressBar shows the current slide number', () => {
-    render(<WrappedProgressBar currentSlide={0} totalSlides={5} />);
-    expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText('/ 5')).toBeInTheDocument();
+  it('WrappedProgressBar zeigt ein Segment je Folie und markiert den Stand', () => {
+    const { container } = render(<WrappedProgressBar currentSlide={1} totalSlides={5} />);
+    expect(screen.getByRole('progressbar', { name: 'Folie 2 von 5' })).toBeInTheDocument();
+    expect(container.querySelectorAll('.wrapped-progress-seg')).toHaveLength(5);
+    expect(container.querySelectorAll('.wrapped-progress-seg.is-done')).toHaveLength(1);
+    expect(container.querySelectorAll('.wrapped-progress-seg.is-current')).toHaveLength(1);
   });
 
   it('WrappedCloseButton invokes its click handler', () => {
@@ -77,10 +79,13 @@ describe('WrappedComponents', () => {
     render(
       <WrappedSlideRenderer
         slideType="intro"
-        stats={{} as ComponentProps<typeof WrappedSlideRenderer>['stats']}
+        stats={
+          { topSeries: [], topMovies: [] } as unknown as ComponentProps<
+            typeof WrappedSlideRenderer
+          >['stats']
+        }
         year={2026}
         username="Alice"
-        onShare={vi.fn<() => Promise<void>>()}
       />
     );
     expect(screen.getByText('INTRO_SLIDE')).toBeInTheDocument();

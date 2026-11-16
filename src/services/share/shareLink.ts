@@ -36,8 +36,9 @@ export async function shareLink(options: {
   url: string;
   title?: string;
   text?: string;
+  clipboardText?: string;
 }): Promise<ShareLinkResult> {
-  const { url, title, text } = options;
+  const { url, title, text, clipboardText } = options;
 
   const native = getNativeShare();
   if (native?.share) {
@@ -59,6 +60,6 @@ export async function shareLink(options: {
     }
   }
 
-  const copied = await copyTextToClipboard(url);
+  const copied = await copyTextToClipboard(clipboardText ?? url);
   return copied ? 'copied' : 'failed';
 }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 type Snapshot = { val: () => unknown };
@@ -30,7 +30,16 @@ import { useWrappedConfig } from './useWrappedConfig';
 
 const snap = (data: unknown): Snapshot => ({ val: () => data });
 
+// Außerhalb des Wrapped-Zeitraums (6.12. bis 31.12.), sonst schaltet der Kalender ein.
+const setToday = (iso: string) => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(iso));
+};
+
+afterEach(() => vi.useRealTimers());
+
 beforeEach(() => {
+  setToday('2026-11-16T12:00:00');
   fb.state.cb = null;
   fb.set.mockClear();
   fb.off.mockClear();
@@ -96,5 +105,26 @@ describe('useWrappedConfig', () => {
     const listener = fb.on.mock.results[0].value;
     unmount();
     expect(fb.off).toHaveBeenCalledWith('value', listener);
+  });
+  it('schaltet sich im Zeitraum von selbst ein, auch wenn der Schalter aus ist', async () => {
+    setToday('2026-12-10T12:00:00');
+    const { result } = renderHook(() => useWrappedConfig());
+    expect(result.current.enabled).toBe(true);
+    await act(async () => {
+      await fb.state.cb?.(snap({ enabled: false, year: 2024 }));
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.enabled).toBe(true);
+    expect(result.current.year).toBe(2026);
+  });
+
+  it('bleibt mit der Notbremse auch im Zeitraum aus', async () => {
+    setToday('2026-12-10T12:00:00');
+    const { result } = renderHook(() => useWrappedConfig());
+    await act(async () => {
+      await fb.state.cb?.(snap({ paused: true }));
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.enabled).toBe(false);
   });
 });

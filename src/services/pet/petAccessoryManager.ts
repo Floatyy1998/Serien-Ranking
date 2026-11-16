@@ -244,7 +244,7 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
   const rarity = rollRarity(config.rarityWeights);
 
   const candidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === rarity && !EXCLUSIVE_ACCESSORIES.has(id)
+    ([id, def]) => def.rarity === rarity && !def.source && !EXCLUSIVE_ACCESSORIES.has(id)
   );
   if (candidates.length === 0) return null;
 
@@ -304,6 +304,8 @@ export async function claimAccessoryDrop(
   // Add to first alive pet — sync propagates to others
   const pets = await getUserPets(userId);
   const alivePet = pets.find((p) => p.isAlive);
+  // Ein Geschenk, das es nur einmal gibt, bleibt liegen, bis ein Pet es tragen kann.
+  if (!alivePet && def.source) return false;
   if (alivePet) {
     const alreadyOwned = alivePet.accessories?.some((a) => a.id === accessoryId);
     if (!alreadyOwned) {

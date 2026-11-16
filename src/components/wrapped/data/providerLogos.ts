@@ -1,0 +1,21 @@
+/** Logos der gängigen Dienste, falls der Eintrag selbst keins mitbringt. */
+export const PROVIDER_LOGOS: Record<string, string> = {
+  Netflix: 'https://image.tmdb.org/t/p/original/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg',
+  'Amazon Prime Video': 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg',
+  'Disney Plus': 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg',
+  'Disney+': 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg',
+  'Apple TV+': 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg',
+  'Apple TV Plus': 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg',
+  Crunchyroll: 'https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg',
+  'HBO Max': 'https://image.tmdb.org/t/p/original/aS2zvJWn9mwiCOeaaCkIh4wleZS.jpg',
+  Max: 'https://image.tmdb.org/t/p/original/6Q3ZYKV3x4mfyEjiHOFhUFoIwor.jpg',
+  'Paramount+': 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
+  'Paramount Plus': 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
+  Sky: 'https://image.tmdb.org/t/p/original/1UrT2H9x6DuQ9ytNhsSCUFtTUwS.jpg',
+  WOW: 'https://image.tmdb.org/t/p/original/1UrT2H9x6DuQ9ytNhsSCUFtTUwS.jpg',
+  'RTL+': 'https://image.tmdb.org/t/p/original/3hI22hp7YDZXyrmXVqDGnVivNTI.jpg',
+  'Joyn Plus+': 'https://image.tmdb.org/t/p/original/2joD3S2goOB6lmepX2IqRpCRe6a.jpg',
+  MagentaTV: 'https://image.tmdb.org/t/p/original/t2P3qlP2sYT3b91hnRMKMSX8XmH.jpg',
+  YouTube: 'https://image.tmdb.org/t/p/original/5Maob4o5w8oZnNeYpCDyVFD3M7X.png',
+  'YouTube Premium': 'https://image.tmdb.org/t/p/original/eWHpKZihdiY617s5LipWJWvN28U.png',
+};

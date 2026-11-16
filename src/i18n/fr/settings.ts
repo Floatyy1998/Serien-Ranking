@@ -358,6 +358,18 @@ const dict: Record<string, string> = {
   'TV-Rank unterstützen': 'Soutenir TV-Rank',
   'Ein privates Projekt ohne Werbung — freiwillig und ohne Gegenleistung':
     'Un projet privé sans publicité — volontaire et sans contrepartie',
+
+  // --- Kontolöschung: Fortschritt ---
+  'Deine Daten werden gelöscht': 'Suppression de tes données',
+  'Freundschaften und Freigaben werden entfernt': 'Retrait des amitiés et des partages',
+  'Chats werden gelöscht': 'Suppression des discussions',
+  'Profilbild und Dateien werden entfernt': 'Retrait de la photo de profil et des fichiers',
+  'Einträge bei anderen Nutzern werden bereinigt': 'Nettoyage des entrées chez les autres comptes',
+  'Konto wird geschlossen': 'Fermeture du compte',
+  'Dein Konto wurde gelöscht.': 'Ton compte a été supprimé.',
+  'Dein Konto wird gelöscht': 'Ton compte est en cours de suppression',
+  'Bitte lass die App geöffnet. Das kann bis zu einer Minute dauern.':
+    'Laisse l’application ouverte. Cela peut prendre jusqu’à une minute.',
 };
 
 export default dict;

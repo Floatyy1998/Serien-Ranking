@@ -126,6 +126,7 @@ const dict: Record<string, string> = {
   'In die Zwischenablage kopiert!': 'Copiado para a área de transferência!',
   'Kopieren fehlgeschlagen': 'Falha ao copiar',
   'Dein Serien-Tracker': 'Seu tracker de séries',
+  'Kostenlos für iPhone, Android & Web': 'Grátis para iPhone, Android e web',
   'Bild konnte nicht erstellt werden': 'Não foi possível criar a imagem',
   'Karte als Bild teilen': 'Compartilhar o cartão como imagem',
   'Bild wird erstellt…': 'Criando imagem…',
@@ -346,6 +347,27 @@ const dict: Record<string, string> = {
   'Spielt zusammen mit': 'Atua ao lado de',
   Watchtime: 'Tempo assistido',
   Trends: 'Tendências',
+
+  // --- Wrapped: Neugestaltung ---
+  'Hey {name}!': 'Oi, {name}!',
+  'Das sind {n} Tage am Stück.': 'São {n} dias seguidos.',
+  'So fing dein Jahr an': 'Assim começou o seu ano',
+  'Und das lief zuletzt': 'E isto foi o último',
+  'Dein Film des Jahres': 'Seu filme do ano',
+  'nach 22 Uhr': 'depois das 22h',
+  'Folie {n} von {total}': 'Slide {n} de {total}',
+  'Bild kopieren': 'Copiar imagem',
+  'Bild kopiert': 'Imagem copiada',
+  'Bild speichern': 'Salvar imagem',
+  'Bild gespeichert': 'Imagem salva',
+  'Mein Jahr im Rückblick': 'Meu ano em resumo',
+  'Meine Highlights': 'Meus destaques',
+  'Meine Top Filme': 'Meus melhores filmes',
+  'Meine Top Manga': 'Meus melhores mangás',
+  'Meine Top Bücher': 'Meus melhores livros',
+  'Ab {date}': 'A partir de {date}',
+  'Dein Jahresrückblick läuft vom 6. bis 31. Dezember. Gezählt wird alles vom 1. Januar bis 5. Dezember.':
+    'Seu resumo do ano fica disponível de 6 a 31 de dezembro. Conta tudo de 1º de janeiro a 5 de dezembro.',
 };
 
 export default dict;

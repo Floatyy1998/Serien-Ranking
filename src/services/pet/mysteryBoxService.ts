@@ -411,7 +411,7 @@ async function pickMilestoneAccessory(
 
   // Fall back to any unowned accessory of that rarity
   const candidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === targetRarity && !owned.has(id)
+    ([id, def]) => def.rarity === targetRarity && !def.source && !owned.has(id)
   );
 
   if (candidates.length === 0) return null;

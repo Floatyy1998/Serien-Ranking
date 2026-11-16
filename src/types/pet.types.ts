@@ -122,6 +122,8 @@ export interface AccessoryDefinition {
   icon: string;
   rarity: AccessoryRarity;
   color?: string;
+  /** Nur über diesen Weg zu bekommen, nie aus Box, Rad oder Episoden-Drop. */
+  source?: 'invite';
 }
 
 // Special Colors & Patterns

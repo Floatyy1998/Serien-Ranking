@@ -392,6 +392,18 @@ const settings: Record<string, string> = {
   'TV-Rank unterstützen': 'Support TV-Rank',
   'Ein privates Projekt ohne Werbung — freiwillig und ohne Gegenleistung':
     'A private project without ads — voluntary and with nothing in return',
+
+  // --- Kontolöschung: Fortschritt ---
+  'Deine Daten werden gelöscht': 'Deleting your data',
+  'Freundschaften und Freigaben werden entfernt': 'Removing friendships and shares',
+  'Chats werden gelöscht': 'Deleting chats',
+  'Profilbild und Dateien werden entfernt': 'Removing profile picture and files',
+  'Einträge bei anderen Nutzern werden bereinigt': 'Cleaning up entries on other accounts',
+  'Konto wird geschlossen': 'Closing your account',
+  'Dein Konto wurde gelöscht.': 'Your account has been deleted.',
+  'Dein Konto wird gelöscht': 'Your account is being deleted',
+  'Bitte lass die App geöffnet. Das kann bis zu einer Minute dauern.':
+    'Please keep the app open. This can take up to a minute.',
 };
 
 export default settings;

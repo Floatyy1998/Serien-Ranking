@@ -54,7 +54,7 @@ beforeEach(() => {
   authState.user = null;
   cfg.value = { enabled: true, year: 2025, loading: false };
   calc.calculateWrappedStats.mockReset().mockReturnValue(statsFixture());
-  wa.getEventsForYear.mockReset().mockResolvedValue([{ ts: 1 }]);
+  wa.getEventsForYear.mockReset().mockResolvedValue([{ timestamp: '2025-06-01T12:00:00' }]);
   wa.getBingeSessionsForYear.mockReset().mockResolvedValue([]);
 });
 
@@ -124,24 +124,25 @@ describe('useWrappedData', () => {
     });
     expect(router.navigate).toHaveBeenCalledWith(-1);
   });
-
-  it('handleShare kopiert Text in die Zwischenablage wenn navigator.share fehlt', async () => {
+  it('zählt nur bis einschließlich 5.12.: spätere Ereignisse erreichen die Berechnung nicht', async () => {
     authState.user = { uid: 'u1' };
-    const writeText = vi.fn((_text?: string) => Promise.resolve());
-    vi.stubGlobal('navigator', {
-      ...navigator,
-      share: undefined,
-      clipboard: { writeText },
-    });
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    wa.getEventsForYear.mockResolvedValue([
+      { timestamp: '2025-03-10T20:00:00' },
+      { timestamp: '2025-12-05T23:30:00' },
+      { timestamp: '2025-12-06T00:10:00' },
+      { timestamp: '2025-12-24T20:00:00' },
+    ]);
+    wa.getBingeSessionsForYear.mockResolvedValue([
+      { startedAt: '2025-12-01T18:00:00' },
+      { startedAt: '2025-12-20T18:00:00' },
+    ]);
     const { result } = renderHook(() => useWrappedData());
     await waitFor(() => expect(result.current.stats).not.toBeNull());
-    await act(async () => {
-      await result.current.handleShare();
-    });
-    expect(writeText).toHaveBeenCalledTimes(1);
-    expect(writeText.mock.calls[0][0]).toContain('100 Episoden');
-    alertSpy.mockRestore();
-    vi.unstubAllGlobals();
+    const [events, binges] = calc.calculateWrappedStats.mock.calls[0];
+    expect(events.map((e: { timestamp: string }) => e.timestamp)).toEqual([
+      '2025-03-10T20:00:00',
+      '2025-12-05T23:30:00',
+    ]);
+    expect(binges).toEqual([{ startedAt: '2025-12-01T18:00:00' }]);
   });
 });

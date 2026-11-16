@@ -13,6 +13,8 @@ import { useAdminHealthAlert } from '../hooks/admin/useAdminHealthAlert';
 import { usePetGiftReceiver } from '../hooks/pet/usePetGiftReceiver';
 import { useNetworkStatus } from '../hooks/platform/useNetworkStatus';
 import { t } from '../services/i18n';
+import { showToast } from '../lib/interaction/toast';
+import { getPendingInviteCode } from '../services/invite/pendingInvite';
 import { LoadingSpinner } from '../components/ui/feedback/LoadingSpinner';
 import { PushOptInPrompt } from '../components/PushOptInPrompt';
 import { WidgetDataSync } from '../components/WidgetDataSync';
@@ -179,6 +181,20 @@ export const MobileApp = () => {
   useEffect(() => {
     tickerRef.current = tickerIndex;
   }, [tickerIndex]);
+
+  // Einladungscode aus dem Link einlösen, sobald das Konto eingerichtet ist.
+  const uid = user?.uid;
+  useEffect(() => {
+    if (!uid || onboardingComplete === false || !getPendingInviteCode()) return;
+    void import('../services/invite/inviteService')
+      .then((m) => m.redeemPendingInvite())
+      .then((result) => {
+        if (result === 'ok') {
+          showToast(t('Eingelöst! Dein Geschenk wartet in den Benachrichtigungen.'), 4500);
+        }
+      })
+      .catch(() => {});
+  }, [uid, onboardingComplete]);
 
   // Cycle through ticker messages in the tab title
   useEffect(() => {

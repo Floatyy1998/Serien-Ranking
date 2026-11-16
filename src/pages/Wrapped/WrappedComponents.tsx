@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import {
   IntroSlide,
   TotalTimeSlide,
@@ -20,6 +20,7 @@ import {
 import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import { tmdbImage } from '../../components/wrapped/kitHelpers';
 
 const useWrappedGradient = () => {
   const { currentTheme } = useTheme();
@@ -103,20 +104,26 @@ interface WrappedProgressBarProps {
 }
 
 export const WrappedProgressBar = memo<WrappedProgressBarProps>(({ currentSlide, totalSlides }) => (
-  <div className="wrapped-progress">
-    <span className="wrapped-progress-text">
-      {currentSlide + 1}
-      <span> / {totalSlides}</span>
-    </span>
-    <div className="wrapped-progress-bar">
-      <div
-        className="wrapped-progress-fill"
-        style={{
-          width: `${((currentSlide + 1) / totalSlides) * 100}%`,
-          background: 'linear-gradient(90deg, var(--theme-primary, #667eea), #f093fb)',
-        }}
+  <div
+    className="wrapped-progress"
+    role="progressbar"
+    aria-valuemin={1}
+    aria-valuemax={totalSlides}
+    aria-valuenow={currentSlide + 1}
+    aria-label={t('Folie {n} von {total}', { n: currentSlide + 1, total: totalSlides })}
+  >
+    {Array.from({ length: totalSlides }, (_, i) => (
+      <span
+        key={i}
+        className={
+          i < currentSlide
+            ? 'wrapped-progress-seg is-done'
+            : i === currentSlide
+              ? 'wrapped-progress-seg is-current'
+              : 'wrapped-progress-seg'
+        }
       />
-    </div>
+    ))}
   </div>
 ));
 
@@ -160,17 +167,24 @@ interface WrappedSlideRendererProps {
   stats: WrappedStats;
   year: number;
   username: string | undefined;
-  onShare: () => Promise<void>;
+  /** Nur die sichtbare Folie spielt Auftritt und Zähler ab. */
+  active?: boolean;
 }
 
 export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
-  ({ slideType, stats, year, username, onShare }) => {
+  ({ slideType, stats, year, username, active = true }) => {
+    const posters = useMemo(
+      () => [...stats.topSeries, ...stats.topMovies].map((e) => tmdbImage(e.poster, 'w185')),
+      [stats.topSeries, stats.topMovies]
+    );
     switch (slideType) {
       case 'intro':
-        return <IntroSlide year={year} username={username} />;
+        return <IntroSlide year={year} username={username} active={active} posters={posters} />;
       case 'total_time':
         return (
           <TotalTimeSlide
+            active={active}
+            posters={posters}
             totalMinutes={stats.totalMinutesWatched}
             totalHours={stats.totalHoursWatched}
             totalDays={stats.totalDaysEquivalent}
@@ -179,20 +193,24 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
           />
         );
       case 'top_series':
-        return <TopSeriesSlide topSeries={stats.topSeries} />;
+        return <TopSeriesSlide active={active} posters={posters} topSeries={stats.topSeries} />;
       case 'top_movies':
-        return <TopMoviesSlide topMovies={stats.topMovies} />;
+        return <TopMoviesSlide active={active} posters={posters} topMovies={stats.topMovies} />;
       case 'top_manga':
-        return stats.manga ? <TopMangaSlide manga={stats.manga} /> : null;
+        return stats.manga ? <TopMangaSlide active={active} manga={stats.manga} /> : null;
       case 'top_books':
-        return stats.books ? <TopBooksSlide books={stats.books} /> : null;
+        return stats.books ? <TopBooksSlide active={active} books={stats.books} /> : null;
       case 'top_genres':
-        return <TopGenresSlide topGenres={stats.topGenres} />;
+        return <TopGenresSlide active={active} posters={posters} topGenres={stats.topGenres} />;
       case 'top_providers':
-        return <TopProvidersSlide topProviders={stats.topProviders} />;
+        return (
+          <TopProvidersSlide active={active} posters={posters} topProviders={stats.topProviders} />
+        );
       case 'time_pattern':
         return (
           <TimePatternSlide
+            active={active}
+            posters={posters}
             favoriteTimeOfDay={stats.favoriteTimeOfDay}
             favoriteDayOfWeek={stats.favoriteDayOfWeek}
           />
@@ -200,6 +218,8 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
       case 'binge_stats':
         return (
           <BingeStatsSlide
+            active={active}
+            posters={posters}
             totalBingeSessions={stats.totalBingeSessions}
             longestBinge={stats.longestBingeSession}
             averageBingeLength={stats.averageBingeLength}
@@ -208,22 +228,34 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
       case 'monthly_breakdown':
         return (
           <MonthlyBreakdownSlide
+            active={active}
+            posters={posters}
             monthlyBreakdown={stats.monthlyBreakdown}
             mostActiveMonth={stats.mostActiveMonth}
           />
         );
       case 'summary':
-        return <SummarySlide stats={stats} onShare={onShare} />;
+        return <SummarySlide active={active} posters={posters} stats={stats} />;
       case 'first_last':
         return (
-          <FirstLastSlide firstWatch={stats.firstWatch} lastWatch={stats.lastWatch} year={year} />
+          <FirstLastSlide
+            active={active}
+            posters={posters}
+            firstWatch={stats.firstWatch}
+            lastWatch={stats.lastWatch}
+            year={year}
+          />
         );
       case 'record_day':
-        return <RecordDaySlide mostActiveDay={stats.mostActiveDay} />;
+        return (
+          <RecordDaySlide active={active} posters={posters} mostActiveDay={stats.mostActiveDay} />
+        );
       case 'late_night':
-        return <LateNightSlide lateNightStats={stats.lateNightStats} />;
+        return (
+          <LateNightSlide active={active} posters={posters} lateNightStats={stats.lateNightStats} />
+        );
       case 'heatmap':
-        return <HeatmapSlide heatmapData={stats.heatmapData} />;
+        return <HeatmapSlide active={active} posters={posters} heatmapData={stats.heatmapData} />;
       default:
         return null;
     }
