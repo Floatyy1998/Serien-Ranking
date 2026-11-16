@@ -4,6 +4,8 @@
 
 import { motion } from 'framer-motion';
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import AutoStories from '@mui/icons-material/AutoStories';
+import MenuBook from '@mui/icons-material/MenuBook';
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import Schedule from '@mui/icons-material/Schedule';
 import Star from '@mui/icons-material/Star';
@@ -174,14 +176,17 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         transition={{ delay: 0.5 }}
         style={{
           display: 'flex',
-          gap: '24px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '12px',
           marginBottom: '40px',
         }}
       >
         {[
-          { icon: <PlayCircle />, label: t('Episoden') },
+          { icon: <PlayCircle />, label: t('Serien') },
           { icon: <Theaters />, label: t('Filme') },
-          { icon: <Star />, label: t('Bewertungen') },
+          { icon: <AutoStories />, label: t('Manga') },
+          { icon: <MenuBook />, label: t('Bücher') },
         ].map((item, i) => (
           <motion.div
             key={i}
@@ -191,7 +196,8 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
               flexDirection: 'column',
               alignItems: 'center',
               gap: '8px',
-              padding: '16px',
+              minWidth: '72px',
+              padding: '14px 12px',
               background: 'rgba(255, 255, 255, 0.05)',
               borderRadius: '12px',
               border: '1px solid rgba(255, 255, 255, 0.1)',

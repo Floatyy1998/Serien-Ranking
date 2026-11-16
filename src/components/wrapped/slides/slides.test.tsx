@@ -55,6 +55,19 @@ describe('Wrapped-Folien', () => {
     expect(screen.getByRole('heading', { name: '2026' })).toBeInTheDocument();
   });
 
+  it('Intro nennt nur die Medien, die im Jahr vorkamen', () => {
+    const { rerender } = render(
+      <IntroSlide year={2026} media={{ watch: true, manga: true, books: true }} {...idle} />
+    );
+    expect(screen.getByText('Dein Jahr in Serien, Filmen, Manga & Büchern')).toBeInTheDocument();
+    rerender(
+      <IntroSlide year={2026} media={{ watch: false, manga: false, books: true }} {...idle} />
+    );
+    expect(screen.getByText('Dein Jahr in Büchern')).toBeInTheDocument();
+    rerender(<IntroSlide year={2026} {...idle} />);
+    expect(screen.getByText('Dein Jahr in Serien & Filmen')).toBeInTheDocument();
+  });
+
   it('Intro kommt ohne Namen ohne Gruß aus', () => {
     render(<IntroSlide year={2026} {...idle} />);
     expect(screen.queryByText(/Hey/)).not.toBeInTheDocument();

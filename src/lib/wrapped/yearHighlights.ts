@@ -82,6 +82,25 @@ export function pickYearHighlights(stats: WrappedStats, min = 3, max = 4): YearH
   return picks;
 }
 
+export interface YearMedia {
+  watch: boolean;
+  manga: boolean;
+  books: boolean;
+}
+
+/** Womit das Jahr gefüllt war: Geschautes, Manga, Bücher. */
+export function yearMedia(stats: WrappedStats): YearMedia {
+  const manga = stats.manga;
+  const books = stats.books;
+  return {
+    watch: stats.totalEpisodesWatched > 0 || stats.totalMoviesWatched > 0,
+    manga:
+      !!manga &&
+      (manga.totalChapters > 0 || (manga.totalVolumes ?? 0) > 0 || manga.topManga.length > 0),
+    books: !!books && (books.booksFinished > 0 || books.pagesRead > 0 || books.topBooks.length > 0),
+  };
+}
+
 /** Kennzahlen des Jahres, nur die mit Inhalt, in fester Reihenfolge. */
 export function yearFacts(stats: WrappedStats): YearFact[] {
   const manga = stats.manga;

@@ -21,6 +21,7 @@ import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
 import { tmdbImage } from '../../components/wrapped/kitHelpers';
+import { yearMedia } from '../../lib/wrapped/yearHighlights';
 
 const useWrappedGradient = () => {
   const { currentTheme } = useTheme();
@@ -179,7 +180,15 @@ export const WrappedSlideRenderer = memo<WrappedSlideRendererProps>(
     );
     switch (slideType) {
       case 'intro':
-        return <IntroSlide year={year} username={username} active={active} posters={posters} />;
+        return (
+          <IntroSlide
+            year={year}
+            username={username}
+            media={yearMedia(stats)}
+            active={active}
+            posters={posters}
+          />
+        );
       case 'total_time':
         return (
           <TotalTimeSlide

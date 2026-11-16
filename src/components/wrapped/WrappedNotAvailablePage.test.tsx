@@ -23,6 +23,13 @@ describe('WrappedNotAvailablePage', () => {
     expect(screen.getByText('Ab 6. Dezember')).toBeInTheDocument();
   });
 
+  it('names every medium the recap covers', () => {
+    render(<WrappedNotAvailablePage year={2026} onBack={vi.fn()} />);
+    for (const label of ['Serien', 'Filme', 'Manga', 'Bücher']) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+  });
+
   it('calls onBack when the back button is clicked', () => {
     const onBack = vi.fn();
     render(<WrappedNotAvailablePage year={2026} onBack={onBack} />);

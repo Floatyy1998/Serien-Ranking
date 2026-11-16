@@ -2,13 +2,24 @@ import React from 'react';
 import { t } from '../../../services/i18n';
 import { Stage, type SlideProps } from '../kit';
 import { step } from '../kitHelpers';
+import type { YearMedia } from '../../../lib/wrapped/yearHighlights';
+import { yearTagline } from '../yearLabels';
 
 interface IntroSlideProps extends SlideProps {
   year: number;
   username?: string;
+  media?: YearMedia;
 }
 
-export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username, posters = [], active }) => {
+const WATCH_ONLY: YearMedia = { watch: true, manga: false, books: false };
+
+export const IntroSlide: React.FC<IntroSlideProps> = ({
+  year,
+  username,
+  media = WATCH_ONLY,
+  posters = [],
+  active,
+}) => {
   const hasWall = posters.filter(Boolean).length >= 4;
   return (
     <Stage
@@ -35,7 +46,7 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username, posters 
           {year}
         </h1>
         <p className="w-title w-title--sm w-pop w-slam" style={step(5)}>
-          {t('Dein Jahr in Serien & Filmen')}
+          {yearTagline(media)}
         </p>
       </div>
     </Stage>

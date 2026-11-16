@@ -1,5 +1,6 @@
 import type React from 'react';
 import { WrappedBanner } from '../HomePage/sheets/WrappedNotification';
+import { WrappedNotAvailablePage } from '../../components/wrapped/WrappedNotAvailablePage';
 import { WrappedShareSheet } from '../../components/wrapped/WrappedShareCard';
 import { WrappedSlideRenderer } from '../Wrapped/WrappedComponents';
 import '../Wrapped/WrappedPage.css';
@@ -267,6 +268,9 @@ export const WrappedPreview = () => {
         </div>
       </div>
     );
+  }
+  if (slide === ('soon' as string)) {
+    return <WrappedNotAvailablePage year={2026} onBack={() => {}} />;
   }
   if (slide === ('share' as string)) {
     return <WrappedShareSheet isOpen onClose={() => {}} stats={STATS} />;

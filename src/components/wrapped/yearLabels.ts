@@ -1,6 +1,16 @@
 import { coverAtSize } from '../../lib/books/bookSearchMapping';
-import type { YearFactKey, YearHighlight } from '../../lib/wrapped/yearHighlights';
+import type { YearFactKey, YearHighlight, YearMedia } from '../../lib/wrapped/yearHighlights';
 import { t } from '../../services/i18n';
+
+export const yearTagline = ({ watch, manga, books }: YearMedia): string => {
+  if (watch && manga && books) return t('Dein Jahr in Serien, Filmen, Manga & Büchern');
+  if (watch && manga) return t('Dein Jahr in Serien, Filmen & Manga');
+  if (watch && books) return t('Dein Jahr in Serien, Filmen & Büchern');
+  if (manga && books) return t('Dein Jahr in Manga & Büchern');
+  if (manga) return t('Dein Jahr in Manga');
+  if (books) return t('Dein Jahr in Büchern');
+  return t('Dein Jahr in Serien & Filmen');
+};
 
 export const factLabel = (key: YearFactKey): string => {
   switch (key) {

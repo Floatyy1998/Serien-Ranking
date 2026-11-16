@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WrappedStats } from '../../types/Wrapped';
-import { pickYearHighlights, yearFacts } from './yearHighlights';
+import { pickYearHighlights, yearFacts, yearMedia } from './yearHighlights';
 
 const base = (over: Partial<WrappedStats> = {}): WrappedStats =>
   ({
@@ -41,6 +41,27 @@ const books = (ids: string[]) => ({
   topBooks: ids.map((id) => ({ id, title: `Buch ${id}` })),
   mostReadMonth: 0,
   mostReadMonthPages: 0,
+});
+
+describe('yearMedia', () => {
+  it('erkennt Geschautes, Manga und Bücher getrennt', () => {
+    expect(yearMedia(base())).toEqual({ watch: false, manga: false, books: false });
+    expect(yearMedia(base({ totalMoviesWatched: 2 }))).toEqual({
+      watch: true,
+      manga: false,
+      books: false,
+    });
+    expect(yearMedia(base({ manga: manga([1]), books: books(['a']) }))).toEqual({
+      watch: false,
+      manga: true,
+      books: true,
+    });
+  });
+
+  it('zählt Manga auch dann, wenn nur Bände gelesen wurden', () => {
+    const onlyVolumes = { ...manga([]), totalChapters: 0, totalVolumes: 3 };
+    expect(yearMedia(base({ manga: onlyVolumes })).manga).toBe(true);
+  });
 });
 
 describe('pickYearHighlights', () => {

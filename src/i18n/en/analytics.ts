@@ -3,6 +3,12 @@
 const dict: Record<string, string> = {
   // --- Wrapped Slides ---
   'Dein Jahr in Serien & Filmen': 'Your Year in TV & Movies',
+  'Dein Jahr in Manga': 'Your Year in Manga',
+  'Dein Jahr in Büchern': 'Your Year in Books',
+  'Dein Jahr in Manga & Büchern': 'Your Year in Manga & Books',
+  'Dein Jahr in Serien, Filmen & Manga': 'Your Year in TV, Movies & Manga',
+  'Dein Jahr in Serien, Filmen & Büchern': 'Your Year in TV, Movies & Books',
+  'Dein Jahr in Serien, Filmen, Manga & Büchern': 'Your Year in TV, Movies, Manga & Books',
   'Du hast dieses Jahr': 'This year you spent',
   'mit Serien & Filmen verbracht': 'watching TV & movies',
   Tage: 'days',
