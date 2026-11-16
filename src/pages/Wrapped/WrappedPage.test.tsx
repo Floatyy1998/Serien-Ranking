@@ -48,6 +48,16 @@ describe('WrappedPage', () => {
     expect(screen.getByText('NOT_AVAILABLE')).toBeInTheDocument();
   });
 
+  it('shows no slides while the Wrapped switch is still loading', () => {
+    useWrappedDataMock.mockReturnValue({
+      ...baseReturn(),
+      wrappedConfig: { loading: true, enabled: false, year: 2026 },
+    });
+    render(<WrappedPage />);
+    expect(screen.getByText('LOADING_STATE')).toBeInTheDocument();
+    expect(screen.queryByTestId('slide-renderer')).not.toBeInTheDocument();
+  });
+
   it('renders the loading state', () => {
     useWrappedDataMock.mockReturnValue({ ...baseReturn(), loading: true });
     render(<WrappedPage />);

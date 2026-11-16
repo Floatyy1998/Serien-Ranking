@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { WrappedNotAvailablePage } from '../../components/wrapped';
-import { ADMIN_UID } from '../../config/admin';
 import { useWrappedData } from './useWrappedData';
 import {
   WrappedLoadingState,
@@ -33,9 +32,10 @@ export const WrappedPage: React.FC = () => {
     handleTouchEnd,
   } = useWrappedData();
 
-  // Vor dem Start sieht nur der Admin den Rückblick, um ihn zu prüfen.
-  const preview = user?.uid === ADMIN_UID;
-  if (!wrappedConfig.loading && !wrappedConfig.enabled && !preview) {
+  if (wrappedConfig.loading) {
+    return <WrappedLoadingState year={year} />;
+  }
+  if (!wrappedConfig.enabled) {
     return <WrappedNotAvailablePage year={wrappedConfig.year} onBack={() => navigate('/')} />;
   }
 
