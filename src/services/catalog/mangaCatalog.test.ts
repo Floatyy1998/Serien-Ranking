@@ -43,7 +43,7 @@ const ITEMS: Record<string, unknown> = {
     title: 'One Piece',
     titleRomaji: 'One Piece',
     poster: 'https://s4.anilist.co/x.jpg',
-    cover: 'https://serienapi.konrad-dinges.de/mangacover/30013-L.jpg?v=50',
+    cover: 'https://api.tv-rank.de/mangacover/30013-L.jpg?v=50',
     chapters: 1100,
     status: 'RELEASING',
     format: 'MANGA',

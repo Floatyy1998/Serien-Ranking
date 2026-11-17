@@ -24,7 +24,7 @@ describe('breadcrumbs fetch hook', () => {
 
   it('wertet andere Fehlantworten nicht als Token-Ablehnung', async () => {
     fetchMock.mockResolvedValueOnce(respond(500, { error: { message: 'BOOM' } }));
-    await window.fetch('https://serienapi.konrad-dinges.de/add');
+    await window.fetch('https://api.tv-rank.de/add');
     expect(getAuthTokenRejection()).toBe('TOKEN_EXPIRED');
     expect(getBreadcrumbs().slice(-1)[0]?.detail).toBe('500');
   });

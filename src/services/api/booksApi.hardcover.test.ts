@@ -27,7 +27,7 @@ const hit = (over: Partial<BookSearchResult>): BookSearchResult => ({
   hardcoverId: 1,
   title: 'Fourth Wing',
   authors: ['Rebecca Yarros'],
-  cover: 'https://serienapi.konrad-dinges.de/bookcover/hc/x.jpg',
+  cover: 'https://api.tv-rank.de/bookcover/hc/x.jpg',
   language: 'de',
   source: 'hardcover',
   popularity: 8000,

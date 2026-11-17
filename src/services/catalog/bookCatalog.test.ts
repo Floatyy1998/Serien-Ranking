@@ -40,7 +40,7 @@ const ITEMS: Record<string, unknown> = {
     id: 'hc-1',
     title: 'Onyx Storm',
     authors: ['Rebecca Yarros'],
-    cover: 'https://serienapi.konrad-dinges.de/bookcover/book/hc-1-L.jpg?v=100',
+    cover: 'https://api.tv-rank.de/bookcover/book/hc-1-L.jpg?v=100',
     hardcoverId: 1,
     pageCount: 500,
     v: 100,

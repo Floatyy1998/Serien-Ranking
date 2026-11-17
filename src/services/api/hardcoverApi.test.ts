@@ -17,7 +17,7 @@ const item = {
   hardcoverId: 328491,
   title: 'Harry Potter und der Stein der Weisen',
   authors: ['J.K. Rowling'],
-  cover: 'https://serienapi.konrad-dinges.de/bookcover/hc/abc.jpg',
+  cover: 'https://api.tv-rank.de/bookcover/hc/abc.jpg',
   isbn13: '9783551354013',
   language: 'de',
   popularity: 16084,

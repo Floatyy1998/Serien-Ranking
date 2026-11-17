@@ -18,7 +18,7 @@ const book = (n: number, over: Partial<BookSearchResult> = {}): BookSearchResult
   hardcoverId: n,
   title: `Buch ${n}`,
   authors: [`Autor ${n}`],
-  cover: `https://serienapi.konrad-dinges.de/bookcover/hc/${n}.jpg`,
+  cover: `https://api.tv-rank.de/bookcover/hc/${n}.jpg`,
   source: 'hardcover',
   ...over,
 });

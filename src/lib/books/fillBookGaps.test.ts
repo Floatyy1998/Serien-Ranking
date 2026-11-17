@@ -6,7 +6,7 @@ const preview: BookSearchResult = {
   id: 'dnb-9783551630292',
   title: 'Marry my husband 5',
   authors: [],
-  cover: 'https://serienapi.konrad-dinges.de/bookcover/book/dnb-9783551630292-L.jpg',
+  cover: 'https://api.tv-rank.de/bookcover/book/dnb-9783551630292-L.jpg',
   source: 'dnb',
 };
 

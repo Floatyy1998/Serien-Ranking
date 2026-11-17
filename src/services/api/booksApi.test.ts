@@ -227,7 +227,7 @@ describe('searchBooks per ISBN', () => {
         id: 'dnb-9783551358165',
         title: 'Artemis Fowl - die Rache',
         authors: [],
-        cover: 'https://serienapi.konrad-dinges.de/bookcover/book/dnb-9783551358165-L.jpg',
+        cover: 'https://api.tv-rank.de/bookcover/book/dnb-9783551358165-L.jpg',
         isbn13: '9783551358165',
         source: 'dnb',
       },
