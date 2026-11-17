@@ -1,4 +1,5 @@
 import { ADMIN_UID } from '../../config/admin';
+import { discussionTarget } from '../../lib/url/discussionTarget';
 import type { LocalizedMap } from '../../services/i18n';
 import { dbRef, userPath } from '../../services/db/ref';
 import { queuePush } from '../../services/notifications/pushQueue';
@@ -30,7 +31,8 @@ export const pushUrlFor = (
     }
     return ticketId ? `/bug-report?ticket=${ticketId}` : '/bug-report';
   }
-  return type === 'moderation_ban' ? '/' : '/discussions';
+  if (type === 'moderation_ban') return '/';
+  return discussionTarget(data) ?? '/discussions';
 };
 
 // Helper to send notification to another user.

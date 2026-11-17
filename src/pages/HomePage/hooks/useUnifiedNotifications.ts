@@ -8,6 +8,7 @@ import { previewLabel } from '../../../services/chat/chatService';
 import { subscribeUnreadChats, type UnreadChat } from '../../../services/chat/chatUnread';
 import type { RecommendationMediaType } from '../../../types/Recommendation';
 import { ADMIN_UID } from '../../../config/admin';
+import { discussionTarget } from '../../../lib/url/discussionTarget';
 import { pickLocalized, t } from '../../../services/i18n';
 import { onValue } from '../../../services/db/subscribeValue';
 import {
@@ -416,21 +417,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     }
 
     for (const n of notifications) {
-      let navigateTo: string | undefined;
-      if (n.data?.discussionPath) {
-        const path = n.data.discussionPath as string;
-        if (path.includes('episode/')) {
-          const match = path.match(/episode\/(\d+)_s(\d+)_e(\d+)/);
-          if (match) navigateTo = `/episode/${match[1]}/s/${match[2]}/e/${match[3]}`;
-        }
-        if (!navigateTo) {
-          const pathMatch = path.match(/discussions\/(series|movie)\/(\d+)/);
-          if (pathMatch) navigateTo = `/${pathMatch[1]}/${pathMatch[2]}`;
-        }
-        if (!navigateTo && n.data.itemType && n.data.itemId) {
-          navigateTo = `/${n.data.itemType}/${n.data.itemId}`;
-        }
-      }
+      let navigateTo: string | undefined =
+        n.data?.discussionPath || n.data?.discussionId ? discussionTarget(n.data) : undefined;
       // Direktes Ziel (z. B. Personalisierungs-Hinweis → „Mehr"-Hub)
       if (!navigateTo && typeof n.data?.navigateTo === 'string') {
         navigateTo = n.data.navigateTo;

@@ -16,6 +16,7 @@ import { NameBadges } from '../ui/display/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
+import { discussionAnchorId } from '../../lib/url/discussionTarget';
 import { useCommentTranslation } from '../../hooks/social/useCommentTranslation';
 import { TranslateButton } from './TranslateButton';
 
@@ -108,6 +109,7 @@ const DiscussionItemInner: React.FC<{
 
   return (
     <motion.div
+      id={discussionAnchorId(discussion.id)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       style={{

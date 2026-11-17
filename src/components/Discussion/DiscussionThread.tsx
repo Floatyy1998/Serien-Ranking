@@ -1,6 +1,6 @@
 import { ChatBubbleOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../ui';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -14,6 +14,7 @@ import { isSpoilerRevealed, markSpoilerRevealed } from '../../services/discussio
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale } from '../../lib/motion';
+import { discussionAnchorId, discussionIdFromHash } from '../../lib/url/discussionTarget';
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemId,
@@ -76,6 +77,22 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     episodeNumber,
     feedMetadata,
   });
+
+  const jumpedTo = useRef<string | null>(null);
+  useEffect(() => {
+    const wanted = discussionIdFromHash(window.location.hash);
+    if (!wanted || jumpedTo.current === wanted || loading) return;
+    if (!discussions.some((d) => d.id === wanted)) return;
+    jumpedTo.current = wanted;
+    const timer = setTimeout(
+      () =>
+        document
+          .getElementById(discussionAnchorId(wanted))
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      450
+    );
+    return () => clearTimeout(timer);
+  }, [discussions, loading]);
 
   // Generate the discussion path for replies
   const discussionPath =

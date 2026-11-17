@@ -150,4 +150,13 @@ describe('pushUrlFor', () => {
     expect(pushUrlFor('user-a', 'bug_ticket_reply')).toBe('/bug-report');
     expect(pushUrlFor('user-a', 'discussion_reply')).toBe('/discussions');
   });
+
+  it('führt Diskussions-Meldungen direkt zur Diskussion', () => {
+    expect(
+      pushUrlFor('user-a', 'discussion_like', {
+        discussionId: '-Nabc',
+        discussionPath: 'discussions/series/1396',
+      })
+    ).toBe('/series/1396#discussion--Nabc');
+  });
 });

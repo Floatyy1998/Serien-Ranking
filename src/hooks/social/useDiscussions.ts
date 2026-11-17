@@ -327,6 +327,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
               messageL: await localizedVariants('{name} gefällt deine Diskussion "{title}"', vars),
               data: {
                 discussionId,
+                discussionPath: path,
                 itemId,
                 itemType,
                 seasonNumber,

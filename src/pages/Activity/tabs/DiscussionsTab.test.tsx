@@ -107,4 +107,17 @@ describe('DiscussionsTab', () => {
     expect(markAsRead).toHaveBeenCalledWith('n1');
     expect(navigateMock).toHaveBeenCalledWith('/series/123');
   });
+
+  it('führt ein Like auf eine Diskussion zur Diskussion, auch ohne gespeicherten Pfad', () => {
+    const like = {
+      ...notification,
+      id: 'n2',
+      type: 'discussion_like',
+      title: 'Neue Reaktion',
+      data: { discussionId: '-Nabc', itemId: 1396, itemType: 'series' },
+    };
+    render(<DiscussionsTab notifications={[like]} markAsRead={vi.fn()} />);
+    fireEvent.click(screen.getByText('Neue Reaktion'));
+    expect(navigateMock).toHaveBeenCalledWith('/series/1396#discussion--Nabc');
+  });
 });

@@ -7,6 +7,7 @@ import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
 import { tapScaleSmall } from '../../../lib/motion';
+import { discussionTarget } from '../../../lib/url/discussionTarget';
 
 interface DiscussionNotification {
   id: string;
@@ -30,27 +31,8 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
 
   const handleNotificationClick = (notification: DiscussionNotification) => {
     markAsRead(notification.id);
-    if (notification.data?.discussionPath) {
-      const path = notification.data.discussionPath as string;
-      // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
-      if (path.includes('episode/')) {
-        const match = path.match(/episode\/(\d+)_s(\d+)_e(\d+)/);
-        if (match) {
-          navigate(`/episode/${match[1]}/s/${match[2]}/e/${match[3]}`);
-          return;
-        }
-      }
-      // Extract itemType and itemId from path for series/movie
-      const pathMatch = path.match(/discussions\/(series|movie)\/(\d+)/);
-      if (pathMatch) {
-        navigate(`/${pathMatch[1]}/${pathMatch[2]}`);
-        return;
-      }
-      // Fallback to notification data if available
-      if (notification.data.itemType && notification.data.itemId) {
-        navigate(`/${notification.data.itemType}/${notification.data.itemId}`);
-      }
-    }
+    const target = discussionTarget(notification.data);
+    if (target) navigate(target);
   };
 
   return (
