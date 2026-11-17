@@ -45,7 +45,17 @@ export const sanitizeReadingLayout = (raw: unknown): ReadingLayout => {
     string,
     { order?: unknown; hidden?: unknown } | undefined
   >;
-  return pinNavigation(sanitizeLists(source));
+  return pinNavigation(sanitizeLists({ ...source, quick: keepLibraryTile(source.quick) }));
+};
+
+/** Die Kachel „Bewertungen" ist in „Bibliothek" aufgegangen — wer nur sie zeigte, behält den Zugang. */
+const keepLibraryTile = (quick: { order?: unknown; hidden?: unknown } | undefined) => {
+  if (!quick || !Array.isArray(quick.order) || !Array.isArray(quick.hidden)) return quick;
+  const hidden = quick.hidden as unknown[];
+  const showedRatings = quick.order.includes('ratings') && !hidden.includes('ratings');
+  return showedRatings && hidden.includes('library')
+    ? { ...quick, hidden: hidden.filter((id) => id !== 'library') }
+    : quick;
 };
 
 const sanitizeLists = (

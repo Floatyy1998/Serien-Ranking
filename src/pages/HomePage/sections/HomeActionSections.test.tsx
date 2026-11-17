@@ -22,12 +22,12 @@ describe('QuickActionsSection', () => {
         navigate={navigate}
       />
     );
-    expect(screen.getByText('Ratings')).toBeInTheDocument();
+    expect(screen.getByText('Bibliothek')).toBeInTheDocument();
     expect(screen.getByText('Entdecken')).toBeInTheDocument();
     expect(screen.getByText('Freunde')).toBeInTheDocument();
     expect(screen.queryByText('Verlauf')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('Ratings'));
+    fireEvent.click(screen.getByText('Bibliothek'));
     expect(navigate).toHaveBeenCalledWith('/ratings');
   });
 

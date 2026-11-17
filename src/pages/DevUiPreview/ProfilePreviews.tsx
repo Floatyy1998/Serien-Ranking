@@ -14,7 +14,7 @@ import {
   Pets,
   Search,
   Settings,
-  Star,
+  Shelves,
   TrendingUp,
   UploadFile,
 } from '@mui/icons-material';
@@ -57,7 +57,7 @@ export const ProfileStatsPreview = () => {
     path: `/${label}`,
   });
   const featured = [
-    item('Meine Bewertungen', Star, currentTheme.status.warning),
+    item('Meine Bibliothek', Shelves, currentTheme.status.warning),
     item('Aktivität & Freunde', Group, currentTheme.primary),
     item('Hinzufügen & Suchen', Search, currentTheme.status.error),
   ];

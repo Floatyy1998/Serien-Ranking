@@ -7,7 +7,6 @@ import {
   LocalLibrary,
   MenuBook,
   Schedule,
-  Star,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
@@ -77,13 +76,6 @@ export const ReadingQuickActions: React.FC<ReadingQuickActionsProps> = React.mem
         path: '/reading/discover',
         hint: t('Neues finden'),
         color: currentTheme.status.success,
-      },
-      ratings: {
-        icon: <Star />,
-        path: '/ratings?tab=books',
-        hint: t('Wertungen'),
-        color: currentTheme.status.warning,
-        stat: stats.rated ? t('{n} bewertet', { n: stats.rated }) : undefined,
       },
       stats: {
         icon: <BarChart />,

@@ -11,7 +11,7 @@ export interface NavSlotOption {
 export const NAV_SLOT_OPTIONS: NavSlotOption[] = [
   { id: 'watchnext', path: '/watchlist', label: 'Weiter' },
   { id: 'calendar', path: '/calendar', label: 'Kalender' },
-  { id: 'ratings', path: '/ratings', label: 'Bewertungen' },
+  { id: 'ratings', path: '/ratings', label: 'Bibliothek' },
   { id: 'manga', path: '/manga', label: 'Lesen', aliases: ['/books', '/reading', '/watch'] },
   { id: 'discover', path: '/discover', label: 'Entdecken' },
   { id: 'stats', path: '/stats', label: 'Statistiken' },

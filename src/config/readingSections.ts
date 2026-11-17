@@ -38,7 +38,6 @@ export const READING_QUICK_ACTION_IDS = [
   'reading-list',
   'library',
   'discover',
-  'ratings',
   'stats',
   'history',
   'catch-up',

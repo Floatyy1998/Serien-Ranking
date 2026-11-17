@@ -57,7 +57,7 @@ export const FOR_YOU_LABELS: Record<string, string> = {
 };
 
 export const QUICK_ACTIONS_LABELS: Record<string, string> = {
-  ratings: t('Ratings'),
+  ratings: t('Bibliothek'),
   discover: t('Entdecken'),
   history: t('Verlauf'),
   friends: t('Freunde'),

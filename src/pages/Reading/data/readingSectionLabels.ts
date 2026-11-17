@@ -73,7 +73,6 @@ export const READING_QUICK_ACTION_LABELS: Record<string, string> = {
   'reading-list': t('Leseliste'),
   library: t('Bibliothek'),
   discover: t('Entdecken'),
-  ratings: t('Ratings'),
   stats: t('Statistiken'),
   history: t('Verlauf'),
   'catch-up': t('Aufholen'),

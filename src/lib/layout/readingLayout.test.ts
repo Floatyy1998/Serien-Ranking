@@ -26,6 +26,18 @@ describe('readingLayout', () => {
     expect(layout.discover.hidden).toEqual([]);
   });
 
+  it('führt die Kachel „Bewertungen" mit „Bibliothek" zusammen, ohne den Zugang zu verlieren', () => {
+    const onlyRatings = sanitizeReadingLayout({
+      quick: { order: ['ratings', 'library', 'stats'], hidden: ['library'] },
+    });
+    expect(onlyRatings.quick.order).not.toContain('ratings');
+    expect(onlyRatings.quick.hidden).not.toContain('library');
+    const bothHidden = sanitizeReadingLayout({
+      quick: { order: ['ratings', 'library'], hidden: ['library', 'ratings'] },
+    });
+    expect(bothHidden.quick.hidden).toEqual(['library']);
+  });
+
   it('übernimmt die alte Manga-Übersicht: Ausblendungen, Schnellzugriffe und Karten', () => {
     const layout = readingLayoutFromManga({
       sections: { order: [], hidden: ['quick-actions', 'trending', 'continue-reading'] },

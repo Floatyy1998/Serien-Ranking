@@ -97,7 +97,7 @@ export const PAGE_TOURS: readonly PageTour[] = [
   {
     path: '/ratings',
     version: 1,
-    title: 'Meine Bewertungen',
+    title: 'Meine Bibliothek',
     intro: 'Alles, was du bewertet hast, und alles, was noch fehlt.',
     actions: [
       {

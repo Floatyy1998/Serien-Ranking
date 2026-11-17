@@ -49,7 +49,7 @@ export const MANGA_SECTION_SHAPES: Record<string, SkeletonShape> = {
 export const MANGA_QUICK_ACTION_LABELS: Record<string, string> = {
   'reading-list': t('Leseliste'),
   discover: t('Entdecken'),
-  ratings: t('Ratings'),
+  ratings: t('Bewertungen'),
   stats: t('Statistiken'),
   journey: t('Journey'),
   history: t('Verlauf'),

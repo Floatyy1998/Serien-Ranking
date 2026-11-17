@@ -51,7 +51,7 @@ describe('BottomNavigation', () => {
     ['Home', 'Weiter', 'Kalender', 'Lesen', 'Mehr'].forEach((label) => {
       expect(screen.getByText(label)).toBeInTheDocument();
     });
-    expect(screen.queryByText('Bewertungen')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bibliothek')).not.toBeInTheDocument();
   });
 
   it('navigiert beim Klick auf einen inaktiven Tab', () => {

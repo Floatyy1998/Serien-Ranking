@@ -82,6 +82,7 @@ const dict: Record<string, string> = {
   Ansicht: 'Affichage',
   'Kompakte Listen-Ansicht': 'Vue liste compacte',
   'Meine Bewertungen': 'Mes notes',
+  'Meine Bibliothek': 'Ma bibliothèque',
   bewertet: 'noté',
   Durchschnitt: 'moyenne',
   'Noch keine Serien': "Aucune série pour l'instant",

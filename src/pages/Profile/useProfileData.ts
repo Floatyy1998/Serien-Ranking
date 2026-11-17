@@ -19,7 +19,7 @@ import {
   Pets,
   Search,
   Settings,
-  Star,
+  Shelves,
   Subscriptions,
   UploadFile,
   TrendingUp,
@@ -215,8 +215,8 @@ export const useProfileData = (): UseProfileDataResult => {
   const menuItems: ProfileMenuItem[] = useMemo(
     () => [
       {
-        label: t('Meine Bewertungen'),
-        icon: Star,
+        label: t('Meine Bibliothek'),
+        icon: Shelves,
         color: currentTheme.status.warning,
         path: '/ratings',
         featured: true,

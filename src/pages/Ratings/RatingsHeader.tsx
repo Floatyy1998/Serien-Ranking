@@ -70,7 +70,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
                 minWidth: 0,
               }}
             >
-              {t('Meine Bewertungen')}
+              {t('Meine Bibliothek')}
             </GradientText>
           </div>
 

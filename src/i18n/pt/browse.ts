@@ -78,6 +78,7 @@ const dict: Record<string, string> = {
   'Cinematic-Ansicht': 'Visualização cinematográfica',
   'Kompakte Listen-Ansicht': 'Visualização em lista compacta',
   'Meine Bewertungen': 'Minhas avaliações',
+  'Meine Bibliothek': 'Minha biblioteca',
   bewertet: 'avaliados',
   Durchschnitt: 'média',
   'Serien & Filme durchsuchen...': 'Buscar séries e filmes...',

@@ -83,6 +83,7 @@ const dict: Record<string, string> = {
   'Cinematic-Ansicht': 'Cinematic view',
   'Kompakte Listen-Ansicht': 'Compact list view',
   'Meine Bewertungen': 'My ratings',
+  'Meine Bibliothek': 'My library',
   bewertet: 'rated',
   Durchschnitt: 'average',
   'Serien & Filme durchsuchen...': 'Search series & movies...',

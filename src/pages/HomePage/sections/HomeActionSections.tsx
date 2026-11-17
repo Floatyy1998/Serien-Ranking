@@ -5,7 +5,7 @@ import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Group from '@mui/icons-material/Group';
 import History from '@mui/icons-material/History';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
-import Star from '@mui/icons-material/Star';
+import Shelves from '@mui/icons-material/Shelves';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { usePetEnabled } from '../../../hooks/pet/usePetEnabled';
@@ -29,8 +29,8 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
     { icon: React.ReactNode; label: string; path: string; color: string; badge?: number }
   > = {
     ratings: {
-      icon: <Star style={{ fontSize: isMobile ? '18px' : '22px' }} />,
-      label: t('Ratings'),
+      icon: <Shelves style={{ fontSize: isMobile ? '18px' : '22px' }} />,
+      label: t('Bibliothek'),
       path: '/ratings',
       color: currentTheme.status.warning,
     },

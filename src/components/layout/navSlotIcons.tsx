@@ -1,5 +1,4 @@
 import {
-  BarChart,
   CalendarToday,
   EmojiEvents,
   Explore,
@@ -12,13 +11,14 @@ import {
   PlayCircle,
   PlaylistAddCheck,
   Schedule,
+  Shelves,
   Subscriptions,
 } from '@mui/icons-material';
 
 export const NAV_SLOT_ICONS: Record<string, React.ReactNode> = {
   watchnext: <PlayCircle />,
   calendar: <CalendarToday />,
-  ratings: <BarChart />,
+  ratings: <Shelves />,
   manga: <MenuBook />,
   discover: <Explore />,
   stats: <Insights />,
