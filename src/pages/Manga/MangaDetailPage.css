@@ -1345,6 +1345,42 @@
   cursor: pointer;
 }
 
+.mobile-app .md-volume-hint-cta--ghost,
+.md-volume-hint-cta.md-volume-hint-cta--ghost {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.md-volume-hint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mobile-app .md-own-volumes,
+.md-own-volumes {
+  display: block;
+  margin-top: 8px;
+  min-height: 0;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.md-own-volumes:active {
+  opacity: 0.7;
+}
+
+.md-own-volumes:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 .mobile-app .md-volume-hint-close,
 .md-volume-hint-close {
   position: absolute;
@@ -1385,6 +1421,7 @@
 .mobile-app .md-volume,
 .md-volume {
   display: grid;
+  position: relative;
   place-items: center;
   aspect-ratio: 3 / 4;
   min-width: 0;
@@ -1419,6 +1456,37 @@
   color: #fff;
 }
 
+.mobile-app .md-volume--mine,
+.md-volume.md-volume--mine {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--color-success, #4ade80) 55%, transparent);
+  background: color-mix(in srgb, var(--color-success, #4ade80) 16%, transparent);
+  color: var(--color-success, #4ade80);
+}
+
+.md-volume--owned::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success, #4ade80);
+}
+
+.md-volume-gap {
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.md-volume-mode {
+  width: fit-content;
+  margin-bottom: 12px;
+}
+
 .md-volume:active {
   opacity: 0.7;
 }
@@ -1437,9 +1505,19 @@
   font-size: 14px;
 }
 
+.md-volumes-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 12px;
+}
+
+.md-volumes-links:empty {
+  display: none;
+}
+
 .mobile-app .md-volumes-more,
 .md-volumes-more {
-  margin-top: 12px;
   min-height: 0;
   padding: 4px 0;
   border: none;

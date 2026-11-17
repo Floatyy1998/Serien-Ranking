@@ -15,6 +15,8 @@ interface BookshelfProps {
   scale?: number;
   /** Ziel beim Antippen; Standard ist die Buch-Detailseite. */
   hrefFor?: (book: Book) => string;
+  /** Rücken mit gleichem Wert sehen gleich aus (Bände einer Reihe). */
+  seedFor?: (book: Book) => string;
   /** Langer Druck auf einen Buchrücken (z. B. Mehrfachauswahl starten). */
   onLongPress?: (book: Book) => void;
   /** Mehrfachauswahl läuft: Antippen wählt aus statt zu öffnen. */
@@ -59,8 +61,9 @@ export const BookSpine: React.FC<{
   pressProps?: React.HTMLAttributes<HTMLButtonElement>;
   /** Gesetzt, solange die Mehrfachauswahl läuft. */
   picked?: boolean;
-}> = ({ book, scale = 1, onOpen, lifted = false, onPeek, pressProps, picked }) => {
-  const style = spineStyle(book, scale);
+  seed?: string;
+}> = ({ book, scale = 1, onOpen, lifted = false, onPeek, pressProps, picked, seed }) => {
+  const style = spineStyle(seed ? { ...book, id: seed } : book, scale);
   const title = spineTitleLayout(book.title, style, spineMeasure());
   return (
     <button
@@ -136,6 +139,7 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
   ghostCount = 0,
   scale = 1,
   hrefFor,
+  seedFor,
   onLongPress,
   selection,
 }) => {
@@ -183,6 +187,7 @@ export const Bookshelf: React.FC<BookshelfProps> = ({
           key={book.id}
           book={book}
           scale={scale}
+          seed={seedFor?.(book)}
           lifted={peek?.id === book.id}
           picked={selection ? selection.isPicked(book) : undefined}
           pressProps={onLongPress ? press(book) : undefined}

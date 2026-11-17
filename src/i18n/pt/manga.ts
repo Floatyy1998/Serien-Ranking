@@ -455,6 +455,31 @@ const dict: Record<string, string> = {
     'Nos seus livros, cada volume é acompanhado separadamente, com páginas e data de leitura.',
   'Zum Buch': 'Ir para o livro',
   '„{title}" wird jetzt als Buch geführt': '"{title}" agora é acompanhado como livros',
+
+  // ─── Manga: einzelne Bände im Besitz ───
+  'Ganze Reihe im Besitz': 'Série completa na sua coleção',
+  '{a} von {b} im Besitz': '{a} de {b} na sua coleção',
+  '{n} im Besitz': '{n} na sua coleção',
+  'Band {n} aus dem Besitz entfernen': 'Remover o volume {n} da sua coleção',
+  'Band {n} als Besitz markieren': 'Marcar o volume {n} como seu',
+  'Alle Bände aus dem Besitz entfernen?': 'Remover todos os volumes da sua coleção?',
+  'Tippe die Bände an, die bei dir im Regal stehen.': 'Toque nos volumes que você tem na estante.',
+  'Ganze Reihe markieren': 'Marcar a série completa',
+  'Alle entfernen': 'Remover todos',
+  'Band {n} im Besitz': 'Volume {n} na sua coleção',
+  'Alle {n} Bände im Besitz': 'Todos os {n} volumes na sua coleção',
+  '{n} Bände im Besitz': '{n} volumes na sua coleção',
+  'Tippen, um die Bände zu ändern': 'Toque para alterar os volumes',
+  'Ganze Reihe im Regal · Tippen zum Entfernen':
+    'Série completa na sua estante · Toque para remover',
+  'Ganze Reihe steht bei dir im Regal': 'A série completa está na sua estante',
+  'Nur einzelne Bände? Hier auswählen': 'Só alguns volumes? Escolha aqui',
+  'Band {n} steht jetzt in deinem Regal': 'O volume {n} agora está na sua estante',
+  'Steht der Band bei dir im Regal?': 'Este volume está na sua estante?',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ zählt ab jetzt in Bänden statt Kapiteln.':
+    '“Na coleção” guarda só este volume. “Lido” passa a contar em volumes em vez de capítulos.',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ hakt alle Bände bis hierhin ab.':
+    '“Na coleção” guarda só este volume. “Lido” marca todos os volumes até este.',
 };
 
 export default dict;

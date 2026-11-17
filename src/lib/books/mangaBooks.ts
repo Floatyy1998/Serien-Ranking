@@ -2,6 +2,7 @@
 
 import type { Book, BookSearchResult } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
+import { isVolumeOwned, ownedSince, volumeKey } from '../manga/ownedVolumes';
 import { mangaUnit } from '../manga/progress';
 import { searchResultToBook, stripUndefined } from './bookSearchMapping';
 import { splitVolume } from './mangaVolume';
@@ -19,6 +20,16 @@ export const volumeBookFrom = (state: unknown): BookSearchResult | null =>
 
 const volumeOf = (book: Book): number | undefined =>
   book.series?.position ?? splitVolume(book.title).volume;
+
+/** Besitz der Bücher als Bände eines Manga (`v<Band>` → seit wann). */
+export function ownedVolumesOfBooks(books: Book[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const book of books) {
+    const volume = volumeOf(book);
+    if (book.ownedAt && volume) out[volumeKey(volume)] = book.ownedAt;
+  }
+  return out;
+}
 
 /** Gleiche Ausgabe: gleiche ID oder gleiche ISBN. */
 export const sameEdition = (a: Pick<Book, 'id' | 'isbn13'>, b: Pick<Book, 'id' | 'isbn13'>) =>
@@ -54,6 +65,11 @@ export function booksFromManga(manga: Manga, existingIds: Set<string>): Book[] {
   return Object.entries(manga.fromBooks ?? {})
     .map(([id, book]) => ({ ...book, id: book.id || id, authors: book.authors ?? [] }))
     .filter((book) => !existingIds.has(book.id))
+    .map((book) => {
+      const volume = volumeOf(book);
+      const since = volume && isVolumeOwned(manga, volume) ? ownedSince(manga, volume) : undefined;
+      return since && !book.ownedAt ? { ...book, ownedAt: since } : book;
+    })
     .map((book) => {
       const volume = volumeOf(book);
       if (book.status === 'completed' || !volume || volume > readUpTo) return book;

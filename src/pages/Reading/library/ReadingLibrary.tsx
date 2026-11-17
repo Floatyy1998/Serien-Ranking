@@ -41,6 +41,8 @@ import {
   parseStatusFilter,
   readLibraryPrefs,
   shelfBooks,
+  shelfMangaId,
+  shelfSeed,
   STATUS_FILTERS,
   type LibraryItem,
   type LibraryMediumFilter,
@@ -122,8 +124,10 @@ const itemMeta = (item: LibraryItem): string => {
 };
 
 /** Schlüssel des Bibliothekseintrags zu einem Regalbuch (Manga stehen als „manga-<id>" im Regal). */
-const shelfKey = (book: Pick<Book, 'id'>): string =>
-  book.id.startsWith('manga-') ? `m:${book.id.slice(6)}` : `b:${book.id}`;
+const shelfKey = (book: Pick<Book, 'id'>): string => {
+  const mangaId = shelfMangaId(book);
+  return mangaId ? `m:${mangaId}` : `b:${book.id}`;
+};
 
 type BulkSheet = 'read' | 'status' | null;
 
@@ -424,6 +428,7 @@ export const ReadingLibrary: React.FC<ReadingLibraryProps> = ({ items, search })
                 <Bookshelf
                   books={shelfBooks(group)}
                   hrefFor={libraryHref}
+                  seedFor={shelfSeed}
                   onLongPress={(book) =>
                     selecting ? selection.toggle(shelfKey(book)) : selection.start(shelfKey(book))
                   }
@@ -435,6 +440,7 @@ export const ReadingLibrary: React.FC<ReadingLibraryProps> = ({ items, search })
             <Bookshelf
               books={shelfBooks(visible)}
               hrefFor={libraryHref}
+              seedFor={shelfSeed}
               onLongPress={(book) =>
                 selecting ? selection.toggle(shelfKey(book)) : selection.start(shelfKey(book))
               }

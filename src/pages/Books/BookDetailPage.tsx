@@ -494,19 +494,21 @@ export const BookDetailPage = () => {
 
   const moveToManga = async () => {
     if (!mangaLink || !owned || !uid) return;
-    const saved = mangaLink.owned
-      ? await rememberSourceBooks(uid, mangaLink.manga.id, [owned]).then(
-          () => true,
-          () => false
+    const ownedFields = mangaLink.owned
+      ? await rememberSourceBooks(uid, mangaLink.manga.id, [owned], mangaLink.owned).catch(
+          () => null
         )
-      : await addManga(mangaLink.manga, { byVolume: true, fromBooks: [owned] });
-    if (!saved) {
+      : (await addManga(mangaLink.manga, { byVolume: true, fromBooks: [owned] }))
+        ? []
+        : null;
+    if (!ownedFields) {
       showToast(t('Speichern fehlgeschlagen'), 2200, 'error');
       return;
     }
     const restore = {
       mangaWasNew: !mangaLink.owned,
       seriesAsBooks: !!mangaLink.asBooks,
+      ownedFields,
     };
     await setBookHidden(uid, owned.id, true).catch(() => {});
     navigate(mangaPath(mangaLink.manga.id, mangaLink.volume), { replace: true });

@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
-import { booksFromManga, firstSourceBook, volumeSnapshot, withSourceBook } from './mangaBooks';
+import {
+  booksFromManga,
+  firstSourceBook,
+  ownedVolumesOfBooks,
+  volumeSnapshot,
+  withSourceBook,
+} from './mangaBooks';
 
 const book = (id: string, title: string, over: Partial<Book> = {}): Book => ({
   id,
@@ -48,6 +54,31 @@ describe('booksFromManga', () => {
     expect(first).not.toHaveProperty('completedAt');
     expect(first).not.toHaveProperty('wishedAt');
     expect(fourth.status).toBe('planned');
+  });
+
+  it('nimmt den Besitz einzelner Bände mit zu den Büchern', () => {
+    const since = '2026-11-17T10:00:00.000Z';
+    const fromBooks = {
+      'dnb-1': book('dnb-1', 'Dead Mount Death Play, Band 1'),
+      'dnb-4': book('dnb-4', 'Dead Mount Death Play, Band 4'),
+    };
+    const [first, fourth] = booksFromManga(
+      manga({ ownedAt: since, ownedVolumes: { v4: since }, fromBooks }),
+      new Set()
+    );
+    expect(first).not.toHaveProperty('ownedAt');
+    expect(fourth.ownedAt).toBe(since);
+  });
+
+  it('liest den Besitz von Büchern als Bände', () => {
+    const since = '2026-11-17T10:00:00.000Z';
+    expect(
+      ownedVolumesOfBooks([
+        book('dnb-3', 'Dead Mount Death Play, Band 3', { ownedAt: since }),
+        book('dnb-4', 'Dead Mount Death Play, Band 4'),
+        book('dnb-x', 'Dead Mount Death Play', { ownedAt: since }),
+      ])
+    ).toEqual({ v3: since });
   });
 
   it('lässt Bücher in Ruhe, die schon wieder in der Sammlung stehen', () => {

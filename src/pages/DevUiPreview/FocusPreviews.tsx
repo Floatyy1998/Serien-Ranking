@@ -36,6 +36,14 @@ const MANGA: Manga[] = [
   readStatus: status as Manga['readStatus'],
   lastReadAt: new Date(Date.now() - i * 86_400_000).toISOString(),
   completedAt: status === 'completed' ? '2026-03-02T10:00:00.000Z' : undefined,
+  ...(title === 'Blue Lock'
+    ? {
+        ownedAt: '2026-11-01T10:00:00.000Z',
+        ownedVolumes: Object.fromEntries(
+          [1, 2, 3, 4, 5, 31].map((n) => [`v${n}`, '2026-11-01T10:00:00.000Z'])
+        ),
+      }
+    : {}),
 }));
 
 const NO_MANGA: Manga[] = [];

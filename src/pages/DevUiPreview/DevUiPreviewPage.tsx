@@ -130,6 +130,7 @@ import {
 import {
   MangaDetailForeignPreview,
   MangaDetailOwnedPreview,
+  MangaDetailBandPreview,
   MangaDetailVolumesPreview,
   MangaHistoryPreview,
   MangaLayoutPreview,
@@ -383,6 +384,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'manga-detail-volumes',
     label: 'Manga: Detail in Bänden',
     render: () => <MangaDetailVolumesPreview />,
+  },
+  {
+    id: 'manga-detail-band',
+    label: 'Manga: Band aus der Suche (Kapitel-Leser)',
+    render: () => <MangaDetailBandPreview />,
   },
   { id: 'manga-foreign', label: 'Manga: Vorschau', render: () => <MangaDetailForeignPreview /> },
   { id: 'manga-search', label: 'Manga: Suche', render: () => <MangaSearchPreview /> },

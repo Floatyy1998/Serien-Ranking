@@ -15,11 +15,16 @@ import type { MangaDexChapterInfo } from '../../../services/api/mangaUpdatesServ
 import { dateLocale, t } from '../../../services/i18n';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { mangaUnit } from '../../../lib/manga/progress';
+import {
+  mangaOwnership,
+  ownedVolumeNumbers,
+  ownedVolumesLabel,
+} from '../../../lib/manga/ownedVolumes';
 import { inferStatus, STATUS_COLORS } from '../mangaUtils';
 import type { MangaHeroData } from './mangaDetailData';
 import { MangaInfoSections } from './MangaInfoSections';
 import { Section, SectionTitle } from './Section';
-import { VolumeShelf } from './VolumeShelf';
+import { VolumeShelf, type VolumeMode } from './VolumeShelf';
 import { BookSwitchPanel } from './BookSwitchPanel';
 import { ManageConfirm } from './ManageConfirm';
 import { OwnToggle } from '../../Books/detail/OwnToggle';
@@ -97,6 +102,11 @@ interface MangaDetailBodyProps {
   onReread: () => void;
   onToggleHide: () => void;
   onToggleOwned?: () => void;
+  onToggleVolumeOwned?: (volume: number, count: number) => void;
+  onOwnAll?: (owned: boolean) => void;
+  /** Bekannte Bandzahl, unabhängig von der Zählweise (0 = unbekannt). */
+  volumeCount?: number;
+  scannedVolume?: number;
   onDelete: () => void;
   /** Nur für Reihen mit Bänden: zurück zu den Büchern. */
   onMoveToBooks?: () => void;
@@ -136,6 +146,10 @@ export const MangaDetailBody = ({
   onReread,
   onToggleHide,
   onToggleOwned,
+  onToggleVolumeOwned,
+  onOwnAll,
+  volumeCount = 0,
+  scannedVolume = 0,
   onDelete,
   onMoveToBooks,
   movingToBooks = false,
@@ -147,6 +161,8 @@ export const MangaDetailBody = ({
   const [confirmReread, setConfirmReread] = useState(false);
   const [confirmToBooks, setConfirmToBooks] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
+  const [volumeMode, setVolumeMode] = useState<VolumeMode>('read');
+  const [volumesOpened, setVolumesOpened] = useState(false);
   const currentChapter = manga.currentChapter ?? 0;
   const byVolume = mangaUnit(manga) === 'volume';
   const effectiveStatus = inferStatus(manga);
@@ -165,13 +181,31 @@ export const MangaDetailBody = ({
     { label: t('Hinzugefügt'), iso: manga.addedAt },
     { label: t('Begonnen'), iso: manga.startedAt },
     { label: t('Zuletzt gelesen'), iso: manga.lastReadAt },
-    { label: t('Abgeschlossen'), iso: manga.completedAt },
+    {
+      label: t('Abgeschlossen'),
+      iso: manga.readStatus === 'completed' ? manga.completedAt : undefined,
+    },
   ]
     .filter((step) => step.iso)
     .sort((a, b) => new Date(a.iso || 0).getTime() - new Date(b.iso || 0).getTime())
     .map((step) => ({ label: step.label, value: formatDay(step.iso) }));
 
   const showBookSwitch = !!onMoveToBooks && (byVolume || !!manga.fromBooks);
+
+  const ownership = mangaOwnership(manga);
+  const canOwnVolumes = !!onToggleVolumeOwned && !!onOwnAll;
+  const readsVolumes = byVolume && !!onVolumeChange;
+  const showVolumes =
+    readsVolumes || (canOwnVolumes && (ownership === 'some' || volumesOpened || scannedVolume > 0));
+  const openVolumes = () => {
+    setVolumesOpened(true);
+    setVolumeMode('own');
+    requestAnimationFrame(() =>
+      document
+        .getElementById('manga-volumes')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    );
+  };
 
   const showReleases =
     !byVolume &&
@@ -182,12 +216,25 @@ export const MangaDetailBody = ({
   return (
     <div className="manga-detail-content md-layout">
       <div className="md-main">
-        {byVolume && onVolumeChange && (
+        {showVolumes && (
           <VolumeShelf
-            current={manga.currentVolume || 0}
-            total={volumeTotal}
+            current={readsVolumes ? manga.currentVolume || 0 : 0}
+            total={readsVolumes ? volumeTotal : volumeCount}
             currentTheme={currentTheme}
-            onChange={onVolumeChange}
+            onChange={readsVolumes ? onVolumeChange : undefined}
+            ownership={
+              canOwnVolumes
+                ? {
+                    all: ownership === 'all',
+                    volumes: ownedVolumeNumbers(manga),
+                    onToggle: onToggleVolumeOwned,
+                    onAll: onOwnAll,
+                  }
+                : undefined
+            }
+            mode={volumeMode}
+            onModeChange={setVolumeMode}
+            highlight={scannedVolume}
           />
         )}
 
@@ -448,14 +495,31 @@ export const MangaDetailBody = ({
             {onToggleOwned && (
               <div style={{ marginTop: 10 }}>
                 <OwnToggle
-                  owned={!!manga.ownedAt}
-                  onToggle={onToggleOwned}
+                  owned={ownership !== 'none'}
+                  onToggle={ownership === 'some' && canOwnVolumes ? openVolumes : onToggleOwned}
+                  label={ownership === 'some' ? ownedVolumesLabel(manga, volumeCount) : undefined}
                   hint={
-                    manga.ownedAt
-                      ? t('Steht bei dir im Regal · Tippen zum Entfernen')
-                      : t('Steht bei dir im Regal')
+                    ownership === 'some'
+                      ? t('Tippen, um die Bände zu ändern')
+                      : !canOwnVolumes
+                        ? ownership === 'all'
+                          ? t('Steht bei dir im Regal · Tippen zum Entfernen')
+                          : t('Steht bei dir im Regal')
+                        : ownership === 'all'
+                          ? t('Ganze Reihe im Regal · Tippen zum Entfernen')
+                          : t('Ganze Reihe steht bei dir im Regal')
                   }
                 />
+                {canOwnVolumes && ownership !== 'some' && (
+                  <button
+                    type="button"
+                    className="md-own-volumes"
+                    onClick={openVolumes}
+                    style={{ color: currentTheme.primary }}
+                  >
+                    {t('Nur einzelne Bände? Hier auswählen')}
+                  </button>
+                )}
               </div>
             )}
           </div>

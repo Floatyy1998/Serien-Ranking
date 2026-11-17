@@ -456,6 +456,31 @@ const dict: Record<string, string> = {
     'En tus libros llevas cada tomo por separado, con páginas y fecha de lectura.',
   'Zum Buch': 'Ir al libro',
   '„{title}" wird jetzt als Buch geführt': '«{title}» ahora se lleva como libros',
+
+  // ─── Manga: einzelne Bände im Besitz ───
+  'Ganze Reihe im Besitz': 'Serie completa en tu colección',
+  '{a} von {b} im Besitz': '{a} de {b} en tu colección',
+  '{n} im Besitz': '{n} en tu colección',
+  'Band {n} aus dem Besitz entfernen': 'Quitar el tomo {n} de tu colección',
+  'Band {n} als Besitz markieren': 'Marcar el tomo {n} como tuyo',
+  'Alle Bände aus dem Besitz entfernen?': '¿Quitar todos los tomos de tu colección?',
+  'Tippe die Bände an, die bei dir im Regal stehen.': 'Toca los tomos que tienes en tu estantería.',
+  'Ganze Reihe markieren': 'Marcar la serie completa',
+  'Alle entfernen': 'Quitar todos',
+  'Band {n} im Besitz': 'Tomo {n} en tu colección',
+  'Alle {n} Bände im Besitz': 'Los {n} tomos en tu colección',
+  '{n} Bände im Besitz': '{n} tomos en tu colección',
+  'Tippen, um die Bände zu ändern': 'Toca para cambiar los tomos',
+  'Ganze Reihe im Regal · Tippen zum Entfernen':
+    'Serie completa en tu estantería · Toca para quitar',
+  'Ganze Reihe steht bei dir im Regal': 'La serie completa está en tu estantería',
+  'Nur einzelne Bände? Hier auswählen': '¿Solo algunos tomos? Elígelos aquí',
+  'Band {n} steht jetzt in deinem Regal': 'El tomo {n} ya está en tu estantería',
+  'Steht der Band bei dir im Regal?': '¿Tienes este tomo en tu estantería?',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ zählt ab jetzt in Bänden statt Kapiteln.':
+    '«En mi colección» solo guarda este tomo. «Leído» cuenta desde ahora en tomos en vez de capítulos.',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ hakt alle Bände bis hierhin ab.':
+    '«En mi colección» solo guarda este tomo. «Leído» marca todos los tomos hasta este.',
 };
 
 export default dict;

@@ -5,11 +5,12 @@ import { t } from '../../../services/i18n';
 import './WishToggle.css';
 
 /** „Im Besitz": Freunde sehen, dass du das Buch physisch besitzt. */
-export const OwnToggle: React.FC<{ owned: boolean; onToggle: () => void; hint?: string }> = ({
-  owned,
-  onToggle,
-  hint,
-}) => {
+export const OwnToggle: React.FC<{
+  owned: boolean;
+  onToggle: () => void;
+  hint?: string;
+  label?: string;
+}> = ({ owned, onToggle, hint, label }) => {
   const { currentTheme } = useTheme();
   const color = currentTheme.status.success;
   return (
@@ -30,7 +31,9 @@ export const OwnToggle: React.FC<{ owned: boolean; onToggle: () => void; hint?: 
         <LibraryBooks style={{ fontSize: 20, color: owned ? '#06140b' : color }} />
       </span>
       <span className="bd-wish-text">
-        <span className="bd-wish-label">{owned ? t('Im Besitz') : t('Als Besitz markieren')}</span>
+        <span className="bd-wish-label">
+          {label ?? (owned ? t('Im Besitz') : t('Als Besitz markieren'))}
+        </span>
         <span className="bd-wish-hint" style={{ color: currentTheme.text.muted }}>
           {hint ??
             (owned

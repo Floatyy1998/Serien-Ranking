@@ -12,6 +12,8 @@ import {
   mediumOptions,
   readLibraryPrefs,
   shelfBooks,
+  shelfMangaId,
+  shelfSeed,
   sortLibrary,
   type LibraryQuery,
 } from './library';
@@ -210,6 +212,29 @@ describe('reading library', () => {
     expect(libraryHref(spines[0])).toBe('/books/b%201');
     expect(libraryHref(spines[1])).toBe('/manga/7');
     expect(itemHref(items[1])).toBe('/manga/7');
+  });
+
+  it('stellt einzeln besessene Bände als eigene Rücken ins Regal', () => {
+    const since = '2026-11-17T10:00:00.000Z';
+    const items = lib({
+      manga: [
+        manga({
+          anilistId: 30013,
+          title: 'One Piece',
+          volumes: 113,
+          ownedAt: since,
+          ownedVolumes: { v113: since, v2: since },
+        }),
+        manga({ anilistId: 8, title: 'Ganz', ownedAt: since }),
+      ],
+    });
+    expect(items.map((i) => i.owned)).toEqual([true, true]);
+    const spines = shelfBooks(items);
+    expect(spines.map((b) => b.id)).toEqual(['manga-30013-v2', 'manga-30013-v113', 'manga-8']);
+    expect(spines[1]).toMatchObject({ title: 'One Piece 113', pageCount: 190 });
+    expect(libraryHref(spines[1])).toBe('/manga/30013');
+    expect(shelfSeed(spines[0])).toBe(shelfSeed(spines[1]));
+    expect(shelfMangaId({ id: 'manga-ausgabe-v2' })).toBeNull();
   });
 
   it('übernimmt alte Sortierung und Ansicht beim ersten Mal', () => {

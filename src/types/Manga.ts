@@ -29,8 +29,10 @@ export interface Manga {
   fromBooks?: Record<string, Book>;
   readStatus: 'reading' | 'completed' | 'paused' | 'dropped' | 'planned';
   hidden?: boolean;
-  /** Physisch im Regal seit. */
+  /** Physisch im Regal seit — ohne `ownedVolumes` die ganze Reihe. */
   ownedAt?: string;
+  /** Einzelne Bände im Regal: `v<Band>` → seit wann. */
+  ownedVolumes?: Record<string, string>;
   addedAt?: string;
   lastReadAt?: string;
   readingPlatform?: string;

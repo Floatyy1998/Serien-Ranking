@@ -456,6 +456,32 @@ const dict: Record<string, string> = {
     'Dans tes livres, tu suis chaque tome séparément, avec pages et date de lecture.',
   'Zum Buch': 'Voir le livre',
   '„{title}" wird jetzt als Buch geführt': '« {title} » est maintenant suivi comme livres',
+
+  // ─── Manga: einzelne Bände im Besitz ───
+  'Ganze Reihe im Besitz': 'Série complète possédée',
+  '{a} von {b} im Besitz': '{a} sur {b} possédés',
+  '{n} im Besitz': '{n} possédés',
+  'Band {n} aus dem Besitz entfernen': 'Retirer le tome {n} de ta collection',
+  'Band {n} als Besitz markieren': 'Marquer le tome {n} comme possédé',
+  'Alle Bände aus dem Besitz entfernen?': 'Retirer tous les tomes de ta collection ?',
+  'Tippe die Bände an, die bei dir im Regal stehen.':
+    'Touche les tomes que tu as dans ta bibliothèque.',
+  'Ganze Reihe markieren': 'Marquer toute la série',
+  'Alle entfernen': 'Tout retirer',
+  'Band {n} im Besitz': 'Tome {n} possédé',
+  'Alle {n} Bände im Besitz': 'Les {n} tomes possédés',
+  '{n} Bände im Besitz': '{n} tomes possédés',
+  'Tippen, um die Bände zu ändern': 'Touche pour modifier les tomes',
+  'Ganze Reihe im Regal · Tippen zum Entfernen':
+    'Série complète dans ta bibliothèque · Touche pour retirer',
+  'Ganze Reihe steht bei dir im Regal': 'Toute la série est dans ta bibliothèque',
+  'Nur einzelne Bände? Hier auswählen': 'Seulement certains tomes ? Choisis-les ici',
+  'Band {n} steht jetzt in deinem Regal': 'Le tome {n} est maintenant dans ta bibliothèque',
+  'Steht der Band bei dir im Regal?': 'As-tu ce tome dans ta bibliothèque ?',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ zählt ab jetzt in Bänden statt Kapiteln.':
+    '« Possédé » ne retient que ce tome. « Lu » compte désormais en tomes au lieu de chapitres.',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ hakt alle Bände bis hierhin ab.':
+    '« Possédé » ne retient que ce tome. « Lu » coche tous les tomes jusqu’à celui-ci.',
 };
 
 export default dict;

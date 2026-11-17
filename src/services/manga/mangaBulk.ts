@@ -1,4 +1,5 @@
 import { logReadingActivity } from '../../features/badges/minimalActivityLogger';
+import { toggleVolumeFields } from '../../lib/manga/ownedVolumes';
 import type { Manga } from '../../types/Manga';
 import { dbUpdate, paths } from '../db/ref';
 
@@ -54,13 +55,23 @@ export async function setMangaStatus(
   }
 }
 
-/** „Im Besitz" für viele Manga setzen oder entfernen. */
+/** „Im Besitz" für viele Manga setzen oder entfernen — immer die ganze Reihe. */
 export async function setMangaOwned(uid: string, list: Manga[], owned: boolean): Promise<void> {
   const value = owned ? new Date().toISOString() : null;
   await writeFields(
     uid,
-    list.map((m) => ({ id: m.anilistId, fields: { ownedAt: value } }))
+    list.map((m) => ({ id: m.anilistId, fields: { ownedAt: value, ownedVolumes: null } }))
   );
+}
+
+export async function toggleVolumeOwned(
+  uid: string,
+  manga: Manga,
+  volume: number,
+  count: number
+): Promise<void> {
+  const fields = toggleVolumeFields(manga, volume, count, new Date().toISOString());
+  await writeFields(uid, [{ id: manga.anilistId, fields }]);
 }
 
 /** Viele Manga aus- oder wieder einblenden. */

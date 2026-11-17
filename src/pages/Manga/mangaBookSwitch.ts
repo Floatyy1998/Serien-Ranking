@@ -1,18 +1,23 @@
-import { booksFromManga } from '../../lib/books/mangaBooks';
+import { booksFromManga, ownedVolumesOfBooks } from '../../lib/books/mangaBooks';
+import { addOwnedVolumesFields } from '../../lib/manga/ownedVolumes';
 import { dbRef, dbUpdate, paths } from '../../services/db/ref';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
 
-/** Buch wandert in einen schon geführten Manga — merken, damit es zurückkann. */
+/** Buch wandert in einen schon geführten Manga; liefert die dabei gesetzten Besitz-Felder fürs Rückgängig. */
 export async function rememberSourceBooks(
   uid: string,
   anilistId: number,
-  books: Book[]
-): Promise<void> {
-  if (books.length === 0) return;
-  await dbRef(paths.mangaItem(uid, anilistId)).update(
-    Object.fromEntries(books.map((book) => [`fromBooks/${book.id}`, book]))
-  );
+  books: Book[],
+  manga?: Manga
+): Promise<string[]> {
+  if (books.length === 0) return [];
+  const owned = manga ? addOwnedVolumesFields(manga, ownedVolumesOfBooks(books)) : {};
+  await dbRef(paths.mangaItem(uid, anilistId)).update({
+    ...Object.fromEntries(books.map((book) => [`fromBooks/${book.id}`, book])),
+    ...owned,
+  });
+  return Object.keys(owned);
 }
 
 /**
@@ -53,13 +58,16 @@ export async function restoreBookFromManga(
   uid: string,
   book: Book,
   anilistId: number,
-  options: { mangaWasNew: boolean; seriesAsBooks: boolean }
+  options: { mangaWasNew: boolean; seriesAsBooks: boolean; ownedFields?: string[] }
 ): Promise<void> {
   const mangaItem = paths.mangaItem(uid, anilistId);
   const updates: Record<string, unknown> = {
     [`${paths.bookItem(uid, book.id)}/hidden`]: book.hidden || null,
     [options.mangaWasNew ? mangaItem : `${mangaItem}/fromBooks/${book.id}`]: null,
   };
+  if (!options.mangaWasNew) {
+    for (const field of options.ownedFields ?? []) updates[`${mangaItem}/${field}`] = null;
+  }
   if (options.mangaWasNew && options.seriesAsBooks) {
     updates[`${paths.mangaAsBooks(uid)}/${anilistId}`] = true;
   }

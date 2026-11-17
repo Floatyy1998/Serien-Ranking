@@ -1,5 +1,6 @@
 import type { Book } from '../../types/Book';
 import type { AniListMangaSearchResult } from '../../types/Manga';
+import { ownedVolumesOfBooks } from '../../lib/books/mangaBooks';
 import { isMangaUpdatesId } from '../../lib/manga/mangaSource';
 import { getMangaDetails } from '../../services/api/mangaDetails';
 import { getMangaDexInfo } from '../../services/api/mangaUpdatesService';
@@ -70,6 +71,12 @@ export async function addMangaToList(
   }
   if (options.fromBooks?.length) {
     manga.fromBooks = Object.fromEntries(options.fromBooks.map((book) => [book.id, book]));
+    const owned = ownedVolumesOfBooks(options.fromBooks);
+    const since = Object.values(owned).sort()[0];
+    if (since) {
+      manga.ownedVolumes = owned;
+      manga.ownedAt = since;
+    }
   }
   if (options.status === 'reading') {
     manga.readStatus = 'reading';

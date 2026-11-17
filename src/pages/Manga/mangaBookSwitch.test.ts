@@ -43,6 +43,30 @@ describe('mangaBookSwitch', () => {
     expect(fb.refUpdate).toHaveBeenCalledWith({ 'fromBooks/dnb-1': book });
   });
 
+  it('nimmt den Besitz eines Buchs als Band mit und beim Rückgängig wieder weg', async () => {
+    const since = '2026-11-17T10:00:00.000Z';
+    const owned = { ...book, title: 'One Piece 113', ownedAt: since };
+    const manga = { anilistId: 42, title: 'One Piece' } as Manga;
+    const fields = await rememberSourceBooks('u1', 42, [owned], manga);
+    expect(fb.refUpdate).toHaveBeenCalledWith({
+      'fromBooks/dnb-1': owned,
+      'ownedVolumes/v113': since,
+      ownedAt: since,
+    });
+    expect(fields).toEqual(['ownedVolumes/v113', 'ownedAt']);
+    await restoreBookFromManga('u1', owned, 42, {
+      mangaWasNew: false,
+      seriesAsBooks: false,
+      ownedFields: fields,
+    });
+    expect(fb.update).toHaveBeenLastCalledWith({
+      'users/u1/books/dnb-1/hidden': null,
+      'users/u1/manga/42/fromBooks/dnb-1': null,
+      'users/u1/manga/42/ownedVolumes/v113': null,
+      'users/u1/manga/42/ownedAt': null,
+    });
+  });
+
   it('zieht Manga, Bücher und Wunsch „als Bücher" in einem Schreibvorgang um', async () => {
     const manga = {
       nmr: 1,

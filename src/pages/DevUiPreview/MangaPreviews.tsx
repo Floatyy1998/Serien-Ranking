@@ -83,8 +83,15 @@ const toManga = (r: AniListMangaSearchResult, i: number, now: number): Manga => 
           trackBy: 'volumes' as const,
           currentVolume: volume,
           latestVolumeAvailable: totalVolumes ? undefined : 14 + i,
+          ownedAt: iso(40),
+          ownedVolumes: Object.fromEntries([1, 2, 3, volume + 1].map((n) => [`v${n}`, iso(40)])),
         }
-      : {}),
+      : i % 5 === 3
+        ? {
+            ownedAt: iso(12),
+            ownedVolumes: { v2: iso(12), [`v${Math.max(totalVolumes, 34)}`]: iso(3) },
+          }
+        : {}),
   };
 };
 
@@ -168,6 +175,19 @@ export const MangaDetailVolumesPreview = () => (
       return (
         <DetailRoute id={manga.anilistId} search={`?band=${(manga.currentVolume || 0) + 2}`} />
       );
+    }}
+  </MangaPreviewShell>
+);
+
+/** Kapitel-Leser kommt über einen gedruckten Band aus der Suche. */
+export const MangaDetailBandPreview = () => (
+  <MangaPreviewShell>
+    {(list) => {
+      const manga = list.find(
+        (m) => m.trackBy !== 'volumes' && m.readStatus === 'reading' && !m.ownedAt && m.volumes
+      );
+      if (!manga) return <p style={{ padding: 24 }}>Kein Kapitel-Manga in den Beispieldaten</p>;
+      return <DetailRoute id={manga.anilistId} search={`?band=${manga.volumes}`} />;
     }}
   </MangaPreviewShell>
 );

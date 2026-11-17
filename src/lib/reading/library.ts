@@ -4,6 +4,7 @@ import type { Book, BookStatus } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
 import { progressPercent } from '../books/bookProgress';
 import { bookGenres } from '../books/shelfView';
+import { isMangaOwned, ownedVolumeNumbers } from '../manga/ownedVolumes';
 import { mangaStand, mangaTotalVolumes } from '../manga/progress';
 import { normalizeTitle } from '../text/searchRelevance';
 
@@ -126,7 +127,7 @@ export function mangaItem(manga: Manga, uid: string | undefined): LibraryItem {
     title: manga.title,
     status: manga.readStatus,
     hidden: !!manga.hidden,
-    owned: !!manga.ownedAt,
+    owned: isMangaOwned(manga),
     genres: (manga.genres ?? []).map((g) => g?.trim()).filter(Boolean),
     rating: uid ? manga.rating?.[uid] || 0 : 0,
     progress: mangaStand(manga).percent,
@@ -331,19 +332,40 @@ export function shelfBook(item: LibraryItem): Book {
   };
 }
 
+/** Einzeln besessene Bände stehen als eigene Rücken im Regal (`manga-<id>-v<Band>`). */
+export function shelfSpines(item: LibraryItem): Book[] {
+  const spine = shelfBook(item);
+  const volumes = item.manga ? ownedVolumeNumbers(item.manga) : [];
+  if (volumes.length === 0) return [spine];
+  return volumes.map((n) => ({
+    ...spine,
+    id: `${spine.id}-v${n}`,
+    title: `${spine.title} ${n}`,
+    pageCount: PAGES_PER_VOLUME,
+  }));
+}
+
 export const shelfBooks = (items: LibraryItem[]): Book[] => {
   const byId = new Map<string, Book>();
   for (const item of items) {
-    const book = shelfBook(item);
-    if (!byId.has(book.id)) byId.set(book.id, book);
+    for (const book of shelfSpines(item)) if (!byId.has(book.id)) byId.set(book.id, book);
   }
   return [...byId.values()];
 };
 
-export const libraryHref = (book: Pick<Book, 'id'>): string =>
-  book.id.startsWith('manga-')
-    ? `/manga/${book.id.slice(6)}`
-    : `/books/${encodeURIComponent(book.id)}`;
+export const shelfMangaId = (book: Pick<Book, 'id'>): string | null =>
+  /^manga-(\d+)(?:-v\d+)?$/.exec(book.id)?.[1] ?? null;
+
+/** Bände einer Reihe teilen sich Farbe und Höhe des Rückens. */
+export const shelfSeed = (book: Pick<Book, 'id'>): string => {
+  const mangaId = shelfMangaId(book);
+  return mangaId ? `manga-${mangaId}` : book.id;
+};
+
+export const libraryHref = (book: Pick<Book, 'id'>): string => {
+  const mangaId = shelfMangaId(book);
+  return mangaId ? `/manga/${mangaId}` : `/books/${encodeURIComponent(book.id)}`;
+};
 
 export const itemHref = (item: LibraryItem): string =>
   item.manga ? `/manga/${item.manga.anilistId}` : libraryHref(shelfBook(item));

@@ -489,6 +489,30 @@ const dict: Record<string, string> = {
     'In your books, every volume is tracked on its own, with pages and reading date.',
   'Zum Buch': 'View book',
   '„{title}" wird jetzt als Buch geführt': '"{title}" is now kept as books',
+
+  // ─── Manga: einzelne Bände im Besitz ───
+  'Ganze Reihe im Besitz': 'Whole series owned',
+  '{a} von {b} im Besitz': '{a} of {b} owned',
+  '{n} im Besitz': '{n} owned',
+  'Band {n} aus dem Besitz entfernen': 'Remove volume {n} from your shelf',
+  'Band {n} als Besitz markieren': 'Mark volume {n} as owned',
+  'Alle Bände aus dem Besitz entfernen?': 'Remove all volumes from your shelf?',
+  'Tippe die Bände an, die bei dir im Regal stehen.': 'Tap the volumes you have on your shelf.',
+  'Ganze Reihe markieren': 'Mark whole series',
+  'Alle entfernen': 'Remove all',
+  'Band {n} im Besitz': 'Volume {n} owned',
+  'Alle {n} Bände im Besitz': 'All {n} volumes owned',
+  '{n} Bände im Besitz': '{n} volumes owned',
+  'Tippen, um die Bände zu ändern': 'Tap to change the volumes',
+  'Ganze Reihe im Regal · Tippen zum Entfernen': 'Whole series on your shelf · Tap to remove',
+  'Ganze Reihe steht bei dir im Regal': 'The whole series is on your shelf',
+  'Nur einzelne Bände? Hier auswählen': 'Only some volumes? Pick them here',
+  'Band {n} steht jetzt in deinem Regal': 'Volume {n} is now on your shelf',
+  'Steht der Band bei dir im Regal?': 'Is this volume on your shelf?',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ zählt ab jetzt in Bänden statt Kapiteln.':
+    '“Owned” only remembers this volume. “Read” counts in volumes instead of chapters from now on.',
+  '„Im Besitz“ merkt sich nur diesen Band. „Gelesen“ hakt alle Bände bis hierhin ab.':
+    '“Owned” only remembers this volume. “Read” checks off every volume up to this one.',
 };
 
 export default dict;

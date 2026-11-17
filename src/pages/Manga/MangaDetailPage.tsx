@@ -14,9 +14,11 @@ import {
   isStaleVolumeMode,
   mangaHasVolumes,
   mangaStand,
+  mangaTotalVolumes,
   mangaUnit,
   type MangaUnit,
 } from '../../lib/manga/progress';
+import { isVolumeOwned, mangaOwnership } from '../../lib/manga/ownedVolumes';
 import type { Manga } from '../../types/Manga';
 import './MangaDetailPage.css';
 import { MangaDetailBody } from './detail/MangaDetailBody';
@@ -43,7 +45,7 @@ import { bookAsResult } from '../../lib/books/bookSearchMapping';
 import { dbRef, paths, userPath } from '../../services/db/ref';
 import { trackMangaDeleted } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
-import { setMangaOwned } from '../../services/manga/mangaBulk';
+import { setMangaOwned, toggleVolumeOwned } from '../../services/manga/mangaBulk';
 
 const logMangaActivity = (uid: string, manga: Manga, type: 'manga_rated', rating?: number) =>
   void logReadingActivity(uid, {
@@ -166,6 +168,32 @@ export const MangaDetailPage = () => {
       total: volumeTotal,
     });
   }, [user, manga, unit, scannedVolume, scannedBook, liveVolumes, updateField]);
+
+  const volumeCount = manga ? Math.max(mangaTotalVolumes(manga), liveVolumes || 0) : 0;
+  const scannedOwned = !!manga && scannedVolume > 0 && isVolumeOwned(manga, scannedVolume);
+
+  const handleToggleVolumeOwned = useCallback(
+    (volume: number, count: number) => {
+      if (!user || !manga) return;
+      void toggleVolumeOwned(user.uid, manga, volume, count).catch(() =>
+        showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+      );
+    },
+    [user, manga]
+  );
+
+  const handleOwnScannedVolume = useCallback(() => {
+    if (!user || !manga || scannedVolume <= 0 || scannedOwned) return;
+    void toggleVolumeOwned(
+      user.uid,
+      manga,
+      scannedVolume,
+      Math.max(volumeCount, scannedVolume)
+    ).then(
+      () => showToast(t('Band {n} steht jetzt in deinem Regal', { n: scannedVolume }), 2200),
+      () => showToast(t('Speichern fehlgeschlagen'), 2200, 'error')
+    );
+  }, [user, manga, scannedVolume, scannedOwned, volumeCount]);
 
   const handleMoveToBooks = useCallback(async () => {
     if (!user || !manga || movingToBooks) return;
@@ -423,10 +451,9 @@ export const MangaDetailPage = () => {
   const userRating = user ? manga.rating?.[user.uid] || 0 : 0;
   const hasVolumes = unit === 'volume' || mangaHasVolumes(manga, liveVolumes);
   const progress = total && total > 0 ? Math.min((editValue / total) * 100, 100) : 0;
-  const showVolumeHint =
-    scannedVolume > 0 &&
-    !hintDismissed &&
-    (unit !== 'volume' || (manga.currentVolume || 0) < scannedVolume);
+  const scannedUnread = unit !== 'volume' || (manga.currentVolume || 0) < scannedVolume;
+  const showVolumeHint = scannedVolume > 0 && !hintDismissed && (scannedUnread || !scannedOwned);
+  const canOwnVolumes = hasVolumes || scannedVolume > 0 || mangaOwnership(manga) === 'some';
 
   return (
     <PageLayout>
@@ -453,7 +480,9 @@ export const MangaDetailPage = () => {
         <VolumeHint
           volume={scannedVolume}
           tracksChapters={unit !== 'volume'}
-          onMark={() => void handleMarkScannedVolume()}
+          hasProgress={mangaStand(manga).current > 0}
+          onMark={scannedUnread ? () => void handleMarkScannedVolume() : undefined}
+          onOwn={scannedOwned ? undefined : handleOwnScannedVolume}
           onDismiss={() => setHintDismissed(true)}
         />
       )}
@@ -489,6 +518,16 @@ export const MangaDetailPage = () => {
         onToggleOwned={() => {
           if (user) void setMangaOwned(user.uid, [manga], !manga.ownedAt);
         }}
+        onToggleVolumeOwned={canOwnVolumes ? handleToggleVolumeOwned : undefined}
+        onOwnAll={
+          canOwnVolumes
+            ? (owned) => {
+                if (user) void setMangaOwned(user.uid, [manga], owned);
+              }
+            : undefined
+        }
+        volumeCount={volumeCount}
+        scannedVolume={scannedVolume}
         onDelete={handleDelete}
         onMoveToBooks={hasVolumes ? () => void handleMoveToBooks() : undefined}
         movingToBooks={movingToBooks}
