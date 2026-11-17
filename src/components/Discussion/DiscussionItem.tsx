@@ -1,7 +1,7 @@
 import { Favorite, FavoriteBorder, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
@@ -56,6 +56,10 @@ const DiscussionItemInner: React.FC<{
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
   const { text, images } = extractImageUrls(discussion.content);
+  const author = useMemo(
+    () => ({ uid: discussion.userId, name: discussion.username }),
+    [discussion.userId, discussion.username]
+  );
 
   // "Bezieht sich auf"-Gating: verdeckt, wenn der Beitrag hinter dem Stand
   // des Lesers liegt. Der Autor sieht seinen Beitrag immer.
@@ -308,7 +312,7 @@ const DiscussionItemInner: React.FC<{
                   lineHeight: 1.6,
                 }}
               >
-                <LinkifiedText text={displayText} />
+                <LinkifiedText text={displayText} mentions={discussion.mentions} />
               </p>
             )}
             <TranslateButton translation={translation} />
@@ -380,6 +384,7 @@ const DiscussionItemInner: React.FC<{
         replyCount={discussion.replyCount}
         isSpoilerHidden={discussion.isSpoiler && !showSpoiler}
         feedMetadata={feedMetadata}
+        author={author}
       />
     </motion.div>
   );

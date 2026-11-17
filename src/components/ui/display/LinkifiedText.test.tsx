@@ -31,6 +31,17 @@ describe('LinkifiedText', () => {
     expect(screen.getByText('Du verlässt TV-Rank')).toBeTruthy();
   });
 
+  it('macht eine Erwähnung zum Link aufs Profil', () => {
+    render(
+      <MemoryRouter>
+        <LinkifiedText text="@Floatyy ist praktisch" mentions={{ u1: 'Floatyy' }} />
+      </MemoryRouter>
+    );
+    const link = screen.getByRole('link');
+    expect(link.textContent).toBe('@Floatyy');
+    expect(link.getAttribute('href')).toBe('/friend/u1');
+  });
+
   it('zeigt Text ohne URL unverändert', () => {
     renderText('nur Text');
     expect(screen.queryByRole('link')).toBeNull();

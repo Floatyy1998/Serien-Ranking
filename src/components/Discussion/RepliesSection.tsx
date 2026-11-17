@@ -9,7 +9,7 @@ import {
   Warning,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionFeedMetadata } from '../../types/Discussion';
@@ -27,7 +27,16 @@ export const RepliesSection: React.FC<{
   replyCount: number;
   isSpoilerHidden?: boolean;
   feedMetadata?: DiscussionFeedMetadata;
-}> = ({ discussionId, discussionPath, replyCount, isSpoilerHidden = false, feedMetadata }) => {
+  /** Wer die Diskussion gestartet hat — zählt zu den erwähnbaren Leuten. */
+  author?: { uid: string; name: string };
+}> = ({
+  discussionId,
+  discussionPath,
+  replyCount,
+  isSpoilerHidden = false,
+  feedMetadata,
+  author,
+}) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const ban = useModerationBan();
@@ -61,6 +70,12 @@ export const RepliesSection: React.FC<{
       feedMetadata
     );
   const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
+  const mentionable = useMemo(() => {
+    const names: Record<string, string> = {};
+    if (author?.name) names[author.uid] = author.name;
+    for (const reply of replies) if (reply.username) names[reply.userId] = reply.username;
+    return names;
+  }, [author, replies]);
 
   const handleSubmitReply = async () => {
     if ((!newReply.trim() && replyImages.length === 0) || submitting) return;
@@ -154,6 +169,7 @@ export const RepliesSection: React.FC<{
                     canDelete={user?.uid === ADMIN_UID}
                     currentUserId={user?.uid}
                     onReplyTo={handleReplyTo}
+                    mentionable={mentionable}
                   />
                 ))
               )}

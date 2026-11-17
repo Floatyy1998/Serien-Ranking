@@ -59,6 +59,8 @@ const dict: Record<string, string> = {
   'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}':
     'Se refiere a T{s}E{e} — tú vas por T{vs}E{ve}',
   'Bezieht sich auf S{s}E{e}': 'Se refiere a T{s}E{e}',
+  Erwähnung: 'Mención',
+  '{name} hat dich in "{title}" erwähnt': '{name} te ha mencionado en "{title}"',
 };
 
 export default dict;

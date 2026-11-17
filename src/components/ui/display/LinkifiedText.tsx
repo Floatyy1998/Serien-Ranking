@@ -1,6 +1,7 @@
 import { Fragment, memo, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { internalPath, linkHost, linkifyText } from '../../../lib/text/linkify';
+import { splitMentions } from '../../../lib/text/mentions';
 import { t } from '../../../services/i18n';
 import { Dialog } from '../overlay/Dialog';
 
@@ -14,9 +15,26 @@ const linkStyle = {
   cursor: 'pointer',
 };
 
-export const LinkifiedText = memo(({ text }: { text: string }) => {
+const mentionStyle = {
+  color: 'var(--theme-primary)',
+  fontWeight: 600,
+  textDecoration: 'none',
+  cursor: 'pointer',
+};
+
+interface LinkifiedTextProps {
+  text: string;
+  /** Erwähnbare Nutzer (uid → Name): „@Name" wird zum Link aufs Profil. */
+  mentions?: Record<string, string>;
+}
+
+export const LinkifiedText = memo(({ text, mentions }: LinkifiedTextProps) => {
   const navigate = useNavigate();
   const segments = useMemo(() => linkifyText(text), [text]);
+  const targets = useMemo(
+    () => Object.entries(mentions ?? {}).map(([uid, name]) => ({ uid, name })),
+    [mentions]
+  );
   const [pendingLink, setPendingLink] = useState('');
 
   const openLink = (href: string) => {
@@ -29,7 +47,28 @@ export const LinkifiedText = memo(({ text }: { text: string }) => {
     <>
       {segments.map((s, i) =>
         s.kind === 'text' ? (
-          <Fragment key={i}>{s.text}</Fragment>
+          <Fragment key={i}>
+            {targets.length === 0
+              ? s.text
+              : splitMentions(s.text, targets).map((part, j) =>
+                  part.kind === 'text' ? (
+                    <Fragment key={j}>{part.text}</Fragment>
+                  ) : (
+                    <a
+                      key={j}
+                      href={`/friend/${part.uid}`}
+                      style={mentionStyle}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/friend/${part.uid}`);
+                      }}
+                    >
+                      {part.text}
+                    </a>
+                  )
+                )}
+          </Fragment>
         ) : (
           <a
             key={i}

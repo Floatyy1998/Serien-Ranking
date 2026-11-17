@@ -59,6 +59,8 @@ const dict: Record<string, string> = {
   'Verstoß gegen die Community-Regeln': 'Non-respect des règles de la communauté',
   Staffel: 'Saison',
   Folge: 'épisode',
+  Erwähnung: 'Mention',
+  '{name} hat dich in "{title}" erwähnt': '{name} t’a mentionné dans « {title} »',
 };
 
 export default dict;

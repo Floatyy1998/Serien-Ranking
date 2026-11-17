@@ -11,7 +11,11 @@ import {
   writeDiscussionFeedEntry,
   deleteDiscussionFeedEntries,
 } from '../../services/discussion/discussionFeedService';
-import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
+import {
+  getDiscussionPath,
+  notifyDiscussionMentions,
+  sendNotificationToUser,
+} from './useDiscussionHelpers';
 import { ADMIN_UID } from '../../config/admin';
 import { getUserDisplayData } from '../../services/firebase/userDisplayData';
 import { queueModerationScan } from '../../services/moderation/moderationScan';
@@ -149,6 +153,16 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           title: input.title,
           userId: user.uid,
           username,
+        });
+
+        // Erwähnungen (@Name) auflösen, hinterlegen und die Erwähnten benachrichtigen
+        void notifyDiscussionMentions({
+          text: input.content,
+          path,
+          discussionId: newRef.key ?? '',
+          title: input.title,
+          authorUid: user.uid,
+          authorName: username,
         });
 
         // Write to discussion feed (fire-and-forget)

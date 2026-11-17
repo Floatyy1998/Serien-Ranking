@@ -18,10 +18,14 @@ export interface DiscussionReply {
   lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
   translations?: CommentTranslations;
   hidden?: boolean; // KI-Quarantäne — nur Autor + Admin sehen den Inhalt
+  /** Erwähnte Nutzer: uid → Name, wie er im Text steht. */
+  mentions?: Record<string, string>;
 }
 
 export interface Discussion {
   id: string;
+  /** Erwähnte Nutzer: uid → Name, wie er im Text steht. */
+  mentions?: Record<string, string>;
   itemId: number; // TMDB ID
   itemType: DiscussionItemType;
   // For episodes: additional identifiers

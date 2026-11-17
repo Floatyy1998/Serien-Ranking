@@ -1,8 +1,9 @@
 import { ADMIN_UID } from '../../config/admin';
 import { discussionTarget } from '../../lib/url/discussionTarget';
-import type { LocalizedMap } from '../../services/i18n';
+import { localizedVariants, tLocale, type LocalizedMap } from '../../services/i18n';
 import { dbRef, userPath } from '../../services/db/ref';
 import { queuePush } from '../../services/notifications/pushQueue';
+import { resolveMentions } from '../../services/social/mentionResolve';
 import type { DiscussionItemType } from '../../types/Discussion';
 
 // Helper to generate a unique path for discussions
@@ -117,5 +118,38 @@ export const sendNotificationToUser = async (
     );
   } catch (error) {
     console.error('Error sending notification:', error);
+  }
+};
+
+/** Erwähnungen einer neuen Diskussion auflösen, am Beitrag hinterlegen und die Erwähnten benachrichtigen. */
+export const notifyDiscussionMentions = async (input: {
+  text: string;
+  path: string;
+  discussionId: string;
+  title: string;
+  authorUid: string;
+  authorName: string;
+}): Promise<void> => {
+  try {
+    if (!input.discussionId) return;
+    const mentions = await resolveMentions(input.text, {});
+    const uids = Object.keys(mentions);
+    if (uids.length === 0) return;
+    await dbRef(`${input.path}/${input.discussionId}/mentions`).set(mentions);
+    const template = '{name} hat dich in "{title}" erwähnt';
+    const vars = { name: input.authorName, title: input.title };
+    for (const uid of uids) {
+      if (uid === input.authorUid) continue;
+      await sendNotificationToUser(uid, {
+        type: 'discussion_reply',
+        title: 'Erwähnung',
+        titleL: await localizedVariants('Erwähnung'),
+        message: tLocale('de', template, vars),
+        messageL: await localizedVariants(template, vars),
+        data: { discussionId: input.discussionId, discussionPath: input.path },
+      });
+    }
+  } catch {
+    /* Erwähnungen sind Beiwerk — der Beitrag steht trotzdem */
   }
 };

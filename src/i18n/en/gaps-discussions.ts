@@ -59,5 +59,7 @@ const dict: Record<string, string> = {
   Folge: 'episode',
   'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}': "Refers to S{s}E{e} — you're on S{vs}E{ve}",
   'Bezieht sich auf S{s}E{e}': 'Refers to S{s}E{e}',
+  Erwähnung: 'Mention',
+  '{name} hat dich in "{title}" erwähnt': '{name} mentioned you in "{title}"',
 };
 export default dict;

@@ -1,7 +1,7 @@
 import { Delete, Edit, Favorite, FavoriteBorder, Flag, Reply, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionReply } from '../../types/Discussion';
@@ -26,6 +26,8 @@ const ReplyItemInner: React.FC<{
   canDelete?: boolean;
   currentUserId?: string;
   onReplyTo?: (username: string) => void;
+  /** Leute aus dem Thread (uid → Name) — auch ältere Antworten ohne hinterlegte Erwähnungen. */
+  mentionable?: Record<string, string>;
 }> = ({
   reply,
   nodePath,
@@ -36,6 +38,7 @@ const ReplyItemInner: React.FC<{
   canDelete,
   currentUserId,
   onReplyTo,
+  mentionable,
 }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -58,6 +61,10 @@ const ReplyItemInner: React.FC<{
   });
   const displayText =
     translation.showTranslation && translation.translated ? translation.translated.text : text;
+  const mentions = useMemo(
+    () => ({ ...mentionable, ...reply.mentions }),
+    [mentionable, reply.mentions]
+  );
 
   const handleSaveEdit = async () => {
     setSaving(true);
@@ -272,7 +279,7 @@ const ReplyItemInner: React.FC<{
                   lineHeight: 1.5,
                 }}
               >
-                <LinkifiedText text={displayText} />
+                <LinkifiedText text={displayText} mentions={mentions} />
               </p>
             )}
             <TranslateButton translation={translation} />

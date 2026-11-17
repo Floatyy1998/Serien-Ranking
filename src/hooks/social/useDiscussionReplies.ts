@@ -13,6 +13,7 @@ import { getUserDisplayData } from '../../services/firebase/userDisplayData';
 import { queueModerationScan } from '../../services/moderation/moderationScan';
 import { localizedVariants, t, tLocale } from '../../services/i18n';
 import { onValue } from '../../services/db/subscribeValue';
+import { resolveMentions } from '../../services/social/mentionResolve';
 
 interface EditReplyInput {
   content?: string;
@@ -138,10 +139,12 @@ export const useDiscussionReplies = (
 
         // Get all participants (discussion author + all reply authors)
         const participantIds = new Set<string>();
+        const participantNames: Record<string, string> = {};
 
         // Add discussion author
         if (discussion?.userId) {
           participantIds.add(discussion.userId);
+          if (discussion.username) participantNames[discussion.userId] = discussion.username;
         }
 
         // Add all reply authors
@@ -152,9 +155,20 @@ export const useDiscussionReplies = (
             const r = reply as DiscussionReply;
             if (r?.userId) {
               participantIds.add(r.userId);
+              if (r.username) participantNames[r.userId] = r.username;
             }
           });
         }
+
+        // Erwähnungen (@Name) auflösen und an der Antwort hinterlegen
+        const mentions = await resolveMentions(content, participantNames);
+        if (Object.keys(mentions).length > 0) {
+          await dbRef(`${repliesPath}/${replyRef.key}/mentions`)
+            .set(mentions)
+            .catch(() => {});
+        }
+        const mentionedIds = new Set(Object.keys(mentions));
+        mentionedIds.forEach((uid) => participantIds.add(uid));
 
         // Remove current user from notification list
         participantIds.delete(user.uid);
@@ -162,14 +176,18 @@ export const useDiscussionReplies = (
         // Send notification to all participants
         for (const participantId of participantIds) {
           const isAuthor = participantId === discussion?.userId;
-          const template = isAuthor
-            ? '{name} hat auf deine Diskussion "{title}" geantwortet'
-            : '{name} hat auch auf "{title}" geantwortet';
+          const isMentioned = mentionedIds.has(participantId);
+          const template = isMentioned
+            ? '{name} hat dich in "{title}" erwähnt'
+            : isAuthor
+              ? '{name} hat auf deine Diskussion "{title}" geantwortet'
+              : '{name} hat auch auf "{title}" geantwortet';
+          const heading = isMentioned ? 'Erwähnung' : 'Neue Antwort';
           const vars = { name: username, title: discussion?.title ?? '' };
           await sendNotificationToUser(participantId, {
             type: 'discussion_reply',
-            title: 'Neue Antwort',
-            titleL: await localizedVariants('Neue Antwort'),
+            title: heading,
+            titleL: await localizedVariants(heading),
             message: tLocale('de', template, vars),
             messageL: await localizedVariants(template, vars),
             data: {
