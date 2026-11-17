@@ -55,7 +55,7 @@ interface UseTMDBTrendingResult {
   error: Error | null;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de';
 
 // Wöchentliche Trends: eine Stunde pro Gerät reicht, der Server cached ohnehin länger.
 const TRENDING_TTL_MS = 60 * 60 * 1000;

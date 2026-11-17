@@ -421,7 +421,7 @@ describe('Mapping und Text', () => {
   it('baut für Aktivitäten eine Cover-Kette: DNB über den Spiegel, ohne Cover per ISBN', () => {
     const dnb = 'https://portal.dnb.de/opac/mvb/cover?isbn=9783842068742';
     expect(bookCoverSources(dnb, '9783842068742', 'M')).toEqual([
-      'https://serienapi.konrad-dinges.de/bookcover/dnb/9783842068742-M.jpg',
+      'https://api.tv-rank.de/bookcover/dnb/9783842068742-M.jpg',
       dnb,
       'https://covers.openlibrary.org/b/isbn/9783842068742-M.jpg?default=false',
     ]);

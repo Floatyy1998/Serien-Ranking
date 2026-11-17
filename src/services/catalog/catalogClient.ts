@@ -6,8 +6,7 @@ import { cacheGet, cacheSet } from '../books/bookCache';
  * Versions-Route (Cache-Bust, die Dateien unter /catalog/ sind immutable), index.json, items/<id>.json,
  * dazu die Routen zum Aufnehmen und für Klappentexte in der App-Sprache.
  */
-export const CATALOG_BACKEND =
-  import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+export const CATALOG_BACKEND = import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de';
 const VERSION_TTL_MS = 10 * 60_000;
 const DESCRIPTION_TTL_MS = 14 * 24 * 60 * 60_000;
 

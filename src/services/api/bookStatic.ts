@@ -5,7 +5,7 @@ import type { BasedOnBook, BookSearchResult } from '../../types/Book';
 import { appLocale } from '../i18n';
 import { mapHardcoverItem } from './hardcoverApi';
 
-const BACKEND = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+const BACKEND = import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de';
 
 /** Tagesstempel als Cache-Bust — /catalog/ ist immutable, die Datei wird täglich neu gebaut. */
 const day = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');

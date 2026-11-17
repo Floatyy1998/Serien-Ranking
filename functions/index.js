@@ -355,11 +355,11 @@ async function renderListImage(list) {
 }
 
 // Bücher und Manga: statischer Katalog des Backends, Manga ohne Katalogeintrag direkt von AniList.
-const CATALOG_ORIGIN = 'https://serienapi.konrad-dinges.de';
+const CATALOG_ORIGIN = 'https://api.tv-rank.de';
 const BOOK_ID_RE = /^[a-z]+-[\w.:-]{1,120}$/;
 const MANGA_ID_RE = /^-?\d{1,14}$/;
 const COVER_HOSTS =
-  /^https:\/\/(serienapi\.konrad-dinges\.de|s4\.anilist\.co|image\.tmdb\.org|covers\.openlibrary\.org|books\.google\.com|books\.googleusercontent\.com|assets\.hardcover\.app|portal\.dnb\.de)\//;
+  /^https:\/\/(serienapi\.konrad-dinges\.de|api\.tv-rank\.de|s4\.anilist\.co|image\.tmdb\.org|covers\.openlibrary\.org|books\.google\.com|books\.googleusercontent\.com|assets\.hardcover\.app|portal\.dnb\.de)\//;
 const VERSION_TTL_MS = 10 * 60 * 1000;
 const versions = new Map();
 const readingCache = new Map();

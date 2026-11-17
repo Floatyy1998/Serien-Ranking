@@ -421,7 +421,7 @@ export function fillBookGaps<T extends object>(
   return out as T;
 }
 
-const BOOKCOVER_BASE = `${import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de'}/bookcover`;
+const BOOKCOVER_BASE = `${import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de'}/bookcover`;
 const COVER_MIRROR = `${BOOKCOVER_BASE}/id`;
 
 /** Original-URL in passender Größe: M (~180 px) für Karten, L nur für große Darstellungen. */

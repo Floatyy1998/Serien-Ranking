@@ -4,7 +4,7 @@ import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Gavel } from '@mui/icons-material';
 import { localeFileChain, t } from '../../services/i18n';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de';
 
 interface ImpressumData {
   title: string;

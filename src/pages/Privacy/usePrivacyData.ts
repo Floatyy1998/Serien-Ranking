@@ -100,7 +100,7 @@ export interface FirebaseService {
   optOut?: string;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de';
 
 export const usePrivacyData = () => {
   const [data, setData] = useState<PrivacyData | null>(null);

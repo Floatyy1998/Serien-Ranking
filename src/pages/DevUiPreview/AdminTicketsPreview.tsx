@@ -73,7 +73,7 @@ const TICKETS: BugTicket[] = [
         {
           t: 171000,
           method: 'GET',
-          url: 'https://serienapi.konrad-dinges.de/catalog/seasons/95396.json',
+          url: 'https://api.tv-rank.de/catalog/seasons/95396.json',
           status: 200,
           ms: 84,
           via: 'fetch',
@@ -81,7 +81,7 @@ const TICKETS: BugTicket[] = [
         {
           t: 178500,
           method: 'POST',
-          url: 'https://serienapi.konrad-dinges.de/add',
+          url: 'https://api.tv-rank.de/add',
           status: 500,
           ms: 312,
           via: 'fetch',

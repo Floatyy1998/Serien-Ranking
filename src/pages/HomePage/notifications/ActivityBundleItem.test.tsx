@@ -74,7 +74,7 @@ describe('ActivityBundleItem', () => {
     );
     const img = () => container.querySelector('img') as HTMLImageElement;
     expect(img().getAttribute('src')).toBe(
-      'https://serienapi.konrad-dinges.de/bookcover/dnb/9783842068742-M.jpg'
+      'https://api.tv-rank.de/bookcover/dnb/9783842068742-M.jpg'
     );
     fireEvent.error(img());
     fireEvent.error(img());

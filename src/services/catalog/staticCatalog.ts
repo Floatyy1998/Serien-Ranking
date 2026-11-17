@@ -8,7 +8,7 @@
  * Infrastruktur:
  *   - Server-Cron (SerienApi index.js) schreibt catalog/*-Subtrees als
  *     JSON-Files nach /home/serien/SerienApi/public/catalog/
- *   - nginx served das unter https://serienapi.konrad-dinges.de/catalog/
+ *   - nginx served das unter https://api.tv-rank.de/catalog/
  *     mit gzip-Kompression + 24h Cache-Control
  *
  * Caching-Strategie (Stale-While-Revalidate):
@@ -39,7 +39,7 @@ import { watchRegion } from '../settings/region';
 declare const process: { env: Record<string, string | undefined> };
 
 const CATALOG_BASE_URL =
-  (process.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de') + '/catalog';
+  (process.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de') + '/catalog';
 
 const LS_PREFIX = 'catalog-static:';
 const LS_VERSION_KEY = LS_PREFIX + 'version';
