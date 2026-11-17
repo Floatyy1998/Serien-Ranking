@@ -199,6 +199,7 @@ const dict: Record<string, string> = {
 
   // MovieDetail
   'Film nicht gefunden': 'Movie not found',
+  'Film konnte nicht geladen werden': "Couldn't load this movie",
   'Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB API-Schlüssel benötigt.':
     "This movie isn't in your list. A TMDB API key is required to view friends' movies.",
   'Film löschen?': 'Delete movie?',

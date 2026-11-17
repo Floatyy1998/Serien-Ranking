@@ -177,6 +177,7 @@ const dict: Record<string, string> = {
   'als nicht gesehen markiert': 'marcado como no visto',
   'Fehler beim Speichern.': 'Error al guardar.',
   'Film nicht gefunden': 'Película no encontrada',
+  'Film konnte nicht geladen werden': 'No se pudo cargar la película',
   'Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB API-Schlüssel benötigt.':
     'Esta película no está en tu lista. Para ver las películas de tus amigos se necesita una clave de API de TMDB.',
   'Film löschen?': '¿Eliminar película?',

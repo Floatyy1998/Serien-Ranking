@@ -176,6 +176,7 @@ const dict: Record<string, string> = {
   'Fehler beim Starten des Rewatches.': 'Échec du lancement du rewatch.',
   'Rewatch beendet.': 'Rewatch terminé.',
   'Film nicht gefunden': 'Film introuvable',
+  'Film konnte nicht geladen werden': 'Impossible de charger le film',
   'Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB API-Schlüssel benötigt.':
     "Ce film n'est pas dans ta liste. Une clé API TMDB est nécessaire pour voir les films de tes amis.",
   'Film löschen?': 'Supprimer le film ?',

@@ -16,6 +16,7 @@ import { useMovieData } from './useMovieData';
 import { FriendsMovieStrip } from './FriendsMovieStrip';
 import { useFriendsMovieStatus } from './useFriendsMovieStatus';
 import { dateLocale, t } from '../../services/i18n';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import './MovieDetailPage.css';
 
 export const MovieDetailPage = memo(() => {
@@ -27,6 +28,8 @@ export const MovieDetailPage = memo(() => {
     movie,
     isReadOnlyTmdbMovie,
     loading,
+    loadFailed,
+    retryLoad,
     tmdbBackdrop,
     tmdbRating,
     imdbRating,
@@ -56,13 +59,33 @@ export const MovieDetailPage = memo(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     return (
       <div className="md-not-found">
-        <h2 className="md-not-found__title">{t('Film nicht gefunden')}</h2>
+        <h2 className="md-not-found__title">
+          {loadFailed ? t('Film konnte nicht geladen werden') : t('Film nicht gefunden')}
+        </h2>
+        {loadFailed && (
+          <p className="md-not-found__text" style={{ color: currentTheme.text.secondary }}>
+            {t('Prüf deine Verbindung und versuch es nochmal.')}
+          </p>
+        )}
         {!apiKey && (
           <p className="md-not-found__text" style={{ color: currentTheme.text.secondary }}>
             {t(
               'Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB API-Schlüssel benötigt.'
             )}
           </p>
+        )}
+        {loadFailed && (
+          <button
+            onClick={retryLoad}
+            className="md-not-found__btn"
+            style={{
+              background: currentTheme.primary,
+              border: `1px solid ${currentTheme.primary}`,
+              color: getOptimalTextColor(currentTheme.primary),
+            }}
+          >
+            {t('Erneut versuchen')}
+          </button>
         )}
         <button
           onClick={() => navigate('/')}

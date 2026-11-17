@@ -13,6 +13,8 @@ const { mdState, navigateMock } = vi.hoisted(() => {
       movie: { id: 5, title: 'Dune' } as unknown as Movie,
       isReadOnlyTmdbMovie: false,
       loading: false,
+      loadFailed: false,
+      retryLoad: vi.fn(),
       tmdbBackdrop: null,
       tmdbRating: null,
       imdbRating: null,
@@ -38,6 +40,7 @@ const { mdState, navigateMock } = vi.hoisted(() => {
 });
 
 vi.mock('./useMovieData', () => ({ useMovieData: () => mdState }));
+vi.mock('../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#000' }));
 vi.mock('./MovieHeroSection', () => ({ MovieHeroSection: () => <div data-testid="hero" /> }));
 vi.mock('./MovieActionButtons', () => ({
   MovieActionButtons: () => <div data-testid="actions" />,
@@ -75,6 +78,8 @@ import { MovieDetailPage } from './MovieDetailPage';
 beforeEach(() => {
   mdState.movie = { id: 5, title: 'Dune' } as unknown as Movie;
   mdState.loading = false;
+  mdState.loadFailed = false;
+  mdState.retryLoad.mockReset();
   mdState.activeTab = 'info';
   mdState.setActiveTab.mockReset();
   navigateMock.mockReset();
@@ -100,6 +105,16 @@ describe('MovieDetailPage', () => {
     mdState.loading = false;
     render(<MovieDetailPage />);
     expect(screen.getByText('Film nicht gefunden')).toBeInTheDocument();
+  });
+
+  it('bietet bei einem Ladefehler das erneute Laden an, statt „nicht gefunden“ zu melden', () => {
+    mdState.movie = null as unknown as Movie;
+    mdState.loadFailed = true;
+    render(<MovieDetailPage />);
+    expect(screen.queryByText('Film nicht gefunden')).not.toBeInTheDocument();
+    expect(screen.getByText('Film konnte nicht geladen werden')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Erneut versuchen'));
+    expect(mdState.retryLoad).toHaveBeenCalledTimes(1);
   });
 
   it('shows the loading state', () => {

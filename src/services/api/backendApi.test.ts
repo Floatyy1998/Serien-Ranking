@@ -268,6 +268,32 @@ describe('backendFetch', () => {
     );
   });
 
+  it('meldet Verbindungsfehler nicht, wenn das Gerät selbst kein Internet hat', async () => {
+    vi.stubGlobal('location', { origin: 'https://app.test' });
+    fetchMock.mockRejectedValue(new TypeError('Load failed'));
+    const backendFetch = await loadBackendFetch();
+    await expect(backendFetch('/hc/search', { method: 'POST' })).rejects.toThrow('Load failed');
+    await expect(backendFetch('/hc/search', { method: 'POST' })).rejects.toThrow('Load failed');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(captureError).not.toHaveBeenCalled();
+    const checks = fetchMock.mock.calls.filter(([url]) => String(url).includes('netcheck='));
+    expect(checks).toHaveLength(1);
+    expect(checks[0][1]).toMatchObject({ method: 'HEAD', cache: 'no-store' });
+  });
+
+  it('meldet Verbindungsfehler, wenn das Gerät Internet hat und nur das Backend fehlt', async () => {
+    vi.stubGlobal('location', { origin: 'https://app.test' });
+    fetchMock.mockImplementation(async (url: string) => {
+      if (String(url).includes('netcheck=')) return sentinel;
+      throw new TypeError('Load failed');
+    });
+    const backendFetch = await loadBackendFetch();
+    await expect(backendFetch('/hc/search', { method: 'POST' })).rejects.toThrow('Load failed');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(captureError).toHaveBeenCalledTimes(1);
+    expect(captureError.mock.calls[0][0].message).toContain('POST /hc/search Verbindungsfehler');
+  });
+
   it('meldet Verbindungsfehler mit quietConnectionErrors nicht, wirft sie aber weiter', async () => {
     fetchMock.mockRejectedValue(new TypeError('Load failed'));
     const backendFetch = await loadBackendFetch();

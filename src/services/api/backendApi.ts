@@ -140,6 +140,38 @@ function reportFailure(path: string, init: RequestInit, outcome: string): void {
   });
 }
 
+const NET_CHECK_TIMEOUT_MS = 5000;
+const NET_CHECK_REUSE_MS = 10_000;
+let netCheck: { at: number; result: Promise<boolean> } | null = null;
+
+/** Erreicht das Gerät die eigene Seite? `navigator.onLine` bleibt auch im Funkloch true. */
+function deviceHasInternet(): true | Promise<boolean> {
+  if (typeof location === 'undefined' || !location.origin?.startsWith('http')) return true;
+  if (netCheck && Date.now() - netCheck.at < NET_CHECK_REUSE_MS) return netCheck.result;
+  const result = fetch(`${location.origin}/?netcheck=${Date.now()}`, {
+    method: 'HEAD',
+    cache: 'no-store',
+    signal: AbortSignal.timeout(NET_CHECK_TIMEOUT_MS),
+  }).then(
+    () => true,
+    () => false
+  );
+  netCheck = { at: Date.now(), result };
+  return result;
+}
+
+/** Ohne Internet am Gerät ist ein Verbindungsfehler zum Backend kein Befund. */
+function reportConnectionFailure(path: string, init: RequestInit, outcome: string): void {
+  const online = deviceHasInternet();
+  if (online === true) {
+    reportFailure(path, init, outcome);
+    return;
+  }
+  void online.then((ok) => {
+    if (ok) reportFailure(path, init, outcome);
+  });
+}
+
 /**
  * Hat der Aufrufer die Anfrage selbst abgebrochen (nächster Buchstabe in der Suche, Seitenwechsel),
  * ist das kein Verbindungsfehler. Eine abgelaufene Frist (`AbortSignal.timeout`, TimeoutError) bleibt ein Befund.
@@ -173,7 +205,7 @@ async function sendWithRetry(
         // Im Hintergrund kappen Android-WebView und iOS das Netz, beim Update-Reload der Browser selbst — kein Befund.
         const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
         if (!quietConnectionErrors && !hidden && !isPageLeaving() && !cancelledByCaller(init)) {
-          reportFailure(path, init, `Verbindungsfehler: ${failureMessage(error, init)}`);
+          reportConnectionFailure(path, init, `Verbindungsfehler: ${failureMessage(error, init)}`);
         }
         throw error;
       }

@@ -55,6 +55,8 @@ export const useMovieData = () => {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
   // Fuer welche ID der Vollabruf schon lief.
   const geholtFuer = useRef<string | null>(null);
@@ -136,6 +138,7 @@ export const useMovieData = () => {
     setImdbRating(null);
     setTmdbOverview(null);
     setLoading(false);
+    setLoadFailed(false);
     geholtFuer.current = null;
   }, [id]);
 
@@ -198,6 +201,7 @@ export const useMovieData = () => {
     let abgebrochen = false;
     const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
     setLoading(true);
+    setLoadFailed(false);
     Promise.all([
       tmdbFetch<TmdbMediaDetail>(`movie/${id}`, {
         append_to_response: 'credits,external_ids',
@@ -230,7 +234,11 @@ export const useMovieData = () => {
           setTmdbMovie(movie);
         }
       })
-      .catch((error) => console.error('Film-Details konnten nicht von TMDB geladen werden:', error))
+      .catch((error) => {
+        console.error('Film-Details konnten nicht von TMDB geladen werden:', error);
+        const notFound = ((error as Error)?.message ?? '').startsWith('TMDB 404 ');
+        if (!abgebrochen && !notFound) setLoadFailed(true);
+      })
       .finally(() => {
         if (!abgebrochen) setLoading(false);
       });
@@ -238,7 +246,7 @@ export const useMovieData = () => {
     return () => {
       abgebrochen = true;
     };
-  }, [id, localMovie]);
+  }, [id, localMovie, loadAttempt]);
 
   useEffect(() => {
     const omdbKey = import.meta.env.VITE_API_OMDb;
@@ -388,6 +396,11 @@ export const useMovieData = () => {
     tmdbMovie,
     isReadOnlyTmdbMovie,
     loading,
+    loadFailed,
+    retryLoad: () => {
+      geholtFuer.current = null;
+      setLoadAttempt((n) => n + 1);
+    },
 
     tmdbBackdrop,
     tmdbRating,
