@@ -1,5 +1,6 @@
 import type { Book, BookDetails, BookSearchResult } from '../../types/Book';
 import { pickIsbn13, sanitizeBookKey } from './bookIdentity';
+import { BACKEND_BASE, onCurrentBackend } from '../url/backendHost';
 
 export interface GoogleVolume {
   id: string;
@@ -421,11 +422,12 @@ export function fillBookGaps<T extends object>(
   return out as T;
 }
 
-const BOOKCOVER_BASE = `${import.meta.env.VITE_BACKEND_API_URL || 'https://api.tv-rank.de'}/bookcover`;
+const BOOKCOVER_BASE = `${BACKEND_BASE}/bookcover`;
 const COVER_MIRROR = `${BOOKCOVER_BASE}/id`;
 
 /** Original-URL in passender Größe: M (~180 px) für Karten, L nur für große Darstellungen. */
-export function directCoverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
+export function directCoverAtSize(rawUrl: string | undefined, size: 'M' | 'L'): string | undefined {
+  const url = onCurrentBackend(rawUrl);
   if (!url) return url;
   if (/books\.google\./.test(url)) {
     return `${url.replace(/&fife=[^&]*/g, '')}&fife=${size === 'L' ? 'w480-h720' : 'w240-h360'}`;
@@ -445,7 +447,8 @@ const LIBRARY_COVER = /(\/bookcover\/book\/[A-Za-z0-9_-]+)-[ML](\.jpg(?:\?v=\d+)
  * DNB-Cover nur über den Spiegel: das Portal stellt Browsern eine Bot-Prüfseite statt des Bildes zu.
  * Katalog-Cover (/bookcover/book/) liegen dauerhaft in M und L bei uns.
  */
-export function coverAtSize(url: string | undefined, size: 'M' | 'L'): string | undefined {
+export function coverAtSize(rawUrl: string | undefined, size: 'M' | 'L'): string | undefined {
+  const url = onCurrentBackend(rawUrl);
   if (url && LIBRARY_COVER.test(url)) return url.replace(LIBRARY_COVER, `$1-${size}$2`);
   if (url && HARDCOVER_MIRROR.test(url)) return url.replace(HARDCOVER_MIRROR, `$1.${size}.jpg`);
   const dnb = url?.match(/portal\.dnb\.de\/opac\/mvb\/cover\?isbn=(97[89]\d{10})/)?.[1];

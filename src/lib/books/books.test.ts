@@ -432,12 +432,28 @@ describe('Mapping und Text', () => {
   });
 
   it('wechselt bei Katalog-Covern nur die Größe und behält den Versionsstempel', () => {
-    const own = 'https://serienapi.konrad-dinges.de/bookcover/book/hc-123-L.jpg?v=1793117589';
+    const own = 'https://api.tv-rank.de/bookcover/book/hc-123-L.jpg?v=1793117589';
     expect(coverAtSize(own, 'M')).toBe(
-      'https://serienapi.konrad-dinges.de/bookcover/book/hc-123-M.jpg?v=1793117589'
+      'https://api.tv-rank.de/bookcover/book/hc-123-M.jpg?v=1793117589'
     );
     expect(coverAtSize(own, 'L')).toBe(own);
     expect(directCoverAtSize(own, 'M')).toBe(own);
+  });
+
+  it('führt gespeicherte Cover der früheren Backend-Adresse über die aktuelle', () => {
+    const legacy = 'https://serienapi.konrad-dinges.de/bookcover/book/hc-123-L.jpg?v=1793117589';
+    expect(coverAtSize(legacy, 'M')).toBe(
+      'https://api.tv-rank.de/bookcover/book/hc-123-M.jpg?v=1793117589'
+    );
+    expect(directCoverAtSize(legacy, 'L')).toBe(
+      'https://api.tv-rank.de/bookcover/book/hc-123-L.jpg?v=1793117589'
+    );
+    expect(coverAtSize('https://serienapi.konrad-dinges.de/bookcover/hc/abc.jpg', 'M')).toBe(
+      'https://api.tv-rank.de/bookcover/hc/abc.M.jpg'
+    );
+    expect(directCoverAtSize('https://covers.openlibrary.org/b/id/1-L.jpg', 'L')).toBe(
+      'https://covers.openlibrary.org/b/id/1-L.jpg'
+    );
   });
 
   it('macht aus HTML lesbaren Text und erkennt die Sprache grob', () => {
@@ -491,7 +507,7 @@ describe('readingTaste', () => {
 });
 
 describe('Hardcover-Cover in Größen', () => {
-  const mirror = 'https://serienapi.konrad-dinges.de/bookcover/hc/L2VkaXRpb24vMS9hLmpwZw';
+  const mirror = 'https://api.tv-rank.de/bookcover/hc/L2VkaXRpb24vMS9hLmpwZw';
 
   it('hängt die Größe vor die Dateiendung', () => {
     expect(coverAtSize(`${mirror}.jpg`, 'M')).toBe(`${mirror}.M.jpg`);

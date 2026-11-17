@@ -6,6 +6,7 @@ import { getMangaChaptersBatch, mangaChapterKey } from '../services/api/mangaUpd
 import { getDisplayFormatKey, shouldReopenCompleted } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 import { dbRef, paths, updateIfExists, userPath } from '../services/db/ref';
+import { onCurrentBackend } from '../lib/url/backendHost';
 import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
@@ -30,7 +31,15 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
 
   const allMangaList: Manga[] = useMemo(
     // Fragmente ohne anilistId/title (Teil-Update auf gelöschten Eintrag) nie anzeigen.
-    () => (mangaData ? Object.values(mangaData).filter((m) => m?.anilistId && m.title) : []),
+    () =>
+      mangaData
+        ? Object.values(mangaData)
+            .filter((m) => m?.anilistId && m.title)
+            .map((m) => {
+              const poster = onCurrentBackend(m.poster);
+              return poster === m.poster ? m : { ...m, poster };
+            })
+        : [],
     [mangaData]
   );
   const mangaList = useMemo(() => allMangaList.filter((m) => !m.hidden), [allMangaList]);
