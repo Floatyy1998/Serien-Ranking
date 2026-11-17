@@ -69,7 +69,6 @@ const dict: Record<string, string> = {
   'Läuft · {rhythm}': 'Diffusion · {rhythm}',
   Fortlaufend: 'En cours',
   Nächste: 'Suivant',
-  Dran: 'À suivre',
   Freunde: 'Amis',
   'Beide durch': 'Terminée pour les deux',
   Gleichauf: 'À égalité',

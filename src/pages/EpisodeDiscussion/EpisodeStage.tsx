@@ -49,6 +49,8 @@ interface EpisodeStageProps {
   /** Folgen der Staffel für den Streifen: gesehen ja/nein, in Reihenfolge. */
   seasonEpisodes: { key: number | string; watched: boolean }[];
   canTrack: boolean;
+  /** Läuft die Serie noch oder ist sie beendet? */
+  status?: ReactNode;
   /** Staffel-Umschalter über dem Folgen-Streifen. */
   seasonSwitch?: ReactNode;
   /** Sterne-Regler — nur, wenn die Serie in der eigenen Liste ist. */
@@ -88,6 +90,7 @@ export const EpisodeStage = memo(
     seasonEpisodes,
     canTrack,
     seasonSwitch,
+    status,
     rating,
     onToggleWatched,
     onOpenEpisode,
@@ -305,6 +308,7 @@ export const EpisodeStage = memo(
           <span className="dk-chip dk-chip--accent">
             S{seasonNumber} E{episodeNumber}
           </span>
+          {status}
           {fillerInfo && (
             <FillerChip
               filler={fillerInfo.filler}

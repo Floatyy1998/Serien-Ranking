@@ -6,16 +6,17 @@ import { dateLocale, t } from '../../../services/i18n';
 import type { Series } from '../../../types/Series';
 
 interface StatusBadgeProps {
-  series: Series;
+  series: Partial<Pick<Series, 'status' | 'production' | 'seasons'>>;
 }
 
-interface NextEpisodeChipProps extends StatusBadgeProps {
+interface NextEpisodeChipProps {
+  series: Series;
   /** Nur kommende Folgen zeigen — die nächste offene nennt dann schon der Abhak-Knopf. */
   upcomingOnly?: boolean;
 }
 
 /** Detect airing rhythm from recent episode air dates */
-function detectAiringRhythm(series: Series): string | null {
+function detectAiringRhythm(series: Partial<Pick<Series, 'seasons'>>): string | null {
   if (!series.seasons || series.seasons.length === 0) return null;
 
   // Collect air dates from the latest season that has dated episodes
@@ -108,7 +109,7 @@ function getNextEpisodeInfo(
       timeZone: 'Europe/Berlin',
     });
     return {
-      label: `S${nearestFuture.season}E${nearestFuture.episode} · ${formatted}`,
+      label: `S${nearestFuture.season}\u00a0E${nearestFuture.episode} · ${formatted}`,
       color: 'upcoming',
     };
   }
@@ -120,7 +121,7 @@ function getNextEpisodeInfo(
     const ep = season.episodes[pos.episodeIndex];
     const eIdx = pos.episodeIndex;
     return {
-      label: `S${(season.seasonNumber ?? 0) + 1}E${eIdx + 1} · ${ep.name || t('Episode {n}', { n: eIdx + 1 })}`,
+      label: `S${(season.seasonNumber ?? 0) + 1}\u00a0E${eIdx + 1} · ${ep.name || t('Episode {n}', { n: eIdx + 1 })}`,
       color: 'unwatched',
     };
   }
@@ -176,7 +177,7 @@ export const NextEpisodeChip = memo<NextEpisodeChipProps>(({ series, upcomingOnl
 
   return (
     <span
-      className="status-badge"
+      className="status-badge status-badge--next"
       // Dunkler Glas-Scrim: der Chip liegt im Hero direkt auf dem Artwork —
       // ohne eigenen Hintergrund säuft jede Theme-Farbe auf hellen Bildern ab.
       style={{
@@ -187,8 +188,8 @@ export const NextEpisodeChip = memo<NextEpisodeChipProps>(({ series, upcomingOnl
         backdropFilter: 'var(--blur-sm)',
       }}
     >
-      {isUpcoming ? t('Nächste') : t('Dran')}
-      <span style={{ opacity: 0.85, marginLeft: 2 }}>{nextEp.label}</span>
+      <span className="status-badge__lead">{isUpcoming ? t('Nächste') : t('Als Nächstes')}</span>{' '}
+      <span className="status-badge__label">{nextEp.label}</span>
     </span>
   );
 });

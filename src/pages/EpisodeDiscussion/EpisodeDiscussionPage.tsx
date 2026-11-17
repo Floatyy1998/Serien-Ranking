@@ -25,6 +25,7 @@ import {
   NotFoundState,
   OverviewSection,
 } from './EpisodeDiscussionComponents';
+import { StatusBadge } from '../SeriesDetail/sections/StatusBadge';
 import { EpisodeStage } from './EpisodeStage';
 import { SeasonEpisodeList } from './SeasonEpisodeList';
 import { SeasonSwitch } from './SeasonSwitch';
@@ -372,6 +373,7 @@ export const EpisodeDiscussionPage = memo(() => {
           fillerInfo={fillerInfo}
           seasonEpisodes={seasonEpisodes}
           seasonSwitch={seasonSwitch}
+          status={<StatusBadge series={series ?? { status: seriesInfo?.status }} />}
           canTrack={hasUser && hasSeries}
           rating={
             hasUser && hasSeries && localEpisode ? (

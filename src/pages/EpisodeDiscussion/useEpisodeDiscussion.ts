@@ -45,6 +45,7 @@ interface TMDBSeriesInfo {
   poster_path: string | null;
   backdrop_path: string | null;
   number_of_seasons?: number;
+  status?: string;
 }
 
 export interface EpisodeNavigationInfo {
@@ -88,6 +89,7 @@ export const useEpisodeDiscussion = () => {
     name: string;
     poster_path: string | null;
     backdrop_path: string | null;
+    status?: string;
   } | null>(null);
   const [tmdbAllSeasons, setTmdbAllSeasons] = useState<TMDBSeasonDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,6 +147,7 @@ export const useEpisodeDiscussion = () => {
                 name: seriesData.name,
                 poster_path: seriesData.poster_path,
                 backdrop_path: seriesData.backdrop_path,
+                status: seriesData.status,
               });
 
               // Alle Seasons für Navigation holen

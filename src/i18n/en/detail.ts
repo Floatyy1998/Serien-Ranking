@@ -75,7 +75,6 @@ const dict: Record<string, string> = {
   'Läuft · {rhythm}': 'Airing · {rhythm}',
   Fortlaufend: 'Ongoing',
   Nächste: 'Next',
-  Dran: 'Up next',
 
   // FriendsProgressStrip
   Freunde: 'Friends',

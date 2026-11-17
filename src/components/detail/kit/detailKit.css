@@ -999,6 +999,9 @@ button.dk-score:hover .dk-score__label {
 
 /* Status-Plakette auf der Bühne: ruhige Pille statt Rahmenkästchen. */
 .dk-kicker .status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 11px;
   border: none;
   border-radius: 999px;
@@ -1008,6 +1011,28 @@ button.dk-score:hover .dk-score__label {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+.dk-kicker .status-badge__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dk-kicker .status-badge--next {
+  display: block;
+  max-width: 100%;
+  border-radius: 14px;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.dk-kicker .status-badge__lead {
+  white-space: nowrap;
+}
+
+.dk-kicker .status-badge__label {
+  opacity: 0.85;
 }
 
 .dk-kicker:empty {

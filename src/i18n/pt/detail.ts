@@ -72,7 +72,6 @@ const dict: Record<string, string> = {
   'Läuft · {rhythm}': 'No ar · {rhythm}',
   Fortlaufend: 'Em andamento',
   Nächste: 'Próximo',
-  Dran: 'É a sua vez',
   Freunde: 'Amigos',
   'Beide durch': 'Ambos em dia',
   Gleichauf: 'Empatados',
