@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
+import { PendingMarker } from '../../components/ui/feedback/PendingMarker';
 import { ReadingGreetingTitle } from '../../components/reading/ReadingGreetingTitle';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBooksList } from '../../contexts/BooksListContext';
@@ -85,6 +86,7 @@ export const ReadingHomePage = () => {
 
   return (
     <div style={{ overflowY: 'auto', position: 'relative' }}>
+      {notifs.badgePending && <PendingMarker />}
       <GreetingSection
         displayName={identity.displayName}
         photoURL={identity.photoURL}

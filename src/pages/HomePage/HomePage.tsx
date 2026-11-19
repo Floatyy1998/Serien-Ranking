@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { t } from '../../services/i18n';
 import { showToast } from '../../lib/interaction/toast';
 import { SectionHeader } from '../../components/ui';
+import { PendingMarker } from '../../components/ui/feedback/PendingMarker';
 import { SeriesNotificationHub } from './sheets/SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { QuickRatingSheet } from '../../components/ui/overlay/QuickRatingSheet';
@@ -402,6 +403,7 @@ export const HomePage: React.FC = () => {
 
   return (
     <div style={{ overflowY: 'auto', position: 'relative' }}>
+      {notifs.badgePending && <PendingMarker />}
       <GreetingSection
         displayName={identity.displayName}
         photoURL={identity.photoURL}

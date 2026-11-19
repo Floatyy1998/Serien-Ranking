@@ -285,6 +285,36 @@ describe('useUnifiedNotifications', () => {
     expect(result.current.totalUnreadBadge).toBe(6);
   });
 
+  it('meldet die Glocken-Zahl als fertig, sobald alle Quellen ihren ersten Stand haben', async () => {
+    const { result } = renderHook(() => useUnifiedNotifications());
+    await flush();
+    expect(result.current.badgePending).toBe(false);
+  });
+
+  it('wartet beim Start höchstens 2,5 s auf eine Quelle, die noch lädt', async () => {
+    friends.value = { ...defaultFriends(), loading: true };
+    const { result } = renderHook(() => useUnifiedNotifications());
+    await flush();
+    expect(result.current.badgePending).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(2600);
+    });
+    expect(result.current.badgePending).toBe(false);
+  });
+
+  it('wartet offline gar nicht auf die Glocken-Zahl', async () => {
+    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    try {
+      (notif as { loaded?: boolean }).loaded = false;
+      const { result } = renderHook(() => useUnifiedNotifications());
+      await flush();
+      expect(result.current.badgePending).toBe(false);
+    } finally {
+      delete (notif as { loaded?: boolean }).loaded;
+      online.mockRestore();
+    }
+  });
+
   it('handleMarkAllNotificationsRead ruft alle Mark-Funktionen und schreibt readTime', () => {
     const markActivitiesAsRead = vi.fn();
     const markRequestsAsRead = vi.fn();

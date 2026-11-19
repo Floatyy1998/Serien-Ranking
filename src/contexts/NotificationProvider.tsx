@@ -15,6 +15,7 @@ interface NotificationProviderProps {
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
   const { user } = useAuth() || {};
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   // Cleanup old notifications (older than 30 days, keep max 50)
   const cleanupOldNotifications = useCallback(
@@ -61,7 +62,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       .orderByChild('timestamp')
       .limitToLast(50);
 
+    const uid = user.uid;
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
+      setLoadedFor(uid);
       const data = snapshot.val();
       if (data) {
         const notificationsList: AppNotification[] = Object.entries(
@@ -90,6 +93,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   }, [user, cleanupOldNotifications]);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+  const loaded = !user || loadedFor === user.uid;
 
   const addNotification = useCallback(
     async (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
@@ -150,12 +154,21 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     () => ({
       notifications,
       unreadCount,
+      loaded,
       addNotification,
       markAsRead,
       markAllAsRead,
       clearNotifications,
     }),
-    [notifications, unreadCount, addNotification, markAsRead, markAllAsRead, clearNotifications]
+    [
+      notifications,
+      unreadCount,
+      loaded,
+      addNotification,
+      markAsRead,
+      markAllAsRead,
+      clearNotifications,
+    ]
   );
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;

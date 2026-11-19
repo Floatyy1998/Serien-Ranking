@@ -71,4 +71,14 @@ describe('NotificationProvider', () => {
     );
     expect(screen.getByTestId('notif').textContent).toBe('0|0');
   });
+
+  it('meldet den ersten Stand aus der Datenbank als geladen', () => {
+    const Loaded = () => <div data-testid="loaded">{String(useNotifications().loaded)}</div>;
+    render(
+      <NotificationProvider>
+        <Loaded />
+      </NotificationProvider>
+    );
+    expect(screen.getByTestId('loaded').textContent).toBe('true');
+  });
 });

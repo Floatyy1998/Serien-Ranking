@@ -12,7 +12,7 @@ const POLL_MS = 100;
 export const RENDER_SETTLE_MAX_MS = 8000;
 
 const LOADER_SELECTOR = '[data-app-loading]';
-const PLACEHOLDER_SELECTOR = '.skeleton-shimmer';
+const PLACEHOLDER_SELECTOR = '.skeleton-shimmer, [data-app-pending]';
 
 function inViewport(el: Element): boolean {
   if (el.getClientRects().length === 0) return false;

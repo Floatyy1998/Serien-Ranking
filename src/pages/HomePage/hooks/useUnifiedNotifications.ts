@@ -240,6 +240,8 @@ export const ANNOUNCEMENTS: Announcement[] = [
 export interface UseUnifiedNotificationsReturn {
   unifiedNotifications: UnifiedNotification[];
   totalUnreadBadge: number;
+  /** true, solange die Quellen der Glocken-Zahl beim Start noch laden. */
+  badgePending: boolean;
   dismissAnnouncement: (id: string) => void;
   handleMarkAllNotificationsRead: () => void;
   markAsRead: (id: string) => void;
@@ -249,6 +251,9 @@ export interface UseUnifiedNotificationsReturn {
   declineRecommendation: (recId: string) => void;
 }
 
+/** So lange wartet der Start höchstens auf die Zahl an der Glocke. */
+const BADGE_WAIT_MS = 2500;
+
 export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     friends,
@@ -256,6 +261,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     friendActivities,
     friendRequests,
     unreadRequestsCount,
+    loading: friendsLoading,
     markActivitiesAsRead,
     markRequestsAsRead,
     acceptFriendRequest,
@@ -266,12 +272,14 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     notifications,
     unreadCount: notificationUnreadCount,
+    loaded: notificationsLoaded,
     markAsRead,
     markAllAsRead,
   } = useNotifications();
   const {
     recommendations,
     pendingCount: pendingRecommendationsCount,
+    loading: recommendationsLoading,
     accept: acceptRecommendation,
     decline: declineRecommendation,
   } = useRecommendations();
@@ -287,10 +295,25 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   // Ungelesene Chat-Nachrichten — verschwinden beim Öffnen des Chats
   // (lastReadAt), NICHT über „alle gelesen" in der Bell.
   const [unreadChats, setUnreadChats] = useState<UnreadChat[]>([]);
+  const [chatsKnownFor, setChatsKnownFor] = useState<string | null>(null);
   useEffect(() => {
     if (!user?.uid) return;
-    return subscribeUnreadChats(user.uid, setUnreadChats);
+    const uid = user.uid;
+    return subscribeUnreadChats(uid, (list) => {
+      setUnreadChats(list);
+      setChatsKnownFor(uid);
+    });
   }, [user?.uid]);
+
+  // Die Zahl an der Glocke speist sich aus fünf Quellen. Bis alle ihren ersten
+  // Stand haben, meldet der Hook „lädt noch" — der Splash wartet darauf, damit
+  // die Zahl nicht erst nach dem Aufdecken erscheint. Kurz gedeckelt: eine
+  // stumme Quelle darf den Start nicht aufhalten.
+  const [badgeWaitOver, setBadgeWaitOver] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setBadgeWaitOver(true), BADGE_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Realtime-Listener statt Einmal-Read: markiert ein Gerät die Announcements
   // als gelesen, wandert das Wasserzeichen live auf alle anderen Geräte (sonst
@@ -549,6 +572,16 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     isAdmin,
   ]);
 
+  const badgePending =
+    !!user &&
+    !badgeWaitOver &&
+    navigator.onLine !== false &&
+    (friendsLoading === true ||
+      notificationsLoaded === false ||
+      recommendationsLoading === true ||
+      chatsKnownFor !== user.uid ||
+      lastReadAnnouncementsTime === null);
+
   const totalUnreadBadge =
     unreadActivityBundles +
     notificationUnreadCount +
@@ -615,6 +648,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   return {
     unifiedNotifications,
     totalUnreadBadge,
+    badgePending,
     dismissAnnouncement,
     handleMarkAllNotificationsRead,
     markAsRead,

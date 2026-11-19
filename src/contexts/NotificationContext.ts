@@ -46,6 +46,8 @@ export interface AppNotification {
 export interface NotificationContextType {
   notifications: AppNotification[];
   unreadCount: number;
+  /** false, solange der erste Stand aus der Datenbank noch aussteht. */
+  loaded?: boolean;
   addNotification: (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;

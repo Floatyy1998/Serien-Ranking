@@ -64,6 +64,21 @@ describe('whenRenderSettled', () => {
     expect(onSettled).not.toHaveBeenCalled();
   });
 
+  it('wartet auf Marker für Inhalt, der noch nachkommt', async () => {
+    const marker = document.createElement('span');
+    marker.setAttribute('data-app-pending', '');
+    show(marker);
+    root.appendChild(marker);
+    const onSettled = vi.fn();
+    whenRenderSettled(root, onSettled);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(onSettled).not.toHaveBeenCalled();
+
+    marker.remove();
+    await vi.advanceTimersByTimeAsync(600);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+
   it('ignoriert Lader in versteckten Bereichen und unterhalb des Bildschirms', async () => {
     root.appendChild(loader());
     const below = loader();
