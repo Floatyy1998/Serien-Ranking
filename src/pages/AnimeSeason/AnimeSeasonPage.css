@@ -321,6 +321,48 @@
   text-overflow: ellipsis;
 }
 
+.as-card-status {
+  font-weight: 700;
+}
+
+.as-card-people {
+  display: flex;
+  flex-direction: column;
+}
+
+.as-card-person {
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-text-secondary, #fff) 78%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.as-card-person--cast {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (min-width: 680px) {
+  .as-card-person {
+    min-height: 1.5em;
+  }
+
+  .as-card-person--cast {
+    min-height: 3em;
+  }
+}
+
+@media (max-width: 679px) {
+  .as-card--film .as-card-title {
+    min-height: 0;
+  }
+}
+
 .as-card-desc {
   margin: 0;
   font-size: 12.5px;
@@ -332,6 +374,30 @@
   -webkit-box-orient: vertical;
   /* Höhe reservieren → Hydration (en→de) springt nicht. */
   min-height: calc(3 * 1.5em);
+}
+
+.as-card-desc--short {
+  -webkit-line-clamp: 2;
+  min-height: calc(2 * 1.5em);
+}
+
+@media (min-width: 680px) {
+  .as-card-desc--long {
+    -webkit-line-clamp: 5;
+    min-height: calc(7.5em + 4px);
+  }
+}
+
+.as-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.as-card-footer .as-card-more {
+  align-self: center;
 }
 
 /* Aufgeklappt: volle Beschreibung, Karte wächst mit (Grid-Row streckt). */

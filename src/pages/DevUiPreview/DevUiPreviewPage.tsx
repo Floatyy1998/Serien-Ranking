@@ -95,6 +95,7 @@ import {
   WatchPlanGroupPreview,
   WatchPlanNewPreview,
   IncomingRequestPreview,
+  FilmKalenderCardPreview,
 } from './NewFeaturePreviews';
 import {
   BookDetailPreview,
@@ -585,6 +586,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'season-mark-overview',
     label: 'Übersicht nach dem Tipp',
     render: () => <BulkHighlightPreview />,
+  },
+  {
+    id: 'film-kalender-card',
+    label: 'Film-Kalender: Karte',
+    render: () => <FilmKalenderCardPreview />,
   },
 ];
 

@@ -63,6 +63,9 @@ import type { WatchPlanEntry } from '../../lib/watch/watchPlan';
 import { ProviderChangeNotification } from '../../components/ui/notification/ProviderChangeNotification';
 import { ProfileItemCard } from '../../components/ui/item/ProfileItemCard';
 import { PLACEHOLDER_SVG } from '../../lib/image/posterPlaceholder';
+import { FilmKalenderCard } from '../FilmKalender/FilmKalenderCard';
+import type { FilmReleaseEntry } from '../FilmKalender/filmReleaseData';
+import '../AnimeSeason/AnimeSeasonPage.css';
 import { FriendComparisonCard } from '../FriendProfile/FriendComparisonCard';
 import { FriendCurrentlyWatchingCard } from '../FriendProfile/FriendCurrentlyWatchingCard';
 import { FriendPetCard } from '../FriendProfile/FriendPetCard';
@@ -1617,5 +1620,73 @@ export const RewatchEditSheetPreview = ({ fresh = false }: { fresh?: boolean }) 
         </MovieListContext.Provider>
       </SeriesListContext.Provider>
     </AuthContext.Provider>
+  );
+};
+
+const FILM_KALENDER_SAMPLE: FilmReleaseEntry = {
+  tmdbId: 1,
+  title: 'I Play Rocky',
+  poster: PLACEHOLDER_SVG,
+  releaseDate: '2026-11-26',
+  rating: 8.5,
+  genres: 'Drama, Historie',
+  overview:
+    'Die Entstehung des Boxerfilms „Rocky" (1976) ist selbst Stoff für großes Kino: Der damals unbekannte Schauspieler Sylvester Stallone schreibt ein Drehbuch und besteht darauf, die Hauptrolle selbst zu spielen — gegen den Widerstand des Studios.',
+  mode: 'cinema',
+  providers: [],
+  directors: ['Peter Farrelly'],
+  cast: ['Anthony Ippolito', 'Stephan James', 'AnnaSophia Robb'],
+};
+
+export const FilmKalenderCardPreview = () => {
+  const now = new Date('2026-11-19T12:00:00').getTime();
+  return (
+    <div style={{ padding: 20 }}>
+      <div className="as-grid">
+        <FilmKalenderCard entry={FILM_KALENDER_SAMPLE} inList watched now={now} onOpen={() => {}} />
+        <FilmKalenderCard
+          entry={{ ...FILM_KALENDER_SAMPLE, tmdbId: 2, title: 'Wicked: Teil 2', rating: 7.1 }}
+          inList
+          watched={false}
+          now={now}
+          onOpen={() => {}}
+        />
+        <FilmKalenderCard
+          entry={{
+            ...FILM_KALENDER_SAMPLE,
+            tmdbId: 3,
+            title: 'Zoomania 2',
+            mode: 'digital',
+            providers: [
+              { name: 'Netflix', logo: PLACEHOLDER_SVG },
+              { name: 'Disney Plus', logo: PLACEHOLDER_SVG },
+            ],
+            directors: ['Jared Bush', 'Byron Howard'],
+            cast: ['Ginnifer Goodwin', 'Jason Bateman'],
+          }}
+          inList={false}
+          watched={false}
+          now={now}
+          onOpen={() => {}}
+          onAdd={() => {}}
+        />
+        <FilmKalenderCard
+          entry={{
+            ...FILM_KALENDER_SAMPLE,
+            tmdbId: 4,
+            title: 'Ohne Credits',
+            rating: null,
+            directors: [],
+            cast: [],
+            overview: 'Kurzer Text.',
+          }}
+          inList={false}
+          watched={false}
+          now={now}
+          onOpen={() => {}}
+          onAdd={() => {}}
+        />
+      </div>
+    </div>
   );
 };

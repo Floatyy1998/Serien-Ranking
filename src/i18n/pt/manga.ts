@@ -278,6 +278,7 @@ const dict: Record<string, string> = {
   'Digital-/Streaming-Releases in deiner Region (TMDB)':
     'Lançamentos digitais/em streaming da sua região (TMDB)',
   'Schon gesehen': 'Já assistido',
+  'Mit {names}': 'Com {names}',
   Jan: 'Jan',
   Feb: 'Fev',
   Apr: 'Abr',

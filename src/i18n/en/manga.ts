@@ -307,6 +307,7 @@ const dict: Record<string, string> = {
   'Digital-/Streaming-Releases in deiner Region (TMDB)':
     'Digital/streaming releases in your region (TMDB)',
   'Schon gesehen': 'Already watched',
+  'Mit {names}': 'With {names}',
   // Auf Deutsch und Englisch gleich geschrieben — der Eintrag steht hier
   // trotzdem, damit weitere Sprachen ihn überhaupt erreichen können.
   Jan: 'Jan',

@@ -1,13 +1,14 @@
 /**
  * Film-Kalender — Querformat-Karte im Serien-Kalender-Look (teilt die
  * `as-*`-Klassen aus AnimeSeasonPage.css): Poster links, rechts Datums-Pill +
- * Modus-Chip (KINO/STREAMING) + „In deiner Liste"-Badge bzw. „+"-Button,
- * Titel, Meta (★ Rating), Genre-Zeile, Beschreibung mit „mehr lesen".
+ * Modus-Chip (KINO/STREAMING) + Status-Badge (gesehen / noch nicht gesehen)
+ * bzw. „+"-Button, Titel, Meta (★ Rating · Status), Genre-Zeile, Regie und
+ * Hauptrollen, Beschreibung mit „mehr lesen".
  * Karten-Tap → MovieDetail.
  */
 
 import React, { useState } from 'react';
-import { Add, CheckCircle } from '@mui/icons-material';
+import { Add, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material';
 import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
@@ -157,6 +158,17 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
 
   const isCinema = entry.mode === 'cinema';
   const metaLine = entry.rating ? `★ ${entry.rating.toFixed(1)}` : '';
+  const statusLabel = !inList ? '' : watched ? t('Gesehen') : t('Noch nicht gesehen');
+  const statusTint = lightenColor(currentTheme.primary, 0.3);
+  const hasPeople = entry.directors.length > 0 || entry.cast.length > 0;
+  const canExpand = description.length > (hasPeople ? 106 : 265);
+  const descClass = [
+    'as-card-desc',
+    hasPeople ? 'as-card-desc--short' : 'as-card-desc--long',
+    descExpanded ? 'as-card-desc--open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const handleOpen = () => {
     hapticTap();
@@ -179,7 +191,7 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
       }}
       style={{ '--as-i': Math.min(staggerIndex, 14) } as React.CSSProperties}
     >
-      <article className="as-card">
+      <article className="as-card as-card--film">
         <img
           src={entry.poster || placeholder}
           alt={t('Poster von {title}', { title })}
@@ -217,12 +229,25 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
             {inList ? (
               <span
                 className="as-card-inlist-badge"
-                style={{ background: `${currentTheme.primary}dd` }}
-                title={watched ? t('Schon gesehen') : t('In deiner Liste')}
+                style={
+                  watched
+                    ? { background: `${currentTheme.primary}dd` }
+                    : {
+                        background: `${currentTheme.primary}1f`,
+                        boxShadow: `inset 0 0 0 1px ${currentTheme.primary}66`,
+                      }
+                }
+                title={statusLabel}
+                aria-label={statusLabel}
+                role="img"
               >
-                <CheckCircle
-                  style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
-                />
+                {watched ? (
+                  <CheckCircle
+                    style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
+                  />
+                ) : (
+                  <RadioButtonUnchecked style={{ fontSize: '13px', color: statusTint }} />
+                )}
               </span>
             ) : onAdd ? (
               <button
@@ -248,29 +273,50 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
             ) : null}
           </div>
           <h3 className="as-card-title">{title}</h3>
-          <p className="as-card-meta">{metaLine || ' '}</p>
-          <p className="as-card-genres">{entry.genres || ' '}</p>
-          <p className={descExpanded ? 'as-card-desc as-card-desc--open' : 'as-card-desc'}>
-            {description || ' '}
+          <p className="as-card-meta">
+            {metaLine}
+            {metaLine && statusLabel ? ' · ' : ''}
+            {statusLabel && (
+              <span className="as-card-status" style={watched ? { color: statusTint } : undefined}>
+                {statusLabel}
+              </span>
+            )}
+            {!metaLine && !statusLabel ? ' ' : ''}
           </p>
-          <button
-            type="button"
-            className="as-card-more"
-            style={{
-              color: lightenColor(currentTheme.primary, 0.2),
-              visibility: description.length > 160 ? 'visible' : 'hidden',
-            }}
-            tabIndex={description.length > 160 ? 0 : -1}
-            aria-hidden={description.length <= 160}
-            onClick={(event) => {
-              event.stopPropagation();
-              setDescExpanded((value) => !value);
-            }}
-          >
-            {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
-          </button>
-          <div className="as-card-providers">
-            <ProviderLogos providers={entry.providers} searchTitle={title} />
+          <p className="as-card-genres">{entry.genres || ' '}</p>
+          {hasPeople && (
+            <div className="as-card-people">
+              <p className="as-card-person">
+                {entry.directors.length > 0
+                  ? t('Regie: {names}', { names: entry.directors.join(', ') })
+                  : null}
+              </p>
+              <p className="as-card-person as-card-person--cast">
+                {entry.cast.length > 0 ? t('Mit {names}', { names: entry.cast.join(', ') }) : null}
+              </p>
+            </div>
+          )}
+          <p className={descClass}>{description || ' '}</p>
+          <div className="as-card-footer">
+            <button
+              type="button"
+              className="as-card-more"
+              style={{
+                color: lightenColor(currentTheme.primary, 0.2),
+                visibility: canExpand ? 'visible' : 'hidden',
+              }}
+              tabIndex={canExpand ? 0 : -1}
+              aria-hidden={!canExpand}
+              onClick={(event) => {
+                event.stopPropagation();
+                setDescExpanded((value) => !value);
+              }}
+            >
+              {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
+            </button>
+            {entry.providers.length > 0 && (
+              <ProviderLogos providers={entry.providers} searchTitle={title} />
+            )}
           </div>
         </div>
       </article>

@@ -1,8 +1,9 @@
 /**
  * Datenlayer des Film-Kalenders: TMDB-Discover pro Monat + Modus (Kino/
  * Digital) in der Watch-Region des Users, mit exakter Release-Datums-
- * Auflösung pro Film (movie/{id}/release_dates → regionales Datum des
- * passenden Typs). Ergebnisse werden pro Session gecacht.
+ * Auflösung pro Film (movie/{id} + release_dates → regionales Datum des
+ * passenden Typs; derselbe Abruf liefert über credits Regie und Besetzung).
+ * Ergebnisse werden pro Session gecacht.
  */
 
 import { tmdbFetch } from '../../services/api/tmdbClient';
@@ -34,6 +35,36 @@ export interface FilmReleaseEntry {
   mode: ReleaseMode;
   /** Flatrate-Anbieter der Watch-Region (nur Streaming-Modus, sonst leer). */
   providers: { name: string; logo: string }[];
+  directors: string[];
+  cast: string[];
+}
+
+interface MovieCredits {
+  cast?: { name?: string; order?: number }[];
+  crew?: { name?: string; job?: string }[];
+}
+
+interface MovieDetailResponse {
+  release_dates?: TmdbReleaseDates;
+  credits?: MovieCredits;
+}
+
+const MAX_DIRECTORS = 2;
+const MAX_CAST = 3;
+
+export function pickDirectors(credits: MovieCredits | undefined): string[] {
+  const names = (credits?.crew || [])
+    .filter((member) => member.job === 'Director' && member.name)
+    .map((member) => member.name as string);
+  return [...new Set(names)].slice(0, MAX_DIRECTORS);
+}
+
+export function pickLeadCast(credits: MovieCredits | undefined): string[] {
+  const names = [...(credits?.cast || [])]
+    .filter((member) => member.name)
+    .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+    .map((member) => member.name as string);
+  return [...new Set(names)].slice(0, MAX_CAST);
 }
 
 const DISCOVER_PAGES = 3;
@@ -103,11 +134,14 @@ async function resolveEntry(
 ): Promise<FilmReleaseEntry | null> {
   const types = mode === 'cinema' ? CINEMA_RELEASE_TYPES : DIGITAL_RELEASE_TYPES;
   let releaseDate = '';
+  let credits: MovieCredits | undefined;
   try {
-    const data = await tmdbFetch<TmdbReleaseDates>(`movie/${raw.id}/release_dates`, {
+    const data = await tmdbFetch<MovieDetailResponse>(`movie/${raw.id}`, {
       language: undefined,
+      append_to_response: 'release_dates,credits',
     });
-    releaseDate = pickRegionalDate(data, region, types);
+    releaseDate = pickRegionalDate(data.release_dates || {}, region, types);
+    credits = data.credits;
   } catch {
     // Fallback unten
   }
@@ -132,6 +166,8 @@ async function resolveEntry(
     overview: raw.overview || '',
     mode,
     providers,
+    directors: pickDirectors(credits),
+    cast: pickLeadCast(credits),
   };
 }
 
