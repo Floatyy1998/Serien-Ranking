@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { CalendarMonth } from '@mui/icons-material';
+import { CalendarMonth, MovieOutlined } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
+import { isMovieCountdown, type CountdownItem } from '../../hooks/watch/useCountdowns';
+import { movieReleaseLabel, parseLocalDay } from '../../lib/watch/movieCountdown';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
@@ -10,10 +11,12 @@ import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
 import { CatchUpPlanNote } from './CatchUpPlanNote';
 
 interface CountdownHeroCardProps {
-  item: SeriesCountdown;
+  item: CountdownItem;
   onClick: () => void;
   plan?: CatchUpPlan;
 }
+
+const countdownDate = (nextDate: string): Date | string => parseLocalDay(nextDate) ?? nextDate;
 
 function countdownText(daysUntil: number): string {
   if (daysUntil === 0) return t('startet heute');
@@ -25,8 +28,19 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
   const { currentTheme } = useTheme();
   const ACCENT = currentTheme.accent;
 
-  const seasonLabel =
-    item.type === 'mid-season-return' ? t('Rückkehr') : t('Staffel {n}', { n: item.seasonNumber });
+  const isMovie = isMovieCountdown(item);
+  const eyebrow = isMovie
+    ? movieReleaseLabel(item.release)
+    : item.type === 'mid-season-return'
+      ? t('Rückkehr')
+      : t('Neue Staffel');
+  const subline = isMovie ? t('Film') : t('Staffel {n}', { n: item.seasonNumber });
+  const spokenLabel = isMovie
+    ? `${subline}, ${eyebrow}`
+    : item.type === 'mid-season-return'
+      ? eyebrow
+      : subline;
+  const PlaceholderIcon = isMovie ? MovieOutlined : CalendarMonth;
 
   return (
     <motion.button
@@ -35,13 +49,13 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
       transition={{ duration: 0.4 }}
       whileTap={tapScaleSmall}
       {...mediaTargetProps({
-        type: 'series',
-        id: item.seriesId,
+        type: isMovie ? 'movie' : 'series',
+        id: isMovie ? item.movieId : item.seriesId,
         title: item.title,
         poster: item.posterUrl,
       })}
       onClick={onClick}
-      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
+      aria-label={`${item.title}, ${spokenLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-hero"
       style={{
         border: `1px solid ${ACCENT}40`,
@@ -78,18 +92,18 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
               background: `linear-gradient(135deg, ${ACCENT}30, ${ACCENT}10)`,
             }}
           >
-            <CalendarMonth style={{ fontSize: 36, color: ACCENT, opacity: 0.5 }} />
+            <PlaceholderIcon style={{ fontSize: 36, color: ACCENT, opacity: 0.5 }} />
           </div>
         )}
 
         {/* Info */}
         <div className="cd-hero-info">
           <p className="cd-hero-eyebrow" style={{ color: ACCENT }}>
-            {item.type === 'mid-season-return' ? t('Rückkehr') : t('Neue Staffel')}
+            {eyebrow}
           </p>
           <h2 className="cd-hero-title">{item.title}</h2>
-          <p className="cd-hero-season">{t('Staffel {n}', { n: item.seasonNumber })}</p>
-          <p className="cd-hero-date">{formatSeasonDate(item.nextDate)}</p>
+          <p className="cd-hero-season">{subline}</p>
+          <p className="cd-hero-date">{formatSeasonDate(countdownDate(item.nextDate))}</p>
           {plan && <CatchUpPlanNote plan={plan} />}
         </div>
 

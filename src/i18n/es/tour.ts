@@ -196,15 +196,19 @@ const tour: Record<string, string> = {
   'Aus jeder Karte heraus geht es direkt in die Serie zum Abhaken.':
     'Cada tarjeta te lleva directo a la serie para ir marcando.',
 
-  'Was von deinen Serien als Nächstes zurückkommt.': 'Cuál de tus series vuelve a continuación.',
+  'Was von deinen Serien und Filmen als Nächstes startet.':
+    'Lo próximo que se estrena de tus series y películas.',
   'Kommende Staffeln': 'Próximas temporadas',
   'Jede angekündigte Rückkehr mit Countdown bis zum Starttag.':
     'Cada regreso anunciado con cuenta atrás hasta su primer día.',
-  'Eine Karte antippen führt direkt zur Serie.':
-    'Tocar una tarjeta te lleva directamente a la serie.',
+  'Kommende Filme': 'Próximas películas',
+  'Filme aus deiner Liste zählen bis zum Start in deiner Region herunter.':
+    'Las películas de tu lista cuentan los días hasta su estreno en tu región.',
+  'Eine Karte antippen führt direkt zur Serie oder zum Film.':
+    'Tocar una tarjeta te lleva directamente a la serie o la película.',
   'Woher das kommt': 'De dónde sale esto',
-  'Gelistet werden angekündigte Staffeln der Serien in deiner Liste.':
-    'Se listan las temporadas anunciadas de las series que tienes en la lista.',
+  'Gelistet werden angekündigte Staffeln und kommende Filme aus deiner Liste.':
+    'Se listan las temporadas anunciadas y las próximas películas de tu lista.',
 
   'Womit du streamst, bestimmt viele Filter in der App.':
     'Con qué plataformas ves determina muchos filtros de la app.',

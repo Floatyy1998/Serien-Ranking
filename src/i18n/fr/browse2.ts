@@ -118,9 +118,11 @@ const dict: Record<string, string> = {
   '{title} {label} als gesehen markiert': '{title} {label} marqué comme vu',
   'Fehler beim Speichern': "Échec de l'enregistrement",
   'Countdowns werden geladen': 'Chargement des comptes à rebours',
-  'Keine kommenden Staffeln': 'Aucune saison à venir',
-  'Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier':
-    'Dès que des séries de ta liste annoncent de nouvelles saisons, elles apparaîtront ici',
+  'Keine kommenden Starts': 'Aucune sortie à venir',
+  'Streaming-Start': 'Sortie en streaming',
+  Filmstart: 'Sortie',
+  'Sobald Serien in deiner Liste neue Staffeln ankündigen oder Filme einen Starttermin haben, siehst du sie hier':
+    'Dès que des séries de ta liste annoncent de nouvelles saisons ou que des films ont une date de sortie, ils apparaîtront ici',
   'startet heute': "commence aujourd'hui",
   'in 1 Tag': 'dans 1 jour',
   'in {n} Tagen': 'dans {n} jours',

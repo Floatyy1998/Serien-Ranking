@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { movieReleaseLabel, type MovieCountdown } from '../../../lib/watch/movieCountdown';
 import { t } from '../../../services/i18n';
 
 // Dunkle Themes: helle Schrift auf abgedunkeltem Artwork. Helle Themes stellen die Karte per
@@ -10,7 +11,13 @@ import { t } from '../../../services/i18n';
 const ON_ART = 'var(--cd-ink, #f4eef2)';
 
 interface CountdownBannerProps {
-  countdown: { title: string; posterUrl?: string; daysUntil: number; seasonNumber: number };
+  countdown: {
+    title: string;
+    posterUrl?: string;
+    daysUntil: number;
+    seasonNumber?: number;
+    release?: MovieCountdown['release'];
+  };
   totalCount: number;
   navigate: (path: string) => void;
 }
@@ -26,17 +33,24 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
         ? t('Morgen')
         : t('in {n} Tagen', { n: countdown.daysUntil });
 
+  const label = countdown.release
+    ? movieReleaseLabel(countdown.release)
+    : t('Staffel {n}', { n: countdown.seasonNumber ?? 1 });
+  const ariaLabel = countdown.release
+    ? t('Countdown: {title}, {label} {days}', { title: countdown.title, label, days: daysText })
+    : t('Countdown: {title}, Staffel {season} {days}', {
+        title: countdown.title,
+        season: countdown.seasonNumber ?? 1,
+        days: daysText,
+      });
+
   return (
     <motion.div
       whileTap={{ opacity: 0.7 }}
       onClick={() => navigate('/countdowns')}
       role="button"
       tabIndex={0}
-      aria-label={t('Countdown: {title}, Staffel {season} {days}', {
-        title: countdown.title,
-        season: countdown.seasonNumber,
-        days: daysText,
-      })}
+      aria-label={ariaLabel}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -152,7 +166,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             color: ON_ART,
           }}
         >
-          {t('Staffel {n}', { n: countdown.seasonNumber })} &middot; {daysText}
+          {label} &middot; {daysText}
         </p>
       </div>
       <div

@@ -72,7 +72,9 @@ import type { Pet } from '../../types/pet.types';
 import '../FriendProfile/FriendProfilePage.css';
 import { CountdownHeroCard } from '../Countdown/CountdownHeroCard';
 import { CountdownListItem } from '../Countdown/CountdownListItem';
+import { CountdownBanner } from '../HomePage/cards/CountdownBanner';
 import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
+import type { MovieCountdown } from '../../lib/watch/movieCountdown';
 import { DropOffView } from '../SeriesDetail/sections/DropOffSection';
 import type { CatchUpPlan, CatchUpVariant } from '../../lib/watch/catchUpPlan';
 import type { DropOffInsight } from '../../lib/watch/dropOff';
@@ -161,6 +163,21 @@ const countdown = (seriesId: number, title: string, daysUntil: number): SeriesCo
   type: 'season-start',
 });
 
+const movieCountdown = (
+  movieId: number,
+  title: string,
+  daysUntil: number,
+  release: MovieCountdown['release']
+): MovieCountdown => ({
+  type: 'movie-release',
+  movieId,
+  title,
+  posterUrl: PLACEHOLDER_SVG,
+  nextDate: inDays(daysUntil).toISOString().slice(0, 10),
+  daysUntil,
+  release,
+});
+
 const noop = () => {};
 
 /** Aufhol-Plan: in der Hero-Karte und als Zeile in den Listenkarten, im echten Grid. */
@@ -206,8 +223,64 @@ export const CatchUpPreview = () => (
         current: variant({ episodes: 6, willMakeIt: true, daysLate: 0, projectedDate: inDays(10) }),
       })}
     />
+    <CountdownListItem
+      item={movieCountdown(8, 'Avengers: Doomsday', 28, 'cinema')}
+      index={4}
+      onClick={noop}
+    />
+    <CountdownListItem
+      item={movieCountdown(9, 'Knives Out 4', 41, 'digital')}
+      index={4}
+      onClick={noop}
+    />
     <CountdownListItem item={countdown(6, 'Harry Potter', 47)} index={4} onClick={noop} />
     <CountdownListItem item={countdown(7, 'Ahsoka', 74)} index={5} onClick={noop} />
+  </div>
+);
+
+/** Film-Countdowns: Startseiten-Banner, Filter und gemischte Liste. */
+export const CountdownMoviesPreview = () => (
+  <div style={{ padding: '16px 0' }}>
+    <CountdownBanner
+      countdown={movieCountdown(8, 'Avengers: Doomsday', 28, 'cinema')}
+      totalCount={5}
+      navigate={noop}
+    />
+    <div style={{ padding: '0 20px' }}>
+      <TabSwitcher
+        className="cd-tabs"
+        tabs={[
+          { id: 'all', label: 'Alle', count: 5 },
+          { id: 'series', label: 'Serien', count: 2 },
+          { id: 'movies', label: 'Filme', count: 3 },
+        ]}
+        activeTab="all"
+        onTabChange={noop}
+      />
+      <div className="cd-list">
+        <CountdownHeroCard
+          item={movieCountdown(8, 'Avengers: Doomsday', 28, 'cinema')}
+          onClick={noop}
+        />
+        <p className="cd-section-label">Weitere (4)</p>
+        <CountdownListItem
+          item={countdown(2, 'Percy Jackson: Die Serie', 30)}
+          index={0}
+          onClick={noop}
+        />
+        <CountdownListItem
+          item={movieCountdown(9, 'Knives Out 4', 41, 'digital')}
+          index={1}
+          onClick={noop}
+        />
+        <CountdownListItem
+          item={movieCountdown(10, 'The Batman: Part II', 0, 'unknown')}
+          index={2}
+          onClick={noop}
+        />
+        <CountdownListItem item={countdown(7, 'Ahsoka', 74)} index={3} onClick={noop} />
+      </div>
+    </div>
   </div>
 );
 

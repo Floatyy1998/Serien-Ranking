@@ -15,6 +15,8 @@ import { CollectionSection } from './CollectionSection';
 import { useMovieData } from './useMovieData';
 import { FriendsMovieStrip } from './FriendsMovieStrip';
 import { useFriendsMovieStatus } from './useFriendsMovieStatus';
+import { useMovieRelease } from '../../hooks/watch/useMovieRelease';
+import { movieReleaseLabel, parseLocalDay } from '../../lib/watch/movieCountdown';
 import { dateLocale, t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import './MovieDetailPage.css';
@@ -53,6 +55,7 @@ export const MovieDetailPage = memo(() => {
     formatRuntime,
   } = useMovieData();
   const friendsStatus = useFriendsMovieStatus(movie?.id);
+  const regionalRelease = useMovieRelease(Number(movie?.id) || undefined);
 
   // --- Not found state ---
   if (!movie && !loading) {
@@ -111,13 +114,15 @@ export const MovieDetailPage = memo(() => {
     );
   }
 
-  const releaseDate = movie.release_date
-    ? new Date(movie.release_date).toLocaleDateString(dateLocale(), {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : null;
+  const longDate = (value: string | undefined) => {
+    const day = value ? (parseLocalDay(value) ?? new Date(value)) : null;
+    return day && !isNaN(day.getTime())
+      ? day.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
+      : null;
+  };
+  const releaseFact = regionalRelease
+    ? { label: movieReleaseLabel(regionalRelease.kind), value: longDate(regionalRelease.date) }
+    : { label: t('Erscheinungsdatum'), value: longDate(movie.release_date) };
   const shortDate = (value: string | number | undefined) =>
     value ? new Date(value).toLocaleDateString(dateLocale()) : null;
   const genreNames = (
@@ -143,7 +148,7 @@ export const MovieDetailPage = memo(() => {
                   ? t('Gesehen')
                   : t('Noch nicht gesehen'),
             },
-            { label: t('Kinostart'), value: releaseDate },
+            releaseFact,
             { label: t('Laufzeit'), value: movie.runtime ? formatRuntime(movie.runtime) : null },
             { label: t('Genres'), value: genreNames.join(', ') },
             { label: t('Gesehen am'), value: shortDate(movie.watchedAt) },

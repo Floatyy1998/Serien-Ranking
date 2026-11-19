@@ -11,6 +11,12 @@ import { isSupportedProvider } from '../../config/menuItems';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../lib/provider/providerName';
 import { mapGenreIds } from '../../utils/genreMap';
+import {
+  CINEMA_RELEASE_TYPES,
+  DIGITAL_RELEASE_TYPES,
+  pickRegionalDate,
+  type TmdbReleaseDates,
+} from '../../lib/watch/movieCountdown';
 
 export type ReleaseMode = 'cinema' | 'digital';
 
@@ -30,10 +36,6 @@ export interface FilmReleaseEntry {
   providers: { name: string; logo: string }[];
 }
 
-// TMDB release_dates: 1 Premiere, 2 Kino (limitiert), 3 Kino, 4 Digital, 5 Physisch, 6 TV
-const CINEMA_TYPES = [3, 2];
-const DIGITAL_TYPES = [4];
-
 const DISCOVER_PAGES = 3;
 const MAX_PER_MODE = 36;
 const RESOLVE_BATCH = 6;
@@ -48,13 +50,6 @@ interface DiscoverMovie {
   release_date?: string;
 }
 
-interface ReleaseDatesResponse {
-  results?: {
-    iso_3166_1: string;
-    release_dates?: { type: number; release_date: string }[];
-  }[];
-}
-
 const cache = new Map<string, FilmReleaseEntry[]>();
 
 /** Datumsbereich eines Quartals-Tabs: 1. des Startmonats bis Monatsende +2. */
@@ -64,17 +59,6 @@ function quarterRange(start: Date, monthsSpan: number): { gte: string; lte: stri
   const fmt = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return { gte: fmt(first), lte: fmt(last) };
-}
-
-/** Frühestes regionales Release-Datum der gewünschten Typen ('' wenn keins). */
-function pickRegionalDate(data: ReleaseDatesResponse, region: string, types: number[]): string {
-  const regional = data.results?.find((r) => r.iso_3166_1 === region);
-  if (!regional?.release_dates?.length) return '';
-  const dates = regional.release_dates
-    .filter((d) => types.includes(d.type) && d.release_date)
-    .map((d) => d.release_date.slice(0, 10))
-    .sort();
-  return dates[0] || '';
 }
 
 interface WatchProviderEntry {
@@ -117,10 +101,10 @@ async function resolveEntry(
   region: string,
   range: { gte: string; lte: string }
 ): Promise<FilmReleaseEntry | null> {
-  const types = mode === 'cinema' ? CINEMA_TYPES : DIGITAL_TYPES;
+  const types = mode === 'cinema' ? CINEMA_RELEASE_TYPES : DIGITAL_RELEASE_TYPES;
   let releaseDate = '';
   try {
-    const data = await tmdbFetch<ReleaseDatesResponse>(`movie/${raw.id}/release_dates`, {
+    const data = await tmdbFetch<TmdbReleaseDates>(`movie/${raw.id}/release_dates`, {
       language: undefined,
     });
     releaseDate = pickRegionalDate(data, region, types);

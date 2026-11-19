@@ -101,7 +101,9 @@ const dict: Record<string, string> = {
   'alles geschaut': 'todo visto',
   'Keine Folgen an diesem Tag': 'No hay episodios este día',
   Staffelstart: 'Nueva temporada',
-  'Keine kommenden Staffeln': 'No hay próximas temporadas',
+  'Keine kommenden Starts': 'No hay próximos estrenos',
+  'Streaming-Start': 'Estreno en streaming',
+  Filmstart: 'Estreno',
   Rückkehr: 'Regreso',
   Staffelende: 'Fin de temporada',
   Staffelpause: 'En pausa',
@@ -119,8 +121,8 @@ const dict: Record<string, string> = {
   'Undo fehlgeschlagen': 'No se pudo deshacer',
   'Fehler beim Speichern': 'Error al guardar',
   'Countdowns werden geladen': 'Cargando cuentas atrás',
-  'Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier':
-    'Cuando las series de tu lista anuncien nuevas temporadas, las verás aquí',
+  'Sobald Serien in deiner Liste neue Staffeln ankündigen oder Filme einen Starttermin haben, siehst du sie hier':
+    'Cuando las series de tu lista anuncien nuevas temporadas o las películas tengan fecha de estreno, las verás aquí',
   'Weitere ({n})': 'Más ({n})',
   'startet heute': 'empieza hoy',
   'in 1 Tag': 'en 1 día',

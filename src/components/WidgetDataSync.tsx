@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
-import { useSeriesCountdowns } from '../hooks/watch/useSeriesCountdowns';
+import { useCountdowns } from '../hooks/watch/useCountdowns';
 import { useTodayEpisodes } from '../hooks/watch/useTodayEpisodes';
 import { isNativeApp, setWidgetData } from '../services/app/nativeShell';
 import { getEpisodeAirDate } from '../utils/episodeDate';
@@ -24,7 +24,7 @@ const isoDay = (d: Date): string =>
 
 export const WidgetDataSync = () => {
   const todayEpisodes = useTodayEpisodes();
-  const { countdowns } = useSeriesCountdowns();
+  const { countdowns } = useCountdowns();
   const { seriesList } = useSeriesList();
   const lastJson = useRef('');
 

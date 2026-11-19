@@ -426,6 +426,23 @@ describe('Weniger Anfragen: Datei-Versionen, geteilte Abrufe, Deltas', () => {
     expect(lastUrlFor('seriesMeta.json')).toMatch(/seriesMeta\.json\?v=100$/);
   });
 
+  it('lädt die Film-Starttermine der Watch-Region einmal und mit ihrer Datei-Version', async () => {
+    server.versionFiles = { 'releases/DE.json': 70 };
+    server.files['releases/DE.json'] = { ok: true, status: 200, json: { '7': '2026-12-17|' } };
+    const { fetchStaticMovieReleases } = await load();
+
+    expect(await fetchStaticMovieReleases()).toEqual({ '7': '2026-12-17|' });
+    expect(await fetchStaticMovieReleases()).toEqual({ '7': '2026-12-17|' });
+
+    expect(callsTo('releases/DE.json')).toBe(1);
+    expect(lastUrlFor('releases/DE.json')).toMatch(/releases\/DE\.json\?v=70$/);
+  });
+
+  it('liefert für die Film-Starttermine null, solange das Backend die Datei nicht hat', async () => {
+    const { fetchStaticMovieReleases } = await load();
+    expect(await fetchStaticMovieReleases()).toBeNull();
+  });
+
   it('gleichzeitige Abrufe derselben Datei teilen sich eine Anfrage', async () => {
     server.files['drop-off.json'] = { ok: true, status: 200, json: { entries: {} } };
     const { fetchStaticDropOff, fetchStaticAnimeFiller } = await load();

@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { CalendarMonth } from '@mui/icons-material';
+import { CalendarMonth, MovieOutlined } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { SeriesCountdown } from '../../hooks/watch/useSeriesCountdowns';
+import { isMovieCountdown, type CountdownItem } from '../../hooks/watch/useCountdowns';
+import { movieReleaseLabel, parseLocalDay } from '../../lib/watch/movieCountdown';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
 import { t } from '../../services/i18n';
@@ -10,11 +11,13 @@ import type { CatchUpPlan } from '../../lib/watch/catchUpPlan';
 import { CatchUpPlanNote } from './CatchUpPlanNote';
 
 interface CountdownListItemProps {
-  item: SeriesCountdown;
+  item: CountdownItem;
   index: number;
   onClick: () => void;
   plan?: CatchUpPlan;
 }
+
+const countdownDate = (nextDate: string): Date | string => parseLocalDay(nextDate) ?? nextDate;
 
 function countdownText(daysUntil: number): string {
   if (daysUntil === 0) return t('startet heute');
@@ -30,8 +33,14 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
-  const seasonLabel =
-    item.type === 'mid-season-return' ? t('Rückkehr') : t('Staffel {n}', { n: item.seasonNumber });
+  const isMovie = isMovieCountdown(item);
+  const metaLabel = isMovie
+    ? movieReleaseLabel(item.release)
+    : item.type === 'mid-season-return'
+      ? t('Rückkehr')
+      : t('Staffel {n}', { n: item.seasonNumber });
+  const spokenLabel = isMovie ? `${t('Film')}, ${metaLabel}` : metaLabel;
+  const PlaceholderIcon = isMovie ? MovieOutlined : CalendarMonth;
 
   return (
     <motion.button
@@ -40,13 +49,13 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileTap={tapScaleSmall}
       {...mediaTargetProps({
-        type: 'series',
-        id: item.seriesId,
+        type: isMovie ? 'movie' : 'series',
+        id: isMovie ? item.movieId : item.seriesId,
         title: item.title,
         poster: item.posterUrl,
       })}
       onClick={onClick}
-      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
+      aria-label={`${item.title}, ${spokenLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-item"
       style={{
         border: `1px solid ${currentTheme.border.default}`,
@@ -67,7 +76,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({
           className="cd-item-poster-placeholder"
           style={{ background: `${currentTheme.primary}15` }}
         >
-          <CalendarMonth style={{ fontSize: 20, color: currentTheme.text.muted }} />
+          <PlaceholderIcon style={{ fontSize: 20, color: currentTheme.text.muted }} />
         </div>
       )}
 
@@ -77,7 +86,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({
           {item.title}
         </h3>
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
-          {seasonLabel} &middot; {formatSeasonDate(item.nextDate)}
+          {metaLabel} &middot; {formatSeasonDate(countdownDate(item.nextDate))}
         </p>
         {plan && <CatchUpPlanNote plan={plan} compact />}
       </div>

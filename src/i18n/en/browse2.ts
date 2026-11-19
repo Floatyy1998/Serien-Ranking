@@ -124,9 +124,11 @@ const dict: Record<string, string> = {
 
   // Countdown
   'Countdowns werden geladen': 'Loading countdowns',
-  'Keine kommenden Staffeln': 'No upcoming seasons',
-  'Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier':
-    "When shows on your list announce new seasons, they'll appear here",
+  'Keine kommenden Starts': 'No upcoming releases',
+  'Streaming-Start': 'Streaming release',
+  Filmstart: 'Release',
+  'Sobald Serien in deiner Liste neue Staffeln ankündigen oder Filme einen Starttermin haben, siehst du sie hier':
+    "When shows on your list announce new seasons or movies get a release date, they'll appear here",
   'Weitere ({n})': 'More ({n})',
   'startet heute': 'starts today',
   'in 1 Tag': 'in 1 day',

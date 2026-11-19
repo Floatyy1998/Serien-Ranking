@@ -25,6 +25,21 @@ describe('CountdownBanner', () => {
     expect(screen.getByText(/Staffel 2/)).toBeInTheDocument();
   });
 
+  it('zeigt bei einem Film die Start-Art statt einer Staffel', () => {
+    render(
+      <CountdownBanner
+        countdown={{ title: 'Dune', daysUntil: 3, release: 'cinema' }}
+        totalCount={1}
+        navigate={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Kinostart/)).toBeInTheDocument();
+    expect(screen.queryByText(/Staffel/)).toBeNull();
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      'Countdown: Dune, Kinostart in 3 Tagen'
+    );
+  });
+
   it('shows the "Heute" state when daysUntil is 0', () => {
     render(
       <CountdownBanner

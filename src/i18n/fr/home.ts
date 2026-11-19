@@ -53,6 +53,7 @@ const dict: Record<string, string> = {
   'in {n} Tagen': 'dans {n} jours',
   'Countdown: {title}, Staffel {season} {days}':
     'Compte à rebours : {title}, saison {season} {days}',
+  'Countdown: {title}, {label} {days}': 'Compte à rebours : {title}, {label} {days}',
   'Staffel {n}': 'Saison {n}',
   Tag: 'jour',
   Tage: 'jours',

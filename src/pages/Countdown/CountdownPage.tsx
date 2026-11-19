@@ -1,24 +1,51 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useSeriesCountdowns } from '../../hooks/watch/useSeriesCountdowns';
+import {
+  countdownKey,
+  countdownPath,
+  isMovieCountdown,
+  useCountdowns,
+  type CountdownItem,
+} from '../../hooks/watch/useCountdowns';
 import { t } from '../../services/i18n';
-import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
+import {
+  PageHeader,
+  SkeletonListRow,
+  EmptyState,
+  PageLayout,
+  TabSwitcher,
+} from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpPlans } from '../../hooks/watch/useCatchUpPlans';
 import { CountdownHeroCard } from './CountdownHeroCard';
 import { CountdownListItem } from './CountdownListItem';
 import './CountdownPage.css';
 
+type CountdownFilter = 'all' | 'series' | 'movies';
+
 export const CountdownPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { countdowns, loading } = useSeriesCountdowns();
-  const catchUpPlans = useCatchUpPlans(countdowns);
+  const { countdowns, seriesCountdowns, movieCountdowns, loading } = useCountdowns();
+  const catchUpPlans = useCatchUpPlans(seriesCountdowns);
+  const [filter, setFilter] = useState<CountdownFilter>('all');
 
-  const hero = countdowns[0];
-  const rest = countdowns.slice(1);
+  const mixed = seriesCountdowns.length > 0 && movieCountdowns.length > 0;
+  const activeFilter = mixed ? filter : 'all';
+  const visible: CountdownItem[] =
+    activeFilter === 'series'
+      ? seriesCountdowns
+      : activeFilter === 'movies'
+        ? movieCountdowns
+        : countdowns;
+
+  const hero = visible[0];
+  const rest = visible.slice(1);
+  const planFor = (item: CountdownItem) =>
+    isMovieCountdown(item) ? undefined : catchUpPlans.get(item.seriesId);
 
   return (
     <PageLayout
@@ -43,16 +70,30 @@ export const CountdownPage: React.FC = () => {
         {!loading && countdowns.length === 0 && (
           <EmptyState
             icon={<CalendarMonth style={{ fontSize: 48 }} />}
-            title={t('Keine kommenden Staffeln')}
+            title={t('Keine kommenden Starts')}
             description={t(
-              'Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier'
+              'Sobald Serien in deiner Liste neue Staffeln ankündigen oder Filme einen Starttermin haben, siehst du sie hier'
             )}
             iconColor={currentTheme.text.secondary}
           />
         )}
 
+        {!loading && mixed && (
+          <TabSwitcher
+            className="cd-tabs"
+            tabs={[
+              { id: 'all', label: t('Alle'), count: countdowns.length },
+              { id: 'series', label: t('Serien'), count: seriesCountdowns.length },
+              { id: 'movies', label: t('Filme'), count: movieCountdowns.length },
+            ]}
+            activeTab={activeFilter}
+            onTabChange={(id) => setFilter(id as CountdownFilter)}
+          />
+        )}
+
         {!loading && hero && (
           <motion.div
+            key={activeFilter}
             className="cd-list"
             variants={staggerContainer}
             initial="hidden"
@@ -62,9 +103,9 @@ export const CountdownPage: React.FC = () => {
               <CountdownHeroCard
                 item={hero}
                 onClick={() => {
-                  navigate(`/series/${hero.seriesId}`);
+                  navigate(countdownPath(hero));
                 }}
-                plan={catchUpPlans.get(hero.seriesId)}
+                plan={planFor(hero)}
               />
             </motion.div>
 
@@ -78,14 +119,14 @@ export const CountdownPage: React.FC = () => {
                   {t('Weitere ({n})', { n: rest.length })}
                 </motion.p>
                 {rest.map((item, i) => (
-                  <motion.div key={item.seriesId} variants={staggerItem}>
+                  <motion.div key={countdownKey(item)} variants={staggerItem}>
                     <CountdownListItem
                       item={item}
                       index={i}
                       onClick={() => {
-                        navigate(`/series/${item.seriesId}`);
+                        navigate(countdownPath(item));
                       }}
-                      plan={catchUpPlans.get(item.seriesId)}
+                      plan={planFor(item)}
                     />
                   </motion.div>
                 ))}

@@ -72,6 +72,26 @@ describe('CountdownListItem', () => {
     expect(screen.getByText('Heute')).toBeInTheDocument();
   });
 
+  it('zeigt bei einem Film die Start-Art und markiert ihn als Film', () => {
+    const { container } = render(
+      <CountdownListItem
+        item={{
+          type: 'movie-release',
+          movieId: 99,
+          title: 'Dune',
+          posterUrl: '',
+          nextDate: '2030-03-01',
+          daysUntil: 12,
+          release: 'cinema',
+        }}
+        index={0}
+        onClick={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Kinostart/)).toHaveTextContent('Kinostart · 1. März 2030');
+    expect(container.querySelector('[data-media-type="movie"][data-media-id="99"]')).not.toBeNull();
+  });
+
   it('calls onClick when pressed', () => {
     const onClick = vi.fn();
     render(<CountdownListItem item={base()} index={2} onClick={onClick} />);

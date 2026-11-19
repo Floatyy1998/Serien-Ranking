@@ -67,6 +67,7 @@ import {
 } from './FocusPreviews';
 import {
   CatchUpPreview,
+  CountdownMoviesPreview,
   RatingsYearFilterPreview,
   DropOffPreview,
   FriendAddCardPreview,
@@ -508,6 +509,7 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     render: () => <LeaderboardEmptyPreview />,
   },
   { id: 'catchup', label: 'Aufhol-Plan', render: () => <CatchUpPreview /> },
+  { id: 'countdown-movies', label: 'Film-Countdown', render: () => <CountdownMoviesPreview /> },
   { id: 'dropoff', label: 'Aussteiger-Radar', render: () => <DropOffPreview /> },
   { id: 'unhide', label: 'Wieder einblenden', render: () => <UnhideProviderPreview /> },
   { id: 'friendadd', label: 'Freundesprofil-Karten', render: () => <FriendAddCardPreview /> },

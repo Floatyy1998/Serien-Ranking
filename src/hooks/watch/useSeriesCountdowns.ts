@@ -16,7 +16,7 @@ export interface SeriesCountdown {
 }
 
 export function useSeriesCountdowns() {
-  const { seriesList } = useSeriesList();
+  const { seriesList, loading: listLoading } = useSeriesList();
 
   const countdowns = useMemo(() => {
     if (seriesList.length === 0) return [];
@@ -107,7 +107,7 @@ export function useSeriesCountdowns() {
     return results.sort((a, b) => a.daysUntil - b.daysUntil);
   }, [seriesList]);
 
-  const loading = seriesList.length === 0;
+  const loading = listLoading && seriesList.length === 0;
 
   return { countdowns, loading };
 }

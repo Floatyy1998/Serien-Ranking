@@ -194,14 +194,19 @@ const tour: Record<string, string> = {
   'Aus jeder Karte heraus geht es direkt in die Serie zum Abhaken.':
     'Every card takes you straight into the show to check things off.',
 
-  'Was von deinen Serien als Nächstes zurückkommt.': 'Which of your shows returns next.',
+  'Was von deinen Serien und Filmen als Nächstes startet.':
+    'What starts next among your shows and movies.',
   'Kommende Staffeln': 'Upcoming seasons',
   'Jede angekündigte Rückkehr mit Countdown bis zum Starttag.':
     'Every announced return with a countdown to its first day.',
-  'Eine Karte antippen führt direkt zur Serie.': 'Tapping a card takes you straight to the show.',
+  'Kommende Filme': 'Upcoming movies',
+  'Filme aus deiner Liste zählen bis zum Start in deiner Region herunter.':
+    'Movies on your list count down to their release in your region.',
+  'Eine Karte antippen führt direkt zur Serie oder zum Film.':
+    'Tapping a card takes you straight to the show or movie.',
   'Woher das kommt': 'Where this comes from',
-  'Gelistet werden angekündigte Staffeln der Serien in deiner Liste.':
-    'Listed here are announced seasons of the shows on your list.',
+  'Gelistet werden angekündigte Staffeln und kommende Filme aus deiner Liste.':
+    'Listed here are announced seasons and upcoming movies from your list.',
 
   'Womit du streamst, bestimmt viele Filter in der App.':
     'The services you use drive a lot of filters across the app.',

@@ -3,10 +3,10 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 
-const ctx = vi.hoisted(() => ({ seriesList: [] as Series[] }));
+const ctx = vi.hoisted(() => ({ seriesList: [] as Series[], loading: true }));
 
 vi.mock('../../contexts/SeriesListContext', () => ({
-  useSeriesList: () => ({ seriesList: ctx.seriesList }),
+  useSeriesList: () => ({ seriesList: ctx.seriesList, loading: ctx.loading }),
 }));
 
 import { useSeriesCountdowns } from './useSeriesCountdowns';
@@ -52,6 +52,12 @@ describe('useSeriesCountdowns', () => {
     const { countdowns, loading } = run([]);
     expect(loading).toBe(true);
     expect(countdowns).toEqual([]);
+  });
+
+  it('lädt nicht ewig, wenn die Liste fertig geladen und leer ist', () => {
+    ctx.loading = false;
+    expect(run([]).loading).toBe(false);
+    ctx.loading = true;
   });
 
   it('erkennt einen Staffelstart in der Zukunft', () => {

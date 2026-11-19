@@ -79,6 +79,30 @@ describe('CountdownHeroCard', () => {
     expect(screen.getByText('Rückkehr')).toBeInTheDocument();
   });
 
+  it('zeigt einen Film mit Start-Art statt Staffel', () => {
+    render(
+      <CountdownHeroCard
+        item={{
+          type: 'movie-release',
+          movieId: 5,
+          title: 'Dune',
+          posterUrl: '',
+          nextDate: '2030-06-15',
+          daysUntil: 4,
+          release: 'digital',
+        }}
+        onClick={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Streaming-Start')).toBeInTheDocument();
+    expect(screen.getByText('Film')).toBeInTheDocument();
+    expect(screen.getByText('15. Juni 2030')).toBeInTheDocument();
+    expect(screen.queryByText(/Staffel/)).toBeNull();
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      'Dune, Film, Streaming-Start, in 4 Tagen. Details öffnen'
+    );
+  });
+
   it('calls onClick when pressed', () => {
     const onClick = vi.fn();
     render(<CountdownHeroCard item={base()} onClick={onClick} />);

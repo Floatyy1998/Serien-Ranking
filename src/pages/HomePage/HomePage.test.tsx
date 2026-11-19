@@ -96,8 +96,8 @@ vi.mock('../../hooks/discover/useSeasonalRecommendations', () => ({
     loading: false,
   }),
 }));
-vi.mock('../../hooks/watch/useSeriesCountdowns', () => ({
-  useSeriesCountdowns: () => ({ countdowns: [] }),
+vi.mock('../../hooks/watch/useCountdowns', () => ({
+  useCountdowns: () => ({ countdowns: [] }),
 }));
 vi.mock('../../hooks/watch/useUnsubscribedNewSeasons', () => ({
   useUnsubscribedNewSeasons: () => ({ entries: [], dismiss: vi.fn() }),

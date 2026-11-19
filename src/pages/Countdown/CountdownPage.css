@@ -10,6 +10,11 @@
   z-index: 1;
 }
 
+.ui-tabs.cd-tabs {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .cd-list {
   display: flex;
   flex-direction: column;

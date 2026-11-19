@@ -61,6 +61,7 @@ const LS_LANG_EPISODES_PREFIX = LS_PREFIX + 'langEpisodes:';
 const langOverlayKey = () => LS_LANG_OVERLAY_PREFIX + appLocale;
 const langEpisodesKey = () => LS_LANG_EPISODES_PREFIX + appLocale;
 const LS_REGION_PROVIDERS_PREFIX = LS_PREFIX + 'regionProviders:';
+const LS_MOVIE_RELEASES_PREFIX = LS_PREFIX + 'movieReleases:';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
 // haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
@@ -126,6 +127,7 @@ let laufendeCommunityRatings: Promise<CommunityRatings | null> | null = null;
 let memoryLangOverlay: LangOverlay | null | undefined = undefined;
 let memoryLangEpisodes: LangEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
+let memoryMovieReleases: Record<string, string> | null = null;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 // Datei-Versionen der zuletzt gelesenen version.json: eine unveränderte Datei
@@ -261,6 +263,7 @@ async function invalidateLocalCaches(opts?: {
     // sonst die Overlays der alten Sprache dauerhaft im Speicher.
     idbRemovePrefix(LS_LANG_OVERLAY_PREFIX),
     idbRemovePrefix(LS_LANG_EPISODES_PREFIX),
+    idbRemovePrefix(LS_MOVIE_RELEASES_PREFIX),
     idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
@@ -422,6 +425,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryLangOverlay = undefined;
   memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
+  memoryMovieReleases = null;
   // keepMeta ist hier IMMER true: den Katalog loeschen wir nur, wenn wir den
   // Ersatz schon in der Hand haben (dann wird er unten ueberschrieben).
   // Kam der neue Stand nicht durch, ist der alte allemal besser als ein leerer
@@ -1077,6 +1081,41 @@ export async function fetchStaticAnimeFiller(): Promise<Record<
 }
 
 /**
+ * Laedt catalog/releases/{CC}.json (tmdbId -> "KINO|DIGITAL"): der Start jedes
+ * Katalog-Films in der Watch-Region. Das releaseDate im Katalog ist dagegen das
+ * weltweit frueheste Datum. Ein leerer Wert heisst: geprueft, kein Start bekannt.
+ *
+ * Returnt null, solange das Backend die Datei (noch) nicht liefert.
+ */
+export async function fetchStaticMovieReleases(): Promise<Record<string, string> | null> {
+  if (memoryMovieReleases) return memoryMovieReleases;
+
+  const idbKey = LS_MOVIE_RELEASES_PREFIX + watchRegion;
+  const cached = await idbGetAny<Record<string, string>>(idbKey);
+  if (cached) {
+    memoryMovieReleases = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<Record<string, string>>(`releases/${watchRegion}.json`, {
+      version,
+    });
+    if (!data || typeof data !== 'object') return null;
+    memoryMovieReleases = data;
+    void idbSetVersioned(idbKey, version, data);
+    return data;
+  } catch (e) {
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] movie-releases fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
  * Laedt catalog/drop-off.json (tmdbId -> anonymes Abbruch-Aggregat). Vom
  * Backend-Cron monatlich vorgerechnet: wie viele Nutzer eine Serie abgebrochen
  * bzw. beendet haben und wo die Abbrueche liegen. Enthaelt keine Nutzer-IDs und
@@ -1646,11 +1685,13 @@ export function clearStaticCatalogCache(): void {
   memoryLangOverlay = undefined;
   memoryLangEpisodes = undefined;
   memoryRegionProviders = undefined;
+  memoryMovieReleases = null;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(langOverlayKey());
   void idbRemove(langEpisodesKey());
   void idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX);
+  void idbRemovePrefix(LS_MOVIE_RELEASES_PREFIX);
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
   void idbRemove(LS_VERSION_KEY);

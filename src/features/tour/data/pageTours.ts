@@ -408,9 +408,9 @@ export const PAGE_TOURS: readonly PageTour[] = [
   },
   {
     path: '/countdowns',
-    version: 1,
+    version: 2,
     title: 'Countdowns',
-    intro: 'Was von deinen Serien als Nächstes zurückkommt.',
+    intro: 'Was von deinen Serien und Filmen als Nächstes startet.',
     actions: [
       {
         icon: 'calendar',
@@ -418,14 +418,19 @@ export const PAGE_TOURS: readonly PageTour[] = [
         text: 'Jede angekündigte Rückkehr mit Countdown bis zum Starttag.',
       },
       {
+        icon: 'play',
+        title: 'Kommende Filme',
+        text: 'Filme aus deiner Liste zählen bis zum Start in deiner Region herunter.',
+      },
+      {
         icon: 'explore',
         title: 'Details öffnen',
-        text: 'Eine Karte antippen führt direkt zur Serie.',
+        text: 'Eine Karte antippen führt direkt zur Serie oder zum Film.',
       },
       {
         icon: 'bookmark',
         title: 'Woher das kommt',
-        text: 'Gelistet werden angekündigte Staffeln der Serien in deiner Liste.',
+        text: 'Gelistet werden angekündigte Staffeln und kommende Filme aus deiner Liste.',
       },
     ],
   },

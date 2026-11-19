@@ -15,7 +15,7 @@ import { useEpisodeSwipeHandlers } from '../../hooks/watch/useEpisodeSwipeHandle
 import { openSeasonTools } from '../../hooks/watch/bulkMarkNudge';
 import { useProactiveRecaps } from '../../hooks/watch/useProactiveRecaps';
 import { useSeasonalRecommendations } from '../../hooks/discover/useSeasonalRecommendations';
-import { useSeriesCountdowns } from '../../hooks/watch/useSeriesCountdowns';
+import { useCountdowns } from '../../hooks/watch/useCountdowns';
 import { useUnsubscribedNewSeasons } from '../../hooks/watch/useUnsubscribedNewSeasons';
 import { useTMDBTrending } from '../../hooks/discover/useTMDBTrending';
 import { useTopRated } from '../../hooks/discover/useTopRated';
@@ -91,7 +91,7 @@ export const HomePage: React.FC = () => {
     clearAnimeMangaHandoffs,
   } = useSeriesList();
   const { currentTheme } = useTheme();
-  const { countdowns } = useSeriesCountdowns();
+  const { countdowns } = useCountdowns();
   const proactiveRecaps = useProactiveRecaps();
   const config = useHomeConfig(user?.uid ?? '');
   const petEnabled = usePetEnabled();

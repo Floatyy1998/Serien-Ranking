@@ -40,6 +40,10 @@ const { mdState, navigateMock } = vi.hoisted(() => {
 });
 
 vi.mock('./useMovieData', () => ({ useMovieData: () => mdState }));
+const release = vi.hoisted(() => ({
+  value: undefined as { date: string; kind: 'cinema' | 'digital' } | null | undefined,
+}));
+vi.mock('../../hooks/watch/useMovieRelease', () => ({ useMovieRelease: () => release.value }));
 vi.mock('../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#000' }));
 vi.mock('./MovieHeroSection', () => ({ MovieHeroSection: () => <div data-testid="hero" /> }));
 vi.mock('./MovieActionButtons', () => ({
@@ -83,6 +87,7 @@ beforeEach(() => {
   mdState.activeTab = 'info';
   mdState.setActiveTab.mockReset();
   navigateMock.mockReset();
+  release.value = undefined;
 });
 afterEach(() => cleanup());
 
@@ -92,6 +97,31 @@ describe('MovieDetailPage', () => {
     expect(screen.getByTestId('hero')).toBeInTheDocument();
     expect(screen.getByTestId('actions')).toBeInTheDocument();
     expect(screen.getByTestId('info-tab')).toBeInTheDocument();
+  });
+
+  it('zeigt den Start in der Region statt des weltweiten Erstdatums', () => {
+    mdState.movie = { id: 5, title: 'Dune', release_date: '2026-09-03' } as unknown as Movie;
+    release.value = { date: '2026-12-17', kind: 'cinema' };
+    render(<MovieDetailPage />);
+    expect(screen.getByText('Kinostart')).toBeInTheDocument();
+    expect(screen.getByText('17. Dezember 2026')).toBeInTheDocument();
+    expect(screen.queryByText('3. September 2026')).not.toBeInTheDocument();
+  });
+
+  it('nennt einen reinen Streaming-Start auch so', () => {
+    release.value = { date: '2027-02-01', kind: 'digital' };
+    render(<MovieDetailPage />);
+    expect(screen.getByText('Streaming-Start')).toBeInTheDocument();
+    expect(screen.getByText('1. Februar 2027')).toBeInTheDocument();
+  });
+
+  it('fällt ohne Start in der Region auf das Erscheinungsdatum zurück', () => {
+    mdState.movie = { id: 5, title: 'Dune', release_date: '2026-09-03' } as unknown as Movie;
+    release.value = null;
+    render(<MovieDetailPage />);
+    expect(screen.getByText('Erscheinungsdatum')).toBeInTheDocument();
+    expect(screen.getByText('3. September 2026')).toBeInTheDocument();
+    expect(screen.queryByText('Kinostart')).not.toBeInTheDocument();
   });
 
   it('switches to the cast tab when the Besetzung tab is clicked', () => {
