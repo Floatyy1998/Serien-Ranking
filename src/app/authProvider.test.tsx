@@ -83,6 +83,34 @@ describe('AuthProvider', () => {
     expect(captureErrorMock).not.toHaveBeenCalled();
   });
 
+  it('ohne Konto gilt die Startseiten-Konfiguration als erledigt, damit der Splash nicht darauf wartet', async () => {
+    const setAppReady = vi.fn<(key: string, value: boolean) => void>();
+    window.setAppReady = setAppReady as unknown as Window['setAppReady'];
+    render(
+      <AuthProvider>
+        <Consumer />
+      </AuthProvider>
+    );
+    await waitFor(() => expect(setAppReady).toHaveBeenCalledWith('homeConfig', true));
+    expect(setAppReady).toHaveBeenCalledWith('auth', true);
+  });
+
+  it('gibt nach dem Warten auf die Sitzung auch das auth-Flag frei', () => {
+    vi.useFakeTimers();
+    const setAppReady = vi.fn<(key: string, value: boolean) => void>();
+    window.setAppReady = setAppReady as unknown as Window['setAppReady'];
+    localStorage.setItem('cachedUser', JSON.stringify({ uid: 'u1' }));
+    onAuthStateChangedMock.mockImplementationOnce(() => () => {});
+    render(
+      <AuthProvider>
+        <Consumer />
+      </AuthProvider>
+    );
+    act(() => vi.advanceTimersByTime(31000));
+    expect(setAppReady).toHaveBeenCalledWith('auth', true);
+    expect(setAppReady).toHaveBeenCalledWith('homeConfig', true);
+  });
+
   it('wartet mit gespeicherter Sitzung länger als 5 s auf Firebase', () => {
     vi.useFakeTimers();
     localStorage.setItem('cachedUser', JSON.stringify({ uid: 'u1' }));

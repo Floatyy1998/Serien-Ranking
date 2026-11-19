@@ -8,12 +8,12 @@ vi.mock('../../../services/app/startupUpdateHold', async (importOriginal) => ({
   isSplashResumed: () => true,
 }));
 
+import { APP_READY_KEYS } from '../../../services/app/appReady';
 import { SplashScreen } from './SplashScreen';
 
 function setReady(count: number) {
-  const keys = ['theme', 'auth', 'firebase', 'emailVerification', 'initialData', 'homeConfig'];
   window.appReadyStatus = Object.fromEntries(
-    keys.map((key, i) => [key, i < count])
+    APP_READY_KEYS.map((key, i) => [key, i < count])
   ) as Window['appReadyStatus'];
 }
 
@@ -45,7 +45,7 @@ describe('SplashScreen nach Update-Reload', () => {
     });
     expect(screen.getByText('90%')).toBeInTheDocument();
     act(() => {
-      setReady(6);
+      setReady(APP_READY_KEYS.length);
       vi.advanceTimersByTime(300 + 140 + 180);
     });
     expect(onComplete).toHaveBeenCalledTimes(1);

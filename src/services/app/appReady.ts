@@ -14,6 +14,7 @@ declare global {
       emailVerification: boolean;
       initialData: boolean;
       homeConfig: boolean;
+      rendered: boolean;
     };
     setAppReady: (key: keyof Window['appReadyStatus'], value: boolean) => void;
     splashScreenComplete: boolean;
@@ -30,7 +31,11 @@ export const APP_READY_KEYS = [
   'emailVerification',
   'initialData',
   'homeConfig',
+  'rendered',
 ] as const;
+
+/** Notfall-Limit: nur falls ein Flag nie fällt. Liegt über dem 30-s-Warten auf eine gespeicherte Sitzung. */
+export const SPLASH_HARD_CAP_MS = 45000;
 
 if (typeof window !== 'undefined') {
   window.appReadyStatus = {
@@ -40,6 +45,7 @@ if (typeof window !== 'undefined') {
     emailVerification: false,
     initialData: false,
     homeConfig: false,
+    rendered: false,
   };
 
   // Event statt Polling: der Splash reagiert auf das letzte Flag sofort,
@@ -84,4 +90,11 @@ export function countAppReady(): number {
 
 export function isAppReady(): boolean {
   return countAppReady() === APP_READY_KEYS.length;
+}
+
+/** Alles da außer dem letzten Schritt: jetzt muss die Seite nur noch fertig aufgebaut sein. */
+export function isReadyToRender(): boolean {
+  const status = typeof window !== 'undefined' ? window.appReadyStatus : undefined;
+  if (!status) return false;
+  return APP_READY_KEYS.every((key) => key === 'rendered' || status[key]);
 }

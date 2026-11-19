@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { APP_READY_EVENT, APP_READY_KEYS, countAppReady } from '../../../services/app/appReady';
+import {
+  APP_READY_EVENT,
+  APP_READY_KEYS,
+  SPLASH_HARD_CAP_MS,
+  countAppReady,
+} from '../../../services/app/appReady';
 import {
   HELD_PROGRESS,
   isSplashHeldForUpdate,
@@ -129,16 +134,15 @@ export const SplashScreen = ({
         return;
       }
 
-      // Hard fallback: 8 s. Splash darf nie laenger haengen, selbst wenn
-      // Daten kaputt sind — App rendert Skeletons.
-      if (Date.now() - startTime > 8000) {
+      // Notfall-Limit, falls ein Flag nie fällt.
+      if (Date.now() - startTime > SPLASH_HARD_CAP_MS) {
         finish();
       }
     };
 
     // Event-getrieben statt 50ms-Polling: das letzte Flag beendet den Splash
     // sofort, statt im Schnitt einen halben Tick spaeter. Das Intervall bleibt
-    // nur als Sicherheitsnetz fuer den 8s-Fallback und fuer waitForCondition.
+    // nur als Sicherheitsnetz fuer das Notfall-Limit und fuer waitForCondition.
     window.addEventListener(APP_READY_EVENT, evaluate);
     const checkProgress = setInterval(evaluate, 250);
     function cleanupWatchers() {

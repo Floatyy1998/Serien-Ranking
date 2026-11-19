@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type React from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { GreetingSection } from './GreetingSection';
@@ -62,6 +62,10 @@ vi.mock('framer-motion', () => ({
     { get: () => (props: Record<string, unknown>) => <div {...strip(props)} /> }
   ),
 }));
+
+beforeEach(() => {
+  window.splashScreenComplete = true;
+});
 
 afterEach(() => {
   navigateMock.mockClear();

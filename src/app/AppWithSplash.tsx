@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { App } from './App';
 import { SplashScreen } from '../components/ui/overlay/SplashScreen';
-import { APP_READY_EVENT, isAppReady } from '../services/app/appReady';
+import {
+  APP_READY_EVENT,
+  SPLASH_HARD_CAP_MS,
+  isAppReady,
+  isReadyToRender,
+} from '../services/app/appReady';
+import { whenRenderSettled } from '../services/app/renderSettled';
 import {
   applyDisplayScale,
   getDisplayScale,
@@ -76,13 +82,12 @@ export const AppWithSplash: React.FC = () => {
     // Sicherheitsnetz, falls ein Flag jemals ohne setAppReady gesetzt wird.
     const safetyInterval = setInterval(check, 250);
 
-    // Hard-Fallback: 8 s. Reicht fuer den seltenen Cold-Start ohne Cache,
-    // verhindert aber dass User bei Edge-Cases (langsames Firebase, broken
-    // Catalog-Fetch) ewig vor dem Splash sitzen.
+    // Der Splash bleibt, bis die Seite fertig steht — langsames Netz zeigt
+    // keinen Lader mehr danach. Das Limit greift nur, wenn ein Flag nie fällt.
     const fallbackTimeout = setTimeout(() => {
       readyRef.current = true;
       setAllSystemsReady(true);
-    }, 8000);
+    }, SPLASH_HARD_CAP_MS);
 
     return () => {
       window.removeEventListener(APP_READY_EVENT, check);
@@ -107,6 +112,28 @@ export const AppWithSplash: React.FC = () => {
     if (noSplash) window.splashScreenComplete = true;
   }, [noSplash]);
 
+  // Letzter Schritt vor dem Ausblenden: Daten sind da, jetzt muss die Seite
+  // darunter fertig aufgebaut sein (kein Lader, keine Platzhalter, Bilder da).
+  const appRootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (noSplash) {
+      window.setAppReady?.('rendered', true);
+      return;
+    }
+    let cancel: (() => void) | null = null;
+    const start = () => {
+      const root = appRootRef.current;
+      if (cancel || !root || !isReadyToRender()) return;
+      cancel = whenRenderSettled(root, () => window.setAppReady?.('rendered', true));
+    };
+    start();
+    window.addEventListener(APP_READY_EVENT, start);
+    return () => {
+      window.removeEventListener(APP_READY_EVENT, start);
+      cancel?.();
+    };
+  }, [noSplash, isAppMounted]);
+
   if (isAuthPage || !hasCachedUser) {
     return <App />;
   }
@@ -123,6 +150,7 @@ export const AppWithSplash: React.FC = () => {
       {/* Eine App-Instanz: versteckt während Splash, sichtbar sobald er ausblendet */}
       {isAppMounted && (
         <div
+          ref={appRootRef}
           style={
             showSplash && !splashHiding
               ? {

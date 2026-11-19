@@ -251,7 +251,7 @@ function AppContent() {
                         } else if (auth?.authStateResolved) {
                           return <GuestRouteSwitch />;
                         } else {
-                          // Auth lädt noch — nach dem 8-s-Splash-Fallback lieber Spinner als Leere
+                          // Auth lädt noch — der Splash verdeckt das; ohne Splash lieber Spinner als Leere
                           return <PageLoader />;
                         }
                       }}

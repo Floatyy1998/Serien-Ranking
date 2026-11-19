@@ -28,6 +28,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div
       role="status"
+      data-app-loading={inline ? undefined : ''}
       style={
         inline
           ? { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...style }

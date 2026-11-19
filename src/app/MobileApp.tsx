@@ -115,6 +115,13 @@ export const MobileApp = () => {
   const { onboardingComplete, user } = useAuth() || {};
   const location = useLocation();
   useRatingsOriginTracker();
+
+  // Nur die Startseite setzt homeConfig — bei einem Start auf einer anderen
+  // Seite (Push, Deep Link, Onboarding) wartete der Splash sonst bis zum Limit.
+  const startsOnHome = location.pathname === '/' || location.pathname === '/watch';
+  useEffect(() => {
+    if (!startsOnHome) window.setAppReady?.('homeConfig', true);
+  }, [startsOnHome]);
   const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } =
     useOptimizedFriends();
   const { unreadCount: notificationUnreadCount, notifications: generalNotifications } =

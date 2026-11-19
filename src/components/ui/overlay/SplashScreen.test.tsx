@@ -17,6 +17,7 @@ function setAllReady(ready: boolean) {
     emailVerification: ready,
     initialData: ready,
     homeConfig: ready,
+    rendered: ready,
   };
 }
 

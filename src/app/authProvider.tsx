@@ -66,20 +66,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       authTimeout = setTimeout(() => {
         setAuthStateResolved(true);
+        window.setAppReady?.('auth', true);
         window.setAppReady?.('emailVerification', true); // No verification check on timeout
 
         // Wenn offline, versuche gespeicherten User zu laden
+        let restored = false;
         if (!navigator.onLine) {
           const savedUser = localStorage.getItem('cachedUser');
           if (savedUser) {
             try {
               const parsedUser = JSON.parse(savedUser);
               setUser(parsedUser);
+              restored = true;
             } catch {
               // ignore — corrupted cached user is non-fatal, auth will re-resolve
             }
           }
         }
+        // Ohne Konto gibt es keine Startseite, die das Flag setzen könnte.
+        if (!restored) window.setAppReady?.('homeConfig', true);
       }, authTimeoutMs);
 
       beginAuthDiagnostics(hasSavedSession);
@@ -95,6 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setErrorReporterUser(user?.uid ?? null);
         window.setAppReady?.('auth', true);
         window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
+        if (!user) window.setAppReady?.('homeConfig', true);
 
         // User für Offline-Zugriff speichern
         if (user) {
@@ -292,7 +298,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch {
       // Auch bei Fehler Auth-State als resolved setzen, sonst haengt der Splash.
       setAuthStateResolved(true);
+      window.setAppReady?.('firebase', true);
+      window.setAppReady?.('auth', true);
       window.setAppReady?.('emailVerification', true);
+      window.setAppReady?.('homeConfig', true);
     }
 
     return () => {

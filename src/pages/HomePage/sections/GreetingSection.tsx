@@ -10,6 +10,7 @@ import { getGreeting } from '../../../lib/text/greetings';
 import { greetingWithName } from '../../../lib/text/greetingName';
 import { pickGreetingMatch, type GreetingSearchHit } from '../../../lib/text/greetingMatch';
 import { t } from '../../../services/i18n';
+import { SPLASH_HARD_CAP_MS } from '../../../services/app/appReady';
 import {
   OPEN_HOME_SEARCH_EVENT,
   consumeHomeSearchRequest,
@@ -100,7 +101,8 @@ export const GreetingSection = React.memo(function GreetingSection({
     };
     const settle = (since: number) => {
       clearTimeout(timer);
-      const splashPending = window.splashScreenComplete === false && Date.now() - since < 6000;
+      const splashPending =
+        window.splashScreenComplete === false && Date.now() - since < SPLASH_HARD_CAP_MS;
       timer = setTimeout(() => (splashPending ? settle(since) : open()), splashPending ? 150 : 250);
     };
     const openFromShell = () => {

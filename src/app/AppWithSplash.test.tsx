@@ -8,10 +8,12 @@ vi.mock('../components/ui/overlay/SplashScreen', () => ({
 }));
 
 import { AppWithSplash } from './AppWithSplash';
+import { APP_READY_KEYS } from '../services/app/appReady';
 
 beforeEach(() => {
   window.history.pushState({}, '', '/');
   localStorage.clear();
+  for (const key of APP_READY_KEYS) window.appReadyStatus[key] = false;
 });
 
 afterEach(() => cleanup());
@@ -45,6 +47,26 @@ describe('AppWithSplash', () => {
     await waitFor(() => expect(screen.getByText('APP_SHELL')).toBeInTheDocument());
     expect(screen.getByText('SPLASH_SCREEN')).toBeInTheDocument();
     expect(screen.getByText('APP_SHELL').parentElement).toHaveStyle({ visibility: 'hidden' });
+  });
+
+  it('ohne Splash gilt die Seite sofort als fertig aufgebaut', () => {
+    render(<AppWithSplash />);
+    expect(window.appReadyStatus.rendered).toBe(true);
+  });
+
+  it('meldet „fertig aufgebaut“ erst, wenn alle anderen Systeme bereit sind', async () => {
+    localStorage.setItem('cachedUser', JSON.stringify({ uid: 'u1' }));
+    render(<AppWithSplash />);
+    await waitFor(() => expect(screen.getByText('APP_SHELL')).toBeInTheDocument());
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(window.appReadyStatus.rendered).toBe(false);
+
+    act(() => {
+      for (const key of APP_READY_KEYS) {
+        if (key !== 'rendered') window.setAppReady(key, true);
+      }
+    });
+    await waitFor(() => expect(window.appReadyStatus.rendered).toBe(true), { timeout: 2000 });
   });
 
   it('mounts the app shell even when the page gets no animation frames (hidden window)', () => {
