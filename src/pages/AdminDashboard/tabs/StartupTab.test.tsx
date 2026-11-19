@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const { dbGetMock, copyMock } = vi.hoisted(() => ({ dbGetMock: vi.fn(), copyMock: vi.fn() }));
 vi.mock('../../../services/db/ref', () => ({ dbGet: dbGetMock }));
@@ -78,11 +78,13 @@ function serve(day: unknown) {
   });
 }
 
+const card = (title: string) => screen.getByText(title).closest('.adm-card') as HTMLElement;
+
 const dayReads = () =>
   dbGetMock.mock.calls.filter(([path]) => String(path).startsWith('analytics/')).length;
 
 describe('StartupTab', () => {
-  it('zeigt Kennzahlen, Gruppen und die langsamsten Starts mit Namen', async () => {
+  it('zeigt Kennzahlen und eine Zeile je Konto mit Namen', async () => {
     serve(today);
     render(<StartupTab />);
     await waitFor(() => expect(screen.getByText('gemessene Starts')).toBeInTheDocument());
@@ -90,19 +92,56 @@ describe('StartupTab', () => {
     expect(screen.getByText('Nach Konto')).toBeInTheDocument();
     expect(screen.getByText('Nach Verbindung')).toBeInTheDocument();
     expect(screen.getByText('Nach Plattform')).toBeInTheDocument();
-    expect(screen.getAllByText('9,4 s').length).toBeGreaterThan(0);
     await waitFor(() => expect(screen.getAllByText('Anna').length).toBeGreaterThan(0));
-    expect(screen.getByText('anna92')).toBeInTheDocument();
+    expect(screen.getByText(/anna92/)).toBeInTheDocument();
     expect(screen.getAllByText('ben').length).toBeGreaterThan(0);
   });
 
   it('nennt die Verbindung für jede Zeile in denselben Einheiten', async () => {
     serve(today);
     render(<StartupTab />);
-    await waitFor(() => expect(screen.getByText('Langsamste Starts')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Auffällige Starts')).toBeInTheDocument());
     expect(screen.getAllByText('0,3 Mbit/s').length).toBeGreaterThan(0);
     expect(screen.getAllByText('24 Mbit/s').length).toBeGreaterThan(0);
     expect(screen.queryByText(/3g/)).not.toBeInTheDocument();
+  });
+
+  it('listet einzeln nur Starts über 5 s', async () => {
+    serve(today);
+    render(<StartupTab />);
+    await waitFor(() => expect(screen.getByText('Auffällige Starts')).toBeInTheDocument());
+    const notable = within(card('Auffällige Starts'));
+    expect(notable.getAllByText('9,4 s')).toHaveLength(1);
+    expect(notable.queryByText('2,1 s')).not.toBeInTheDocument();
+    expect(notable.queryByText('3,1 s')).not.toBeInTheDocument();
+  });
+
+  it('klappt die Starts eines Kontos auf und wieder zu', async () => {
+    serve(today);
+    render(<StartupTab />);
+    await waitFor(() => expect(screen.getAllByText('Anna').length).toBeGreaterThan(0));
+    const accounts = within(card('Nach Konto'));
+    const row = accounts.getByText('Anna').closest('tr') as HTMLElement;
+    // Zugeklappt steht 2,1 s nur als Median des Kontos da.
+    expect(accounts.getAllByText('2,1 s')).toHaveLength(1);
+    fireEvent.click(row);
+    expect(row).toHaveAttribute('aria-expanded', 'true');
+    expect(accounts.getAllByText('2,1 s')).toHaveLength(2);
+    expect(accounts.getByText('App laden')).toBeInTheDocument();
+    fireEvent.click(row);
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+    expect(accounts.getAllByText('2,1 s')).toHaveLength(1);
+  });
+
+  it('kennzeichnet Starts, die auf ein Update gewartet haben', async () => {
+    serve({
+      aaaaaa111: {
+        u1: { ts: 1795126300000, t: 12000, js: 1300, a: 1600, d: 2500, r: 3000, p: 'electron' },
+      },
+    });
+    render(<StartupTab />);
+    await waitFor(() => expect(screen.getByText('Auffällige Starts')).toBeInTheDocument());
+    expect(screen.getByText('Update')).toBeInTheDocument();
   });
 
   it('kopiert alle Zeilen als Tabelle', async () => {

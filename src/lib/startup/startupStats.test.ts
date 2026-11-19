@@ -4,11 +4,13 @@ import {
   formatMs,
   formatRate,
   groupSamples,
+  isUpdateWait,
   latencyOf,
   measureThroughput,
   nameOf,
   netClassOf,
   percentile,
+  phasesOf,
   rateOf,
   samplesToTsv,
   summarize,
@@ -75,6 +77,32 @@ describe('netClassOf', () => {
     expect(netClassOf({ ct: '3g' })).toBe('langsam');
     expect(netClassOf({ ct: '4g' })).toBe('schnell');
     expect(netClassOf({})).toBe('unbekannt');
+  });
+});
+
+describe('phasesOf', () => {
+  it('zerlegt einen Start in Abschnitte, die zusammen die Gesamtzeit ergeben', () => {
+    const p = phasesOf({ t: 3000, js: 400, a: 700, d: 1900, r: 2700 });
+    expect(p).toEqual({ load: 400, auth: 300, data: 1200, build: 800, wait: 300 });
+  });
+
+  it('lässt fehlende oder vertauschte Zwischenstände auf 0 fallen', () => {
+    expect(phasesOf({ t: 2000, js: 500 })).toEqual({
+      load: 500,
+      auth: 0,
+      data: 0,
+      build: 0,
+      wait: 1500,
+    });
+    const p = phasesOf({ t: 2000, js: 500, a: 900, d: 800, r: 1800 });
+    expect(p.data).toBe(0);
+    expect(Object.values(p).reduce((sum, v) => sum + v, 0)).toBe(2000);
+  });
+
+  it('erkennt Starts, die nach dem Aufbau auf ein Update gewartet haben', () => {
+    expect(isUpdateWait({ t: 12000, js: 1300, a: 1600, d: 2500, r: 3000 })).toBe(true);
+    expect(isUpdateWait({ t: 3300, js: 1300, a: 1600, d: 2500, r: 3000 })).toBe(false);
+    expect(isUpdateWait({ t: 9000, js: 1300 })).toBe(false);
   });
 });
 

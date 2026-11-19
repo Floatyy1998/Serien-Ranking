@@ -88,6 +88,47 @@ export function netClassOf(sample: NetFields): NetClass {
   return 'unbekannt';
 }
 
+export type StartupPhase = 'load' | 'auth' | 'data' | 'build' | 'wait';
+
+export const PHASE_ORDER: StartupPhase[] = ['load', 'auth', 'data', 'build', 'wait'];
+
+export const PHASE_LABEL: Record<StartupPhase, string> = {
+  load: 'App laden',
+  auth: 'Anmeldung',
+  data: 'Daten',
+  build: 'Aufbau',
+  wait: 'Warten',
+};
+
+/**
+ * Zerlegt einen Start in aufeinanderfolgende Abschnitte, die zusammen die
+ * Gesamtzeit ergeben. Fehlt ein Zwischenstand, fällt sein Abschnitt auf 0.
+ */
+export function phasesOf(
+  sample: Pick<StartupSample, 't' | 'js' | 'a' | 'd' | 'r'>
+): Record<StartupPhase, number> {
+  const total = Math.max(sample.t, 0);
+  const load = Math.min(Math.max(sample.js, 0), total);
+  const auth = Math.min(Math.max(sample.a ?? load, load), total);
+  const data = Math.min(Math.max(sample.d ?? auth, auth), total);
+  const build = Math.min(Math.max(sample.r ?? data, data), total);
+  return {
+    load,
+    auth: auth - load,
+    data: data - auth,
+    build: build - data,
+    wait: total - build,
+  };
+}
+
+/** Ab so viel Wartezeit nach dem Aufbau hing der Splash an einem Update, nicht am Start. */
+const UPDATE_WAIT_MS = 2000;
+
+/** Der Start war fertig aufgebaut, der Splash blieb aber stehen — die App hat auf eine neue Version gewartet. */
+export function isUpdateWait(sample: Pick<StartupSample, 't' | 'js' | 'a' | 'd' | 'r'>): boolean {
+  return typeof sample.r === 'number' && phasesOf(sample).wait > UPDATE_WAIT_MS;
+}
+
 export function percentile(values: number[], p: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);

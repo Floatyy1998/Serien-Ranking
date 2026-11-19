@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle,
   ContentCopy,
   Devices,
+  ExpandLess,
+  ExpandMore,
   HourglassBottom,
   NetworkCheck,
   People,
@@ -10,13 +12,17 @@ import {
 import {
   NET_CLASS_LABEL,
   NET_CLASS_ORDER,
+  PHASE_LABEL,
+  PHASE_ORDER,
   SLOW_START_MS,
   formatMs,
   formatRate,
   groupSamples,
+  isUpdateWait,
   latencyOf,
   nameOf,
   netClassOf,
+  phasesOf,
   rateOf,
   samplesToTsv,
   summarize,
@@ -43,7 +49,10 @@ const PLATFORM_LABEL: Record<StartupPlatform, string> = {
   web: 'Browser',
 };
 
-const SLOWEST_ROWS = 40;
+/** So viele Starts zeigt die Liste der auffälligen Starts höchstens. */
+const NOTABLE_ROWS = 10;
+/** So viele Starts zeigt ein aufgeklapptes Konto höchstens (neueste zuerst). */
+const ACCOUNT_ROWS = 25;
 
 function dayKeys(days: number): string[] {
   const keys: string[] = [];
@@ -60,10 +69,111 @@ function dayKeys(days: number): string[] {
 const toneOf = (ms: number): string =>
   ms > SLOW_START_MS ? 'adm-tone-bad' : ms > 3000 ? 'adm-tone-warn' : 'adm-tone-ok';
 
-const platformsOf = (samples: StartupSample[], uid: string): string =>
-  [...new Set(samples.filter((s) => s.u === uid).map((s) => PLATFORM_LABEL[s.p] ?? s.p))].join(
-    ', '
+const platformsOf = (samples: StartupSample[]): string =>
+  [...new Set(samples.map((s) => PLATFORM_LABEL[s.p] ?? s.p))].join(', ');
+
+const shortTime = (ts: number): string =>
+  ts
+    ? new Date(ts).toLocaleString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '–';
+
+/** Ein Balken je Start: Länge = Dauer im Verhältnis zum längsten, Farben = Abschnitte. */
+function PhaseBar({ sample, longest }: { sample: StartupSample; longest: number }) {
+  const phases = phasesOf(sample);
+  const title = PHASE_ORDER.filter((key) => phases[key] > 0)
+    .map((key) => `${PHASE_LABEL[key]} ${formatMs(phases[key])}`)
+    .join(' · ');
+  return (
+    <div className="adm-phasebar__track" title={title}>
+      <div
+        className="adm-phasebar"
+        style={{ width: `${Math.max(4, (sample.t / Math.max(longest, 1)) * 100)}%` }}
+      >
+        {PHASE_ORDER.map((key) =>
+          phases[key] > 0 ? (
+            <span
+              key={key}
+              className={`adm-phasebar__seg adm-phase--${key}`}
+              style={{ flexGrow: phases[key] }}
+            />
+          ) : null
+        )}
+      </div>
+    </div>
   );
+}
+
+function PhaseLegend() {
+  return (
+    <div className="adm-legend">
+      {PHASE_ORDER.map((key) => (
+        <span key={key} className="adm-legend__item">
+          <span className={`adm-legend__dot adm-phase--${key}`} />
+          {PHASE_LABEL[key]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Kompakte Liste einzelner Starts — im aufgeklappten Konto und bei den auffälligen Starts. */
+function StartRows({
+  rows,
+  names,
+  longest,
+}: {
+  rows: StartupSample[];
+  names?: StartupNames;
+  longest: number;
+}) {
+  return (
+    <div className="adm-table__wrap">
+      <table className="adm-table">
+        <thead>
+          <tr>
+            <th>Wann</th>
+            {names && <th>Name</th>}
+            <th>Plattform</th>
+            <th>Gesamt</th>
+            <th>Verlauf</th>
+            <th>Download</th>
+            <th>Latenz</th>
+            <th>Cache</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((s, i) => (
+            <tr key={`${s.u}-${s.ts}-${i}`}>
+              <td>{shortTime(s.ts)}</td>
+              {names && <td title={s.u}>{nameOf(s.u, names)}</td>}
+              <td>{PLATFORM_LABEL[s.p] ?? s.p}</td>
+              <td className={toneOf(s.t)}>
+                {formatMs(s.t)}
+                {isUpdateWait(s) && (
+                  <>
+                    {' '}
+                    <span className="adm-tag adm-tone-warn">Update</span>
+                  </>
+                )}
+              </td>
+              <td>
+                <PhaseBar sample={s} longest={longest} />
+              </td>
+              <td>{formatRate(rateOf(s))}</td>
+              <td>{formatMs(latencyOf(s))}</td>
+              <td>{typeof s.hit === 'number' ? `${s.hit} %` : '–'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 function GroupTable({
   title,
@@ -120,6 +230,7 @@ export function StartupTab() {
   const [loaded, setLoaded] = useState<{ days: number; samples: StartupSample[] } | null>(null);
   const [names, setNames] = useState<StartupNames>({});
   const [copied, setCopied] = useState(false);
+  const [openUid, setOpenUid] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -181,10 +292,15 @@ export function StartupTab() {
     () => groupSamples(samples, (s) => s.u).sort((a, b) => b.median - a.median),
     [samples]
   );
-  const slowest = useMemo(
-    () => [...samples].sort((a, b) => b.t - a.t).slice(0, SLOWEST_ROWS),
+  const notable = useMemo(
+    () =>
+      samples
+        .filter((s) => s.t > SLOW_START_MS)
+        .sort((a, b) => b.t - a.t)
+        .slice(0, NOTABLE_ROWS),
     [samples]
   );
+  const slowCount = useMemo(() => samples.filter((s) => s.t > SLOW_START_MS).length, [samples]);
   const platforms = useMemo(() => [...new Set((all ?? []).map((s) => s.p))], [all]);
 
   if (!all) return <div className="adm-empty">Laden...</div>;
@@ -194,6 +310,9 @@ export function StartupTab() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };
+
+  const startsOf = (uid: string): StartupSample[] =>
+    samples.filter((s) => s.u === uid).sort((a, b) => b.ts - a.ts);
 
   const stats = [
     { value: String(summary.count), label: 'gemessene Starts', tone: 'adm-tone-info' },
@@ -273,40 +392,77 @@ export function StartupTab() {
               </span>
             </div>
             <p className="adm-card__hint">
-              Langsamste zuerst. Download und Latenz stammen aus einem kurzen Verbindungstest nach
-              jedem Start (256 kB vom eigenen Server) und sind deshalb für jede Zeile gleich
-              gemessen. Ältere Zeilen ohne Test zeigen die an den App-Dateien gemessenen Werte oder
-              nichts.
+              Eine Zeile je Konto, langsamste zuerst — ein Klick zeigt die einzelnen Starts.
+              Download und Latenz stammen aus einem kurzen Verbindungstest nach jedem Start und sind
+              für alle gleich gemessen.
             </p>
             <div className="adm-table__wrap">
-              <table className="adm-table">
+              <table className="adm-table adm-table--clickable">
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Nutzername</th>
                     <th>Starts</th>
                     <th>Median</th>
-                    <th>95 %</th>
                     <th>langsamster</th>
                     <th>Download</th>
                     <th>Latenz</th>
                     <th>Plattform</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
-                  {byUser.map((group) => (
-                    <tr key={group.key}>
-                      <td title={group.key}>{nameOf(group.key, names)}</td>
-                      <td>{names[group.key]?.username || '–'}</td>
-                      <td>{group.count}</td>
-                      <td className={toneOf(group.median)}>{formatMs(group.median)}</td>
-                      <td className={toneOf(group.p95)}>{formatMs(group.p95)}</td>
-                      <td className={toneOf(group.max)}>{formatMs(group.max)}</td>
-                      <td>{formatRate(group.medianRate)}</td>
-                      <td>{formatMs(group.medianLatency)}</td>
-                      <td>{platformsOf(samples, group.key)}</td>
-                    </tr>
-                  ))}
+                  {byUser.map((group) => {
+                    const open = openUid === group.key;
+                    const username = names[group.key]?.username;
+                    const name = nameOf(group.key, names);
+                    const own = open ? startsOf(group.key) : [];
+                    return (
+                      <Fragment key={group.key}>
+                        <tr
+                          className={open ? 'adm-table__open' : undefined}
+                          onClick={() => setOpenUid(open ? null : group.key)}
+                          aria-expanded={open}
+                        >
+                          <td title={group.key}>
+                            {name}
+                            {username && username !== name && (
+                              <span className="adm-muted"> · {username}</span>
+                            )}
+                          </td>
+                          <td>{group.count}</td>
+                          <td className={toneOf(group.median)}>{formatMs(group.median)}</td>
+                          <td className={toneOf(group.max)}>{formatMs(group.max)}</td>
+                          <td>{formatRate(group.medianRate)}</td>
+                          <td>{formatMs(group.medianLatency)}</td>
+                          <td>{platformsOf(samples.filter((s) => s.u === group.key))}</td>
+                          <td>
+                            {open ? (
+                              <ExpandLess style={{ fontSize: 18 }} />
+                            ) : (
+                              <ExpandMore style={{ fontSize: 18 }} />
+                            )}
+                          </td>
+                        </tr>
+                        {open && (
+                          <tr className="adm-table__sub">
+                            <td colSpan={8}>
+                              <PhaseLegend />
+                              <StartRows
+                                rows={own.slice(0, ACCOUNT_ROWS)}
+                                longest={Math.max(...own.map((s) => s.t))}
+                              />
+                              {own.length > ACCOUNT_ROWS && (
+                                <p className="adm-note">
+                                  Die neuesten {ACCOUNT_ROWS} von {own.length} Starts — alle stehen
+                                  in der Kopie.
+                                </p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -333,54 +489,26 @@ export function StartupTab() {
             <div className="adm-card__head">
               <h3 className="adm-card__title">
                 <HourglassBottom style={{ fontSize: 18 }} />
-                Langsamste Starts
+                Auffällige Starts
               </h3>
               <span className="adm-card__meta">
-                <strong>{slowest.length}</strong> von {samples.length}
+                <strong>{slowCount}</strong> über {SLOW_START_MS / 1000} s
               </span>
             </div>
-            <p className="adm-card__hint">
-              Zeiten ab dem Öffnen: „App-Code" ist der Moment, in dem der Bildschirm nicht mehr leer
-              ist, „aufgebaut" der, in dem der Splash verschwinden darf.
-            </p>
-            <div className="adm-table__wrap">
-              <table className="adm-table">
-                <thead>
-                  <tr>
-                    <th>Wann</th>
-                    <th>Name</th>
-                    <th>Plattform</th>
-                    <th>Gesamt</th>
-                    <th>App-Code</th>
-                    <th>Anmeldung</th>
-                    <th>Daten</th>
-                    <th>aufgebaut</th>
-                    <th>Verbindung</th>
-                    <th>Download</th>
-                    <th>Latenz</th>
-                    <th>Cache</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {slowest.map((s, i) => (
-                    <tr key={`${s.u}-${s.ts}-${i}`}>
-                      <td>{s.ts ? new Date(s.ts).toLocaleString('de-DE') : '–'}</td>
-                      <td title={s.u}>{nameOf(s.u, names)}</td>
-                      <td>{PLATFORM_LABEL[s.p] ?? s.p}</td>
-                      <td className={toneOf(s.t)}>{formatMs(s.t)}</td>
-                      <td>{formatMs(s.js)}</td>
-                      <td>{formatMs(s.a)}</td>
-                      <td>{formatMs(s.d)}</td>
-                      <td>{formatMs(s.r)}</td>
-                      <td>{NET_CLASS_LABEL[netClassOf(s)]}</td>
-                      <td>{formatRate(rateOf(s))}</td>
-                      <td>{formatMs(latencyOf(s))}</td>
-                      <td>{typeof s.hit === 'number' ? `${s.hit} %` : '–'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {notable.length === 0 ? (
+              <p className="adm-note">
+                Kein Start über {SLOW_START_MS / 1000} s in diesem Zeitraum.
+              </p>
+            ) : (
+              <>
+                <p className="adm-card__hint">
+                  Nur Starts über {SLOW_START_MS / 1000} s, die {NOTABLE_ROWS} langsamsten. „Update"
+                  heißt: die App war fertig aufgebaut und hat danach auf eine neue Version gewartet.
+                </p>
+                <PhaseLegend />
+                <StartRows rows={notable} names={names} longest={notable[0].t} />
+              </>
+            )}
           </div>
         </>
       )}

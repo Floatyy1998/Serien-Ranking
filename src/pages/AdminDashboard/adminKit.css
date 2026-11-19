@@ -172,6 +172,83 @@
   cursor: pointer;
 }
 
+/* Aufgeklappte Zeile samt Unterzeile: gehören sichtbar zusammen. */
+.adm-table tbody tr.adm-table__open td {
+  background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+}
+
+.adm-table tbody tr.adm-table__sub,
+.adm-table tbody tr.adm-table__sub:hover {
+  cursor: default;
+}
+
+.adm-table tbody tr.adm-table__sub > td {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  white-space: normal;
+  background: var(--adm-inset);
+}
+
+.adm-table td .adm-muted {
+  color: var(--adm-muted);
+}
+
+/* ── Abschnitts-Balken: wo ging die Zeit hin ─────────────────────────── */
+.adm-phasebar__track {
+  width: 260px;
+  max-width: 34vw;
+}
+
+.adm-phasebar {
+  display: flex;
+  height: 8px;
+  min-width: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--adm-line-soft);
+}
+
+.adm-phasebar__seg {
+  display: block;
+  height: 100%;
+}
+
+.adm-phase--load {
+  background: var(--adm-info);
+}
+.adm-phase--auth {
+  background: #c08cff;
+}
+.adm-phase--data {
+  background: var(--adm-warn);
+}
+.adm-phase--build {
+  background: var(--adm-ok);
+}
+.adm-phase--wait {
+  background: var(--adm-bad);
+}
+
+.adm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--adm-muted);
+}
+
+.adm-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.adm-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
 /* ── Schaltflächen ───────────────────────────────────────────────────── */
 .adm-btn {
   padding: 9px 14px;
