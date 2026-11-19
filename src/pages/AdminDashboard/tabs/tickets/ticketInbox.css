@@ -199,6 +199,12 @@
   opacity: 0.5;
 }
 
+.tk-item--finished .tk-item__title {
+  color: var(--adm-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--adm-text) 60%, transparent);
+}
+
 .tk-item__bar {
   position: absolute;
   left: 6px;

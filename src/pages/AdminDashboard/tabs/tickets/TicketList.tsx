@@ -105,7 +105,9 @@ export function TicketList({ data, now }: { data: TicketsData; now: number }) {
           </div>
         )}
         {items.map(({ ticket, stale }) => {
-          const status = STATUS_CONFIG[normalizeStatus(ticket.status)];
+          const statusId = normalizeStatus(ticket.status);
+          const status = STATUS_CONFIG[statusId];
+          const finished = statusId === 'done' || statusId === 'obsolete';
           const priority = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
           const commentCount = Object.keys(ticket.comments || {}).length;
           const waiting = needsReply(ticket);
@@ -119,6 +121,7 @@ export function TicketList({ data, now }: { data: TicketsData; now: number }) {
                 'tk-item',
                 selectedId === ticket.id ? 'tk-item--on' : '',
                 stale ? 'tk-item--stale' : '',
+                finished ? 'tk-item--finished' : '',
               ].join(' ')}
               style={{ '--adm-tone': status.color } as CSSProperties}
               onClick={() => data.setSelectedId(ticket.id)}
