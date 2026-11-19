@@ -31,7 +31,8 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-import { SelfStandBand, computeSelfStand } from './SelfStandBand';
+import { SelfStandBand } from './SelfStandBand';
+import { computeSelfStand } from './selfStand';
 
 const entry = (over: Partial<LeaderboardEntry>): LeaderboardEntry => ({
   uid: 'u',

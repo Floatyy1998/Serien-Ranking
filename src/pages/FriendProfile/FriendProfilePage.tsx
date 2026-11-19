@@ -74,7 +74,7 @@ import { useFriendBooks } from './useFriendBooks';
 import { rankBooksByRating } from '../../lib/books/bookRanking';
 import { FriendReadingSection } from './FriendReadingSection';
 import { FriendBooksInsights } from './FriendBooksInsights';
-import { useOpenResult } from '../Books/discover/DiscoverParts';
+import { useOpenResult } from '../Books/discover/useOpenBook';
 import { RatingFolderGrid } from '../Ratings/RatingFolderGrid';
 import type { FolderPreview } from '../Ratings/ratingsHelpers';
 import { folderDisplayName, folderItemKey } from '../../lib/rating/ratingFolders';

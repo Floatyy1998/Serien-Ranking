@@ -9,7 +9,7 @@ import { t } from '../../../services/i18n';
 import type { Book, BookSeriesPart } from '../../../types/Book';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { BookCover } from '../components/BookCover';
-import { useOpenByTitle, useOpenResult } from '../discover/DiscoverParts';
+import { useOpenByTitle, useOpenResult } from '../discover/useOpenBook';
 import { bookPath } from '../helpers';
 import type { AdaptationMeta } from '../hooks/useAdaptationMeta';
 import { useSeriesPartBooks } from '../hooks/useSeriesPartBooks';

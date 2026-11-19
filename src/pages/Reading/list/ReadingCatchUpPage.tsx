@@ -32,7 +32,7 @@ import { t } from '../../../services/i18n';
 import type { Book } from '../../../types/Book';
 import { BookCover } from '../../Books/components/BookCover';
 import '../../Books/components/books.css';
-import { useOpenByTitle, useOpenResult } from '../../Books/discover/DiscoverParts';
+import { useOpenByTitle, useOpenResult } from '../../Books/discover/useOpenBook';
 import { bookPath, formatHours } from '../../Books/helpers';
 import { useNextVolumes } from '../../Books/hooks/useNextVolumes';
 import { useSeriesPartBooks } from '../../Books/hooks/useSeriesPartBooks';

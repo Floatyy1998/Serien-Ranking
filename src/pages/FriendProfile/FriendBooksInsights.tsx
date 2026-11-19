@@ -12,7 +12,7 @@ import type { Book, BookSearchResult } from '../../types/Book';
 import { BookCover } from '../Books/components/BookCover';
 import { ReadingTasteCard } from '../Books/components/ReadingTasteCard';
 import { GENRES } from '../Books/data/genres';
-import { useOpenByTitle, useOpenResult } from '../Books/discover/DiscoverParts';
+import { useOpenByTitle, useOpenResult } from '../Books/discover/useOpenBook';
 import { useNextVolumes } from '../Books/hooks/useNextVolumes';
 import { useReadingTaste } from '../Books/hooks/useReadingTaste';
 import { useSeriesPartBooks } from '../Books/hooks/useSeriesPartBooks';

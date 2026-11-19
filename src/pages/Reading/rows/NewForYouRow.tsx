@@ -7,7 +7,7 @@ import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { PLACEHOLDER_SVG } from '../../../lib/image/posterPlaceholder';
 import { getNewChapterEntries } from '../../../lib/manga/overview';
 import { t } from '../../../services/i18n';
-import { useOpenByTitle, useOpenResult } from '../../Books/discover/DiscoverParts';
+import { useOpenByTitle, useOpenResult } from '../../Books/discover/useOpenBook';
 import type { SeriesProgress } from '../../Books/hooks/useNextVolumes';
 import { useSeriesPartBooks } from '../../Books/hooks/useSeriesPartBooks';
 import { MangaPosterCard } from '../../Manga/components/MangaPosterCard';

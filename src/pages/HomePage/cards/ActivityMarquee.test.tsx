@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ActivityMarquee, marqueeDuration } from './ActivityMarquee';
+import { ActivityMarquee } from './ActivityMarquee';
+import { marqueeDuration } from './marqueeDuration';
 import type { FriendActivity } from '../../../types/Friend';
 
 const { navigateMock, actsRef } = vi.hoisted(() => ({

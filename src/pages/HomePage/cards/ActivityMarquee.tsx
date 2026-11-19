@@ -14,16 +14,9 @@ import { useTransitionNavigate } from '../../../hooks/ui/useTransitionNavigate';
 import type { FriendActivity } from '../../../types/Friend';
 import { t } from '../../../services/i18n';
 import './ActivityMarquee.css';
-
-// Leisurely reading pace – px per second. Lower = slower.
-const MARQUEE_PIXELS_PER_SECOND = 48;
+import { marqueeDuration } from './marqueeDuration';
 
 const MAX_ENTRIES = 14;
-
-/** Dauer einer Runde in Sekunden — die CSS-Animation schiebt das Band um genau eine Rundenbreite. */
-export function marqueeDuration(lapPx: number): number {
-  return lapPx > 0 ? lapPx / MARQUEE_PIXELS_PER_SECOND : 0;
-}
 
 /** Lesen-Seite: nur Bücher und Manga; Serien-Startseite: nur Serien und Filme. */
 const isReadingActivity = (a: FriendActivity) =>

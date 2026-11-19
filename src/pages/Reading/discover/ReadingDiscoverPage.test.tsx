@@ -89,8 +89,8 @@ vi.mock('../../Books/discover/useAddFlow', () => ({
 vi.mock('../../Manga/useAddManga', () => ({
   useAddManga: () => ({ add: addManga, addingId: null }),
 }));
+vi.mock('../../Books/discover/useOpenBook', () => ({ useOpenResult: () => vi.fn() }));
 vi.mock('../../Books/discover/DiscoverParts', () => ({
-  useOpenResult: () => vi.fn(),
   GenreTiles: ({ only }: { only?: string[] }) => (
     <div data-testid="block">{`genre-tiles:${only ? 'manga' : 'all'}`}</div>
   ),

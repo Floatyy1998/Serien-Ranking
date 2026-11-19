@@ -297,12 +297,13 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
           body: JSON.stringify({ texts, targetLang: 'de' }),
         });
         const data = (await res.json()) as { translations?: string[] };
-        if (res.ok && Array.isArray(data.translations)) {
+        const translated = data.translations;
+        if (res.ok && Array.isArray(translated)) {
           setTranslations((prev) => ({
             ...prev,
             [flag.id]: flag.title
-              ? { title: data.translations![0], text: data.translations![1], visible: true }
-              : { text: data.translations![0], visible: true },
+              ? { title: translated[0], text: translated[1], visible: true }
+              : { text: translated[0], visible: true },
           }));
         }
       } catch (err) {

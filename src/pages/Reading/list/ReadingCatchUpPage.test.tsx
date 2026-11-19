@@ -59,7 +59,7 @@ vi.mock('../../Books/hooks/useNextVolumes', () => ({
   useNextVolumes: (books: Book[]) => ({ progress: books.length ? state.volumes : [] }),
 }));
 vi.mock('../../Books/hooks/useSeriesPartBooks', () => ({ useSeriesPartBooks: () => ({}) }));
-vi.mock('../../Books/discover/DiscoverParts', () => ({
+vi.mock('../../Books/discover/useOpenBook', () => ({
   useOpenByTitle: () => ({ open: openByTitle }),
   useOpenResult: () => vi.fn(),
 }));

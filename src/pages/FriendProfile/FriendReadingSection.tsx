@@ -8,7 +8,7 @@ import { mangaStand, mangaStandLabel } from '../../lib/manga/progress';
 import { t } from '../../services/i18n';
 import type { Book } from '../../types/Book';
 import type { Manga } from '../../types/Manga';
-import { useOpenResult } from '../Books/discover/DiscoverParts';
+import { useOpenResult } from '../Books/discover/useOpenBook';
 import { formatRelativeDay } from '../Manga/mangaUtils';
 
 interface Props {

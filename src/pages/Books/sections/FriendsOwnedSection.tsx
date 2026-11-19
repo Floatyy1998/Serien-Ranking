@@ -7,7 +7,7 @@ import { bookAsResult } from '../../../lib/books/bookSearchMapping';
 import { t } from '../../../services/i18n';
 import type { Book } from '../../../types/Book';
 import { BookCover } from '../components/BookCover';
-import { useOpenResult } from '../discover/DiscoverParts';
+import { useOpenResult } from '../discover/useOpenBook';
 import { useFriendsOwnedBooks } from '../hooks/useFriendsOwnedBooks';
 
 /** Bücher, die Freunde besitzen und du noch nicht — zum Ausleihen anfragen. */

@@ -3,19 +3,13 @@ import { AnimatePresence, motion, type PanInfo, type Variants } from 'framer-mot
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
-import { useBooksList } from '../../../contexts/BooksListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useBookShelf, useBookShelves } from '../../../hooks/books/useBookShelf';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { useSwipeAxisLock } from '../../../hooks/ui/useSwipeAxisLock';
-import { sanitizeBookKey } from '../../../lib/books/bookIdentity';
 import { coverAtSize } from '../../../lib/books/bookSearchMapping';
 import { curateShelf, daySeed, mixShelves, resultKeys } from '../../../lib/books/discoverMix';
-import { volumeBookState } from '../../../lib/books/mangaBooks';
-import { splitVolume } from '../../../lib/books/mangaVolume';
-import { mangaPath } from '../../../lib/manga/mangaSource';
 import { fetchShelf, type ShelfId } from '../../../services/api/bookDiscovery';
-import { findBook } from '../../../services/api/booksApi';
 import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { BookSearchResult } from '../../../types/Book';
@@ -23,62 +17,16 @@ import { BookCover } from '../components/BookCover';
 import { pauseOffscreen } from '../components/pauseOffscreen';
 import '../components/books.css';
 import { GENRES, SHELF_TITLES } from '../data/genres';
-import { bookPath } from '../helpers';
 import './discover.css';
 import { useShelfClaim, useShelfTaken } from './discoverDedupe';
 import { useHideOwned } from './useAddFlow';
+import { useOpenResult } from './useOpenBook';
 
 const MIN_RATINGS = 5;
 
 /** Open Library bewertet mit 1–5 Sternen; angezeigt wird wie überall auf 0–10. */
 const ratingLabel = (r: BookSearchResult) =>
   r.avgRating && (r.ratingCount ?? 0) >= MIN_RATINGS ? (r.avgRating * 2).toFixed(1) : null;
-
-/** Öffnet eigene Bücher direkt, fremde als Vorschau mit den Treffer-Daten; Bände eigener Manga die Reihe samt Band. */
-export function useOpenResult() {
-  const navigate = useNavigate();
-  const ownedFor = useOwnedBooks();
-  const mangaFor = useMangaForBook();
-  const { seriesAsBooks } = useBooksList();
-  return (result: BookSearchResult) => {
-    const owned = ownedFor(result);
-    const manga = owned ? undefined : mangaFor(result);
-    // „Als Buch führen": Bände der Reihe öffnen als Buch, nicht auf der Manga-Seite.
-    if (manga && !seriesAsBooks.has(manga.anilistId)) {
-      navigate(
-        mangaPath(manga.anilistId, splitVolume(result.title).volume),
-        volumeBookState(result)
-      );
-      return;
-    }
-    navigate(bookPath(owned?.id ?? result.id), { state: { result } });
-  };
-}
-
-/** Öffnet ein Buch, von dem nur Titel und Autor bekannt sind (Wikidata): erst suchen, ohne Treffer Detail aus Titel + Autor. */
-export function useOpenByTitle() {
-  const navigate = useNavigate();
-  const ownedFor = useOwnedBooks();
-  const [busyKey, setBusyKey] = useState<string | null>(null);
-  const open = async (title: string, author?: string) => {
-    const key = `${title}|${author ?? ''}`;
-    if (busyKey) return;
-    setBusyKey(key);
-    try {
-      const result = (await findBook(title, author)) ?? {
-        id: sanitizeBookKey(`wd-${title}-${author ?? ''}`),
-        title,
-        authors: author ? [author] : [],
-        source: 'openlibrary' as const,
-      };
-      const owned = ownedFor(result);
-      navigate(bookPath(owned?.id ?? result.id), { state: { result } });
-    } finally {
-      setBusyKey(null);
-    }
-  };
-  return { open, busyKey };
-}
 
 export const DiscoverCard: React.FC<{
   result: BookSearchResult;

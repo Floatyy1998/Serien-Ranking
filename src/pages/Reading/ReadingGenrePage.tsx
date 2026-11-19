@@ -17,7 +17,7 @@ import { useAddFlow } from '../Books/discover/useAddFlow';
 import { MangaPosterCard } from '../Manga/components/MangaPosterCard';
 import { MangaPosterRow } from '../Manga/components/MangaPosterRow';
 import '../Manga/MangaPage.css';
-import { mangaFromAniList } from './discover/MixedDiscover';
+import { mangaFromAniList } from './discover/discoverManga';
 
 /** Ein Genre für Bücher und Manga zusammen — Ziel der Genre-Kacheln auf der Lesen-Seite. */
 export const ReadingGenrePage = () => {

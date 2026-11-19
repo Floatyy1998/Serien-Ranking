@@ -119,11 +119,14 @@ function parseTrakt(data: any): ParsedImport | null {
   ) => {
     matchedAny = true;
     const seriesKey = identityKey(ids);
-    if (!seriesByKey.has(seriesKey)) {
-      seriesByKey.set(seriesKey, { ...ids, title, episodes: [] });
-      epMaps.set(seriesKey, new Map());
+    let series = seriesByKey.get(seriesKey);
+    let eps = epMaps.get(seriesKey);
+    if (!series || !eps) {
+      series = { ...ids, title, episodes: [] };
+      eps = new Map();
+      seriesByKey.set(seriesKey, series);
+      epMaps.set(seriesKey, eps);
     }
-    const eps = epMaps.get(seriesKey)!;
     const key = epKey(season, episode);
     const existing = eps.get(key);
     if (existing) {
@@ -139,7 +142,7 @@ function parseTrakt(data: any): ParsedImport | null {
         count: Math.max(1, plays),
       };
       eps.set(key, item);
-      seriesByKey.get(seriesKey)!.episodes.push(item);
+      series.episodes.push(item);
     }
   };
 

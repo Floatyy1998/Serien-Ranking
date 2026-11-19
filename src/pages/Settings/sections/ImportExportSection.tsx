@@ -5,6 +5,7 @@
  * Commit läuft über den Backend-Job (/import/commit, importJobs/$uid).
  */
 import { FileDownload, FileUpload } from '@mui/icons-material';
+import type firebase from 'firebase/compat/app';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
@@ -48,7 +49,7 @@ export const ImportExportSection = () => {
   // Live-Progress des Import-Jobs (Backend schreibt importJobs/$uid)
   useEffect(() => {
     if (!user?.uid || !committing) return;
-    let ref: import('firebase/compat/app').default.database.Reference | null = null;
+    let ref: firebase.database.Reference | null = null;
     let listener: ((snap: { val: () => ImportJobState | null }) => void) | null = null;
     let cancelled = false;
     void (async () => {
@@ -163,6 +164,7 @@ export const ImportExportSection = () => {
   const newSeriesCount = parsed
     ? parsed.series.filter((s) => s.tmdbId != null && !knownIds.has(s.tmdbId)).length
     : 0;
+  const failed = job?.report?.failed ?? [];
 
   return (
     <>
@@ -267,11 +269,11 @@ export const ImportExportSection = () => {
                         sm: job.report.skippedMovies ?? 0,
                       }
                     )}
-                    {(job.report.failed?.length ?? 0) > 0 &&
-                      ` ${t('{n} Einträge fehlgeschlagen:', { n: job.report.failed!.length })} ${job.report
-                        .failed!.slice(0, 5)
+                    {failed.length > 0 &&
+                      ` ${t('{n} Einträge fehlgeschlagen:', { n: failed.length })} ${failed
+                        .slice(0, 5)
                         .map((f) => f.title || '?')
-                        .join(', ')}${job.report.failed!.length > 5 ? '…' : ''}`}
+                        .join(', ')}${failed.length > 5 ? '…' : ''}`}
                   </p>
                 )}
               </div>

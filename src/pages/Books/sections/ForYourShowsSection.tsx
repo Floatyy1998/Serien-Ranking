@@ -5,7 +5,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import type { ShowBookSuggestion } from '../../../hooks/books/useBasedOnBooks';
 import { t } from '../../../services/i18n';
 import { getImageUrl } from '../../../utils/imageUrl';
-import { useOpenByTitle } from '../discover/DiscoverParts';
+import { useOpenByTitle } from '../discover/useOpenBook';
 import '../discover/discover.css';
 import { pauseOffscreen } from '../components/pauseOffscreen';
 
