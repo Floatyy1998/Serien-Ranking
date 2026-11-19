@@ -54,17 +54,28 @@ export function measureThroughput(transfers: Transfer[]): number | undefined {
   return Math.round((bytes * 8) / activeMs);
 }
 
+type NetFields = Pick<StartupSample, 'dn' | 'lat' | 'kbps' | 'ttfb' | 'ct' | 'rtt' | 'dl'>;
+
+/** Download-Rate einer Zeile: der Verbindungstest, sonst die an den App-Dateien gemessene. */
+export function rateOf(sample: Pick<StartupSample, 'dn' | 'kbps'>): number | undefined {
+  return sample.dn ?? sample.kbps;
+}
+
+/** Latenz einer Zeile: der Verbindungstest, sonst die Antwortzeit der Startseite. */
+export function latencyOf(sample: Pick<StartupSample, 'lat' | 'ttfb'>): number | undefined {
+  return sample.lat ?? sample.ttfb;
+}
+
 /** Verbindungsklasse: gemessene Rate vor Antwortzeit vor Browser-Angabe. */
-export function netClassOf(
-  sample: Pick<StartupSample, 'kbps' | 'ttfb' | 'ct' | 'rtt' | 'dl'>
-): NetClass {
-  if (typeof sample.kbps === 'number') {
-    if (sample.kbps < 500) return 'sehr-langsam';
-    if (sample.kbps < 2000) return 'langsam';
-    if (sample.kbps < 10000) return 'mittel';
+export function netClassOf(sample: NetFields): NetClass {
+  const rate = rateOf(sample);
+  if (typeof rate === 'number') {
+    if (rate < 500) return 'sehr-langsam';
+    if (rate < 2000) return 'langsam';
+    if (rate < 10000) return 'mittel';
     return 'schnell';
   }
-  const latency = sample.ttfb ?? sample.rtt;
+  const latency = latencyOf(sample) ?? sample.rtt;
   if (typeof latency === 'number') {
     if (latency > 1500) return 'sehr-langsam';
     if (latency > 600) return 'langsam';
@@ -90,10 +101,21 @@ export interface StartupSummary {
   median: number;
   p75: number;
   p95: number;
+  /** Langsamster Start */
+  max: number;
   /** Anteil der Starts über SLOW_START_MS in Prozent */
   slowShare: number;
   /** Median der Zeit, bis der App-Code läuft */
   medianJs: number;
+  /** Median der Download-Rate in kbit/s, soweit gemessen */
+  medianRate?: number;
+  /** Median der Latenz in ms, soweit gemessen */
+  medianLatency?: number;
+}
+
+function medianOfKnown(values: (number | undefined)[]): number | undefined {
+  const known = values.filter((v): v is number => typeof v === 'number');
+  return known.length ? percentile(known, 50) : undefined;
 }
 
 export function summarize(samples: StartupSample[]): StartupSummary {
@@ -105,6 +127,9 @@ export function summarize(samples: StartupSample[]): StartupSummary {
     median: percentile(totals, 50),
     p75: percentile(totals, 75),
     p95: percentile(totals, 95),
+    max: totals.length ? Math.max(...totals) : 0,
+    medianRate: medianOfKnown(samples.map(rateOf)),
+    medianLatency: medianOfKnown(samples.map(latencyOf)),
     slowShare: samples.length ? Math.round((slow / samples.length) * 100) : 0,
     medianJs: percentile(
       samples.map((s) => s.js),
@@ -164,9 +189,70 @@ export function formatMs(ms: number | undefined): string {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1).replace('.', ',')} s` : `${Math.round(ms)} ms`;
 }
 
+/** Immer in Mbit/s, damit sich Zeilen untereinander vergleichen lassen. */
 export function formatRate(kbps: number | undefined): string {
   if (typeof kbps !== 'number') return '–';
-  return kbps >= 1000
-    ? `${(kbps / 1000).toFixed(1).replace('.', ',')} Mbit/s`
-    : `${Math.round(kbps)} kbit/s`;
+  const mbit = kbps / 1000;
+  return `${mbit.toFixed(mbit >= 10 ? 0 : 1).replace('.', ',')} Mbit/s`;
+}
+
+export interface StartupNames {
+  [uid: string]: { displayName?: string; username?: string } | undefined;
+}
+
+export function nameOf(uid: string, names: StartupNames): string {
+  const entry = names[uid];
+  return entry?.displayName || entry?.username || uid.slice(0, 8);
+}
+
+const TSV_HEAD = [
+  'Zeit',
+  'Name',
+  'Nutzername',
+  'Konto',
+  'Plattform',
+  'Build',
+  'Gesamt ms',
+  'App-Code ms',
+  'Anmeldung ms',
+  'Daten ms',
+  'Aufgebaut ms',
+  'Verbindung',
+  'Download Mbit/s',
+  'Latenz ms',
+  'Cache %',
+  'Netz laut Browser',
+];
+
+const cell = (value: string | number | undefined): string =>
+  value === undefined ? '' : String(value).replace(/[\t\r\n]+/g, ' ');
+
+/** Alle Messzeilen als Tabelle zum Einfügen in eine Tabellenkalkulation oder einen Chat. */
+export function samplesToTsv(samples: StartupSample[], names: StartupNames): string {
+  const rows = [...samples]
+    .sort((a, b) => b.ts - a.ts)
+    .map((s) => {
+      const rate = rateOf(s);
+      return [
+        s.ts ? new Date(s.ts).toLocaleString('de-DE') : '',
+        names[s.u]?.displayName || names[s.u]?.username || '',
+        names[s.u]?.username || '',
+        s.u,
+        s.p,
+        s.b,
+        s.t,
+        s.js,
+        s.a,
+        s.d,
+        s.r,
+        NET_CLASS_LABEL[netClassOf(s)],
+        typeof rate === 'number' ? (rate / 1000).toFixed(1).replace('.', ',') : undefined,
+        latencyOf(s),
+        s.hit,
+        s.ct,
+      ]
+        .map(cell)
+        .join('\t');
+    });
+  return [TSV_HEAD.join('\t'), ...rows].join('\n');
 }

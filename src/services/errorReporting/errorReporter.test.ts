@@ -33,6 +33,11 @@ vi.mock('../app/stylesheetRetry', () => ({
   willRetryStylesheet: () => stylesheetRetry.pending,
 }));
 
+const testRun = { active: false };
+vi.mock('../../lib/platform/testRun', () => ({
+  isTestRunHere: () => testRun.active,
+}));
+
 vi.mock('./context', () => ({
   collectEnvironment: (count: number) => ({ route: '/home', sessionErrorCount: count }),
   primeErrorContext: vi.fn(async () => {}),
@@ -58,6 +63,7 @@ beforeEach(() => {
   pushCounter = 0;
   localStorage.clear();
   stylesheetRetry.pending = false;
+  testRun.active = false;
   resetErrorReporter();
 });
 
@@ -147,6 +153,20 @@ describe('captureError', () => {
     captureError({ kind: 'error', name: 'DOMException', message: 'Zugriff verweigert' });
     await flush();
     expect(fb.sets).toHaveLength(1);
+  });
+
+  it('meldet nichts aus lokalen Builds und ferngesteuerten Browsern', async () => {
+    testRun.active = true;
+    setErrorReporterUser('u1');
+    captureError({
+      kind: 'error',
+      name: 'BackendFetch',
+      message: 'POST /hc/browse Verbindungsfehler: Failed to fetch (online=true)',
+    });
+    await flush();
+    expect(fb.sets).toHaveLength(0);
+    expect(localStorage.getItem('errorReportQueue')).toBeNull();
+    expect(localStorage.getItem('errorReportThrottle')).toBeNull();
   });
 
   it('wirft nie, auch bei kaputter Eingabe', () => {

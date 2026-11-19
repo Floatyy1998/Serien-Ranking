@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NetworkCheck, Devices, HourglassBottom } from '@mui/icons-material';
+import {
+  CheckCircle,
+  ContentCopy,
+  Devices,
+  HourglassBottom,
+  NetworkCheck,
+  People,
+} from '@mui/icons-material';
 import {
   NET_CLASS_LABEL,
   NET_CLASS_ORDER,
@@ -7,14 +14,20 @@ import {
   formatMs,
   formatRate,
   groupSamples,
+  latencyOf,
+  nameOf,
   netClassOf,
+  rateOf,
+  samplesToTsv,
   summarize,
   toSamples,
   type NetClass,
   type StartupGroup,
+  type StartupNames,
 } from '../../../lib/startup/startupStats';
 import { dbGet } from '../../../services/db/ref';
 import type { StartupPlatform, StartupSample } from '../../../types/StartupSample';
+import { copyTextToClipboard } from '../../../utils/clipboard';
 
 const RANGES = [
   { days: 1, label: 'Heute' },
@@ -47,13 +60,10 @@ function dayKeys(days: number): string[] {
 const toneOf = (ms: number): string =>
   ms > SLOW_START_MS ? 'adm-tone-bad' : ms > 3000 ? 'adm-tone-warn' : 'adm-tone-ok';
 
-function describeNet(sample: StartupSample): string {
-  const parts: string[] = [];
-  if (typeof sample.kbps === 'number') parts.push(formatRate(sample.kbps));
-  if (typeof sample.ttfb === 'number') parts.push(`Antwort ${formatMs(sample.ttfb)}`);
-  if (sample.ct) parts.push(sample.ct);
-  return parts.length ? parts.join(' · ') : 'unbekannt';
-}
+const platformsOf = (samples: StartupSample[], uid: string): string =>
+  [...new Set(samples.filter((s) => s.u === uid).map((s) => PLATFORM_LABEL[s.p] ?? s.p))].join(
+    ', '
+  );
 
 function GroupTable({
   title,
@@ -108,6 +118,8 @@ export function StartupTab() {
   const [days, setDays] = useState<number>(7);
   const [platform, setPlatform] = useState<StartupPlatform | null>(null);
   const [loaded, setLoaded] = useState<{ days: number; samples: StartupSample[] } | null>(null);
+  const [names, setNames] = useState<StartupNames>({});
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +138,33 @@ export function StartupTab() {
   }, [days]);
 
   const all = loaded?.days === days ? loaded.samples : null;
+
+  // Namen nur für die Konten holen, die in den Messungen vorkommen.
+  const uidKey = useMemo(() => [...new Set((all ?? []).map((s) => s.u))].sort().join(','), [all]);
+  useEffect(() => {
+    if (!uidKey) return;
+    let cancelled = false;
+    const uids = uidKey.split(',');
+    Promise.all(
+      uids.map((uid) =>
+        dbGet<{ displayName?: string; username?: string }>(`userSearchIndex/${uid}`).catch(
+          () => null
+        )
+      )
+    ).then((entries) => {
+      if (cancelled) return;
+      const next: StartupNames = {};
+      uids.forEach((uid, i) => {
+        const entry = entries[i];
+        if (entry) next[uid] = { displayName: entry.displayName, username: entry.username };
+      });
+      setNames(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [uidKey]);
+
   const samples = useMemo(
     () => (all ?? []).filter((s) => !platform || s.p === platform),
     [all, platform]
@@ -138,6 +177,10 @@ export function StartupTab() {
     );
   }, [samples]);
   const byPlatform = useMemo(() => groupSamples(samples, (s) => s.p), [samples]);
+  const byUser = useMemo(
+    () => groupSamples(samples, (s) => s.u).sort((a, b) => b.median - a.median),
+    [samples]
+  );
   const slowest = useMemo(
     () => [...samples].sort((a, b) => b.t - a.t).slice(0, SLOWEST_ROWS),
     [samples]
@@ -146,11 +189,16 @@ export function StartupTab() {
 
   if (!all) return <div className="adm-empty">Laden...</div>;
 
+  const copyAll = async () => {
+    if (!(await copyTextToClipboard(samplesToTsv(samples, names)))) return;
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
   const stats = [
     { value: String(summary.count), label: 'gemessene Starts', tone: 'adm-tone-info' },
     { value: String(summary.users), label: 'Konten', tone: '' },
     { value: formatMs(summary.median), label: 'Median', tone: toneOf(summary.median) },
-    { value: formatMs(summary.p75), label: '75 %', tone: toneOf(summary.p75) },
     { value: formatMs(summary.p95), label: '95 %', tone: toneOf(summary.p95) },
     {
       value: `${summary.slowShare} %`,
@@ -158,6 +206,8 @@ export function StartupTab() {
       tone: summary.slowShare > 10 ? 'adm-tone-bad' : '',
     },
     { value: formatMs(summary.medianJs), label: 'bis App-Code läuft (Median)', tone: '' },
+    { value: formatRate(summary.medianRate), label: 'Download (Median)', tone: '' },
+    { value: formatMs(summary.medianLatency), label: 'Latenz (Median)', tone: '' },
   ];
 
   return (
@@ -183,6 +233,17 @@ export function StartupTab() {
               {PLATFORM_LABEL[p] ?? p}
             </button>
           ))}
+        {samples.length > 0 && <span className="adm-chips__sep" />}
+        {samples.length > 0 && (
+          <button className="adm-chip" onClick={copyAll}>
+            {copied ? (
+              <CheckCircle style={{ fontSize: 14 }} />
+            ) : (
+              <ContentCopy style={{ fontSize: 14 }} />
+            )}{' '}
+            {copied ? 'Kopiert' : `Alle ${samples.length} Zeilen kopieren`}
+          </button>
+        )}
       </div>
 
       {samples.length === 0 ? (
@@ -199,6 +260,56 @@ export function StartupTab() {
                 <div className="adm-stat__label">{stat.label}</div>
               </div>
             ))}
+          </div>
+
+          <div className="adm-card">
+            <div className="adm-card__head">
+              <h3 className="adm-card__title">
+                <People style={{ fontSize: 18 }} />
+                Nach Konto
+              </h3>
+              <span className="adm-card__meta">
+                <strong>{byUser.length}</strong> Konten
+              </span>
+            </div>
+            <p className="adm-card__hint">
+              Langsamste zuerst. Download und Latenz stammen aus einem kurzen Verbindungstest nach
+              jedem Start (256 kB vom eigenen Server) und sind deshalb für jede Zeile gleich
+              gemessen. Ältere Zeilen ohne Test zeigen die an den App-Dateien gemessenen Werte oder
+              nichts.
+            </p>
+            <div className="adm-table__wrap">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Nutzername</th>
+                    <th>Starts</th>
+                    <th>Median</th>
+                    <th>95 %</th>
+                    <th>langsamster</th>
+                    <th>Download</th>
+                    <th>Latenz</th>
+                    <th>Plattform</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {byUser.map((group) => (
+                    <tr key={group.key}>
+                      <td title={group.key}>{nameOf(group.key, names)}</td>
+                      <td>{names[group.key]?.username || '–'}</td>
+                      <td>{group.count}</td>
+                      <td className={toneOf(group.median)}>{formatMs(group.median)}</td>
+                      <td className={toneOf(group.p95)}>{formatMs(group.p95)}</td>
+                      <td className={toneOf(group.max)}>{formatMs(group.max)}</td>
+                      <td>{formatRate(group.medianRate)}</td>
+                      <td>{formatMs(group.medianLatency)}</td>
+                      <td>{platformsOf(samples, group.key)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="adm-grid">
@@ -230,15 +341,14 @@ export function StartupTab() {
             </div>
             <p className="adm-card__hint">
               Zeiten ab dem Öffnen: „App-Code" ist der Moment, in dem der Bildschirm nicht mehr leer
-              ist, „aufgebaut" der, in dem der Splash verschwinden darf. Die Rate ist an den
-              App-Dateien gemessen und fehlt, wenn alles aus dem Cache kam.
+              ist, „aufgebaut" der, in dem der Splash verschwinden darf.
             </p>
             <div className="adm-table__wrap">
               <table className="adm-table">
                 <thead>
                   <tr>
                     <th>Wann</th>
-                    <th>Konto</th>
+                    <th>Name</th>
                     <th>Plattform</th>
                     <th>Gesamt</th>
                     <th>App-Code</th>
@@ -246,6 +356,8 @@ export function StartupTab() {
                     <th>Daten</th>
                     <th>aufgebaut</th>
                     <th>Verbindung</th>
+                    <th>Download</th>
+                    <th>Latenz</th>
                     <th>Cache</th>
                   </tr>
                 </thead>
@@ -253,16 +365,16 @@ export function StartupTab() {
                   {slowest.map((s, i) => (
                     <tr key={`${s.u}-${s.ts}-${i}`}>
                       <td>{s.ts ? new Date(s.ts).toLocaleString('de-DE') : '–'}</td>
-                      <td title={s.u}>{s.u.slice(0, 6)}</td>
+                      <td title={s.u}>{nameOf(s.u, names)}</td>
                       <td>{PLATFORM_LABEL[s.p] ?? s.p}</td>
                       <td className={toneOf(s.t)}>{formatMs(s.t)}</td>
                       <td>{formatMs(s.js)}</td>
                       <td>{formatMs(s.a)}</td>
                       <td>{formatMs(s.d)}</td>
                       <td>{formatMs(s.r)}</td>
-                      <td>
-                        {NET_CLASS_LABEL[netClassOf(s)]} ({describeNet(s)})
-                      </td>
+                      <td>{NET_CLASS_LABEL[netClassOf(s)]}</td>
+                      <td>{formatRate(rateOf(s))}</td>
+                      <td>{formatMs(latencyOf(s))}</td>
                       <td>{typeof s.hit === 'number' ? `${s.hit} %` : '–'}</td>
                     </tr>
                   ))}

@@ -2,14 +2,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-const { dbGetMock } = vi.hoisted(() => ({ dbGetMock: vi.fn() }));
+const { dbGetMock, copyMock } = vi.hoisted(() => ({ dbGetMock: vi.fn(), copyMock: vi.fn() }));
 vi.mock('../../../services/db/ref', () => ({ dbGet: dbGetMock }));
+vi.mock('../../../utils/clipboard', () => ({ copyTextToClipboard: copyMock }));
 
 import { StartupTab } from './StartupTab';
 
 afterEach(() => {
   cleanup();
   dbGetMock.mockReset();
+  copyMock.mockReset();
 });
 
 const rows = {
@@ -60,33 +62,76 @@ const today = {
   bbbbbb222: { s2: strip(s2) },
 };
 
+const NAMES: Record<string, { displayName?: string; username?: string }> = {
+  aaaaaa111: { displayName: 'Anna', username: 'anna92' },
+  bbbbbb222: { username: 'ben' },
+};
+
+/** Der erste Tagesknoten liefert die Messungen, die Namen kommen aus dem Suchindex. */
+function serve(day: unknown) {
+  let served = false;
+  dbGetMock.mockImplementation(async (path: string) => {
+    if (path.startsWith('userSearchIndex/')) return NAMES[path.split('/')[1]] ?? null;
+    if (served) return null;
+    served = true;
+    return day;
+  });
+}
+
+const dayReads = () =>
+  dbGetMock.mock.calls.filter(([path]) => String(path).startsWith('analytics/')).length;
+
 describe('StartupTab', () => {
-  it('zeigt Kennzahlen, Gruppen und die langsamsten Starts', async () => {
-    dbGetMock.mockResolvedValueOnce(today).mockResolvedValue(null);
+  it('zeigt Kennzahlen, Gruppen und die langsamsten Starts mit Namen', async () => {
+    serve(today);
     render(<StartupTab />);
     await waitFor(() => expect(screen.getByText('gemessene Starts')).toBeInTheDocument());
-    expect(dbGetMock).toHaveBeenCalledTimes(7);
+    expect(dayReads()).toBe(7);
+    expect(screen.getByText('Nach Konto')).toBeInTheDocument();
     expect(screen.getByText('Nach Verbindung')).toBeInTheDocument();
     expect(screen.getByText('Nach Plattform')).toBeInTheDocument();
     expect(screen.getAllByText('9,4 s').length).toBeGreaterThan(0);
-    expect(screen.getByText(/sehr langsam \(320 kbit\/s · 3g\)/)).toBeInTheDocument();
-    expect(screen.getByText('bbbbbb')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByText('Anna').length).toBeGreaterThan(0));
+    expect(screen.getByText('anna92')).toBeInTheDocument();
+    expect(screen.getAllByText('ben').length).toBeGreaterThan(0);
+  });
+
+  it('nennt die Verbindung für jede Zeile in denselben Einheiten', async () => {
+    serve(today);
+    render(<StartupTab />);
+    await waitFor(() => expect(screen.getByText('Langsamste Starts')).toBeInTheDocument());
+    expect(screen.getAllByText('0,3 Mbit/s').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('24 Mbit/s').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/3g/)).not.toBeInTheDocument();
+  });
+
+  it('kopiert alle Zeilen als Tabelle', async () => {
+    serve(today);
+    copyMock.mockResolvedValue(true);
+    render(<StartupTab />);
+    await waitFor(() => expect(screen.getAllByText('Anna').length).toBeGreaterThan(0));
+    fireEvent.click(screen.getByRole('button', { name: /Alle 3 Zeilen kopieren/ }));
+    await waitFor(() => expect(screen.getByText('Kopiert')).toBeInTheDocument());
+    const text = copyMock.mock.calls[0][0] as string;
+    expect(text.split('\n')).toHaveLength(4);
+    expect(text).toContain('anna92');
+    expect(text).toContain('bbbbbb222');
   });
 
   it('filtert nach Plattform', async () => {
-    dbGetMock.mockResolvedValueOnce(today).mockResolvedValue(null);
+    serve(today);
     render(<StartupTab />);
-    await waitFor(() => expect(screen.getByText('Langsamste Starts')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('ben').length).toBeGreaterThan(0));
     fireEvent.click(screen.getByRole('button', { name: 'iOS-App' }));
-    expect(screen.queryByText('bbbbbb')).not.toBeInTheDocument();
-    expect(screen.getAllByText('aaaaaa')).toHaveLength(2);
+    expect(screen.queryByText('ben')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Anna').length).toBeGreaterThan(0);
   });
 
   it('erklärt den leeren Zustand und lädt beim Zeitraumwechsel neu', async () => {
-    dbGetMock.mockResolvedValue(null);
+    serve(null);
     render(<StartupTab />);
     await waitFor(() => expect(screen.getByText(/Noch keine Messungen/)).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'Heute' }));
-    await waitFor(() => expect(dbGetMock).toHaveBeenCalledTimes(8));
+    await waitFor(() => expect(dayReads()).toBe(8));
   });
 });

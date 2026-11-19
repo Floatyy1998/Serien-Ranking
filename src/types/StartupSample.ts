@@ -19,6 +19,10 @@ export interface StartupSample {
   p: StartupPlatform;
   /** Build-Kennung */
   b: string;
+  /** Download-Rate des Verbindungstests in kbit/s (services/app/netProbe) */
+  dn?: number;
+  /** Latenz des Verbindungstests in ms */
+  lat?: number;
   /** Gemessene Download-Rate der App-Dateien in kbit/s (fehlt, wenn alles aus dem Cache kam) */
   kbps?: number;
   /** Übertragene App-Dateien in kB */

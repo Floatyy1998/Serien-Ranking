@@ -13,6 +13,7 @@ import { buildFingerprint } from '../../lib/errorReport/fingerprint';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { redactUrl, shortStack, truncate } from '../../lib/errorReport/redact';
 import { decideThrottle, type ThrottleState } from '../../lib/errorReport/throttle';
+import { isTestRunHere } from '../../lib/platform/testRun';
 import { willRetryStylesheet } from '../app/stylesheetRetry';
 import { dbRef, serverTimestamp } from '../db/ref';
 import { addBreadcrumb, getBreadcrumbs, installBreadcrumbs, sessionAgeMs } from './breadcrumbs';
@@ -157,6 +158,7 @@ export function captureError(input: CaptureInput): void {
     if (isServiceWorkerRegistration(input)) return;
     if (isResizeObserverLoop(input)) return;
     logToConsoleBuffer(input);
+    if (isTestRunHere()) return;
     const fingerprint = buildFingerprint(input);
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);

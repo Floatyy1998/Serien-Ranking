@@ -2,14 +2,18 @@
  * Misst einen App-Start (Dauer je Abschnitt + Verbindung) und legt ihn in der
  * eigenen Erhebung ab — nur mit Einwilligung, siehe analyticsService.
  */
+import { isTestRunHere } from '../../lib/platform/testRun';
 import { measureThroughput } from '../../lib/startup/startupStats';
 import type { StartupSample } from '../../types/StartupSample';
 import { detectPlatform } from '../errorReporting/context';
-import { logAppStart } from '../firebase/analytics';
+import { getAnalyticsConsent, logAppStart } from '../firebase/analytics';
 import { appCodeStartedAt, startupTimings } from './appReady';
+import { probeNetwork } from './netProbe';
 
 const DAILY_CAP = 10;
 const CAP_KEY = 'startupLogDay';
+/** Der Verbindungstest läuft erst, wenn die Startseite zur Ruhe gekommen ist. */
+const PROBE_DELAY_MS = 1500;
 
 interface NetworkInformation {
   effectiveType?: string;
@@ -90,7 +94,9 @@ export function recordStartup(): void {
   if (recorded) return;
   recorded = true;
   document.removeEventListener('visibilitychange', markHidden);
-  if (import.meta.env.DEV || hiddenDuringStart) return;
+  if (import.meta.env.DEV || hiddenDuringStart || isTestRunHere()) return;
+  // Ohne Einwilligung wird weder gezählt noch der Verbindungstest geladen.
+  if (getAnalyticsConsent() !== true) return;
   const total = round(performance.now());
   if (!total || !underDailyCap()) return;
 
@@ -110,5 +116,13 @@ export function recordStartup(): void {
   for (const [key, value] of Object.entries(optional)) {
     if (value !== undefined) sample[key] = value;
   }
-  logAppStart(sample);
+  setTimeout(() => {
+    void probeNetwork()
+      .catch(() => ({}) as Awaited<ReturnType<typeof probeNetwork>>)
+      .then((net) => {
+        if (net.lat !== undefined) sample.lat = net.lat;
+        if (net.dn !== undefined) sample.dn = net.dn;
+        logAppStart(sample);
+      });
+  }, PROBE_DELAY_MS);
 }

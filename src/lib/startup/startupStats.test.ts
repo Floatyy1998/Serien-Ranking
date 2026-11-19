@@ -4,9 +4,13 @@ import {
   formatMs,
   formatRate,
   groupSamples,
+  latencyOf,
   measureThroughput,
+  nameOf,
   netClassOf,
   percentile,
+  rateOf,
+  samplesToTsv,
   summarize,
   toSamples,
 } from './startupStats';
@@ -51,6 +55,14 @@ describe('netClassOf', () => {
     expect(netClassOf({ kbps: 40000 })).toBe('schnell');
   });
 
+  it('nimmt den Verbindungstest vor der Messung an den App-Dateien', () => {
+    expect(netClassOf({ dn: 300, kbps: 40000 })).toBe('sehr-langsam');
+    expect(rateOf({ dn: 300, kbps: 40000 })).toBe(300);
+    expect(rateOf({ kbps: 40000 })).toBe(40000);
+    expect(latencyOf({ lat: 70, ttfb: 400 })).toBe(70);
+    expect(latencyOf({ ttfb: 400 })).toBe(400);
+  });
+
   it('fällt auf die Antwortzeit zurück, wenn alles aus dem Cache kam', () => {
     expect(netClassOf({ ttfb: 2000 })).toBe('sehr-langsam');
     expect(netClassOf({ ttfb: 800 })).toBe('langsam');
@@ -86,6 +98,18 @@ describe('percentile / summarize', () => {
     expect(s.median).toBe(2000);
     expect(s.slowShare).toBe(25);
     expect(s.medianJs).toBe(500);
+    expect(s.max).toBe(9000);
+    expect(s.medianRate).toBeUndefined();
+  });
+
+  it('bildet Download und Latenz nur über Zeilen, die sie haben', () => {
+    const s = summarize([
+      sample({ dn: 4000, lat: 60 }),
+      sample({ dn: 20000, lat: 30 }),
+      sample({ ttfb: 500 }),
+    ]);
+    expect(s.medianRate).toBe(4000);
+    expect(s.medianLatency).toBe(60);
   });
 });
 
@@ -127,7 +151,51 @@ describe('Formatierung', () => {
     expect(formatMs(850)).toBe('850 ms');
     expect(formatMs(2350)).toBe('2,4 s');
     expect(formatMs(undefined)).toBe('–');
-    expect(formatRate(640)).toBe('640 kbit/s');
-    expect(formatRate(12500)).toBe('12,5 Mbit/s');
+    expect(formatRate(640)).toBe('0,6 Mbit/s');
+    expect(formatRate(4200)).toBe('4,2 Mbit/s');
+    expect(formatRate(12500)).toBe('13 Mbit/s');
+    expect(formatRate(undefined)).toBe('–');
+  });
+});
+
+describe('Namen und Kopieren', () => {
+  const names = { u1: { displayName: 'Anna', username: 'anna92' }, u2: { username: 'ben' } };
+
+  it('zeigt den Anzeigenamen, sonst den Nutzernamen, sonst die Kennung', () => {
+    expect(nameOf('u1', names)).toBe('Anna');
+    expect(nameOf('u2', names)).toBe('ben');
+    expect(nameOf('unbekannt-0123456789', names)).toBe('unbekann');
+  });
+
+  it('schreibt alle Zeilen als Tabelle mit Kopfzeile, neueste zuerst', () => {
+    const tsv = samplesToTsv(
+      [
+        sample({ u: 'u1', ts: 1000, t: 2100, js: 400, p: 'ios', dn: 12500, lat: 70, hit: 100 }),
+        sample({
+          u: 'u2',
+          ts: 5000,
+          t: 9400,
+          js: 6100,
+          p: 'android',
+          kbps: 320,
+          ttfb: 900,
+          ct: '3g',
+        }),
+      ],
+      names
+    );
+    const lines = tsv.split('\n');
+    expect(lines).toHaveLength(3);
+    const head = lines[0].split('\t');
+    const first = lines[1].split('\t');
+    const second = lines[2].split('\t');
+    expect(head.slice(1, 5)).toEqual(['Name', 'Nutzername', 'Konto', 'Plattform']);
+    expect(first.length).toBe(head.length);
+    expect(first.slice(1, 5)).toEqual(['ben', 'ben', 'u2', 'android']);
+    expect(first[head.indexOf('Download Mbit/s')]).toBe('0,3');
+    expect(first[head.indexOf('Latenz ms')]).toBe('900');
+    expect(first[head.indexOf('Verbindung')]).toBe('sehr langsam');
+    expect(second.slice(1, 3)).toEqual(['Anna', 'anna92']);
+    expect(second[head.indexOf('Download Mbit/s')]).toBe('12,5');
   });
 });
