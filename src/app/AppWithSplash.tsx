@@ -8,6 +8,7 @@ import {
   isReadyToRender,
 } from '../services/app/appReady';
 import { whenRenderSettled } from '../services/app/renderSettled';
+import { recordStartup } from '../services/app/startupMetrics';
 import {
   applyDisplayScale,
   getDisplayScale,
@@ -100,6 +101,7 @@ export const AppWithSplash: React.FC = () => {
   const handleComplete = useCallback(() => {
     window.splashScreenComplete = true;
     setShowSplash(false);
+    recordStartup();
   }, []);
   const waitForCondition = useCallback(() => allSystemsReady, [allSystemsReady]);
 

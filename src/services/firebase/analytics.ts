@@ -33,6 +33,10 @@ export function setAnalyticsUser(uid: string | null) {
   analyticsService.setUser(uid);
 }
 
+/** Gemessener App-Start (Dauer + Verbindung) — nur mit Einwilligung, siehe analyticsService. */
+export const logAppStart = (sample: Record<string, string | number>) =>
+  analyticsService.logStart(sample);
+
 // ─── Essential events (actually tracked) ─────────────────────────────────
 
 // Auth

@@ -244,6 +244,24 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Ein gemessener App-Start als eigene Zeile. Bewusst ein eigener Write: im
+   * Sammel-Update würde eine abgelehnte Zeile den ganzen Flush scheitern lassen.
+   */
+  logStart(sample: Record<string, string | number>): void {
+    if (!this.enabled || !this.userId) return;
+    try {
+      firebase
+        .database()
+        .ref(`analytics/global/daily/${todayKey()}/starts`)
+        .push()
+        .set({ ...sample, u: this.userId, ts: firebase.database.ServerValue.TIMESTAMP })
+        .catch(() => {});
+    } catch {
+      // Non-critical
+    }
+  }
+
   /** Mark this user as active today in global DAU/MAU */
   private async updateMeta(): Promise<void> {
     if (!this.userId || !this.enabled) return;

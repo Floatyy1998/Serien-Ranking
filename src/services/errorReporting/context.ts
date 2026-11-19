@@ -29,7 +29,7 @@ export async function primeErrorContext(): Promise<void> {
   }
 }
 
-function detectPlatform(): ErrorPlatform {
+export function detectPlatform(): ErrorPlatform {
   const root = document.documentElement.classList;
   if (root.contains('native-ios')) return 'ios';
   if (root.contains('native-android')) return 'android';

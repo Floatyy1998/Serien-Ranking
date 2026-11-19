@@ -11,6 +11,7 @@ import {
   Groups,
   HealthAndSafety,
   History,
+  HourglassBottom,
   Message,
   NewReleases,
   Refresh,
@@ -47,6 +48,7 @@ import { AnimeFillerTab } from './tabs/AnimeFillerTab';
 import { CrossoversTab } from './tabs/CrossoversTab';
 import { TmdbAheadTab } from './tabs/TmdbAheadTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
+import { StartupTab } from './tabs/StartupTab';
 import { ModerationTab } from './tabs/ModerationTab';
 import { SecurityTab } from './tabs/SecurityTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
@@ -129,6 +131,12 @@ const TABS = [
     icon: <SwapHoriz style={{ fontSize: 16 }} />,
   },
   { id: 'performance', label: 'Perf', group: 'Betrieb', icon: <Timer style={{ fontSize: 16 }} /> },
+  {
+    id: 'startup',
+    label: 'Ladezeiten',
+    group: 'Betrieb',
+    icon: <HourglassBottom style={{ fontSize: 16 }} />,
+  },
   {
     id: 'client-errors',
     label: 'Client-Fehler',
@@ -297,6 +305,7 @@ export function AdminDashboardPage() {
               {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'crossovers' && <CrossoversTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
+              {activeTab === 'startup' && <StartupTab />}
               {activeTab === 'client-errors' && <ClientErrorsTab />}
               {activeTab === 'suspicious' && <SuspiciousAccountsTab />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}

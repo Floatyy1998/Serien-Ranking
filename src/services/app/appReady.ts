@@ -21,6 +21,9 @@ declare global {
   }
 }
 
+/** ms seit der Navigation, als der App-Code zu laufen begann — bis dahin ist der Bildschirm leer. */
+export const appCodeStartedAt = typeof performance !== 'undefined' ? performance.now() : 0;
+
 /** Feuert bei jeder echten Aenderung an appReadyStatus. */
 export const APP_READY_EVENT = 'appReadyChange';
 

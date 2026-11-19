@@ -144,6 +144,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.adm-table td[class*='adm-tone-'] {
+  color: var(--adm-tone-text, var(--adm-text));
+  font-weight: 600;
+}
+
 .adm-table tbody tr:last-child td {
   border-bottom: 0;
 }
