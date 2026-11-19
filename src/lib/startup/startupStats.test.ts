@@ -106,13 +106,18 @@ describe('groupSamples', () => {
 describe('toSamples', () => {
   it('übernimmt nur Einträge, die wie eine Messung aussehen', () => {
     const out = toSamples({
-      a: { u: 'u1', t: 1500, js: 200, p: 'ios', b: 'x', ts: 5 },
-      b: { u: 'u1', t: 'kaputt' },
-      c: null,
-      d: { t: 900 },
+      u1: {
+        a: { t: 1500, js: 200, p: 'ios', b: 'x', ts: 5 },
+        b: { t: 'kaputt' },
+        c: null,
+      },
+      u2: { d: { t: 900 } },
+      u3: 'kaputt',
     });
-    expect(out).toHaveLength(1);
-    expect(out[0].p).toBe('ios');
+    expect(out.map((s) => [s.u, s.t, s.p])).toEqual([
+      ['u1', 1500, 'ios'],
+      ['u2', 900, 'web'],
+    ]);
     expect(toSamples(null)).toEqual([]);
   });
 });

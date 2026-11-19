@@ -133,22 +133,28 @@ export function groupSamples(
     .sort((a, b) => b.count - a.count);
 }
 
-/** Nur Einträge, die wie eine Messung aussehen — die Rules prüfen nicht jedes Feld. */
+/**
+ * Liest den Tagesknoten `starts/{uid}/{id}`. Nur Einträge, die wie eine Messung
+ * aussehen — die Rules prüfen nicht jedes Feld.
+ */
 export function toSamples(raw: unknown): StartupSample[] {
   if (!raw || typeof raw !== 'object') return [];
   const out: StartupSample[] = [];
-  for (const value of Object.values(raw as Record<string, unknown>)) {
-    const s = value as Partial<StartupSample> | null;
-    if (!s || typeof s.t !== 'number' || typeof s.u !== 'string' || s.t <= 0) continue;
-    out.push({
-      ...s,
-      u: s.u,
-      t: s.t,
-      ts: typeof s.ts === 'number' ? s.ts : 0,
-      js: typeof s.js === 'number' ? s.js : 0,
-      p: s.p ?? 'web',
-      b: typeof s.b === 'string' ? s.b : '',
-    });
+  for (const [uid, rows] of Object.entries(raw as Record<string, unknown>)) {
+    if (!rows || typeof rows !== 'object') continue;
+    for (const value of Object.values(rows as Record<string, unknown>)) {
+      const s = value as Partial<StartupSample> | null;
+      if (!s || typeof s !== 'object' || typeof s.t !== 'number' || s.t <= 0) continue;
+      out.push({
+        ...s,
+        u: uid,
+        t: s.t,
+        ts: typeof s.ts === 'number' ? s.ts : 0,
+        js: typeof s.js === 'number' ? s.js : 0,
+        p: s.p ?? 'web',
+        b: typeof s.b === 'string' ? s.b : '',
+      });
+    }
   }
   return out;
 }

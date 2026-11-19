@@ -12,7 +12,7 @@ afterEach(() => {
   dbGetMock.mockReset();
 });
 
-const today = {
+const rows = {
   s1: {
     u: 'aaaaaa111',
     ts: 1795126000000,
@@ -51,6 +51,13 @@ const today = {
     kbps: 24000,
     hit: 40,
   },
+};
+
+const { s1, s2, s3 } = rows;
+const strip = ({ u: _u, ...rest }: (typeof rows)['s1' | 's2' | 's3']) => rest;
+const today = {
+  aaaaaa111: { s1: strip(s1), s3: strip(s3) },
+  bbbbbb222: { s2: strip(s2) },
 };
 
 describe('StartupTab', () => {

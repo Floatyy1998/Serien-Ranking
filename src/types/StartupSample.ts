@@ -2,7 +2,7 @@ export type StartupPlatform = 'ios' | 'android' | 'electron' | 'pwa' | 'web';
 
 /** Ein gemessener App-Start. Kurze Schlüssel, weil jede Zeile in der RTDB liegt. */
 export interface StartupSample {
-  /** Konto */
+  /** Konto — steht im Pfad, nicht in der Zeile */
   u: string;
   /** Serverzeit des Eintrags */
   ts: number;

@@ -245,7 +245,8 @@ class AnalyticsService {
   }
 
   /**
-   * Ein gemessener App-Start als eigene Zeile. Bewusst ein eigener Write: im
+   * Ein gemessener App-Start als eigene Zeile, je Konto abgelegt (die
+   * Kontolöschung räumt den Pfad mit). Bewusst ein eigener Write: im
    * Sammel-Update würde eine abgelehnte Zeile den ganzen Flush scheitern lassen.
    */
   logStart(sample: Record<string, string | number>): void {
@@ -253,9 +254,9 @@ class AnalyticsService {
     try {
       firebase
         .database()
-        .ref(`analytics/global/daily/${todayKey()}/starts`)
+        .ref(`analytics/global/daily/${todayKey()}/starts/${this.userId}`)
         .push()
-        .set({ ...sample, u: this.userId, ts: firebase.database.ServerValue.TIMESTAMP })
+        .set({ ...sample, ts: firebase.database.ServerValue.TIMESTAMP })
         .catch(() => {});
     } catch {
       // Non-critical
