@@ -452,6 +452,14 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'Tu cuenta funciona en todas partes con el mismo progreso: como app para iPhone, iPad y Android, en el ordenador en el navegador en tv-rank.de y como app para Windows. Todas las opciones están ahora reunidas en Ajustes, en «General».',
   'Geräte ansehen': 'Ver dispositivos',
+  'November 2026 – Countdown für Filme': 'Noviembre de 2026 – Cuenta atrás para películas',
+  'Filme im Countdown': 'Películas en la cuenta atrás',
+  'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':
+    'La cuenta atrás ahora también incluye películas. Cada película de tu lista que aún no has visto y que todavía no se ha estrenado aparece con los días que faltan para su estreno en cines en tu país. Si una película solo llega al streaming, cuenta hasta su estreno en streaming. Con las pestañas Todo, Series y Películas acotas la lista, y el próximo estreno sigue apareciendo en la página de inicio.',
+  'Zum Countdown': 'Ir a la cuenta atrás',
+  'Kinostart in deinem Land': 'Estreno en cines en tu país',
+  'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
+    'En cada página de película, en «De un vistazo», ahora aparece el estreno en tu país en lugar de la primera fecha mundial. También en las películas que aún no has añadido. El año junto al título sigue siendo el año de estreno original de la película.',
 };
 
 export default dict;

@@ -453,6 +453,14 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'Ton compte fonctionne partout avec la même progression : en appli pour iPhone, iPad et Android, sur ordinateur dans le navigateur sur tv-rank.de et en appli Windows. Toutes les options sont réunies dans les Réglages, sous « Général ».',
   'Geräte ansehen': 'Voir les appareils',
+  'November 2026 – Countdown für Filme': 'Novembre 2026 – Compte à rebours pour les films',
+  'Filme im Countdown': 'Les films dans le compte à rebours',
+  'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':
+    'Le compte à rebours inclut désormais aussi les films. Chaque film de ta liste que tu n’as pas encore vu et qui n’est pas encore sorti y apparaît avec le nombre de jours avant sa sortie en salle dans ton pays. Si un film ne sort qu’en streaming, le décompte va jusqu’à sa sortie en streaming. Les onglets Tout, Séries et Films permettent de filtrer la liste, et la prochaine sortie reste affichée sur l’accueil.',
+  'Zum Countdown': 'Voir le compte à rebours',
+  'Kinostart in deinem Land': 'Sortie en salle dans ton pays',
+  'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
+    'Sur chaque page de film, sous « En un coup d’œil », tu vois désormais la sortie dans ton pays au lieu de la première date mondiale. C’est aussi le cas pour les films que tu n’as pas encore ajoutés. L’année à côté du titre reste l’année de sortie d’origine du film.',
 };
 
 export default dict;

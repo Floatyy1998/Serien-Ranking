@@ -108,6 +108,29 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('November 2026 – Countdown für Filme'),
+      date: '2026-11-19',
+      features: [
+        {
+          icon: <LocalMovies />,
+          color: currentTheme.primary,
+          title: t('Filme im Countdown'),
+          description: t(
+            'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.'
+          ),
+          link: { label: t('Zum Countdown'), path: '/countdowns' },
+        },
+        {
+          icon: <CalendarToday />,
+          color: currentTheme.accent,
+          title: t('Kinostart in deinem Land'),
+          description: t(
+            'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('November 2026 – Neuer Look, Community-Designs und helle Themes'),
       date: '2026-11-14',
       features: [

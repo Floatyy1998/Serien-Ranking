@@ -452,6 +452,14 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'A tua conta funciona em todo o lado com o mesmo progresso: como app para iPhone, iPad e Android, no computador no navegador em tv-rank.de e como app para Windows. Todas as opções estão agora reunidas nas Definições, em «Geral».',
   'Geräte ansehen': 'Ver dispositivos',
+  'November 2026 – Countdown für Filme': 'Novembro de 2026 – Contagem regressiva para filmes',
+  'Filme im Countdown': 'Filmes na contagem regressiva',
+  'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':
+    'A contagem regressiva agora também inclui filmes. Cada filme da sua lista que você ainda não viu e que ainda não estreou aparece com os dias que faltam para a estreia nos cinemas no seu país. Se um filme só chega ao streaming, a contagem vai até a estreia no streaming. Com as abas Tudo, Séries e Filmes você filtra a lista, e a próxima estreia continua aparecendo na tela inicial.',
+  'Zum Countdown': 'Ver a contagem regressiva',
+  'Kinostart in deinem Land': 'Estreia nos cinemas no seu país',
+  'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
+    'Em cada página de filme, em “Em resumo”, agora aparece a estreia no seu país em vez da primeira data mundial. Isso vale também para filmes que você ainda não adicionou. O ano ao lado do título continua sendo o ano de lançamento original do filme.',
 };
 
 export default dict;

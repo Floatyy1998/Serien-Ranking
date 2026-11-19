@@ -468,6 +468,14 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'Your account runs everywhere with the same progress: as an app for iPhone, iPad and Android, on a computer in the browser at tv-rank.de and as a Windows app. All options are now gathered in Settings under “General”.',
   'Geräte ansehen': 'View devices',
+  'November 2026 – Countdown für Filme': 'November 2026 – Countdown for movies',
+  'Filme im Countdown': 'Movies in the countdown',
+  'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':
+    "The countdown now counts down to movies too. Every unwatched movie on your list that hasn't opened yet appears there with the days until its theatrical release in your country. If a movie only comes to streaming, it counts down to the streaming release. Use the All, Shows and Movies tabs to narrow the list, and the next release still shows on the home page.",
+  'Zum Countdown': 'Open the countdown',
+  'Kinostart in deinem Land': 'Theatrical release in your country',
+  'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
+    "Under “At a glance”, every movie page now shows the release in your country instead of the first worldwide date. That also goes for movies you haven't added yet. The year next to the title stays the movie's original release year.",
 };
 
 export default dict;
