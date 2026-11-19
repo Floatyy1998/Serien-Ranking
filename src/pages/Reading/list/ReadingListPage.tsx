@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
   type CSSProperties,
@@ -151,16 +152,27 @@ export const ReadingListPage = () => {
     [entries, debouncedFilter, activeFormat, sortOption]
   );
 
+  const completingTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const timers = completingTimers.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
+
   const markCompleting = useCallback((key: string, direction: 'left' | 'right') => {
     setSwipeDirections((prev) => ({ ...prev, [key]: direction }));
     setCompletingEpisodes((prev) => new Set(prev).add(key));
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      completingTimers.current.delete(timer);
       setCompletingEpisodes((prev) => {
         const s = new Set(prev);
         s.delete(key);
         return s;
       });
     }, 250);
+    completingTimers.current.add(timer);
   }, []);
 
   const handleComplete = useCallback(
