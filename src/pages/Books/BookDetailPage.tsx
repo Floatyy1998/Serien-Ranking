@@ -19,6 +19,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { BackButton, HorizontalScrollContainer } from '../../components/ui';
+import { Deferred } from '../../components/ui/feedback/Deferred';
+import { DiscussionThread } from '../../components/Discussion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBookDetails, useBookLinks } from '../../hooks/books/useBookLinks';
 import { useMangaVolumes } from '../../hooks/books/useMangaVolumes';
@@ -31,9 +33,10 @@ import {
   seriesPlacement,
 } from '../../lib/books/bookSeries';
 import { splitVolume } from '../../lib/books/mangaVolume';
+import { bookThreadKey, sanitizeBookKey } from '../../lib/books/bookIdentity';
 import { searchBooks } from '../../services/api/booksApi';
 import { hardcoverBook, hardcoverReady } from '../../services/api/hardcoverApi';
-import { loadBookCatalogItem } from '../../services/catalog/bookCatalog';
+import { keepInCatalog, loadBookCatalogItem } from '../../services/catalog/bookCatalog';
 import { BookMoodPanel, SimilarBooksPanel, WhenNearViewport } from './detail/BookExtrasPanels';
 import { EditableDetailRow, type EditableDetailRowProps } from './detail/EditableDetailRow';
 import { bookAsResult, coverAtSize, fillBookGaps } from '../../lib/books/bookSearchMapping';
@@ -933,6 +936,20 @@ export const BookDetailPage = () => {
               />
             </div>
           )}
+
+          <Deferred>
+            <DiscussionThread
+              itemId={sanitizeBookKey(view.id)}
+              itemType="book"
+              threadKey={bookThreadKey(view)}
+              onCreated={owned ? undefined : () => keepInCatalog(view)}
+              isWatched={!!owned && (owned.status !== 'planned' || owned.currentPage > 0)}
+              feedMetadata={{
+                itemTitle: view.title,
+                posterPath: coverAtSize(view.cover || coverFallback, 'M'),
+              }}
+            />
+          </Deferred>
         </main>
       </div>
 

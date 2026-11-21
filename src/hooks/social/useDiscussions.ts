@@ -5,6 +5,7 @@ import type {
   CreateDiscussionInput,
   Discussion,
   DiscussionFeedMetadata,
+  DiscussionItemId,
   DiscussionItemType,
 } from '../../types/Discussion';
 import {
@@ -26,8 +27,9 @@ import { onValue } from '../../services/db/subscribeValue';
 export { useDiscussionReplies } from './useDiscussionReplies';
 
 interface UseDiscussionsOptions {
-  itemId: number;
+  itemId: DiscussionItemId;
   itemType: DiscussionItemType;
+  threadKey?: string;
   seasonNumber?: number;
   episodeNumber?: number;
   feedMetadata?: DiscussionFeedMetadata;
@@ -53,14 +55,14 @@ interface UseDiscussionsResult {
 }
 
 export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsResult => {
-  const { itemId, itemType, seasonNumber, episodeNumber, feedMetadata } = options;
+  const { itemId, itemType, threadKey, seasonNumber, episodeNumber, feedMetadata } = options;
   const { user } = useAuth() || {};
 
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(!!itemId);
   const [error, setError] = useState<string | null>(null);
 
-  const path = getDiscussionPath(itemType, itemId, seasonNumber, episodeNumber);
+  const path = getDiscussionPath(itemType, itemId, seasonNumber, episodeNumber, threadKey);
 
   // Fetch discussions with realtime listener
   useEffect(() => {
@@ -163,6 +165,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           title: input.title,
           authorUid: user.uid,
           authorName: username,
+          itemId,
+          itemType,
         });
 
         // Write to discussion feed (fire-and-forget)

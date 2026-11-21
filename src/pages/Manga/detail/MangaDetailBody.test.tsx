@@ -7,6 +7,7 @@ import { MangaDetailBody } from './MangaDetailBody';
 import { buildHeroData } from './mangaDetailData';
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+vi.mock('./MangaDiscussion', () => ({ MangaDiscussion: () => null }));
 
 const theme = {
   primary: '#00d123',

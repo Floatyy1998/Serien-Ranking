@@ -15,10 +15,21 @@ import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale } from '../../lib/motion';
 import { discussionAnchorId, discussionIdFromHash } from '../../lib/url/discussionTarget';
+import type { DiscussionItemType } from '../../types/Discussion';
+
+const SPOILER_SUBJECT: Record<DiscussionItemType, () => string> = {
+  movie: () => t('diesen Film'),
+  series: () => t('diese Serie'),
+  episode: () => t('diese Episode'),
+  manga: () => t('diesen Manga'),
+  book: () => t('dieses Buch'),
+};
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemId,
   itemType,
+  threadKey,
+  onCreated,
   seasonNumber,
   episodeNumber,
   title,
@@ -31,12 +42,11 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const [showNewForm, setShowNewForm] = useState(false);
   const ban = useModerationBan();
 
-  // Spoiler-Schutz für noch nicht gesehene Inhalte (Episode, Serie & Film).
   const spoilerKey =
-    itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
-      ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
-      : itemType === 'series' || itemType === 'movie'
-        ? `spoiler_revealed_${itemType}_${itemId}`
+    itemType !== 'episode'
+      ? `spoiler_revealed_${itemType}_${threadKey ?? itemId}`
+      : seasonNumber !== undefined && episodeNumber !== undefined
+        ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
         : null;
 
   const [spoilerRevealed, setSpoilerRevealed] = useState(() => {
@@ -55,12 +65,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
   // Wall nur zeigen, wenn der Aufrufer explizit "nicht gesehen" meldet.
   const showSpoilerProtection = !!spoilerKey && isWatched === false && !spoilerRevealed;
-  const spoilerSubject =
-    itemType === 'movie'
-      ? t('diesen Film')
-      : itemType === 'series'
-        ? t('diese Serie')
-        : t('diese Episode');
+  const isReading = itemType === 'manga' || itemType === 'book';
+  const spoilerSubject = SPOILER_SUBJECT[itemType]();
 
   const {
     discussions,
@@ -73,6 +79,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   } = useDiscussions({
     itemId,
     itemType,
+    threadKey,
     seasonNumber,
     episodeNumber,
     feedMetadata,
@@ -98,7 +105,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const discussionPath =
     itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
       ? `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`
-      : `discussions/${itemType}/${itemId}`;
+      : `discussions/${itemType}/${threadKey ?? itemId}`;
 
   const handleCreateDiscussion = async (data: {
     title: string;
@@ -108,6 +115,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     refEpisode?: number;
   }) => {
     const id = await createDiscussion(data);
+    if (id) onCreated?.();
     return !!id;
   };
 
@@ -169,7 +177,9 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               lineHeight: 1.6,
             }}
           >
-            {t('Du hast {subject} noch nicht gesehen.', { subject: spoilerSubject })}
+            {isReading
+              ? t('Du hast {subject} noch nicht gelesen.', { subject: spoilerSubject })
+              : t('Du hast {subject} noch nicht gesehen.', { subject: spoilerSubject })}
           </p>
           <p
             style={{

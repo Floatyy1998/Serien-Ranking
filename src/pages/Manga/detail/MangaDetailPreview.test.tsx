@@ -8,6 +8,7 @@ import { MangaDetailPreview } from './MangaDetailPreview';
 import { buildHeroData } from './mangaDetailData';
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+vi.mock('./MangaDiscussion', () => ({ MangaDiscussion: () => null }));
 
 vi.mock('../../../components/share/ShareTitleButton', () => ({ ShareTitleButton: () => null }));
 vi.mock('../../../components/ui', () => ({

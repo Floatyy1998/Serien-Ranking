@@ -12,7 +12,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { DiscussionFeedMetadata } from '../../types/Discussion';
+import type {
+  DiscussionFeedMetadata,
+  DiscussionItemId,
+  DiscussionItemType,
+} from '../../types/Discussion';
 import { useDiscussionImages } from '../../hooks/social/useDiscussionImages';
 import { useDiscussionReplies } from '../../hooks/social/useDiscussions';
 import { useModerationBan } from '../../hooks/social/useModerationBan';
@@ -29,6 +33,8 @@ export const RepliesSection: React.FC<{
   feedMetadata?: DiscussionFeedMetadata;
   /** Wer die Diskussion gestartet hat — zählt zu den erwähnbaren Leuten. */
   author?: { uid: string; name: string };
+  itemId?: DiscussionItemId;
+  itemType?: DiscussionItemType;
 }> = ({
   discussionId,
   discussionPath,
@@ -36,6 +42,8 @@ export const RepliesSection: React.FC<{
   isSpoilerHidden = false,
   feedMetadata,
   author,
+  itemId,
+  itemType,
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -67,7 +75,8 @@ export const RepliesSection: React.FC<{
       discussionId,
       discussionPath,
       isExpanded, // Only fetch replies when expanded
-      feedMetadata
+      feedMetadata,
+      { itemId, itemType }
     );
   const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
   const mentionable = useMemo(() => {

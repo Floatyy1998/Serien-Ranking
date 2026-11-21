@@ -1,4 +1,4 @@
-import { ChatBubbleOutlined, Movie, Reply, Tv } from '@mui/icons-material';
+import { AutoStories, ChatBubbleOutlined, MenuBook, Movie, Reply, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +15,10 @@ import type { FeedFilterType } from '../../hooks/social/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/social/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import { t } from '../../services/i18n';
-import type { DiscussionFeedEntry } from '../../types/Discussion';
+import type { DiscussionFeedEntry, DiscussionItemType } from '../../types/Discussion';
 import { tapScaleSmall } from '../../lib/motion';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
+import { discussionTarget } from '../../lib/url/discussionTarget';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -26,7 +27,25 @@ const FILTER_TABS: { id: FeedFilterType; label: string }[] = [
   { id: 'series', label: t('Serien') },
   { id: 'movie', label: t('Filme') },
   { id: 'episode', label: t('Episoden') },
+  { id: 'manga', label: t('Manga') },
+  { id: 'book', label: t('Bücher') },
 ];
+
+const ITEM_ICON: Record<DiscussionItemType, typeof Tv> = {
+  series: Tv,
+  episode: Tv,
+  movie: Movie,
+  manga: AutoStories,
+  book: MenuBook,
+};
+
+const EMPTY_TEXT: Record<DiscussionItemType, () => string> = {
+  series: () => t('Keine Serien-Diskussionen vorhanden'),
+  episode: () => t('Keine Episoden-Diskussionen vorhanden'),
+  movie: () => t('Keine Film-Diskussionen vorhanden'),
+  manga: () => t('Keine Manga-Diskussionen vorhanden'),
+  book: () => t('Keine Buch-Diskussionen vorhanden'),
+};
 
 const FeedCard: React.FC<{
   entry: DiscussionFeedEntry;
@@ -37,7 +56,8 @@ const FeedCard: React.FC<{
 
   const isReply = entry.type === 'reply_created';
   const actionText = isReply ? t('hat geantwortet auf') : t('hat eine Diskussion gestartet in');
-  const ItemIcon = entry.itemType === 'movie' ? Movie : Tv;
+  const ItemIcon = ITEM_ICON[entry.itemType] ?? Tv;
+  const isScreenTitle = entry.itemType === 'series' || entry.itemType === 'movie';
   // Serien- und Filmseite speichern die volle Poster-URL, ältere Einträge nur den Pfad.
   const posterUrl = !entry.posterPath
     ? null
@@ -58,7 +78,7 @@ const FeedCard: React.FC<{
       transition={{ delay: index * 0.03 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
-      {...(opensEpisode
+      {...(opensEpisode || !isScreenTitle
         ? {}
         : mediaTargetProps({
             type: entry.itemType,
@@ -214,13 +234,10 @@ export const DiscussionFeedPage = () => {
   const { entries, loading, error } = useDiscussionFeed(filter);
 
   const handleCardClick = (entry: DiscussionFeedEntry) => {
-    if (entry.itemType === 'episode' && entry.seasonNumber && entry.episodeNumber) {
-      navigate(`/episode/${entry.itemId}/s/${entry.seasonNumber}/e/${entry.episodeNumber}`);
-    } else if (entry.itemType === 'movie') {
-      navigate(`/movie/${entry.itemId}`);
-    } else {
-      navigate(`/series/${entry.itemId}`);
-    }
+    const { itemType, itemId, seasonNumber, episodeNumber } = entry;
+    navigate(
+      discussionTarget({ itemType, itemId, seasonNumber, episodeNumber }) ?? `/series/${itemId}`
+    );
   };
 
   return (
@@ -229,7 +246,7 @@ export const DiscussionFeedPage = () => {
 
       {/* Filter Tabs */}
       <div
-        className="ui-line-tabs"
+        className="ui-line-tabs hide-scrollbar"
         role="group"
         aria-label={t('Filter')}
         style={{
@@ -237,6 +254,7 @@ export const DiscussionFeedPage = () => {
           position: 'relative',
           zIndex: 5,
           width: isDesktop ? 'max-content' : undefined,
+          overflowX: 'auto',
         }}
       >
         {FILTER_TABS.map((tab) => (
@@ -248,7 +266,11 @@ export const DiscussionFeedPage = () => {
             onClick={() => {
               setFilter(tab.id);
             }}
-            style={isDesktop ? { flex: 'none', padding: '0 24px' } : undefined}
+            style={
+              isDesktop
+                ? { flex: 'none', padding: '0 24px' }
+                : { flex: '1 0 auto', padding: '0 6px', fontSize: 13 }
+            }
           >
             {tab.label}
           </button>
@@ -282,11 +304,7 @@ export const DiscussionFeedPage = () => {
             title={t('Noch keine Diskussionen')}
             description={
               filter !== 'all'
-                ? filter === 'movie'
-                  ? t('Keine Film-Diskussionen vorhanden')
-                  : filter === 'episode'
-                    ? t('Keine Episoden-Diskussionen vorhanden')
-                    : t('Keine Serien-Diskussionen vorhanden')
+                ? EMPTY_TEXT[filter]()
                 : t('Es wurden noch keine Diskussionen gestartet')
             }
           />
@@ -302,7 +320,7 @@ export const DiscussionFeedPage = () => {
                 display: 'grid',
                 gridTemplateColumns: isDesktop
                   ? 'repeat(auto-fill, minmax(min(100%, 560px), 1fr))'
-                  : '1fr',
+                  : 'minmax(0, 1fr)',
                 gap: '12px',
                 alignItems: 'start',
                 paddingBottom: 'var(--page-bottom-gap)',

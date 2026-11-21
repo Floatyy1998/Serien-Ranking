@@ -385,6 +385,8 @@ const DiscussionItemInner: React.FC<{
         isSpoilerHidden={discussion.isSpoiler && !showSpoiler}
         feedMetadata={feedMetadata}
         author={author}
+        itemId={discussion.itemId}
+        itemType={discussion.itemType}
       />
     </motion.div>
   );

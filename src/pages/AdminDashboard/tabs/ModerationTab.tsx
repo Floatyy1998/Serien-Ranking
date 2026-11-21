@@ -2,7 +2,7 @@ import { Block, Delete, Done, Gavel, OpenInNew, Translate } from '@mui/icons-mat
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
-import { dbRef, serverIncrement } from '../../../services/db/ref';
+import { dbGet, dbRef, serverIncrement } from '../../../services/db/ref';
 import { backendFetch } from '../../../services/api/backendApi';
 import { deleteDiscussionFeedEntries } from '../../../services/discussion/discussionFeedService';
 import { sendNotificationToUser } from '../../../hooks/social/useDiscussionHelpers';
@@ -85,7 +85,19 @@ const contentRouteFor = (flag: ModerationFlag): string | null => {
     const m = itemId.match(/^(\d+)_s(\d+)_e(\d+)$/);
     return m ? `/episode/${m[1]}/s/${m[2]}/e/${m[3]}` : null;
   }
+  if (itemType === 'book') return null;
   return `/${itemType}/${itemId}`;
+};
+
+/** Buch-Threads hängen am Werk-Schlüssel — die Buch-ID steht nur im Beitrag selbst. */
+const bookDiscussionOf = (flag: ModerationFlag): string | null => {
+  const record =
+    flag.kind === 'discussion'
+      ? flag.path
+      : flag.kind === 'reply' && flag.contextPath
+        ? `${flag.contextPath}/${flag.path.split('/')[1]}`
+        : '';
+  return record.startsWith('discussions/book/') ? record.split('/').slice(0, 4).join('/') : null;
 };
 
 const formatUntil = (until?: number): string => {
@@ -509,11 +521,16 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
                         ? 'Original'
                         : 'Übersetzen'}
                   </button>
-                  {contentRouteFor(flag) && (
+                  {(contentRouteFor(flag) || bookDiscussionOf(flag)) && (
                     <button
                       onClick={() => {
                         const route = contentRouteFor(flag);
-                        if (route) navigate(route);
+                        if (route) return navigate(route);
+                        const record = bookDiscussionOf(flag);
+                        if (!record) return;
+                        void dbGet<string | number>(`${record}/itemId`)
+                          .then((id) => id && navigate(`/books/${encodeURIComponent(String(id))}`))
+                          .catch(() => undefined);
                       }}
                       style={actionBtn(theme.text.secondary)}
                     >

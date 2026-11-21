@@ -27,6 +27,25 @@ describe('discussionTarget', () => {
     expect(discussionTarget({ discussionPath: 'discussions/movie/603' })).toBe('/movie/603');
   });
 
+  it('führt Manga- und Buch-Diskussionen auf ihre Detailseiten', () => {
+    expect(
+      discussionTarget({ discussionId: '-Nabc', discussionPath: 'discussions/manga/30013' })
+    ).toBe('/manga/30013#discussion--Nabc');
+    expect(discussionTarget({ discussionPath: 'discussions/book/hc-328491/-Nabc' })).toBe(
+      '/books/hc-328491'
+    );
+    expect(discussionTarget({ itemId: 30013, itemType: 'manga' })).toBe('/manga/30013');
+    expect(discussionTarget({ itemId: 'gb-a b', itemType: 'book' })).toBe('/books/gb-a%20b');
+  });
+
+  it('nimmt bei geteilten Buch-Threads die Buch-ID statt des Werk-Schlüssels', () => {
+    const discussionPath = 'discussions/book/w-dune_herbert';
+    expect(
+      discussionTarget({ discussionId: '-Nabc', discussionPath, itemId: 'hc-1', itemType: 'book' })
+    ).toBe('/books/hc-1#discussion--Nabc');
+    expect(discussionTarget({ discussionId: '-Nabc', discussionPath })).toBeUndefined();
+  });
+
   it('liefert nichts ohne brauchbare Angaben', () => {
     expect(discussionTarget(undefined)).toBeUndefined();
     expect(discussionTarget({ discussionId: '-Nabc' })).toBeUndefined();

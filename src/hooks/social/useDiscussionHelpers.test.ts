@@ -66,6 +66,14 @@ describe('getDiscussionPath', () => {
     expect(getDiscussionPath('movie', 7)).toBe('discussions/movie/7');
   });
 
+  it('baut Manga- und Buch-Pfade aus AniList-ID bzw. Buch-Schlüssel', () => {
+    expect(getDiscussionPath('manga', 30013)).toBe('discussions/manga/30013');
+    expect(getDiscussionPath('book', 'hc-328491')).toBe('discussions/book/hc-328491');
+    expect(getDiscussionPath('book', 'hc-1', undefined, undefined, 'w-dune_herbert')).toBe(
+      'discussions/book/w-dune_herbert'
+    );
+  });
+
   it('baut den Episode-Pfad mit Season + Episode', () => {
     expect(getDiscussionPath('episode', 100, 2, 5)).toBe('discussions/episode/100_s2_e5');
   });

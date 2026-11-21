@@ -3,6 +3,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { AniListMangaSearchResult } from '../../../types/Manga';
 import type { MangaHeroData } from './mangaDetailData';
 import { MangaDetailHero } from './MangaDetailHero';
+import { MangaDiscussion } from './MangaDiscussion';
 import { MangaInfoSections } from './MangaInfoSections';
 
 interface MangaDetailPreviewProps {
@@ -52,6 +53,12 @@ export const MangaDetailPreview = ({
           ownedIds={ownedIds}
         />
       </aside>
+      <MangaDiscussion
+        anilistId={heroData.anilistId}
+        title={heroData.title}
+        poster={heroData.poster}
+        started={false}
+      />
     </div>
   </PageLayout>
 );

@@ -10,15 +10,25 @@ export function discussionTarget(data: Record<string, unknown> | undefined): str
   if (!data) return undefined;
   const path = typeof data.discussionPath === 'string' ? data.discussionPath : '';
   const episode = /episode\/(\d+)_s(\d+)_e(\d+)/.exec(path);
-  const item = /discussions\/(series|movie)\/(\d+)/.exec(path);
+  const item = /discussions\/(series|movie|manga)\/(\d+)/.exec(path);
+  const book = /discussions\/book\/([^/]+)/.exec(path);
   const { itemType, itemId, seasonNumber, episodeNumber, discussionId } = data;
+  // Buch-Threads teilen sich einen Werk-Schlüssel (`w-…`), der keine Seite hat — das Ziel ist die Buch-ID.
+  const bookId =
+    itemType === 'book' && itemId
+      ? String(itemId)
+      : book && !book[1].startsWith('w-')
+        ? book[1]
+        : undefined;
 
   let route: string | undefined;
   if (episode) route = `/episode/${episode[1]}/s/${episode[2]}/e/${episode[3]}`;
   else if (item) route = `/${item[1]}/${item[2]}`;
+  else if (bookId) route = `/books/${encodeURIComponent(bookId)}`;
   else if (!itemId) route = undefined;
-  else if (itemType === 'series' || itemType === 'movie') route = `/${itemType}/${String(itemId)}`;
-  else if (itemType === 'episode' && seasonNumber != null && episodeNumber != null) {
+  else if (itemType === 'series' || itemType === 'movie' || itemType === 'manga') {
+    route = `/${itemType}/${String(itemId)}`;
+  } else if (itemType === 'episode' && seasonNumber != null && episodeNumber != null) {
     route = `/episode/${String(itemId)}/s/${String(seasonNumber)}/e/${String(episodeNumber)}`;
   }
 

@@ -4,19 +4,20 @@ import { localizedVariants, tLocale, type LocalizedMap } from '../../services/i1
 import { dbRef, userPath } from '../../services/db/ref';
 import { queuePush } from '../../services/notifications/pushQueue';
 import { resolveMentions } from '../../services/social/mentionResolve';
-import type { DiscussionItemType } from '../../types/Discussion';
+import type { DiscussionItemId, DiscussionItemType } from '../../types/Discussion';
 
 // Helper to generate a unique path for discussions
 export const getDiscussionPath = (
   itemType: DiscussionItemType,
-  itemId: number,
+  itemId: DiscussionItemId,
   seasonNumber?: number,
-  episodeNumber?: number
+  episodeNumber?: number,
+  threadKey?: string
 ): string => {
   if (itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined) {
     return `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`;
   }
-  return `discussions/${itemType}/${itemId}`;
+  return `discussions/${itemType}/${threadKey ?? itemId}`;
 };
 
 /** Ziel beim Tippen auf den nativen Push — bei Tickets direkt das Ticket, nicht nur die Übersicht. */
@@ -129,6 +130,8 @@ export const notifyDiscussionMentions = async (input: {
   title: string;
   authorUid: string;
   authorName: string;
+  itemId?: DiscussionItemId;
+  itemType?: DiscussionItemType;
 }): Promise<void> => {
   try {
     if (!input.discussionId) return;
@@ -146,7 +149,12 @@ export const notifyDiscussionMentions = async (input: {
         titleL: await localizedVariants('Erwähnung'),
         message: tLocale('de', template, vars),
         messageL: await localizedVariants(template, vars),
-        data: { discussionId: input.discussionId, discussionPath: input.path },
+        data: {
+          discussionId: input.discussionId,
+          discussionPath: input.path,
+          itemId: input.itemId,
+          itemType: input.itemType,
+        },
       });
     }
   } catch {

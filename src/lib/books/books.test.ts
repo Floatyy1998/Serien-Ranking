@@ -3,6 +3,7 @@ import type { Book } from '../../types/Book';
 import { eventPages, readingStreak, type CompactBookEvent } from './bookEvents';
 import {
   bookMatchKey,
+  bookThreadKey,
   bookTitleKey,
   createBookIndex,
   findMangaForBook,
@@ -74,6 +75,62 @@ describe('bookIdentity', () => {
     expect(bookTitleKey(band2)).toBe(bookTitleKey('Requiem of the Rose King, Vol. 2'));
     expect(bookMatchKey(band2, ['Aya Kanno'])).not.toBe(bookMatchKey(band1, ['Aya Kanno']));
     expect(bookTitleKey('Chernobyl: Die Katastrophe 1986')).toBe('chernobyl');
+  });
+});
+
+describe('bookThreadKey', () => {
+  it('gibt Ausgaben und Quellen desselben Buchs denselben Schlüssel', () => {
+    const key = bookThreadKey({ id: 'hc-1', title: 'Dune', authors: ['Frank Herbert'] });
+    expect(key).toBe('w-dune_herbert');
+    expect(
+      bookThreadKey({ id: 'dnb-9783453317178', title: 'Dune: Roman', authors: ['Herbert, Frank'] })
+    ).toBe(key);
+    expect(
+      bookThreadKey({
+        id: 'ol-OL893414W',
+        title: 'Dune (Deluxe Edition)',
+        authors: ['Frank Herbert', 'Brian Herbert'],
+      })
+    ).toBe(key);
+  });
+
+  it('führt Reihenbände über Reihe + Bandnummer zusammen, egal wen die Quelle als Autor nennt', () => {
+    const band = (title: string, authors: string[]) => bookThreadKey({ id: 'x', title, authors });
+    expect(band('Solo leveling 3', ['Chu gong'])).toBe('w-solo-leveling-3');
+    expect(band('Solo Leveling, Vol. 3', ['Chugong'])).toBe('w-solo-leveling-3');
+    expect(band('Solo Leveling 03', [])).toBe('w-solo-leveling-3');
+    expect(
+      band("Arifureta: From Commonplace to World's Strongest, Vol. 1", ['Ryo Shirakome'])
+    ).toBe(band('Arifureta - Der Kampf zurück in meine Welt 01', ['Takaya-Ki']));
+    expect(band('Solo leveling 3', [])).not.toBe(band('Solo leveling 4', []));
+  });
+
+  it('hält Bände auseinander, die nur der Untertitel unterscheidet', () => {
+    const maas = (title: string) => bookThreadKey({ id: 'x', title, authors: ['Sarah J. Maas'] });
+    expect(maas('Das Reich der sieben Höfe - Dornen und Rosen')).not.toBe(
+      maas('Das Reich der sieben Höfe - Flammen und Finsternis')
+    );
+    expect(maas('Das Reich der sieben Höfe - Dornen und Rosen')).toBe(
+      'w-das-reich-der-sieben-hofe-dornen-und-rosen_maas'
+    );
+  });
+
+  it('trennt gleiche Titel verschiedener Autoren', () => {
+    expect(bookThreadKey({ id: 'a', title: 'Erwachen', authors: ['A. Meier'] })).not.toBe(
+      bookThreadKey({ id: 'b', title: 'Erwachen', authors: ['B. Schulz'] })
+    );
+  });
+
+  it('bleibt RTDB-tauglich und fällt ohne lateinischen Titel auf die Buch-ID zurück', () => {
+    expect(bookThreadKey({ id: 'gb-a.b', title: '進撃の巨人 1', authors: ['諫山創'] })).toBe(
+      'gb-a_b'
+    );
+    expect(bookThreadKey({ id: 'x', title: '1984', authors: ['George Orwell'] })).toBe(
+      'w-1984_orwell'
+    );
+    expect(bookThreadKey({ id: 'x', title: 'Der Weiße Hai. #Neu [2024]', authors: [] })).toMatch(
+      /^w-[a-z0-9-]+_$/
+    );
   });
 });
 

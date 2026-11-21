@@ -243,6 +243,8 @@ const dict: Record<string, string> = {
   'Keine Film-Diskussionen vorhanden': 'No movie discussions yet',
   'Keine Episoden-Diskussionen vorhanden': 'No episode discussions yet',
   'Keine Serien-Diskussionen vorhanden': 'No show discussions yet',
+  'Keine Manga-Diskussionen vorhanden': 'No manga discussions yet',
+  'Keine Buch-Diskussionen vorhanden': 'No book discussions yet',
   'Es wurden noch keine Diskussionen gestartet': 'No one has started a discussion yet',
 
   // Episode discussion page
@@ -286,8 +288,11 @@ const dict: Record<string, string> = {
   'diesen Film': 'this movie',
   'diese Serie': 'this show',
   'diese Episode': 'this episode',
+  'diesen Manga': 'this manga',
+  'dieses Buch': 'this book',
   'Spoiler-Warnung': 'Spoiler warning',
   'Du hast {subject} noch nicht gesehen.': "You haven't watched {subject} yet.",
+  'Du hast {subject} noch nicht gelesen.': "You haven't read {subject} yet.",
   'Die Diskussionen könnten Spoiler enthalten.': 'Discussions may contain spoilers.',
   'Trotzdem anzeigen': 'Show anyway',
   '{n} Diskussion versteckt': '{n} discussion hidden',

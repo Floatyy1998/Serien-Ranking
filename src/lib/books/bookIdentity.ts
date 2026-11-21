@@ -197,6 +197,31 @@ export function findMangaForBook<T extends MangaTitles>(
   );
 }
 
+const keySlug = (value: string): string =>
+  value
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const GENERIC_SUBTITLE =
+  /^(?:(?:ein|eine|a|the) )?(?:[a-z]+ )?(?:roman|kriminalroman|krimi|thriller|novel|novelle)$/;
+
+/** Diskussions-Schlüssel über Ausgaben hinweg; der Untertitel bleibt drin, sonst fielen bei „Reihe - Bandtitel" alle Bände zusammen. */
+export function bookThreadKey(book: { id: string; title: string; authors?: string[] }): string {
+  const [rawHead, ...rest] = normalizeBookText(book.title).split(SUBTITLE_SPLIT);
+  const head = withoutLeadingZeros(compactWords(rawHead));
+  const subtitle = withoutLeadingZeros(compactWords(rest.join(' ')));
+  if (!head || (!/[a-z]/.test(head) && /\p{L}/u.test(book.title))) return sanitizeBookKey(book.id);
+
+  const { volume } = titleParts(book.title);
+  if (volume) return `w-${keySlug(`${head} ${volume}`)}`.slice(0, 120);
+  if (splitVolumeKey(head)) return `w-${keySlug(head)}`.slice(0, 120);
+
+  const title = subtitle && !GENERIC_SUBTITLE.test(subtitle) ? `${head} ${subtitle}` : head;
+  const firstAuthor = (book.authors?.[0] ?? '').split(',')[0];
+  return `w-${keySlug(title)}_${keySlug(bookAuthorKey([firstAuthor]))}`.slice(0, 120);
+}
+
 /** RTDB-tauglicher Schlüssel (keine . # $ [ ] /). */
 export function sanitizeBookKey(raw: string): string {
   return raw.replace(/[.#$[\]/]/g, '_').slice(0, 120);

@@ -14,7 +14,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { MangaDexChapterInfo } from '../../../services/api/mangaUpdatesService';
 import { dateLocale, t } from '../../../services/i18n';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
-import { mangaUnit } from '../../../lib/manga/progress';
+import { mangaStand, mangaUnit } from '../../../lib/manga/progress';
 import {
   mangaOwnership,
   ownedVolumeNumbers,
@@ -27,6 +27,7 @@ import { Section, SectionTitle } from './Section';
 import { VolumeShelf, type VolumeMode } from './VolumeShelf';
 import { BookSwitchPanel } from './BookSwitchPanel';
 import { ManageConfirm } from './ManageConfirm';
+import { MangaDiscussion } from './MangaDiscussion';
 import { OwnToggle } from '../../Books/detail/OwnToggle';
 
 const STATUS_OPTIONS: { value: Manga['readStatus']; label: string }[] = [
@@ -712,6 +713,13 @@ export const MangaDetailBody = ({
           </div>
         </Section>
       </aside>
+
+      <MangaDiscussion
+        anilistId={manga.anilistId}
+        title={manga.title}
+        poster={manga.poster}
+        started={mangaStand(manga).current > 0 || manga.readStatus === 'completed'}
+      />
     </div>
   );
 };

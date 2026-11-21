@@ -537,6 +537,12 @@
   box-shadow: var(--glass-specular);
 }
 
+.manga-detail-discussion {
+  order: 20;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
 .manga-detail-section--plain {
   background: none;
   border: none;

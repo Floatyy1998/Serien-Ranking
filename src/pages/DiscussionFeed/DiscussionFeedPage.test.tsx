@@ -25,7 +25,14 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => {
   const Stub = () => <span />;
-  return { ChatBubbleOutlined: Stub, Movie: Stub, Reply: Stub, Tv: Stub };
+  return {
+    AutoStories: Stub,
+    ChatBubbleOutlined: Stub,
+    MenuBook: Stub,
+    Movie: Stub,
+    Reply: Stub,
+    Tv: Stub,
+  };
 });
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../contexts/ThemeContext', () => {
@@ -102,5 +109,39 @@ describe('DiscussionFeedPage', () => {
     expect(screen.getByText('Bob')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Lost'));
     expect(navigateMock).toHaveBeenCalledWith('/series/99');
+  });
+
+  it('öffnet Buch-, Manga- und Folgen-Einträge auf ihrer eigenen Seite', () => {
+    const entry = (id: string, rest: Record<string, unknown>) => ({
+      id,
+      type: 'discussion_created',
+      username: 'Bob',
+      discussionTitle: 'Theorie',
+      createdAt: 123,
+      ...rest,
+    });
+    useDiscussionFeedMock.mockReturnValue({
+      entries: [
+        entry('b', { itemType: 'book', itemTitle: 'Dune', itemId: 'ol-OL893414W' }),
+        entry('m', { itemType: 'manga', itemTitle: 'Vagabond', itemId: 30656 }),
+        entry('e', {
+          itemType: 'episode',
+          itemTitle: 'Lost',
+          itemId: 99,
+          seasonNumber: 2,
+          episodeNumber: 5,
+        }),
+      ],
+      loading: false,
+      error: null,
+    });
+    render(<DiscussionFeedPage />);
+    fireEvent.click(screen.getByText('Dune'));
+    expect(navigateMock).toHaveBeenLastCalledWith('/books/ol-OL893414W');
+    fireEvent.click(screen.getByText('Vagabond'));
+    expect(navigateMock).toHaveBeenLastCalledWith('/manga/30656');
+    fireEvent.click(screen.getByText('Lost S2E5'));
+    expect(navigateMock).toHaveBeenLastCalledWith('/episode/99/s/2/e/5');
+    expect(screen.getByText('Dune').closest('[data-media-id]')).toBeNull();
   });
 });

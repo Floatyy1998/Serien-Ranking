@@ -1,6 +1,9 @@
 import type React from 'react';
 
-export type DiscussionItemType = 'movie' | 'series' | 'episode';
+export type DiscussionItemType = 'movie' | 'series' | 'episode' | 'manga' | 'book';
+
+/** TMDB-ID (Serie, Film, Folge), AniList-ID (Manga) oder Buch-Schlüssel wie `hc-123`. */
+export type DiscussionItemId = number | string;
 
 /** Geteilter Übersetzungs-Cache pro Zielsprache (Erst-Übersetzer schreibt). */
 export type CommentTranslations = Record<string, { text: string; title?: string }>;
@@ -26,7 +29,7 @@ export interface Discussion {
   id: string;
   /** Erwähnte Nutzer: uid → Name, wie er im Text steht. */
   mentions?: Record<string, string>;
-  itemId: number; // TMDB ID
+  itemId: DiscussionItemId;
   itemType: DiscussionItemType;
   // For episodes: additional identifiers
   seasonNumber?: number;
@@ -58,7 +61,7 @@ export interface Discussion {
 }
 
 export interface CreateDiscussionInput {
-  itemId: number;
+  itemId: DiscussionItemId;
   itemType: DiscussionItemType;
   seasonNumber?: number;
   episodeNumber?: number;
@@ -84,7 +87,7 @@ export interface DiscussionFeedEntry {
   username: string;
   userPhotoURL?: string;
   itemType: DiscussionItemType;
-  itemId: number;
+  itemId: DiscussionItemId;
   itemTitle: string;
   posterPath?: string;
   seasonNumber?: number;
@@ -96,12 +99,16 @@ export interface DiscussionFeedEntry {
 }
 
 export interface DiscussionThreadProps {
-  itemId: number;
+  itemId: DiscussionItemId;
   itemType: DiscussionItemType;
+  /** Pfad-Schlüssel, wenn mehrere itemIds einen Thread teilen (Ausgaben eines Buchs); itemId bleibt das Sprungziel. */
+  threadKey?: string;
+  onCreated?: () => void;
   seasonNumber?: number;
   episodeNumber?: number;
   title?: React.ReactNode;
-  isWatched?: boolean; // For spoiler protection on episodes
+  /** false = noch nicht gesehen bzw. gelesen: die Diskussionen liegen hinter der Spoiler-Warnung. */
+  isWatched?: boolean;
   feedMetadata?: DiscussionFeedMetadata;
   /** Letzter gesehener Stand des Betrachters (1-basiert) — für "bezieht sich auf"-Gating. */
   viewerProgress?: { season: number; episode: number } | null;

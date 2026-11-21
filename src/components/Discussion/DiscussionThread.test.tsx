@@ -167,6 +167,30 @@ describe('DiscussionThread', () => {
     expect(screen.getByText('Noch keine Diskussionen')).toBeInTheDocument();
   });
 
+  it('warnt bei ungelesenen Büchern und Manga mit „gelesen" statt „gesehen"', () => {
+    render(
+      <DiscussionThread
+        itemId="hc-1"
+        itemType="book"
+        threadKey="w-dune_herbert"
+        isWatched={false}
+      />
+    );
+    expect(screen.getByText('Du hast dieses Buch noch nicht gelesen.')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Trotzdem anzeigen'));
+    expect(localStorage.getItem('spoiler_revealed_book_w-dune_herbert')).toBe('true');
+    cleanup();
+
+    render(<DiscussionThread itemId={30013} itemType="manga" isWatched={false} />);
+    expect(screen.getByText('Du hast diesen Manga noch nicht gelesen.')).toBeInTheDocument();
+  });
+
+  it('zeigt Buch-Diskussionen ohne Warnung, sobald das Buch begonnen wurde', () => {
+    render(<DiscussionThread itemId="hc-1" itemType="book" isWatched />);
+    expect(screen.queryByText('Spoiler-Warnung')).not.toBeInTheDocument();
+    expect(screen.getByText('Noch keine Diskussionen')).toBeInTheDocument();
+  });
+
   it('opens the new discussion form when the button is clicked', () => {
     render(<DiscussionThread itemId={1} itemType="series" />);
     fireEvent.click(screen.getByText('+ Neue Diskussion'));

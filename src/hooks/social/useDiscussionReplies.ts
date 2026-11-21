@@ -3,6 +3,7 @@ import { dbRef, serverIncrement } from '../../services/db/ref';
 import { useAuth } from '../../contexts/AuthContext';
 import type {
   DiscussionFeedMetadata,
+  DiscussionItemId,
   DiscussionItemType,
   DiscussionReply,
 } from '../../types/Discussion';
@@ -34,9 +35,12 @@ export const useDiscussionReplies = (
   discussionId: string | null,
   discussionPath: string,
   shouldFetch: boolean = true,
-  feedMetadata?: DiscussionFeedMetadata
+  feedMetadata?: DiscussionFeedMetadata,
+  item?: { itemId?: DiscussionItemId; itemType?: DiscussionItemType }
 ): UseDiscussionRepliesResult => {
   const { user } = useAuth() || {};
+  const itemId = item?.itemId;
+  const itemType = item?.itemType;
 
   const [replies, setReplies] = useState<DiscussionReply[]>([]);
   const [loading, setLoading] = useState(!!discussionId && shouldFetch);
@@ -193,6 +197,8 @@ export const useDiscussionReplies = (
             data: {
               discussionId,
               discussionPath,
+              itemId,
+              itemType,
             },
           });
         }
@@ -209,7 +215,9 @@ export const useDiscussionReplies = (
               if (
                 pathItemType === 'movie' ||
                 pathItemType === 'series' ||
-                pathItemType === 'episode'
+                pathItemType === 'episode' ||
+                pathItemType === 'manga' ||
+                pathItemType === 'book'
               ) {
                 derivedItemType = pathItemType;
               }
@@ -244,7 +252,7 @@ export const useDiscussionReplies = (
         return false;
       }
     },
-    [user, discussionId, repliesPath, discussionPath, feedMetadata]
+    [user, discussionId, repliesPath, discussionPath, feedMetadata, itemId, itemType]
   );
 
   // Edit a reply (owner can edit all, others can only mark as spoiler)
@@ -314,6 +322,8 @@ export const useDiscussionReplies = (
               discussionId,
               discussionPath,
               replyId,
+              itemId,
+              itemType,
             },
           });
         }
@@ -325,7 +335,7 @@ export const useDiscussionReplies = (
         return false;
       }
     },
-    [user, discussionId, repliesPath, discussionPath]
+    [user, discussionId, repliesPath, discussionPath, itemId, itemType]
   );
 
   // Delete a reply (only owner)
@@ -398,6 +408,8 @@ export const useDiscussionReplies = (
                 discussionId,
                 discussionPath,
                 replyId,
+                itemId,
+                itemType,
               },
             });
           }
@@ -406,7 +418,7 @@ export const useDiscussionReplies = (
         console.error('Error toggling reply like:', err);
       }
     },
-    [user, repliesPath, discussionId, discussionPath]
+    [user, repliesPath, discussionId, discussionPath, itemId, itemType]
   );
 
   return {
