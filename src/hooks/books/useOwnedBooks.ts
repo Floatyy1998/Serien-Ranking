@@ -1,16 +1,14 @@
 import { useCallback, useMemo } from 'react';
 import { useBooksList } from '../../contexts/BooksListContext';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { createBookIndex, findMangaForBook } from '../../lib/books/bookIdentity';
+import {
+  createBookIndex,
+  findMangaForBook,
+  type BookIdentityLike,
+} from '../../lib/books/bookIdentity';
 import type { Book } from '../../types/Book';
 
-interface OwnedLookup {
-  id: string;
-  hardcoverId?: number;
-  title: string;
-  authors?: string[];
-  isbn13?: string;
-}
+type OwnedLookup = BookIdentityLike & { id: string };
 
 /** Findet zu einem Treffer das eigene Buch — über ID, Hardcover-ID, ISBN oder Titel samt Band/Beteiligten. */
 export function useOwnedBooks() {
@@ -23,7 +21,8 @@ export function useOwnedBooks() {
 export function useMangaForBook() {
   const { allMangaList } = useMangaList();
   return useCallback(
-    (item: { title: string; subtitle?: string }) => findMangaForBook(item, allMangaList),
+    (item: { title: string; subtitle?: string; series?: { name?: string } }) =>
+      findMangaForBook(item, allMangaList),
     [allMangaList]
   );
 }

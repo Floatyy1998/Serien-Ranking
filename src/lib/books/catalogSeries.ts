@@ -1,5 +1,52 @@
 import type { BookSearchResult, BookSeriesPart } from '../../types/Book';
+import {
+  editionLanguage,
+  sameAuthor,
+  sameSeriesKey,
+  seriesNameKey,
+  titledStems,
+} from './bookSeries';
 import { dnbPartDate } from './dnbSeries';
+import { splitVolume } from './mangaVolume';
+
+export interface CatalogEdition {
+  id: string;
+  t: string;
+  a?: string[];
+  i?: string;
+  h?: number;
+  l?: string;
+  s?: string;
+  sp?: number;
+  v: number;
+}
+
+/** Fremdsprachige Bände der Liste samt Katalog-Ausgabe in `lang`: dasselbe Hardcover-Buch, derselbe Reihenplatz oder der Titel der Nachbarbände. */
+export function localEditionGaps(
+  seriesKey: string,
+  parts: BookSeriesPart[],
+  lang: string,
+  editions: CatalogEdition[]
+): { position: number; edition: CatalogEdition }[] {
+  const local = parts.filter((p) => editionLanguage(p.result) === lang);
+  const foreign = parts.filter((p) => p.result && editionLanguage(p.result) !== lang);
+  if (!local.length || !foreign.length) return [];
+  const stems = titledStems(local);
+  const fitting = editions.filter((e) => editionLanguage({ isbn13: e.i, language: e.l }) === lang);
+  const gaps: { position: number; edition: CatalogEdition }[] = [];
+  for (const part of foreign) {
+    const edition = fitting.find((e) => {
+      if (e.id === part.wikidataId) return false;
+      if (e.h && e.h === part.result?.hardcoverId) return true;
+      if (e.sp === part.position && sameSeriesKey(e.s, seriesKey)) return true;
+      if (e.s || !sameAuthor(e.a, part.result?.authors)) return false;
+      const titled = splitVolume(e.t);
+      return titled.volume === part.position && stems.has(seriesNameKey(titled.series));
+    });
+    if (edition) gaps.push({ position: part.position, edition });
+  }
+  return gaps;
+}
 
 /** Band in catalog/books/series/<lang>/<datei>.json (Nachtlauf bookSeriesCatalog.js im Backend). */
 export interface CatalogSeriesPart {

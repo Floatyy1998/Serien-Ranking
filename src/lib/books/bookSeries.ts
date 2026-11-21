@@ -1,5 +1,6 @@
 import { isLocale, type Locale } from '../../i18n/locales';
 import type { Book, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
+import { bookFormsConflict } from './bookIdentity';
 import { isDnbSeriesKey, parseDnbSeriesKey } from './bookSearchMapping';
 import { splitVolume } from './mangaVolume';
 
@@ -63,7 +64,8 @@ interface SeriesBookRef {
   wikidataId?: string;
   olWorkId?: string;
   isbn13?: string;
-  series?: { wikidataId?: string; position?: number };
+  series?: { wikidataId?: string; position?: number; name?: string };
+  categories?: string[];
 }
 
 /**
@@ -108,10 +110,41 @@ export function partPositionOf(
   if (byId) return byId.position;
   for (const mainOnly of [false, true]) {
     const keys = titleKeys(book.title, mainOnly);
-    const hits = parts.filter((p) => sharesKey(keys, titleKeys(p.title, mainOnly)));
+    const hits = parts.filter(
+      (p) => sharesKey(keys, titleKeys(p.title, mainOnly)) && !bookFormsConflict(book, formOf(p))
+    );
     if (hits.length === 1) return hits[0].position;
   }
-  return undefined;
+  return patternPositionOf(book, parts);
+}
+
+const formOf = (part: BookSeriesPart) => ({
+  title: part.title,
+  series: part.result?.series,
+  categories: part.result?.categories,
+});
+
+/** Stamm der Bandtitel, die wie ihr Platz heißen („Solo Leveling Roman 01" auf Platz 1) — je Stamm die Bände dazu. */
+export function titledStems(parts: BookSeriesPart[]): Map<string, BookSeriesPart[]> {
+  const stems = new Map<string, BookSeriesPart[]>();
+  for (const part of parts) {
+    const { series, volume } = splitVolume(part.title);
+    if (volume !== part.position) continue;
+    const stem = seriesNameKey(series);
+    stems.set(stem, [...(stems.get(stem) ?? []), part]);
+  }
+  return stems;
+}
+
+// Hardcover kennt nicht jede Ausgabe: „Solo Leveling Roman 02" fehlt, die Bände 01 und 03 daneben verraten den Platz.
+function patternPositionOf(book: SeriesBookRef, parts: BookSeriesPart[]): number | undefined {
+  const { series, volume } = splitVolume(book.title);
+  if (volume === undefined || !parts.some((p) => p.position === volume)) return undefined;
+  const siblings = titledStems(parts).get(seriesNameKey(series)) ?? [];
+  if (siblings.length < 2 || siblings.some((p) => bookFormsConflict(book, formOf(p)))) {
+    return undefined;
+  }
+  return volume;
 }
 
 const authorKeys = (authors: string[] | undefined) =>
@@ -422,6 +455,26 @@ export function alignSeriesKey<T extends { series?: BookSeriesInfo }>(item: T, l
   return known && known !== series.wikidataId
     ? { ...item, series: { ...series, wikidataId: known } }
     : item;
+}
+
+/** Buch ohne Reihe von der Quelle, das wie ein eigener Band mit anderer Nummer heißt („… Roman 02" neben „… Roman 01"), erbt dessen Reihe. */
+export function inheritSeries<
+  T extends { title: string; authors?: string[]; series?: BookSeriesInfo },
+>(item: T, library: Book[]): T {
+  const { series, volume } = splitVolume(item.title);
+  if (item.series || volume === undefined) return item;
+  const stem = seriesNameKey(series);
+  const sibling = library.find((b) => {
+    if (!b.series?.wikidataId || b.series.position === undefined) return false;
+    const own = splitVolume(b.title);
+    return (
+      own.volume === b.series.position &&
+      own.volume !== volume &&
+      seriesNameKey(own.series) === stem &&
+      sameAuthor(item.authors, b.authors)
+    );
+  });
+  return sibling?.series ? { ...item, series: { ...sibling.series, position: volume } } : item;
 }
 
 const EXPLICIT_VOLUME = /\b(?:band|bd|vol|volume|tome|tomo|teil|nr|book|buch)\.?\s*\d{1,4}\s*$/i;

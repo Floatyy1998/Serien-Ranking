@@ -1,12 +1,14 @@
 import { isDnbSeriesKey, parseDnbSeriesKey } from '../../lib/books/bookSearchMapping';
+import { editionLanguage } from '../../lib/books/bookSeries';
 import {
+  localEditionGaps,
   mapCatalogSeries,
   seriesFileName,
   type CatalogSeriesFile,
 } from '../../lib/books/catalogSeries';
 import type { BookSeriesInfo, BookSeriesPart } from '../../types/Book';
 import { appLocale } from '../i18n';
-import { bookCatalogVersion, loadBookCatalogIndex } from './bookCatalog';
+import { bookCatalogVersion, loadBookCatalogIndex, loadBookCatalogItem } from './bookCatalog';
 import { CATALOG_BACKEND } from './catalogClient';
 
 /**
@@ -37,6 +39,32 @@ export function loadCatalogSeries(
     files.set(`${lang}:${key}`, pending);
   }
   return pending;
+}
+
+/** Füllt fremdsprachige Bände der Liste mit der Ausgabe aus dem eigenen Katalog, soweit jemand sie schon hinzugefügt hat. */
+export async function withCatalogEditions(
+  key: string,
+  parts: BookSeriesPart[],
+  lang: string
+): Promise<BookSeriesPart[]> {
+  if (!parts.some((p) => p.result && editionLanguage(p.result) !== lang)) return parts;
+  const index = await loadBookCatalogIndex().catch(() => null);
+  const gaps = index ? localEditionGaps(key, parts, lang, index.items) : [];
+  if (!gaps.length) return parts;
+  const loaded = await Promise.all(
+    gaps.map(({ edition }) => loadBookCatalogItem(edition.id, edition.v).catch(() => null))
+  );
+  return parts.map((part) => {
+    const hit = loaded[gaps.findIndex((gap) => gap.position === part.position)];
+    if (!hit) return part;
+    const series = part.result?.series ?? hit.series;
+    return {
+      ...part,
+      wikidataId: hit.id,
+      title: hit.title,
+      result: { ...hit, ...(series ? { series: { ...series, position: part.position } } : {}) },
+    };
+  });
 }
 
 /** Reihe eines Buchs laut Katalog-Index; `null` = Katalog kennt das Buch, aber keine Reihe; `undefined` = unbekannt. */

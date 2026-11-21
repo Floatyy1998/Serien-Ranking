@@ -4,6 +4,7 @@ import { eventPages, readingStreak, type CompactBookEvent } from './bookEvents';
 import {
   bookMatchKey,
   bookThreadKey,
+  bookFormOf,
   bookTitleKey,
   createBookIndex,
   findMangaForBook,
@@ -222,6 +223,63 @@ describe('isSameBookIdentity', () => {
     expect(index.has({ title: 'Dune', authors: ['Herbert, Frank'] })).toBe(true);
     expect(index.has({ title: 'Marry My Husband 8', authors: ['Sojak Sung'] })).toBe(false);
   });
+
+  // Ticket 21.11.2026: Der vorgeschlagene Roman-Band 2 öffnete den eigenen Comic-Band 2.
+  describe('Roman und Comic derselben Reihe', () => {
+    const comic = {
+      id: 'dnb-9783963585265',
+      title: 'Solo leveling 2',
+      authors: ['Chu gong'],
+      isbn13: '9783963585265',
+      hardcoverId: 848094,
+      series: { name: 'Solo Leveling (Comic)' },
+    };
+    const novel = {
+      id: 'hc-1979308',
+      title: 'Solo Leveling (Novel), Vol. 2',
+      authors: ['Chugong'],
+      isbn13: '9781975325893',
+      hardcoverId: 1979308,
+      series: { name: 'Solo Leveling (Novel)' },
+    };
+
+    it('liest die Form aus den Klammerzusätzen', () => {
+      expect(bookFormOf(comic)).toBe('comic');
+      expect(bookFormOf(novel)).toBe('prose');
+      expect(bookFormOf({ title: 'Solo Leveling, Vol. 10 (comic)' })).toBe('comic');
+      expect(bookFormOf({ title: 'Overlord 3', series: { name: 'Overlord [Light Novel]' } })).toBe(
+        'prose'
+      );
+      expect(bookFormOf({ title: 'Solo leveling 2', categories: ['Comics', 'Fantasy'] })).toBe(
+        'comic'
+      );
+      expect(bookFormOf({ title: 'X (Novel), Vol. 1', categories: ['Manga'] })).toBe('prose');
+      expect(bookFormOf({ title: 'Solo Leveling Roman 05', categories: ['Light Novel'] })).toBe(
+        'prose'
+      );
+      expect(bookFormOf({ title: 'X 1', categories: ['Manga', 'Light Novel'] })).toBeUndefined();
+      expect(bookFormOf({ title: 'Der Schwarm: Roman' })).toBeUndefined();
+      expect(bookFormOf({ title: 'Bis(s) zum Morgengrauen' })).toBeUndefined();
+    });
+
+    it('hält den Roman-Band nicht für den eigenen Comic-Band', () => {
+      expect(bookTitleKey(novel.title)).toBe(bookTitleKey(comic.title));
+      expect(isSameBookIdentity(comic, novel)).toBe(false);
+      expect(createBookIndex([comic]).find(novel)).toBeUndefined();
+      expect(
+        isSameBookIdentity({ ...comic, series: undefined, categories: ['Comics'] }, novel)
+      ).toBe(false);
+    });
+
+    it('lässt Ausgaben ohne Angabe der Form weiter zusammenfallen', () => {
+      const plain = { id: 'gb-x', title: 'Solo Leveling 02', authors: ['Chugong'] };
+      expect(isSameBookIdentity(comic, plain)).toBe(true);
+      expect(isSameBookIdentity(novel, plain)).toBe(true);
+      expect(
+        isSameBookIdentity(comic, { id: 'gb-y', title: 'Solo Leveling, Vol. 2 (Manhwa)' })
+      ).toBe(true);
+    });
+  });
 });
 
 describe('findMangaForBook', () => {
@@ -260,6 +318,14 @@ describe('findMangaForBook', () => {
 
   it('lässt Romane, Spin-offs und fremde Reihen in Ruhe', () => {
     expect(findMangaForBook({ title: 'Solo Leveling – Roman 1' }, library)).toBeUndefined();
+    expect(findMangaForBook({ title: 'Solo Leveling (Novel), Vol. 2' }, library)).toBeUndefined();
+    expect(
+      findMangaForBook(
+        { title: 'Solo Leveling, Vol. 2', series: { name: 'Solo Leveling (Novel)' } },
+        library
+      )
+    ).toBeUndefined();
+    expect(findMangaForBook({ title: 'Solo Leveling, Vol. 2 (comic)' }, library)).toBe(library[3]);
     expect(findMangaForBook({ title: 'One Piece Film Red' }, library)).toBeUndefined();
     expect(findMangaForBook({ title: 'Der Schwarm' }, library)).toBeUndefined();
   });
@@ -408,6 +474,32 @@ describe('bookSeries', () => {
     const book = { title: 'Zwei', series: { wikidataId: 'QX', position: 7 } };
     expect(partPositionOf(book, parts, 'QX')).toBe(7);
     expect(partPositionOf(book, parts, 'Q-andere')).toBe(2);
+  });
+
+  it('zählt einen Comic-Band nicht als Band der gleichnamigen Roman-Reihe', () => {
+    const series = { name: 'Solo Leveling (Novel)', wikidataId: 'hc:Solo Leveling (Novel)' };
+    const parts = [1, 2].map((position) => ({
+      wikidataId: `hc-${position}`,
+      title: `Solo Leveling (Novel), Vol. ${position}`,
+      position,
+      result: {
+        id: `hc-${position}`,
+        title: `Solo Leveling (Novel), Vol. ${position}`,
+        authors: ['Chugong'],
+        source: 'hardcover' as const,
+        series: { ...series, position },
+      },
+    }));
+    const comic = {
+      title: 'Solo Leveling, Vol. 2 (comic)',
+      series: {
+        name: 'Solo Leveling (Comic)',
+        wikidataId: 'hc:Solo Leveling (Comic)',
+        position: 2,
+      },
+    };
+    expect(partPositionOf(comic, parts, series.wikidataId)).toBeUndefined();
+    expect(partPositionOf({ title: 'Solo Leveling, Vol. 2' }, parts, series.wikidataId)).toBe(2);
   });
 });
 

@@ -1,7 +1,7 @@
 import type { BasedOnBook, BookAdaptation, BookLinks, BookSeriesPart } from '../../types/Book';
 import { isDnbSeriesKey } from '../../lib/books/bookSearchMapping';
 import { normalizeSeriesParts } from '../../lib/books/bookSeries';
-import { loadCatalogSeries } from '../catalog/bookSeriesCatalog';
+import { loadCatalogSeries, withCatalogEditions } from '../catalog/bookSeriesCatalog';
 import { dnbSeriesParts } from './booksApi';
 import { appLocale } from '../i18n';
 import { loadStaticBasedOn } from './bookStatic';
@@ -179,10 +179,15 @@ export function fetchSeriesParts(
   seriesId: string,
   lang: string = appLocale
 ): Promise<BookSeriesPart[]> {
-  if (isDnbSeriesKey(seriesId) || isHardcoverSeriesKey(seriesId)) {
-    return loadCatalogSeries(seriesId, isDnbSeriesKey(seriesId) ? 'de' : lang).then((parts) =>
+  if (isDnbSeriesKey(seriesId)) {
+    return loadCatalogSeries(seriesId, 'de').then((parts) =>
       parts.length >= 2 ? parts : liveSeriesParts(seriesId, lang)
     );
+  }
+  if (isHardcoverSeriesKey(seriesId)) {
+    return loadCatalogSeries(seriesId, lang)
+      .then((parts) => (parts.length >= 2 ? parts : liveSeriesParts(seriesId, lang)))
+      .then((parts) => withCatalogEditions(seriesId, parts, lang));
   }
   return liveSeriesParts(seriesId, lang);
 }

@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import type { Book, BookSeriesPart } from '../../types/Book';
+import type { Book, BookSearchResult, BookSeriesPart } from '../../types/Book';
+import { createBookIndex } from './bookIdentity';
 import {
   adoptSeries,
   displayVolume,
   fitsSeries,
   editionLanguage,
+  inheritSeries,
   needsSeriesLookup,
+  partPositionOf,
   partsFitLanguage,
   SERIES_LOOKUP_VERSION,
   seriesProgress,
 } from './bookSeries';
+import { localEditionGaps } from './catalogSeries';
 
 const NOW = new Date('2026-11-07T12:00:00').getTime();
 
@@ -450,5 +454,121 @@ describe('Omniscient Reader: DNB nennt den Zeichner, Hardcover führt dasselbe W
     expect(out).toHaveLength(1);
     expect(out[0].seriesId).toBe(DNB);
     expect(out[0].next.part.result?.isbn13).toBe('9783551630186');
+  });
+});
+
+// Ticket 21.11.2026: Hardcover kennt die deutschen Roman-Bände 2 und 5 nicht — die Liste zeigt dort die englische Ausgabe.
+describe('Solo Leveling: Roman neben Comic', () => {
+  const NOVEL = 'hc:Solo Leveling (Novel)';
+  const COMIC = 'hc:Solo Leveling (Comic)';
+  const novelPart = (position: number, id: string, title: string, isbn13: string) => ({
+    wikidataId: id,
+    title,
+    position,
+    publishedDate: '2021-01-01',
+    result: {
+      id,
+      title,
+      authors: ['Chugong'],
+      isbn13,
+      hardcoverId: Number(id.slice(3)),
+      source: 'hardcover' as const,
+      series: { name: 'Solo Leveling (Novel)', position, wikidataId: NOVEL },
+    },
+  });
+  const novelParts: BookSeriesPart[] = [
+    novelPart(1, 'hc-1509648', 'Solo Leveling Roman 01', '9783963587160'),
+    novelPart(2, 'hc-1979308', 'Solo Leveling (Novel), Vol. 2', '9781975325893'),
+    novelPart(3, 'hc-705287', 'Solo Leveling Roman 03', '9783963587504'),
+    novelPart(4, 'hc-893196', 'Solo Leveling Roman 04 mit Box', '9783753904764'),
+    novelPart(5, 'hc-893204', 'Solo Leveling (Novel), Vol. 5', '9781975319366'),
+    novelPart(6, 'hc-927597', 'Solo Leveling Roman 06', '9783963587535'),
+  ];
+  const roman1 = book({
+    id: 'hc-1509648',
+    title: 'Solo Leveling Roman 01',
+    authors: ['Chugong'],
+    isbn13: '9783963587160',
+    hardcoverId: 1509648,
+    series: { name: 'Solo Leveling (Novel)', position: 1, wikidataId: NOVEL, hardcoverId: 20376 },
+  });
+  const comic2 = book({
+    id: 'dnb-9783963585265',
+    title: 'Solo leveling 2',
+    authors: ['Chu gong'],
+    isbn13: '9783963585265',
+    hardcoverId: 848094,
+    categories: ['Fantasy', 'Comics'],
+    series: { name: 'Solo Leveling (Comic)', position: 2, wikidataId: COMIC, hardcoverId: 225411 },
+  });
+  const roman2: BookSearchResult = {
+    id: 'gb-roman2',
+    title: 'Solo Leveling Roman 02',
+    authors: ['Chugong'],
+    isbn13: '9783963587498',
+    source: 'google',
+  };
+
+  it('schlägt Roman-Band 2 vor, den der eigene Comic-Band 2 nicht ersetzt', () => {
+    const [next] = seriesProgress([roman1, comic2], { [NOVEL]: novelParts }, {}, NOW);
+    expect(next.next.part.position).toBe(2);
+    expect(createBookIndex([roman1, comic2]).find(novelParts[1].result ?? roman2)).toBeUndefined();
+  });
+
+  it('erkennt den deutschen Band 2 am Titel der Nachbarbände', () => {
+    expect(partPositionOf(roman2, novelParts, NOVEL)).toBe(2);
+    expect(partPositionOf(comic2, novelParts, NOVEL)).toBeUndefined();
+    expect(partPositionOf({ title: 'Solo Leveling Roman 09' }, novelParts, NOVEL)).toBeUndefined();
+    const read = book({ ...roman2, series: undefined });
+    const [next] = seriesProgress([roman1, comic2, read], { [NOVEL]: novelParts }, {}, NOW);
+    expect(next.next.part.title).toBe('Solo Leveling Roman 03');
+  });
+
+  it('vererbt die Reihe des eigenen Bands 1 an den neuen Band 2', () => {
+    expect(inheritSeries(roman2, [comic2, roman1]).series).toEqual({
+      name: 'Solo Leveling (Novel)',
+      position: 2,
+      wikidataId: NOVEL,
+      hardcoverId: 20376,
+    });
+    expect(inheritSeries(roman2, [comic2]).series).toBeUndefined();
+    expect(
+      inheritSeries({ ...roman2, authors: ['Jemand Anderes'] }, [roman1]).series
+    ).toBeUndefined();
+    const known = { name: 'X', wikidataId: 'hc:X' };
+    expect(inheritSeries({ ...roman2, series: known }, [roman1]).series).toBe(known);
+    expect(inheritSeries({ title: 'Solo Leveling Roman', authors: ['Chugong'] }, [roman1])).toEqual(
+      {
+        title: 'Solo Leveling Roman',
+        authors: ['Chugong'],
+      }
+    );
+  });
+
+  it('füllt fremdsprachige Bände aus dem eigenen Katalog', () => {
+    const editions = [
+      { id: 'gb-CdqvzgEACAAJ', t: 'Solo Leveling Roman 05', i: '9783963587528', h: 893204, v: 1 },
+      { id: 'gb-roman2', t: 'Solo Leveling Roman 02', a: ['Chugong'], i: '9783963587498', v: 2 },
+      {
+        id: 'dnb-9783963587658',
+        t: 'Solo leveling 2',
+        i: '9783963587658',
+        s: 'dnb:1:Solo leveling',
+        sp: 2,
+        v: 3,
+      },
+      { id: 'gb-en', t: 'Solo Leveling Roman 02', i: '9781975325893', v: 4 },
+    ];
+    expect(
+      localEditionGaps(NOVEL, novelParts, 'de', editions).map((gap) => [
+        gap.position,
+        gap.edition.id,
+      ])
+    ).toEqual([
+      [2, 'gb-roman2'],
+      [5, 'gb-CdqvzgEACAAJ'],
+    ]);
+    expect(localEditionGaps(NOVEL, novelParts, 'de', [editions[2], editions[3]])).toEqual([]);
+    expect(localEditionGaps(NOVEL, novelParts, 'fr', editions)).toEqual([]);
   });
 });

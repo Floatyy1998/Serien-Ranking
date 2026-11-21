@@ -10,7 +10,7 @@ import {
 import { notifyBookEventsChanged } from '../../../hooks/books/useBookEvents';
 import { useMangaForBook, useOwnedBooks } from '../../../hooks/books/useOwnedBooks';
 import { triggerPetReaction } from '../../../hooks/pet/usePetReactions';
-import { alignSeriesKey } from '../../../lib/books/bookSeries';
+import { alignSeriesKey, inheritSeries } from '../../../lib/books/bookSeries';
 import { volumeSnapshot } from '../../../lib/books/mangaBooks';
 import { mangaVolumeGuess } from '../../../lib/books/mangaVolume';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
@@ -115,7 +115,8 @@ export function useBookActions() {
       const { asBookOf, ...bookOptions } = options;
       if (asBookOf === undefined && (await addVolumeAsManga(result))) return null;
       try {
-        const book = await addBook(uid, alignSeriesKey(result, allBookList), status, bookOptions);
+        const placed = alignSeriesKey(inheritSeries(result, allBookList), allBookList);
+        const book = await addBook(uid, placed, status, bookOptions);
         if (asBookOf !== undefined) void setSeriesAsBooks(uid, asBookOf).catch(() => {});
         trackBookAdded(book.id, book.title, status);
         logBook(uid, book, 'book_added');

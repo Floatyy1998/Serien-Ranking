@@ -121,9 +121,37 @@ export function sameBookAuthors(a: string[] | undefined, b: string[] | undefined
   return false;
 }
 
-export interface BookIdentityLike {
-  id?: string;
+export interface BookFormHint {
   title: string;
+  series?: { name?: string };
+  categories?: string[];
+}
+
+const BRACKETED = /\(([^)]*)\)|\[([^\]]*)\]/g;
+const COMIC_FORM = /\b(?:comics?|manga|manhwa|manhua|webtoons?|graphic novels?)\b/;
+const PROSE_FORM = /\b(?:light ?novels?|novels?|roman)\b/;
+
+/** Comic oder Roman laut Klammerzusatz in Titel und Reihenname („(Novel)", „(Comic)") — den wirft der Titelschlüssel weg. */
+export function bookFormOf(item: BookFormHint): 'comic' | 'prose' | undefined {
+  const notes = [...`${item.title} ${item.series?.name ?? ''}`.toLowerCase().matchAll(BRACKETED)]
+    .map((match) => match[1] ?? match[2])
+    .join(' ');
+  if (COMIC_FORM.test(notes)) return 'comic';
+  if (PROSE_FORM.test(notes)) return 'prose';
+  const genres = (item.categories ?? []).join(' | ').toLowerCase();
+  const comic = COMIC_FORM.test(genres);
+  const prose = /\blight ?novels?\b/.test(genres);
+  return comic === prose ? undefined : comic ? 'comic' : 'prose';
+}
+
+export const bookFormsConflict = (a: BookFormHint, b: BookFormHint): boolean => {
+  const formA = bookFormOf(a);
+  const formB = bookFormOf(b);
+  return !!formA && !!formB && formA !== formB;
+};
+
+export interface BookIdentityLike extends BookFormHint {
+  id?: string;
   authors?: string[];
   isbn13?: string;
   hardcoverId?: number;
@@ -139,7 +167,7 @@ export function isSameBookIdentity(a: BookIdentityLike, b: BookIdentityLike): bo
   if (a.hardcoverId && a.hardcoverId === b.hardcoverId) return true;
   if (a.isbn13 && a.isbn13 === b.isbn13) return true;
   const key = bookTitleKey(a.title);
-  if (key !== bookTitleKey(b.title)) return false;
+  if (key !== bookTitleKey(b.title) || bookFormsConflict(a, b)) return false;
   return !!splitVolumeKey(key) || sameBookAuthors(a.authors, b.authors);
 }
 
@@ -172,11 +200,13 @@ type MangaTitles = Pick<Manga, 'title' | 'titleEnglish' | 'titleRomaji'>;
 
 /** Ein Manga-Band als Buchtreffer: Reihentitel plus höchstens eine Bandnummer, kein Roman. */
 export function findMangaForBook<T extends MangaTitles>(
-  item: { title: string; subtitle?: string },
+  item: { title: string; subtitle?: string; series?: { name?: string } },
   mangas: T[]
 ): T | undefined {
-  const full = compactWords(normalizeBookText(`${item.title} ${item.subtitle ?? ''}`));
+  const whole = `${item.title} ${item.subtitle ?? ''}`;
+  const full = compactWords(normalizeBookText(whole));
   if (!full || /\b(?:light ?novel|roman)\b/.test(full)) return undefined;
+  if (bookFormOf({ title: whole, series: item.series }) === 'prose') return undefined;
   const title = compactWords(normalizeBookText(item.title));
   // Deutsche Ausgaben hängen den Band an den Untertitel („X: Untertitel 2") — zählt wie „X 2".
   const { head, volume } = titleParts(
