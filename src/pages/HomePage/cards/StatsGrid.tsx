@@ -64,7 +64,7 @@ export const StatsGrid = () => {
       {/* Header with expand button */}
       <SectionHeader
         icon={<BarChart />}
-        iconColor={currentTheme.primary}
+        iconColor={currentTheme.accent}
         title={t('Deine Statistiken')}
         action={
           <IconButton

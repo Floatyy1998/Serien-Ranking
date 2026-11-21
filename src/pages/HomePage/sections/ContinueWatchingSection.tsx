@@ -127,7 +127,11 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
       if (seriesLoading) return null;
       return (
         <section style={{ marginBottom: 'var(--home-section-gap)' }}>
-          <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
+          <SectionHeader
+            icon={<PlayCircle />}
+            iconColor={currentTheme.accent}
+            title={t('Weiterschauen')}
+          />
           <div style={{ padding: '0 20px' }}>
             <button
               type="button"
@@ -178,7 +182,11 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     if (unwatchlistedWithUnwatched === 0) return null;
     return (
       <section style={{ marginBottom: 'var(--home-section-gap)' }}>
-        <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
+        <SectionHeader
+          icon={<PlayCircle />}
+          iconColor={currentTheme.accent}
+          title={t('Weiterschauen')}
+        />
         <div style={{ padding: '0 20px' }}>
           <button
             type="button"
@@ -232,7 +240,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={<PlayCircle />}
-        iconColor={accentColor}
+        iconColor={currentTheme.accent}
         title={t('Weiterschauen')}
         onSeeAll={() => navigate('/watchlist')}
       />
@@ -363,7 +371,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                         style={{
                           fontSize: isMobile ? '11px' : '14px',
                           margin: 0,
-                          color: item.chipType ? chipColor(item.chipType) : accentColor,
+                          color: currentTheme.accent,
                           fontWeight: 500,
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',

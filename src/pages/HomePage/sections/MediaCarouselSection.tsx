@@ -31,7 +31,6 @@ interface MediaCarouselSectionProps {
   items: MediaItem[];
   title: string;
   onSeeAll?: () => void;
-  iconColor?: string;
   /** Show skeleton placeholder while TMDB request is in flight. */
   loading?: boolean;
 }
@@ -41,7 +40,6 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   items,
   title,
   onSeeAll,
-  iconColor,
   loading,
 }: MediaCarouselSectionProps) {
   const { currentTheme } = useTheme();
@@ -53,11 +51,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   if (loading && items.length === 0) {
     return (
       <section style={{ marginBottom: 'var(--home-section-gap)' }}>
-        <SectionHeader
-          icon={sectionIcon}
-          iconColor={iconColor || currentTheme.accent}
-          title={title}
-        />
+        <SectionHeader icon={sectionIcon} iconColor={currentTheme.accent} title={title} />
         <SkeletonPosterRow posterWidth={isMobile ? 155 : 280} count={6} />
       </section>
     );
@@ -65,13 +59,11 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 
   if (items.length === 0) return null;
 
-  const sectionIconColor = iconColor || currentTheme.accent;
-
   return (
     <section style={{ marginBottom: 'var(--home-section-gap)' }}>
       <SectionHeader
         icon={sectionIcon}
-        iconColor={sectionIconColor}
+        iconColor={currentTheme.accent}
         title={title}
         onSeeAll={onSeeAll}
       />

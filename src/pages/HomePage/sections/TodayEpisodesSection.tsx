@@ -204,11 +204,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                         style={{
                           fontSize: isMobile ? '11px' : '14px',
                           margin: 0,
-                          color: episode.chipType
-                            ? chipColor(episode.chipType)
-                            : episode.watched
-                              ? accentColor
-                              : currentTheme.accent,
+                          color: currentTheme.accent,
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',

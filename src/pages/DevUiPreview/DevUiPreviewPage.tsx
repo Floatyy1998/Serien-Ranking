@@ -117,6 +117,7 @@ import {
 } from './BooksPreviews';
 import { ChatReplyPreview, EpisodeSharePreview } from './ChatSharePreviews';
 import { DuoShellPreview } from './DuoShellPreview';
+import { HomeSectionColorsPreview } from './HomeSectionColorsPreview';
 import { AdminTicketsPreview } from './AdminTicketsPreview';
 import { ProfileStatsPreview } from './ProfilePreviews';
 import { RatingsBooksPreview } from './RatingsPreviews';
@@ -581,6 +582,11 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
     id: 'season-mark-home',
     label: 'Startseite: Weiterschauen + Tipp',
     render: () => <HomeNudgePreview />,
+  },
+  {
+    id: 'home-section-colors',
+    label: 'Startseite: Sektionsfarben',
+    render: () => <HomeSectionColorsPreview />,
   },
   {
     id: 'season-mark-overview',

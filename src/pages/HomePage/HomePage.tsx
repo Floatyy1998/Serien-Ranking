@@ -267,7 +267,7 @@ export const HomePage: React.FC = () => {
           <section key="for-you" style={{ marginBottom: 'var(--home-section-gap)' }}>
             <SectionHeader
               icon={<AutoAwesome />}
-              iconColor={currentTheme.primary}
+              iconColor={currentTheme.accent}
               title={t('Für dich')}
             />
             <div
@@ -369,7 +369,6 @@ export const HomePage: React.FC = () => {
             variant="seasonal"
             items={deferredSeasonalItems}
             title={seasonal.title}
-            iconColor={seasonal.iconColor}
             loading={seasonal.loading}
           />
         );
