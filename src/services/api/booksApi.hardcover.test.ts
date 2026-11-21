@@ -204,6 +204,69 @@ describe('Buchsuche mit Hardcover als erster Quelle', () => {
   });
 });
 
+describe('Schonung der Quellen beim Tippen', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    hc.ready = true;
+    hc.search.mockReset();
+    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  const six = (title: string) =>
+    Array.from({ length: 6 }, (_, i) =>
+      hit({ id: `hc-${title}-${i}`, hardcoverId: 100 + i, title: `${title} ${'I'.repeat(i + 1)}` })
+    );
+
+  it('schickt eine überholte Suche nicht mehr an Hardcover', async () => {
+    vi.stubGlobal('fetch', route({}));
+    let finishFirst: (list: BookSearchResult[]) => void = () => {};
+    hc.search.mockImplementationOnce(
+      () =>
+        new Promise<BookSearchResult[]>((resolve) => {
+          finishFirst = resolve;
+        })
+    );
+    hc.search.mockResolvedValue(six('Eisenflamme'));
+    const first = searchBooks('eisenflamme');
+    await vi.waitFor(() => expect(hc.search).toHaveBeenCalledTimes(1));
+    const typedOver = new AbortController();
+    const second = searchBooks('eisenflamme d', typedOver.signal).catch(
+      (err) => (err as Error).name
+    );
+    const third = searchBooks('eisenflamme dr');
+    typedOver.abort();
+    finishFirst(six('Eisenflamme'));
+    expect(await second).toBe('AbortError');
+    await Promise.all([first, third]);
+    expect(hc.search.mock.calls.map(([query]) => query)).toEqual(['eisenflamme', 'eisenflamme dr']);
+  });
+
+  it('lässt die DNB nach einem Fehlschlag zwei Minuten ruhen', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-01-01T12:00:00Z'));
+    hc.search.mockResolvedValue([]);
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.includes('services.dnb.de')) throw new TypeError('Load failed');
+      return new Response(JSON.stringify({ docs: [] }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const dnbCalls = () =>
+      fetchMock.mock.calls.filter(([url]) => String(url).includes('services.dnb.de')).length;
+    await searchBooks('ruhepause eins');
+    await searchBooks('ruhepause zwei');
+    expect(dnbCalls()).toBe(1);
+    vi.setSystemTime(new Date('2026-01-01T12:03:00Z'));
+    await searchBooks('ruhepause drei');
+    expect(dnbCalls()).toBe(2);
+  });
+});
+
 describe('DNB-Bandlisten', () => {
   const volume = (n: number) => `<record><recordData>
 <record xmlns="http://www.loc.gov/MARC21/slim" type="Bibliographic">

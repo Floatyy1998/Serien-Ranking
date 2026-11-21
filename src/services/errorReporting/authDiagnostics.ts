@@ -25,6 +25,7 @@ interface StartSnapshot {
   hadSession: boolean;
   storageKeys: number;
   usageKeys: number;
+  usageNames: string[];
   firebaseLocal: boolean;
   lastExit: LastExit | null;
   startedAt: number;
@@ -71,20 +72,42 @@ function hasFirebaseLocalUser(): boolean {
   return false;
 }
 
-// Schreibt schon die abgemeldete Startseite — beweist also keine frühere Anmeldung.
-const ANONYMOUS_KEY_PREFIXES = ['bk:shelf:', 'firebase:host:', 'firebase:previous_websocket'];
+// Entstehen schon ohne Anmeldung (Startseite, Cookie-Banner, Gast-Seiten, Einladungslink) — beweisen also keine frühere Anmeldung.
+const ANONYMOUS_KEY_PREFIXES = [
+  'bk:',
+  'firebase:host:',
+  'firebase:previous_websocket',
+  'analytics-consent',
+  'startupLogDay',
+  'pendingInviteCode',
+  'guestOnboardingV2',
+  'appInstallBannerDismissedAt',
+  'errorReportThrottle',
+  'errorReportQueue',
+];
+const MAX_USAGE_NAMES = 6;
 
-function countUsageKeys(): number {
+/** Nur der Namensraum eines Schlüssels: was nach dem ersten Doppelpunkt folgt, kann Kennungen oder Suchtext enthalten. */
+const keyNamespace = (key: string): string =>
+  key
+    .split(':')[0]
+    .replace(/[-_]?\d+$/, '')
+    .slice(0, 40);
+
+function readUsageKeys(): { count: number; names: string[] } {
   let count = 0;
+  const names = new Set<string>();
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i) ?? '';
-      if (!ANONYMOUS_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) count++;
+      if (ANONYMOUS_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) continue;
+      count++;
+      names.add(keyNamespace(key));
     }
   } catch {
     // localStorage gesperrt
   }
-  return count;
+  return { count, names: [...names].sort().slice(0, MAX_USAGE_NAMES) };
 }
 
 function describeLastExit(exit: LastExit | null): string {
@@ -176,10 +199,12 @@ export function beginAuthDiagnostics(hadSession: boolean): void {
   } catch {
     // localStorage gesperrt
   }
+  const usage = readUsageKeys();
   snapshot = {
     hadSession,
     storageKeys,
-    usageKeys: countUsageKeys(),
+    usageKeys: usage.count,
+    usageNames: usage.names,
     firebaseLocal: hasFirebaseLocalUser(),
     lastExit: readLastExit(),
     startedAt: Date.now(),
@@ -250,7 +275,7 @@ export function trackAuthEvent(user: firebase.User | null): void {
   }
   if (!startedLoggedOut) return;
   startedLoggedOut = false;
-  const { hadSession, storageKeys, usageKeys, firebaseLocal, idb } = snapshot;
+  const { hadSession, storageKeys, usageKeys, usageNames, firebaseLocal, idb } = snapshot;
   const lastExit = snapshot.lastExit ?? readLastExit();
   writeLastExit(null);
   const createdAt = Date.parse(user.metadata?.creationTime || '') || Date.now();
@@ -263,11 +288,12 @@ export function trackAuthEvent(user: firebase.User | null): void {
   if (!hadSession && usageKeys === 0 && !lastExit) return;
   const rejection = getAuthTokenRejection();
   const token = rejection ? `abgelehnt (${rejection})` : 'keine Ablehnung';
+  const traces = usageNames.length ? ` [${usageNames.join(', ')}]` : '';
   void describeStorage().then((storage) =>
     captureError({
       kind: 'error',
       name: 'AuthRelogin',
-      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Token-Erneuerung: ${token}, Firebase-IDB: ${idb ?? 'ungeprüft'}${reloaded ? ' nach Neuladen' : ''}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys} (Nutzungsspuren: ${usageKeys}), ${storage})`,
+      message: `Bestandskonto musste sich neu anmelden (cachedUser: ${hadSession ? 'ja' : 'nein'}, Token-Erneuerung: ${token}, Firebase-IDB: ${idb ?? 'ungeprüft'}${reloaded ? ' nach Neuladen' : ''}, Firebase-localStorage: ${firebaseLocal ? 'ja' : 'nein'}, zuvor: ${describeLastExit(lastExit)}, localStorage-Einträge beim Start: ${storageKeys} (Nutzungsspuren: ${usageKeys}${traces}), ${storage})`,
     })
   );
 }

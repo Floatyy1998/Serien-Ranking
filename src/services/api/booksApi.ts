@@ -137,6 +137,28 @@ async function searchOpenLibrary(
   return (data.docs ?? []).map(mapOpenLibraryDoc).filter((r): r is BookSearchResult => !!r);
 }
 
+const DNB_PAUSE_MS = 2 * 60_000;
+let dnbPausedUntil = 0;
+
+/** Ein 403 der DNB kommt ohne CORS-Header, im Browser also als TypeError — danach ruht sie, statt je Tastendruck erneut zu scheitern. */
+async function fetchDnb(params: URLSearchParams, signal?: AbortSignal): Promise<string> {
+  if (Date.now() < dnbPausedUntil) throw new Error('DNB pausiert');
+  let res: Response;
+  try {
+    res = await fetch(`${DNB_SRU}?${params.toString()}`, { signal });
+  } catch (err) {
+    if (!signal?.aborted && navigator.onLine !== false) dnbPausedUntil = Date.now() + DNB_PAUSE_MS;
+    throw err;
+  }
+  if (!res.ok) {
+    if (res.status === 403 || res.status === 429 || res.status >= 500) {
+      dnbPausedUntil = Date.now() + DNB_PAUSE_MS;
+    }
+    throw new Error(`DNB ${res.status}`);
+  }
+  return res.text();
+}
+
 async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
   const params = new URLSearchParams({
     version: '1.1',
@@ -145,9 +167,7 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
     recordSchema: 'MARC21-xml',
     maximumRecords: '1',
   });
-  const res = await fetch(`${DNB_SRU}?${params.toString()}`, { signal });
-  if (!res.ok) throw new Error(`DNB ${res.status}`);
-  const hit = mapDnbRecord(await res.text(), isbn13);
+  const hit = mapDnbRecord(await fetchDnb(params, signal), isbn13);
   return hit ? [hit] : [];
 }
 
@@ -185,9 +205,7 @@ async function dnbPage(
     maximumRecords: String(max),
     startRecord: String(start),
   });
-  const res = await fetch(`${DNB_SRU}?${params.toString()}`, { signal });
-  if (!res.ok) throw new Error(`DNB ${res.status}`);
-  return res.text();
+  return fetchDnb(params, signal);
 }
 
 /** Die SRU liefert höchstens 100 Datensätze je Abfrage — lange Reihen (Perry-Rhodan-Silberbände: 180) brauchen mehr Seiten. */
@@ -369,20 +387,30 @@ export async function searchBooks(
   // e4: DNB ergänzt (e3: Hardcover als erste Quelle) — alte Listen im Cache verdrängt das LRU nach und nach.
   const source = hardcoverReady() ? 'h' : hasGoogleBooks() ? 'g' : 'o';
   const key = `e4:${appLocale}:${source}:${trimmed.toLowerCase()}`;
+  const leave = joinSearch(key);
+  signal?.addEventListener('abort', leave, { once: true });
   const results = await cached(
     'search',
     key,
     6 * HOUR,
     async () => {
-      const found = await runSearch(trimmed, undefined, { typing: true });
+      const found = await runSearch(trimmed, undefined, {
+        typing: true,
+        wanted: () => searchWaiters.has(key),
+      });
       if (!found.length) throw NO_HITS;
       return found;
     },
     40
-  ).catch((err) => {
-    if (err === NO_HITS) return [] as BookSearchResult[];
-    throw err;
-  });
+  )
+    .catch((err) => {
+      if (err === NO_HITS) return [] as BookSearchResult[];
+      throw err;
+    })
+    .finally(() => {
+      signal?.removeEventListener('abort', leave);
+      leave();
+    });
   if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
   // Bücher aus dem eigenen Katalog zuerst — sie haben Cover und Daten schon bei uns liegen.
   const own = await searchBookCatalog(trimmed).catch(() => [] as BookSearchResult[]);
@@ -401,35 +429,88 @@ function mergeById(results: BookSearchResult[]): BookSearchResult[] {
   return [...byId.values()];
 }
 
+const searchWaiters = new Map<string, number>();
+
+function joinSearch(key: string): () => void {
+  searchWaiters.set(key, (searchWaiters.get(key) ?? 0) + 1);
+  let left = false;
+  return () => {
+    if (left) return;
+    left = true;
+    const rest = (searchWaiters.get(key) ?? 1) - 1;
+    if (rest > 0) searchWaiters.set(key, rest);
+    else searchWaiters.delete(key);
+  };
+}
+
+const TYPING_TURN_MAX_WAIT_MS = 3000;
+let typingTurn: Promise<void> = Promise.resolve();
+
+/** Beim Tippen nur eine Suche zugleich, überholte gehen nie raus — Hardcovers Minutenlimit teilen sich alle Nutzer. */
+async function takeTypingTurn(wanted: () => boolean): Promise<() => void> {
+  const previous = typingTurn;
+  let release = () => {};
+  typingTurn = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    previous,
+    new Promise((resolve) => {
+      timer = setTimeout(resolve, TYPING_TURN_MAX_WAIT_MS);
+    }),
+  ]);
+  clearTimeout(timer);
+  if (!wanted()) {
+    release();
+    throw new DOMException('aborted', 'AbortError');
+  }
+  return release;
+}
+
 /**
  * typing: Suche beim Tippen — Open Library fragt zusätzlich den Titel mit angefangenem letzten Wort ab.
+ * wanted: wartet noch jemand auf das Ergebnis? Sonst endet die Suche vor der nächsten Quelle.
  * background: Hintergrund-Abfragen (Verfilmungs-Brücke, „Bücher zu deinen Serien") laufen über Hardcover mit niedriger
  * Priorität — der Server weist sie bei Andrang ab, ohne die normale Suche zu bremsen.
  */
 async function runSearch(
   trimmed: string,
   signal?: AbortSignal,
-  options: { typing?: boolean; google?: boolean; hardcover?: boolean; background?: boolean } = {}
+  options: {
+    typing?: boolean;
+    google?: boolean;
+    hardcover?: boolean;
+    background?: boolean;
+    wanted?: () => boolean;
+  } = {}
 ): Promise<BookSearchResult[]> {
   if (looksLikeIsbn(trimmed)) {
     return searchByIsbn(toIsbn13(trimmed) ?? trimmed.replace(/\D/g, ''), signal);
   }
+  const wanted = options.wanted ?? (() => true);
+  const endTurn = options.typing ? await takeTypingTurn(wanted) : () => {};
   // Läuft parallel an; zählt nur, wenn die Suche einen Band nennt oder Hardcover kaum etwas Passendes hat.
   const national = options.background ? null : nationalSearch(trimmed, signal);
   const withNational = async (list: BookSearchResult[]) =>
     rankResults(national ? [...list, ...(await national)] : list, trimmed);
   let primary: BookSearchResult[] = [];
-  if (options.hardcover !== false && hardcoverReady()) {
-    try {
-      primary = await hardcoverSearch(trimmed, signal, options.background);
-      // Hardcover findet angefangene Wörter („fourth wi") nicht — dann ergänzen die anderen Quellen.
-      const fitting = primary.filter((r) => searchMatch(r, trimmed).matches).length;
-      if (fitting >= FEW_HITS && !/\d/.test(trimmed)) return rankResults(primary, trimmed);
-      if (fitting) return withNational(primary);
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') throw err;
+  try {
+    if (options.hardcover !== false && hardcoverReady()) {
+      try {
+        primary = await hardcoverSearch(trimmed, signal, options.background);
+        // Hardcover findet angefangene Wörter („fourth wi") nicht — dann ergänzen die anderen Quellen.
+        const fitting = primary.filter((r) => searchMatch(r, trimmed).matches).length;
+        if (fitting >= FEW_HITS && !/\d/.test(trimmed)) return rankResults(primary, trimmed);
+        if (fitting) return withNational(primary);
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') throw err;
+      }
     }
+  } finally {
+    endTurn();
   }
+  if (!wanted()) throw new DOMException('aborted', 'AbortError');
   if (options.google !== false && hasGoogleBooks()) {
     try {
       const google = await searchGoogle(trimmed, signal);

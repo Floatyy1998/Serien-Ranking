@@ -144,7 +144,39 @@ describe('authDiagnostics', () => {
       expect(captureErrorMock).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'AuthRelogin',
-          message: expect.stringContaining('Einträge beim Start: 2 (Nutzungsspuren: 1)'),
+          message: expect.stringContaining(
+            'Einträge beim Start: 2 (Nutzungsspuren: 1 [customTheme])'
+          ),
+        })
+      )
+    );
+  });
+
+  it('meldet den Login nicht, wenn nur Spuren abgemeldeter Besuche da sind', async () => {
+    localStorage.setItem('analytics-consent', 'false');
+    localStorage.setItem('startupLogDay', '2026-10-20:1');
+    localStorage.setItem('pendingInviteCode', 'ABC123');
+    localStorage.setItem('bk:search:e4:de:h:dune', '{}');
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(captureErrorMock).not.toHaveBeenCalled();
+  });
+
+  it('nennt von den Nutzungsspuren nur den Namensraum', async () => {
+    localStorage.setItem('appFocus:u1', 'read');
+    localStorage.setItem('recap-permanent-dismiss-1399', 'true');
+    beginAuthDiagnostics(false);
+    trackAuthEvent(null);
+    trackAuthEvent(user(OLD));
+    await vi.waitFor(() =>
+      expect(captureErrorMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'AuthRelogin',
+          message: expect.stringContaining(
+            'Nutzungsspuren: 2 [appFocus, recap-permanent-dismiss])'
+          ),
         })
       )
     );
