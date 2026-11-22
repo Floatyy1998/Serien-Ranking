@@ -322,6 +322,33 @@ describe('backendFetch', () => {
     }
   );
 
+  it('wiederholt nicht mehr, sobald die Frist des Aufrufers abgelaufen ist', async () => {
+    const controller = new AbortController();
+    fetchMock.mockImplementation(async () => {
+      controller.abort(new DOMException('signal timed out', 'TimeoutError'));
+      throw controller.signal.reason;
+    });
+    const backendFetch = await loadBackendFetch();
+    await expect(
+      backendFetch('/mangaupdates/titles', { method: 'POST', signal: controller.signal })
+    ).rejects.toThrow('signal timed out');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(captureError).toHaveBeenCalledTimes(1);
+  });
+
+  it('wiederholt Status nicht, die der Aufrufer selbst abfängt', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 502 });
+    const backendFetch = await loadBackendFetch();
+    const response = await backendFetch(
+      '/mangaupdates/titles',
+      { method: 'POST' },
+      { quietStatuses: [429, 502] }
+    );
+    expect(response.status).toBe(502);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(captureError).not.toHaveBeenCalled();
+  });
+
   it('meldet Status, die der Aufrufer selbst abfängt, nicht', async () => {
     const backendFetch = await loadBackendFetch();
     fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });

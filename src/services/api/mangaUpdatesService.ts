@@ -29,10 +29,11 @@ type Outcome<T> = { hit: T } | 'miss' | null;
 let pausedUntil = 0;
 const inflight = new Map<string, Promise<unknown>>();
 
-/** 429 und 5xx bremsen alle MangaUpdates-Abfragen eine Minute lang, statt sie zu wiederholen. */
+/** 429, 5xx und eine abgelaufene Frist bremsen alle MangaUpdates-Abfragen eine Minute lang, statt sie zu wiederholen. */
 async function muPost(path: string, body: unknown): Promise<Response | null> {
   if (Date.now() < pausedUntil) return null;
   if (!GUEST_PATHS.has(path) && !hasBackendSession()) return null;
+  const signal = AbortSignal.timeout(TIMEOUT_MS);
   // 502 = MangaUpdates selbst gestört (Backend: `upstream`), 429 bremst unten die Pause aus — beides kein Befund.
   const res = await backendFetch(
     path,
@@ -40,10 +41,13 @@ async function muPost(path: string, body: unknown): Promise<Response | null> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal,
     },
     { quietStatuses: [429, 502] }
-  );
+  ).catch((error: unknown) => {
+    if (signal.aborted) pausedUntil = Date.now() + PAUSE_MS;
+    throw error;
+  });
   if (res.status === 429 || res.status >= 500) {
     pausedUntil = Date.now() + PAUSE_MS;
     return null;

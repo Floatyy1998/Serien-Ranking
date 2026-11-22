@@ -88,6 +88,7 @@ async function getToken(): Promise<string | null> {
  * „bereits vorhanden", ein Doppelversand schadet also nicht. Der Prozess startet
  * gelegentlich neu (pm2) und ist dann einige Sekunden nicht erreichbar bzw.
  * reißt die laufende Anfrage ab; im Mobilfunk bricht auch mal eine einzelne ab.
+ * Nicht wiederholt wird, was der Aufrufer selbst abfängt (`quietStatuses`) oder was an seiner Frist scheitert.
  */
 const RETRY_PATHS = new Set([
   '/add',
@@ -193,15 +194,18 @@ async function sendWithRetry(
   path: string,
   init: RequestInit,
   token: string | null,
-  quietConnectionErrors = false
+  quietConnectionErrors = false,
+  quietStatuses: readonly number[] = []
 ): Promise<Response> {
   const delays = RETRY_PATHS.has(path) ? CONNECTION_RETRY_DELAYS_MS : [];
   for (let attempt = 0; ; attempt++) {
     try {
       const response = await send(path, init, token);
-      if (!TRANSIENT_STATUS.has(response.status) || attempt >= delays.length) return response;
+      const transient =
+        TRANSIENT_STATUS.has(response.status) && !quietStatuses.includes(response.status);
+      if (!transient || attempt >= delays.length) return response;
     } catch (error) {
-      if (attempt >= delays.length) {
+      if (attempt >= delays.length || init.signal?.aborted) {
         // Im Hintergrund kappen Android-WebView und iOS das Netz, beim Update-Reload der Browser selbst — kein Befund.
         const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
         if (!quietConnectionErrors && !hidden && !isPageLeaving() && !cancelledByCaller(init)) {
@@ -237,21 +241,21 @@ export async function backendFetch(
 ): Promise<Response> {
   lastTokenError = null;
   let token = await getToken();
-  let response = await sendWithRetry(path, init, token, quietConnectionErrors);
+  let response = await sendWithRetry(path, init, token, quietConnectionErrors, quietStatuses);
 
   const user = response.status === 401 ? firebase.auth().currentUser : null;
   if (user) {
     const fresh = await fetchToken(user, true);
     if (fresh && fresh !== token) {
       token = fresh;
-      response = await sendWithRetry(path, init, fresh, quietConnectionErrors);
+      response = await sendWithRetry(path, init, fresh, quietConnectionErrors, quietStatuses);
     }
   }
 
   // Andere Geräte, die Extension oder ein zweiter Tab desselben Kontos zählen mit.
   if (response.status === 429 && ADD_LIMIT_PATHS.has(path)) {
     await sleep(retryAfterMs(response));
-    response = await sendWithRetry(path, init, token, quietConnectionErrors);
+    response = await sendWithRetry(path, init, token, quietConnectionErrors, quietStatuses);
   }
 
   const failed = [401, 403, 429].includes(response.status) || response.status >= 500;

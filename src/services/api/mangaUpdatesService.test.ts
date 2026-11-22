@@ -328,6 +328,25 @@ describe('Last-Bremsen', () => {
     expect(backendFetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('pausiert nach abgelaufener Frist, statt jede weitere Abfrage erneut hängen zu lassen', async () => {
+    const controller = new AbortController();
+    controller.abort(new DOMException('signal timed out', 'TimeoutError'));
+    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal);
+    backendFetchMock.mockRejectedValue(controller.signal.reason);
+    const { searchMangaUpdatesTitles, getMangaDexInfo } = await load();
+    expect(await searchMangaUpdatesTitles('Biest')).toEqual([]);
+    expect((await getMangaDexInfo('Berserk')).mangadexId).toBeNull();
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('pausiert nach einem bloßen Verbindungsabbruch nicht', async () => {
+    backendFetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    backendFetchMock.mockResolvedValueOnce(res({ seriesId: 4, latestChapter: 2 }));
+    const { searchMangaUpdatesTitles, getMangaDexInfo } = await load();
+    expect(await searchMangaUpdatesTitles('Biest')).toEqual([]);
+    expect((await getMangaDexInfo('Berserk')).mangadexId).toBe('4');
+  });
+
   it('merkt sich „nicht gefunden“, aber keine Störung', async () => {
     backendFetchMock.mockResolvedValueOnce(res({ latestChapter: 5 }));
     backendFetchMock.mockRejectedValueOnce(new Error('netz'));
