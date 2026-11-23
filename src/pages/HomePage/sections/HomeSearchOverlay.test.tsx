@@ -84,6 +84,15 @@ vi.mock('../../../hooks/rating/useCommunityRatings', () => ({
   pickDisplayRating: () => null,
 }));
 vi.mock('../../../hooks/ui/useAndroidBack', () => ({ useAndroidBack: vi.fn() }));
+const itemProviders = vi.hoisted(() => ({
+  byId: {} as Record<number, { name: string; logo: string }[]>,
+}));
+vi.mock('../../../hooks/provider/useItemProviders', () => ({
+  useItemProviders: (_type: string, id: number) => itemProviders.byId[id] ?? [],
+}));
+vi.mock('../../../hooks/platform/useDeviceType', () => ({
+  useDeviceType: () => ({ isDesktop: false, isMobile: true }),
+}));
 vi.mock('../../../theme/colorUtils', () => ({ getOptimalTextColor: () => '#fff' }));
 vi.mock('../../../lib/motion', () => ({ tapScale: {} }));
 const api = vi.hoisted(() => ({
@@ -361,6 +370,18 @@ describe('HomeSearchOverlay Poster-Aktionen', () => {
       undefined
     );
     expect(screen.queryByTestId('quick-rating')).toBeNull();
+  });
+});
+
+describe('HomeSearchOverlay Anbieter', () => {
+  it('zeigt das Anbieter-Logo auf dem Poster, ohne beim Antippen die Detailseite zu öffnen', () => {
+    itemProviders.byId = { 1: [{ name: 'Netflix', logo: 'https://img/nf.jpg' }] };
+    render(<HomeSearchOverlay open onClose={vi.fn()} />);
+    const logos = screen.getAllByAltText('Netflix');
+    expect(logos).toHaveLength(1);
+    fireEvent.click(logos[0]);
+    expect(navigateMock).not.toHaveBeenCalled();
+    itemProviders.byId = {};
   });
 });
 

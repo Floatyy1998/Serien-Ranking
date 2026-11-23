@@ -24,6 +24,21 @@ export async function blockRecommendation(
   }
 }
 
+export async function fetchRecFeedback(
+  uid: string
+): Promise<{ id: number; type: 'series' | 'movie' }[]> {
+  if (!uid) return [];
+  try {
+    const data = await dbGet<Record<string, RecFeedbackEntry>>(`users/${uid}/recFeedback`);
+    return Object.entries(data || {})
+      .filter(([, e]) => e && e.v < 0)
+      .map(([id, e]) => ({ id: Number(id), type: e.t }))
+      .filter((entry) => Number.isFinite(entry.id));
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchBlockedRecommendations(uid: string): Promise<Set<number>> {
   if (!uid) return new Set();
   try {

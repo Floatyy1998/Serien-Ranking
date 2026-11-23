@@ -5,7 +5,7 @@ import type { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../../components/ui';
 import { t } from '../../services/i18n';
 import { ItemCard } from './DiscoverItemCard';
-import type { DiscoverItem } from './discoverItemHelpers';
+import type { DiscoverItem, DiscoverQuickActions } from './discoverItemHelpers';
 
 interface DiscoverContentProps {
   activeCategory: string;
@@ -25,6 +25,9 @@ interface DiscoverContentProps {
   addingItem: string | null;
   handleItemClick: (item: DiscoverItem) => void;
   addToList: (item: DiscoverItem, event?: React.MouseEvent) => Promise<void>;
+  quick?: DiscoverQuickActions;
+  /** True, wenn Ausblenden/Zeitraum/Wertung/Genre die Liste einschränken. */
+  filtersActive?: boolean;
 }
 
 /** Zusatzzeile für Empty-States, wenn der Abo-Filter aktiv ist. */
@@ -51,96 +54,9 @@ export const DiscoverContent = memo(
     addingItem,
     handleItemClick,
     addToList,
+    quick,
+    filtersActive,
   }: DiscoverContentProps) => {
-    if (activeCategory === 'recommendations') {
-      if (recommendationsLoading && recommendations.length === 0) {
-        return (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <LoadingSpinner size={50} text={t('Lade Empfehlungen...')} />
-          </motion.div>
-        );
-      }
-      if (!recommendationsLoading && recommendations.length === 0) {
-        return (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              background: currentTheme.background.surface,
-              borderRadius: 'var(--radius-xl)',
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <Recommend
-              style={{
-                fontSize: '56px',
-                marginBottom: '16px',
-                color: currentTheme.text.muted,
-              }}
-            />
-            <p
-              style={{
-                fontSize: 'var(--text-md)',
-                color: currentTheme.text.secondary,
-                marginBottom: '8px',
-                fontWeight: 600,
-              }}
-            >
-              {t('Keine Empfehlungen verfügbar')}
-            </p>
-            <p style={{ fontSize: 'var(--text-base)', color: currentTheme.text.secondary }}>
-              {t(
-                'Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier passende Empfehlungen.'
-              )}
-            </p>
-            {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
-          </motion.div>
-        );
-      }
-      return (
-        <div>
-          <p
-            style={{
-              fontSize: 'var(--text-base)',
-              color: currentTheme.text.muted,
-              marginBottom: '20px',
-              textAlign: 'center',
-              fontWeight: 500,
-            }}
-          >
-            {t('Basierend auf deiner Liste')}
-          </p>
-          <div
-            className="discover-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isDesktop
-                ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                : 'repeat(2, minmax(0, 1fr))',
-              gap: isDesktop ? '24px' : '16px',
-              maxWidth: '100%',
-              margin: '0',
-            }}
-          >
-            {recommendations.map((item) => (
-              <div key={`rec-${item.type}-${item.id}`} className="discover-grid-item">
-                <ItemCard
-                  item={item}
-                  onItemClick={handleItemClick}
-                  onAddToList={addToList}
-                  addingItem={addingItem}
-                  currentTheme={currentTheme}
-                  isDesktop={isDesktop}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     if (showSearch) {
       return (
         <div>
@@ -214,6 +130,9 @@ export const DiscoverContent = memo(
                     item={item}
                     onItemClick={handleItemClick}
                     onAddToList={addToList}
+                    quickStatus={quick?.statusOf(item)}
+                    onMarkWatched={quick?.markWatched}
+                    onRate={quick?.rate}
                     addingItem={addingItem}
                     currentTheme={currentTheme}
                     isDesktop={isDesktop}
@@ -223,6 +142,132 @@ export const DiscoverContent = memo(
             </div>
           )}
         </div>
+      );
+    }
+
+    if (activeCategory === 'recommendations') {
+      if (recommendationsLoading && recommendations.length === 0) {
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <LoadingSpinner size={50} text={t('Lade Empfehlungen...')} />
+          </motion.div>
+        );
+      }
+      if (!recommendationsLoading && recommendations.length === 0) {
+        return (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              background: currentTheme.background.surface,
+              borderRadius: 'var(--radius-xl)',
+              border: `1px solid ${currentTheme.border.default}`,
+            }}
+          >
+            <Recommend
+              style={{
+                fontSize: '56px',
+                marginBottom: '16px',
+                color: currentTheme.text.muted,
+              }}
+            />
+            <p
+              style={{
+                fontSize: 'var(--text-md)',
+                color: currentTheme.text.secondary,
+                marginBottom: '8px',
+                fontWeight: 600,
+              }}
+            >
+              {filtersActive
+                ? t('Nichts passt zu deinen Filtern')
+                : t('Keine Empfehlungen verfügbar')}
+            </p>
+            <p style={{ fontSize: 'var(--text-base)', color: currentTheme.text.secondary }}>
+              {filtersActive
+                ? t('Lockere die Filter, um wieder mehr zu sehen.')
+                : t(
+                    'Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier passende Empfehlungen.'
+                  )}
+            </p>
+            {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
+          </motion.div>
+        );
+      }
+      return (
+        <div>
+          <p
+            style={{
+              fontSize: 'var(--text-base)',
+              color: currentTheme.text.muted,
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontWeight: 500,
+            }}
+          >
+            {t('Abgestimmt auf das, was du schaust und wie du es bewertest')}
+          </p>
+          <div
+            className="discover-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isDesktop
+                ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                : 'repeat(2, minmax(0, 1fr))',
+              gap: isDesktop ? '24px' : '16px',
+              maxWidth: '100%',
+              margin: '0',
+            }}
+          >
+            {recommendations.map((item) => (
+              <div key={`rec-${item.type}-${item.id}`} className="discover-grid-item">
+                <ItemCard
+                  item={item}
+                  onItemClick={handleItemClick}
+                  onAddToList={addToList}
+                  quickStatus={quick?.statusOf(item)}
+                  onMarkWatched={quick?.markWatched}
+                  onRate={quick?.rate}
+                  addingItem={addingItem}
+                  currentTheme={currentTheme}
+                  isDesktop={isDesktop}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (!loading && results.length === 0 && filtersActive && !onlyMyProviders) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            background: currentTheme.background.surface,
+            borderRadius: 'var(--radius-xl)',
+            border: `1px solid ${currentTheme.border.default}`,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 'var(--text-md)',
+              color: currentTheme.text.secondary,
+              marginBottom: '8px',
+              fontWeight: 600,
+            }}
+          >
+            {t('Nichts passt zu deinen Filtern')}
+          </p>
+          <p style={{ fontSize: 'var(--text-base)', color: currentTheme.text.secondary }}>
+            {t('Lockere die Filter, um wieder mehr zu sehen.')}
+          </p>
+        </motion.div>
       );
     }
 
@@ -275,6 +320,9 @@ export const DiscoverContent = memo(
               item={item}
               onItemClick={handleItemClick}
               onAddToList={addToList}
+              quickStatus={quick?.statusOf(item)}
+              onMarkWatched={quick?.markWatched}
+              onRate={quick?.rate}
               addingItem={addingItem}
               currentTheme={currentTheme}
               isDesktop={isDesktop}

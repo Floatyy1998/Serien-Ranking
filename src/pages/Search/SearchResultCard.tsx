@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { useItemProviders } from '../../hooks/provider/useItemProviders';
 import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
 import { t } from '../../services/i18n';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { formatRatingShort } from '../../lib/rating/rating';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import type { SearchResult } from './useSearchPage';
 
 export interface SearchResultCardProps {
@@ -78,6 +80,7 @@ export const SearchResultCard = memo(
     const successColor = currentTheme.status.success;
     const onSuccess = useMemo(() => getOptimalTextColor(successColor), [successColor]);
 
+    const providers = useItemProviders(item.type, item.id);
     const busy = isPending || isWatchedPending;
     const ownRating = item.userRating ?? 0;
     const showWatchedButton = item.type === 'movie' && !item.watched;
@@ -138,6 +141,17 @@ export const SearchResultCard = memo(
               </div>
             </PosterFrame>
           </button>
+
+          {providers.length > 0 && (
+            <div className={withDesktop('search-provider-badges')}>
+              <MiniProviderBadges
+                providers={isDesktop ? providers.slice(0, 3) : providers}
+                isMobile={!isDesktop}
+                textColor={currentTheme.text.primary}
+                searchTitle={label}
+              />
+            </div>
+          )}
 
           {/* Gesehen-Button (nur Filme, solange nicht gesehen): fügt bei Bedarf
               hinzu, markiert als gesehen und bietet danach die Schnellbewertung an. */}

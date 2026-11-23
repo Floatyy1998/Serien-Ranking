@@ -2,10 +2,40 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import {
+  DEFAULT_VIEW_FILTERS,
+  activeViewFilterCount,
+  discoverGenreParams,
+  passesViewFilters,
+  type DiscoverViewFilters,
+} from '../../lib/taste/discoverFilters';
+import {
+  buildSupportIndex,
+  buildTasteProfile,
+  rankBrowse,
+  rankCandidates,
+  seedBatches,
+  topGenrePairs,
+  type ScoreOptions,
+  type ScoredItem,
+  type SeedResults,
+  type SupportIndex,
+  type TasteItem,
+  type TasteMedia,
+  type TasteProfile,
+  type TasteSeed,
+} from '../../lib/taste/tasteEngine';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { t } from '../../services/i18n';
 import { tmdbFetch } from '../../services/api/tmdbClient';
+import {
+  fetchGenrePicks,
+  fetchSeedResults,
+  interestTagsFor,
+  loadTasteSignals,
+  type TasteSignals,
+} from '../../services/taste/tasteRecommendations';
 import { watchRegion } from '../../services/settings/region';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
@@ -17,13 +47,59 @@ interface TmdbListResponse {
   total_pages?: number;
 }
 
-/** Bewertung des aktuellen Nutzers für ein Listen-Item (0, falls unbewertet). */
-function userRatingOf(item: Series | Movie, uid: string | undefined): number {
-  if (!uid) return 0;
-  const rating = (item as { rating?: Record<string, number> }).rating;
-  const value = rating?.[uid];
-  return typeof value === 'number' && value > 0 ? value : 0;
+const REC_PAGE_SIZE = 30;
+const REC_MIN_PAGE = 12;
+
+interface TasteContext {
+  media: TasteMedia;
+  profile: TasteProfile;
+  signals: TasteSignals;
+  batches: TasteSeed[][];
+  firstLists: SeedResults<TasteItem>[];
+  index: SupportIndex;
 }
+
+interface TasteSession {
+  context: TasteContext;
+  nextBatch: number;
+  lists: SeedResults<TasteItem>[];
+  pool: DiscoverItem[];
+  shown: Set<number>;
+  ranked: boolean;
+}
+
+const withTaste = (
+  { item, match, reasons, genreIds, friend }: ScoredItem<TasteItem | DiscoverItem>,
+  media: TasteMedia
+): DiscoverItem => ({
+  ...item,
+  type: media,
+  inList: false,
+  match,
+  basedOn: reasons[0],
+  basedOnMore: reasons[1],
+  fitGenres: genreIds,
+  friendPick: friend,
+});
+
+const scoreOptionsOf = (context: TasteContext): ScoreOptions => ({
+  media: context.media,
+  profile: context.profile,
+  interests: context.signals.interests,
+  interestTags: interestTagsFor(context.signals, context.media),
+  communityRating: (id) => context.signals.community[String(id)]?.a,
+  friendPicks: context.signals.friendPicks,
+  available: context.signals.available,
+});
+
+export interface DiscoverFetchExtras {
+  viewFilters: DiscoverViewFilters;
+  ownProviders: Set<string>;
+  readsManga: boolean;
+}
+
+const BROWSE_MIN_PAGE = 8;
+const BROWSE_MAX_PAGES = 4;
 
 interface UseDiscoverFetchResult {
   results: DiscoverItem[];
@@ -59,6 +135,11 @@ interface UseDiscoverFetchResult {
 // Stabile Default-Referenz: ein Inline `new Set()` pro Render wechselt die
 // Identitaet, destabilisiert die Fetch-Callbacks und loopt den Auto-Fetch-Effect.
 const EMPTY_ACTIVE_PROVIDERS = new Set<string>();
+const DEFAULT_EXTRAS: DiscoverFetchExtras = {
+  viewFilters: DEFAULT_VIEW_FILTERS,
+  ownProviders: EMPTY_ACTIVE_PROVIDERS,
+  readsManga: false,
+};
 
 export const useDiscoverFetch = (
   activeTab: 'series' | 'movies',
@@ -68,8 +149,14 @@ export const useDiscoverFetch = (
   searchQuery: string,
   isRestoring: boolean,
   onlyMyProviders = false,
-  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS
+  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS,
+  extras: DiscoverFetchExtras = DEFAULT_EXTRAS
 ): UseDiscoverFetchResult => {
+  const { viewFilters } = extras;
+  const extrasRef = useRef(extras);
+  useEffect(() => {
+    extrasRef.current = extras;
+  }, [extras]);
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { user } = useAuth() || {};
@@ -87,9 +174,6 @@ export const useDiscoverFetch = (
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<DiscoverItem[]>([]);
   const [recommendationsHasMore, setRecommendationsHasMore] = useState(true);
-  const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(
-    new Set()
-  );
 
   const { addingItem, snackbar, dialog, setDialog, addToList } = useDiscoverActions(
     setResults,
@@ -104,8 +188,14 @@ export const useDiscoverFetch = (
   const recommendationsLoadingRef = useRef(recommendationsLoading);
   const recommendationsHasMoreRef = useRef(recommendationsHasMore);
   const activeCategoryRef = useRef(activeCategory);
-  const recommendationsRef = useRef(recommendations);
-  const usedSourcesRef = useRef(usedRecommendationSources);
+  const seriesListRef = useRef(seriesList);
+  const movieListRef = useRef(movieList);
+  const tasteSessionRef = useRef<TasteSession | null>(null);
+  const tasteContextRef = useRef<{ key: string; promise: Promise<TasteContext | null> } | null>(
+    null
+  );
+  const recommendationsRunRef = useRef(0);
+  const browseRunRef = useRef(0);
 
   useEffect(() => {
     pageRef.current = page;
@@ -129,11 +219,9 @@ export const useDiscoverFetch = (
     activeCategoryRef.current = activeCategory;
   }, [activeCategory]);
   useEffect(() => {
-    recommendationsRef.current = recommendations;
-  }, [recommendations]);
-  useEffect(() => {
-    usedSourcesRef.current = usedRecommendationSources;
-  }, [usedRecommendationSources]);
+    seriesListRef.current = seriesList;
+    movieListRef.current = movieList;
+  }, [seriesList, movieList]);
 
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
@@ -150,132 +238,144 @@ export const useDiscoverFetch = (
     [seriesList, movieList]
   );
 
+  const hasLibrary = (activeTab === 'series' ? seriesList : movieList).length > 0;
+
+  const getTasteContext = useCallback(
+    (media: TasteMedia, fresh = false): Promise<TasteContext | null> => {
+      const librarySize = seriesListRef.current.length + movieListRef.current.length;
+      const { ownProviders, readsManga } = extrasRef.current;
+      const key = `${uid ?? ''}:${media}:${librarySize > 0}:${ownProviders.size}:${readsManga}`;
+      const cached = tasteContextRef.current;
+      if (!fresh && cached?.key === key) return cached.promise;
+
+      const promise = (async (): Promise<TasteContext | null> => {
+        if (librarySize === 0) return null;
+        const signals = await loadTasteSignals(uid, media, ownProviders);
+        const profile = buildTasteProfile(
+          seriesListRef.current,
+          movieListRef.current,
+          media,
+          Date.now(),
+          { tagMap: signals.tagMap, readsManga, disliked: signals.disliked }
+        );
+        const batches = seedBatches(profile.seeds);
+        const firstLists = batches[0] ? await fetchSeedResults(media, batches[0]) : [];
+        return {
+          media,
+          profile,
+          signals,
+          batches,
+          firstLists,
+          index: buildSupportIndex(firstLists),
+        };
+      })().catch(() => null);
+      tasteContextRef.current = { key, promise };
+      return promise;
+    },
+    [uid]
+  );
+
   const fetchRecommendations = useCallback(
     async (reset = false) => {
-      if (recommendationsLoadingRef.current) return;
+      if (!reset && recommendationsLoadingRef.current) return;
 
+      const run = ++recommendationsRunRef.current;
+      recommendationsLoadingRef.current = true;
       setRecommendationsLoading(true);
 
       try {
-        const userItems = activeTab === 'series' ? seriesList : movieList;
+        const media: TasteMedia = activeTab === 'series' ? 'series' : 'movie';
+        const ownedItems = media === 'series' ? seriesListRef.current : movieListRef.current;
 
-        if (userItems.length === 0) {
+        if (!hasLibrary || ownedItems.length === 0) {
+          tasteSessionRef.current = null;
           setRecommendations([]);
           setRecommendationsHasMore(false);
-          setRecommendationsLoading(false);
           return;
         }
 
-        if (reset) {
-          setUsedRecommendationSources(new Set());
+        let session = reset ? null : tasteSessionRef.current;
+        if (!session) {
           setRecommendations([]);
           setRecommendationsHasMore(true);
+          const context = await getTasteContext(media, true);
+          if (!context) {
+            if (run === recommendationsRunRef.current) setRecommendationsHasMore(false);
+            return;
+          }
+          const picks = await fetchGenrePicks(media, topGenrePairs(context.profile, media));
+          session = {
+            context,
+            nextBatch: 1,
+            lists: [...context.firstLists, ...picks],
+            pool: [],
+            shown: new Set(),
+            ranked: false,
+          };
         }
 
-        const currentUsedSources = reset ? new Set<string>() : new Set(usedSourcesRef.current);
-        // Versteckte Serien nicht als Empfehlungs-Quelle nutzen.
-        const availableItems = userItems.filter(
-          (item) =>
-            !currentUsedSources.has(item.id.toString()) && !(item as { hidden?: boolean }).hidden
-        );
-
-        if (availableItems.length === 0) {
-          setRecommendationsHasMore(false);
-          setRecommendationsLoading(false);
-          return;
-        }
-
-        // Gewichtete Quell-Auswahl: höher bewertete Titel bevorzugen (statt rein
-        // zufällig), aber innerhalb des Top-Pools mischen, damit es abwechslungsreich
-        // bleibt. Unbewertete Titel landen am Ende des Pools.
-        const rankedItems = [...availableItems].sort(
-          (a, b) => userRatingOf(b, uid) - userRatingOf(a, uid)
-        );
-        const poolSize = Math.min(10, rankedItems.length);
-        const pool = rankedItems.slice(0, poolSize).sort(() => 0.5 - Math.random());
-        const selectedItems = pool.slice(0, Math.min(3, pool.length));
-
-        const allRecommendations: DiscoverItem[] = [];
-        const existingIds = new Set(recommendationsRef.current.map((r) => r.id));
-
-        const mediaType = activeTab === 'series' ? 'tv' : 'movie';
-
-        const recResponses = await Promise.all(
-          selectedItems.map(async (item) => ({
-            item,
-            data: await tmdbFetch<TmdbListResponse>(`${mediaType}/${item.id}/recommendations`),
-          }))
-        );
-
-        for (const { item, data } of recResponses) {
-          if (data.results) {
-            data.results.forEach((rec: DiscoverItem) => {
-              if (
-                !existingIds.has(rec.id) &&
-                !isInList(rec.id, activeTab === 'series' ? 'series' : 'movie')
-              ) {
-                existingIds.add(rec.id);
-                allRecommendations.push({
-                  ...rec,
-                  type: activeTab === 'series' ? 'series' : 'movie',
-                  inList: false,
-                  basedOn: (item as Series & Movie).title || (item as Series & Movie).name,
-                });
-              }
-            });
+        const active = session;
+        const { context } = active;
+        const page: DiscoverItem[] = [];
+        while (page.length < REC_MIN_PAGE && run === recommendationsRunRef.current) {
+          if (active.pool.length === 0) {
+            if (active.ranked) {
+              const batch = context.batches[active.nextBatch];
+              if (!batch) break;
+              active.nextBatch++;
+              active.lists.push(...(await fetchSeedResults(media, batch)));
+            }
+            active.ranked = true;
+            const ownedIds = new Set(
+              (media === 'series' ? seriesListRef.current : movieListRef.current).map((item) =>
+                Number(item.id)
+              )
+            );
+            active.pool = rankCandidates(active.lists, {
+              ...scoreOptionsOf(context),
+              exclude: (id) =>
+                ownedIds.has(id) || active.shown.has(id) || context.signals.blocked.has(id),
+              daySeed: Math.floor(Date.now() / 86_400_000),
+            }).map((scored) => withTaste(scored, media));
+            continue;
           }
 
-          currentUsedSources.add(item.id.toString());
+          let slice = active.pool.splice(0, REC_PAGE_SIZE);
+          slice.forEach((item) => active.shown.add(item.id));
+          slice = slice.filter((item) => passesViewFilters(item, viewFilters));
+          if (onlyMyProviders && activeProviders.size > 0) {
+            slice = await filterItemsByActiveProviders(slice, activeProviders);
+          }
+          page.push(...slice);
         }
 
-        // Nach Qualität sortieren (TMDB-Wertung, dann Popularität) statt zufällig,
-        // damit die stärksten Vorschläge oben stehen.
-        let rankedRecommendations = allRecommendations
-          .sort((a, b) => {
-            const va = (a as { vote_average?: number }).vote_average ?? 0;
-            const vb = (b as { vote_average?: number }).vote_average ?? 0;
-            if (vb !== va) return vb - va;
-            const pa = (a as { popularity?: number }).popularity ?? 0;
-            const pb = (b as { popularity?: number }).popularity ?? 0;
-            return pb - pa;
-          })
-          .slice(0, 20);
-
-        if (onlyMyProviders && activeProviders.size > 0) {
-          rankedRecommendations = await filterItemsByActiveProviders(
-            rankedRecommendations,
-            activeProviders
-          );
-        }
-
-        setUsedRecommendationSources(currentUsedSources);
-
-        if (reset) {
-          setRecommendations(rankedRecommendations);
-        } else {
-          setRecommendations((prev) => [...prev, ...rankedRecommendations]);
-        }
-
-        const remainingItems = userItems.filter(
-          (item) => !currentUsedSources.has(item.id.toString())
+        if (run !== recommendationsRunRef.current) return;
+        tasteSessionRef.current = active;
+        setRecommendations((prev) => (reset ? page : [...prev, ...page]));
+        setRecommendationsHasMore(
+          active.pool.length > 0 || active.nextBatch < context.batches.length
         );
-        setRecommendationsHasMore(remainingItems.length > 0);
       } catch (error) {
         console.error('Error fetching recommendations:', error);
-        if (reset) {
+        if (reset && run === recommendationsRunRef.current) {
           setRecommendations([]);
         }
       } finally {
-        setRecommendationsLoading(false);
+        if (run === recommendationsRunRef.current) {
+          recommendationsLoadingRef.current = false;
+          setRecommendationsLoading(false);
+        }
       }
     },
-    [activeTab, seriesList, movieList, isInList, uid, onlyMyProviders, activeProviders]
+    [activeTab, hasLibrary, onlyMyProviders, activeProviders, getTasteContext, viewFilters]
   );
 
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
-      if (loadingRef.current) return;
+      if (!reset && loadingRef.current) return;
 
+      const run = ++browseRunRef.current;
+      loadingRef.current = true;
       setLoading(true);
       setError(null);
       const currentPage = reset ? 1 : pageRef.current + 1;
@@ -283,8 +383,13 @@ export const useDiscoverFetch = (
       try {
         let endpoint = '';
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
+        const genreParams =
+          activeCategory === 'upcoming'
+            ? null
+            : discoverGenreParams(viewFilters, activeTab === 'series' ? 'series' : 'movie');
+        const viaDiscover = !!selectedGenre || !!genreParams;
 
-        if (selectedGenre) {
+        if (viaDiscover) {
           endpoint = `discover/${mediaType}`;
         } else {
           switch (activeCategory) {
@@ -307,19 +412,37 @@ export const useDiscoverFetch = (
           }
         }
 
-        // undefined-Params werden vom Client weggelassen (konditionale Genre-Filter).
-        const data = await tmdbFetch<TmdbListResponse>(endpoint, {
-          page: currentPage,
-          region: watchRegion,
-          with_genres: selectedGenre ? selectedGenre : undefined,
-          sort_by: selectedGenre
-            ? activeCategory === 'top_rated'
-              ? 'vote_average.desc'
-              : 'popularity.desc'
-            : undefined,
-        });
+        const tasteMedia: TasteMedia = activeTab === 'series' ? 'series' : 'movie';
+        const filtering =
+          activeViewFilterCount(viewFilters) > 0 || (onlyMyProviders && activeProviders.size > 0);
+        const collected: DiscoverItem[] = [];
+        let pageNo = currentPage;
+        let totalPages = 0;
+        let loaded = false;
 
-        if (data.results) {
+        const maxAttempts = filtering ? BROWSE_MAX_PAGES : 1;
+        for (let attempt = 1; ; attempt++) {
+          // undefined-Params werden vom Client weggelassen (konditionale Genre-Filter).
+          const [data, taste] = await Promise.all([
+            tmdbFetch<TmdbListResponse>(endpoint, {
+              page: pageNo,
+              region: watchRegion,
+              with_genres: selectedGenre ? selectedGenre : genreParams?.with_genres,
+              without_genres: genreParams?.without_genres,
+              with_original_language: genreParams?.with_original_language,
+              sort_by: viaDiscover
+                ? activeCategory === 'top_rated'
+                  ? 'vote_average.desc'
+                  : 'popularity.desc'
+                : undefined,
+              'vote_count.gte': viaDiscover && activeCategory === 'top_rated' ? 200 : undefined,
+            }),
+            getTasteContext(tasteMedia),
+          ]);
+          if (!data.results) break;
+          loaded = true;
+          totalPages = data.total_pages ?? 0;
+
           let mappedResults: DiscoverItem[] = data.results
             .filter(
               (item: DiscoverItem) =>
@@ -331,46 +454,77 @@ export const useDiscoverFetch = (
               inList: false,
             }));
 
+          if (taste) {
+            mappedResults = rankBrowse(mappedResults, taste.index, scoreOptionsOf(taste)).map(
+              (scored) => withTaste(scored, tasteMedia)
+            );
+          }
+          mappedResults = mappedResults.filter((item) => passesViewFilters(item, viewFilters));
+
           if (onlyMyProviders && activeProviders.size > 0) {
             mappedResults = await filterItemsByActiveProviders(mappedResults, activeProviders);
           }
+          collected.push(...mappedResults);
 
+          if (
+            collected.length >= BROWSE_MIN_PAGE ||
+            pageNo >= totalPages ||
+            attempt >= maxAttempts
+          ) {
+            break;
+          }
+          pageNo++;
+        }
+
+        if (run !== browseRunRef.current) return;
+        if (loaded) {
           if (reset) {
-            setResults(mappedResults);
-            setPage(1);
+            setResults(collected);
           } else {
             setResults((prev) => {
               const existingIds = new Set(
                 prev.map((item: DiscoverItem) => `${item.type}-${item.id}`)
               );
-              const newResults = mappedResults.filter(
+              const newResults = collected.filter(
                 (item: DiscoverItem) => !existingIds.has(`${item.type}-${item.id}`)
               );
               return [...prev, ...newResults];
             });
-            setPage(currentPage);
           }
-
-          setHasMore(currentPage < (data.total_pages ?? 0));
+          setPage(pageNo);
+          setHasMore(pageNo < totalPages);
         }
       } catch (error) {
+        if (run !== browseRunRef.current) return;
         console.error('Error fetching from TMDB:', error);
         setHasMore(false);
         if (reset) {
           setError(t('Inhalte konnten nicht geladen werden.'));
         }
       } finally {
-        setLoading(false);
+        if (run === browseRunRef.current) {
+          loadingRef.current = false;
+          setLoading(false);
+        }
       }
     },
-    [activeTab, activeCategory, selectedGenre, isInList, onlyMyProviders, activeProviders]
+    [
+      activeTab,
+      activeCategory,
+      selectedGenre,
+      isInList,
+      onlyMyProviders,
+      activeProviders,
+      getTasteContext,
+      viewFilters,
+    ]
   );
 
   useEffect(() => {
     if (isRestoring) return;
 
     if (activeCategory === 'recommendations') {
-      fetchRecommendations(true);
+      if (!showSearch) fetchRecommendations(true);
     } else if (!showSearch) {
       setResults([]);
       setPage(1);
@@ -502,6 +656,7 @@ export const useDiscoverFetch = (
             scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
 
           if (distanceFromBottom < 500) {
+            if (showSearchRef.current) return;
             if (activeCategoryRef.current === 'recommendations') {
               if (recommendationsHasMoreRef.current && !recommendationsLoadingRef.current) {
                 fetchRecommendations(false);

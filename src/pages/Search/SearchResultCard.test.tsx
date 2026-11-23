@@ -21,6 +21,11 @@ vi.mock(
     )
 );
 
+const itemProviders = vi.hoisted(() => ({ list: [] as { name: string; logo: string }[] }));
+vi.mock('../../hooks/provider/useItemProviders', () => ({
+  useItemProviders: () => itemProviders.list,
+}));
+
 vi.mock('framer-motion', async () => {
   const React = await import('react');
   const skip = new Set(['initial', 'animate', 'exit', 'transition']);
@@ -154,5 +159,13 @@ describe('SearchResultCard', () => {
     const { container, props } = renderCard();
     fireEvent.click(container.querySelector('.search-result-poster-btn') as HTMLElement);
     expect(props.onItemClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the provider logo on the poster without opening the title', () => {
+    itemProviders.list = [{ name: 'Netflix', logo: 'https://img/nf.jpg' }];
+    const { props } = renderCard();
+    fireEvent.click(screen.getByAltText('Netflix'));
+    expect(props.onItemClick).not.toHaveBeenCalled();
+    itemProviders.list = [];
   });
 });

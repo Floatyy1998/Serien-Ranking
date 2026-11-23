@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
 import { useDeviceType } from '../../hooks/platform/useDeviceType';
+import {
+  DEFAULT_VIEW_FILTERS,
+  normalizeViewFilters,
+  type DiscoverViewFilters,
+} from '../../lib/taste/discoverFilters';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverFiltersResult {
@@ -22,6 +27,8 @@ interface UseDiscoverFiltersResult {
   /** F7: "Läuft auf meinen Abos"-Filter. */
   onlyMyProviders: boolean;
   setOnlyMyProviders: React.Dispatch<React.SetStateAction<boolean>>;
+  viewFilters: DiscoverViewFilters;
+  setViewFilters: React.Dispatch<React.SetStateAction<DiscoverViewFilters>>;
   isRestoring: boolean;
   isDesktop: boolean;
   headerHeight: number;
@@ -43,6 +50,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyMyProviders, setOnlyMyProviders] = useState(false);
+  const [viewFilters, setViewFilters] = useState<DiscoverViewFilters>(DEFAULT_VIEW_FILTERS);
   const [isRestoring, setIsRestoring] = useState(false);
   const { isDesktop } = useDeviceType();
   const [headerHeight, setHeaderHeight] = useState(220);
@@ -70,10 +78,17 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
 
     window.addEventListener('resize', handleResize);
     const timeoutId = setTimeout(updateHeaderHeight, 100);
+    const headerElement = document.querySelector('[data-header="discover-header"]');
+    const observer =
+      headerElement && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(updateHeaderHeight)
+        : null;
+    if (headerElement) observer?.observe(headerElement);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
+      observer?.disconnect();
     };
   }, [showSearch, showFilters, activeTab, activeCategory]);
 
@@ -91,10 +106,10 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
           setActiveTab(filters.activeTab || 'series');
           setActiveCategory(filters.activeCategory || 'trending');
           setSelectedGenre(filters.selectedGenre || null);
-          setShowFilters(filters.showFilters || false);
           setSearchQuery(filters.searchQuery || '');
           setShowSearch(filters.showSearch || false);
           setOnlyMyProviders(filters.onlyMyProviders || false);
+          setViewFilters(normalizeViewFilters(filters.viewFilters));
 
           setTimeout(() => {
             setIsRestoring(false);
@@ -121,10 +136,10 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
       activeTab,
       activeCategory,
       selectedGenre,
-      showFilters,
       searchQuery,
       showSearch,
       onlyMyProviders,
+      viewFilters,
     };
     sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
     sessionStorage.setItem('comingFromDetail', 'true');
@@ -151,6 +166,8 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     setSearchQuery,
     onlyMyProviders,
     setOnlyMyProviders,
+    viewFilters,
+    setViewFilters,
     isRestoring,
     isDesktop,
     headerHeight,

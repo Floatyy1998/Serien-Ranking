@@ -13,6 +13,8 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAndroidBack } from '../../../hooks/ui/useAndroidBack';
+import { useDeviceType } from '../../../hooks/platform/useDeviceType';
+import { useItemProviders } from '../../../hooks/provider/useItemProviders';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
 import {
@@ -29,6 +31,7 @@ import { usePopularPeople } from '../../../hooks/person/usePeopleSearch';
 import { quickMediaKey, useQuickMediaActions } from '../../../hooks/rating/useQuickMediaActions';
 import type { PersonHit } from '../../../lib/person/personSearch';
 import { formatRatingShort } from '../../../lib/rating/rating';
+import { MiniProviderBadges } from './MiniProviderBadges';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
 import {
@@ -73,6 +76,32 @@ const readingFilters = (areas: ReadingAreas): { key: Filter; label: string }[] =
 
 const foundAt = (path: string): RecentSearchScope =>
   path.startsWith('/books/') ? 'books' : path.startsWith('/manga/') ? 'manga' : 'media';
+
+const CardProviders = memo(
+  ({
+    item,
+    isDesktop,
+    textColor,
+  }: {
+    item: QuickResult;
+    isDesktop: boolean;
+    textColor: string;
+  }) => {
+    const providers = useItemProviders(item.type, item.id);
+    if (providers.length === 0) return null;
+    return (
+      <span className="hso__providers" onClick={(e) => e.stopPropagation()}>
+        <MiniProviderBadges
+          providers={isDesktop ? providers.slice(0, 3) : providers}
+          isMobile={!isDesktop}
+          textColor={textColor}
+          searchTitle={item.title}
+        />
+      </span>
+    );
+  }
+);
+CardProviders.displayName = 'CardProviders';
 
 interface HomeSearchOverlayProps {
   open: boolean;
@@ -130,6 +159,7 @@ export const HomeSearchOverlay = memo(
       }
     }, [open, parked, pathname, key, homePath]);
     const { currentTheme } = useTheme();
+    const { isDesktop } = useDeviceType();
     const communityMap = useCommunityRatingsMap();
     const { query, setQuery, results, people, peopleFirst, loading, popular, popularItems } =
       useHomeQuickSearch(open && !reading, !reading);
@@ -464,6 +494,11 @@ export const HomeSearchOverlay = memo(
             >
               {item.type === 'series' ? t('Serie') : t('Film')}
             </span>
+            <CardProviders
+              item={item}
+              isDesktop={isDesktop}
+              textColor={currentTheme.text.primary}
+            />
 
             {showWatched && (
               <button

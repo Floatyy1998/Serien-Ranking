@@ -33,6 +33,24 @@ vi.mock('../../services/api/backendApi', () => ({
   backendFetch: vi.fn(async () => ({ ok: true })),
 }));
 
+const taste = vi.hoisted(() => ({ blocked: new Set<number>() }));
+vi.mock('../../services/rating/recFeedbackService', () => ({
+  fetchRecFeedback: vi.fn(async () => [...taste.blocked].map((id) => ({ id, type: 'series' }))),
+}));
+vi.mock('../../services/taste/friendPicks', () => ({
+  fetchFriendPicks: vi.fn(async () => ({ picks: new Map(), declined: new Set() })),
+}));
+vi.mock('../../services/profile/interestsService', () => ({
+  fetchInterests: vi.fn(async () => []),
+}));
+vi.mock('../../services/catalog/staticCatalog', async (importOriginal) => ({
+  ...((await importOriginal()) as object),
+  fetchStaticInterestTags: vi.fn(async () => null),
+  fetchStaticCommunityRatings: vi.fn(async () => null),
+  fetchStaticCatalogSeries: vi.fn(async () => null),
+  fetchStaticCatalogMovies: vi.fn(async () => null),
+}));
+
 // fetch helper
 type FetchResult = { ok: boolean; json: () => Promise<unknown> };
 const jsonOk = (body: unknown): FetchResult => ({ ok: true, json: async () => body });
@@ -96,6 +114,7 @@ describe('useDiscoverFetch', () => {
     ctx.seriesList = [];
     ctx.movieList = [];
     ctx.user = { uid: 'u1' };
+    taste.blocked = new Set();
     clearProviderCache();
     vi.stubEnv('VITE_API_TMDB', 'tmdb-key');
     vi.stubEnv('VITE_USER', 'flo');
@@ -223,12 +242,12 @@ describe('useDiscoverFetch', () => {
   });
 
   it('fetchRecommendations builds recs from owned items, filtering owned/dupes', async () => {
-    ctx.seriesList = [{ id: 100, title: 'A', rating: { u1: 9 } } as unknown as Series];
+    ctx.seriesList = [{ id: 100, title: 'A', rating: { Drama: 9 } } as unknown as Series];
     stubFetch(() =>
       jsonOk({
         results: [
-          { id: 500, vote_average: 8 },
-          { id: 100, vote_average: 7 },
+          { id: 500, vote_average: 8, poster_path: '/p.jpg' },
+          { id: 100, vote_average: 7, poster_path: '/p.jpg' },
         ],
       })
     );
@@ -238,8 +257,143 @@ describe('useDiscoverFetch', () => {
     });
     expect(result.current.recommendations.map((r) => r.id)).toEqual([500]);
     expect(result.current.recommendations[0].basedOn).toBe('A');
+    expect(result.current.recommendations[0].type).toBe('series');
     // only owned source exhausted → no more
     expect(result.current.recommendationsHasMore).toBe(false);
+  });
+
+  it('fetchRecommendations asks every liked title and skips disliked and blocked ones', async () => {
+    ctx.seriesList = [
+      { id: 100, title: 'A', rating: { Drama: 10 } },
+      { id: 101, title: 'B', rating: { Drama: 9 } },
+      { id: 102, title: 'C', rating: { Drama: 2 } },
+    ] as unknown as Series[];
+    taste.blocked = new Set([501]);
+    const fetchMock = stubFetch(() =>
+      jsonOk({
+        results: [
+          { id: 500, vote_average: 8, poster_path: '/p.jpg' },
+          { id: 501, vote_average: 8, poster_path: '/p.jpg' },
+        ],
+      })
+    );
+    const { result } = render({ activeCategory: 'recommendations' });
+    await act(async () => {
+      await result.current.fetchRecommendations(true);
+    });
+    const asked = fetchMock.mock.calls.map(([url]) => new URL(url).pathname);
+    expect(asked.sort()).toEqual(['/3/tv/100/recommendations', '/3/tv/101/recommendations']);
+    expect(result.current.recommendations.map((r) => r.id)).toEqual([500]);
+    expect(result.current.recommendations[0].basedOn).toBe('A');
+    expect(result.current.recommendations[0].basedOnMore).toBe('B');
+  });
+
+  it('sorts a browse page by taste and explains the match', async () => {
+    ctx.seriesList = [
+      {
+        id: 100,
+        title: 'A',
+        genre: { genres: ['Drama'] },
+        rating: { Drama: 10 },
+      } as unknown as Series,
+    ];
+    stubFetch((url) =>
+      url.includes('/recommendations')
+        ? jsonOk({ results: [{ id: 202, poster_path: '/p.jpg' }] })
+        : jsonOk({
+            results: [
+              { id: 201, genre_ids: [27], vote_average: 7 },
+              { id: 202, genre_ids: [18], vote_average: 7 },
+            ],
+            total_pages: 1,
+          })
+    );
+    const { result } = render();
+    await act(async () => {
+      await result.current.fetchFromTMDB(true);
+    });
+    expect(result.current.results.map((r) => r.id)).toEqual([202, 201]);
+    expect(result.current.results[0].basedOn).toBe('A');
+    expect(result.current.results[0].match).toBeGreaterThan(result.current.results[1].match ?? 0);
+  });
+
+  it('applies the view filters and keeps loading pages until enough titles pass', async () => {
+    const fetchMock = stubFetch((url) => {
+      const page = new URL(url).searchParams.get('page');
+      return page === '1'
+        ? jsonOk({
+            results: [
+              { id: 401, genre_ids: [16], original_language: 'ja' },
+              { id: 402, genre_ids: [18] },
+            ],
+            total_pages: 2,
+          })
+        : jsonOk({ results: [{ id: 403, genre_ids: [18] }], total_pages: 2 });
+    });
+    const extras = {
+      viewFilters: {
+        only: [] as string[],
+        hide: ['anime'],
+        eras: [],
+        minRating: 0,
+        minMatch: 0,
+      },
+      ownProviders: new Set<string>(),
+      readsManga: false,
+    };
+    const { result } = renderHook(() =>
+      useDiscoverFetch('series', 'trending', null, false, '', true, false, new Set(), extras)
+    );
+    await act(async () => {
+      await result.current.fetchFromTMDB(true);
+    });
+    expect(result.current.results.map((r) => r.id)).toEqual([402, 403]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('asks TMDB discover for the wanted genres and still drops hidden anime', async () => {
+    const fetchMock = stubFetch(() =>
+      jsonOk({
+        results: [
+          { id: 501, genre_ids: [35, 18] },
+          { id: 502, genre_ids: [16, 35, 18], original_language: 'ja' },
+        ],
+        total_pages: 1,
+      })
+    );
+    const extras = {
+      viewFilters: {
+        only: ['comedy', 'drama'],
+        hide: ['anime'],
+        eras: [],
+        minRating: 0,
+        minMatch: 0,
+      },
+      ownProviders: new Set<string>(),
+      readsManga: false,
+    };
+    const { result } = renderHook(() =>
+      useDiscoverFetch('movies', 'popular', null, false, '', true, false, new Set(), extras)
+    );
+    await act(async () => {
+      await result.current.fetchFromTMDB(true);
+    });
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe('/3/discover/movie');
+    expect(url.searchParams.get('with_genres')).toBe('35|18');
+    expect(url.searchParams.get('sort_by')).toBe('popularity.desc');
+    expect(result.current.results.map((r) => r.id)).toEqual([501]);
+  });
+
+  it('leaves browse pages untouched without a library', async () => {
+    stubFetch(() => jsonOk({ results: [{ id: 301 }, { id: 302 }], total_pages: 1 }));
+    const { result } = render();
+    await act(async () => {
+      await result.current.fetchFromTMDB(true);
+    });
+    expect(result.current.results.map((r) => r.id)).toEqual([301, 302]);
+    expect(result.current.results[0].match).toBeUndefined();
   });
 
   it('fetchRecommendations short-circuits with an empty owned list', async () => {

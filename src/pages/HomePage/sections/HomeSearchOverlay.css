@@ -323,6 +323,14 @@
   letter-spacing: 0.02em;
 }
 
+.hso__providers {
+  position: absolute;
+  left: 6px;
+  bottom: 32px;
+  z-index: 2;
+  line-height: 0;
+}
+
 /* Poster-Aktionen rechts: Hinzufügen bzw. Bewerten unten, „Gesehen" (nur Filme)
    darüber gestapelt. Zwei Klassen im Selektor gegen die globale 44px-Regel. */
 .hso .hso__add,

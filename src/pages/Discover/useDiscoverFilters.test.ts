@@ -91,6 +91,7 @@ describe('useDiscoverFilters', () => {
         showFilters: true,
         searchQuery: '',
         showSearch: false,
+        viewFilters: { hide: ['anime'], eras: ['mid', 'new'], minRating: 7, minMatch: 0 },
       })
     );
 
@@ -105,7 +106,14 @@ describe('useDiscoverFilters', () => {
     expect(result.current.activeTab).toBe('movies');
     expect(result.current.activeCategory).toBe('popular');
     expect(result.current.selectedGenre).toBe(35);
-    expect(result.current.showFilters).toBe(true);
+    expect(result.current.showFilters).toBe(false);
+    expect(result.current.viewFilters).toEqual({
+      only: [],
+      hide: ['anime'],
+      eras: ['mid', 'new'],
+      minRating: 7,
+      minMatch: 0,
+    });
     expect(result.current.isRestoring).toBe(false);
     expect(restoreSpy).toHaveBeenCalled();
     // one-shot keys consumed

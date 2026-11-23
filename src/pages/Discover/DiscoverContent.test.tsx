@@ -107,4 +107,18 @@ describe('DiscoverContent', () => {
     render(<DiscoverContent {...baseProps} showSearch />);
     expect(screen.getByText('Gib einen Suchbegriff ein...')).toBeInTheDocument();
   });
+
+  it('shows search hits even while the recommendations category is active', () => {
+    render(
+      <DiscoverContent
+        {...baseProps}
+        activeCategory="recommendations"
+        recommendations={[item(1), item(2), item(3)]}
+        showSearch
+        searchQuery="dune"
+        searchResults={[item(9)]}
+      />
+    );
+    expect(screen.getAllByTestId('item-card')).toHaveLength(1);
+  });
 });

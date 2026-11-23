@@ -1,6 +1,8 @@
 import Add from '@mui/icons-material/Add';
 import ArrowForward from '@mui/icons-material/ArrowForward';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Star from '@mui/icons-material/Star';
+import Visibility from '@mui/icons-material/Visibility';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
@@ -12,12 +14,24 @@ import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/us
 import type { ItemCardProps } from './discoverItemHelpers';
 import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import { tapScale } from '../../lib/motion';
+import { formatRatingShort } from '../../lib/rating/rating';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { mapGenreIds } from '../../utils/genreMap';
 
 export const ItemCard = memo(
-  ({ item, onItemClick, onAddToList, addingItem, currentTheme, isDesktop }: ItemCardProps) => {
+  ({
+    item,
+    onItemClick,
+    onAddToList,
+    quickStatus,
+    onMarkWatched,
+    onRate,
+    addingItem,
+    currentTheme,
+    isDesktop,
+  }: ItemCardProps) => {
     const [showInfo, setShowInfo] = useState(false);
 
     const imageUrl = useMemo(() => getImageUrl(item.poster_path, 'w500'), [item.poster_path]);
@@ -33,6 +47,37 @@ export const ItemCard = memo(
       item.id,
       item.vote_average
     );
+
+    const itemTitle = item.title || item.name || '';
+    const inList = item.inList || !!quickStatus?.added;
+    const ownRating = quickStatus?.ownRating ?? 0;
+    const busy = (quickStatus?.busyAction ?? null) !== null;
+    const showWatched =
+      !!onMarkWatched && item.type === 'movie' && !!quickStatus && !quickStatus.watched;
+    const showRate = inList && !!onRate;
+
+    const fitGenreText =
+      (item.match ?? 0) >= 60 && item.fitGenres?.length ? mapGenreIds(item.fitGenres) : '';
+    const basedOnText = item.friendPick
+      ? t('Von {name} empfohlen', { name: item.friendPick })
+      : item.basedOn
+        ? item.basedOnMore
+          ? t('Weil du „{title}" und „{other}" magst', {
+              title: item.basedOn,
+              other: item.basedOnMore,
+            })
+          : t('Weil du „{title}" magst', { title: item.basedOn })
+        : fitGenreText
+          ? t('Trifft deinen Geschmack: {genres}', { genres: fitGenreText })
+          : '';
+    const matchTier =
+      item.match === undefined
+        ? null
+        : item.match >= 80
+          ? 'high'
+          : item.match >= 60
+            ? 'mid'
+            : 'low';
 
     const handlePosterClick = useCallback(() => {
       if (showInfo) {
@@ -69,35 +114,49 @@ export const ItemCard = memo(
           boxShadow={`0 6px 20px ${currentTheme.background.default}80`}
           style={{ marginBottom: '10px' }}
         >
-          {displayRating && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                padding: '5px 10px',
-                background: `linear-gradient(135deg, ${currentTheme.background.default}d9, ${currentTheme.background.default}e6)`,
-                backdropFilter: 'var(--blur-sm)',
-                WebkitBackdropFilter: 'var(--blur-sm)',
-                borderRadius: '10px',
-                fontSize: 'var(--text-sm)',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                border: '1px solid var(--glass-border-light)',
-                zIndex: 2,
-              }}
-            >
-              <Star
+          <div className="discover-badges">
+            {matchTier && !showInfo && (
+              <div
+                className={`discover-match discover-match--${matchTier}`}
+                aria-label={t('{n} % Übereinstimmung mit deinem Geschmack', {
+                  n: item.match ?? 0,
+                })}
+                title={t('{n} % Übereinstimmung mit deinem Geschmack', { n: item.match ?? 0 })}
                 style={{
-                  fontSize: '14px',
-                  color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                  background: `${currentTheme.background.default}d9`,
+                  color:
+                    matchTier === 'high'
+                      ? currentTheme.status.success
+                      : matchTier === 'mid'
+                        ? currentTheme.text.primary
+                        : currentTheme.text.muted,
+                  borderColor:
+                    matchTier === 'high'
+                      ? `${currentTheme.status.success}80`
+                      : 'var(--glass-border-light)',
                 }}
-              />
-              {displayRating.value.toFixed(1)}
-            </div>
-          )}
+              >
+                <AutoAwesome style={{ fontSize: '13px' }} />
+                {t('{n} %', { n: item.match ?? 0 })}
+              </div>
+            )}
+            {displayRating && (
+              <div
+                className="discover-rating"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.background.default}d9, ${currentTheme.background.default}e6)`,
+                }}
+              >
+                <Star
+                  style={{
+                    fontSize: '14px',
+                    color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                  }}
+                />
+                {displayRating.value.toFixed(1)}
+              </div>
+            )}
+          </div>
 
           {/* Glassmorphic Info Overlay */}
           <AnimatePresence>
@@ -241,7 +300,61 @@ export const ItemCard = memo(
             </div>
           )}
 
-          {!item.inList && !showInfo && (
+          {showWatched && !showInfo && (
+            <button
+              type="button"
+              className="discover-watched-btn"
+              aria-label={
+                inList
+                  ? t('„{title}" als gesehen markieren', { title: itemTitle })
+                  : t('„{title}" hinzufügen und als gesehen markieren', { title: itemTitle })
+              }
+              disabled={busy}
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkWatched?.(item, inList, e);
+              }}
+              style={{
+                border: `1px solid ${currentTheme.status.success}99`,
+                color: currentTheme.status.success,
+                cursor: busy ? 'wait' : 'pointer',
+                opacity: quickStatus?.busyAction === 'watched' ? 0.7 : 1,
+              }}
+            >
+              <Visibility style={{ fontSize: '20px' }} />
+            </button>
+          )}
+
+          {showRate && !showInfo && (
+            <button
+              type="button"
+              className="discover-rate-btn"
+              aria-label={
+                ownRating > 0
+                  ? t('„{title}" ist mit {rating} bewertet. Bewertung ändern', {
+                      title: itemTitle,
+                      rating: formatRatingShort(ownRating),
+                    })
+                  : t('„{title}" bewerten', { title: itemTitle })
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                onRate?.(item, ownRating, e);
+              }}
+              style={{
+                background: currentTheme.status.success,
+                color: getOptimalTextColor(currentTheme.status.success),
+              }}
+            >
+              {ownRating > 0 ? (
+                <span className="discover-rate-value">{formatRatingShort(ownRating)}</span>
+              ) : (
+                <Star style={{ fontSize: '22px' }} />
+              )}
+            </button>
+          )}
+
+          {!inList && !showInfo && (
             <Tooltip title={t('Zur Liste hinzufügen')} arrow>
               <button
                 className="discover-add-btn"
@@ -317,20 +430,22 @@ export const ItemCard = memo(
             : 'TBA'}
         </p>
 
-        {item.basedOn && (
+        {basedOnText && (
           <p
-            title={t('Weil du „{title}" magst', { title: item.basedOn })}
+            title={basedOnText}
             style={{
               fontSize: 'var(--text-xs)',
               color: currentTheme.primary,
               margin: '4px 0 0 0',
               fontWeight: 600,
+              lineHeight: 1.3,
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
             }}
           >
-            {t('Weil du „{title}" magst', { title: item.basedOn })}
+            {basedOnText}
           </p>
         )}
       </div>

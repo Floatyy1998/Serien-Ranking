@@ -301,6 +301,19 @@
   font-size: 12px;
 }
 
+.search-provider-badges {
+  position: absolute;
+  top: 32px;
+  left: 6px;
+  z-index: 2;
+  line-height: 0;
+}
+
+.search-provider-badges--desktop {
+  top: 42px;
+  left: 8px;
+}
+
 /* Poster-Aktionen: Hinzufügen bzw. Bewerten (rechts), Gesehen (links, nur Filme).
    Zwei Klassen im Selektor, damit die globale 44px-Regel (.mobile-app button)
    die Kreise nicht aufbläht — den 44px-Tap-Bereich liefert der ::before-Hit-Slop. */

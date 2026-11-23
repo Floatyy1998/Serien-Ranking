@@ -14,6 +14,7 @@
 .discover-item-card {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 280px;
+  container-type: inline-size;
   animation: fadeInUp 0.3s ease-out both;
 }
 
@@ -79,17 +80,355 @@
   opacity: 0.7;
 }
 
-.discover-add-btn:focus-visible,
-.discover-info-close:focus-visible {
+/* Übereinstimmung links, Wertung rechts. Reicht die Kartenbreite nicht für
+   beide, rutscht die Wertung in die zweite Zeile statt sie zu überdecken. */
+.discover-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.discover-match,
+.discover-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--glass-border-light);
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: auto;
+  -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
+}
+
+.discover-match {
+  padding: 5px 9px;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.discover-rating {
+  padding: 5px 10px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.discover-rating:only-child {
+  margin-left: auto;
+}
+
+@container (max-width: 150px) {
+  .discover-badges {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    gap: 4px;
+  }
+
+  .discover-match,
+  .discover-rating {
+    padding: 3px 5px;
+    gap: 2px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .discover-match svg,
+  .discover-rating svg {
+    font-size: 11px !important;
+  }
+}
+
+@container (max-width: 118px) {
+  .discover-badges {
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    gap: 3px;
+  }
+
+  .discover-match,
+  .discover-rating {
+    padding: 2px 4px;
+    font-size: 10.5px;
+    border-radius: 7px;
+  }
+
+  .discover-match svg {
+    display: none;
+  }
+
+  .discover-rating svg {
+    font-size: 10px !important;
+  }
+}
+
+.discover-filter-toggle {
+  position: relative;
+}
+
+.discover-filter-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.df {
+  padding: 0 var(--page-x) var(--space-2);
+}
+
+.df-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.df-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.df .df-reset {
+  min-width: 0;
+  min-height: var(--control-sm);
+  padding: 0 var(--space-2);
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.df .df-reset:disabled {
+  cursor: default;
+}
+
+.df-group {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 8%, transparent);
+}
+
+.df-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.df-label > span:first-child {
+  opacity: 0.75;
+}
+
+.df-value {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: right;
+}
+
+.df-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.df .df-genre {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 12%, transparent);
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 7%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.df .df-genre--only {
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  border-color: transparent;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent);
+  font-weight: 700;
+}
+
+.df .df-genre--hide {
+  background: color-mix(in srgb, var(--color-error, #ff4d4f) 12%, transparent);
+}
+
+.df .df-genre--hide > span {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.df .df-genre:active {
+  opacity: 0.7;
+}
+
+.df-hint {
+  margin: var(--space-3) 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.df-seg {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 10%, transparent);
+}
+
+.df .df-seg button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.df .df-seg button.is-active {
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent);
+  font-weight: 700;
+}
+
+.df .df-seg button:active {
+  opacity: 0.7;
+}
+
+.df .df-done {
+  width: 100%;
+  min-height: var(--control-lg);
+  margin-top: var(--space-1);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  box-shadow: 0 8px 22px -10px var(--theme-primary, #ef6f8a);
+  font-size: var(--text-base);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.df .df-done:active {
+  opacity: 0.8;
+}
+
+@media (min-width: 768px) {
+  .df-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .df-grid .df-group {
+    margin-bottom: var(--space-4);
+  }
+}
+
+.df-genre:focus-visible,
+.df-seg button:focus-visible,
+.df-reset:focus-visible,
+.df-done:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
 
-.discover-search-input {
-  outline: none;
+.discover-item-card .discover-watched-btn,
+.discover-item-card .discover-rate-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.discover-search-input:focus-visible {
+.discover-item-card .discover-watched-btn {
+  right: 13px;
+  bottom: 62px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  background: rgba(10, 14, 26, 0.85);
+  -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
+}
+
+.discover-item-card .discover-watched-btn:active,
+.discover-item-card .discover-rate-btn:active {
+  opacity: 0.7;
+}
+
+.discover-rate-value {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.2px;
+}
+
+.discover-add-btn:focus-visible,
+.discover-watched-btn:focus-visible,
+.discover-rate-btn:focus-visible,
+.discover-info-close:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }

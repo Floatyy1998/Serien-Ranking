@@ -22,12 +22,32 @@ export interface DiscoverItem {
   type: 'series' | 'movie';
   inList: boolean;
   basedOn?: string;
+  basedOnMore?: string;
+  match?: number;
+  fitGenres?: number[];
+  friendPick?: string;
+}
+
+export interface DiscoverQuickStatus {
+  added: boolean;
+  ownRating: number;
+  watched: boolean;
+  busyAction: 'add' | 'watched' | null;
+}
+
+export interface DiscoverQuickActions {
+  statusOf: (item: Pick<DiscoverItem, 'id' | 'type'>) => DiscoverQuickStatus;
+  markWatched: (item: DiscoverItem, inList: boolean, event: React.MouseEvent) => void;
+  rate: (item: DiscoverItem, ownRating: number, event: React.MouseEvent) => void;
 }
 
 export interface ItemCardProps {
   item: DiscoverItem;
   onItemClick: (item: DiscoverItem) => void;
   onAddToList: (item: DiscoverItem, event?: React.MouseEvent) => void;
+  quickStatus?: DiscoverQuickStatus;
+  onMarkWatched?: DiscoverQuickActions['markWatched'];
+  onRate?: DiscoverQuickActions['rate'];
   addingItem: string | null;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   isDesktop: boolean;

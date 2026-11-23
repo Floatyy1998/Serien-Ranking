@@ -63,6 +63,14 @@ const filters = vi.hoisted(() => ({
   setSearchQuery: vi.fn(),
   onlyMyProviders: false,
   setOnlyMyProviders: vi.fn(),
+  viewFilters: {
+    only: [] as string[],
+    hide: [] as string[],
+    eras: [] as ('new' | 'mid' | 'old')[],
+    minRating: 0,
+    minMatch: 0,
+  },
+  setViewFilters: vi.fn(),
   isRestoring: false,
   isDesktop: false,
   headerHeight: 120,
@@ -72,6 +80,16 @@ const filters = vi.hoisted(() => ({
   fetchFromTMDBOnRestoreRef: { current: null as null | (() => void) },
 }));
 vi.mock('./useDiscoverFilters', () => ({ useDiscoverFilters: () => filters }));
+vi.mock('../../contexts/MangaListContext', () => ({
+  useMangaList: () => ({ allMangaList: [] }),
+}));
+const filterSheet = vi.hoisted(() => ({ props: null as null | Record<string, unknown> }));
+vi.mock('./sheets/DiscoverFilterSheet', () => ({
+  DiscoverFilterSheet: (props: Record<string, unknown>) => {
+    filterSheet.props = props;
+    return null;
+  },
+}));
 
 const fetchState = vi.hoisted(() => ({
   results: [],
@@ -107,6 +125,21 @@ vi.mock('../../hooks/provider/useActiveSubscriptions', () => ({
   }),
 }));
 
+vi.mock('../../hooks/rating/useQuickMediaActions', () => ({
+  useQuickMediaActions: () => ({
+    statusOf: () => ({ added: false, ownRating: 0, watched: false, busyAction: null }),
+    add: vi.fn(),
+    markWatched: vi.fn(),
+    rate: vi.fn(),
+    quickRating: { open: false, title: '' },
+    closeQuickRating: vi.fn(),
+    saveQuickRating: vi.fn(),
+  }),
+}));
+vi.mock('../../components/ui/overlay/QuickRatingSheet', () => ({
+  QuickRatingSheet: () => null,
+}));
+
 vi.mock('../../components/ui', () => ({
   BackButton: () => <button>back</button>,
   Dialog: () => null,
@@ -114,6 +147,15 @@ vi.mock('../../components/ui', () => ({
   LoadingSpinner: () => <div>spinner</div>,
   PageLayout: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   ScrollToTopButton: () => null,
+  SearchInput: ({
+    value,
+    onChange,
+    placeholder,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+  }) => <input aria-label={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />,
   Snackbar: () => null,
   TabSwitcher: ({
     tabs,
@@ -175,5 +217,25 @@ describe('DiscoverPage', () => {
     fireEvent.click(toggle);
     expect(filters.setOnlyMyProviders).toHaveBeenCalled();
     subs.activeProviders = new Set();
+  });
+
+  it('shows the shared search field while searching and forwards typing', () => {
+    filters.showSearch = true;
+    render(<DiscoverPage />);
+    fireEvent.change(screen.getByLabelText('Serien suchen...'), { target: { value: 'dune' } });
+    expect(filters.setSearchQuery).toHaveBeenCalledWith('dune');
+    filters.showSearch = false;
+  });
+
+  it('opens the filter sheet and shows how many filters are active', () => {
+    filters.viewFilters = { only: [], hide: ['anime'], eras: [], minRating: 8, minMatch: 0 };
+    render(<DiscoverPage />);
+    const toggle = screen.getByLabelText('Filter ({n} aktiv)'.replace('{n}', '2'));
+    expect(toggle).toHaveTextContent('2');
+    fireEvent.click(toggle);
+    expect(filters.setShowFilters).toHaveBeenCalledWith(true);
+    expect(filterSheet.props?.filters).toEqual(filters.viewFilters);
+    expect(filterSheet.props?.media).toBe('series');
+    filters.viewFilters = { only: [], hide: [], eras: [], minRating: 0, minMatch: 0 };
   });
 });

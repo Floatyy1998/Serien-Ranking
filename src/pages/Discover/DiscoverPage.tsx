@@ -11,14 +11,20 @@ import {
   Whatshot,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../hooks/provider/useActiveSubscriptions';
+import { useQuickMediaActions } from '../../hooks/rating/useQuickMediaActions';
+import { QuickRatingSheet } from '../../components/ui/overlay/QuickRatingSheet';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
+import { activeViewFilterCount } from '../../lib/taste/discoverFilters';
 import { DiscoverContent } from './DiscoverContent';
+import { DiscoverFilterSheet } from './sheets/DiscoverFilterSheet';
+import type { DiscoverItem, DiscoverQuickActions } from './discoverItemHelpers';
 import {
   BackButton,
   Dialog,
@@ -28,13 +34,21 @@ import {
   PageState,
   Snackbar,
   TabSwitcher,
+  SearchInput,
 } from '../../components/ui';
 import './DiscoverPage.css';
-import { tapScale, tapScaleTight } from '../../lib/motion';
+import { tapScaleTight } from '../../lib/motion';
 
 // Stabile leere Referenz: verhindert überflüssige Re-Fetches, solange der
 // Abo-Filter aus ist (Identität ändert sich sonst, wenn die Abos nachladen).
 const EMPTY_PROVIDERS: Set<string> = new Set();
+
+const toQuickItem = (item: DiscoverItem) => ({
+  id: item.id,
+  type: item.type,
+  title: item.title || item.name || '',
+  poster_path: item.poster_path ?? undefined,
+});
 
 export const DiscoverPage = memo(() => {
   const { currentTheme } = useTheme();
@@ -45,7 +59,6 @@ export const DiscoverPage = memo(() => {
     activeCategory,
     setActiveCategory,
     selectedGenre,
-    setSelectedGenre,
     showFilters,
     setShowFilters,
     showSearch,
@@ -54,16 +67,24 @@ export const DiscoverPage = memo(() => {
     setSearchQuery,
     onlyMyProviders,
     setOnlyMyProviders,
+    viewFilters,
+    setViewFilters,
     isRestoring,
     isDesktop,
     headerHeight,
-    genres,
     handleItemClick,
     fetchRecommendationsOnRestoreRef,
     fetchFromTMDBOnRestoreRef,
   } = useDiscoverFilters();
 
   const { activeProviders } = useActiveSubscriptions();
+  const { allMangaList } = useMangaList();
+  const readsManga = allMangaList.length >= 3;
+  const fetchExtras = useMemo(
+    () => ({ viewFilters, ownProviders: activeProviders, readsManga }),
+    [viewFilters, activeProviders, readsManga]
+  );
+  const filterCount = activeViewFilterCount(viewFilters);
 
   // Beim Scrollen klappt die Titelzeile ein; Umschalter, Filter und Kategorien
   // bleiben stehen. Der Platzhalter unten behaelt die volle Kopfhoehe, damit
@@ -111,7 +132,42 @@ export const DiscoverPage = memo(() => {
     searchQuery,
     isRestoring,
     providerFilterActive,
-    providerFilterActive ? activeProviders : EMPTY_PROVIDERS
+    providerFilterActive ? activeProviders : EMPTY_PROVIDERS,
+    fetchExtras
+  );
+
+  const [matchSeen, setMatchSeen] = useState(false);
+  const hasMatches =
+    recommendations.some((item) => item.match !== undefined) ||
+    results.some((item) => item.match !== undefined);
+  useEffect(() => {
+    if (hasMatches) setMatchSeen(true);
+  }, [hasMatches]);
+
+  const [quickSnack, setQuickSnack] = useState('');
+  const quickSnackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifyQuick = useCallback((message: string) => {
+    if (quickSnackTimer.current) clearTimeout(quickSnackTimer.current);
+    setQuickSnack(message);
+    quickSnackTimer.current = setTimeout(() => setQuickSnack(''), 2500);
+  }, []);
+  useEffect(
+    () => () => {
+      if (quickSnackTimer.current) clearTimeout(quickSnackTimer.current);
+    },
+    []
+  );
+
+  const { statusOf, markWatched, rate, quickRating, closeQuickRating, saveQuickRating } =
+    useQuickMediaActions({ source: 'discover', notify: notifyQuick });
+
+  const quick = useMemo<DiscoverQuickActions>(
+    () => ({
+      statusOf,
+      markWatched: (item, inList, event) => void markWatched(toQuickItem(item), inList, event),
+      rate: (item, ownRating, event) => rate(toQuickItem(item), ownRating, event),
+    }),
+    [statusOf, markWatched, rate]
   );
 
   useEffect(() => {
@@ -258,33 +314,15 @@ export const DiscoverPage = memo(() => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                style={{ padding: '0 20px 12px 20px', overflow: 'hidden' }}
+                style={{ padding: '4px var(--page-x) var(--space-3)', overflow: 'hidden' }}
               >
-                <input
-                  type="text"
-                  className="discover-search-input"
-                  aria-label={activeTab === 'series' ? t('Serien suchen') : t('Filme suchen')}
+                <SearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
                   placeholder={
                     activeTab === 'series' ? t('Serien suchen...') : t('Filme suchen...')
                   }
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                  }}
                   autoFocus
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    background:
-                      'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
-                    border: '1px solid var(--glass-border-subtle)',
-                    borderRadius: '14px',
-                    color: currentTheme.text.primary,
-                    fontSize: '15px',
-                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    backdropFilter: 'var(--blur-md)',
-                    WebkitBackdropFilter: 'var(--blur-md)',
-                  }}
                 />
               </motion.div>
             )}
@@ -334,33 +372,45 @@ export const DiscoverPage = memo(() => {
             >
               <Subscriptions style={{ fontSize: '20px' }} />
             </motion.button>
-            {!showSearch && activeCategory !== 'recommendations' && (
+            {!showSearch && (
               <motion.button
+                className="discover-filter-toggle"
                 whileTap={tapScaleTight}
-                onClick={() => setShowFilters(!showFilters)}
-                aria-label={t('Genre filtern')}
-                aria-expanded={showFilters}
+                onClick={() => setShowFilters(true)}
+                aria-label={
+                  filterCount > 0 ? t('Filter ({n} aktiv)', { n: filterCount }) : t('Filter')
+                }
+                aria-haspopup="dialog"
                 style={{
-                  background: selectedGenre
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                    : currentTheme.background.surface,
-                  border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
-                  color: selectedGenre
-                    ? getOptimalTextColor(currentTheme.primary)
-                    : currentTheme.text.primary,
+                  background:
+                    filterCount > 0
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                      : currentTheme.background.surface,
+                  border: filterCount > 0 ? 'none' : `1px solid ${currentTheme.border.default}`,
+                  color:
+                    filterCount > 0
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.primary,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: selectedGenre ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                  boxShadow: filterCount > 0 ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                 }}
-                title={
-                  selectedGenre
-                    ? genres.find((g) => g.id === selectedGenre)?.name
-                    : t('Genre Filter')
-                }
+                title={t('Filter')}
               >
                 <FilterList style={{ fontSize: '20px' }} />
+                {filterCount > 0 && (
+                  <span
+                    className="discover-filter-count"
+                    style={{
+                      background: currentTheme.background.default,
+                      color: currentTheme.text.primary,
+                    }}
+                  >
+                    {filterCount}
+                  </span>
+                )}
               </motion.button>
             )}
           </div>
@@ -402,92 +452,6 @@ export const DiscoverPage = memo(() => {
               })}
             </div>
           )}
-
-          {/* Genre filter dropdown */}
-          <AnimatePresence>
-            {showFilters && !showSearch && activeCategory !== 'recommendations' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                style={{ padding: '0 20px 14px 20px', overflow: 'hidden' }}
-              >
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                    gap: '8px',
-                    maxHeight: '160px',
-                    overflowY: 'auto',
-                    padding: '12px',
-                    background: currentTheme.background.surface,
-                    borderRadius: '14px',
-                    border: `1px solid ${currentTheme.border.default}`,
-                  }}
-                >
-                  <motion.button
-                    whileTap={tapScale}
-                    onClick={() => {
-                      setSelectedGenre(null);
-                      setShowFilters(false);
-                    }}
-                    style={{
-                      padding: '8px 10px',
-                      background: !selectedGenre
-                        ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}10)`
-                        : 'transparent',
-                      border: !selectedGenre
-                        ? `1px solid ${currentTheme.primary}50`
-                        : `1px solid ${currentTheme.border.default}`,
-                      borderRadius: '10px',
-                      color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {t('Alle')}
-                  </motion.button>
-                  {genres.map((genre) => (
-                    <motion.button
-                      key={genre.id}
-                      whileTap={tapScale}
-                      onClick={() => {
-                        setSelectedGenre(genre.id);
-                        setShowFilters(false);
-                      }}
-                      style={{
-                        padding: '8px 10px',
-                        background:
-                          selectedGenre === genre.id
-                            ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}10)`
-                            : 'transparent',
-                        border:
-                          selectedGenre === genre.id
-                            ? `1px solid ${currentTheme.primary}50`
-                            : `1px solid ${currentTheme.border.default}`,
-                        borderRadius: '10px',
-                        color:
-                          selectedGenre === genre.id
-                            ? currentTheme.primary
-                            : currentTheme.text.primary,
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {genre.name}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
@@ -535,11 +499,14 @@ export const DiscoverPage = memo(() => {
             addingItem={addingItem}
             handleItemClick={handleItemClick}
             addToList={addToList}
+            quick={quick}
+            filtersActive={filterCount > 0}
           />
 
           {/* Loading indicator */}
           {((loading && !showSearch && activeCategory !== 'recommendations') ||
             (recommendationsLoading &&
+              !showSearch &&
               activeCategory === 'recommendations' &&
               recommendations.length > 0)) && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -554,7 +521,32 @@ export const DiscoverPage = memo(() => {
       </div>
 
       {/* Snackbar for success feedback */}
-      <Snackbar open={snackbar.open} message={snackbar.message} />
+      <Snackbar
+        open={snackbar.open || !!quickSnack}
+        message={snackbar.open ? snackbar.message : quickSnack}
+      />
+
+      <DiscoverFilterSheet
+        isOpen={showFilters && !showSearch}
+        onClose={() => setShowFilters(false)}
+        filters={viewFilters}
+        onChange={setViewFilters}
+        media={activeTab === 'series' ? 'series' : 'movie'}
+        showMatch={matchSeen}
+      />
+
+      <QuickRatingSheet
+        isOpen={quickRating.open}
+        onClose={closeQuickRating}
+        seriesTitle={quickRating.title}
+        eyebrow={quickRating.afterWatched ? t('Als gesehen markiert') : t('In deiner Liste')}
+        initialRating={quickRating.initialRating}
+        genres={quickRating.genres}
+        mediaType={quickRating.mediaType}
+        itemId={quickRating.itemId}
+        initialGenreRatings={quickRating.genreRatings}
+        onRate={saveQuickRating}
+      />
 
       {/* Dialog for alerts */}
       <Dialog
