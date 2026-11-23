@@ -452,6 +452,27 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'Tu cuenta funciona en todas partes con el mismo progreso: como app para iPhone, iPad y Android, en el ordenador en el navegador en tv-rank.de y como app para Windows. Todas las opciones están ahora reunidas en Ajustes, en «General».',
   'Geräte ansehen': 'Ver dispositivos',
+  'November 2026 – Vorschläge, die zu dir passen':
+    'Noviembre de 2026 – Sugerencias que encajan contigo',
+  'Für dich, neu gedacht': 'Para ti, de nuevo',
+  'Die Vorschläge unter „Für dich“ richten sich jetzt nach allem, was TV-Rank über deinen Geschmack weiß: deine Bewertungen samt Genre-Noten und Folgenbewertungen, was du durchgeschaut, abgebrochen oder noch einmal geschaut hast, deine Interessen und deine Merkliste. Unter jedem Titel steht, warum er dir vorgeschlagen wird.':
+    'Las sugerencias de «Para ti» se guían ahora por todo lo que TV-Rank sabe de tus gustos: tus valoraciones, también por género y por episodio, lo que has terminado, abandonado o vuelto a ver, tus intereses y tu lista de pendientes. Debajo de cada título ves por qué se te sugiere.',
+  'Entdecken öffnen': 'Abrir Descubrir',
+  'Übereinstimmung in Prozent': 'Afinidad en porcentaje',
+  'Jedes Poster in Entdecken zeigt jetzt, wie gut der Titel zu dir passt. Das gilt auch für Trend, Beliebt, Top, Neu und Läuft: Was dir vermutlich gefällt, steht dort weiter vorn. Die Zahl ist eine Schätzung aus deinem bisherigen Schauen und Bewerten.':
+    'Cada póster de Descubrir muestra ahora cuánto encaja el título contigo. También en Tendencias, Popular, Top, Nuevo y En emisión: lo que probablemente te guste aparece antes. La cifra es una estimación a partir de lo que has visto y valorado.',
+  'Filter für Entdecken': 'Filtros para Descubrir',
+  'Über den Filter-Knopf grenzt du jede Liste ein. Tipp ein Genre einmal an, um nur dieses zu sehen, und zweimal, um es auszublenden, zum Beispiel Comedy und Drama ohne Anime. Dazu kommen Zeitraum, Mindestwertung und eine Mindest-Übereinstimmung.':
+    'Con el botón de filtros acotas cualquier lista. Toca un género una vez para ver solo ese y dos veces para ocultarlo, por ejemplo comedia y drama sin anime. Además hay periodo, valoración mínima y afinidad mínima.',
+  'Schneller abhaken und bewerten': 'Marcar y valorar más rápido',
+  'Filme markierst du in Entdecken direkt auf dem Poster als gesehen und bewertest sie im selben Zug. Titel aus deiner Liste zeigen dort deine Note. In der Suche stehen jetzt die Streaming-Dienste auf den Postern.':
+    'En Descubrir marcas las películas como vistas directamente en el póster y las valoras en el mismo paso. Los títulos de tu lista muestran ahí tu nota. En la búsqueda, los servicios de streaming aparecen ahora en los pósteres.',
+  'Diskussionen bei Büchern und Manga': 'Debates en libros y manga',
+  'Auf den Seiten von Büchern und Manga kannst du jetzt wie bei Serien und Filmen mitdiskutieren. Alle Ausgaben eines Buchs teilen sich eine Diskussion, und wer noch nicht angefangen hat, sieht vorher eine Spoiler-Warnung.':
+    'En las páginas de libros y manga ya puedes debatir como en series y películas. Todas las ediciones de un libro comparten un debate y, si aún no has empezado, verás antes un aviso de spoilers.',
+  'Ruhigerer Start': 'Un inicio más tranquilo',
+  'Die App lädt ihre Dateien nicht mehr bei jedem Start neu und zeigt die Seite erst, wenn sie fertig aufgebaut ist. Gerade auf dem Handy und bei langsamem Netz startet TV-Rank dadurch schneller und ohne Nachladen.':
+    'La app ya no vuelve a cargar sus archivos en cada inicio y solo muestra la página cuando está completa. Sobre todo en el móvil y con mala conexión, TV-Rank arranca más rápido y sin cargas posteriores.',
   'November 2026 – Countdown für Filme': 'Noviembre de 2026 – Cuenta atrás para películas',
   'Filme im Countdown': 'Películas en la cuenta atrás',
   'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':

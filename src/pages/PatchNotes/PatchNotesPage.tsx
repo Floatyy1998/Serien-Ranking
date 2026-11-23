@@ -108,6 +108,61 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('November 2026 – Vorschläge, die zu dir passen'),
+      date: '2026-11-24',
+      features: [
+        {
+          icon: <Recommend />,
+          color: currentTheme.primary,
+          title: t('Für dich, neu gedacht'),
+          description: t(
+            'Die Vorschläge unter „Für dich“ richten sich jetzt nach allem, was TV-Rank über deinen Geschmack weiß: deine Bewertungen samt Genre-Noten und Folgenbewertungen, was du durchgeschaut, abgebrochen oder noch einmal geschaut hast, deine Interessen und deine Merkliste. Unter jedem Titel steht, warum er dir vorgeschlagen wird.'
+          ),
+          link: { label: t('Entdecken öffnen'), path: '/discover' },
+        },
+        {
+          icon: <AutoAwesome />,
+          color: currentTheme.accent,
+          title: t('Übereinstimmung in Prozent'),
+          description: t(
+            'Jedes Poster in Entdecken zeigt jetzt, wie gut der Titel zu dir passt. Das gilt auch für Trend, Beliebt, Top, Neu und Läuft: Was dir vermutlich gefällt, steht dort weiter vorn. Die Zahl ist eine Schätzung aus deinem bisherigen Schauen und Bewerten.'
+          ),
+        },
+        {
+          icon: <FilterAlt />,
+          color: currentTheme.status.success,
+          title: t('Filter für Entdecken'),
+          description: t(
+            'Über den Filter-Knopf grenzt du jede Liste ein. Tipp ein Genre einmal an, um nur dieses zu sehen, und zweimal, um es auszublenden, zum Beispiel Comedy und Drama ohne Anime. Dazu kommen Zeitraum, Mindestwertung und eine Mindest-Übereinstimmung.'
+          ),
+        },
+        {
+          icon: <Visibility />,
+          color: currentTheme.status.warning,
+          title: t('Schneller abhaken und bewerten'),
+          description: t(
+            'Filme markierst du in Entdecken direkt auf dem Poster als gesehen und bewertest sie im selben Zug. Titel aus deiner Liste zeigen dort deine Note. In der Suche stehen jetzt die Streaming-Dienste auf den Postern.'
+          ),
+        },
+        {
+          icon: <Forum />,
+          color: currentTheme.primary,
+          title: t('Diskussionen bei Büchern und Manga'),
+          description: t(
+            'Auf den Seiten von Büchern und Manga kannst du jetzt wie bei Serien und Filmen mitdiskutieren. Alle Ausgaben eines Buchs teilen sich eine Diskussion, und wer noch nicht angefangen hat, sieht vorher eine Spoiler-Warnung.'
+          ),
+        },
+        {
+          icon: <Speed />,
+          color: currentTheme.accent,
+          title: t('Ruhigerer Start'),
+          description: t(
+            'Die App lädt ihre Dateien nicht mehr bei jedem Start neu und zeigt die Seite erst, wenn sie fertig aufgebaut ist. Gerade auf dem Handy und bei langsamem Netz startet TV-Rank dadurch schneller und ohne Nachladen.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('November 2026 – Countdown für Filme'),
       date: '2026-11-19',
       features: [

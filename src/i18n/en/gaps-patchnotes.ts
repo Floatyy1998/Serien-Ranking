@@ -468,6 +468,26 @@ const dict: Record<string, string> = {
   'Dein Konto läuft überall mit demselben Stand: als App für iPhone, iPad und Android, am Computer im Browser auf tv-rank.de und als Windows-App. Alle Wege stehen jetzt gesammelt in den Einstellungen unter „Allgemein“.':
     'Your account runs everywhere with the same progress: as an app for iPhone, iPad and Android, on a computer in the browser at tv-rank.de and as a Windows app. All options are now gathered in Settings under “General”.',
   'Geräte ansehen': 'View devices',
+  'November 2026 – Vorschläge, die zu dir passen': 'November 2026 – Suggestions that fit you',
+  'Für dich, neu gedacht': 'For you, rethought',
+  'Die Vorschläge unter „Für dich“ richten sich jetzt nach allem, was TV-Rank über deinen Geschmack weiß: deine Bewertungen samt Genre-Noten und Folgenbewertungen, was du durchgeschaut, abgebrochen oder noch einmal geschaut hast, deine Interessen und deine Merkliste. Unter jedem Titel steht, warum er dir vorgeschlagen wird.':
+    'The suggestions under "For you" now follow everything TV-Rank knows about your taste: your ratings including genre and episode ratings, what you finished, dropped or watched again, your interests and your watchlist. Below each title you can see why it is suggested to you.',
+  'Entdecken öffnen': 'Open Discover',
+  'Übereinstimmung in Prozent': 'Match in percent',
+  'Jedes Poster in Entdecken zeigt jetzt, wie gut der Titel zu dir passt. Das gilt auch für Trend, Beliebt, Top, Neu und Läuft: Was dir vermutlich gefällt, steht dort weiter vorn. Die Zahl ist eine Schätzung aus deinem bisherigen Schauen und Bewerten.':
+    'Every poster in Discover now shows how well the title fits you. That also applies to Trending, Popular, Top, New and On air: what you will probably like comes first. The number is an estimate based on what you have watched and rated so far.',
+  'Filter für Entdecken': 'Filters for Discover',
+  'Über den Filter-Knopf grenzt du jede Liste ein. Tipp ein Genre einmal an, um nur dieses zu sehen, und zweimal, um es auszublenden, zum Beispiel Comedy und Drama ohne Anime. Dazu kommen Zeitraum, Mindestwertung und eine Mindest-Übereinstimmung.':
+    'The filter button narrows down every list. Tap a genre once to see only that one and twice to hide it, for example comedy and drama without anime. On top of that come period, minimum rating and a minimum match.',
+  'Schneller abhaken und bewerten': 'Tick off and rate faster',
+  'Filme markierst du in Entdecken direkt auf dem Poster als gesehen und bewertest sie im selben Zug. Titel aus deiner Liste zeigen dort deine Note. In der Suche stehen jetzt die Streaming-Dienste auf den Postern.':
+    'In Discover you mark movies as watched right on the poster and rate them in the same step. Titles from your list show your rating there. In search, the streaming services now appear on the posters.',
+  'Diskussionen bei Büchern und Manga': 'Discussions for books and manga',
+  'Auf den Seiten von Büchern und Manga kannst du jetzt wie bei Serien und Filmen mitdiskutieren. Alle Ausgaben eines Buchs teilen sich eine Diskussion, und wer noch nicht angefangen hat, sieht vorher eine Spoiler-Warnung.':
+    'On book and manga pages you can now join the discussion just like for series and movies. All editions of a book share one discussion, and if you have not started yet you see a spoiler warning first.',
+  'Ruhigerer Start': 'A calmer start',
+  'Die App lädt ihre Dateien nicht mehr bei jedem Start neu und zeigt die Seite erst, wenn sie fertig aufgebaut ist. Gerade auf dem Handy und bei langsamem Netz startet TV-Rank dadurch schneller und ohne Nachladen.':
+    'The app no longer reloads its files on every start and only shows the page once it is fully built. Especially on the phone and on a slow connection, TV-Rank starts faster and without loading in afterwards.',
   'November 2026 – Countdown für Filme': 'November 2026 – Countdown for movies',
   'Filme im Countdown': 'Movies in the countdown',
   'Der Countdown zählt jetzt auch Filme herunter. Jeder ungesehene Film auf deiner Liste, der noch nicht angelaufen ist, steht dort mit den Tagen bis zum Kinostart in deinem Land. Kommt ein Film nur ins Streaming, zählt er bis zum Streaming-Start. Über die Reiter Alle, Serien und Filme grenzt du die Liste ein, und der nächste Start steht wie gewohnt auf der Startseite.':
