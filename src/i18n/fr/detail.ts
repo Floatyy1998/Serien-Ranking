@@ -218,6 +218,8 @@ const dict: Record<string, string> = {
   'Rest abhaken': 'Cocher le reste',
   Besitz: 'Possédé',
   '{n} Min. pro Folge': '{n} min par épisode',
+  'Laufzeit unbekannt': 'Durée inconnue',
+  'Nicht bekannt': 'Inconnue',
   'Auf einen Blick': "En un coup d'œil",
   Laufzeit: 'Durée',
   Originaltitel: 'Titre original',

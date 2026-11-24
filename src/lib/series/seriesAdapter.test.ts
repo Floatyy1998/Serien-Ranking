@@ -111,6 +111,19 @@ describe('mergeToSeriesView', () => {
       expect(result.id).toBe(42);
     });
 
+    it('reicht episodeRuntimeUnknown nur durch, wenn der Katalog die Laufzeit als unbekannt markiert', () => {
+      const unbekannt = mergeToSeriesView(
+        42,
+        makeCatalog({ episodeRuntime: 30, episodeRuntimeUnknown: true }),
+        makeUserRef()
+      );
+      expect(unbekannt.episodeRuntime).toBe(30);
+      expect(unbekannt.episodeRuntimeUnknown).toBe(true);
+
+      const bekannt = mergeToSeriesView(42, makeCatalog(), makeUserRef());
+      expect(bekannt).not.toHaveProperty('episodeRuntimeUnknown');
+    });
+
     it('mappt imdbId=null und woUrl=null auf leere Strings in den Wrappern', () => {
       const result = mergeToSeriesView(
         1,

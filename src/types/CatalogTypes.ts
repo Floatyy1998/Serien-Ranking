@@ -15,6 +15,7 @@ export interface CatalogSeries {
   production: boolean;
   episodeCount: number;
   episodeRuntime: number;
+  episodeRuntimeUnknown?: boolean;
   watchtime: number;
   seasonCount: number;
   lastUpdated: number;

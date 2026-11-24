@@ -185,6 +185,7 @@ export function mergeToSeriesView(
     rewatch: userRef.rewatch,
     episodeCount: catalog.episodeCount,
     episodeRuntime: catalog.episodeRuntime,
+    ...(catalog.episodeRuntimeUnknown ? { episodeRuntimeUnknown: true } : {}),
     watchtime: catalog.watchtime,
     seasonCount: catalog.seasonCount,
     seasons,

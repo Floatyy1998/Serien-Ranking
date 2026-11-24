@@ -175,4 +175,20 @@ describe('HeroSection', () => {
     fireEvent.click(screen.getByText('Bewerten'));
     expect(baseProps.onNavigateRating).toHaveBeenCalledTimes(1);
   });
+
+  it('shows the runtime per episode, or "Laufzeit unbekannt" when the catalog has none', () => {
+    const { rerender } = render(
+      <HeroSection {...baseProps} series={{ ...series, episodeRuntime: 44 }} />
+    );
+    expect(screen.getByText('44 Min. pro Folge')).toBeInTheDocument();
+
+    rerender(
+      <HeroSection
+        {...baseProps}
+        series={{ ...series, episodeRuntime: 30, episodeRuntimeUnknown: true }}
+      />
+    );
+    expect(screen.getByText('Laufzeit unbekannt')).toBeInTheDocument();
+    expect(screen.queryByText('30 Min. pro Folge')).not.toBeInTheDocument();
+  });
 });

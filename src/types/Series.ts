@@ -3,6 +3,7 @@ export interface Series {
   beschreibung?: string;
   episodeCount: number;
   episodeRuntime: number;
+  episodeRuntimeUnknown?: boolean;
   genre: {
     genres: string[];
   };

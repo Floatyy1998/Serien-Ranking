@@ -243,6 +243,8 @@ const dict: Record<string, string> = {
   'Rest abhaken': 'Mark rest',
   Besitz: 'Owned',
   '{n} Min. pro Folge': '{n} min per episode',
+  'Laufzeit unbekannt': 'Runtime unknown',
+  'Nicht bekannt': 'Unknown',
   'Auf einen Blick': 'At a glance',
   Laufzeit: 'Runtime',
   Originaltitel: 'Original title',

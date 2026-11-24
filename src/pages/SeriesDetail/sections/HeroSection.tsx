@@ -556,8 +556,12 @@ export const HeroSection = memo<HeroSectionProps>(
                 : t('{n} Staffeln', { n: series.seasons.length })}
             </span>
           )}
-          {series.episodeRuntime > 0 && (
-            <span>{t('{n} Min. pro Folge', { n: series.episodeRuntime })}</span>
+          {series.episodeRuntimeUnknown ? (
+            <span>{t('Laufzeit unbekannt')}</span>
+          ) : (
+            series.episodeRuntime > 0 && (
+              <span>{t('{n} Min. pro Folge', { n: series.episodeRuntime })}</span>
+            )
           )}
         </div>
 

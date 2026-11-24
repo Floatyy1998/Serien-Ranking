@@ -378,9 +378,11 @@ export const SeriesDetailPage = memo(() => {
             { label: t('Folgen'), value: progressStats.total || null },
             {
               label: t('Laufzeit'),
-              value: series.episodeRuntime
-                ? t('{n} Min. pro Folge', { n: series.episodeRuntime })
-                : null,
+              value: series.episodeRuntimeUnknown
+                ? t('Nicht bekannt')
+                : series.episodeRuntime
+                  ? t('{n} Min. pro Folge', { n: series.episodeRuntime })
+                  : null,
             },
             {
               label: t('Originaltitel'),
