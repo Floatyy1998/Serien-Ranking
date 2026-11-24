@@ -7,7 +7,7 @@
  * Karten-Tap → MovieDetail.
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Add, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material';
 import { LoadingSpinner } from '../../components/ui/feedback/LoadingSpinner';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -21,6 +21,7 @@ import {
 } from '../../lib/provider/providerLinks';
 import { parsePremiereDate, isSameDay, datePillText } from '../SerienKalender/tvPremiereFormat';
 import type { FilmReleaseEntry } from './filmReleaseData';
+import { useFilmDetails } from './useFilmDetails';
 import { t } from '../../services/i18n';
 import { mediaTargetProps } from '../../lib/interaction/mediaTarget';
 
@@ -112,6 +113,8 @@ interface FilmKalenderCardProps {
   onAdd?: () => void;
   adding?: boolean;
   staggerIndex?: number;
+  /** Regie, Besetzung und Anbieter beim Sichtbarwerden nachladen. */
+  hydrate?: boolean;
 }
 
 export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
@@ -123,10 +126,15 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
   onAdd,
   adding = false,
   staggerIndex = 0,
+  hydrate = false,
 }) => {
   const { currentTheme } = useTheme();
   const placeholder = useThemedPlaceholder();
   const [descExpanded, setDescExpanded] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const loaded = useFilmDetails(entry.tmdbId, entry.mode, cardRef, hydrate);
+  const detailsPending = hydrate && !loaded;
+  const { directors, cast, providers } = loaded ?? entry;
 
   const title = entry.title || t('Unbekannter Titel');
   const description = entry.overview;
@@ -160,7 +168,7 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
   const metaLine = entry.rating ? `★ ${entry.rating.toFixed(1)}` : '';
   const statusLabel = !inList ? '' : watched ? t('Gesehen') : t('Noch nicht gesehen');
   const statusTint = lightenColor(currentTheme.primary, 0.3);
-  const hasPeople = entry.directors.length > 0 || entry.cast.length > 0;
+  const hasPeople = detailsPending || directors.length > 0 || cast.length > 0;
   const canExpand = description.length > (hasPeople ? 106 : 265);
   const descClass = [
     'as-card-desc',
@@ -177,6 +185,7 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
 
   return (
     <div
+      ref={cardRef}
       className="as-grid-item"
       role="button"
       tabIndex={0}
@@ -285,14 +294,17 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
           </p>
           <p className="as-card-genres">{entry.genres || ' '}</p>
           {hasPeople && (
-            <div className="as-card-people">
+            <div
+              className={
+                detailsPending ? 'as-card-people as-card-people--pending' : 'as-card-people as-fade'
+              }
+              key={detailsPending ? 'people-pending' : 'people'}
+            >
               <p className="as-card-person">
-                {entry.directors.length > 0
-                  ? t('Regie: {names}', { names: entry.directors.join(', ') })
-                  : null}
+                {directors.length > 0 ? t('Regie: {names}', { names: directors.join(', ') }) : null}
               </p>
               <p className="as-card-person as-card-person--cast">
-                {entry.cast.length > 0 ? t('Mit {names}', { names: entry.cast.join(', ') }) : null}
+                {cast.length > 0 ? t('Mit {names}', { names: cast.join(', ') }) : null}
               </p>
             </div>
           )}
@@ -314,9 +326,7 @@ export const FilmKalenderCard: React.FC<FilmKalenderCardProps> = ({
             >
               {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
             </button>
-            {entry.providers.length > 0 && (
-              <ProviderLogos providers={entry.providers} searchTitle={title} />
-            )}
+            {providers.length > 0 && <ProviderLogos providers={providers} searchTitle={title} />}
           </div>
         </div>
       </article>

@@ -6,11 +6,11 @@
  *   Modus: KINO (Kinostarts) · STREAMING (Digital-Releases).
  *   Timeline mit Tages-Nodes, „Aus deiner Liste"-Badge + „+"-Add-Button
  *   (backendFetch('/addMovie'), wie Discover).
- * Datenquelle: clientseitig TMDB (discover + release_dates pro Film für das
- * exakte regionale Datum), Session-Cache in filmReleaseData.
+ * Datenquelle: clientseitig TMDB-Discover (alle Releases des Quartals in
+ * einem Zug, Wiederaufführungen ausgenommen), Session-Cache in filmReleaseData.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarMonth, InfoOutlined, LocalMovies } from '@mui/icons-material';
 import {
@@ -106,22 +106,16 @@ export const FilmKalenderPage: React.FC = () => {
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [addingId, setAddingId] = useState<number | null>(null);
-  const [remaining, setRemaining] = useState(0);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const viewRef = useRef('');
 
   const selectedDate = useMemo(() => parseQuarterKey(selected), [selected]);
 
   useEffect(() => {
     let cancelled = false;
-    viewRef.current = `${selected}:${mode}`;
     setLoading(true);
     setFailed(false);
     fetchFilmReleases(selectedDate, mode)
       .then((data) => {
-        if (cancelled) return;
-        setEntries(data.entries);
-        setRemaining(data.remaining);
+        if (!cancelled) setEntries(data);
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -132,24 +126,7 @@ export const FilmKalenderPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [selected, selectedDate, mode, reloadKey]);
-
-  const loadMore = () => {
-    if (loadingMore) return;
-    hapticSelect();
-    const view = `${selected}:${mode}`;
-    setLoadingMore(true);
-    fetchFilmReleases(selectedDate, mode, true)
-      .then((data) => {
-        if (viewRef.current !== view) return;
-        setEntries(data.entries);
-        setRemaining(data.remaining);
-      })
-      .catch(() => {
-        showToast(t('Die Release-Daten konnten nicht geladen werden.'), 2500, 'error');
-      })
-      .finally(() => setLoadingMore(false));
-  };
+  }, [selectedDate, mode, reloadKey]);
 
   useEffect(() => {
     try {
@@ -388,6 +365,7 @@ export const FilmKalenderPage: React.FC = () => {
                           watched={listEntry?.watched === true}
                           now={now}
                           staggerIndex={index}
+                          hydrate
                           onOpen={() => navigate(`/movie/${entry.tmdbId}`)}
                           onAdd={listEntry ? undefined : () => void addEntry(entry)}
                           adding={addingId === entry.tmdbId}
@@ -398,22 +376,6 @@ export const FilmKalenderPage: React.FC = () => {
                 </div>
               ))}
             </div>
-            {remaining > 0 && (
-              <button
-                type="button"
-                className="as-jump as-more"
-                onClick={loadMore}
-                disabled={loadingMore}
-                style={{ color: currentTheme.text.secondary }}
-              >
-                {loadingMore ? t('Lädt…') : t('Mehr anzeigen')}
-                {!loadingMore && (
-                  <span style={{ color: currentTheme.text.muted, fontWeight: 600 }}>
-                    {remaining}
-                  </span>
-                )}
-              </button>
-            )}
             <p className="as-source-hint" style={{ color: currentTheme.text.muted }}>
               <InfoOutlined style={{ fontSize: '14px', flexShrink: 0 }} />
               {mode === 'cinema'

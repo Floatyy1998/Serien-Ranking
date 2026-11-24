@@ -1,10 +1,10 @@
 /**
- * Datenlayer des Film-Kalenders: TMDB-Discover pro Monat + Modus (Kino/
- * Digital) in der Watch-Region des Users, mit exakter Release-Datums-
- * Auflösung pro Film (movie/{id} + release_dates → regionales Datum des
- * passenden Typs; derselbe Abruf liefert über credits Regie und Besetzung).
- * Geladen wird in Blöcken nach Popularität, weitere Blöcke auf Wunsch.
- * Ergebnisse werden pro Session gecacht.
+ * Datenlayer des Film-Kalenders: TMDB-Discover für ein Quartal + Modus (Kino/
+ * Digital) in der Watch-Region des Users. Discover liefert mit `region` schon
+ * das früheste regionale Datum des abgefragten Typs — die Liste kommt deshalb
+ * komplett aus den Discover-Seiten, ohne Abruf pro Film. Regie, Besetzung und
+ * Anbieter lädt jede Karte selbst nach (fetchFilmDetails), sobald sie sichtbar
+ * wird. Beides wird pro Session gecacht.
  */
 
 import { tmdbFetch } from '../../services/api/tmdbClient';
@@ -13,16 +13,17 @@ import { isSupportedProvider } from '../../config/menuItems';
 import { getProviderLogoUrl } from '../../lib/provider/providerMerge';
 import { normalizeProviderName } from '../../lib/provider/providerName';
 import { mapGenreIds } from '../../utils/genreMap';
-import {
-  CINEMA_RELEASE_TYPES,
-  DIGITAL_RELEASE_TYPES,
-  pickRegionalDateInRange,
-  type TmdbReleaseDates,
-} from '../../lib/watch/movieCountdown';
 
 export type ReleaseMode = 'cinema' | 'digital';
 
-export interface FilmReleaseEntry {
+export interface FilmDetails {
+  /** Flatrate-Anbieter der Watch-Region (nur Streaming-Modus, sonst leer). */
+  providers: { name: string; logo: string }[];
+  directors: string[];
+  cast: string[];
+}
+
+export interface FilmReleaseEntry extends FilmDetails {
   tmdbId: number;
   title: string;
   /** Volle Poster-URL (w342) oder ''. */
@@ -34,20 +35,11 @@ export interface FilmReleaseEntry {
   genres: string;
   overview: string;
   mode: ReleaseMode;
-  /** Flatrate-Anbieter der Watch-Region (nur Streaming-Modus, sonst leer). */
-  providers: { name: string; logo: string }[];
-  directors: string[];
-  cast: string[];
 }
 
 interface MovieCredits {
   cast?: { name?: string; order?: number }[];
   crew?: { name?: string; job?: string }[];
-}
-
-interface MovieDetailResponse {
-  release_dates?: TmdbReleaseDates;
-  credits?: MovieCredits;
 }
 
 const MAX_DIRECTORS = 2;
@@ -68,15 +60,12 @@ export function pickLeadCast(credits: MovieCredits | undefined): string[] {
   return [...new Set(names)].slice(0, MAX_CAST);
 }
 
-const PAGES_PER_LOAD = 5;
-const DISCOVER_PAGE_SIZE = 20;
-const RESOLVE_BATCH = 20;
-
-export interface FilmReleasePage {
-  entries: FilmReleaseEntry[];
-  /** Filme des Zeitraums, die noch nicht geladen sind. */
-  remaining: number;
-}
+/** Obergrenze der Discover-Seiten (20 Filme je Seite); ein Quartal hat 11–16. */
+const MAX_DISCOVER_PAGES = 40;
+/** Erststart weltweit höchstens so lange vor dem Zeitraum — ältere Filme sind
+ *  Wiederaufführungen bzw. Katalogtitel, keine Neustarts. */
+const MAX_AGE_YEARS = 2;
+const DETAIL_PARALLEL = 6;
 
 interface DiscoverMovie {
   id: number;
@@ -91,18 +80,14 @@ interface DiscoverMovie {
 interface DiscoverResponse {
   results?: DiscoverMovie[];
   total_pages?: number;
-  total_results?: number;
 }
 
-interface LoadState {
-  entries: FilmReleaseEntry[];
-  seen: Set<number>;
-  nextPage: number;
-  remaining: number;
-}
+const cache = new Map<string, FilmReleaseEntry[]>();
+const pending = new Map<string, Promise<FilmReleaseEntry[]>>();
 
-const cache = new Map<string, LoadState>();
-const pending = new Map<string, Promise<FilmReleasePage>>();
+function yearsBefore(day: string, years: number): string {
+  return `${Number(day.slice(0, 4)) - years}${day.slice(4)}`;
+}
 
 /** Datumsbereich eines Quartals-Tabs: 1. des Startmonats bis Monatsende +2. */
 function quarterRange(start: Date, monthsSpan: number): { gte: string; lte: string } {
@@ -147,136 +132,143 @@ async function resolveProviders(movieId: number): Promise<{ name: string; logo: 
   }
 }
 
-async function resolveEntry(
-  raw: DiscoverMovie,
-  mode: ReleaseMode,
-  region: string,
-  range: { gte: string; lte: string }
-): Promise<FilmReleaseEntry | null> {
-  const types = mode === 'cinema' ? CINEMA_RELEASE_TYPES : DIGITAL_RELEASE_TYPES;
-  let releaseDate = '';
-  let credits: MovieCredits | undefined;
+async function resolveCredits(movieId: number): Promise<MovieCredits | undefined> {
   try {
-    const data = await tmdbFetch<MovieDetailResponse>(`movie/${raw.id}`, {
-      language: undefined,
-      append_to_response: 'release_dates,credits',
-    });
-    releaseDate = pickRegionalDateInRange(
-      data.release_dates || {},
-      region,
-      types,
-      range.gte,
-      range.lte
-    );
-    credits = data.credits;
+    return await tmdbFetch<MovieCredits>(`movie/${movieId}/credits`, { language: undefined });
   } catch {
-    // Fallback unten
+    return undefined;
   }
-  // Fallback: Discover-Datum, wenn es in den Zeitraum fällt (Discover hat regional
-  // gefiltert — das exakte Regional-Datum war nur nicht abrufbar).
-  if (
-    !releaseDate &&
-    raw.release_date &&
-    raw.release_date >= range.gte &&
-    raw.release_date <= range.lte
-  ) {
-    releaseDate = raw.release_date;
-  }
-  if (!releaseDate) return null;
-
-  // Anbieter nur im Streaming-Modus auflösen (Kino hat keine) — ein weiterer
-  // kleiner Request pro Film, läuft im selben Batch und landet im Cache.
-  const providers = mode === 'digital' ? await resolveProviders(raw.id) : [];
-
-  return {
-    tmdbId: raw.id,
-    title: raw.title || '',
-    poster: raw.poster_path ? `https://image.tmdb.org/t/p/w342${raw.poster_path}` : '',
-    releaseDate,
-    rating: typeof raw.vote_average === 'number' && raw.vote_average > 0 ? raw.vote_average : null,
-    genres: mapGenreIds(raw.genre_ids || [], 3),
-    overview: raw.overview || '',
-    mode,
-    providers,
-    directors: pickDirectors(credits),
-    cast: pickLeadCast(credits),
-  };
 }
 
-async function loadNextBlock(
-  key: string,
-  previous: LoadState | undefined,
+const detailsCache = new Map<string, FilmDetails>();
+const detailsPending = new Map<string, Promise<FilmDetails>>();
+let detailsActive = 0;
+const detailsWaiting: (() => void)[] = [];
+
+// Beim schnellen Scrollen melden sich viele Karten auf einmal — die zuletzt
+// sichtbar gewordene ist die, auf die der Nutzer gerade schaut.
+async function withDetailSlot<T>(task: () => Promise<T>): Promise<T> {
+  if (detailsActive >= DETAIL_PARALLEL) {
+    await new Promise<void>((resolve) => detailsWaiting.push(resolve));
+  } else {
+    detailsActive++;
+  }
+  try {
+    return await task();
+  } finally {
+    const next = detailsWaiting.pop();
+    if (next) next();
+    else detailsActive--;
+  }
+}
+
+const detailsKey = (movieId: number, mode: ReleaseMode) => `${watchRegion}:${mode}:${movieId}`;
+
+export function peekFilmDetails(movieId: number, mode: ReleaseMode): FilmDetails | undefined {
+  return detailsCache.get(detailsKey(movieId, mode));
+}
+
+/** Regie, Besetzung und (nur Streaming) Anbieter eines Films. */
+export function fetchFilmDetails(movieId: number, mode: ReleaseMode): Promise<FilmDetails> {
+  const key = detailsKey(movieId, mode);
+  const cached = detailsCache.get(key);
+  if (cached) return Promise.resolve(cached);
+  const running = detailsPending.get(key);
+  if (running) return running;
+  const run = withDetailSlot(async () => {
+    const [credits, providers] = await Promise.all([
+      resolveCredits(movieId),
+      mode === 'digital' ? resolveProviders(movieId) : Promise.resolve([]),
+    ]);
+    const details: FilmDetails = {
+      providers,
+      directors: pickDirectors(credits),
+      cast: pickLeadCast(credits),
+    };
+    detailsCache.set(key, details);
+    return details;
+  }).finally(() => detailsPending.delete(key));
+  detailsPending.set(key, run);
+  return run;
+}
+
+async function loadReleases(
   mode: ReleaseMode,
   region: string,
   range: { gte: string; lte: string }
-): Promise<FilmReleasePage> {
+): Promise<FilmReleaseEntry[]> {
   const fetchPage = (page: number) =>
     tmdbFetch<DiscoverResponse>('discover/movie', {
       region,
       with_release_type: mode === 'cinema' ? '3|2' : '4',
       'release_date.gte': range.gte,
       'release_date.lte': range.lte,
+      'primary_release_date.gte': yearsBefore(range.gte, MAX_AGE_YEARS),
       sort_by: 'popularity.desc',
       page,
     });
 
-  const firstPage = previous?.nextPage ?? 1;
-  const first = await fetchPage(firstPage);
-  const totalPages = Math.max(first.total_pages || firstPage, firstPage);
-  const lastPage = Math.min(firstPage + PAGES_PER_LOAD - 1, totalPages);
+  const first = await fetchPage(1);
+  const lastPage = Math.min(first.total_pages || 1, MAX_DISCOVER_PAGES);
   const followPages: number[] = [];
-  for (let page = firstPage + 1; page <= lastPage; page++) followPages.push(page);
+  for (let page = 2; page <= lastPage; page++) followPages.push(page);
   const responses = [first, ...(await Promise.all(followPages.map(fetchPage)))];
 
-  const seen = new Set(previous?.seen);
-  const raws: DiscoverMovie[] = [];
+  const seen = new Set<number>();
+  const entries: FilmReleaseEntry[] = [];
   for (const res of responses) {
-    for (const item of res.results || []) {
-      if (!item?.id || seen.has(item.id)) continue;
-      seen.add(item.id);
-      raws.push(item);
+    for (const raw of res.results || []) {
+      if (!raw?.id || seen.has(raw.id)) continue;
+      seen.add(raw.id);
+      // Das Discover-Datum ist der früheste Termin der Region: liegt er vor
+      // dem Zeitraum, ist der Termin im Zeitraum eine Wiederaufführung.
+      const releaseDate = raw.release_date || '';
+      if (releaseDate < range.gte || releaseDate > range.lte) continue;
+      entries.push({
+        tmdbId: raw.id,
+        title: raw.title || '',
+        poster: raw.poster_path ? `https://image.tmdb.org/t/p/w342${raw.poster_path}` : '',
+        releaseDate,
+        rating:
+          typeof raw.vote_average === 'number' && raw.vote_average > 0 ? raw.vote_average : null,
+        genres: mapGenreIds(raw.genre_ids || [], 3),
+        overview: raw.overview || '',
+        mode,
+        providers: [],
+        directors: [],
+        cast: [],
+      });
     }
   }
 
-  const entries = [...(previous?.entries || [])];
-  for (let i = 0; i < raws.length; i += RESOLVE_BATCH) {
-    const batch = raws.slice(i, i + RESOLVE_BATCH);
-    const resolved = await Promise.all(batch.map((raw) => resolveEntry(raw, mode, region, range)));
-    for (const entry of resolved) if (entry) entries.push(entry);
-  }
-  entries.sort((a, b) =>
+  // Stabil: Filme desselben Tages bleiben nach Popularität geordnet.
+  return entries.sort((a, b) =>
     a.releaseDate < b.releaseDate ? -1 : a.releaseDate > b.releaseDate ? 1 : 0
   );
-
-  const remaining =
-    lastPage >= totalPages
-      ? 0
-      : Math.max(1, (first.total_results || 0) - lastPage * DISCOVER_PAGE_SIZE);
-  cache.set(key, { entries, seen, nextPage: lastPage + 1, remaining });
-  return { entries, remaining };
 }
 
 /**
- * Releases eines 3-Monats-Blocks (Quartals-Tab wie beim Serien-Kalender) für
- * einen Modus (Kino/Digital), nach Datum sortiert. Der erste Aufruf lädt die
- * populärsten Filme, `more` hängt den nächsten Block an. Session-Cache pro
+ * Alle Releases eines 3-Monats-Blocks (Quartals-Tab wie beim Serien-Kalender)
+ * für einen Modus (Kino/Digital), nach Datum sortiert. Session-Cache pro
  * Region+Bereich+Modus.
  */
-export async function fetchFilmReleases(
+export function fetchFilmReleases(
   quarterStart: Date,
-  mode: ReleaseMode,
-  more: boolean = false
-): Promise<FilmReleasePage> {
+  mode: ReleaseMode
+): Promise<FilmReleaseEntry[]> {
   const region = watchRegion;
   const range = quarterRange(quarterStart, 3);
   const key = `${region}:${range.gte}:${range.lte}:${mode}`;
-  const state = cache.get(key);
-  if (state && (!more || state.remaining === 0)) {
-    return { entries: state.entries, remaining: state.remaining };
-  }
+  const cached = cache.get(key);
+  if (cached) return Promise.resolve(cached);
   const running = pending.get(key);
   if (running) return running;
-  const run = loadNextBlock(key, state, mode, region, range).finally(() => pending.delete(key));
+  const run = loadReleases(mode, region, range)
+    .then((entries) => {
+      cache.set(key, entries);
+      return entries;
+    })
+    .finally(() => pending.delete(key));
   pending.set(key, run);
   return run;
 }

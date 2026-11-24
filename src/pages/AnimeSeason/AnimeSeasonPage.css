@@ -361,6 +361,10 @@
   .as-card--film .as-card-title {
     min-height: 0;
   }
+
+  .as-card-people--pending .as-card-person {
+    min-height: 1.5em;
+  }
 }
 
 .as-card-desc {
@@ -498,19 +502,6 @@
 .as-jump:hover {
   background: var(--glass-medium);
   box-shadow: var(--glow-primary);
-}
-
-.mobile-app .as-jump.as-more,
-.as-jump.as-more {
-  display: flex;
-  gap: 6px;
-  margin: var(--space-6) auto 0;
-  padding: 6px 18px;
-}
-
-.as-jump.as-more:disabled {
-  opacity: 0.6;
-  cursor: default;
 }
 
 /* Scroll-Ziel: Platz für den sticky Glass-Header lassen */

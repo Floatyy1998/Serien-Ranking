@@ -8,89 +8,125 @@ vi.mock('../../services/settings/region', () => ({
   pickProviderTiers: () => [],
 }));
 
-import { fetchFilmReleases, pickDirectors, pickLeadCast } from './filmReleaseData';
+import {
+  fetchFilmDetails,
+  fetchFilmReleases,
+  peekFilmDetails,
+  pickDirectors,
+  pickLeadCast,
+} from './filmReleaseData';
 
 const PAGE_SIZE = 20;
 const REISSUE_ID = 42;
 
-function mockTmdb(totalResults: number, day: string, reissueDay: string) {
+function mockDiscover(totalResults: number, day: string) {
   const totalPages = Math.ceil(totalResults / PAGE_SIZE);
   tmdbFetch.mockImplementation(async (path: string, params: Record<string, unknown>) => {
-    if (path === 'discover/movie') {
-      const page = Number(params.page);
-      const first = (page - 1) * PAGE_SIZE + 1;
-      const last = Math.min(page * PAGE_SIZE, totalResults);
-      const results = [];
-      for (let id = first; id <= last; id++) results.push({ id, title: `Film ${id}` });
-      return { results, total_pages: totalPages, total_results: totalResults };
+    if (path !== 'discover/movie') throw new Error(`unerwartet: ${path}`);
+    const page = Number(params.page);
+    const first = (page - 1) * PAGE_SIZE + 1;
+    const last = Math.min(page * PAGE_SIZE, totalResults);
+    const results = [];
+    for (let id = first; id <= last; id++) {
+      results.push({
+        id,
+        title: `Film ${id}`,
+        release_date: id === REISSUE_ID ? '1977-04-01' : day,
+      });
     }
-    const id = Number(path.split('/')[1]);
-    const release_dates =
-      id === REISSUE_ID
-        ? [
-            { type: 3, release_date: '1977-04-01T00:00:00.000Z' },
-            { type: 3, release_date: `${reissueDay}T00:00:00.000Z` },
-          ]
-        : [{ type: 3, release_date: `${day}T00:00:00.000Z` }];
-    return { release_dates: { results: [{ iso_3166_1: 'DE', release_dates }] } };
+    return { results, total_pages: totalPages, total_results: totalResults };
   });
 }
 
-const discoverPages = () =>
-  tmdbFetch.mock.calls
-    .filter(([path]) => path === 'discover/movie')
-    .map(([, params]) => Number(params.page))
-    .sort((x, y) => x - y);
+const discoverCalls = () => tmdbFetch.mock.calls.filter(([path]) => path === 'discover/movie');
 
 describe('fetchFilmReleases', () => {
   beforeEach(() => {
     tmdbFetch.mockReset();
   });
 
-  it('lädt die ersten hundert Filme und meldet den Rest', async () => {
-    mockTmdb(130, '2026-11-10', '2026-11-25');
-    const page = await fetchFilmReleases(new Date(2026, 9, 1), 'cinema');
-    expect(discoverPages()).toEqual([1, 2, 3, 4, 5]);
-    expect(page.entries).toHaveLength(100);
-    expect(page.remaining).toBe(30);
-    expect(page.entries.some((entry) => entry.tmdbId === 60)).toBe(true);
+  it('lädt alle Seiten des Quartals in einem Zug, ohne Abruf pro Film', async () => {
+    mockDiscover(130, '2026-11-10');
+    const entries = await fetchFilmReleases(new Date(2026, 9, 1), 'cinema');
+    expect(
+      discoverCalls()
+        .map(([, params]) => Number(params.page))
+        .sort((x, y) => x - y)
+    ).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(tmdbFetch.mock.calls).toHaveLength(7);
+    expect(entries).toHaveLength(129);
+    expect(entries.some((entry) => entry.tmdbId === 130)).toBe(true);
   });
 
-  it('behält eine Wiederaufführung mit ihrem Termin im Zeitraum', async () => {
-    mockTmdb(60, '2026-04-10', '2026-06-25');
-    const page = await fetchFilmReleases(new Date(2026, 3, 1), 'cinema');
-    expect(page.entries).toHaveLength(60);
-    expect(page.remaining).toBe(0);
-    expect(page.entries[page.entries.length - 1]).toMatchObject({
-      tmdbId: REISSUE_ID,
-      releaseDate: '2026-06-25',
+  it('lässt Wiederaufführungen weg', async () => {
+    mockDiscover(60, '2026-05-10');
+    const entries = await fetchFilmReleases(new Date(2026, 3, 1), 'cinema');
+    expect(entries.find((entry) => entry.tmdbId === REISSUE_ID)).toBeUndefined();
+    expect(discoverCalls()[0][1]).toMatchObject({
+      'release_date.gte': '2026-04-01',
+      'release_date.lte': '2026-06-30',
+      'primary_release_date.gte': '2024-04-01',
     });
   });
 
-  it('verwirft Filme ohne Termin im Zeitraum', async () => {
-    mockTmdb(40, '2026-11-10', '2026-11-25');
-    const page = await fetchFilmReleases(new Date(2027, 9, 1), 'cinema');
-    expect(page.entries).toHaveLength(0);
+  it('liefert beim zweiten Aufruf den Cache', async () => {
+    mockDiscover(30, '2026-08-10');
+    const quarter = new Date(2026, 6, 1);
+    const first = await fetchFilmReleases(quarter, 'digital');
+    const calls = tmdbFetch.mock.calls.length;
+    expect(await fetchFilmReleases(quarter, 'digital')).toBe(first);
+    expect(tmdbFetch.mock.calls.length).toBe(calls);
+  });
+});
+
+describe('fetchFilmDetails', () => {
+  beforeEach(() => {
+    tmdbFetch.mockReset();
   });
 
-  it('hängt mit more den nächsten Block an und liefert danach den Cache', async () => {
-    mockTmdb(130, '2026-09-10', '2026-09-11');
-    const quarter = new Date(2026, 6, 1);
+  it('holt im Kino-Modus nur die Credits und merkt sie sich', async () => {
+    tmdbFetch.mockResolvedValue({
+      crew: [{ name: 'David Fincher', job: 'Director' }],
+      cast: [{ name: 'Brad Pitt', order: 0 }],
+    });
+    expect(peekFilmDetails(7, 'cinema')).toBeUndefined();
+    const details = await fetchFilmDetails(7, 'cinema');
+    expect(details).toEqual({ providers: [], directors: ['David Fincher'], cast: ['Brad Pitt'] });
+    expect(tmdbFetch.mock.calls.map(([path]) => path)).toEqual(['movie/7/credits']);
+    expect(peekFilmDetails(7, 'cinema')).toBe(details);
+    await fetchFilmDetails(7, 'cinema');
+    expect(tmdbFetch).toHaveBeenCalledTimes(1);
+  });
 
-    const first = await fetchFilmReleases(quarter, 'cinema');
-    expect(first.entries).toHaveLength(100);
-    expect(first.remaining).toBe(30);
+  it('fragt im Streaming-Modus zusätzlich die Anbieter ab', async () => {
+    tmdbFetch.mockResolvedValue({});
+    await fetchFilmDetails(8, 'digital');
+    expect(tmdbFetch.mock.calls.map(([path]) => path).sort()).toEqual([
+      'movie/8/credits',
+      'movie/8/watch/providers',
+    ]);
+  });
 
-    const second = await fetchFilmReleases(quarter, 'cinema', true);
-    expect(discoverPages()).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(second.entries).toHaveLength(130);
-    expect(second.remaining).toBe(0);
+  it('liefert leere Angaben, wenn TMDB nicht antwortet', async () => {
+    tmdbFetch.mockRejectedValue(new Error('offline'));
+    expect(await fetchFilmDetails(9, 'cinema')).toEqual({ providers: [], directors: [], cast: [] });
+  });
 
-    const calls = tmdbFetch.mock.calls.length;
-    const cached = await fetchFilmReleases(quarter, 'cinema');
-    expect(cached.entries).toHaveLength(130);
-    expect(await fetchFilmReleases(quarter, 'cinema', true)).toEqual(cached);
-    expect(tmdbFetch.mock.calls.length).toBe(calls);
+  it('lässt höchstens sechs Abrufe gleichzeitig laufen', async () => {
+    let running = 0;
+    let peak = 0;
+    tmdbFetch.mockImplementation(async () => {
+      running++;
+      peak = Math.max(peak, running);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      running--;
+      return {};
+    });
+    await Promise.all(
+      Array.from({ length: 20 }, (_, index) => fetchFilmDetails(100 + index, 'cinema'))
+    );
+    expect(peak).toBe(6);
+    expect(tmdbFetch).toHaveBeenCalledTimes(20);
   });
 });
 
