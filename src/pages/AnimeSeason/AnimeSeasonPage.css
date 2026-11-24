@@ -500,6 +500,19 @@
   box-shadow: var(--glow-primary);
 }
 
+.mobile-app .as-jump.as-more,
+.as-jump.as-more {
+  display: flex;
+  gap: 6px;
+  margin: var(--space-6) auto 0;
+  padding: 6px 18px;
+}
+
+.as-jump.as-more:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* Scroll-Ziel: Platz für den sticky Glass-Header lassen */
 .as-continuing {
   scroll-margin-top: calc(84px + env(safe-area-inset-top));

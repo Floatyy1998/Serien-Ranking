@@ -3,6 +3,7 @@
  * Digital) in der Watch-Region des Users, mit exakter Release-Datums-
  * Auflösung pro Film (movie/{id} + release_dates → regionales Datum des
  * passenden Typs; derselbe Abruf liefert über credits Regie und Besetzung).
+ * Geladen wird in Blöcken nach Popularität, weitere Blöcke auf Wunsch.
  * Ergebnisse werden pro Session gecacht.
  */
 
@@ -15,7 +16,7 @@ import { mapGenreIds } from '../../utils/genreMap';
 import {
   CINEMA_RELEASE_TYPES,
   DIGITAL_RELEASE_TYPES,
-  pickRegionalDate,
+  pickRegionalDateInRange,
   type TmdbReleaseDates,
 } from '../../lib/watch/movieCountdown';
 
@@ -67,9 +68,15 @@ export function pickLeadCast(credits: MovieCredits | undefined): string[] {
   return [...new Set(names)].slice(0, MAX_CAST);
 }
 
-const DISCOVER_PAGES = 3;
-const MAX_PER_MODE = 36;
-const RESOLVE_BATCH = 6;
+const PAGES_PER_LOAD = 5;
+const DISCOVER_PAGE_SIZE = 20;
+const RESOLVE_BATCH = 20;
+
+export interface FilmReleasePage {
+  entries: FilmReleaseEntry[];
+  /** Filme des Zeitraums, die noch nicht geladen sind. */
+  remaining: number;
+}
 
 interface DiscoverMovie {
   id: number;
@@ -81,7 +88,21 @@ interface DiscoverMovie {
   release_date?: string;
 }
 
-const cache = new Map<string, FilmReleaseEntry[]>();
+interface DiscoverResponse {
+  results?: DiscoverMovie[];
+  total_pages?: number;
+  total_results?: number;
+}
+
+interface LoadState {
+  entries: FilmReleaseEntry[];
+  seen: Set<number>;
+  nextPage: number;
+  remaining: number;
+}
+
+const cache = new Map<string, LoadState>();
+const pending = new Map<string, Promise<FilmReleasePage>>();
 
 /** Datumsbereich eines Quartals-Tabs: 1. des Startmonats bis Monatsende +2. */
 function quarterRange(start: Date, monthsSpan: number): { gte: string; lte: string } {
@@ -140,17 +161,28 @@ async function resolveEntry(
       language: undefined,
       append_to_response: 'release_dates,credits',
     });
-    releaseDate = pickRegionalDate(data.release_dates || {}, region, types);
+    releaseDate = pickRegionalDateInRange(
+      data.release_dates || {},
+      region,
+      types,
+      range.gte,
+      range.lte
+    );
     credits = data.credits;
   } catch {
     // Fallback unten
   }
-  // Fallback: Primär-Datum, wenn es in den Monat fällt (Discover hat regional
+  // Fallback: Discover-Datum, wenn es in den Zeitraum fällt (Discover hat regional
   // gefiltert — das exakte Regional-Datum war nur nicht abrufbar).
-  if (!releaseDate && raw.release_date && raw.release_date >= range.gte) {
+  if (
+    !releaseDate &&
+    raw.release_date &&
+    raw.release_date >= range.gte &&
+    raw.release_date <= range.lte
+  ) {
     releaseDate = raw.release_date;
   }
-  if (!releaseDate || releaseDate < range.gte || releaseDate > range.lte) return null;
+  if (!releaseDate) return null;
 
   // Anbieter nur im Streaming-Modus auflösen (Kino hat keine) — ein weiterer
   // kleiner Request pro Film, läuft im selben Batch und landet im Cache.
@@ -171,56 +203,80 @@ async function resolveEntry(
   };
 }
 
-/**
- * Alle Releases eines 3-Monats-Blocks (Quartals-Tab wie beim Serien-Kalender)
- * für einen Modus (Kino/Digital), nach Datum sortiert. Session-Cache pro
- * Region+Bereich+Modus.
- */
-export async function fetchFilmReleases(
-  quarterStart: Date,
+async function loadNextBlock(
+  key: string,
+  previous: LoadState | undefined,
   mode: ReleaseMode,
-  monthsSpan: number = 3
-): Promise<FilmReleaseEntry[]> {
-  const region = watchRegion;
-  const range = quarterRange(quarterStart, monthsSpan);
-  const key = `${region}:${range.gte}:${range.lte}:${mode}`;
-  const cached = cache.get(key);
-  if (cached) return cached;
-  const raws: DiscoverMovie[] = [];
-  const seen = new Set<number>();
+  region: string,
+  range: { gte: string; lte: string }
+): Promise<FilmReleasePage> {
+  const fetchPage = (page: number) =>
+    tmdbFetch<DiscoverResponse>('discover/movie', {
+      region,
+      with_release_type: mode === 'cinema' ? '3|2' : '4',
+      'release_date.gte': range.gte,
+      'release_date.lte': range.lte,
+      sort_by: 'popularity.desc',
+      page,
+    });
 
-  for (let page = 1; page <= DISCOVER_PAGES; page++) {
-    const res = await tmdbFetch<{ results?: DiscoverMovie[]; total_pages?: number }>(
-      'discover/movie',
-      {
-        region,
-        with_release_type: mode === 'cinema' ? '3|2' : '4',
-        'release_date.gte': range.gte,
-        'release_date.lte': range.lte,
-        sort_by: 'popularity.desc',
-        page,
-      }
-    );
+  const firstPage = previous?.nextPage ?? 1;
+  const first = await fetchPage(firstPage);
+  const totalPages = Math.max(first.total_pages || firstPage, firstPage);
+  const lastPage = Math.min(firstPage + PAGES_PER_LOAD - 1, totalPages);
+  const followPages: number[] = [];
+  for (let page = firstPage + 1; page <= lastPage; page++) followPages.push(page);
+  const responses = [first, ...(await Promise.all(followPages.map(fetchPage)))];
+
+  const seen = new Set(previous?.seen);
+  const raws: DiscoverMovie[] = [];
+  for (const res of responses) {
     for (const item of res.results || []) {
       if (!item?.id || seen.has(item.id)) continue;
       seen.add(item.id);
       raws.push(item);
     }
-    if (!res.total_pages || page >= res.total_pages) break;
   }
 
-  // Regionales Datum in kleinen Batches auflösen (Connection-Pool schonen).
-  const capped = raws.slice(0, MAX_PER_MODE);
-  const entries: FilmReleaseEntry[] = [];
-  for (let i = 0; i < capped.length; i += RESOLVE_BATCH) {
-    const batch = capped.slice(i, i + RESOLVE_BATCH);
+  const entries = [...(previous?.entries || [])];
+  for (let i = 0; i < raws.length; i += RESOLVE_BATCH) {
+    const batch = raws.slice(i, i + RESOLVE_BATCH);
     const resolved = await Promise.all(batch.map((raw) => resolveEntry(raw, mode, region, range)));
     for (const entry of resolved) if (entry) entries.push(entry);
   }
-
   entries.sort((a, b) =>
     a.releaseDate < b.releaseDate ? -1 : a.releaseDate > b.releaseDate ? 1 : 0
   );
-  cache.set(key, entries);
-  return entries;
+
+  const remaining =
+    lastPage >= totalPages
+      ? 0
+      : Math.max(1, (first.total_results || 0) - lastPage * DISCOVER_PAGE_SIZE);
+  cache.set(key, { entries, seen, nextPage: lastPage + 1, remaining });
+  return { entries, remaining };
+}
+
+/**
+ * Releases eines 3-Monats-Blocks (Quartals-Tab wie beim Serien-Kalender) für
+ * einen Modus (Kino/Digital), nach Datum sortiert. Der erste Aufruf lädt die
+ * populärsten Filme, `more` hängt den nächsten Block an. Session-Cache pro
+ * Region+Bereich+Modus.
+ */
+export async function fetchFilmReleases(
+  quarterStart: Date,
+  mode: ReleaseMode,
+  more: boolean = false
+): Promise<FilmReleasePage> {
+  const region = watchRegion;
+  const range = quarterRange(quarterStart, 3);
+  const key = `${region}:${range.gte}:${range.lte}:${mode}`;
+  const state = cache.get(key);
+  if (state && (!more || state.remaining === 0)) {
+    return { entries: state.entries, remaining: state.remaining };
+  }
+  const running = pending.get(key);
+  if (running) return running;
+  const run = loadNextBlock(key, state, mode, region, range).finally(() => pending.delete(key));
+  pending.set(key, run);
+  return run;
 }

@@ -43,6 +43,22 @@ export function pickRegionalDate(data: TmdbReleaseDates, region: string, types: 
   return dates[0] || '';
 }
 
+export function pickRegionalDateInRange(
+  data: TmdbReleaseDates,
+  region: string,
+  types: number[],
+  gte: string,
+  lte: string
+): string {
+  const regional = data.results?.find((r) => r.iso_3166_1 === region);
+  const dates = (regional?.release_dates || [])
+    .filter((d) => types.includes(d.type) && d.release_date)
+    .map((d) => d.release_date.slice(0, 10))
+    .filter((day) => day >= gte && day <= lte)
+    .sort();
+  return dates[0] || '';
+}
+
 export function pickRegionalRelease(
   data: TmdbReleaseDates,
   region: string

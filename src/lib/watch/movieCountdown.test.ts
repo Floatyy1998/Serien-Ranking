@@ -5,6 +5,7 @@ import {
   daysUntilDay,
   isReleaseCandidate,
   parseCatalogRelease,
+  pickRegionalDateInRange,
   pickRegionalRelease,
   sortReleaseCandidates,
   type RegionalRelease,
@@ -57,6 +58,39 @@ describe('pickRegionalRelease', () => {
     expect(pickRegionalRelease(dates('DE', [[1, '2026-11-01']]), 'DE')).toBeNull();
     expect(pickRegionalRelease(dates('DE', [[3, '2026-12-17']]), 'AT')).toBeNull();
     expect(pickRegionalRelease({}, 'DE')).toBeNull();
+  });
+});
+
+describe('pickRegionalDateInRange', () => {
+  it('nimmt bei einer Wiederaufführung den Termin im Zeitraum, nicht den Erststart', () => {
+    const data = dates('DE', [
+      [3, '1977-04-01T00:00:00.000Z'],
+      [3, '2026-11-03T00:00:00.000Z'],
+      [3, '2027-03-10T00:00:00.000Z'],
+    ]);
+    expect(pickRegionalDateInRange(data, 'DE', [3, 2], '2026-10-01', '2026-12-31')).toBe(
+      '2026-11-03'
+    );
+  });
+
+  it('zählt Zeitraumgrenzen mit und nimmt den frühesten Treffer', () => {
+    const data = dates('DE', [
+      [2, '2026-12-31T00:00:00.000Z'],
+      [3, '2026-10-01T00:00:00.000Z'],
+    ]);
+    expect(pickRegionalDateInRange(data, 'DE', [3, 2], '2026-10-01', '2026-12-31')).toBe(
+      '2026-10-01'
+    );
+  });
+
+  it('liefert leer ohne passenden Typ, Termin oder Region', () => {
+    const data = dates('DE', [
+      [4, '2026-11-03T00:00:00.000Z'],
+      [3, '2026-09-30T00:00:00.000Z'],
+    ]);
+    expect(pickRegionalDateInRange(data, 'DE', [3, 2], '2026-10-01', '2026-12-31')).toBe('');
+    expect(pickRegionalDateInRange(data, 'FR', [4], '2026-10-01', '2026-12-31')).toBe('');
+    expect(pickRegionalDateInRange({}, 'DE', [4], '2026-10-01', '2026-12-31')).toBe('');
   });
 });
 

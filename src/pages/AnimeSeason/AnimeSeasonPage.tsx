@@ -433,11 +433,11 @@ export const AnimeSeasonPage: React.FC = () => {
     setContinuing([]);
 
     // ALLE relevanten Seiten sofort laden (kein „Mehr laden"-Button mehr —
-    // das Nachrendern beim Klick war störend). Cap bei 3 Seiten/150
-    // Einträgen: AniList sortiert nach Popularität, dahinter kommen nur
-    // noch Recaps/Kurz-ONAs. Fehler ab Seite 2 sind best-effort.
+    // das Nachrendern beim Klick war störend). Cap bei 6 Seiten/300
+    // Einträgen — eine Season hat 90–150 Titel, die Schleife endet mit der
+    // letzten Seite. Fehler ab Seite 2 sind best-effort.
     (async () => {
-      const MAX_SEASON_PAGES = 3;
+      const MAX_SEASON_PAGES = 6;
       const collected: SeasonAnime[] = [];
       const seen = new Set<number>();
       try {
