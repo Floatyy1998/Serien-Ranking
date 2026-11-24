@@ -22,6 +22,7 @@ const PAUSE_MS = 60_000;
 const TIMEOUT_MS = 15_000;
 /** Der Proxy verlangt sonst eine Anmeldung; Gäste (Onboarding vor der Registrierung) dürfen nur die Titelsuche. */
 const GUEST_PATHS = new Set(['/mangaupdates/titles']);
+const QUIET_STATUSES = [429, 502, 503];
 
 /** Treffer wird gespeichert, `miss` kürzer gemerkt, `null` (Störung) gar nicht. */
 type Outcome<T> = { hit: T } | 'miss' | null;
@@ -34,7 +35,7 @@ async function muPost(path: string, body: unknown): Promise<Response | null> {
   if (Date.now() < pausedUntil) return null;
   if (!GUEST_PATHS.has(path) && !hasBackendSession()) return null;
   const signal = AbortSignal.timeout(TIMEOUT_MS);
-  // 502 = MangaUpdates selbst gestört (Backend: `upstream`), 429 bremst unten die Pause aus — beides kein Befund.
+  // 503 = MangaUpdates selbst gestört (Backend: `upstream`; ein 502 ersetzt Cloudflare durch eine eigene Seite ohne CORS-Header), 429 bremst unten die Pause aus — kein Befund.
   const res = await backendFetch(
     path,
     {
@@ -43,7 +44,7 @@ async function muPost(path: string, body: unknown): Promise<Response | null> {
       body: JSON.stringify(body),
       signal,
     },
-    { quietStatuses: [429, 502] }
+    { quietStatuses: QUIET_STATUSES }
   ).catch((error: unknown) => {
     if (signal.aborted) pausedUntil = Date.now() + PAUSE_MS;
     throw error;

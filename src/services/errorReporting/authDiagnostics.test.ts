@@ -14,6 +14,7 @@ import {
   probeFirebaseIdb,
   trackAuthEvent,
 } from './authDiagnostics';
+import { recordRequest, resetDiagnosticLog } from './diagnosticLog';
 
 function stubFirebaseIdb(keys: string[] | 'ohne-store' | 'fehlt') {
   vi.stubGlobal('indexedDB', {
@@ -58,6 +59,7 @@ describe('authDiagnostics', () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     captureErrorMock.mockClear();
+    resetDiagnosticLog();
     rejection.code = null;
     sessionStorage.clear();
     localStorage.clear();
@@ -196,6 +198,45 @@ describe('authDiagnostics', () => {
     trackAuthEvent(user(OLD));
     expect(captureErrorMock).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'AuthSlowStart' })
+    );
+  });
+
+  it('nennt beim langsamen Start die Dauer der Google-Anfragen', () => {
+    beginAuthDiagnostics(true);
+    recordRequest({
+      t: 100,
+      method: 'POST',
+      url: 'https://securetoken.googleapis.com/v1/token?key=abc',
+      status: 200,
+      ms: 3100,
+      via: 'fetch',
+    });
+    recordRequest({
+      t: 3300,
+      method: 'POST',
+      url: 'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=abc',
+      ms: 2900,
+      failed: 'TypeError',
+      via: 'fetch',
+    });
+    vi.advanceTimersByTime(7000);
+    trackAuthEvent(user(OLD));
+    expect(captureErrorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message:
+          'Anmeldung erst nach 7000 ms bereit (Google-Anfragen: Token 3100 ms, Konto 2900 ms gescheitert)',
+      })
+    );
+  });
+
+  it('meldet einen langsamen Start ohne Google-Anfrage als solchen', () => {
+    beginAuthDiagnostics(true);
+    vi.advanceTimersByTime(7000);
+    trackAuthEvent(user(OLD));
+    expect(captureErrorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Anmeldung erst nach 7000 ms bereit (Google-Anfragen: keine)',
+      })
     );
   });
 

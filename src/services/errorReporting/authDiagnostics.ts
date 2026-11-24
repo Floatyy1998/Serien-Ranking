@@ -1,6 +1,7 @@
 import type firebase from 'firebase/compat/app';
 import { PAGE_REPLACING_EVENT } from '../../lib/errorReport/pageReplacing';
 import { getAuthTokenRejection } from './breadcrumbs';
+import { getNetworkLog } from './diagnosticLog';
 import { captureError } from './errorReporter';
 
 const SLOW_AUTH_MS = 5000;
@@ -232,6 +233,23 @@ async function describeStorage(): Promise<string> {
   }
 }
 
+const AUTH_REQUESTS: [host: string, label: string][] = [
+  ['securetoken.googleapis.com', 'Token'],
+  ['identitytoolkit.googleapis.com', 'Konto'],
+];
+
+/** Firebase meldet die gespeicherte Sitzung erst, wenn Google Token und Konto bestätigt hat. */
+function describeAuthRequests(): string {
+  const log = getNetworkLog();
+  const parts = AUTH_REQUESTS.flatMap(([host, label]) => {
+    const entries = log.filter((entry) => entry.url.includes(host));
+    if (!entries.length) return [];
+    const ms = entries.reduce((sum, entry) => sum + entry.ms, 0);
+    return [`${label} ${ms} ms${entries.some((entry) => entry.failed) ? ' gescheitert' : ''}`];
+  });
+  return parts.length ? parts.join(', ') : 'keine';
+}
+
 /** Langsamer Start und Neu-Login eines Bestandskontos nach abgemeldetem Start. */
 export function trackAuthEvent(user: firebase.User | null): void {
   if (!snapshot) return;
@@ -262,7 +280,7 @@ export function trackAuthEvent(user: firebase.User | null): void {
       captureError({
         kind: 'error',
         name: 'AuthSlowStart',
-        message: `Anmeldung erst nach ${waitedMs} ms bereit`,
+        message: `Anmeldung erst nach ${waitedMs} ms bereit (Google-Anfragen: ${describeAuthRequests()})`,
       });
     }
     return;

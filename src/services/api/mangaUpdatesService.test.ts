@@ -41,7 +41,7 @@ describe('getMangaDexInfo', () => {
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/search',
       expect.objectContaining({ method: 'POST' }),
-      { quietStatuses: [429, 502] }
+      { quietStatuses: [429, 502, 503] }
     );
   });
 
@@ -271,7 +271,7 @@ describe('searchMangaUpdatesTitles', () => {
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/titles',
       expect.objectContaining({ body: JSON.stringify({ search: 'Suche nicht nach mir' }) }),
-      { quietStatuses: [429, 502] }
+      { quietStatuses: [429, 502, 503] }
     );
   });
 
@@ -328,6 +328,14 @@ describe('Last-Bremsen', () => {
     expect(backendFetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('pausiert nach 503 der gestörten Quelle ebenso', async () => {
+    backendFetchMock.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+    const { searchMangaUpdatesTitles, getMangaDexInfo } = await load();
+    expect(await searchMangaUpdatesTitles('Biest')).toEqual([]);
+    expect((await getMangaDexInfo('Berserk')).mangadexId).toBeNull();
+    expect(backendFetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('pausiert nach abgelaufener Frist, statt jede weitere Abfrage erneut hängen zu lassen', async () => {
     const controller = new AbortController();
     controller.abort(new DOMException('signal timed out', 'TimeoutError'));
@@ -374,7 +382,7 @@ describe('getMangaUpdatesSeries', () => {
     expect(backendFetchMock).toHaveBeenCalledWith(
       '/mangaupdates/series',
       expect.objectContaining({ body: JSON.stringify({ id: 48132338279 }) }),
-      { quietStatuses: [429, 502] }
+      { quietStatuses: [429, 502, 503] }
     );
   });
 
