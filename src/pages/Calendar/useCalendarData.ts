@@ -248,6 +248,9 @@ export const useCalendarData = () => {
           },
           onCommit: async () => {
             if (series) {
+              const episode = series.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
+              const runtimeMinutes =
+                episode?.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
               trackEpisodeWatched(
                 series.title || series.name || '',
                 seasonIndex + 1,
@@ -255,12 +258,11 @@ export const useCalendarData = () => {
                 {
                   tmdbId: series.id,
                   genres: series.genre?.genres,
-                  runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  runtime: runtimeMinutes,
                   isRewatch: prevCount > 0,
                   source: 'calendar',
                 }
               );
-              const episode = series.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
               // Bewertungs-Prompt wie an den übrigen Abhak-Stellen (1×/Minute gedrosselt)
               if (episode?.id && prevCount === 0) {
                 requestEpisodeRating({
@@ -281,7 +283,7 @@ export const useCalendarData = () => {
                 seriesTitle: series.title || series.name || '',
                 seasonNumber: seasonIndex + 1,
                 episodeNumber: episodeIndex + 1,
-                runtimeMinutes: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                runtimeMinutes,
                 isRewatch: prevCount > 0,
                 genres: series.genre?.genres,
                 providers: series.provider?.provider?.map((p: { name: string }) => p.name),

@@ -241,7 +241,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
         seriesTitle: episode.seriesName,
         seasonNumber: episode.seasonNumber,
         episodeNumber: episode.episodeNumber,
-        runtimeMinutes: series?.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+        runtimeMinutes: ep.runtime || series?.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
         isRewatch: true,
         genres: series?.genre?.genres,
         seriesHidden: series?.hidden,
