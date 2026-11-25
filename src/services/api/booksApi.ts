@@ -19,10 +19,8 @@ import {
   dnbSeriesKey,
   isDnbSeriesKey,
   parseDnbSeriesKey,
-  mapGoogleDetails,
   mapOpenLibraryDoc,
   stripResult,
-  type GoogleVolume,
   type OpenLibraryDoc,
   fillBookGaps,
 } from '../../lib/books/bookSearchMapping';
@@ -44,7 +42,6 @@ import {
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
-const GOOGLE_API = 'https://www.googleapis.com/books/v1';
 const OPEN_LIBRARY = 'https://openlibrary.org';
 const DNB_SRU = 'https://services.dnb.de/sru/dnb';
 const NO_HITS = new Error('no hits');
@@ -73,11 +70,9 @@ const OL_FIELDS = [
   'editions.publisher',
 ].join(',');
 
-const googleKey = (): string | undefined => import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || undefined;
-
 const RETRY_DELAYS = [250, 700];
 
-/** Google Books antwortet auf identische Anfragen zufällig mit 503 — kurz wiederholen statt sofort aufzugeben. */
+/** Ein 5xx der Quelle ist oft nur ein Ausreißer — kurz wiederholen statt sofort aufzugeben. */
 async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(url, { signal });
@@ -493,13 +488,12 @@ async function runSearch(
 
 async function loadDetails(ref: {
   hardcoverId?: number;
-  googleId?: string;
   olWorkId?: string;
 }): Promise<BookDetails | null> {
   const hardcover =
     ref.hardcoverId && hardcoverReady() ? await hardcoverDetails(ref.hardcoverId) : null;
   if (hardcover?.description) return hardcover;
-  // Fehlt der Klappentext bei Hardcover, ergänzen Google/Open Library ihn; Stimmungen und Hinweise bleiben erhalten.
+  // Fehlt der Klappentext bei Hardcover, ergänzt Open Library ihn; Stimmungen und Hinweise bleiben erhalten.
   const withExtras = (details: BookDetails): BookDetails =>
     hardcover
       ? {
@@ -510,16 +504,6 @@ async function loadDetails(ref: {
           categories: details.categories?.length ? details.categories : hardcover.categories,
         }
       : details;
-  if (ref.googleId && googleKey()) {
-    try {
-      const volume = await fetchJson<GoogleVolume>(
-        `${GOOGLE_API}/volumes/${encodeURIComponent(ref.googleId)}?key=${googleKey()}`
-      );
-      return withExtras(mapGoogleDetails(volume));
-    } catch {
-      /* Open Library versuchen */
-    }
-  }
   if (ref.olWorkId) {
     const work = await fetchJson<{
       description?: string | { value?: string };
@@ -541,10 +525,10 @@ async function loadDetails(ref: {
 
 export function getBookDetails(ref: {
   hardcoverId?: number;
-  googleId?: string;
   olWorkId?: string;
 }): Promise<BookDetails | null> {
-  const key = ref.hardcoverId ? `hc${ref.hardcoverId}` : (ref.googleId ?? ref.olWorkId);
+  const key = ref.hardcoverId ? `hc${ref.hardcoverId}` : ref.olWorkId;
+
   if (!key) return Promise.resolve(null);
   return cached(
     'details',

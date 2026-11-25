@@ -85,7 +85,6 @@ describe('Buchsuche mit Hardcover als erster Quelle', () => {
     hc.search.mockReset();
     hc.isbn.mockReset();
     hc.details.mockReset();
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
   });
 
   afterEach(() => {
@@ -209,7 +208,6 @@ describe('Schonung der Quellen beim Tippen', () => {
     localStorage.clear();
     hc.ready = true;
     hc.search.mockReset();
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
   });
 
   afterEach(() => {

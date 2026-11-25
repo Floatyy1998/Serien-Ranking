@@ -14,7 +14,6 @@ interface ImportMetaEnv {
   readonly VITE_MEASUREMENTID: string;
   readonly VITE_API_TMDB: string;
   /** Optional: ohne Key fällt die Büchersuche auf Open Library zurück. */
-  readonly VITE_GOOGLE_BOOKS_API_KEY?: string;
 }
 
 interface ImportMeta {

@@ -5,30 +5,27 @@ import { isHardcoverSeriesKey } from '../../services/api/hardcoverApi';
 import { fetchBookLinks, fetchSeriesParts } from '../../services/api/wikidataBooks';
 import type { BookDetails, BookLinks, BookSeriesPart } from '../../types/Book';
 
-export function useBookDetails(
-  ref: { hardcoverId?: number; googleId?: string; olWorkId?: string } | null
-) {
+export function useBookDetails(ref: { hardcoverId?: number; olWorkId?: string } | null) {
   const [details, setDetails] = useState<BookDetails | null>(null);
-  const [loading, setLoading] = useState(!!(ref?.hardcoverId || ref?.googleId || ref?.olWorkId));
+  const [loading, setLoading] = useState(!!(ref?.hardcoverId || ref?.olWorkId));
   const hardcoverId = ref?.hardcoverId;
-  const googleId = ref?.googleId;
   const olWorkId = ref?.olWorkId;
 
   useEffect(() => {
-    if (!hardcoverId && !googleId && !olWorkId) {
+    if (!hardcoverId && !olWorkId) {
       setDetails(null);
       setLoading(false);
       return;
     }
     let alive = true;
     setLoading(true);
-    getBookDetails({ hardcoverId, googleId, olWorkId })
+    getBookDetails({ hardcoverId, olWorkId })
       .then((d) => alive && setDetails(d))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [hardcoverId, googleId, olWorkId]);
+  }, [hardcoverId, olWorkId]);
 
   return { details, loading };
 }

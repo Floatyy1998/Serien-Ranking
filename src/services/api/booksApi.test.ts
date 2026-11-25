@@ -77,7 +77,6 @@ const respond = (docs: unknown[]) => new Response(JSON.stringify({ docs }), { st
 
 describe('findBook', () => {
   beforeEach(() => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     localStorage.clear();
   });
 
@@ -99,8 +98,7 @@ describe('findBook', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it('fragt Google bei der Suche nie, auch mit Schlüssel', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', 'test-key');
+  it('fragt Google bei der Suche nie', async () => {
     const fetchMock = route({
       google: () => respond([]),
       ol: [doc('Der kleine Hobbit', 'J.R.R. Tolkien')],
@@ -176,7 +174,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('übernimmt kein fremdes Buch von Google: die ISBN-Suche fragt dort nicht mehr', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', 'test-key');
     // Google nannte zu 9783963587498 (Roman 02) den Comic-Band 1 mit anderer ISBN.
     const wrongVolume = {
       id: 'cntEzQEACAAJ',
@@ -222,7 +219,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('ergänzt einen Open-Library-Treffer um Cover und Seitenzahl aus der DNB', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     vi.stubGlobal(
       'fetch',
       route({
@@ -236,7 +232,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('merkt sich eine leere Suche nicht', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     vi.stubGlobal('fetch', route({}));
     expect(await searchBooks('9783328600930')).toEqual([]);
     vi.stubGlobal('fetch', route({ dnb: DNB_RECORD }));
@@ -254,7 +249,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('liest ohne Personen-Felder die Namen aus der Verantwortlichkeitsangabe', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     vi.stubGlobal(
       'fetch',
       route({ dnb: MANHWA_RECORD.replace(/<datafield tag="100"[\s\S]*?<\/datafield>/, '') })
@@ -264,7 +258,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('füllt einen dünnen Katalog-Eintrag mit den Daten der ISBN-Quellen auf, statt sie zu verwerfen', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     catalog.hits = [
       {
         id: 'dnb-9783551358165',
@@ -292,7 +285,6 @@ describe('searchBooks per ISBN', () => {
   });
 
   it('repariert gecachte Treffer ohne authors', async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '');
     const fetchMock = route({});
     vi.stubGlobal('fetch', fetchMock);
     localStorage.setItem(

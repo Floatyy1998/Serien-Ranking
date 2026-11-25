@@ -1,26 +1,6 @@
-import type { Book, BookDetails, BookSearchResult } from '../../types/Book';
+import type { Book, BookSearchResult } from '../../types/Book';
 import { pickIsbn13, sanitizeBookKey } from './bookIdentity';
 import { BACKEND_BASE, onCurrentBackend } from '../url/backendHost';
-
-export interface GoogleVolume {
-  id: string;
-  volumeInfo?: {
-    title?: string;
-    subtitle?: string;
-    authors?: string[];
-    publisher?: string;
-    publishedDate?: string;
-    description?: string;
-    pageCount?: number;
-    categories?: string[];
-    language?: string;
-    industryIdentifiers?: { type: string; identifier: string }[];
-    imageLinks?: Record<string, string>;
-    previewLink?: string;
-    infoLink?: string;
-    canonicalVolumeLink?: string;
-  };
-}
 
 interface OpenLibraryEdition {
   key?: string;
@@ -72,72 +52,9 @@ export const openLibraryCoverById = (coverId: number, size: 'M' | 'L' = 'L') =>
 export const openLibraryCoverByIsbn = (isbn13: string) =>
   `https://covers.openlibrary.org/b/isbn/${isbn13}-L.jpg?default=false`;
 
-/** Google-Thumbnails kommen als http und mit Eselsohr-Effekt. */
-export function googleCoverUrl(imageLinks: Record<string, string> | undefined): string | undefined {
-  if (!imageLinks) return undefined;
-  const raw =
-    imageLinks.extraLarge ||
-    imageLinks.large ||
-    imageLinks.medium ||
-    imageLinks.thumbnail ||
-    imageLinks.smallThumbnail;
-  if (!raw) return undefined;
-  return raw.replace(/^http:/, 'https:').replace(/&edge=curl/g, '');
-}
-
 export function parseYear(date: string | undefined): number | undefined {
   const match = date?.match(/\d{4}/);
   return match ? Number(match[0]) : undefined;
-}
-
-const cleanCategories = (raw: string[] | undefined): string[] | undefined => {
-  if (!raw?.length) return undefined;
-  const out = new Set<string>();
-  for (const entry of raw) {
-    for (const part of entry.split(/\s*\/\s*/)) {
-      const name = part.trim();
-      if (name && name.length < 40 && !/^general$/i.test(name)) out.add(name);
-      if (out.size >= 4) break;
-    }
-  }
-  return out.size ? [...out] : undefined;
-};
-
-export function mapGoogleVolume(volume: GoogleVolume): BookSearchResult | null {
-  const info = volume.volumeInfo;
-  if (!info?.title) return null;
-  const isbn13 = pickIsbn13(info.industryIdentifiers?.map((i) => i.identifier));
-  const google = googleCoverUrl(info.imageLinks);
-  return {
-    id: sanitizeBookKey(`gb-${volume.id}`),
-    title: info.title,
-    subtitle: info.subtitle,
-    authors: info.authors ?? [],
-    cover: google ?? (isbn13 ? openLibraryCoverByIsbn(isbn13) : undefined),
-    coverFallback: google && isbn13 ? openLibraryCoverByIsbn(isbn13) : undefined,
-    pageCount: info.pageCount || undefined,
-    publishedYear: parseYear(info.publishedDate),
-    publisher: info.publisher,
-    language: info.language,
-    categories: cleanCategories(info.categories),
-    isbn13,
-    googleId: volume.id,
-    description: info.description,
-    source: 'google',
-  };
-}
-
-export function mapGoogleDetails(volume: GoogleVolume): BookDetails {
-  const info = volume.volumeInfo ?? {};
-  return {
-    description: info.description,
-    categories: cleanCategories(info.categories),
-    pageCount: info.pageCount || undefined,
-    publisher: info.publisher,
-    publishedDate: info.publishedDate,
-    previewLink: info.previewLink?.replace(/^http:/, 'https:'),
-    infoLink: (info.canonicalVolumeLink || info.infoLink)?.replace(/^http:/, 'https:'),
-  };
 }
 
 /** Nimmt die passende Ausgabe (z. B. die deutsche) statt des Originalwerks, wenn Open Library sie mitliefert. */

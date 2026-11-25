@@ -203,7 +203,6 @@ export const BookDetailPage = () => {
   const isbnToLookup =
     withCatalog?.isbn13 &&
     !withCatalog.hardcoverId &&
-    !withCatalog.googleId &&
     !withCatalog.olWorkId &&
     (!withCatalog.authors?.length || !withCatalog.pageCount || !withCatalog.categories?.length)
       ? withCatalog.isbn13
@@ -246,9 +245,7 @@ export const BookDetailPage = () => {
   }, [owned?.id, owned?.notes]);
 
   const { details, loading: detailsLoading } = useBookDetails(
-    view
-      ? { hardcoverId: view.hardcoverId, googleId: view.googleId, olWorkId: view.olWorkId }
-      : null
+    view ? { hardcoverId: view.hardcoverId, olWorkId: view.olWorkId } : null
   );
   const {
     links,
@@ -435,8 +432,6 @@ export const BookDetailPage = () => {
   );
 
   const externalLinks = [
-    details?.infoLink &&
-      /google\./.test(details.infoLink) && { label: 'Google Books', href: details.infoLink },
     view.olWorkId && {
       label: 'Open Library',
       href: `https://openlibrary.org/works/${view.olWorkId}`,
