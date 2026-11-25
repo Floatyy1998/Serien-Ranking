@@ -95,6 +95,16 @@ describe('mangaVolumeGuess', () => {
       })
     ).toBeNull();
     expect(mangaVolumeGuess({ id: 'g', title: 'Overlord Light Novel 3', ...comic })).toBeNull();
+    const dnbNovel = { id: 'n', title: 'Solo leveling 2', publisher: 'Altraverse GmbH' };
+    expect(mangaVolumeGuess(dnbNovel)).toEqual({
+      series: 'Solo leveling',
+      full: 'Solo leveling 2',
+      volume: 2,
+    });
+    expect(mangaVolumeGuess({ ...dnbNovel, categories: ['Roman'] })).toBeNull();
+    expect(
+      mangaVolumeGuess({ ...dnbNovel, categories: ['Light Novel'] }, { loose: true })
+    ).toBeNull();
     expect(
       mangaVolumeGuess({ id: 'h', title: 'Maus', subtitle: 'A Graphic Novel', ...comic })
     ).toEqual({ series: 'Maus' });
@@ -195,6 +205,7 @@ describe('linkSeriesSiblings', () => {
     { id: 'v3', title: 'Not-Sew-Wicked Stepmom, Vol. 3' },
     { id: 'de8', title: 'Not-Sew-Wicked Stepmom 8' },
     { id: 'novel', title: 'Not-Sew-Wicked Stepmom 2 (Light Novel)' },
+    { id: 'dnbNovel', title: 'Not-Sew-Wicked Stepmom 5', categories: ['Roman'] },
     { id: 'guide', title: 'Not-Sew-Wicked Stepmom Artbook' },
     { id: 'other', title: 'Wicked Stepmom Diaries 4' },
   ];
@@ -209,6 +220,7 @@ describe('linkSeriesSiblings', () => {
   it('lässt Romane, Bücher ohne Band und fremde Reihen außen vor', () => {
     const linked = linkSeriesSiblings(items, new Map([['v3', stepmom]]));
     expect(linked.has('novel')).toBe(false);
+    expect(linked.has('dnbNovel')).toBe(false);
     expect(linked.has('guide')).toBe(false);
     expect(linked.has('other')).toBe(false);
   });

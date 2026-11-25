@@ -1,5 +1,5 @@
 import type { BookSearchResult, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
-import { pickIsbn13 } from './bookIdentity';
+import { bookFormsConflict, pickIsbn13, toIsbn13 } from './bookIdentity';
 import { dnbSeriesKey, isDnbSeriesKey, mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
 import { sameAuthor, seriesNameKey } from './bookSeries';
 import { seriesHead, splitVolume } from './mangaVolume';
@@ -27,6 +27,47 @@ export function dnbPartDate(
     return planned === current ? undefined : `${planned}-01`;
   }
   return year ? `${year}-01-01` : undefined;
+}
+
+const OWN_VOLUME_NOTE = /^(?:band|bd\.?|teil|vol\.?)\s*\d+$/i;
+
+function isbnFields(record: Element): { isbn13?: string; note?: string; raw: string[] }[] {
+  return [...record.getElementsByTagNameNS(MARC_NS, 'datafield')]
+    .filter((f) => f.getAttribute('tag') === '020')
+    .map((f) => {
+      const sub = (codes: string[]) =>
+        [...f.getElementsByTagNameNS(MARC_NS, 'subfield')]
+          .filter((s) => codes.includes(s.getAttribute('code') ?? ''))
+          .map((s) => s.textContent ?? '');
+      const raw = sub(['9', 'a']);
+      return { isbn13: pickIsbn13(raw), note: sub(['q'])[0]?.trim(), raw };
+    });
+}
+
+/** Bände aus Schubern nennen zuerst die ISBN des Schubers („Bände 1-4"), die eigene trägt den Zusatz „Band 2". */
+function recordIsbn(record: Element): string | undefined {
+  const fields = isbnFields(record);
+  return (
+    fields.find((f) => f.isbn13 && OWN_VOLUME_NOTE.test(f.note ?? ''))?.isbn13 ??
+    pickIsbn13(fields.flatMap((f) => f.raw))
+  );
+}
+
+/** Treffer einer ISBN-Abfrage: die Einzelausgabe vor dem Schuber-Datensatz, der dieselbe ISBN mitführt. */
+export function mapDnbIsbnRecord(xml: string, isbn13: string): BookSearchResult | null {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const records = [...doc.getElementsByTagNameNS(MARC_NS, 'record')];
+  if (records.length < 2) return mapDnbRecord(xml, isbn13);
+  const standalone = (record: Element) => {
+    const isbns = isbnFields(record)
+      .flatMap((f) => f.raw)
+      .map((value) => toIsbn13(value))
+      .filter((value): value is string => !!value);
+    return isbns.length > 0 && isbns.every((value) => value === isbn13);
+  };
+  const record =
+    records.find(standalone) ?? records.find((r) => recordIsbn(r) === isbn13) ?? records[0];
+  return mapDnbRecord(new XMLSerializer().serializeToString(record), isbn13);
 }
 
 /** Bandnummer eines Treffers, wenn er zur gesuchten Reihe gehört — aus Feld 490/245 $n oder der Zahl am Titelende. */
@@ -59,7 +100,7 @@ export function mapDnbSeriesParts(xml: string, name: string, now = new Date()): 
         .flatMap((f) => [...f.getElementsByTagNameNS(MARC_NS, 'subfield')])
         .filter((s) => codes.includes(s.getAttribute('code') ?? ''))
         .map((s) => s.textContent ?? '');
-    const isbn13 = pickIsbn13(values('020', ['9', 'a']));
+    const isbn13 = recordIsbn(record);
     if (!isbn13) continue;
     const result = mapDnbRecord(serializer.serializeToString(record), isbn13);
     const position = result && volumeIn(result, wanted);
@@ -94,12 +135,7 @@ export function mapDnbRecords(xml: string): BookSearchResult[] {
   const seen = new Set<string>();
   for (const record of [...doc.getElementsByTagNameNS(MARC_NS, 'record')]) {
     if (!isTextRecord(record)) continue;
-    const isbns = [...record.getElementsByTagNameNS(MARC_NS, 'datafield')]
-      .filter((f) => f.getAttribute('tag') === '020')
-      .flatMap((f) => [...f.getElementsByTagNameNS(MARC_NS, 'subfield')])
-      .filter((s) => ['9', 'a'].includes(s.getAttribute('code') ?? ''))
-      .map((s) => s.textContent ?? '');
-    const isbn13 = pickIsbn13(isbns);
+    const isbn13 = recordIsbn(record);
     if (!isbn13 || seen.has(isbn13)) continue;
     const result = mapDnbRecord(serializer.serializeToString(record), isbn13);
     if (!result) continue;
@@ -139,6 +175,12 @@ export function seriesFromTitle(
   return { name: series, position: volume, wikidataId: dnbSeriesKey(series, parentId) };
 }
 
+const formOf = (part: BookSeriesPart) => ({
+  title: part.title,
+  series: part.result?.series,
+  categories: part.result?.categories,
+});
+
 const parentOf = (part: BookSeriesPart): string | undefined => {
   const key = part.result?.series?.wikidataId;
   return key && isDnbSeriesKey(key) ? parseDnbSeriesKey(key).parentId : undefined;
@@ -160,7 +202,8 @@ export function mergeParentSeriesParts(
   let last = own[own.length - 1].position;
   for (const part of loose) {
     if (part.position <= last) continue;
-    if (part.position !== last + 1) break;
+    if (part.position !== last + 1 || bookFormsConflict(formOf(part), formOf(own[0]))) break;
+
     own.push(part);
     last = part.position;
   }

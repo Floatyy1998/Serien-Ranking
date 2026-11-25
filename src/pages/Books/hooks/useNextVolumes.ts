@@ -6,6 +6,7 @@ import {
   editionLanguage,
   fitsSeries,
   needsSeriesLookup,
+  nextPartLanguage,
   partsFitLanguage,
   seriesCheckedFields,
   seriesProgress,
@@ -116,11 +117,16 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
         const own = knownParts.length >= 2 && !placed ? undefined : book.series;
         // Bandliste ohne Ausgabe in der Sprache des Buchs (nur Originale): nach einer passenden suchen, sonst bleibt sie.
         const speaks = partsFitLanguage(book, knownParts);
+        // Auch der nächste Band soll in der Sprache des Buchs vorliegen — sonst nach einer Liste suchen, die ihn hat.
+        const nextForeign =
+          !!known && placed && speaks && nextPartLanguage(book, knownParts, known) === 'foreign';
+        const fluent = speaks && !nextForeign;
         // Deutsche DNB-Reihennamen und -Titel kennt Hardcover nicht — das Buch selbst über ID/ISBN nachschlagen,
         // deutsche Manga-Bände kennt meist nur die DNB.
-        if (needsSeriesLookup(book, knownParts.length, placed && speaks, Date.now())) {
+        if (needsSeriesLookup(book, knownParts.length, placed && fluent, Date.now())) {
           lookups += 1;
           let answered = false;
+          let unreachable = false;
           let adopted: BookSeriesInfo | undefined;
           let foreign: BookSeriesInfo | undefined;
           const worth = (found: BookSeriesInfo, parts: BookSeriesPart[]) =>
@@ -130,7 +136,10 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
           for (const source of SERIES_SOURCES) {
             const found = await source(book);
             if (!alive) return;
-            if (found === undefined) continue;
+            if (found === undefined) {
+              unreachable ||= source !== catalogSeriesOfBook;
+              continue;
+            }
             answered = true;
             if (!found?.wikidataId) continue;
             const parts = await loadParts(found.wikidataId, book);
@@ -142,17 +151,25 @@ export function useNextVolumes(books: Book[], now: number, options: { readOnly?:
             if (found.wikidataId === known && speaks && placed) continue;
             if (!worth(found, parts)) continue;
             // Wechsel der Sprache: nur in eine Liste, in der das Buch selbst steht; Name kommt aus der neuen Quelle.
-            if (!speaks && !fitsSeries({ ...book, series: found }, parts, found.wikidataId))
+            const moved = { ...book, series: found };
+            if (!fluent && !fitsSeries(moved, parts, found.wikidataId)) continue;
+            if (nextForeign && nextPartLanguage(moved, parts, found.wikidataId) !== 'local')
               continue;
-            adopted = adoptSeries(speaks ? own : undefined, found);
+            adopted = adoptSeries(fluent ? own : undefined, found);
             names[found.wikidataId] = adopted.name;
             break;
           }
-          if (!adopted && foreign?.wikidataId && worth(foreign, next[foreign.wikidataId] ?? [])) {
+          if (
+            !adopted &&
+            !nextForeign &&
+            foreign?.wikidataId &&
+            worth(foreign, next[foreign.wikidataId] ?? [])
+          ) {
             adopted = adoptSeries(own, foreign);
             names[foreign.wikidataId] = adopted.name;
           }
-          if (answered || adopted) {
+          // Fiel eine Quelle aus (DNB-Störung), gilt das Buch nicht als geprüft — sonst bliebe es 30 Tage liegen.
+          if (adopted || (answered && !unreachable)) {
             await updateBookFields(uid, book.id, {
               ...seriesCheckedFields(),
               ...(adopted ? { series: adopted } : {}),

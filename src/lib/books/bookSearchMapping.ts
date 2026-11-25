@@ -292,7 +292,31 @@ export function mapDnbRecord(xml: string, isbn13: string): BookSearchResult | nu
     .filter((f) => f.getAttribute('tag') === '655')
     .flatMap((f) => subfields(f, 'a'))
     .map((term) => (/^comics?$/i.test(term) ? 'Comics' : term));
-  const categories = [...new Set([...(comic ? ['Comics'] : []), ...genreTerms])].slice(0, 6);
+  // Roman und Comic einer Reihe heißen bei der DNB gleich („Solo leveling 2"): Comics tragen den Inhaltstyp „unbewegtes Bild".
+  const contentTypes = fields
+    .filter((f) => f.getAttribute('tag') === '336')
+    .flatMap((f) => subfields(f, 'b'));
+  const keywords = new Set(
+    fields
+      .filter((f) => f.getAttribute('tag') === '653')
+      .flatMap((f) => subfields(f, 'a'))
+      .map((term) => term.toLowerCase())
+  );
+  const textOnly =
+    !comic &&
+    !genreTerms.includes('Comics') &&
+    contentTypes.includes('txt') &&
+    !contentTypes.includes('sti');
+  const prose = !textOnly
+    ? undefined
+    : keywords.has('light novel')
+      ? 'Light Novel'
+      : keywords.has('roman')
+        ? 'Roman'
+        : undefined;
+  const categories = [
+    ...new Set([...(comic ? ['Comics'] : []), ...(prose ? [prose] : []), ...genreTerms]),
+  ].slice(0, 6);
 
   return stripResult({
     id: sanitizeBookKey(`dnb-${isbn13}`),

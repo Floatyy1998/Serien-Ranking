@@ -1,6 +1,6 @@
 import { normalizeTitle } from '../text/searchRelevance';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
-import { looksLikeIsbn } from './bookIdentity';
+import { bookFormOf, looksLikeIsbn } from './bookIdentity';
 
 export interface MangaVolumeInput {
   id: string;
@@ -35,6 +35,10 @@ const NOVEL_HINT = /\b(?:light ?novels?|novels?|roman|romanzo|novela)\b/i;
 const VOLUME_TAIL =
   /^(.+?)[\s,.:;–—-]*(?:\b(?:band|bd|vol|volume|tome|tomo|tom|teil|nr|book|buch)\.?\s*|#\s*)?(\d{1,4})$/i;
 
+const isProse = (item: MangaVolumeInput): boolean =>
+  NOVEL_HINT.test(`${item.title} ${item.subtitle ?? ''}`.replace(/graphic novels?/gi, '')) ||
+  bookFormOf(item) === 'prose';
+
 export const hasComicHint = (item: MangaVolumeInput): boolean =>
   (item.categories ?? []).some((c) => COMIC_HINT.test(c)) ||
   (!!item.publisher && MANGA_PUBLISHER.test(item.publisher));
@@ -62,8 +66,7 @@ export function mangaVolumeGuess(
   options: { loose?: boolean } = {}
 ): MangaVolumeGuess | null {
   if (!item.title) return null;
-  const graphicFree = `${item.title} ${item.subtitle ?? ''}`.replace(/graphic novels?/gi, '');
-  if (NOVEL_HINT.test(graphicFree)) return null;
+  if (isProse(item)) return null;
   if (!options.loose && !hasComicHint(item)) return null;
   const { series, volume } = splitVolume(item.title);
   if (normalizeTitle(series).length < 2) return null;
@@ -161,7 +164,14 @@ export function linkSeriesSiblings(
   if (!bySeries.size) return links;
   const linked = new Map(links);
   for (const item of items) {
-    if (linked.has(item.id) || NOVEL_HINT.test(`${item.title} ${item.subtitle ?? ''}`)) continue;
+    if (
+      linked.has(item.id) ||
+      NOVEL_HINT.test(`${item.title} ${item.subtitle ?? ''}`) ||
+      bookFormOf(item) === 'prose'
+    ) {
+      continue;
+    }
+
     const { volume } = splitVolume(item.title);
     const link = volume === undefined ? undefined : bySeries.get(seriesKey(item.title));
     if (link) linked.set(item.id, { ...link, volume });

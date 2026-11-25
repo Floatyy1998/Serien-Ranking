@@ -147,13 +147,15 @@ function patternPositionOf(book: SeriesBookRef, parts: BookSeriesPart[]): number
   return volume;
 }
 
+// Der ganze Name zählt mit: „Chugong" (Hardcover) ist „Chu gong" (DNB).
 const authorKeys = (authors: string[] | undefined) =>
   new Set(
-    (authors ?? []).flatMap((a) =>
-      fold(a)
+    (authors ?? []).flatMap((a) => {
+      const words = fold(a)
         .split(/[^a-z0-9ß]+/)
-        .filter((w) => w.length >= 3)
-    )
+        .filter(Boolean);
+      return [...words, words.join('')].filter((w) => w.length >= 3);
+    })
   );
 
 /** Gleicher Autor, soweit beide Seiten einen kennen — „Maas, Sarah J." trifft „Sarah J. Maas". */
@@ -335,8 +337,9 @@ const SERIES_RECHECK_MS = 30 * 86_400_000;
  * 3 = Katalog, Hardcover, DNB per ISBN mit Gesamttitel, DNB über den Titel.
  * 4 = die Bandliste folgt der Sprache des Buchs (Hardcover in dieser Sprache, für Deutsch notfalls die DNB).
  * 5 = das Buch selbst zählt dabei nicht mit (Lady Eris: nur Band 1 deutsch, Band 6 und 7 koreanisch).
+ * 6 = auch der nächste Band muss in der Sprache des Buchs vorliegen; die DNB nennt zur ISBN die Einzelausgabe statt des Schubers.
  */
-export const SERIES_LOOKUP_VERSION = 5;
+export const SERIES_LOOKUP_VERSION = 6;
 
 /** ISBN-Gruppen der App-Sprachen (Sprachräume bzw. Länder) — verlässlicher als das Sprachfeld der Quellen. */
 const ISBN_LANGUAGE: [prefix: string, language: Locale][] = [
@@ -400,6 +403,20 @@ export function partsFitLanguage(
       !(book.isbn13 && p.result?.isbn13 === book.isbn13) &&
       p.position !== own
   );
+}
+
+/** Sprache des Bands nach dem eigenen: Hardcover kennt „Solo Leveling Roman" 1, 3, 4 und 6 deutsch, Band 2 nur englisch. */
+export function nextPartLanguage(
+  book: Edition & SeriesBookRef,
+  parts: BookSeriesPart[],
+  seriesId: string
+): 'local' | 'foreign' | undefined {
+  const language = editionLanguage(book);
+  const own = partPositionOf(book, parts, seriesId);
+  if (!language || own === undefined) return undefined;
+  const next = parts.filter((p) => p.position > own).sort((a, b) => a.position - b.position)[0];
+  if (!next?.result) return undefined;
+  return editionLanguage(next.result) === language ? 'local' : 'foreign';
 }
 
 /** Felder, die eine abgeschlossene Reihensuche am Buch hinterlässt. */

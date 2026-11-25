@@ -123,7 +123,7 @@ export function sameBookAuthors(a: string[] | undefined, b: string[] | undefined
 
 export interface BookFormHint {
   title: string;
-  series?: { name?: string };
+  series?: { name?: string; wikidataId?: string };
   categories?: string[];
 }
 
@@ -131,16 +131,17 @@ const BRACKETED = /\(([^)]*)\)|\[([^\]]*)\]/g;
 const COMIC_FORM = /\b(?:comics?|manga|manhwa|manhua|webtoons?|graphic novels?)\b/;
 const PROSE_FORM = /\b(?:light ?novels?|novels?|roman)\b/;
 
-/** Comic oder Roman laut Klammerzusatz in Titel und Reihenname („(Novel)", „(Comic)") — den wirft der Titelschlüssel weg. */
+/** Comic oder Roman laut Klammerzusatz in Titel, Reihenname und Reihen-Schlüssel („(Novel)", „(Comic)") — den wirft der Titelschlüssel weg. */
 export function bookFormOf(item: BookFormHint): 'comic' | 'prose' | undefined {
-  const notes = [...`${item.title} ${item.series?.name ?? ''}`.toLowerCase().matchAll(BRACKETED)]
+  const text = `${item.title} ${item.series?.name ?? ''} ${item.series?.wikidataId ?? ''}`;
+  const notes = [...text.toLowerCase().matchAll(BRACKETED)]
     .map((match) => match[1] ?? match[2])
     .join(' ');
   if (COMIC_FORM.test(notes)) return 'comic';
   if (PROSE_FORM.test(notes)) return 'prose';
   const genres = (item.categories ?? []).join(' | ').toLowerCase();
   const comic = COMIC_FORM.test(genres);
-  const prose = /\blight ?novels?\b/.test(genres);
+  const prose = /\b(?:light ?novels?|roman)\b/.test(genres);
   return comic === prose ? undefined : comic ? 'comic' : 'prose';
 }
 
@@ -200,13 +201,19 @@ type MangaTitles = Pick<Manga, 'title' | 'titleEnglish' | 'titleRomaji'>;
 
 /** Ein Manga-Band als Buchtreffer: Reihentitel plus höchstens eine Bandnummer, kein Roman. */
 export function findMangaForBook<T extends MangaTitles>(
-  item: { title: string; subtitle?: string; series?: { name?: string } },
+  item: {
+    title: string;
+    subtitle?: string;
+    series?: BookFormHint['series'];
+    categories?: string[];
+  },
   mangas: T[]
 ): T | undefined {
   const whole = `${item.title} ${item.subtitle ?? ''}`;
   const full = compactWords(normalizeBookText(whole));
   if (!full || /\b(?:light ?novel|roman)\b/.test(full)) return undefined;
-  if (bookFormOf({ title: whole, series: item.series }) === 'prose') return undefined;
+  if (bookFormOf({ ...item, title: whole }) === 'prose') return undefined;
+
   const title = compactWords(normalizeBookText(item.title));
   // Deutsche Ausgaben hängen den Band an den Untertitel („X: Untertitel 2") — zählt wie „X 2".
   const { head, volume } = titleParts(

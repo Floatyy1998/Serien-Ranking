@@ -258,6 +258,14 @@ describe('isSameBookIdentity', () => {
         'prose'
       );
       expect(bookFormOf({ title: 'X 1', categories: ['Manga', 'Light Novel'] })).toBeUndefined();
+      expect(bookFormOf({ title: 'Solo leveling 2', categories: ['Roman'] })).toBe('prose');
+      expect(bookFormOf({ title: 'Verity', categories: ['Romance'] })).toBeUndefined();
+      expect(
+        bookFormOf({
+          title: 'Solo leveling 2',
+          series: { name: 'Solo leveling', wikidataId: 'hc:Solo Leveling (Comic)' },
+        })
+      ).toBe('comic');
       expect(bookFormOf({ title: 'Der Schwarm: Roman' })).toBeUndefined();
       expect(bookFormOf({ title: 'Bis(s) zum Morgengrauen' })).toBeUndefined();
     });
@@ -269,6 +277,26 @@ describe('isSameBookIdentity', () => {
       expect(
         isSameBookIdentity({ ...comic, series: undefined, categories: ['Comics'] }, novel)
       ).toBe(false);
+    });
+
+    it('trennt den DNB-Roman vom gleichnamigen Comic-Band', () => {
+      const dnbNovel = {
+        id: 'dnb-9783963587498',
+        title: 'Solo leveling 2',
+        authors: ['Chu gong'],
+        categories: ['Roman'],
+        isbn13: '9783963587498',
+      };
+      const dnbComic = {
+        id: 'dnb-9783963585265',
+        title: 'Solo leveling 2',
+        authors: ['Chu gong'],
+        categories: ['Comics'],
+        isbn13: '9783963585265',
+      };
+      expect(isSameBookIdentity(dnbNovel, dnbComic)).toBe(false);
+      expect(createBookIndex([dnbComic, comic]).find(dnbNovel)).toBeUndefined();
+      expect(createBookIndex([novel]).find(dnbNovel)).toBe(novel);
     });
 
     it('lässt Ausgaben ohne Angabe der Form weiter zusammenfallen', () => {
@@ -325,6 +353,12 @@ describe('findMangaForBook', () => {
         library
       )
     ).toBeUndefined();
+    expect(
+      findMangaForBook({ title: 'Solo leveling 2', categories: ['Roman'] }, library)
+    ).toBeUndefined();
+    expect(findMangaForBook({ title: 'Solo leveling 2', categories: ['Comics'] }, library)).toBe(
+      library[3]
+    );
     expect(findMangaForBook({ title: 'Solo Leveling, Vol. 2 (comic)' }, library)).toBe(library[3]);
     expect(findMangaForBook({ title: 'One Piece Film Red' }, library)).toBeUndefined();
     expect(findMangaForBook({ title: 'Der Schwarm' }, library)).toBeUndefined();

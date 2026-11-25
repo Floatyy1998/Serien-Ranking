@@ -8,6 +8,7 @@ import {
   editionLanguage,
   inheritSeries,
   needsSeriesLookup,
+  nextPartLanguage,
   partPositionOf,
   partsFitLanguage,
   SERIES_LOOKUP_VERSION,
@@ -543,6 +544,78 @@ describe('Solo Leveling: Roman neben Comic', () => {
         authors: ['Chugong'],
       }
     );
+  });
+
+  // Ticket 25.11.2026: Hardcover kennt Band 2 nur englisch, die DNB führt die deutsche Reihe schlicht als „Solo leveling".
+  describe('deutsche Bandliste der DNB', () => {
+    const DNB = 'dnb:1235188582:Solo leveling';
+    const dnbPart = (position: number, isbn13: string): BookSeriesPart => ({
+      wikidataId: `dnb-${isbn13}`,
+      title: `Solo leveling ${position}`,
+      position,
+      publishedDate: '2021-01-01',
+      result: {
+        id: `dnb-${isbn13}`,
+        title: `Solo leveling ${position}`,
+        authors: ['Chu gong'],
+        isbn13,
+        categories: ['Roman'],
+        source: 'dnb',
+        series: { name: 'Solo leveling', position, wikidataId: DNB },
+      },
+    });
+    const dnbParts = [
+      dnbPart(1, '9783963587160'),
+      dnbPart(2, '9783963587498'),
+      dnbPart(3, '9783963587504'),
+    ];
+    const moved = { ...roman1, series: { name: 'Solo leveling', position: 1, wikidataId: DNB } };
+
+    it('merkt, dass der nächste Band bei Hardcover nur englisch vorliegt, bei der DNB deutsch', () => {
+      expect(partsFitLanguage(roman1, novelParts)).toBe(true);
+      expect(nextPartLanguage(roman1, novelParts, NOVEL)).toBe('foreign');
+      expect(nextPartLanguage(moved, dnbParts, DNB)).toBe('local');
+      const roman3 = book({
+        ...roman1,
+        id: 'hc-705287',
+        isbn13: '9783963587504',
+        series: { name: 'Solo Leveling (Novel)', position: 3, wikidataId: NOVEL },
+      });
+      expect(nextPartLanguage(roman3, novelParts, NOVEL)).toBe('local');
+      expect(nextPartLanguage({ ...moved, isbn13: '9783963587504' }, dnbParts, DNB)).toBe('local');
+      expect(
+        nextPartLanguage({ ...moved, series: { ...moved.series, position: 3 } }, dnbParts, DNB)
+      ).toBeUndefined();
+    });
+
+    it('findet das Buch in der DNB-Liste über die ISBN oder den Autor („Chugong" = „Chu gong")', () => {
+      expect(fitsSeries(moved, dnbParts, DNB)).toBe(true);
+      expect(fitsSeries({ ...moved, isbn13: '9783963587641' }, dnbParts, DNB)).toBe(true);
+      expect(fitsSeries({ ...moved, isbn13: undefined, authors: ['Dubu'] }, dnbParts, DNB)).toBe(
+        false
+      );
+    });
+
+    it('schlägt nach den deutschen Bänden 1 und 2 den deutschen Band 3 vor, die Reihe nur einmal', () => {
+      const dnbRoman2 = book({
+        id: 'dnb-9783963587498',
+        title: 'Solo leveling 2',
+        authors: ['Chu gong'],
+        isbn13: '9783963587498',
+        categories: ['Roman'],
+        series: { name: 'Solo leveling', position: 2, wikidataId: DNB },
+      });
+      expect(partPositionOf(dnbRoman2, novelParts, NOVEL)).toBeUndefined();
+      const out = seriesProgress(
+        [roman1, dnbRoman2, comic2],
+        { [NOVEL]: novelParts, [DNB]: dnbParts },
+        {},
+        NOW
+      );
+      expect(out).toHaveLength(1);
+      expect(out[0].seriesId).toBe(DNB);
+      expect(out[0].next.part.result?.isbn13).toBe('9783963587504');
+    });
   });
 
   it('füllt fremdsprachige Bände aus dem eigenen Katalog', () => {

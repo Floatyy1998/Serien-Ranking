@@ -109,6 +109,34 @@ describe('DNB-Autoren und Genres', () => {
     expect(mapDnbRecord(withPerson, '9783551354013')?.authors).toEqual(['J. K. Rowling']);
   });
 
+  it('kennzeichnet reine Textausgaben mit dem Schlagwort Roman oder Light Novel, Comics nie', () => {
+    const type = (code: string) =>
+      `<datafield tag="336" ind1=" " ind2=" "><subfield code="b">${code}</subfield></datafield>`;
+    const keyword = (term: string) =>
+      `<datafield tag="653" ind1=" " ind2=" "><subfield code="a">${term}</subfield></datafield>`;
+    const volume = (fields: string) =>
+      marc(`
+  <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Solo leveling</subfield><subfield code="n">2 / aus dem Koreanischen von Jiye Josephine Lee</subfield><subfield code="c">Chugong</subfield></datafield>
+  ${fields}`);
+    const categoriesOf = (fields: string) =>
+      mapDnbRecord(volume(fields), '9783963587498')?.categories;
+
+    expect(categoriesOf(type('txt') + keyword('Manhwa') + keyword('Roman'))).toEqual(['Roman']);
+    expect(categoriesOf(type('txt') + keyword('Light Novel') + keyword('Roman'))).toEqual([
+      'Light Novel',
+    ]);
+    expect(categoriesOf(type('txt') + type('sti') + keyword('Roman'))).toBeUndefined();
+    expect(categoriesOf(type('txt') + keyword('Fantasy'))).toBeUndefined();
+    expect(categoriesOf(keyword('Roman'))).toBeUndefined();
+    expect(
+      categoriesOf(
+        type('txt') +
+          keyword('Roman') +
+          '<datafield tag="082" ind1="7" ind2="4"><subfield code="a">741.5</subfield></datafield>'
+      )
+    ).toEqual(['Comics']);
+  });
+
   it('übernimmt Formschlagwörter als Genres, ohne Comics doppelt zu nennen', () => {
     const fantasy = marc(`
   <datafield tag="245" ind1="1" ind2="0"><subfield code="a">Terra</subfield></datafield>

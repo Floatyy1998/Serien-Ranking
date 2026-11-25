@@ -58,7 +58,6 @@ const dict: Record<string, string> = {
   'Vorlagen deiner Serien': 'Les livres de tes séries',
   'Bibliothek von Goodreads oder StoryGraph importieren':
     'Importer ta bibliothèque depuis Goodreads ou StoryGraph',
-  'Buchdaten: Google Books und Open Library': 'Données des livres : Google Books et Open Library',
   'Buchdaten: Open Library': 'Données des livres : Open Library',
   Autor: 'Auteur',
   Früher: 'Avant',

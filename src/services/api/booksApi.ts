@@ -6,6 +6,7 @@ import type {
 } from '../../types/Book';
 import { looksLikeIsbn, toIsbn13 } from '../../lib/books/bookIdentity';
 import {
+  mapDnbIsbnRecord,
   mapDnbRecords,
   mergeParentSeriesParts,
   mapDnbSeriesParts,
@@ -18,9 +19,7 @@ import {
   dnbSeriesKey,
   isDnbSeriesKey,
   parseDnbSeriesKey,
-  mapDnbRecord,
   mapGoogleDetails,
-  mapGoogleVolume,
   mapOpenLibraryDoc,
   stripResult,
   type GoogleVolume,
@@ -76,11 +75,6 @@ const OL_FIELDS = [
 
 const googleKey = (): string | undefined => import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || undefined;
 
-/** Ohne Key ist das anonyme Google-Kontingent praktisch immer leer — dann direkt Open Library. */
-export const hasGoogleBooks = (): boolean => !!googleKey();
-
-let googleBlockedUntil = 0;
-
 const RETRY_DELAYS = [250, 700];
 
 /** Google Books antwortet auf identische Anfragen zufällig mit 503 — kurz wiederholen statt sofort aufzugeben. */
@@ -95,29 +89,6 @@ async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
     const error = new Error(`HTTP ${res.status}`) as Error & { status?: number };
     error.status = res.status;
     throw error;
-  }
-}
-
-async function searchGoogle(query: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
-  const key = googleKey();
-  if (!key || Date.now() < googleBlockedUntil) throw new Error('google unavailable');
-  const q = looksLikeIsbn(query) ? `isbn:${toIsbn13(query) ?? query.replace(/\D/g, '')}` : query;
-  const params = new URLSearchParams({
-    q,
-    maxResults: '24',
-    printType: 'books',
-    orderBy: 'relevance',
-    key,
-  });
-  try {
-    const data = await fetchJson<{ items?: GoogleVolume[] }>(
-      `${GOOGLE_API}/volumes?${params.toString()}`,
-      signal
-    );
-    return (data.items ?? []).map(mapGoogleVolume).filter((r): r is BookSearchResult => !!r);
-  } catch (err) {
-    if ((err as { status?: number }).status === 429) googleBlockedUntil = Date.now() + 10 * 60_000;
-    throw err;
   }
 }
 
@@ -165,9 +136,9 @@ async function searchDnb(isbn13: string, signal?: AbortSignal): Promise<BookSear
     operation: 'searchRetrieve',
     query: `num=${isbn13}`,
     recordSchema: 'MARC21-xml',
-    maximumRecords: '1',
+    maximumRecords: '5',
   });
-  const hit = mapDnbRecord(await fetchDnb(params, signal), isbn13);
+  const hit = mapDnbIsbnRecord(await fetchDnb(params, signal), isbn13);
   return hit ? [hit] : [];
 }
 
@@ -283,6 +254,8 @@ export function dnbSeriesParts(key: string): Promise<BookSeriesPart[]> {
           dnbQuery(q).then((pages) => pages.flatMap((xml) => mapDnbSeriesParts(xml, name)))
         )
       );
+      // Der Schlüssel stammt aus einem Band des Gesamttitels: eine leere partof-Antwort ist eine Störung, keine Reihe.
+      if (parentId && !lists[0].length) throw NO_HITS;
       const parts = parentId
         ? mergeParentSeriesParts(lists[0], lists[1], parentId)
         : mergeSeriesParts(lists);
@@ -304,7 +277,7 @@ function mergeSeries(
 }
 
 /**
- * Hardcover kennt die meisten ISBNs samt lokaler Ausgabe; Google und Open Library springen nur ein, wenn es nichts findet
+ * Hardcover kennt die meisten ISBNs samt lokaler Ausgabe; Open Library springt nur ein, wenn es nichts findet
  * (oder pausiert). Die DNB fragt immer mit: sie ist kostenlos und liefert Auflage und Seitenzahl deutscher Ausgaben.
  */
 async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookSearchResult[]> {
@@ -318,11 +291,8 @@ async function searchByIsbn(isbn13: string, signal?: AbortSignal): Promise<BookS
   ]);
   let primary = hardcover[0];
   if (!primary) {
-    const [google, openLibrary] = await Promise.all([
-      hasGoogleBooks() ? settle(searchGoogle(isbn13, signal)) : Promise.resolve([]),
-      settle(searchOpenLibrary(isbn13, signal)),
-    ]);
-    primary = google[0] ?? openLibrary[0] ?? dnb[0];
+    const openLibrary = await settle(searchOpenLibrary(isbn13, signal));
+    primary = openLibrary[0] ?? dnb[0];
   }
   const national = dnb[0];
   if (!primary || !national || primary === national) return primary ? [primary] : [];
@@ -384,9 +354,9 @@ export async function searchBooks(
 ): Promise<BookSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
-  // e4: DNB ergänzt (e3: Hardcover als erste Quelle) — alte Listen im Cache verdrängt das LRU nach und nach.
-  const source = hardcoverReady() ? 'h' : hasGoogleBooks() ? 'g' : 'o';
-  const key = `e4:${appLocale}:${source}:${trimmed.toLowerCase()}`;
+  // e5: ohne Google Books (e4: DNB ergänzt) — alte Listen im Cache verdrängt das LRU nach und nach.
+  const source = hardcoverReady() ? 'h' : 'o';
+  const key = `e5:${appLocale}:${source}:${trimmed.toLowerCase()}`;
   const leave = joinSearch(key);
   signal?.addEventListener('abort', leave, { once: true });
   const results = await cached(
@@ -479,7 +449,6 @@ async function runSearch(
   signal?: AbortSignal,
   options: {
     typing?: boolean;
-    google?: boolean;
     hardcover?: boolean;
     background?: boolean;
     wanted?: () => boolean;
@@ -511,14 +480,6 @@ async function runSearch(
     endTurn();
   }
   if (!wanted()) throw new DOMException('aborted', 'AbortError');
-  if (options.google !== false && hasGoogleBooks()) {
-    try {
-      const google = await searchGoogle(trimmed, signal);
-      if (google.length) return withNational([...primary, ...google]);
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') throw err;
-    }
-  }
   const titleQuery = options.typing ? titlePrefixQuery(trimmed) : null;
   const [general, byTitle] = await Promise.all([
     searchOpenLibrary(trimmed, signal),
@@ -549,7 +510,7 @@ async function loadDetails(ref: {
           categories: details.categories?.length ? details.categories : hardcover.categories,
         }
       : details;
-  if (ref.googleId && hasGoogleBooks()) {
+  if (ref.googleId && googleKey()) {
     try {
       const volume = await fetchJson<GoogleVolume>(
         `${GOOGLE_API}/volumes/${encodeURIComponent(ref.googleId)}?key=${googleKey()}`
@@ -607,8 +568,7 @@ async function lookupBook(title: string, author?: string): Promise<BookSearchRes
     );
   const queries = author ? [`${title} ${author}`, title, `${title} ${last}`] : [title];
   for (const [index, query] of queries.entries()) {
-    // Ohne Google: das Tageskontingent (1.000) bleibt für Suche und Detailseiten.
-    const results = await runSearch(query, undefined, { google: false, background: true }).catch(
+    const results = await runSearch(query, undefined, { background: true }).catch(
       () => [] as BookSearchResult[]
     );
     const hit = byAuthor(results) ?? (index === 0 ? results[0] : undefined);

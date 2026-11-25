@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { mapDnbRecord, parseDnbSeriesKey } from './bookSearchMapping';
 import {
   dnbPartDate,
+  mapDnbIsbnRecord,
   mapDnbSeriesParts,
   mergeParentSeriesParts,
   mergeSeriesParts,
@@ -191,7 +192,79 @@ describe('Bände mit Untertitel im Titel', () => {
   });
 });
 
+describe('Bände aus Schubern', () => {
+  const SOLO = 'Solo leveling';
+  // Die DNB führt Band 1 zweimal: einzeln (1. Auflage) und im Schuber (2. Auflage, ISBN des Schubers zuerst).
+  const boxed = (n: number, isbn: string) =>
+    `<record xmlns="http://www.loc.gov/MARC21/slim">
+    ${field('020', sub('a', '9783753904771'), sub('q', 'Bände 1-4'))}
+    ${field('020', sub('a', isbn), sub('q', `Band ${n}`))}
+    ${field('245', sub('a', SOLO), sub('n', `${n} / aus dem Koreanischen`))}
+    ${field('250', sub('a', '2. Auflage'))}
+    ${field('300', sub('a', '382 Seiten'))}
+    ${field('773', sub('w', '(DE-101)1265048096'))}
+  </record>`;
+  const single = (n: number, isbn: string) =>
+    `<record xmlns="http://www.loc.gov/MARC21/slim">
+    ${field('020', sub('a', isbn))}
+    ${field('245', sub('a', SOLO), sub('n', `${n} / aus dem Koreanischen`))}
+    ${field('250', sub('a', '1. Auflage'))}
+    ${field('300', sub('a', '382 Seiten'))}
+    ${field('773', sub('w', '(DE-101)1235188582'))}
+  </record>`;
+
+  it('nimmt zur ISBN die Einzelausgabe, auch wenn der Schuber-Datensatz zuerst kommt', () => {
+    const xml = response(boxed(1, '9783963587160'), single(1, '9783963587160'));
+    expect(mapDnbIsbnRecord(xml, '9783963587160')).toMatchObject({
+      edition: '1. Auflage',
+      isbn13: '9783963587160',
+      series: { position: 1, wikidataId: `dnb:1235188582:${SOLO}` },
+    });
+  });
+
+  it('bleibt beim Schuber-Datensatz, wenn es keine Einzelausgabe gibt', () => {
+    const xml = response(boxed(2, '9783963587498'), boxed(3, '9783963587504'));
+    expect(mapDnbIsbnRecord(xml, '9783963587504')?.series).toMatchObject({
+      position: 3,
+      wikidataId: `dnb:1265048096:${SOLO}`,
+    });
+    expect(mapDnbIsbnRecord(response(boxed(2, '9783963587498')), '9783963587498')?.title).toBe(
+      'Solo leveling 2'
+    );
+  });
+
+  it('gibt jedem Band des Schubers seine eigene ISBN', () => {
+    const xml = response(boxed(1, '9783963587160'), boxed(2, '9783963587498'));
+    expect(mapDnbSeriesParts(xml, SOLO).map((p) => p.result?.isbn13)).toEqual([
+      '9783963587160',
+      '9783963587498',
+    ]);
+  });
+});
+
 describe('mergeParentSeriesParts', () => {
+  it('hängt an eine Roman-Reihe keine gleichnamigen Comic-Bände an', () => {
+    const volume = (n: number, extra: string) =>
+      `<record xmlns="http://www.loc.gov/MARC21/slim">
+      ${field('020', sub('a', `978396358${String(7000 + n)}`))}
+      ${field('245', sub('a', 'Solo leveling'), sub('n', String(n)))}
+      ${extra}
+    </record>`;
+    const novel = (n: number) =>
+      volume(
+        n,
+        field('336', sub('b', 'txt')) +
+          field('653', sub('a', 'Roman')) +
+          field('773', sub('w', '(DE-101)1265048096'))
+      );
+    const comic = (n: number) => volume(n, field('082', sub('a', '741.5')));
+    const byParent = mapDnbSeriesParts(response(novel(1), novel(2)), 'Solo leveling');
+    const byTitle = mapDnbSeriesParts(response(comic(3), comic(4)), 'Solo leveling');
+    expect(mergeParentSeriesParts(byParent, byTitle, '1265048096').map((p) => p.position)).toEqual([
+      1, 2,
+    ]);
+  });
+
   const SLIME = 'Meine Wiedergeburt als Schleim in einer anderen Welt';
   const vol = (n: number, parent?: string) =>
     `<record xmlns="http://www.loc.gov/MARC21/slim">

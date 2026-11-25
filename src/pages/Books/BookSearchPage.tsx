@@ -17,7 +17,6 @@ import {
 } from '../../lib/books/mangaVolume';
 import { mangaPath } from '../../lib/manga/mangaSource';
 import { volumeBookState, volumeSnapshot } from '../../lib/books/mangaBooks';
-import { hasGoogleBooks } from '../../services/api/booksApi';
 import { t } from '../../services/i18n';
 import { addRecentSearch, useRecentSearches } from '../../services/settings/recentSearches';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -447,9 +446,7 @@ const BookSearchView = () => {
           fontSize: 11.5,
         }}
       >
-        {hasGoogleBooks()
-          ? t('Buchdaten: Google Books und Open Library')
-          : t('Buchdaten: Open Library')}
+        {t('Buchdaten: Open Library')}
       </div>
 
       <AddBookSheet
