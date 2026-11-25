@@ -43,7 +43,7 @@ export const PET_ITEMS: Record<PetItemId, PetItemDefinition> = {
   streakPass: {
     name: 'Streak-Freischein',
     description: 'Rettet deine Streak, ohne dass dein Pet XP opfert.',
-    rarity: 'rare',
+    rarity: 'legendary',
     hint: 'An der Streak-Karte einlösen',
   },
   elixir: {
@@ -79,16 +79,46 @@ export function readPetItems(raw: unknown): PetItemCounts {
   return counts;
 }
 
-/** Was eine Belohnung dieser Seltenheit als Vorrat enthalten kann. */
-const ITEM_POOLS: Record<AccessoryRarity, readonly PetItemId[]> = {
-  common: ['treat', 'toy'],
-  uncommon: ['treat', 'toy', 'feast', 'extraSpin'],
-  rare: ['feast', 'extraSpin', 'bonusBox', 'streakPass'],
-  epic: ['bonusBox', 'streakPass', 'elixir'],
-  legendary: ['bonusBox', 'streakPass', 'elixir'],
+/**
+ * Was eine Belohnung dieser Seltenheit als Vorrat enthalten kann, mit Gewicht. Der
+ * Streak-Freischein steckt nur im epischen und legendären Topf und dort mit einem Sechstel:
+ * er rettet eine Streak ohne Kosten und ohne Cooldown und soll ein seltener Fund bleiben.
+ */
+export const ITEM_POOLS: Record<AccessoryRarity, readonly (readonly [PetItemId, number])[]> = {
+  common: [
+    ['treat', 1],
+    ['toy', 1],
+  ],
+  uncommon: [
+    ['treat', 1],
+    ['toy', 1],
+    ['feast', 1],
+    ['extraSpin', 1],
+  ],
+  rare: [
+    ['feast', 1],
+    ['extraSpin', 1],
+    ['bonusBox', 1],
+  ],
+  epic: [
+    ['bonusBox', 3],
+    ['streakPass', 1],
+    ['elixir', 2],
+  ],
+  legendary: [
+    ['bonusBox', 3],
+    ['streakPass', 1],
+    ['elixir', 2],
+  ],
 };
 
 export function rollPetItem(rarity: AccessoryRarity): PetItemId {
   const pool = ITEM_POOLS[rarity];
-  return pool[Math.floor(Math.random() * pool.length)];
+  const total = pool.reduce((sum, [, weight]) => sum + weight, 0);
+  let roll = Math.random() * total;
+  for (const [id, weight] of pool) {
+    roll -= weight;
+    if (roll < 0) return id;
+  }
+  return pool[pool.length - 1][0];
 }
