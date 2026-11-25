@@ -5,6 +5,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import { subscribeValue } from '../../services/db/subscribeValue';
 import { useAuth } from '../../contexts/AuthContext';
 import { petService } from '../../services/pet/petService';
+import { applyPetItem } from '../../services/pet/petItemService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { emitPetDockChanged } from '../../services/pet/petEvents';
 import { MAX_DOCK_PETS } from '../../services/pet/petConstants';
@@ -202,10 +203,25 @@ export function usePetsData(enabled = true) {
     }
   };
 
-  const revivePet = async () => {
+  /** Leckerli, Spielzeug oder Festmahl aus dem Vorrat einlösen; false, wenn nichts passiert ist. */
+  const applyItem = async (id: 'treat' | 'toy' | 'feast'): Promise<boolean> => {
+    if (!user) return false;
+    try {
+      const changed = await applyPetItem(user.uid, id, pet?.id);
+      if (!changed) return false;
+      const byId = new Map(changed.map((p) => [p.id, p]));
+      setPets((prev) => prev.map((p) => byId.get(p.id) ?? p));
+      return true;
+    } catch (error) {
+      console.error('Error using pet item:', error);
+      return false;
+    }
+  };
+
+  const revivePet = async (useElixir = false) => {
     if (!user || !pet) return;
     try {
-      const revivedPet = await petService.revivePet(user.uid, pet.id);
+      const revivedPet = await petService.revivePet(user.uid, pet.id, { useElixir });
       if (revivedPet) setPets((prev) => prev.map((p) => (p.id === revivedPet.id ? revivedPet : p)));
     } catch (error) {
       console.error('Error reviving pet:', error);
@@ -368,6 +384,7 @@ export function usePetsData(enabled = true) {
     playWithPet,
     cheerUpPet,
     revivePet,
+    applyItem,
     releasePet,
     changeColor,
     toggleAccessory,

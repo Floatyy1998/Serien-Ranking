@@ -1,3 +1,4 @@
+import type { Pet } from '../../types/pet.types';
 import type { PetPose } from './petPose';
 import {
   clamp,
@@ -37,8 +38,7 @@ export type Activity =
 
 export type Trick = 'flip' | 'spin' | 'dance' | 'moonwalk' | 'sit' | 'jump' | 'signature';
 
-export type Species =
-  'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl';
+export type Species = Pet['type'];
 
 /** Arteigene Spezialbewegung. */
 export type Signature =
@@ -55,6 +55,12 @@ export const SIGNATURE_OF: Record<Species, Signature> = {
   panda: 'roll',
   penguin: 'slide',
   axolotl: 'float',
+  frog: 'pounce',
+  hedgehog: 'roll',
+  otter: 'slide',
+  capybara: 'float',
+  unicorn: 'binky',
+  bat: 'soar',
 };
 
 /** Purzelbaum: Rollphase in Sekunden. */

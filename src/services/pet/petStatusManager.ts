@@ -6,6 +6,7 @@ import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
 import { getPetEnabled } from './petPreferences';
 import { agePetVitals, type PetAgingRules } from '../../lib/pet/petAging';
+import { takePetItem } from './petItemService';
 
 const PET_AGING_RULES: PetAgingRules = {
   stepHours: PET_CONFIG.AGING_STEP_HOURS,
@@ -152,12 +153,19 @@ export async function updateAllPetsStatus(userId: string): Promise<Pet[]> {
 }
 
 // Revival-Logik: klar getrennt von Death-Logik
-export async function revivePet(userId: string, petId: string): Promise<Pet | null> {
+export async function revivePet(
+  userId: string,
+  petId: string,
+  options: { useElixir?: boolean } = {}
+): Promise<Pet | null> {
   const pet = await getUserPet(userId, petId);
   if (!pet) return null;
 
   // Nur tote Pets koennen wiederbelebt werden
   if (pet.isAlive) return pet;
+
+  // Ein Lebenselixier erspart den Levelverlust; ohne Level-Kosten wird keines verbraucht
+  const keepsLevel = !!options.useElixir && pet.level > 1 && (await takePetItem(userId, 'elixir'));
 
   const now = new Date();
   pet.isAlive = true;
@@ -168,7 +176,7 @@ export async function revivePet(userId: string, petId: string): Promise<Pet | nu
   pet.reviveCount = (pet.reviveCount || 0) + 1;
 
   // Level-Penalty bei Revival
-  if (pet.level > 1) {
+  if (pet.level > 1 && !keepsLevel) {
     pet.level = Math.max(1, pet.level - 1);
     pet.experience = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL;
   }
@@ -192,10 +200,11 @@ export async function revivePet(userId: string, petId: string): Promise<Pet | nu
   return pet;
 }
 
-// Streak Shield: Pet opfert XP um die Watch Streak zu retten
+// Streak Shield: Pet opfert XP um die Watch Streak zu retten — oder ein Freischein wird eingelöst
 export async function activateStreakShield(
   userId: string,
-  petId: string
+  petId: string | null,
+  options: { usePass?: boolean } = {}
 ): Promise<{
   success: boolean;
   error?: string;
@@ -203,40 +212,46 @@ export async function activateStreakShield(
   newExperience?: number;
 }> {
   try {
-    const pet = await getUserPet(userId, petId);
-    if (!pet) return { success: false, error: t('Pet nicht gefunden') };
-    if (!pet.isAlive) return { success: false, error: t('Dein Pet lebt nicht') };
+    let newLevel: number | undefined;
+    let newExperience: number | undefined;
 
-    // Check if pet can afford it (including level-down)
-    const totalXP = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience;
-    if (totalXP < PET_CONFIG.STREAK_SHIELD_XP_COST) {
-      return {
-        success: false,
-        error: t('Nicht genug XP ({xp} XP, Level {level})', {
-          xp: pet.experience,
-          level: pet.level,
-        }),
-      };
+    if (options.usePass) {
+      if (!(await takePetItem(userId, 'streakPass'))) {
+        return { success: false, error: t('Kein Streak-Freischein vorhanden') };
+      }
+    } else {
+      const pet = petId ? await getUserPet(userId, petId) : null;
+      if (!pet) return { success: false, error: t('Pet nicht gefunden') };
+      if (!pet.isAlive) return { success: false, error: t('Dein Pet lebt nicht') };
+
+      // Check if pet can afford it (including level-down)
+      const totalXP = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience;
+      if (totalXP < PET_CONFIG.STREAK_SHIELD_XP_COST) {
+        return {
+          success: false,
+          error: t('Nicht genug XP ({xp} XP, Level {level})', {
+            xp: pet.experience,
+            level: pet.level,
+          }),
+        };
+      }
+
+      // Deduct XP with level-down support
+      newExperience = pet.experience - PET_CONFIG.STREAK_SHIELD_XP_COST;
+      newLevel = pet.level;
+      while (newExperience < 0 && newLevel > 1) {
+        newLevel--;
+        newExperience += newLevel * PET_CONFIG.XP_PER_LEVEL;
+      }
+      newExperience = Math.max(0, newExperience);
+
+      // Update pet in Firebase
+      await dbRef(userPath(userId, 'pets', pet.id)).update({
+        experience: newExperience,
+        level: newLevel,
+        happiness: Math.max(0, pet.happiness - PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST),
+      });
     }
-
-    // Deduct XP with level-down support
-    let newExperience = pet.experience - PET_CONFIG.STREAK_SHIELD_XP_COST;
-    let newLevel = pet.level;
-    while (newExperience < 0 && newLevel > 1) {
-      newLevel--;
-      newExperience += newLevel * PET_CONFIG.XP_PER_LEVEL;
-    }
-    newExperience = Math.max(0, newExperience);
-
-    // Reduce happiness
-    const newHappiness = Math.max(0, pet.happiness - PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST);
-
-    // Update pet in Firebase
-    await dbRef(userPath(userId, 'pets', petId)).update({
-      experience: newExperience,
-      level: newLevel,
-      happiness: newHappiness,
-    });
 
     // Update streak: set lastWatchDate to yesterday so status becomes at_risk
     const year = new Date().getFullYear();

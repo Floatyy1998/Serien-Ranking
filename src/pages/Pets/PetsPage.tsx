@@ -19,6 +19,7 @@ import { PetReleaseConfirm } from './PetReleaseConfirm';
 import { PetReviveConfirm } from './PetReviveConfirm';
 import { PetSelector } from './PetSelector';
 import { usePetsData } from './usePetsData';
+import { usePetItems } from '../../hooks/pet/usePetItems';
 import './PetsPage.css';
 
 export const PetsPage: React.FC = () => {
@@ -120,6 +121,7 @@ type Section = 'tricks' | 'wardrobe' | 'dock';
 /** Die eigentliche Seite; die Vorschau unter /dev/ui-preview füttert sie mit Testdaten. */
 export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
   const { currentTheme } = useTheme();
+  const petItems = usePetItems();
   const {
     pets,
     pet,
@@ -139,6 +141,7 @@ export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
     playWithPet,
     cheerUpPet,
     revivePet,
+    applyItem,
     releasePet,
     changeColor,
     toggleAccessory,
@@ -172,7 +175,7 @@ export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
         title={t('Meine Pets')}
         gradientFrom={currentTheme.accent}
         gradientTo={currentTheme.primary}
-        actions={<XpBoostHeaderButton />}
+        actions={<XpBoostHeaderButton pet={pet} onUseItem={applyItem} />}
       />
 
       {/* Pet Selector */}
@@ -275,6 +278,7 @@ export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
         show={showReviveConfirm}
         onClose={closeReviveConfirm}
         onConfirm={revivePet}
+        elixirs={petItems.elixir}
       />
     </div>
   );

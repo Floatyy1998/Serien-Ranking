@@ -13,6 +13,10 @@ import type { XpBoostItem } from '../../services/pet/dailySpinService';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
 import { onValue } from '../../services/db/subscribeValue';
+import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
+import { usePetItems } from '../../hooks/pet/usePetItems';
+import type { Pet } from '../../types/pet.types';
+import { PetItemsPanel, type DirectItemId } from './PetItemsPanel';
 
 /** Color based on total boost value (multiplier × episodes) */
 function getBoostColor(multiplier: number, episodes: number): string {
@@ -33,9 +37,18 @@ function getBoostLabel(multiplier: number, episodes: number): string {
   return t('Gewöhnlich');
 }
 
-export const XpBoostHeaderButton: React.FC = () => {
+interface XpBoostHeaderButtonProps {
+  /** Das gewählte Pet — Ziel für Leckerli und Spielzeug aus dem Vorrat. */
+  pet?: Pet | null;
+  onUseItem?: (id: DirectItemId) => Promise<boolean>;
+}
+
+export const XpBoostHeaderButton: React.FC<XpBoostHeaderButtonProps> = ({ pet, onUseItem }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const petItems = usePetItems();
+  const itemTotal = Object.values(petItems).reduce((sum, n) => sum + n, 0);
+  const [showBonusBox, setShowBonusBox] = useState(false);
   const [inventory, setInventory] = useState<XpBoostItem[]>([]);
   const [activeBoost, setActiveBoost] = useState<{
     multiplier: number;
@@ -96,7 +109,7 @@ export const XpBoostHeaderButton: React.FC = () => {
   };
 
   const hasBoosts = inventory.length > 0;
-  const isEmpty = !hasBoosts && !activeBoost;
+  const isEmpty = !hasBoosts && !activeBoost && itemTotal === 0;
 
   // Determine icon color + glow
   let iconColor = currentTheme.text.muted;
@@ -111,6 +124,8 @@ export const XpBoostHeaderButton: React.FC = () => {
     iconColor = '#ffffff';
     glowColor = '#ffffff';
     showPulse = true;
+  } else if (itemTotal > 0) {
+    iconColor = '#ffffff';
   }
 
   return (
@@ -119,7 +134,7 @@ export const XpBoostHeaderButton: React.FC = () => {
       <motion.button
         whileTap={tapScaleTight}
         onClick={() => setOpen((v) => !v)}
-        aria-label={t('Streak-Shield & XP-Boost')}
+        aria-label={t('XP-Boosts & Vorräte')}
         aria-expanded={open}
         style={{
           position: 'relative',
@@ -214,7 +229,7 @@ export const XpBoostHeaderButton: React.FC = () => {
         )}
 
         {/* Inventory count badge */}
-        {!activeBoost && hasBoosts && (
+        {!activeBoost && inventory.length + itemTotal > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -236,7 +251,7 @@ export const XpBoostHeaderButton: React.FC = () => {
               padding: '0 3px',
             }}
           >
-            {inventory.length}
+            {inventory.length + itemTotal}
           </motion.div>
         )}
       </motion.button>
@@ -259,7 +274,8 @@ export const XpBoostHeaderButton: React.FC = () => {
               border: `1px solid ${currentTheme.border.default}`,
               boxShadow: `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${currentTheme.border.default}`,
               zIndex: 100,
-              overflow: 'hidden',
+              maxHeight: 'min(70vh, 520px)',
+              overflowY: 'auto',
               backdropFilter: 'var(--blur-lg)',
               WebkitBackdropFilter: 'var(--blur-lg)',
             }}
@@ -426,9 +442,37 @@ export const XpBoostHeaderButton: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Vorräte */}
+            <div
+              style={{
+                padding: '12px 16px 10px',
+                borderTop: `1px solid ${currentTheme.border.default}`,
+                borderBottom: `1px solid ${currentTheme.border.default}`,
+                fontSize: 14,
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+                color: currentTheme.text.primary,
+              }}
+            >
+              {t('Vorräte')}
+            </div>
+            <PetItemsPanel
+              items={petItems}
+              pet={pet}
+              onUseItem={onUseItem}
+              onOpenBonusBox={() => {
+                setOpen(false);
+                setShowBonusBox(true);
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showBonusBox && (
+        <MysteryBoxOverlay totalEpisodes={0} bonus onClose={() => setShowBonusBox(false)} />
+      )}
     </div>
   );
 };

@@ -3,7 +3,22 @@ export interface Pet {
   userId: string;
   name: string;
   type:
-    'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl';
+    | 'cat'
+    | 'dog'
+    | 'bird'
+    | 'dragon'
+    | 'fox'
+    | 'rabbit'
+    | 'panda'
+    | 'owl'
+    | 'penguin'
+    | 'axolotl'
+    | 'frog'
+    | 'hedgehog'
+    | 'otter'
+    | 'capybara'
+    | 'unicorn'
+    | 'bat';
   color: string;
   level: number;
   experience: number;
@@ -60,6 +75,12 @@ export const PET_TYPES = {
   owl: '\uD83E\uDD89',
   penguin: '\uD83D\uDC27',
   axolotl: '\uD83E\uDD8E',
+  frog: '\uD83D\uDC38',
+  hedgehog: '\uD83E\uDD94',
+  otter: '\uD83E\uDDA6',
+  capybara: '\uD83D\uDC39',
+  unicorn: '\uD83E\uDD84',
+  bat: '\uD83E\uDD87',
 };
 
 export const PET_TYPE_NAMES = {
@@ -73,6 +94,12 @@ export const PET_TYPE_NAMES = {
   owl: 'Eule',
   penguin: 'Pinguin',
   axolotl: 'Axolotl',
+  frog: 'Frosch',
+  hedgehog: 'Igel',
+  otter: 'Otter',
+  capybara: 'Capybara',
+  unicorn: 'Einhorn',
+  bat: 'Fledermaus',
 };
 
 // Accessory System

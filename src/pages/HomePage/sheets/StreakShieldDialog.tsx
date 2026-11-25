@@ -10,6 +10,8 @@ interface StreakShieldDialogProps {
   pet: ActivePetInfo | null;
   streak: WatchStreakData;
   flameColor: string;
+  /** Ein Streak-Freischein wird eingelöst — das Pet opfert nichts. */
+  freePass?: boolean;
   shieldLoading: boolean;
   onClose: () => void;
   onActivate: () => void;
@@ -22,6 +24,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
   pet,
   streak,
   flameColor,
+  freePass = false,
   shieldLoading,
   onClose,
   onActivate,
@@ -30,7 +33,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
 
   return (
     <AnimatePresence>
-      {showConfirm && pet && (
+      {showConfirm && (pet || freePass) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -116,64 +119,89 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
               </button>
             </div>
 
-            {/* Description */}
-            <p
-              style={{
-                margin: '0 0 16px',
-                fontSize: 14,
-                color: currentTheme.text.secondary,
-                lineHeight: 1.5,
-              }}
-            >
-              <strong style={{ color: currentTheme.text.primary }}>{pet.name}</strong> {t('opfert')}{' '}
-              <strong style={{ color: shieldColor }}>{PET_CONFIG.STREAK_SHIELD_XP_COST} XP</strong>{' '}
-              {t('um deine')}{' '}
-              <strong style={{ color: flameColor }}>
-                {t('{n}-Tage-Streak', { n: streak.currentStreak })}
-              </strong>
-              {t(' zu retten.')}
-            </p>
+            {freePass ? (
+              <p
+                style={{
+                  margin: '0 0 16px',
+                  fontSize: 14,
+                  color: currentTheme.text.secondary,
+                  lineHeight: 1.5,
+                }}
+              >
+                {t(
+                  'Du löst einen Streak-Freischein ein und rettest deine {n}-Tage-Streak. Dein Pet opfert nichts.',
+                  { n: streak.currentStreak }
+                )}
+              </p>
+            ) : (
+              pet && (
+                <>
+                  {/* Description */}
+                  <p
+                    style={{
+                      margin: '0 0 16px',
+                      fontSize: 14,
+                      color: currentTheme.text.secondary,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong style={{ color: currentTheme.text.primary }}>{pet.name}</strong>{' '}
+                    {t('opfert')}{' '}
+                    <strong style={{ color: shieldColor }}>
+                      {PET_CONFIG.STREAK_SHIELD_XP_COST} XP
+                    </strong>{' '}
+                    {t('um deine')}{' '}
+                    <strong style={{ color: flameColor }}>
+                      {t('{n}-Tage-Streak', { n: streak.currentStreak })}
+                    </strong>
+                    {t(' zu retten.')}
+                  </p>
 
-            {/* Cost breakdown */}
-            <div
-              style={{
-                background: `${shieldColor}10`,
-                borderRadius: 12,
-                padding: '10px 12px',
-                marginBottom: 16,
-                fontSize: 13,
-                color: currentTheme.text.secondary,
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span>{t('XP-Kosten')}</span>
-                <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
-                  -{PET_CONFIG.STREAK_SHIELD_XP_COST} XP
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>{t('Happiness')}</span>
-                <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
-                  -{PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST}
-                </span>
-              </div>
-              {pet.experience < PET_CONFIG.STREAK_SHIELD_XP_COST && (
-                <div
-                  style={{
-                    marginTop: 8,
-                    paddingTop: 8,
-                    borderTop: '1px solid var(--glass-border-light)',
-                    fontSize: 12,
-                    color: currentTheme.status?.warning || '#f59e0b',
-                  }}
-                >
-                  {t('{name} wird auf Level {level} fallen', {
-                    name: pet.name,
-                    level: pet.level - 1,
-                  })}
-                </div>
-              )}
-            </div>
+                  {/* Cost breakdown */}
+                  <div
+                    style={{
+                      background: `${shieldColor}10`,
+                      borderRadius: 12,
+                      padding: '10px 12px',
+                      marginBottom: 16,
+                      fontSize: 13,
+                      color: currentTheme.text.secondary,
+                    }}
+                  >
+                    <div
+                      style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}
+                    >
+                      <span>{t('XP-Kosten')}</span>
+                      <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
+                        -{PET_CONFIG.STREAK_SHIELD_XP_COST} XP
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{t('Happiness')}</span>
+                      <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
+                        -{PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST}
+                      </span>
+                    </div>
+                    {pet.experience < PET_CONFIG.STREAK_SHIELD_XP_COST && (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          paddingTop: 8,
+                          borderTop: '1px solid var(--glass-border-light)',
+                          fontSize: 12,
+                          color: currentTheme.status?.warning || '#f59e0b',
+                        }}
+                      >
+                        {t('{name} wird auf Level {level} fallen', {
+                          name: pet.name,
+                          level: pet.level - 1,
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )
+            )}
 
             {/* Buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
@@ -210,7 +238,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                   opacity: shieldLoading ? 0.7 : 1,
                 }}
               >
-                {shieldLoading ? t('Aktiviere...') : t('Aktivieren')}
+                {shieldLoading ? t('Aktiviere...') : freePass ? t('Einlösen') : t('Aktivieren')}
               </button>
             </div>
           </motion.div>

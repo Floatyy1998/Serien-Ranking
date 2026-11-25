@@ -11,6 +11,12 @@ export const DEV_PET_TYPES: Pet['type'][] = [
   'owl',
   'penguin',
   'axolotl',
+  'frog',
+  'hedgehog',
+  'otter',
+  'capybara',
+  'unicorn',
+  'bat',
 ];
 const COLORS = [
   'orange',
@@ -23,6 +29,12 @@ const COLORS = [
   'blau',
   'tuerkis',
   'rosa',
+  'gruen',
+  'orange',
+  'gelb',
+  'orange',
+  'lila',
+  'blau',
 ];
 
 export function makeDevPet(type: Pet['type'], level: number, extras: Partial<Pet> = {}): Pet {

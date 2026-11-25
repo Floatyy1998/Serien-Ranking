@@ -8,6 +8,7 @@ import { subscribeValue } from '../../../services/db/subscribeValue';
 import { CelebrationBurst } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePetItems } from '../../../hooks/pet/usePetItems';
 import { hapticCelebrate, hapticSuccess } from '../../../lib/interaction/haptics';
 import { showToast } from '../../../lib/interaction/toast';
 import { notePositiveMoment } from '../../../services/app/appReview';
@@ -32,6 +33,7 @@ export const WatchStreakCard: React.FC = () => {
   const [shieldJustUsed, setShieldJustUsed] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [celebrateRecord, setCelebrateRecord] = useState(false);
+  const freePass = usePetItems().streakPass > 0;
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -120,10 +122,12 @@ export const WatchStreakCard: React.FC = () => {
   }, [user?.uid]);
 
   const handleShieldActivate = useCallback(async () => {
-    if (!user?.uid || !pet?.id) return;
+    if (!user?.uid || (!pet?.id && !freePass)) return;
     setShieldLoading(true);
     try {
-      const result = await petService.activateStreakShield(user.uid, pet.id);
+      const result = await petService.activateStreakShield(user.uid, pet?.id ?? null, {
+        usePass: freePass,
+      });
       if (result.success) {
         setShowConfirm(false);
         setShieldJustUsed(true);
@@ -135,7 +139,7 @@ export const WatchStreakCard: React.FC = () => {
     } finally {
       setShieldLoading(false);
     }
-  }, [user?.uid, pet?.id]);
+  }, [user?.uid, pet?.id, freePass]);
 
   // Confetti edge-trigger: fire only when currentStreak actually grew within
   // this session. The first effect-run after mount just snapshots the current
@@ -184,8 +188,10 @@ export const WatchStreakCard: React.FC = () => {
         ? t('Cooldown: noch {n} Tag', { n: cooldown.daysRemaining })
         : t('Cooldown: noch {n} Tage', { n: cooldown.daysRemaining });
 
+  // Ein Streak-Freischein braucht weder XP noch ein lebendes Pet und kennt keinen Cooldown
+  if (freePass) shieldDisabledReason = '';
   const shieldEligible = canUseShield && !shieldDisabledReason;
-  const showShieldButton = canUseShield && pet;
+  const showShieldButton = canUseShield && (pet || freePass);
 
   const streakColors = {
     active: currentTheme.status?.success || '#22c55e',
@@ -482,6 +488,7 @@ export const WatchStreakCard: React.FC = () => {
         pet={pet}
         streak={streak}
         flameColor={flameColor}
+        freePass={freePass}
         shieldLoading={shieldLoading}
         onClose={() => setShowConfirm(false)}
         onActivate={handleShieldActivate}

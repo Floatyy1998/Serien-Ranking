@@ -4,10 +4,13 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { EvolvingPixelPet } from '../../components/pet/EvolvingPixelPet';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { EXTRA_SCENES } from '../../components/pet/data/petBackgroundsExtra';
+import { petSignatureColor } from '../../components/pet/data/petSignature';
 import type { Pet, PetAccessory } from '../../types/pet.types';
 import '../Pets/PetsPage.css';
 
-// Dev-only Vorschau der Pet-Inhalte vom Juli-2026-Drop (nur im Dev-Server geroutet).
+// Dev-only Vorschau aller Pet-Inhalte (nur im Dev-Server geroutet).
+// ?pets=frog,bat&lv=1,25,60 · ?acc=cat,owl&ids=a,b&slot=face · ?bgs=new&room=1&w=350&h=300
 
 const SHOW_PET_TYPES: { type: Pet['type']; label: string }[] = [
   { type: 'cat', label: 'Katze' },
@@ -20,89 +23,80 @@ const SHOW_PET_TYPES: { type: Pet['type']; label: string }[] = [
   { type: 'owl', label: 'Eule' },
   { type: 'penguin', label: 'Pinguin' },
   { type: 'axolotl', label: 'Axolotl' },
+  { type: 'frog', label: 'Frosch' },
+  { type: 'hedgehog', label: 'Igel' },
+  { type: 'otter', label: 'Otter' },
+  { type: 'capybara', label: 'Capybara' },
+  { type: 'unicorn', label: 'Einhorn' },
+  { type: 'bat', label: 'Fledermaus' },
 ];
 
-const ALL_PET_TYPES: Pet['type'][] = [
-  'cat',
-  'dog',
-  'bird',
-  'dragon',
-  'fox',
-  'rabbit',
-  'panda',
-  'owl',
-  'penguin',
-  'axolotl',
-];
+const ALL_PET_TYPES: Pet['type'][] = SHOW_PET_TYPES.map((x) => x.type);
 
 const NEW_ACCESSORY_IDS = [
-  'sproutHat',
-  'popcornHat',
-  'propellerCap',
-  'jesterHat',
-  'detectiveHat',
-  'winterCrown',
-  'divingHelmet',
-  'crystalHorns',
-  'jellyfishCrown',
-  'galaxyCrown',
-  'eyepatch',
-  'blushStickers',
-  'mustache',
-  'discoShades',
-  'snorkelMask',
-  'goldenEyelashes',
-  'vrHeadset',
-  'kitsuneMask',
-  'thirdEye',
-  'moonVisor',
-  'woolScarf',
-  'leafCape',
-  'seaweedScarf',
-  'headphonesNeck',
-  'pearlNecklace',
-  'filmstripScarf',
-  'discoChain',
-  'lavaAmulet',
-  'auroraScarf',
-  'krakenCharm',
+  'bucketHat',
+  'bowHeadband',
+  'earmuffs',
+  'paperCrown',
+  'daisyClip',
+  'fez',
+  'sombrero',
+  'bobbleHat',
+  'sailorCap',
+  'flatCap',
+  'clapperHat',
+  'pineappleHat',
+  'gamerHeadset',
+  'sakuraBranch',
+  'knightHelmet',
+  'pharaohCrown',
+  'ufoHat',
+  'stormCloud',
+  'sunCrown',
+  'saturnRing',
+  'freckles',
+  'bandaid',
+  'catWhiskers',
+  'sleepMask',
+  'pacifier',
+  'swirlGlasses',
+  'cinemaGlasses',
+  'catEyeGlasses',
+  'starFacePaint',
+  'bubbleGum',
+  'tigerStripes',
+  'roseBite',
+  'sparkleEyes',
+  'cyberMonocle',
+  'masqueradeMask',
+  'rainbowCheeks',
+  'ledVisor',
+  'phantomMask',
+  'fireBreath',
+  'galaxyGlasses',
+  'bibNapkin',
+  'nameTag',
+  'beadNecklace',
+  'balloon',
+  'stripedSweater',
+  'fannyPack',
+  'hawaiiShirt',
+  'lifeVest',
+  'cameraStrap',
+  'ticketNecklace',
+  'spikedCollar',
+  'tuxedo',
+  'featherBoa',
+  'butterflyWings',
+  'duckFloat',
+  'angelWings',
+  'knightArmor',
+  'lanternNecklace',
+  'jetpack',
+  'starOrbit',
 ];
 
-const NEW_BACKGROUND_IDS = [
-  'birchForest',
-  'duneGrass',
-  'streetCafe',
-  'koiPond',
-  'driveInCinema',
-  'neonArcade',
-  'tuscanHills',
-  'frozenLake',
-  'homeCinema',
-  'observatory',
-  'jellyfishDepths',
-  'redCarpet',
-  'bonsaiRoom',
-  'filmSet',
-  'floatingIslands',
-  'dragonPeaks',
-  'neonTokyo',
-  'premiereNight',
-  'worldTree',
-  'nebulaOcean',
-];
-
-const TYPE_COLORS: Record<string, string> = {
-  cat: '#ffb74d',
-  dog: '#a1887f',
-  bird: '#4fc3f7',
-  dragon: '#9575cd',
-  fox: '#ff8a65',
-  rabbit: '#f8bbd0',
-  panda: '#eceff1',
-  owl: '#8d6e63',
-  penguin: '#455a64',
-  axolotl: '#f48fb1',
-};
+const NEW_BACKGROUND_IDS = EXTRA_SCENES.map((x) => x.id);
 
 function makePet(type: Pet['type'], level: number, extras: Partial<Pet> = {}): Pet {
   return {
@@ -110,7 +104,7 @@ function makePet(type: Pet['type'], level: number, extras: Partial<Pet> = {}): P
     userId: 'dev',
     name: 'Preview',
     type,
-    color: TYPE_COLORS[type],
+    color: petSignatureColor(type),
     level,
     experience: 0,
     hunger: 10,
@@ -182,14 +176,106 @@ export const DevPetPreviewPage: React.FC = () => {
     .filter((id) => !slotFilter || ACCESSORIES[id].slot === slotFilter)
     .slice(from, from + (Number(query.get('n')) || 999));
 
+  const noSeason = themeCtx && {
+    ...themeCtx,
+    userConfig: {
+      ...themeCtx.userConfig,
+      seasons: { spooky: false, christmas: false, newyear: false, valentine: false } as const,
+    },
+  };
+
+  const petsParam = query.get('pets');
+  if (petsParam) {
+    const levels = (query.get('lv') || '1,10,25,60').split(',').map(Number);
+    const colorKey = query.get('color');
+    return (
+      <ThemeContext.Provider value={noSeason || themeCtx}>
+        <div
+          style={{
+            padding: 12,
+            color: '#fff',
+            background: query.get('bg') || '#1b1420',
+            ...gridStyle,
+          }}
+        >
+          {petsParam.split(',').flatMap((type) =>
+            levels.map((level) => (
+              <div key={`${type}-${level}`} style={cellStyle}>
+                <EvolvingPixelPet
+                  pet={makePet(
+                    type as Pet['type'],
+                    level,
+                    colorKey ? { color: colorKey } : undefined
+                  )}
+                  size={Number(query.get('size')) || 256}
+                  animated={false}
+                />
+                <span style={capStyle}>
+                  {type} Lv{level}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </ThemeContext.Provider>
+    );
+  }
+
+  const bgParam = query.get('bgs');
+  if (bgParam) {
+    const ids = bgParam === 'new' ? NEW_BACKGROUND_IDS : bgParam.split(',');
+    const cell = Number(query.get('size')) || 300;
+    // room=1: Pet steht wie auf der Pet-Seite unten (Füße 24px über dem Rand), Zelle w×h
+    const room = query.has('room');
+    const roomW = Number(query.get('w')) || 350;
+    const roomH = Number(query.get('h')) || 300;
+    const petSize = room ? 120 : Math.round(cell * 0.6);
+    return (
+      <ThemeContext.Provider value={noSeason || themeCtx}>
+        <div style={{ padding: 12, color: '#fff', background: '#1b1420', ...gridStyle }}>
+          {ids
+            .slice(from, from + (Number(query.get('n')) || 999))
+            .filter((id) => PET_BACKGROUNDS[id])
+            .map((id) => (
+              <div
+                key={id}
+                style={{ ...cellStyle, padding: 0, overflow: 'hidden', width: room ? roomW : cell }}
+              >
+                <div
+                  className="pet-card-display"
+                  style={{
+                    background: PET_BACKGROUNDS[id].background,
+                    width: room ? roomW : cell,
+                    height: room ? roomH : cell,
+                    minWidth: 0,
+                    minHeight: 0,
+                    boxSizing: 'border-box',
+                    borderRadius: 0,
+                    ...(room ? { padding: 0, alignItems: 'flex-end' } : {}),
+                  }}
+                >
+                  <div
+                    className="pet-card-pet-wrapper"
+                    style={room ? { marginBottom: 24 - petSize * (1 - 26.3 / 32) } : undefined}
+                  >
+                    <EvolvingPixelPet
+                      pet={makePet((query.get('pet') as Pet['type']) || 'otter', 25)}
+                      size={petSize}
+                      animated={false}
+                    />
+                  </div>
+                </div>
+                <span style={{ ...capStyle, padding: '4px 0 8px' }}>
+                  {PET_BACKGROUNDS[id].name} — {id} ({PET_BACKGROUNDS[id].rarity})
+                </span>
+              </div>
+            ))}
+        </div>
+      </ThemeContext.Provider>
+    );
+  }
+
   if (accOnly) {
-    const noSeason = themeCtx && {
-      ...themeCtx,
-      userConfig: {
-        ...themeCtx.userConfig,
-        seasons: { spooky: false, christmas: false, newyear: false, valentine: false } as const,
-      },
-    };
     return (
       <ThemeContext.Provider value={noSeason || themeCtx}>
         <div style={{ padding: 12, color: '#fff', background: '#1b1420', ...gridStyle }}>
@@ -219,8 +305,8 @@ export const DevPetPreviewPage: React.FC = () => {
     <div style={{ padding: '16px 16px 80px', color: '#fff' }}>
       <h1 style={{ fontSize: 22, margin: '8px 0' }}>Pet-Preview (Dev)</h1>
       <p style={{ ...capStyle, textAlign: 'left', maxWidth: 640 }}>
-        Neue Inhalte: 3 neue Pets, Kawaii-Redesign der 7 alten Pets, 30 Accessoires, 20
-        Hintergruende. Diese Seite ist nur im Dev-Server erreichbar.
+        Neue Inhalte im Winter 2026: 6 neue Pets, 60 Accessoires, 40 Hintergründe. Diese Seite ist
+        nur im Dev-Server erreichbar.
       </p>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <label style={{ ...capStyle, display: 'inline-flex', alignItems: 'center', gap: 6 }}>

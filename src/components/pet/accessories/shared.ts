@@ -11,6 +11,8 @@ export interface PetAnchors {
   eyeWidth: number;
   neckY: number;
   neckHalfWidth: number;
+  /** Höhe des Mundes, für alles, was im oder am Mund sitzt. */
+  mouthY: number;
   /** Gürtellinie: Höhe + halbe Breite inklusive anliegender Flügel/Flossen. */
   waist: { y: number; hw: number };
   /** Umhänge: Schließe + Kragenbreite vorne, Rumpf-Ellipse, hinter der das Rückenteil hängt. */

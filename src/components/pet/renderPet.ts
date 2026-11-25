@@ -4,15 +4,21 @@ import { adjustColor } from './colorUtils';
 import { coveredSlots, slotOf, wornAccessories } from './outfit';
 import { drawAccessory, drawAccessoryBack } from './sprites/drawAccessory';
 import { drawAxolotl } from './sprites/drawAxolotl';
+import { drawBat } from './sprites/drawBat';
 import { drawBird } from './sprites/drawBird';
+import { drawCapybara } from './sprites/drawCapybara';
 import { drawCat } from './sprites/drawCat';
 import { drawDog } from './sprites/drawDog';
 import { drawDragon, drawDragonWingsOverlay } from './sprites/drawDragon';
 import { drawFox } from './sprites/drawFox';
+import { drawFrog } from './sprites/drawFrog';
+import { drawHedgehog } from './sprites/drawHedgehog';
+import { drawOtter } from './sprites/drawOtter';
 import { drawOwl } from './sprites/drawOwl';
 import { drawPanda } from './sprites/drawPanda';
 import { drawPenguin } from './sprites/drawPenguin';
 import { drawRabbit } from './sprites/drawRabbit';
+import { drawUnicorn, drawUnicornHorn } from './sprites/drawUnicorn';
 import { NEUTRAL_POSE, type PetPose } from './sprites/pose';
 
 type Drawer = typeof drawCat;
@@ -28,6 +34,12 @@ const DRAWERS: Record<Pet['type'], Drawer> = {
   owl: drawOwl,
   penguin: drawPenguin,
   axolotl: drawAxolotl,
+  frog: drawFrog,
+  hedgehog: drawHedgehog,
+  otter: drawOtter,
+  capybara: drawCapybara,
+  unicorn: drawUnicorn,
+  bat: drawBat,
 };
 
 export interface PetColors {
@@ -81,6 +93,10 @@ export function drawPetFigure(ctx: CanvasRenderingContext2D, pet: Pet, o: Figure
   );
 
   worn.forEach((accessory) => drawAccessory(ctx, accessory, o.ps, o.offset, pet.type, pet.level));
+
+  if (pet.type === 'unicorn' && worn.some((a) => slotOf(a.id) === 'head')) {
+    drawUnicornHorn(ctx, pet.level, o.ps, o.offset, o.animated, o.frame, o.animationSpeed);
+  }
 
   o.overlay?.(ctx);
 

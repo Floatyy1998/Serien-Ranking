@@ -87,3 +87,31 @@ export const ellipseFill = (
   ctx.fill();
   shadeEllipse(ctx, cx * ps, cy * ps + offset, rx * ps, ry * ps, ps, rotation);
 };
+
+/** Gefülltes Vieleck im 32er-Raster. */
+export const polyFill = (
+  ctx: CanvasRenderingContext2D,
+  points: [number, number][],
+  ps: number,
+  offset: number
+): void => {
+  ctx.beginPath();
+  ctx.moveTo(points[0][0] * ps, points[0][1] * ps + offset);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0] * ps, points[i][1] * ps + offset);
+  ctx.closePath();
+  ctx.fill();
+};
+
+/** Wachstumsstufen des Kawaii-Skeletts; `evolved` ist die Lv50-Form. */
+export const growth = (level: number, evolved = 1.16): number =>
+  level >= 50
+    ? evolved
+    : level >= 20
+      ? 1.12
+      : level >= 15
+        ? 1.08
+        : level >= 10
+          ? 1.05
+          : level >= 5
+            ? 1.02
+            : 1;

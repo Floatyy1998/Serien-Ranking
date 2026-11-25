@@ -7,6 +7,7 @@ import Inventory2 from '@mui/icons-material/Inventory2';
 import { CelebrationBurst } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePetItems } from '../../../hooks/pet/usePetItems';
 import { useWebWorkerStatsOptimized } from '../../../hooks/data/useWebWorkerStatsOptimized';
 import { hapticCelebrate } from '../../../lib/interaction/haptics';
 import {
@@ -94,7 +95,10 @@ export const MilestoneBoxCard: React.FC = () => {
   // einen Frame 10 Boxen aufploppen).
   const availableBoxes =
     lastOpenedBoxNumber === null ? 0 : Math.max(0, earnedBoxes - lastOpenedBoxNumber);
-  const hasBox = availableBoxes > 0;
+  // Bonus-Boxen aus dem Vorrat zählen mit; geöffnet werden zuerst die erspielten
+  const bonusBoxes = usePetItems().bonusBox;
+  const openableBoxes = availableBoxes + bonusBoxes;
+  const hasBox = openableBoxes > 0;
 
   // Verfuegbarkeit fuer den Backend-Push-Cron spiegeln, sobald sie feststeht.
   useEffect(() => {
@@ -119,7 +123,7 @@ export const MilestoneBoxCard: React.FC = () => {
           {...(hasBox && {
             role: 'button',
             tabIndex: 0,
-            'aria-label': t('Mystery Box öffnen – {n} verfügbar', { n: availableBoxes }),
+            'aria-label': t('Mystery Box öffnen – {n} verfügbar', { n: openableBoxes }),
             onKeyDown: (e: React.KeyboardEvent) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -196,9 +200,9 @@ export const MilestoneBoxCard: React.FC = () => {
               }}
             >
               {hasBox
-                ? availableBoxes > 1
-                  ? t('{n} Boxen verfügbar!', { n: availableBoxes })
-                  : t('{n} Box verfügbar!', { n: availableBoxes })
+                ? openableBoxes > 1
+                  ? t('{n} Boxen verfügbar!', { n: openableBoxes })
+                  : t('{n} Box verfügbar!', { n: openableBoxes })
                 : t('Nächste in {n} Episoden', { n: nextThreshold - boxEpisodes })}
             </p>
           </div>
@@ -207,7 +211,7 @@ export const MilestoneBoxCard: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {hasBox ? (
               <>
-                {availableBoxes > 1 && (
+                {openableBoxes > 1 && (
                   <span
                     style={{
                       fontSize: 10,
@@ -218,7 +222,7 @@ export const MilestoneBoxCard: React.FC = () => {
                       borderRadius: 4,
                     }}
                   >
-                    x{availableBoxes}
+                    x{openableBoxes}
                   </span>
                 )}
                 <motion.div
@@ -263,7 +267,13 @@ export const MilestoneBoxCard: React.FC = () => {
       </div>
 
       <AnimatePresence>
-        {showBox && <MysteryBoxOverlay totalEpisodes={totalEpisodes} onClose={handleClose} />}
+        {showBox && (
+          <MysteryBoxOverlay
+            totalEpisodes={totalEpisodes}
+            onClose={handleClose}
+            bonus={availableBoxes === 0}
+          />
+        )}
       </AnimatePresence>
       <CelebrationBurst
         trigger={celebrate}

@@ -91,6 +91,7 @@ export const PetsPagePreview = ({
       playWithPet: async () => {},
       cheerUpPet: async () => {},
       revivePet: async () => {},
+      applyItem: async () => false,
       releasePet: async () => {},
       changeColor: async (color: string) => update({ color }),
       toggleAccessory: (id: string) => {

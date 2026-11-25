@@ -26,7 +26,7 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
       ctx.clearRect(0, 0, size, size);
       ctx.fillStyle = color;
 
-      const patterns: Record<Pet['type'], number[][]> = {
+      const patterns: Partial<Record<Pet['type'], number[][]>> = {
         cat: [
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
@@ -209,7 +209,7 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
         ],
       };
 
-      const pattern = patterns[pet.type] || patterns.cat;
+      const pattern = patterns[pet.type] ?? patterns.cat ?? [];
       const bounceOffset = animated ? Math.sin(frameRef.current * 0.1) * 2 : 0;
 
       pattern.forEach((row, y) => {
@@ -221,7 +221,7 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
       });
 
       ctx.fillStyle = '#000';
-      const eyePositions = {
+      const eyePositions: Partial<Record<Pet['type'], number[][]>> = {
         cat: [
           [5, 5],
           [10, 5],
@@ -264,7 +264,7 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
         ],
       };
 
-      const eyes = eyePositions[pet.type] || eyePositions.cat;
+      const eyes = eyePositions[pet.type] ?? eyePositions.cat ?? [];
       eyes.forEach(([x, y]) => {
         ctx.fillRect(x * pixelSize, y * pixelSize + bounceOffset, pixelSize, pixelSize);
       });

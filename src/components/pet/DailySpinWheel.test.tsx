@@ -19,7 +19,21 @@ vi.mock('../../services/pet/dailySpinService', () => ({
   performDailySpin: spin.performDailySpin,
 }));
 
+const petItems = vi.hoisted(() => ({ extraSpin: 0 }));
+vi.mock('../../hooks/pet/usePetItems', () => ({
+  usePetItems: () => ({
+    treat: 0,
+    toy: 0,
+    feast: 0,
+    bonusBox: 0,
+    streakPass: 0,
+    elixir: 0,
+    extraSpin: petItems.extraSpin,
+  }),
+}));
+
 beforeEach(() => {
+  petItems.extraSpin = 0;
   authState.user = { uid: 'u1' };
   spin.buildSpinSegments.mockReturnValue(
     Array.from({ length: 9 }, (_, i) => ({

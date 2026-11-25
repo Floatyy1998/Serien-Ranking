@@ -10,6 +10,8 @@ import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Wallpaper from '@mui/icons-material/Wallpaper';
+import Cookie from '@mui/icons-material/Cookie';
+import Redeem from '@mui/icons-material/Redeem';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   buildSpinSegments,
@@ -23,6 +25,9 @@ import {
   playRevealSound,
   readEffectSounds,
 } from '../../services/settings/effectSounds';
+import { usePetItems } from '../../hooks/pet/usePetItems';
+import { PET_ITEMS } from './data/petItems';
+import { PetItemIcon } from './PetItemIcon';
 import { SoundToggleButton } from './SoundToggleButton';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -37,9 +42,9 @@ const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 
 const SEGMENT_COLORS = [
   '#E040FB', // 3x XP 5 Ep (Epic Booster)
-  '#FFD93D', // 2x XP 2 Ep
+  '#FFD93D', // Vorrat
   '#FFD700', // 3x XP 10 Ep (Legendary Booster)
-  '#FF9800', // 2x XP 5 Ep
+  '#FF9800', // Großer Vorrat
   '#2196F3', // Accessoire
   '#4CAF50', // 2x XP 10 Ep
   '#9C27B0', // Seltenes Acc
@@ -50,9 +55,9 @@ const SEGMENT_COLORS = [
 /** MUI icon per segment */
 const SEGMENT_ICONS = [
   <Diamond style={{ fontSize: 28, color: 'white' }} />,
-  <Bolt style={{ fontSize: 28, color: '#1a1a2e' }} />,
+  <Cookie style={{ fontSize: 28, color: '#1a1a2e' }} />,
   <EmojiEvents style={{ fontSize: 28, color: '#1a1a2e' }} />,
-  <Whatshot style={{ fontSize: 28, color: '#1a1a2e' }} />,
+  <Redeem style={{ fontSize: 28, color: '#1a1a2e' }} />,
   <CardGiftcard style={{ fontSize: 28, color: 'white' }} />,
   <LocalFireDepartment style={{ fontSize: 28, color: '#1a1a2e' }} />,
   <AutoAwesome style={{ fontSize: 28, color: 'white' }} />,
@@ -73,6 +78,13 @@ function getResultIcon(reward: SpinReward) {
       return <Bolt style={{ fontSize: 64, color: '#FFD93D' }} />;
     case 'background':
       return <Wallpaper style={{ fontSize: 64, color: '#00D4FF' }} />;
+    case 'item':
+      return reward.itemId ? (
+        <PetItemIcon
+          id={reward.itemId}
+          style={{ fontSize: 64, color: RARITY_COLORS[reward.rarity] }}
+        />
+      ) : null;
     case 'accessory':
       if (reward.rarity === 'legendary')
         return <EmojiEvents style={{ fontSize: 64, color: '#FFD700' }} />;
@@ -100,6 +112,8 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
   const lastTickAngleRef = useRef(-1);
 
   const segments = buildSpinSegments(streakDays);
+  const extraSpins = usePetItems().extraSpin;
+  const spinnable = canSpin || extraSpins > 0;
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -163,7 +177,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
   }, []);
 
   const handleSpin = async () => {
-    if (!user?.uid || phase !== 'ready' || !canSpin) return;
+    if (!user?.uid || phase !== 'ready' || !spinnable) return;
 
     setPhase('spinning');
     lastTickAngleRef.current = -1;
@@ -173,7 +187,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       audioCtxRef.current = new AudioContext();
     }
 
-    const spinResult = await performDailySpin(user.uid, streakDays);
+    const spinResult = await performDailySpin(user.uid, streakDays, { useExtraSpin: !canSpin });
     if (!spinResult) {
       setCanSpin(false);
       setPhase('ready');
@@ -525,6 +539,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
                 })}
               {result.type === 'accessory' && t('Neues Accessoire freigeschaltet!')}
               {result.type === 'background' && t('Neuer Hintergrund freigeschaltet!')}
+              {result.type === 'item' && result.itemId && t(PET_ITEMS[result.itemId].description)}
               {result.type === 'nothing' && t('Morgen hast du mehr Glück!')}
             </motion.p>
           </motion.div>
@@ -537,23 +552,27 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
           whileHover={{ scale: 1.05 }}
           whileTap={tapScale}
           onClick={handleSpin}
-          disabled={!canSpin}
+          disabled={!spinnable}
           style={{
-            background: canSpin
+            background: spinnable
               ? 'linear-gradient(135deg, #FFD93D, #FF9800)'
               : 'rgba(255,255,255,0.1)',
-            color: canSpin ? '#1a1a2e' : 'rgba(255,255,255,0.4)',
+            color: spinnable ? '#1a1a2e' : 'rgba(255,255,255,0.4)',
             border: 'none',
             borderRadius: 16,
             padding: '14px 48px',
             fontSize: 18,
             fontWeight: 800,
             fontFamily: 'var(--font-display)',
-            cursor: canSpin ? 'pointer' : 'default',
-            boxShadow: canSpin ? '0 6px 24px rgba(255,152,0,0.4)' : 'none',
+            cursor: spinnable ? 'pointer' : 'default',
+            boxShadow: spinnable ? '0 6px 24px rgba(255,152,0,0.4)' : 'none',
           }}
         >
-          {canSpin ? t('Drehen!') : t('Morgen wieder!')}
+          {canSpin
+            ? t('Drehen!')
+            : extraSpins > 0
+              ? t('Extra-Dreh einlösen ({n})', { n: extraSpins })
+              : t('Morgen wieder!')}
         </motion.button>
       )}
 

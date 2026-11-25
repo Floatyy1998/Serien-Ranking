@@ -1,11 +1,17 @@
 import { dbRef, dbGet, userPath } from '../../services/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
+import {
+  pickItemReward,
+  SPIN_EXCLUSIVE_ACCESSORIES,
+} from '../../components/pet/data/accessoryPools';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { PET_ITEMS, rollPetItem, type PetItemId } from '../../components/pet/data/petItems';
 import { t } from '../i18n';
 import { getUserPets } from './petCore';
+import { addPetItem, takePetItem } from './petItemService';
 
-export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing' | 'background';
+export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing' | 'background' | 'item';
 
 export interface XpBoostItem {
   multiplier: number;
@@ -27,6 +33,8 @@ export interface SpinReward {
   accessoryId?: string;
   // Background
   backgroundId?: string;
+  // Verbrauchsgut
+  itemId?: PetItemId;
 }
 
 export interface DailySpinData {
@@ -40,34 +48,6 @@ export interface SpinHistoryEntry {
   reward: SpinReward;
   timestamp: number;
 }
-
-/** IDs of accessories exclusive to the daily spin (not dropped from episodes) */
-const SPIN_EXCLUSIVE_ACCESSORIES = [
-  'diamondTiara',
-  'ninjaMask',
-  'royalCape',
-  'aviatorGoggles',
-  'chefHat',
-  'lei',
-  'catEars',
-  'nightOwlGoggles',
-  'galaxyCape',
-  'samuraiHelmet',
-  'pixelShades',
-  'luckyClover',
-  'witchHat',
-  'steamGoggles',
-  'rainbowScarf',
-  'mushHat',
-  'butterflyMask',
-  'shellNecklace',
-  'foxEars',
-  'ghostMask',
-  'thunderChain',
-  'iceHelm',
-  'prismVisor',
-  'solarAmulet',
-];
 
 export function toLocalDateString(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -86,15 +66,13 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
       xpMultiplier: 3,
       xpEpisodeCount: 5,
     },
-    // 1: 2x XP 2 Episoden
+    // 1: Vorrat (Leckerli, Spielzeug, Festmahl, Extra-Dreh)
     {
-      type: 'xp_boost',
-      label: t('2x XP — 2 Episoden'),
-      icon: '⚡',
+      type: 'item',
+      label: t('Vorrat'),
+      icon: '🍪',
       color: '#FFD93D',
-      rarity: 'common',
-      xpMultiplier: 2,
-      xpEpisodeCount: 2,
+      rarity: 'uncommon',
     },
     // 2: 3x XP 10 Episoden (Legendary Booster)
     {
@@ -106,15 +84,13 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
       xpMultiplier: 3,
       xpEpisodeCount: 10,
     },
-    // 3: 2x XP 5 Episoden
+    // 3: Großer Vorrat (Festmahl, Extra-Dreh, Bonus-Box, Streak-Freischein, selten Lebenselixier)
     {
-      type: 'xp_boost',
-      label: t('2x XP — 5 Episoden'),
-      icon: '🔥',
+      type: 'item',
+      label: t('Großer Vorrat'),
+      icon: '🎁',
       color: '#FF9800',
-      rarity: 'uncommon',
-      xpMultiplier: 2,
-      xpEpisodeCount: 5,
+      rarity: 'rare',
     },
     // 4: Common Accessoire
     {
@@ -164,7 +140,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
 }
 
 /** Weights per segment index, scaled by streak tier.
- *  Segments: EpicBoost(3x5), 2xXP2Ep, LegendaryBoost(3x10), 2xXP5Ep, Acc,
+ *  Segments: EpicBoost(3x5), Vorrat, LegendaryBoost(3x10), Großer Vorrat, Acc,
  *            2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
  *  Higher streak = bessere Boosts, mehr Epic/Legendary */
 const STREAK_WEIGHTS: number[][] = [
@@ -200,13 +176,28 @@ export async function getDailySpinData(userId: string): Promise<DailySpinData | 
   return dbGet<DailySpinData>(userPath(userId, 'dailySpin'));
 }
 
-/** Perform the daily spin and return the reward + segment index */
+/** Macht aus dem Feld ein bestimmtes Verbrauchsgut. */
+function asItem(reward: SpinReward, itemId: PetItemId): void {
+  reward.type = 'item';
+  reward.itemId = itemId;
+  reward.rarity = PET_ITEMS[itemId].rarity;
+  reward.label = t(PET_ITEMS[itemId].name);
+  reward.icon = '🎁';
+}
+
+/**
+ * Perform the daily spin and return the reward + segment index.
+ * Ist der Tages-Dreh verbraucht, löst `useExtraSpin` einen Extra-Dreh aus dem Vorrat ein.
+ */
 export async function performDailySpin(
   userId: string,
-  streakDays: number
+  streakDays: number,
+  options: { useExtraSpin?: boolean } = {}
 ): Promise<{ reward: SpinReward; segmentIndex: number } | null> {
   const allowed = await canSpinToday(userId);
-  if (!allowed) return null;
+  if (!allowed && !(options.useExtraSpin && (await takePetItem(userId, 'extraSpin')))) {
+    return null;
+  }
 
   const segments = buildSpinSegments(streakDays);
   const tier = streakDays >= 30 ? 3 : streakDays >= 14 ? 2 : streakDays >= 7 ? 1 : 0;
@@ -220,39 +211,38 @@ export async function performDailySpin(
     reward.rarity = 'uncommon';
   }
 
-  // If it's an accessory reward, 30% chance to swap for a background of same rarity
-  if (reward.type === 'accessory' && Math.random() < 0.3) {
-    const bg = await pickBackgroundReward(userId, reward.rarity);
-    if (bg) {
-      reward.type = 'background';
-      reward.backgroundId = bg.id;
-      reward.label = bg.name;
-      reward.icon = '\uD83C\uDF0C';
-    }
+  if (reward.type === 'item') {
+    const big = segmentIndex === 3 && Math.random() < 0.25;
+    asItem(reward, rollPetItem(big ? 'epic' : reward.rarity));
   }
 
+  // Accessoire-Felder: zu 30 % zuerst ein Hintergrund. Ist die Seltenheit leergesammelt, rückt
+  // die nächstgelegene nach; ist wirklich alles gesammelt, gibt es einen großen Vorrat.
   if (reward.type === 'accessory') {
-    const picked = await pickAccessoryReward(userId, reward.rarity);
-    if (picked) {
-      reward.accessoryId = picked.id;
-      reward.label = picked.name;
-      reward.icon = picked.icon;
+    const first = Math.random() < 0.3 ? 'background' : 'accessory';
+    const pet = (await getUserPets(userId)).find((p) => p.isAlive);
+    const item =
+      pet &&
+      pickItemReward({
+        ownedAccessories: new Set((pet.accessories || []).map((a) => a.id)),
+        ownedBackgrounds: new Set(pet.unlockedBackgrounds || []),
+        rarity: reward.rarity,
+        preferred: SPIN_EXCLUSIVE_ACCESSORIES,
+        first,
+      });
+    if (item?.kind === 'accessory') {
+      reward.rarity = item.rarity;
+      reward.accessoryId = item.id;
+      reward.label = ACCESSORIES[item.id].name;
+      reward.icon = ACCESSORIES[item.id].icon;
+    } else if (item) {
+      reward.type = 'background';
+      reward.rarity = item.rarity;
+      reward.backgroundId = item.id;
+      reward.label = PET_BACKGROUNDS[item.id].name;
+      reward.icon = '\uD83C\uDF0C';
     } else {
-      // Try background fallback before XP fallback
-      const bg = await pickBackgroundReward(userId, reward.rarity);
-      if (bg) {
-        reward.type = 'background';
-        reward.backgroundId = bg.id;
-        reward.label = bg.name;
-        reward.icon = '\uD83C\uDF0C';
-      } else {
-        // Fallback to XP boost if all accessories owned
-        reward.type = 'xp_boost';
-        reward.label = t('2x XP — 5 Episoden');
-        reward.icon = '🔥';
-        reward.xpMultiplier = 2;
-        reward.xpEpisodeCount = 5;
-      }
+      asItem(reward, rollPetItem('rare'));
     }
   }
 
@@ -280,58 +270,13 @@ export async function performDailySpin(
   return { reward, segmentIndex };
 }
 
-async function pickAccessoryReward(
-  userId: string,
-  targetRarity: AccessoryRarity
-): Promise<{ id: string; name: string; icon: string } | null> {
-  const pets = await getUserPets(userId);
-  const alivePet = pets.find((p) => p.isAlive);
-  if (!alivePet) return null;
-
-  const owned = new Set((alivePet.accessories || []).map((a) => a.id));
-
-  // Prefer spin-exclusive accessories first, then fall back to regular ones
-  const spinExclusiveCandidates = SPIN_EXCLUSIVE_ACCESSORIES.filter((id) => {
-    const def = ACCESSORIES[id];
-    return def && def.rarity === targetRarity && !owned.has(id);
-  });
-
-  if (spinExclusiveCandidates.length > 0) {
-    const id = spinExclusiveCandidates[Math.floor(Math.random() * spinExclusiveCandidates.length)];
-    const def = ACCESSORIES[id];
-    return { id, name: def.name, icon: def.icon };
+async function applySpinReward(userId: string, reward: SpinReward): Promise<void> {
+  // Vorräte gehören zum Konto, nicht zu einem Pet — auch ohne lebendes Pet gutschreiben
+  if (reward.type === 'item') {
+    if (reward.itemId) await addPetItem(userId, reward.itemId);
+    return;
   }
 
-  // Fall back to regular accessories of that rarity
-  const regularCandidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === targetRarity && !def.source && !owned.has(id)
-  );
-
-  if (regularCandidates.length === 0) return null;
-
-  const [id, def] = regularCandidates[Math.floor(Math.random() * regularCandidates.length)];
-  return { id, name: def.name, icon: def.icon };
-}
-
-async function pickBackgroundReward(
-  userId: string,
-  targetRarity: AccessoryRarity
-): Promise<{ id: string; name: string } | null> {
-  const pets = await getUserPets(userId);
-  const alivePet = pets.find((p) => p.isAlive);
-  if (!alivePet) return null;
-
-  const owned = new Set(alivePet.unlockedBackgrounds || []);
-  const candidates = Object.values(PET_BACKGROUNDS).filter(
-    (bg) => bg.rarity === targetRarity && !owned.has(bg.id)
-  );
-
-  if (candidates.length === 0) return null;
-  const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  return { id: pick.id, name: pick.name };
-}
-
-async function applySpinReward(userId: string, reward: SpinReward): Promise<void> {
   const pets = await getUserPets(userId);
   const alivePet = pets.find((p) => p.isAlive);
   if (!alivePet) return;

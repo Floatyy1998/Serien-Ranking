@@ -480,6 +480,27 @@ const dict: Record<string, string> = {
   'Kinostart in deinem Land': 'Estreia nos cinemas no seu país',
   'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
     'Em cada página de filme, em “Em resumo”, agora aparece a estreia no seu país em vez da primeira data mundial. Isso vale também para filmes que você ainda não adicionou. O ano ao lado do título continua sendo o ano de lançamento original do filme.',
+
+  // ── Winter 2026 ──
+  'November 2026 – Sechs neue Pets und 100 neue Sachen':
+    'Novembro de 2026 – Seis bichinhos novos e 100 novidades',
+  'Sechs neue Pets': 'Seis bichinhos novos',
+  'Frosch, Igel, Otter, Capybara, Einhorn und Fledermaus ziehen ein. Jedes hat eine eigene Spezialbewegung und ab Level 50 eine Entwicklungsform: Regenkönig, Kristalligel, Gezeitenhüter, Onsen-Meister, Alicorn und Nachtfürst.':
+    'Sapo, ouriço, lontra, capivara, unicórnio e morcego estão chegando. Cada um tem seu próprio movimento especial e, a partir do nível 50, uma forma evoluída: Rei da Chuva, Ouriço de Cristal, Guardião das Marés, Mestre do Onsen, Alicórnio e Senhor da Noite.',
+  '60 neue Accessoires': '60 acessórios novos',
+  'Je 20 neue Teile für Kopf, Gesicht und Körper, vom Fischerhut bis zum Saturn-Reif. Neu sind Kleidung wie Ringelpulli, Hawaiihemd und Smoking sowie Teile, die hinter dem Pet sitzen: Engelsflügel, Schmetterlingsflügel und ein Jetpack. Du findest sie beim Schauen, am Glücksrad und in Mystery Boxen.':
+    'Vinte peças novas para cabeça, rosto e corpo, do chapéu bucket ao anel de Saturno. A novidade são roupas como o suéter listrado, a camisa havaiana e o smoking, além de peças que ficam atrás do bichinho: asas de anjo, asas de borboleta e uma mochila a jato. Você as encontra assistindo, na roda da sorte e nas Mystery Boxes.',
+  '40 neue Hintergründe': '40 fundos novos',
+  'Vom Sonnenblumenfeld über Kinosaal und Bibliothek bis zu Wolkenschloss, Drachenhort und Zeitstrudel. Freigeschaltete Szenen stehen dir auch als Chat-Hintergrund zur Wahl.':
+    'Do campo de girassóis à sala de cinema e à biblioteca, até o castelo nas nuvens, o tesouro do dragão e o vórtice do tempo. As cenas desbloqueadas também podem ser usadas como fundo do chat.',
+  'Neue Sticker und besserer Sitz': 'Novos stickers e melhor encaixe',
+  'Die sechs neuen Pets gibt es auch als Sticker im Chat. Außerdem sitzt alles, was zum Mund gehört, jetzt bei jeder Art genau am Mund, vom Schnurrbart bis zum Feueratem.':
+    'Os seis bichinhos novos também estão disponíveis como stickers no chat. Além disso, tudo o que vai na boca agora fica exatamente na boca em cada espécie, do bigode ao sopro de fogo.',
+
+  // ── Vorräte ──
+  'Vorräte statt immer nur XP-Boosts': 'Suprimentos em vez de só boosts de XP',
+  'Am Glücksrad und in Mystery Boxen gibt es jetzt sieben Verbrauchsgüter: Leckerli, Spielzeug und Festmahl für deine Pets, den Extra-Dreh, die Bonus-Box, den Streak-Freischein und das Lebenselixier, mit dem ein Pet ohne Levelverlust zurückkehrt. Zwei XP-Felder am Rad sind dafür Vorrats-Felder geworden. Deinen Vorrat findest du auf der Pet-Seite oben rechts. Und ist eine Seltenheit leergesammelt, bekommst du jetzt ein Teil der nächsten statt eines XP-Boosts.':
+    'A roda da sorte e as Mystery Boxes agora distribuem sete consumíveis: petisco, brinquedo e banquete para seus bichinhos, o giro extra, a caixa bônus, o passe de sequência e o elixir da vida, com o qual um bichinho volta sem perder nível. Para isso, dois campos de XP da roda viraram campos de suprimentos. Seus suprimentos ficam no canto superior direito da página dos bichinhos. E quando uma raridade já está completa, agora você recebe uma peça da seguinte em vez de um boost de XP.',
 };
 
 export default dict;

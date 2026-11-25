@@ -482,6 +482,27 @@ const dict: Record<string, string> = {
   'Kinostart in deinem Land': 'Sortie en salle dans ton pays',
   'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
     'Sur chaque page de film, sous « En un coup d’œil », tu vois désormais la sortie dans ton pays au lieu de la première date mondiale. C’est aussi le cas pour les films que tu n’as pas encore ajoutés. L’année à côté du titre reste l’année de sortie d’origine du film.',
+
+  // ── Winter 2026 ──
+  'November 2026 – Sechs neue Pets und 100 neue Sachen':
+    'Novembre 2026 – Six nouveaux compagnons et 100 nouveautés',
+  'Sechs neue Pets': 'Six nouveaux compagnons',
+  'Frosch, Igel, Otter, Capybara, Einhorn und Fledermaus ziehen ein. Jedes hat eine eigene Spezialbewegung und ab Level 50 eine Entwicklungsform: Regenkönig, Kristalligel, Gezeitenhüter, Onsen-Meister, Alicorn und Nachtfürst.':
+    "La grenouille, le hérisson, la loutre, le capybara, la licorne et la chauve-souris débarquent. Chacun a son propre mouvement spécial et, à partir du niveau 50, une forme évoluée : Roi de la pluie, Hérisson de cristal, Gardien des marées, Maître de l'onsen, Alicorne et Seigneur de la nuit.",
+  '60 neue Accessoires': '60 nouveaux accessoires',
+  'Je 20 neue Teile für Kopf, Gesicht und Körper, vom Fischerhut bis zum Saturn-Reif. Neu sind Kleidung wie Ringelpulli, Hawaiihemd und Smoking sowie Teile, die hinter dem Pet sitzen: Engelsflügel, Schmetterlingsflügel und ein Jetpack. Du findest sie beim Schauen, am Glücksrad und in Mystery Boxen.':
+    "Vingt nouvelles pièces pour la tête, le visage et le corps, du bob à l'anneau de Saturne. Nouveauté : des vêtements comme le pull rayé, la chemise hawaïenne et le smoking, ainsi que des pièces portées derrière ton compagnon : ailes d'ange, ailes de papillon et jetpack. Tu les trouves en regardant, à la roue de la fortune et dans les Mystery Boxes.",
+  '40 neue Hintergründe': '40 nouveaux fonds',
+  'Vom Sonnenblumenfeld über Kinosaal und Bibliothek bis zu Wolkenschloss, Drachenhort und Zeitstrudel. Freigeschaltete Szenen stehen dir auch als Chat-Hintergrund zur Wahl.':
+    'Du champ de tournesols à la salle de cinéma et à la bibliothèque, jusqu’au château dans les nuages, au trésor du dragon et au vortex temporel. Les scènes débloquées sont aussi disponibles comme fond de chat.',
+  'Neue Sticker und besserer Sitz': 'Nouveaux stickers et meilleur ajustement',
+  'Die sechs neuen Pets gibt es auch als Sticker im Chat. Außerdem sitzt alles, was zum Mund gehört, jetzt bei jeder Art genau am Mund, vom Schnurrbart bis zum Feueratem.':
+    'Les six nouveaux compagnons existent aussi en stickers dans le chat. Et tout ce qui va à la bouche est désormais placé exactement sur la bouche pour chaque espèce, de la moustache au souffle de feu.',
+
+  // ── Vorräte ──
+  'Vorräte statt immer nur XP-Boosts': 'Des provisions au lieu de boosts XP à répétition',
+  'Am Glücksrad und in Mystery Boxen gibt es jetzt sieben Verbrauchsgüter: Leckerli, Spielzeug und Festmahl für deine Pets, den Extra-Dreh, die Bonus-Box, den Streak-Freischein und das Lebenselixier, mit dem ein Pet ohne Levelverlust zurückkehrt. Zwei XP-Felder am Rad sind dafür Vorrats-Felder geworden. Deinen Vorrat findest du auf der Pet-Seite oben rechts. Und ist eine Seltenheit leergesammelt, bekommst du jetzt ein Teil der nächsten statt eines XP-Boosts.':
+    'La roue de la fortune et les Mystery Boxes distribuent désormais sept consommables : friandise, jouet et festin pour tes compagnons, le tour bonus, la boîte bonus, le passe de série et l’élixir de vie, qui ramène un compagnon sans perte de niveau. Deux cases XP de la roue sont devenues des cases de provisions. Tes provisions se trouvent en haut à droite de la page des compagnons. Et lorsqu’une rareté est entièrement collectionnée, tu reçois maintenant une pièce de la suivante au lieu d’un boost XP.',
 };
 
 export default dict;

@@ -113,7 +113,7 @@ describe('PatchNotesPage', () => {
     render(<PatchNotesPage />);
     expect(screen.getByText('Patch Notes')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: 'Vorschläge, die zu dir passen' })
+      screen.getByRole('heading', { name: 'Sechs neue Pets und 100 neue Sachen' })
     ).toBeInTheDocument();
     const older = screen.getByRole('button', { name: /Anime-Season-Kalender/ });
     expect(older).toHaveAttribute('aria-expanded', 'false');

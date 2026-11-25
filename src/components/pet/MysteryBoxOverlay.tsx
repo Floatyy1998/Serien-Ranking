@@ -8,13 +8,15 @@ import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import Diamond from '@mui/icons-material/Diamond';
 import Wallpaper from '@mui/icons-material/Wallpaper';
 import { useAuth } from '../../contexts/AuthContext';
-import { openMysteryBox } from '../../services/pet/mysteryBoxService';
+import { openBonusBox, openMysteryBox } from '../../services/pet/mysteryBoxService';
 import type { MysteryBoxReward } from '../../services/pet/mysteryBoxService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
 import { playRevealSound } from '../../services/settings/effectSounds';
+import { PET_ITEMS } from './data/petItems';
+import { PetItemIcon } from './PetItemIcon';
 import { SoundToggleButton } from './SoundToggleButton';
 
 function getRewardIcon(reward: MysteryBoxReward) {
@@ -29,6 +31,15 @@ function getRewardIcon(reward: MysteryBoxReward) {
       return <Bolt style={{ fontSize: 72, color: '#FFD93D' }} />;
     case 'background':
       return <Wallpaper style={{ fontSize: 72, color: '#00D4FF' }} />;
+    case 'item':
+      return reward.itemId ? (
+        <PetItemIcon
+          id={reward.itemId}
+          style={{ fontSize: 72, color: RARITY_COLORS[reward.rarity] }}
+        />
+      ) : (
+        <CardGiftcard style={{ fontSize: 72, color: '#9E9E9E' }} />
+      );
     default:
       return <CardGiftcard style={{ fontSize: 72, color: '#9E9E9E' }} />;
   }
@@ -37,9 +48,15 @@ function getRewardIcon(reward: MysteryBoxReward) {
 interface MysteryBoxOverlayProps {
   totalEpisodes: number;
   onClose: () => void;
+  /** Bonus-Box aus dem Vorrat statt einer erspielten Box. */
+  bonus?: boolean;
 }
 
-export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpisodes, onClose }) => {
+export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({
+  totalEpisodes,
+  onClose,
+  bonus = false,
+}) => {
   const { user } = useAuth() || {};
   const [phase, setPhase] = useState<'closed' | 'shaking' | 'opening' | 'reveal' | 'gone'>(
     'closed'
@@ -54,7 +71,9 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
     setTimeout(async () => {
       setPhase('opening');
 
-      const result = await openMysteryBox(user.uid, totalEpisodes);
+      const result = bonus
+        ? await openBonusBox(user.uid)
+        : await openMysteryBox(user.uid, totalEpisodes);
       if (result) {
         setReward(result);
         setTimeout(() => {
@@ -128,7 +147,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           ) : (
             <>
               <Inventory2 style={{ fontSize: 22, color: '#E040FB' }} />
-              {t('Mystery Box')}
+              {bonus ? t('Bonus-Box') : t('Mystery Box')}
             </>
           )}
         </motion.h2>
@@ -278,6 +297,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
                 t('{x}x XP Boost — aktiviere ihn auf der Pet-Seite!', {
                   x: reward.xpMultiplier ?? 2,
                 })}
+              {reward.type === 'item' && reward.itemId && t(PET_ITEMS[reward.itemId].description)}
             </motion.p>
           </motion.div>
         )}

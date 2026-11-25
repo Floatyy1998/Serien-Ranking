@@ -17,7 +17,9 @@ interface PetReviveConfirmProps {
   pet: Pet;
   show: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (useElixir?: boolean) => void;
+  /** Lebenselixiere im Vorrat. */
+  elixirs?: number;
 }
 
 export const PetReviveConfirm = memo(function PetReviveConfirm({
@@ -25,9 +27,11 @@ export const PetReviveConfirm = memo(function PetReviveConfirm({
   show,
   onClose,
   onConfirm,
+  elixirs = 0,
 }: PetReviveConfirmProps) {
   const { currentTheme } = useTheme();
   const losesLevel = pet.level > 1;
+  const withElixir = losesLevel && elixirs > 0;
 
   return (
     <AnimatePresence>
@@ -55,13 +59,19 @@ export const PetReviveConfirm = memo(function PetReviveConfirm({
               {t('{name} wiederbeleben?', { name: pet.name })}
             </h2>
             <p className="pet-release-desc" style={{ color: currentTheme.text.muted }}>
-              {losesLevel
-                ? t('Das kostet 1 Level: {name} fällt von Level {von} auf Level {auf}.', {
+              {withElixir
+                ? t('Mit einem Lebenselixier behält {name} Level {level}. Du hast {n}.', {
                     name: pet.name,
-                    von: pet.level,
-                    auf: pet.level - 1,
+                    level: pet.level,
+                    n: elixirs,
                   })
-                : t('{name} kehrt frisch gestärkt zurück.', { name: pet.name })}
+                : losesLevel
+                  ? t('Das kostet 1 Level: {name} fällt von Level {von} auf Level {auf}.', {
+                      name: pet.name,
+                      von: pet.level,
+                      auf: pet.level - 1,
+                    })
+                  : t('{name} kehrt frisch gestärkt zurück.', { name: pet.name })}
             </p>
             <div className="pet-release-actions">
               <motion.button
@@ -78,12 +88,34 @@ export const PetReviveConfirm = memo(function PetReviveConfirm({
               </motion.button>
               <motion.button
                 whileTap={tapScale}
-                onClick={onConfirm}
+                onClick={() => onConfirm(withElixir)}
                 className="pet-release-btn pet-release-btn--confirm"
               >
-                {losesLevel ? t('Wiederbeleben (−1 Level)') : t('Wiederbeleben')}
+                {withElixir
+                  ? t('Mit Elixier wiederbeleben')
+                  : losesLevel
+                    ? t('Wiederbeleben (−1 Level)')
+                    : t('Wiederbeleben')}
               </motion.button>
             </div>
+            {withElixir && (
+              <button
+                type="button"
+                onClick={() => onConfirm(false)}
+                style={{
+                  display: 'block',
+                  margin: '10px auto 0',
+                  background: 'none',
+                  border: 'none',
+                  color: currentTheme.text.muted,
+                  fontSize: 13,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('Elixier aufheben und 1 Level abgeben')}
+              </button>
+            )}
           </motion.div>
         </motion.div>
       )}

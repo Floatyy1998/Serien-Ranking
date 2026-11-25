@@ -12,4 +12,10 @@ export const SIGNATURE_LABEL: Record<Species, string> = {
   panda: 'Purzelbaum',
   penguin: 'Rutschen',
   axolotl: 'Blubbern',
+  frog: 'Fliegenfang',
+  hedgehog: 'Einkugeln',
+  otter: 'Bauchrutscher',
+  capybara: 'Baden',
+  unicorn: 'Freudensprünge',
+  bat: 'Flattern',
 };

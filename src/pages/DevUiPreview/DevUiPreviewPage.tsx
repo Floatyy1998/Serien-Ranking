@@ -41,6 +41,7 @@ import {
   PetCreationPreview,
   PetsPagePreview,
 } from './PetsPagePreview';
+import { PetItemsPreview, PetReviveElixirPreview, StreakPassPreview } from './PetItemsPreview';
 import {
   PetPlaygroundPreview,
   PetPoseGalleryPreview,
@@ -338,6 +339,13 @@ const VIEWS: { id: string; label: string; render: () => React.ReactNode }[] = [
   },
   { id: 'pets-page', label: 'Pets: Seite', render: () => <PetsPagePreview /> },
   { id: 'pet-create', label: 'Pets: Erschaffen', render: () => <PetCreationPreview /> },
+  { id: 'pet-items', label: 'Pets: Vorräte', render: () => <PetItemsPreview /> },
+  {
+    id: 'pet-revive-elixir',
+    label: 'Pets: Wiederbeleben mit Elixier',
+    render: () => <PetReviveElixirPreview />,
+  },
+  { id: 'streak-pass', label: 'Streak: Freischein', render: () => <StreakPassPreview /> },
   {
     id: 'pet-create-named',
     label: 'Pets: Erschaffen mit Name',

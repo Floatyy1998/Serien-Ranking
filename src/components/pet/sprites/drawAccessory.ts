@@ -1,5 +1,9 @@
-import type { PetAccessory } from '../../../types/pet.types';
+import type { Pet, PetAccessory } from '../../../types/pet.types';
 import type { PetAnchors } from '../accessories/shared';
+import { FACE_EXTRA } from '../accessories/faceExtra';
+import { HEAD_EXTRA, HEAD_EXTRA_BACK } from '../accessories/headExtra';
+import { NECK_EXTRA, NECK_EXTRA_BACK } from '../accessories/neckExtra';
+import { pen, type AccessoryDrawer } from '../accessories/pen';
 import {
   drawBeanie,
   drawBaseballCap,
@@ -140,9 +144,18 @@ import {
   isCloakId,
 } from '../accessories/neck';
 
+/** Teile ab dem Winter-Update 2026: je ein Zeichner, optional ein Teil hinter dem Körper. */
+const EXTRA_FRONT: Record<string, AccessoryDrawer> = {
+  ...HEAD_EXTRA,
+  ...FACE_EXTRA,
+  ...NECK_EXTRA,
+};
+const EXTRA_BACK: Record<string, AccessoryDrawer> = { ...HEAD_EXTRA_BACK, ...NECK_EXTRA_BACK };
+
 // Sicherer Default falls petType nicht bekannt (z.B. veralteter JS-Cache,
 // alte/korrupte Pet-Daten in Firebase mit unbekanntem Typ).
-type BaseAnchors = Omit<PetAnchors, 'waist'> & Partial<Pick<PetAnchors, 'waist'>>;
+type BaseAnchors = Omit<PetAnchors, 'waist' | 'mouthY'> &
+  Partial<Pick<PetAnchors, 'waist' | 'mouthY'>>;
 
 const DEFAULT_ANCHORS: BaseAnchors = {
   headTopY: 11,
@@ -161,14 +174,14 @@ const DEFAULT_ANCHORS: BaseAnchors = {
 const eggCollar = (claspY: number, cy: number, rx: number, ry: number): number =>
   rx * Math.sqrt(Math.max(0, 1 - ((claspY - 1.5 - cy) / ry) ** 2)) + 0.2;
 
-type AnchorPetType =
-  'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' | 'owl' | 'penguin' | 'axolotl';
+type AnchorPetType = Pet['type'];
 
 export function getAnchors(petType: AnchorPetType, level: number): PetAnchors {
   const base = baseAnchors(petType, level);
   return {
     ...base,
     waist: base.waist ?? { y: base.neckY + 4.4, hw: base.neckHalfWidth + 0.4 },
+    mouthY: base.mouthY ?? base.eyeY + 2.5,
   };
 }
 
@@ -191,6 +204,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        mouthY: 16.2,
         cloak: { claspY: 12.7 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
       };
     case 'dog':
@@ -207,6 +221,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        mouthY: petType === 'dog' ? 15.6 : 16.2,
         cloak: { claspY: 12.7 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
       };
     case 'bird': {
@@ -223,6 +238,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 17.5 - 6.2 * b * 0.35 + 3.9,
         neckHalfWidth: wingX + 0.8,
+        mouthY: 17.5 - 6.2 * b * 0.35 + 1.9,
         waist: { y: 17.5 + 6.2 * b * 0.5, hw: wingX + 1 },
         cloak: {
           claspY,
@@ -245,6 +261,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 18.6,
         neckHalfWidth: 4.4 * s,
+        mouthY: 16.1,
         cloak: { claspY: 13.2 + 6 * b, collarHw: 4.4 * b + 0.6, ...torso, bodyRy: 4.3 * b },
       };
     case 'panda':
@@ -261,6 +278,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
           eyeWidth: 1.8,
           neckY: 18,
           neckHalfWidth: 5,
+          mouthY: 16.1,
           cloak: {
             claspY: 12.2 + (level >= 75 ? 7 : 6.7),
             collarHw: 5.6,
@@ -281,6 +299,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 1.8,
         neckY: 19,
         neckHalfWidth: 4,
+        mouthY: 16.4,
         cloak: {
           claspY: 12.7 + 6.5 * b,
           collarHw: 4.4 * b + 0.6,
@@ -314,6 +333,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 19.5,
         neckHalfWidth: 4.5 * s,
+        mouthY: 17.5 - 7.4 * s * 0.38 + 2.2,
         waist: { y: 17.5 + 7.4 * s * 0.42, hw: 6.2 * s * 0.95 + 0.6 },
         cloak: {
           claspY,
@@ -337,6 +357,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 1.8,
         neckY: 18 - 7.2 * s * 0.62 + 3,
         neckHalfWidth: 4 * s,
+        mouthY: 18 - 7.2 * b * 0.62 + 1.9,
         waist: { y: 18 + 7.2 * b * 0.35, hw: 5.6 * b * 0.95 },
         cloak: {
           claspY: 18 - 7.2 * b * 0.62 + 3.3,
@@ -360,6 +381,7 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         eyeWidth: 2,
         neckY: 18.5,
         neckHalfWidth: 4 * s,
+        mouthY: 16.2,
         cloak: {
           claspY: 12.7 + 6.3 * b,
           collarHw: 4 * b + 0.6,
@@ -369,6 +391,126 @@ function baseAnchors(petType: AnchorPetType, level: number): BaseAnchors {
         },
       };
     }
+    case 'frog': {
+      // Augen sitzen auf zwei Hügeln über dem breiten Kopf
+      const bumpCY = 13.6 - 5.2 * b * 0.72;
+      return {
+        headTopY: bumpCY - 2.65 * b + 0.75,
+        headCenterX: cx,
+        headHalfWidth: 5.6 * b,
+        eyeY: bumpCY + 0.15,
+        eyeLeftX: -4.3,
+        eyeRightX: 2.3,
+        eyeWidth: 2,
+        neckY: 18.5,
+        neckHalfWidth: 4.6 * b,
+        mouthY: 16.3,
+        cloak: {
+          claspY: 13.3 + 5.2 * b,
+          collarHw: 4.6 * b + 0.6,
+          bodyCY: 21.5,
+          bodyRx: 5 * b,
+          bodyRy: 4.3 * b,
+        },
+      };
+    }
+    case 'hedgehog':
+      // Stachelkugel überragt das Gesicht; Hüte sitzen auf dem Mantel
+      return {
+        headTopY: 17 - 9 * b,
+        headCenterX: cx,
+        headHalfWidth: 5.6 * b,
+        eyeY: 13.8,
+        eyeLeftX: -3.5,
+        eyeRightX: 1.5,
+        eyeWidth: 2,
+        neckY: 18.7,
+        neckHalfWidth: 4.4 * b,
+        mouthY: 16.8,
+        cloak: { claspY: 12.5 + 6.2 * b, collarHw: 4.4 * b + 0.6, ...torso },
+      };
+    case 'otter':
+      // Kopf breiter als hoch
+      return {
+        headTopY: 13.2 - 5.5 * b,
+        headCenterX: cx,
+        headHalfWidth: 5.8 * b,
+        eyeY: 13.1,
+        eyeLeftX: -3.9,
+        eyeRightX: 1.9,
+        eyeWidth: 2,
+        neckY: 18.5,
+        neckHalfWidth: 4.3 * b,
+        mouthY: 16.3,
+        cloak: {
+          claspY: 12.9 + 5.5 * b,
+          collarHw: 4.3 * b + 0.6,
+          bodyCY: 21.4,
+          bodyRx: 4.5 * b,
+          bodyRy: 4.8 * b,
+        },
+      };
+    case 'unicorn':
+      return {
+        headTopY: 13 - 6.1 * b,
+        headCenterX: cx,
+        headHalfWidth: 5.5 * b,
+        eyeY: 13.1,
+        eyeLeftX: -3.7,
+        eyeRightX: 1.7,
+        eyeWidth: 2,
+        neckY: 18.6,
+        neckHalfWidth: 4.4 * b,
+        mouthY: 14.35 + 2.56 * b,
+        cloak: {
+          claspY: 12.7 + 6.1 * b,
+          collarHw: 4.4 * b + 0.6,
+          bodyCY: 21.5,
+          bodyRx: 4.8 * b,
+          bodyRy: 4.5 * b,
+        },
+      };
+    case 'capybara':
+      // Kantiger Kopf, Augen sitzen hoch über der großen Schnauze
+      return {
+        headTopY: 13 - 5.7 * b,
+        headCenterX: cx,
+        headHalfWidth: 5.4 * b,
+        eyeY: 13 - 5.7 * b * 0.36 - 0.2,
+        eyeLeftX: -4.6,
+        eyeRightX: 2.6,
+        eyeWidth: 2,
+        neckY: 19.6,
+        neckHalfWidth: 5 * b,
+        mouthY: 15.25 + 2.62 * b,
+        cloak: {
+          claspY: 13.4 + 5.7 * b,
+          collarHw: 5 * b + 0.6,
+          bodyCY: 22,
+          bodyRx: 5.9 * b,
+          bodyRy: 4.2 * b,
+        },
+      };
+    case 'bat':
+      return {
+        headTopY: 13 - 6.1 * b,
+        headCenterX: cx,
+        headHalfWidth: 5.5 * b,
+        eyeY: 13.2,
+        eyeLeftX: -3.6,
+        eyeRightX: 1.6,
+        eyeWidth: 2,
+        neckY: 18.6,
+        neckHalfWidth: 4.2 * b,
+        mouthY: 16.2,
+        cloak: {
+          claspY: 12.7 + 6.1 * b,
+          collarHw: 4.2 * b + 0.6,
+          bodyCY: 21.4,
+          bodyRx: 4.4 * b,
+          bodyRy: 4.3 * b,
+        },
+      };
     default:
       return DEFAULT_ANCHORS;
   }
@@ -385,6 +527,7 @@ export const drawAccessoryBack = (
 ): void => {
   const a = getAnchors(petType, level);
   if (isCloakId(accessory.id)) drawCloakBack(ctx, ps, offset, a, accessory.id);
+  else EXTRA_BACK[accessory.id]?.(pen(ctx, ps, offset), a);
 };
 
 export const drawAccessory = (
@@ -392,17 +535,7 @@ export const drawAccessory = (
   accessory: PetAccessory,
   ps: number,
   offset: number,
-  petType:
-    | 'cat'
-    | 'dog'
-    | 'bird'
-    | 'dragon'
-    | 'fox'
-    | 'rabbit'
-    | 'panda'
-    | 'owl'
-    | 'penguin'
-    | 'axolotl' = 'cat',
+  petType: AnchorPetType = 'cat',
   level: number = 1
 ): void => {
   const a = getAnchors(petType, level);
@@ -828,5 +961,7 @@ export const drawAccessory = (
     case 'krakenCharm':
       drawKrakenCharm(ctx, ps, offset, a);
       break;
+    default:
+      EXTRA_FRONT[accessory.id]?.(pen(ctx, ps, offset), a);
   }
 };

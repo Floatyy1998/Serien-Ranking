@@ -440,7 +440,8 @@ export function drawSurgeonMask(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ey = a.eyeY;
+  // Sitzt am Mund: Höhe vom Mund aus gerechnet, nicht von den Augen
+  const ey = a.mouthY - 2.9;
   const hw = a.headHalfWidth;
   // Weich gerundete Maske
   ctx.fillStyle = '#87CEEB';
@@ -558,7 +559,8 @@ export function drawClownNose(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ey = a.eyeY;
+  // Sitzt am Mund: Höhe vom Mund aus gerechnet, nicht von den Augen
+  const ey = a.mouthY - 2.9;
   // Rote Knollennase mit weichem Verlauf
   const g = ctx.createRadialGradient(
     (cx - 0.4) * ps,
@@ -1715,7 +1717,8 @@ export function drawMustache(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ey = a.eyeY;
+  // Sitzt am Mund: Höhe vom Mund aus gerechnet, nicht von den Augen
+  const ey = a.mouthY - 2.9;
   // Gezwirbelter Schnurrbart unter der Nase
   ctx.fillStyle = '#4E342E';
   ctx.beginPath();

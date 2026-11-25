@@ -50,6 +50,12 @@ const fb = vi.hoisted(() => {
     async remove() {
       removeAt(path);
     },
+    async transaction(fn: (cur: unknown) => unknown) {
+      const next = fn(getAt(path));
+      if (next === undefined) return { committed: false, snapshot: { val: () => getAt(path) } };
+      setAt(path, next);
+      return { committed: true, snapshot: { val: () => next } };
+    },
   });
   return {
     getAt,
@@ -228,15 +234,59 @@ describe('performDailySpin', () => {
     expect(fb.getAt('users/u/xpBoostInventory')).toBeNull();
   });
 
-  it('Accessoire-Segment ohne verfügbares Accessoire/Background fällt auf XP-Boost zurück', async () => {
+  it('Accessoire-Segment ohne verfügbares Accessoire/Background gibt einen großen Vorrat', async () => {
     getUserPets.mockResolvedValue([{ id: 'dead', isAlive: false }]); // Picks liefern null
-    // 0.5 → Segment 4 (accessory), 0.9 → kein Upgrade, 0.9 → kein Swap
-    const q = [0.5, 0.9, 0.9];
+    // 0.5 → Segment 4 (accessory), 0.9 → kein Upgrade, 0.9 → kein Swap, 0 → Vorrats-Index 0
+    const q = [0.5, 0.9, 0.9, 0];
     vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
 
     const result = await performDailySpin('u', 0);
-    expect(result?.reward.type).toBe('xp_boost'); // Fallback
-    expect(result?.reward.xpEpisodeCount).toBe(5);
+    expect(result?.reward).toMatchObject({ type: 'item', itemId: 'feast' });
+    // Vorräte gehören zum Konto: auch ohne lebendes Pet gutgeschrieben
+    expect(fb.getAt('users/u/petItems/feast')).toBe(1);
+  });
+
+  it('Vorrats-Feld (Index 1): legt ein Verbrauchsgut in den Vorrat', async () => {
+    // 0.1 → Segment 1 (Vorrat), 0.99 → Index 3 von [treat, toy, feast, extraSpin]
+    const q = [0.1, 0.99];
+    vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
+
+    const result = await performDailySpin('u', 0);
+    expect(result?.segmentIndex).toBe(1);
+    expect(result?.reward).toMatchObject({ type: 'item', itemId: 'extraSpin', rarity: 'uncommon' });
+    expect(fb.getAt('users/u/petItems/extraSpin')).toBe(1);
+  });
+
+  it('Großer Vorrat (Index 3): zu 25 % aus dem epischen Topf', async () => {
+    // 0.3 → Segment 3, 0.1 → epischer Topf, 0.99 → Index 2 von [bonusBox, streakPass, elixir]
+    const q = [0.3, 0.1, 0.99];
+    vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
+
+    const result = await performDailySpin('u', 0);
+    expect(result?.reward).toMatchObject({ type: 'item', itemId: 'elixir', rarity: 'epic' });
+  });
+
+  it('Extra-Dreh: zweiter Dreh am selben Tag nur mit Vorrat, und er wird verbraucht', async () => {
+    fb.setAt('users/u/dailySpin', { lastSpinDate: TODAY, totalSpins: 1, history: [] });
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    expect(await performDailySpin('u', 0, { useExtraSpin: true })).toBeNull();
+
+    fb.setAt('users/u/petItems/extraSpin', 1);
+    expect(await performDailySpin('u', 0)).toBeNull(); // ohne Wunsch kein Verbrauch
+    expect(fb.getAt('users/u/petItems/extraSpin')).toBe(1);
+
+    const result = await performDailySpin('u', 0, { useExtraSpin: true });
+    expect(result?.reward.type).toBe('xp_boost');
+    expect(fb.getAt('users/u/petItems/extraSpin')).toBe(0);
+    expect((fb.getAt('users/u/dailySpin') as { totalSpins: number }).totalSpins).toBe(2);
+  });
+
+  it('der Tages-Dreh verbraucht keinen Extra-Dreh', async () => {
+    fb.setAt('users/u/petItems/extraSpin', 1);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    await performDailySpin('u', 0, { useExtraSpin: true });
+    expect(fb.getAt('users/u/petItems/extraSpin')).toBe(1);
   });
 });
 

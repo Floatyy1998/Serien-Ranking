@@ -65,6 +65,9 @@ const petCore = vi.hoisted(() => ({
 }));
 vi.mock('./petCore', () => petCore);
 
+const takePetItem = vi.hoisted(() => vi.fn<(uid: string, id: string) => Promise<boolean>>());
+vi.mock('./petItemService', () => ({ takePetItem }));
+
 import {
   feedPet,
   playWithPet,
@@ -379,9 +382,61 @@ describe('revivePet', () => {
     petCore.getUserPet.mockResolvedValue(null);
     expect(await revivePet('u1', 'p1')).toBeNull();
   });
+
+  it('Lebenselixier: Level und XP bleiben, ein Elixier wird verbraucht', async () => {
+    takePetItem.mockResolvedValue(true);
+    petCore.getUserPet.mockResolvedValue(makePet({ isAlive: false, level: 5, experience: 30 }));
+    const result = await revivePet('u1', 'p1', { useElixir: true });
+    expect(result?.isAlive).toBe(true);
+    expect(result?.level).toBe(5);
+    expect(result?.experience).toBe(30);
+    expect(takePetItem).toHaveBeenCalledWith('u1', 'elixir');
+  });
+
+  it('Lebenselixier gewünscht, aber keines da → normale Level-Kosten', async () => {
+    takePetItem.mockResolvedValue(false);
+    petCore.getUserPet.mockResolvedValue(makePet({ isAlive: false, level: 5, experience: 30 }));
+    const result = await revivePet('u1', 'p1', { useElixir: true });
+    expect(result?.level).toBe(4);
+  });
+
+  it('auf Level 1 wird kein Elixier verbraucht (es kostet ohnehin nichts)', async () => {
+    takePetItem.mockClear();
+    petCore.getUserPet.mockResolvedValue(makePet({ isAlive: false, level: 1, experience: 40 }));
+    await revivePet('u1', 'p1', { useElixir: true });
+    expect(takePetItem).not.toHaveBeenCalled();
+  });
 });
 
 describe('activateStreakShield', () => {
+  it('Streak-Freischein: rettet die Streak ohne Pet und ohne XP-Kosten', async () => {
+    const year = NOW.getFullYear();
+    fb.setAt(`users/u1/wrapped/${year}/streak`, { lastWatchDate: '2026-07-01' });
+    takePetItem.mockResolvedValue(true);
+    petCore.getUserPet.mockClear();
+
+    const result = await activateStreakShield('u1', null, { usePass: true });
+    expect(result.success).toBe(true);
+    expect(result.newExperience).toBeUndefined();
+    expect(takePetItem).toHaveBeenCalledWith('u1', 'streakPass');
+    expect(petCore.getUserPet).not.toHaveBeenCalled();
+    expect(fb.getAt('users/u1/pets/p1') ?? null).toBeNull();
+    const streak = fb.getAt(`users/u1/wrapped/${year}/streak`) as Record<string, unknown>;
+    expect(streak.lastWatchDate).toBe('2026-07-03');
+    expect(streak.shieldUsedCount).toBe(1);
+  });
+
+  it('Streak-Freischein gewünscht, aber keiner da → Fehler, Streak unverändert', async () => {
+    const year = NOW.getFullYear();
+    fb.setAt(`users/u1/wrapped/${year}/streak`, { lastWatchDate: '2026-07-01' });
+    takePetItem.mockResolvedValue(false);
+    const result = await activateStreakShield('u1', 'p1', { usePass: true });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Freischein');
+    const streak = fb.getAt(`users/u1/wrapped/${year}/streak`) as Record<string, unknown>;
+    expect(streak.lastWatchDate).toBe('2026-07-01');
+  });
+
   it('kein Pet → Fehler', async () => {
     petCore.getUserPet.mockResolvedValue(null);
     const result = await activateStreakShield('u1', 'p1');

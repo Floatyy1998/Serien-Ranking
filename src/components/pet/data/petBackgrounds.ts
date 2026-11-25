@@ -1,5 +1,6 @@
 import type { AccessoryRarity, PetBackgroundDefinition } from '../../../types/pet.types';
 import { t } from '../../../services/i18n';
+import { EXTRA_SCENES } from './petBackgroundsExtra';
 
 /** Wraps an inline SVG in a data URI CSS background value. */
 function bgUrl(svg: string): string {
@@ -2103,6 +2104,14 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     animationClass: 'pet-bg-anim-aurora pet-bg-anim-waves',
     glowColor: 'rgba(179, 136, 255, 0.55)',
   },
+
+  // ── Erweiterung Winter 2026 (40 neue) ──
+  ...Object.fromEntries(
+    EXTRA_SCENES.map(({ svg, name, ...rest }) => [
+      rest.id,
+      { ...rest, name: t(name), background: bgUrl(svg) },
+    ])
+  ),
 };
 
 export const PET_BACKGROUND_IDS = Object.keys(PET_BACKGROUNDS);

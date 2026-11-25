@@ -8,6 +8,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePetItems } from '../../../hooks/pet/usePetItems';
 import { toLocalDateString } from '../../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -28,7 +29,9 @@ export const DailySpinCard: React.FC = () => {
   const [streakDays, setStreakDays] = useState(0);
   const [totalSpins, setTotalSpins] = useState(0);
 
-  const available = lastSpinDate !== toLocalDateString(new Date());
+  const extraSpins = usePetItems().extraSpin;
+  const dailyOpen = lastSpinDate !== toLocalDateString(new Date());
+  const available = dailyOpen || extraSpins > 0;
 
   // Live subscription auf lastSpinDate, damit die Card sofort updated
   // wenn der User im DailySpinWheel oder anderswo gespint hat.
@@ -159,7 +162,11 @@ export const DailySpinCard: React.FC = () => {
                 fontWeight: available ? 600 : 400,
               }}
             >
-              {available ? t('Jetzt drehen!') : t('Morgen wieder verfügbar')}
+              {dailyOpen
+                ? t('Jetzt drehen!')
+                : extraSpins > 0
+                  ? t('Extra-Dreh bereit!')
+                  : t('Morgen wieder verfügbar')}
             </p>
           </div>
 

@@ -66,6 +66,7 @@ import {
   getProgressToNextBox,
   getAvailableBoxCount,
   ensureInitialized,
+  openBonusBox,
   openMysteryBox,
   syncAvailableBoxCount,
   adjustBulkExcludedEpisodes,
@@ -281,7 +282,8 @@ describe('openMysteryBox', () => {
   it('Regression Doppel-Einlösung: dieselbe Box kann nur EINMAL geöffnet werden', async () => {
     // 1 Box verfügbar — zweiter Open (zweites Gerät/Doppel-Tap) muss leer ausgehen, Transaktion claimt atomar.
     fb.setAt(MB, { boxesOpened: 1, lastOpenedBoxNumber: 1, schemaVersion: 2 });
-    vi.spyOn(Math, 'random').mockReturnValue(0.9); // common → xp_boost
+    // Seltenheit 0.9 → common, Belohnung 0.8 → xp_boost
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.9).mockReturnValue(0.8);
 
     const first = await openMysteryBox('u', 40);
     const second = await openMysteryBox('u', 40);
@@ -295,8 +297,8 @@ describe('openMysteryBox', () => {
 
   it('öffnet die nächste Box, speichert Fortschritt und wendet eine XP-Boost-Belohnung an', async () => {
     fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 0, schemaVersion: 2 });
-    // 1. random: getBoxRarity(1) → 0.9 → common; 2. random: generateMysteryReward → 0.9 → XP-Boost
-    const q = [0.9, 0.9];
+    // 1. random: getBoxRarity(1) → 0.9 → common; 2. random: generateMysteryReward → 0.8 → XP-Boost
+    const q = [0.9, 0.8];
     vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
 
     const reward = await openMysteryBox('u', 40); // earned 2 > lastOpened 0 → Box 1
@@ -376,31 +378,63 @@ describe('openMysteryBox', () => {
   it('liefert null, wenn kein lebendes Pet für die Belohnung existiert', async () => {
     fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 0, schemaVersion: 2 });
     getUserPets.mockResolvedValue([{ id: 'dead', isAlive: false }]);
-    vi.spyOn(Math, 'random').mockReturnValue(0.9); // common → xp_boost
+    // Seltenheit 0.9 → common, Belohnung 0.8 → xp_boost
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.9).mockReturnValue(0.8);
     const reward = await openMysteryBox('u', 40);
     // Box wird geöffnet + gespeichert, aber applyMysteryReward findet kein Pet
     expect(reward?.type).toBe('xp_boost');
     expect(fb.getAt('users/u/xpBoostInventory')).toBeNull();
   });
 
-  it('Accessoire-Zweig ohne verfügbares Accessoire/Background fällt auf XP-Boost zurück', async () => {
+  it('Accessoire-Zweig ohne verfügbares Accessoire/Background gibt einen Vorrat statt XP-Boost', async () => {
     fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 0, schemaVersion: 2 });
     getUserPets.mockResolvedValue([{ id: 'dead', isAlive: false }]); // Picks liefern null
-    // getBoxRarity(1)=0.9 → common; generateMysteryReward 0.5 → accessory-Zweig
-    const q = [0.9, 0.5];
+    // getBoxRarity(1)=0.9 → common; generateMysteryReward 0.5 → accessory-Zweig; Vorrats-Index 0
+    const q = [0.9, 0.5, 0];
     vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
     const reward = await openMysteryBox('u', 40);
-    expect(reward?.type).toBe('xp_boost'); // Fallback nach null-Picks
+    expect(reward).toMatchObject({ type: 'item', itemId: 'treat', rarity: 'common' });
+    // Vorräte gehören zum Konto: auch ohne lebendes Pet gutgeschrieben
+    expect(fb.getAt('users/u/petItems/treat')).toBe(1);
+  });
+
+  it('15 % der Boxen enthalten einen Vorrat (Belohnungs-Wurf ab 0,85)', async () => {
+    fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 19, schemaVersion: 2 });
+    // getBoxRarity(20)=0.2 → epic; Belohnung 0.9 → Vorrat; Index 2 von [bonusBox, streakPass, elixir]
+    const q = [0.2, 0.9, 0.99];
+    vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
+    const reward = await openMysteryBox('u', 400);
+    expect(reward).toMatchObject({ type: 'item', itemId: 'elixir', rarity: 'epic' });
+    expect(fb.getAt('users/u/petItems/elixir')).toBe(1);
+  });
+});
+
+describe('openBonusBox', () => {
+  it('liefert null ohne Bonus-Box im Vorrat', async () => {
+    expect(await openBonusBox('u')).toBeNull();
+  });
+
+  it('verbraucht eine Bonus-Box und lässt den Zähler der erspielten Boxen unberührt', async () => {
+    fb.setAt(MB, { boxesOpened: 3, lastOpenedBoxNumber: 3, schemaVersion: 2 });
+    fb.setAt('users/u/petItems/bonusBox', 2);
+    // Seltenheit 0.9 → common, Belohnung 0.8 → xp_boost
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.9).mockReturnValue(0.8);
+
+    const reward = await openBonusBox('u');
+    expect(reward?.type).toBe('xp_boost');
+    expect(fb.getAt('users/u/petItems/bonusBox')).toBe(1);
+    expect(fb.getAt(MB)).toEqual({ boxesOpened: 3, lastOpenedBoxNumber: 3, schemaVersion: 2 });
+    expect(fb.getAt('users/u/xpBoostInventory')).toHaveLength(1);
   });
 });
 
 describe('getBoxRarity – Skalierung mit der Box-Nummer', () => {
-  // Rarity über die deterministische XP-Boost-Belohnung geprüft (Reward-roll 0.9 → xp_boost).
+  // Rarity über die deterministische XP-Boost-Belohnung geprüft (Reward-roll 0.8 → xp_boost).
   const openBoxAt = async (boxNumber: number, rarityRoll: number) => {
     fb.reset();
     getUserPets.mockResolvedValue(alivePet());
     fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: boxNumber - 1, schemaVersion: 2 });
-    const q = [rarityRoll, 0.9];
+    const q = [rarityRoll, 0.8];
     vi.spyOn(Math, 'random').mockImplementation(() => (q.length ? (q.shift() as number) : 0));
     const reward = await openMysteryBox('u', boxNumber * 20);
     vi.restoreAllMocks();

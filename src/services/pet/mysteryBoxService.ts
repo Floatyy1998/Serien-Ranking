@@ -1,9 +1,15 @@
 import { dbRef, userPath } from '../../services/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
+import {
+  MILESTONE_EXCLUSIVE_ACCESSORIES,
+  pickItemReward,
+} from '../../components/pet/data/accessoryPools';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { PET_ITEMS, rollPetItem, type PetItemId } from '../../components/pet/data/petItems';
 import { t } from '../i18n';
 import { getUserPets } from './petCore';
+import { addPetItem, takePetItem } from './petItemService';
 
 /** Interval: alle X Episoden gibt es eine Mystery Box */
 export const BOX_EVERY_N_EPISODES = 20;
@@ -11,7 +17,7 @@ export const BOX_EVERY_N_EPISODES = 20;
 /** Schema-Version: v1 = 50er-Intervall, v2 = 20er — Migration re-baselined auf den 20er-Stand. */
 export const BOX_SCHEMA_VERSION = 2;
 
-export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background';
+export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background' | 'item';
 
 export interface MysteryBoxReward {
   type: MysteryRewardType;
@@ -22,6 +28,7 @@ export interface MysteryBoxReward {
   backgroundId?: string;
   xpMultiplier?: number;
   xpEpisodeCount?: number;
+  itemId?: PetItemId;
 }
 
 export interface MysteryBoxData {
@@ -50,43 +57,6 @@ export function effectiveEpisodes(totalEpisodes: number, data?: MysteryBoxData |
 
 /** Defizit muss so lange bestehen, bevor der Self-Heal die Baseline zurückzieht */
 export const HEAL_DELAY_MS = 24 * 60 * 60 * 1000;
-
-/** Milestone-exclusive accessories (cannot drop from episodes or spin) */
-const MILESTONE_EXCLUSIVE_ACCESSORIES = [
-  'trophyNecklace',
-  'starHelmet',
-  'crystalMonocle',
-  'phoenixFeather',
-  'infinityScarf',
-  'ancientCrown',
-  'championBelt',
-  'cosmicHelm',
-  'timeTravelerGoggles',
-  'enchantedRose',
-  'shadowHood',
-  'celestialCrown',
-  'volcanoHelm',
-  'abyssVisor',
-  'dragonScaleCollar',
-  'lotusHelm',
-  'eclipseGoggles',
-  'runeNecklace',
-  'glitchCrown',
-  'voidMask',
-  'sakuraPendant',
-  'pyramidHelm',
-  'mirrorShades',
-  'obsidianAmulet',
-  // Erweiterung Juli 2026
-  'jellyfishCrown',
-  'galaxyCrown',
-  'crystalHorns',
-  'kitsuneMask',
-  'thirdEye',
-  'moonVisor',
-  'auroraScarf',
-  'krakenCharm',
-];
 
 /** Wie viele ungeöffnete Boxen hat der User? */
 export async function getAvailableBoxCount(userId: string, totalEpisodes: number): Promise<number> {
@@ -215,6 +185,17 @@ export function getProgressToNextBox(totalEpisodes: number): number {
   return within / BOX_EVERY_N_EPISODES;
 }
 
+/** Löst eine Bonus-Box aus dem Vorrat ein; der Zähler der erspielten Boxen bleibt unberührt. */
+export async function openBonusBox(userId: string): Promise<MysteryBoxReward | null> {
+  if (!(await takePetItem(userId, 'bonusBox'))) return null;
+  const snap = await dbRef(userPath(userId, 'mysteryBox')).once('value');
+  const opened = (snap.val() as MysteryBoxData | null)?.lastOpenedBoxNumber;
+  const rarity = getBoxRarity(typeof opened === 'number' && opened > 0 ? opened : 1);
+  const reward = await generateMysteryReward(userId, rarity);
+  await applyMysteryReward(userId, reward);
+  return reward;
+}
+
 export async function openMysteryBox(
   userId: string,
   totalEpisodes: number
@@ -335,47 +316,51 @@ async function generateMysteryReward(
   userId: string,
   rarity: AccessoryRarity
 ): Promise<MysteryBoxReward> {
-  // 30% background, 40% exclusive accessory, 30% XP boost
+  // 30 % Hintergrund, 40 % Accessoire, 15 % XP-Boost, 15 % Vorrat. Ist die Seltenheit
+  // leergesammelt, rückt die nächstgelegene nach; ist alles gesammelt, gibt es einen Vorrat.
   const roll = Math.random();
-
-  if (roll < 0.3) {
-    const background = await pickBackgroundReward(userId, rarity);
-    if (background) {
-      return {
-        type: 'background',
-        label: background.name,
-        icon: '\uD83C\uDF0C',
-        rarity,
-        backgroundId: background.id,
-      };
-    }
-  }
-
   if (roll < 0.7) {
-    const accessory = await pickMilestoneAccessory(userId, rarity);
-    if (accessory) {
+    const pet = (await getUserPets(userId)).find((p) => p.isAlive);
+    const item =
+      pet &&
+      pickItemReward({
+        ownedAccessories: new Set((pet.accessories || []).map((a) => a.id)),
+        ownedBackgrounds: new Set(pet.unlockedBackgrounds || []),
+        rarity,
+        preferred: MILESTONE_EXCLUSIVE_ACCESSORIES,
+        first: roll < 0.3 ? 'background' : 'accessory',
+      });
+    if (item?.kind === 'accessory') {
       return {
         type: 'accessory',
-        label: accessory.name,
-        icon: accessory.icon,
-        rarity,
-        accessoryId: accessory.id,
+        label: ACCESSORIES[item.id].name,
+        icon: ACCESSORIES[item.id].icon,
+        rarity: item.rarity,
+        accessoryId: item.id,
       };
     }
-    // Fallback: try background before XP boost
-    const background = await pickBackgroundReward(userId, rarity);
-    if (background) {
+    if (item) {
       return {
         type: 'background',
-        label: background.name,
+        label: PET_BACKGROUNDS[item.id].name,
         icon: '\uD83C\uDF0C',
-        rarity,
-        backgroundId: background.id,
+        rarity: item.rarity,
+        backgroundId: item.id,
       };
     }
   }
 
-  // XP boost (also fallback if all accessories owned)
+  if (roll < 0.7 || roll >= 0.85) {
+    const itemId = rollPetItem(rarity);
+    return {
+      type: 'item',
+      label: t(PET_ITEMS[itemId].name),
+      icon: '🎁',
+      rarity: PET_ITEMS[itemId].rarity,
+      itemId,
+    };
+  }
+
   const boost = BOOST_EPISODES[rarity];
   return {
     type: 'xp_boost',
@@ -387,57 +372,13 @@ async function generateMysteryReward(
   };
 }
 
-async function pickMilestoneAccessory(
-  userId: string,
-  targetRarity: AccessoryRarity
-): Promise<{ id: string; name: string; icon: string } | null> {
-  const pets = await getUserPets(userId);
-  const alivePet = pets.find((p) => p.isAlive);
-  if (!alivePet) return null;
-
-  const owned = new Set((alivePet.accessories || []).map((a) => a.id));
-
-  // Prefer milestone-exclusive accessories
-  const exclusiveCandidates = MILESTONE_EXCLUSIVE_ACCESSORIES.filter((id) => {
-    const def = ACCESSORIES[id];
-    return def && def.rarity === targetRarity && !owned.has(id);
-  });
-
-  if (exclusiveCandidates.length > 0) {
-    const id = exclusiveCandidates[Math.floor(Math.random() * exclusiveCandidates.length)];
-    const def = ACCESSORIES[id];
-    return { id, name: def.name, icon: def.icon };
+async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Promise<void> {
+  // Vorräte gehören zum Konto, nicht zu einem Pet — auch ohne lebendes Pet gutschreiben
+  if (reward.type === 'item') {
+    if (reward.itemId) await addPetItem(userId, reward.itemId);
+    return;
   }
 
-  // Fall back to any unowned accessory of that rarity
-  const candidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === targetRarity && !def.source && !owned.has(id)
-  );
-
-  if (candidates.length === 0) return null;
-  const [id, def] = candidates[Math.floor(Math.random() * candidates.length)];
-  return { id, name: def.name, icon: def.icon };
-}
-
-async function pickBackgroundReward(
-  userId: string,
-  targetRarity: AccessoryRarity
-): Promise<{ id: string; name: string } | null> {
-  const pets = await getUserPets(userId);
-  const alivePet = pets.find((p) => p.isAlive);
-  if (!alivePet) return null;
-
-  const owned = new Set(alivePet.unlockedBackgrounds || []);
-  const candidates = Object.values(PET_BACKGROUNDS).filter(
-    (bg) => bg.rarity === targetRarity && !owned.has(bg.id)
-  );
-
-  if (candidates.length === 0) return null;
-  const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  return { id: pick.id, name: pick.name };
-}
-
-async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Promise<void> {
   const pets = await getUserPets(userId);
   const alivePet = pets.find((p) => p.isAlive);
   if (!alivePet) return;

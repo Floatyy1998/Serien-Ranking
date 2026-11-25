@@ -481,6 +481,27 @@ const dict: Record<string, string> = {
   'Kinostart in deinem Land': 'Estreno en cines en tu país',
   'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
     'En cada página de película, en «De un vistazo», ahora aparece el estreno en tu país en lugar de la primera fecha mundial. También en las películas que aún no has añadido. El año junto al título sigue siendo el año de estreno original de la película.',
+
+  // ── Winter 2026 ──
+  'November 2026 – Sechs neue Pets und 100 neue Sachen':
+    'Noviembre de 2026 – Seis mascotas nuevas y 100 cosas nuevas',
+  'Sechs neue Pets': 'Seis mascotas nuevas',
+  'Frosch, Igel, Otter, Capybara, Einhorn und Fledermaus ziehen ein. Jedes hat eine eigene Spezialbewegung und ab Level 50 eine Entwicklungsform: Regenkönig, Kristalligel, Gezeitenhüter, Onsen-Meister, Alicorn und Nachtfürst.':
+    'Llegan la rana, el erizo, la nutria, el capibara, el unicornio y el murciélago. Cada uno tiene su propio movimiento especial y, a partir del nivel 50, una forma evolucionada: Rey de la Lluvia, Erizo de Cristal, Guardián de las Mareas, Maestro del Onsen, Alicornio y Señor de la Noche.',
+  '60 neue Accessoires': '60 accesorios nuevos',
+  'Je 20 neue Teile für Kopf, Gesicht und Körper, vom Fischerhut bis zum Saturn-Reif. Neu sind Kleidung wie Ringelpulli, Hawaiihemd und Smoking sowie Teile, die hinter dem Pet sitzen: Engelsflügel, Schmetterlingsflügel und ein Jetpack. Du findest sie beim Schauen, am Glücksrad und in Mystery Boxen.':
+    'Veinte piezas nuevas para la cabeza, la cara y el cuerpo, del sombrero de pescador al anillo de Saturno. Como novedad hay ropa, como el jersey a rayas, la camisa hawaiana y el esmoquin, y piezas que van detrás de la mascota: alas de ángel, alas de mariposa y una mochila propulsora. Las encuentras al ver episodios, en la ruleta de la suerte y en las Mystery Boxes.',
+  '40 neue Hintergründe': '40 fondos nuevos',
+  'Vom Sonnenblumenfeld über Kinosaal und Bibliothek bis zu Wolkenschloss, Drachenhort und Zeitstrudel. Freigeschaltete Szenen stehen dir auch als Chat-Hintergrund zur Wahl.':
+    'Del campo de girasoles a la sala de cine y la biblioteca, hasta el castillo en las nubes, el tesoro del dragón y el vórtice temporal. Las escenas que desbloquees también puedes usarlas como fondo del chat.',
+  'Neue Sticker und besserer Sitz': 'Stickers nuevos y mejor ajuste',
+  'Die sechs neuen Pets gibt es auch als Sticker im Chat. Außerdem sitzt alles, was zum Mund gehört, jetzt bei jeder Art genau am Mund, vom Schnurrbart bis zum Feueratem.':
+    'Las seis mascotas nuevas también están disponibles como stickers en el chat. Además, todo lo que va en la boca ahora queda justo en la boca en cada especie, del bigote al aliento de fuego.',
+
+  // ── Vorräte ──
+  'Vorräte statt immer nur XP-Boosts': 'Provisiones en vez de solo potenciadores de XP',
+  'Am Glücksrad und in Mystery Boxen gibt es jetzt sieben Verbrauchsgüter: Leckerli, Spielzeug und Festmahl für deine Pets, den Extra-Dreh, die Bonus-Box, den Streak-Freischein und das Lebenselixier, mit dem ein Pet ohne Levelverlust zurückkehrt. Zwei XP-Felder am Rad sind dafür Vorrats-Felder geworden. Deinen Vorrat findest du auf der Pet-Seite oben rechts. Und ist eine Seltenheit leergesammelt, bekommst du jetzt ein Teil der nächsten statt eines XP-Boosts.':
+    'La ruleta de la suerte y las Mystery Boxes reparten ahora siete consumibles: golosina, juguete y festín para tus mascotas, el giro extra, la caja extra, el pase de racha y el elixir de vida, con el que una mascota vuelve sin perder nivel. Para ello, dos casillas de XP de la ruleta son ahora casillas de provisiones. Tus provisiones están arriba a la derecha en la página de mascotas. Y si una rareza ya está completa, ahora recibes una pieza de la siguiente en lugar de un potenciador de XP.',
 };
 
 export default dict;

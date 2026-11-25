@@ -496,6 +496,27 @@ const dict: Record<string, string> = {
   'Kinostart in deinem Land': 'Theatrical release in your country',
   'Auf jeder Filmseite steht unter „Auf einen Blick“ jetzt der Start in deinem Land statt des weltweit ersten Termins. Das gilt auch für Filme, die du noch nicht hinzugefügt hast. Die Jahreszahl neben dem Titel bleibt das Erscheinungsjahr des Films.':
     "Under “At a glance”, every movie page now shows the release in your country instead of the first worldwide date. That also goes for movies you haven't added yet. The year next to the title stays the movie's original release year.",
+
+  // ── Winter 2026 ──
+  'November 2026 – Sechs neue Pets und 100 neue Sachen':
+    'November 2026 – Six New Pets and 100 New Things',
+  'Sechs neue Pets': 'Six New Pets',
+  'Frosch, Igel, Otter, Capybara, Einhorn und Fledermaus ziehen ein. Jedes hat eine eigene Spezialbewegung und ab Level 50 eine Entwicklungsform: Regenkönig, Kristalligel, Gezeitenhüter, Onsen-Meister, Alicorn und Nachtfürst.':
+    'Frog, hedgehog, otter, capybara, unicorn and bat are moving in. Each has its own special move and an evolved form from level 50: Rain King, Crystal Hedgehog, Tide Keeper, Onsen Master, Alicorn and Night Lord.',
+  '60 neue Accessoires': '60 New Accessories',
+  'Je 20 neue Teile für Kopf, Gesicht und Körper, vom Fischerhut bis zum Saturn-Reif. Neu sind Kleidung wie Ringelpulli, Hawaiihemd und Smoking sowie Teile, die hinter dem Pet sitzen: Engelsflügel, Schmetterlingsflügel und ein Jetpack. Du findest sie beim Schauen, am Glücksrad und in Mystery Boxen.':
+    'Twenty new items each for head, face and body, from the bucket hat to the Saturn ring. New: clothing such as the striped sweater, Hawaiian shirt and tuxedo, plus items worn behind your pet: angel wings, butterfly wings and a jetpack. You find them while watching, on the wheel of fortune and in Mystery Boxes.',
+  '40 neue Hintergründe': '40 New Backgrounds',
+  'Vom Sonnenblumenfeld über Kinosaal und Bibliothek bis zu Wolkenschloss, Drachenhort und Zeitstrudel. Freigeschaltete Szenen stehen dir auch als Chat-Hintergrund zur Wahl.':
+    "From the sunflower field to the movie theater and library, all the way to the cloud castle, dragon's hoard and time vortex. Scenes you have unlocked are also available as chat backgrounds.",
+  'Neue Sticker und besserer Sitz': 'New Stickers and a Better Fit',
+  'Die sechs neuen Pets gibt es auch als Sticker im Chat. Außerdem sitzt alles, was zum Mund gehört, jetzt bei jeder Art genau am Mund, vom Schnurrbart bis zum Feueratem.':
+    'The six new pets are also available as chat stickers. And everything that belongs to the mouth now sits exactly on the mouth for every species, from the mustache to the fire breath.',
+
+  // ── Vorräte ──
+  'Vorräte statt immer nur XP-Boosts': 'Supplies Instead of Endless XP Boosts',
+  'Am Glücksrad und in Mystery Boxen gibt es jetzt sieben Verbrauchsgüter: Leckerli, Spielzeug und Festmahl für deine Pets, den Extra-Dreh, die Bonus-Box, den Streak-Freischein und das Lebenselixier, mit dem ein Pet ohne Levelverlust zurückkehrt. Zwei XP-Felder am Rad sind dafür Vorrats-Felder geworden. Deinen Vorrat findest du auf der Pet-Seite oben rechts. Und ist eine Seltenheit leergesammelt, bekommst du jetzt ein Teil der nächsten statt eines XP-Boosts.':
+    'The wheel of fortune and Mystery Boxes now hand out seven consumables: treat, toy and feast for your pets, the extra spin, the bonus box, the streak pass and the elixir of life, which brings a pet back without losing a level. Two XP fields on the wheel have become supply fields for this. You find your supplies at the top right of the pet page. And when a rarity is fully collected, you now get an item of the next one instead of an XP boost.',
 };
 
 export default dict;

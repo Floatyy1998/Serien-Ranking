@@ -12,6 +12,12 @@ export const PET_SIGNATURES: { type: Pet['type']; label: string; color: string }
   { type: 'owl', label: 'Eule', color: 'orange' },
   { type: 'penguin', label: 'Pinguin', color: 'blau' },
   { type: 'axolotl', label: 'Axolotl', color: 'rosa' },
+  { type: 'frog', label: 'Frosch', color: 'gruen' },
+  { type: 'hedgehog', label: 'Igel', color: 'rot' },
+  { type: 'otter', label: 'Otter', color: 'blau' },
+  { type: 'capybara', label: 'Capybara', color: 'orange' },
+  { type: 'unicorn', label: 'Einhorn', color: 'lila' },
+  { type: 'bat', label: 'Fledermaus', color: 'lila' },
 ];
 
 export const petSignatureColor = (type: Pet['type']): string =>

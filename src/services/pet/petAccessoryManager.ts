@@ -7,6 +7,7 @@ import type {
 } from '../../types/pet.types';
 import { PET_COLORS } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
+import { pickEpisodeDrop } from '../../components/pet/data/accessoryPools';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { PET_CONFIG } from './petConstants';
 import { t } from '../i18n';
@@ -176,60 +177,6 @@ export interface AccessoryDrop {
   rarity: AccessoryRarity;
 }
 
-/** Accessories exclusive to daily spin and milestones — never drop from episodes */
-const EXCLUSIVE_ACCESSORIES = new Set([
-  // Spin exclusive
-  'diamondTiara',
-  'ninjaMask',
-  'royalCape',
-  'aviatorGoggles',
-  'chefHat',
-  'lei',
-  'catEars',
-  'nightOwlGoggles',
-  'galaxyCape',
-  'samuraiHelmet',
-  'pixelShades',
-  'luckyClover',
-  'witchHat',
-  'steamGoggles',
-  'rainbowScarf',
-  'mushHat',
-  'butterflyMask',
-  'shellNecklace',
-  'foxEars',
-  'ghostMask',
-  'thunderChain',
-  'iceHelm',
-  'prismVisor',
-  'solarAmulet',
-  // Milestone exclusive
-  'trophyNecklace',
-  'starHelmet',
-  'crystalMonocle',
-  'phoenixFeather',
-  'infinityScarf',
-  'ancientCrown',
-  'championBelt',
-  'cosmicHelm',
-  'timeTravelerGoggles',
-  'enchantedRose',
-  'shadowHood',
-  'celestialCrown',
-  'volcanoHelm',
-  'abyssVisor',
-  'dragonScaleCollar',
-  'lotusHelm',
-  'eclipseGoggles',
-  'runeNecklace',
-  'glitchCrown',
-  'voidMask',
-  'sakuraPendant',
-  'pyramidHelm',
-  'mirrorShades',
-  'obsidianAmulet',
-]);
-
 /**
  * Rolls for a random accessory drop after watching an episode.
  * Writes a pending drop to Firebase instead of granting immediately.
@@ -241,12 +188,7 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
     return null;
   }
 
-  const rarity = rollRarity(config.rarityWeights);
-
-  const candidates = Object.entries(ACCESSORIES).filter(
-    ([id, def]) => def.rarity === rarity && !def.source && !EXCLUSIVE_ACCESSORIES.has(id)
-  );
-  if (candidates.length === 0) return null;
+  const rolled = rollRarity(config.rarityWeights);
 
   const pets = await getUserPets(userId);
   const alivePets = pets.filter((p) => p.isAlive);
@@ -254,12 +196,14 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
 
   // Inventory is shared — use first pet as source of truth
   const owned = new Set((alivePets[0].accessories || []).map((a) => a.id));
-  const unowned = candidates.filter(([id]) => !owned.has(id));
 
-  // All candidates already owned → no drop
-  if (unowned.length === 0) return null;
+  // Gewürfelte Seltenheit leergesammelt → die nächstgelegene; kein Fund erst, wenn alles da ist
+  const pick = pickEpisodeDrop(owned, rolled);
+  if (!pick) return null;
 
-  const [accessoryId, def] = unowned[Math.floor(Math.random() * unowned.length)];
+  const accessoryId = pick.id;
+  const rarity = pick.rarity;
+  const def = ACCESSORIES[accessoryId];
 
   // Write pending drop + notification in one go
   const dropRef = dbRef(userPath(userId, 'pendingAccessoryDrops')).push();

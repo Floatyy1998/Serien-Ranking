@@ -108,6 +108,54 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('November 2026 – Sechs neue Pets und 100 neue Sachen'),
+      date: '2026-11-25',
+      features: [
+        {
+          icon: <Pets />,
+          color: currentTheme.primary,
+          title: t('Sechs neue Pets'),
+          description: t(
+            'Frosch, Igel, Otter, Capybara, Einhorn und Fledermaus ziehen ein. Jedes hat eine eigene Spezialbewegung und ab Level 50 eine Entwicklungsform: Regenkönig, Kristalligel, Gezeitenhüter, Onsen-Meister, Alicorn und Nachtfürst.'
+          ),
+          link: { label: t('Zu deinen Pets'), path: '/pets' },
+        },
+        {
+          icon: <Checkroom />,
+          color: currentTheme.accent,
+          title: t('60 neue Accessoires'),
+          description: t(
+            'Je 20 neue Teile für Kopf, Gesicht und Körper, vom Fischerhut bis zum Saturn-Reif. Neu sind Kleidung wie Ringelpulli, Hawaiihemd und Smoking sowie Teile, die hinter dem Pet sitzen: Engelsflügel, Schmetterlingsflügel und ein Jetpack. Du findest sie beim Schauen, am Glücksrad und in Mystery Boxen.'
+          ),
+        },
+        {
+          icon: <Palette />,
+          color: currentTheme.status.success,
+          title: t('40 neue Hintergründe'),
+          description: t(
+            'Vom Sonnenblumenfeld über Kinosaal und Bibliothek bis zu Wolkenschloss, Drachenhort und Zeitstrudel. Freigeschaltete Szenen stehen dir auch als Chat-Hintergrund zur Wahl.'
+          ),
+        },
+        {
+          icon: <EmojiEmotions />,
+          color: currentTheme.status.warning,
+          title: t('Vorräte statt immer nur XP-Boosts'),
+          description: t(
+            'Am Glücksrad und in Mystery Boxen gibt es jetzt sieben Verbrauchsgüter: Leckerli, Spielzeug und Festmahl für deine Pets, den Extra-Dreh, die Bonus-Box, den Streak-Freischein und das Lebenselixier, mit dem ein Pet ohne Levelverlust zurückkehrt. Zwei XP-Felder am Rad sind dafür Vorrats-Felder geworden. Deinen Vorrat findest du auf der Pet-Seite oben rechts. Und ist eine Seltenheit leergesammelt, bekommst du jetzt ein Teil der nächsten statt eines XP-Boosts.'
+          ),
+          link: { label: t('Zu deinen Pets'), path: '/pets' },
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.primary,
+          title: t('Neue Sticker und besserer Sitz'),
+          description: t(
+            'Die sechs neuen Pets gibt es auch als Sticker im Chat. Außerdem sitzt alles, was zum Mund gehört, jetzt bei jeder Art genau am Mund, vom Schnurrbart bis zum Feueratem.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('November 2026 – Vorschläge, die zu dir passen'),
       date: '2026-11-24',
       features: [
