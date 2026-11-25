@@ -41,7 +41,28 @@ vi.mock('../../services/pet/dailySpinService', () => ({
   activateXpBoost: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
 }));
 
-afterEach(() => cleanup());
+const petItems = vi.hoisted(() => ({ bonusBox: 0 }));
+vi.mock('../../hooks/pet/usePetItems', () => ({
+  usePetItems: () => ({
+    treat: 0,
+    toy: 0,
+    feast: 0,
+    extraSpin: 0,
+    streakPass: 0,
+    elixir: 0,
+    bonusBox: petItems.bonusBox,
+  }),
+}));
+vi.mock('../../components/pet/MysteryBoxOverlay', () => ({
+  MysteryBoxOverlay: ({ bonus }: { bonus?: boolean }) => (
+    <div data-testid="box-overlay" data-bonus={String(!!bonus)} />
+  ),
+}));
+
+afterEach(() => {
+  cleanup();
+  petItems.bonusBox = 0;
+});
 
 describe('XpBoostHeaderButton', () => {
   it('rendert den XP-Shield-Button', () => {
@@ -56,5 +77,17 @@ describe('XpBoostHeaderButton', () => {
     fireEvent.click(button as HTMLButtonElement);
     await waitFor(() => expect(screen.getByText('XP Boosts')).toBeInTheDocument());
     expect(screen.getByText('Keine Boosts vorhanden.')).toBeInTheDocument();
+  });
+
+  it('öffnet die Bonus-Box als Vollbild an document.body, nicht in der Kopfzeile', async () => {
+    petItems.bonusBox = 1;
+    const { container } = render(<XpBoostHeaderButton />);
+    fireEvent.click(screen.getByText('XP').closest('button') as HTMLButtonElement);
+    fireEvent.click(await screen.findByText('Bonus-Box'));
+
+    const overlay = await screen.findByTestId('box-overlay');
+    expect(overlay.dataset.bonus).toBe('true');
+    expect(overlay.parentElement).toBe(document.body);
+    expect(container.contains(overlay)).toBe(false);
   });
 });

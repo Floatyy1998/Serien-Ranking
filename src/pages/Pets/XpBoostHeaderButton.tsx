@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Bolt from '@mui/icons-material/Bolt';
 import PlayArrow from '@mui/icons-material/PlayArrow';
@@ -467,9 +468,12 @@ export const XpBoostHeaderButton: React.FC<XpBoostHeaderButtonProps> = ({ onUseI
         )}
       </AnimatePresence>
 
-      {showBonusBox && (
-        <MysteryBoxOverlay totalEpisodes={0} bonus onClose={() => setShowBonusBox(false)} />
-      )}
+      {/* Per Portal an document.body: in der Kopfzeile wäre position:fixed eingesperrt */}
+      {showBonusBox &&
+        createPortal(
+          <MysteryBoxOverlay totalEpisodes={0} bonus onClose={() => setShowBonusBox(false)} />,
+          document.body
+        )}
     </div>
   );
 };
