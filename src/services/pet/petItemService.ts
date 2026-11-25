@@ -27,16 +27,15 @@ export async function takePetItem(userId: string, id: PetItemId): Promise<boolea
 }
 
 /**
- * Leckerli, Spielzeug und Festmahl einlösen. Liefert die geänderten Pets oder null, wenn nichts
- * eingelöst wurde — ein Vorrat wird nie verbraucht, ohne zu wirken.
+ * Leckerli, Spielzeug und Festmahl einlösen — jedes wirkt auf alle lebenden Pets. Liefert die
+ * geänderten Pets oder null, wenn nichts eingelöst wurde: ein Vorrat wird nie verbraucht, ohne
+ * zu wirken.
  */
 export async function applyPetItem(
   userId: string,
-  id: 'treat' | 'toy' | 'feast',
-  petId?: string
+  id: 'treat' | 'toy' | 'feast'
 ): Promise<Pet[] | null> {
-  const alive = (await getUserPets(userId)).filter((p) => p.isAlive);
-  const targets = id === 'feast' ? alive : alive.filter((p) => p.id === petId);
+  const targets = (await getUserPets(userId)).filter((p) => p.isAlive);
   if (targets.length === 0) return null;
   if (!(await takePetItem(userId, id))) return null;
 

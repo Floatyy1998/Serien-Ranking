@@ -207,7 +207,7 @@ export function usePetsData(enabled = true) {
   const applyItem = async (id: 'treat' | 'toy' | 'feast'): Promise<boolean> => {
     if (!user) return false;
     try {
-      const changed = await applyPetItem(user.uid, id, pet?.id);
+      const changed = await applyPetItem(user.uid, id);
       if (!changed) return false;
       const byId = new Map(changed.map((p) => [p.id, p]));
       setPets((prev) => prev.map((p) => byId.get(p.id) ?? p));

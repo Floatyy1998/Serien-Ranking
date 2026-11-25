@@ -16,12 +16,12 @@ export interface PetItemDefinition {
 export const PET_ITEMS: Record<PetItemId, PetItemDefinition> = {
   treat: {
     name: 'Leckerli',
-    description: 'Macht dein Pet sofort satt.',
+    description: 'Macht alle deine Pets sofort satt.',
     rarity: 'common',
   },
   toy: {
     name: 'Spielzeug',
-    description: 'Bringt das Glück deines Pets auf 100 %.',
+    description: 'Bringt das Glück aller deiner Pets auf 100 %.',
     rarity: 'common',
   },
   feast: {

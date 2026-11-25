@@ -683,8 +683,8 @@ const dict: Record<string, string> = {
   'Bonus-Box': 'Bonus Box',
   'Streak-Freischein': 'Streak Pass',
   Lebenselixier: 'Elixir of Life',
-  'Macht dein Pet sofort satt.': 'Fills your pet up instantly.',
-  'Bringt das Glück deines Pets auf 100 %.': "Raises your pet's happiness to 100%.",
+  'Macht alle deine Pets sofort satt.': 'Fills all your pets up instantly.',
+  'Bringt das Glück aller deiner Pets auf 100 %.': "Raises all your pets' happiness to 100%.",
   'Alle deine Pets sind satt und glücklich.': 'All your pets are full and happy.',
   'Ein weiterer Dreh am Glücksrad.': 'One more spin of the wheel of fortune.',
   'Eine zusätzliche Mystery Box.': 'An additional Mystery Box.',
@@ -710,8 +710,8 @@ const dict: Record<string, string> = {
     'You get supplies from the wheel of fortune & Mystery Boxes!',
   'Das geht gerade nicht.': "That isn't possible right now.",
   'Alle Pets sind satt und glücklich.': 'All pets are full and happy.',
-  '{name} ist satt.': '{name} is full.',
-  '{name} ist glücklich.': '{name} is happy.',
+  'Alle Pets sind satt.': 'All pets are full.',
+  'Alle Pets sind glücklich.': 'All pets are happy.',
 };
 
 export default dict;

@@ -650,8 +650,9 @@ const dict: Record<string, string> = {
   'Bonus-Box': 'Caixa bônus',
   'Streak-Freischein': 'Passe de sequência',
   Lebenselixier: 'Elixir da vida',
-  'Macht dein Pet sofort satt.': 'Deixa seu bichinho satisfeito na hora.',
-  'Bringt das Glück deines Pets auf 100 %.': 'Leva a felicidade do seu bichinho a 100%.',
+  'Macht alle deine Pets sofort satt.': 'Deixa todos os seus bichinhos satisfeitos na hora.',
+  'Bringt das Glück aller deiner Pets auf 100 %.':
+    'Leva a felicidade de todos os seus bichinhos a 100%.',
   'Alle deine Pets sind satt und glücklich.':
     'Todos os seus bichinhos ficam satisfeitos e felizes.',
   'Ein weiterer Dreh am Glücksrad.': 'Mais um giro na roda da sorte.',
@@ -678,8 +679,8 @@ const dict: Record<string, string> = {
     'Você ganha suprimentos na roda da sorte e nas Mystery Boxes!',
   'Das geht gerade nicht.': 'Isso não é possível agora.',
   'Alle Pets sind satt und glücklich.': 'Todos os bichinhos estão satisfeitos e felizes.',
-  '{name} ist satt.': '{name} está satisfeito.',
-  '{name} ist glücklich.': '{name} está feliz.',
+  'Alle Pets sind satt.': 'Todos os bichinhos estão satisfeitos.',
+  'Alle Pets sind glücklich.': 'Todos os bichinhos estão felizes.',
 };
 
 export default dict;

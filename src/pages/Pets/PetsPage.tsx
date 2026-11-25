@@ -175,7 +175,7 @@ export const PetsPageView: React.FC<{ data: PetsPageData }> = ({ data }) => {
         title={t('Meine Pets')}
         gradientFrom={currentTheme.accent}
         gradientTo={currentTheme.primary}
-        actions={<XpBoostHeaderButton pet={pet} onUseItem={applyItem} />}
+        actions={<XpBoostHeaderButton onUseItem={applyItem} />}
       />
 
       {/* Pet Selector */}

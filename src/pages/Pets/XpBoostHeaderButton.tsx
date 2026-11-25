@@ -15,7 +15,6 @@ import { t } from '../../services/i18n';
 import { onValue } from '../../services/db/subscribeValue';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
 import { usePetItems } from '../../hooks/pet/usePetItems';
-import type { Pet } from '../../types/pet.types';
 import { PetItemsPanel, type DirectItemId } from './PetItemsPanel';
 
 /** Color based on total boost value (multiplier × episodes) */
@@ -38,12 +37,11 @@ function getBoostLabel(multiplier: number, episodes: number): string {
 }
 
 interface XpBoostHeaderButtonProps {
-  /** Das gewählte Pet — Ziel für Leckerli und Spielzeug aus dem Vorrat. */
-  pet?: Pet | null;
+  /** Leckerli, Spielzeug oder Festmahl aus dem Vorrat einlösen. */
   onUseItem?: (id: DirectItemId) => Promise<boolean>;
 }
 
-export const XpBoostHeaderButton: React.FC<XpBoostHeaderButtonProps> = ({ pet, onUseItem }) => {
+export const XpBoostHeaderButton: React.FC<XpBoostHeaderButtonProps> = ({ onUseItem }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const petItems = usePetItems();
@@ -459,7 +457,6 @@ export const XpBoostHeaderButton: React.FC<XpBoostHeaderButtonProps> = ({ pet, o
             </div>
             <PetItemsPanel
               items={petItems}
-              pet={pet}
               onUseItem={onUseItem}
               onOpenBonusBox={() => {
                 setOpen(false);

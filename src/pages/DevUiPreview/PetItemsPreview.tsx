@@ -27,7 +27,6 @@ export const PetItemsPreview = () => {
             streakPass: 1,
             elixir: 1,
           }}
-          pet={makeDevPet('otter', 12)}
           onUseItem={async () => true}
           onOpenBonusBox={() => {}}
         />

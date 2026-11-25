@@ -9,7 +9,7 @@ import { PetItemIcon } from '../../components/pet/PetItemIcon';
 import { useTheme } from '../../contexts/ThemeContext';
 import { showToast } from '../../lib/interaction/toast';
 import { t } from '../../services/i18n';
-import { RARITY_COLORS, type Pet } from '../../types/pet.types';
+import { RARITY_COLORS } from '../../types/pet.types';
 
 export type DirectItemId = 'treat' | 'toy' | 'feast';
 
@@ -18,14 +18,12 @@ const isDirect = (id: PetItemId): id is DirectItemId =>
 
 interface PetItemsPanelProps {
   items: PetItemCounts;
-  /** Das gerade gewählte Pet — Ziel für Leckerli und Spielzeug. */
-  pet?: Pet | null;
   onUseItem?: (id: DirectItemId) => Promise<boolean>;
   onOpenBonusBox: () => void;
 }
 
 /** Vorrat an Verbrauchsgütern: was da ist, was es tut und wo es eingelöst wird. */
-export const PetItemsPanel = ({ items, pet, onUseItem, onOpenBonusBox }: PetItemsPanelProps) => {
+export const PetItemsPanel = ({ items, onUseItem, onOpenBonusBox }: PetItemsPanelProps) => {
   const { currentTheme } = useTheme();
   const [busy, setBusy] = useState(false);
   const owned = PET_ITEM_IDS.filter((id) => items[id] > 0);
@@ -39,13 +37,12 @@ export const PetItemsPanel = ({ items, pet, onUseItem, onOpenBonusBox }: PetItem
       showToast(t('Das geht gerade nicht.'), 2500, 'error');
       return;
     }
-    const name = pet?.name ?? '';
     showToast(
       id === 'feast'
         ? t('Alle Pets sind satt und glücklich.')
         : id === 'treat'
-          ? t('{name} ist satt.', { name })
-          : t('{name} ist glücklich.', { name }),
+          ? t('Alle Pets sind satt.')
+          : t('Alle Pets sind glücklich.'),
       2500
     );
   };
@@ -74,9 +71,8 @@ export const PetItemsPanel = ({ items, pet, onUseItem, onOpenBonusBox }: PetItem
       {owned.map((id) => {
         const def = PET_ITEMS[id];
         const color = RARITY_COLORS[def.rarity];
-        const needsLivingPet = id === 'treat' || id === 'toy';
         const action = isDirect(id)
-          ? onUseItem && (!needsLivingPet || pet?.isAlive)
+          ? onUseItem
             ? { label: t('Benutzen'), run: () => void redeem(id) }
             : null
           : id === 'bonusBox'

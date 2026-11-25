@@ -93,20 +93,23 @@ describe('Vorrat', () => {
 });
 
 describe('applyPetItem', () => {
-  it('Leckerli macht nur das gewählte Pet satt', async () => {
+  it('Leckerli macht alle lebenden Pets satt und lässt das Glück unberührt', async () => {
     fb.setAt('users/u/petItems/treat', 1);
-    const changed = await applyPetItem('u', 'treat', 'p1');
-    expect(changed?.map((p) => p.id)).toEqual(['p1']);
+    const changed = await applyPetItem('u', 'treat');
+    expect(changed?.map((p) => p.id)).toEqual(['p1', 'p2']);
     expect(fb.getAt('users/u/pets/p1')).toMatchObject({ hunger: 0 });
+    expect(fb.getAt('users/u/pets/p2')).toMatchObject({ hunger: 0 });
     expect((fb.getAt('users/u/pets/p1') as { happiness?: number }).happiness).toBeUndefined();
-    expect(fb.getAt('users/u/pets/p2')).toBeNull();
+    expect(fb.getAt('users/u/pets/p3')).toBeNull();
     expect(fb.getAt('users/u/petItems/treat')).toBe(0);
   });
 
-  it('Spielzeug hebt nur das Glück', async () => {
+  it('Spielzeug hebt bei allen lebenden Pets nur das Glück', async () => {
     fb.setAt('users/u/petItems/toy', 1);
-    await applyPetItem('u', 'toy', 'p2');
+    await applyPetItem('u', 'toy');
+    expect(fb.getAt('users/u/pets/p1')).toEqual({ happiness: 100 });
     expect(fb.getAt('users/u/pets/p2')).toEqual({ happiness: 100 });
+    expect(fb.getAt('users/u/pets/p3')).toBeNull();
   });
 
   it('Festmahl wirkt auf alle lebenden Pets', async () => {
@@ -117,12 +120,13 @@ describe('applyPetItem', () => {
     expect(fb.getAt('users/u/pets/p3')).toBeNull();
   });
 
-  it('verbraucht nichts, wenn das Pet tot ist oder der Vorrat leer', async () => {
-    fb.setAt('users/u/petItems/treat', 1);
-    expect(await applyPetItem('u', 'treat', 'p3')).toBeNull();
-    expect(fb.getAt('users/u/petItems/treat')).toBe(1);
-
-    expect(await applyPetItem('u', 'toy', 'p1')).toBeNull();
+  it('verbraucht nichts, wenn kein Pet lebt oder der Vorrat leer ist', async () => {
+    expect(await applyPetItem('u', 'toy')).toBeNull();
     expect(fb.getAt('users/u/pets/p1')).toBeNull();
+
+    fb.setAt('users/u/petItems/treat', 1);
+    getUserPets.mockResolvedValue([{ id: 'p3', isAlive: false, hunger: 100, happiness: 0 }]);
+    expect(await applyPetItem('u', 'treat')).toBeNull();
+    expect(fb.getAt('users/u/petItems/treat')).toBe(1);
   });
 });
