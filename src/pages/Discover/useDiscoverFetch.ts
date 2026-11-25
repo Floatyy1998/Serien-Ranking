@@ -542,6 +542,7 @@ export const useDiscoverFetch = (
   ]);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (activeCategory === 'recommendations') {
       if (
         recommendations.length > 0 &&
@@ -558,7 +559,7 @@ export const useDiscoverFetch = (
             }
           }
         };
-        setTimeout(checkNeedMoreContent, 100);
+        timer = setTimeout(checkNeedMoreContent, 100);
       }
     } else {
       if (results.length > 0 && hasMore && !loading && !showSearch) {
@@ -571,9 +572,10 @@ export const useDiscoverFetch = (
             }
           }
         };
-        setTimeout(checkNeedMoreContent, 100);
+        timer = setTimeout(checkNeedMoreContent, 100);
       }
     }
+    return () => clearTimeout(timer);
   }, [
     results.length,
     hasMore,
