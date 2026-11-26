@@ -14,7 +14,7 @@ import {
   SERIES_LOOKUP_VERSION,
   seriesProgress,
 } from './bookSeries';
-import { localEditionGaps } from './catalogSeries';
+import { localEditionGaps, mapCatalogSeries } from './catalogSeries';
 
 const NOW = new Date('2026-11-07T12:00:00').getTime();
 
@@ -615,6 +615,89 @@ describe('Solo Leveling: Roman neben Comic', () => {
       expect(out).toHaveLength(1);
       expect(out[0].seriesId).toBe(DNB);
       expect(out[0].next.part.result?.isbn13).toBe('9783963587504');
+    });
+
+    // Ticket 26.11.2026: Ohne Form in der Katalog-Liste zählten die eigenen Comic-Bände 6 und 7 als Roman-Bände.
+    describe('Bandliste aus dem Katalog neben eigenen Comic-Bänden', () => {
+      const isbns = [
+        '9783963587160',
+        '9783963587498',
+        '9783963587504',
+        '9783963587511',
+        '9783963587528',
+        '9783963587535',
+        '9783963587542',
+        '9783753914664',
+      ];
+      const catalogParts = (formless: number[] = []) =>
+        mapCatalogSeries(
+          {
+            key: DNB,
+            name: 'Solo leveling',
+            v: 1,
+            parts: isbns.map((isbn13, i) => ({
+              id: `dnb-${isbn13}`,
+              title: `Solo leveling ${i + 1}`,
+              position: i + 1,
+              year: 2021,
+              authors: ['Chu gong'],
+              isbn13,
+              language: 'de',
+              ...(formless.includes(i + 1) ? {} : { categories: ['Roman'] }),
+            })),
+          },
+          new Date(NOW)
+        );
+      const read = isbns.slice(0, 5).map((isbn13, i) =>
+        book({
+          id: `dnb-${isbn13}`,
+          title: `Solo leveling ${i + 1}`,
+          authors: ['Chu gong'],
+          isbn13,
+          categories: ['Roman'],
+          series: { name: 'Solo leveling', position: i + 1, wikidataId: DNB },
+        })
+      );
+      const comic = (position: number, title: string, isbn13: string) =>
+        book({
+          id: `hc-${isbn13}`,
+          title,
+          authors: ['Chu gong'],
+          isbn13,
+          categories: ['Fantasy', 'Comics'],
+          series: { name: 'Solo Leveling (Comic)', position, wikidataId: COMIC },
+        });
+      const comics = [
+        comic(6, 'Solo Leveling 6', '9783753907475'),
+        comic(7, 'Solo Leveling 07', '9783753917320'),
+      ];
+
+      it('schlägt nach Roman-Band 5 den Roman-Band 6 vor', () => {
+        const parts = catalogParts();
+        expect(partPositionOf(comics[0], parts, DNB)).toBeUndefined();
+        const out = seriesProgress([...read, ...comics], { [DNB]: parts }, {}, NOW);
+        expect(out).toHaveLength(1);
+        expect(out[0].next.part.result?.isbn13).toBe('9783963587535');
+        expect(out[0].ownedCount).toBe(5);
+      });
+
+      it('vererbt die Form der Liste an Bände ohne eigene Angabe', () => {
+        const parts = catalogParts([6, 7]);
+        expect(partPositionOf(comics[0], parts, DNB)).toBeUndefined();
+        const out = seriesProgress([...read, ...comics], { [DNB]: parts }, {}, NOW);
+        expect(out[0].next.part.position).toBe(6);
+      });
+
+      it('lässt Bücher ohne Formangabe weiter über den Titel zu', () => {
+        const plain = book({
+          id: 'gb-x',
+          title: 'Solo leveling 6',
+          authors: ['Chu gong'],
+          isbn13: undefined,
+          series: undefined,
+        });
+        expect(partPositionOf(plain, catalogParts(), DNB)).toBe(6);
+      });
     });
   });
 

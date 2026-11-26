@@ -1,6 +1,6 @@
 import { isLocale, type Locale } from '../../i18n/locales';
 import type { Book, BookSeriesInfo, BookSeriesPart } from '../../types/Book';
-import { bookFormsConflict } from './bookIdentity';
+import { bookFormOf } from './bookIdentity';
 import { isDnbSeriesKey, parseDnbSeriesKey } from './bookSearchMapping';
 import { splitVolume } from './mangaVolume';
 
@@ -111,7 +111,7 @@ export function partPositionOf(
   for (const mainOnly of [false, true]) {
     const keys = titleKeys(book.title, mainOnly);
     const hits = parts.filter(
-      (p) => sharesKey(keys, titleKeys(p.title, mainOnly)) && !bookFormsConflict(book, formOf(p))
+      (p) => sharesKey(keys, titleKeys(p.title, mainOnly)) && !formConflict(book, p, parts)
     );
     if (hits.length === 1) return hits[0].position;
   }
@@ -123,6 +123,23 @@ const formOf = (part: BookSeriesPart) => ({
   series: part.result?.series,
   categories: part.result?.categories,
 });
+
+const listForms = new WeakMap<BookSeriesPart[], ReturnType<typeof bookFormOf>>();
+
+function listFormOf(parts: BookSeriesPart[]): ReturnType<typeof bookFormOf> {
+  if (!listForms.has(parts)) {
+    const forms = new Set(parts.map((p) => bookFormOf(formOf(p))).filter(Boolean));
+    listForms.set(parts, forms.size === 1 ? [...forms][0] : undefined);
+  }
+  return listForms.get(parts);
+}
+
+// Roman und Comic heißen bei der DNB Band für Band gleich („Solo leveling 6"); Bände ohne Angabe erben die einhellige Form der Liste.
+function formConflict(book: SeriesBookRef, part: BookSeriesPart, parts: BookSeriesPart[]): boolean {
+  const own = bookFormOf(book);
+  const other = bookFormOf(formOf(part)) ?? listFormOf(parts);
+  return !!own && !!other && own !== other;
+}
 
 /** Stamm der Bandtitel, die wie ihr Platz heißen („Solo Leveling Roman 01" auf Platz 1) — je Stamm die Bände dazu. */
 export function titledStems(parts: BookSeriesPart[]): Map<string, BookSeriesPart[]> {
@@ -141,7 +158,7 @@ function patternPositionOf(book: SeriesBookRef, parts: BookSeriesPart[]): number
   const { series, volume } = splitVolume(book.title);
   if (volume === undefined || !parts.some((p) => p.position === volume)) return undefined;
   const siblings = titledStems(parts).get(seriesNameKey(series)) ?? [];
-  if (siblings.length < 2 || siblings.some((p) => bookFormsConflict(book, formOf(p)))) {
+  if (siblings.length < 2 || siblings.some((p) => formConflict(book, p, parts))) {
     return undefined;
   }
   return volume;

@@ -64,6 +64,7 @@ export interface CatalogSeriesPart {
   pageCount?: number;
   publisher?: string;
   language?: string;
+  categories?: string[];
 }
 
 export interface CatalogSeriesFile {
@@ -116,6 +117,7 @@ export function mapCatalogSeries(file: CatalogSeriesFile, now = new Date()): Boo
         pageCount: p.pageCount,
         publisher: p.publisher,
         language: p.language,
+        categories: p.categories,
         publishedYear: p.year,
         series: { name: file.name, position: p.position, wikidataId: file.key },
         source: p.id.startsWith('dnb-') ? 'dnb' : 'hardcover',
