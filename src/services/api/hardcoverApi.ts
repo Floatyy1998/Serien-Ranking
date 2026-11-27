@@ -89,6 +89,7 @@ const SOFT_FAILURES_BEFORE_PAUSE = 3;
 const SOFT_WINDOW_MS = 60_000;
 const RETRY_DELAY_MS = 1200;
 let softFailures: number[] = [];
+let outageNotedAt = 0;
 
 /** Der Abbruchgrund des Aufrufers (nächster Buchstabe, Seitenwechsel) — nie eine Hardcover-Störung. */
 const abortedBy = (signal: AbortSignal): unknown =>
@@ -203,7 +204,10 @@ async function post<T>(
       // hinge genauso lange — lieber sofort die Ersatzquellen. Der erste Versuch war still, deshalb hier melden.
       // Danach weist der Server jede Abfrage für die Dauer der Schonfrist sofort ab: so lange gar nicht erst fragen.
       if (round === 0 && Date.now() - startedAt >= SLOW_FAILURE_MS) {
-        if (!background) reportSlowFailure(path, err, Date.now() - startedAt);
+        if (!background && startedAt >= outageNotedAt) {
+          reportSlowFailure(path, err, Date.now() - startedAt);
+        }
+        outageNotedAt = Date.now();
         pause(err.retryAfterMs ?? UPSTREAM_DOWN_PAUSE_MS);
         pausedForDowntime = true;
         break;

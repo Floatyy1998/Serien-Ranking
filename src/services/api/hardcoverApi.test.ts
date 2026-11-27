@@ -150,6 +150,29 @@ describe('hardcoverApi', () => {
     expect(captureError).toHaveBeenCalledTimes(1);
   });
 
+  it('meldet eine Störung nur einmal, auch wenn weitere Abfragen währenddessen schon unterwegs waren', async () => {
+    vi.useFakeTimers();
+    backendFetch.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
+      return json({ error: 'upstream' }, 503);
+    });
+    const { hardcoverSearch } = await import('./hardcoverApi');
+    const first = hardcoverSearch('har').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(5_000);
+    const second = hardcoverSearch('harry').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(4_000);
+    const third = hardcoverSearch('harry p').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(20_000);
+    await Promise.all([first, second, third]);
+    expect(backendFetch).toHaveBeenCalledTimes(3);
+    expect(captureError).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(20_000);
+    const later = hardcoverSearch('harry po').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(15_000);
+    await later;
+    expect(captureError).toHaveBeenCalledTimes(2);
+  });
+
   it('wiederholt einen 503 mit genannter Schonfrist nicht, meldet ihn nicht und pausiert so lange', async () => {
     vi.useFakeTimers();
     backendFetch.mockResolvedValue(json({ error: 'upstream', retryAfter: 12 }, 503));
