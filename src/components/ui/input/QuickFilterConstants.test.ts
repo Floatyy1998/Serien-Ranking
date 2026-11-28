@@ -45,6 +45,7 @@ describe('QuickFilterConstants', () => {
     expect(values).toContain('watched');
     expect(values).toContain('not-started');
     expect(values).toContain('ongoing');
+    expect(values).toContain('ended');
   });
 
   it('movie-Filter bieten "unreleased" (Serien nicht)', () => {

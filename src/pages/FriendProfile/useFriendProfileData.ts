@@ -4,6 +4,7 @@ import {
   fetchStaticCatalogSeasonsBulk,
 } from '../../services/catalog/staticCatalog';
 import { mergeToSeriesView } from '../../lib/series/seriesAdapter';
+import { isSeriesEnded, isSeriesOngoing } from '../../lib/series/seriesStatus';
 import type { CatalogSeries, SeriesWatchData, UserSeriesRef } from '../../types/CatalogTypes';
 import { dbRef, dbGet, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -164,14 +165,11 @@ const filterByQuickFilter = (
       });
 
     case 'ongoing':
-      return items.filter((item) => {
-        const status = item.status?.toLowerCase();
-        return (
-          status === 'returning series' ||
-          status === 'ongoing' ||
-          (!status && item.production?.production === true)
-        );
-      });
+      return items.filter(isSeriesOngoing);
+
+    case 'ended':
+      if (isMovieMode) return items;
+      return items.filter(isSeriesEnded);
 
     default:
       return items;

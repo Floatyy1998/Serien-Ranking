@@ -13,6 +13,7 @@ import { useRatingFolders } from '../../hooks/rating/useRatingFolders';
 import { folderItemKey } from '../../lib/rating/ratingFolders';
 import { preloadImage } from '../../lib/image/preloadImage';
 import { isMovieWatched } from '../../lib/rating/rating';
+import { isSeriesEnded, isSeriesOngoing } from '../../lib/series/seriesStatus';
 import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
 import {
   compareByRelease,
@@ -352,14 +353,9 @@ export const useRatingsData = (): UseRatingsDataResult => {
     } else if (quickFilter === 'not-started') {
       items = items.filter(({ s }) => !hasWatchedEpisodes(s));
     } else if (quickFilter === 'ongoing') {
-      items = items.filter(({ s }) => {
-        const status = s.status?.toLowerCase();
-        return (
-          status === 'returning series' ||
-          status === 'ongoing' ||
-          (!status && s.production?.production === true)
-        );
-      });
+      items = items.filter(({ s }) => isSeriesOngoing(s));
+    } else if (quickFilter === 'ended') {
+      items = items.filter(({ s }) => isSeriesEnded(s));
     }
 
     items.sort((a, b) => {

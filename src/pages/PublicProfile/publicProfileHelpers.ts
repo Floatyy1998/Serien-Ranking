@@ -7,6 +7,7 @@ import {
   releaseYearOf,
 } from '../../lib/filters/releaseYearFilter';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { isSeriesEnded, isSeriesOngoing } from '../../lib/series/seriesStatus';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -203,14 +204,11 @@ const filterByQuickFilter = (
       });
 
     case 'ongoing':
-      return items.filter((item) => {
-        const status = item.status?.toLowerCase();
-        return (
-          status === 'returning series' ||
-          status === 'ongoing' ||
-          (!status && item.production?.production === true)
-        );
-      });
+      return items.filter(isSeriesOngoing);
+
+    case 'ended':
+      if (isMovieMode) return items;
+      return items.filter(isSeriesEnded);
 
     default:
       return items;

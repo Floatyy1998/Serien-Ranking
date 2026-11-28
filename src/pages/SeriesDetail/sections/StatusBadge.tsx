@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { findNextEpisodePosition } from '../../../lib/episode/nextEpisode';
+import { isSeriesEnded, isSeriesOngoing } from '../../../lib/series/seriesStatus';
 import { getEpisodeAirDate } from '../../../utils/episodeDate';
 import { dateLocale, t } from '../../../services/i18n';
 import type { Series } from '../../../types/Series';
@@ -131,14 +132,8 @@ function getNextEpisodeInfo(
 
 export const StatusBadge = memo<StatusBadgeProps>(({ series }) => {
   const { currentTheme } = useTheme();
-  const isOngoing =
-    series.status === 'Returning Series' ||
-    series.status === 'ongoing' ||
-    (!series.status && series.production?.production === true);
-  const isEnded =
-    series.status === 'Ended' ||
-    series.status === 'Canceled' ||
-    (!series.status && series.production?.production === false);
+  const isOngoing = isSeriesOngoing(series);
+  const isEnded = isSeriesEnded(series);
 
   const rhythm = useMemo(
     () => (isOngoing ? detectAiringRhythm(series) : null),

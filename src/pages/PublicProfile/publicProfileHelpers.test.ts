@@ -133,6 +133,16 @@ describe('applyFilters', () => {
     expect(result.map((i) => i.id)).toEqual([3]);
   });
 
+  it('quickFilter "ended" liefert beendete Serien in der gewählten Sortierung', () => {
+    const result = applyFilters(items, { quickFilter: 'ended', sortBy: 'rating-asc' }, false);
+    expect(result.map((i) => i.id)).toEqual([2, 1]);
+  });
+
+  it('quickFilter "ended" lässt Filme stehen', () => {
+    const movies = [makeItem({ id: 9, title: 'Film', rating: { a: 6 }, status: 'Released' })];
+    expect(applyFilters(movies, { quickFilter: 'ended' }, true)).toHaveLength(1);
+  });
+
   it('name-asc sortiert alphabetisch', () => {
     const result = applyFilters(items, { sortBy: 'name-asc' }, false);
     expect(result.map((i) => i.title)).toEqual(['Breaking Bad', 'Ongoing Show', 'The Office']);

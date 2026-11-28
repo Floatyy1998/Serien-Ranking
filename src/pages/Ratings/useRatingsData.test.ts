@@ -246,6 +246,12 @@ describe('useRatingsData', () => {
     expect(result.current.currentItems.map((i) => i.id)).toEqual([1]);
   });
 
+  it('quickFilter=ended keeps ended series and the chosen sort order', () => {
+    const { result } = renderHook(() => useRatingsData());
+    act(() => result.current.handleQuickFilterChange({ quickFilter: 'ended' }));
+    expect(result.current.currentItems.map((i) => i.id)).toEqual([2]);
+  });
+
   it('handleGridClick preloads poster, saves scroll and navigates', () => {
     const { result } = renderHook(() => useRatingsData());
     const grid = document.createElement('div');

@@ -2,6 +2,7 @@ import { Bookmark, NewReleases, PlaylistAdd, Schedule, Star } from '@mui/icons-m
 // Einzeln importiert: viele Testdateien mocken das Barrel mit einer festen
 // Export-Liste, ein neues Icon dort hätte sie reihenweise brechen lassen.
 import Album from '@mui/icons-material/Album';
+import DoneAll from '@mui/icons-material/DoneAll';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { t } from '../../../services/i18n';
@@ -27,5 +28,6 @@ export const ratingsQuickFilters = [
   { value: 'not-started', label: t('Nicht gesehen'), icon: VisibilityOff },
   { value: 'owned', label: t('Im Besitz'), icon: Album },
   { value: 'ongoing', label: t('Fortlaufend'), icon: Schedule },
+  { value: 'ended', label: t('Beendet'), icon: DoneAll },
   { value: 'recently-added', label: t('Zuletzt Hinzugefügt'), icon: PlaylistAdd },
 ];
