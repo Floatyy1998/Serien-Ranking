@@ -31,6 +31,7 @@ export function getCachedItemProviders(type: ProviderItemType, id: number): Item
 export function clearItemProviderCache(): void {
   cache.clear();
   inFlight.clear();
+  seriesCards.clear();
 }
 
 // TMDB teilt sich einen Key über alle Clients — die Poster-Badges eines Grids
@@ -82,20 +83,52 @@ async function fromCatalog(type: ProviderItemType, id: number): Promise<ItemProv
   }
 }
 
+function tmdbProviders(data: TmdbWatchProvidersResponse | undefined): ItemProvider[] {
+  return toProviders(
+    pickProviderTiers(data?.results).map((p) => ({
+      name: p?.provider_name,
+      logo: p?.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '',
+    }))
+  );
+}
+
+export interface TmdbSeriesCard {
+  status?: string;
+  inProduction?: boolean;
+  providers: ItemProvider[];
+}
+
+const seriesCards = new Map<number, Promise<TmdbSeriesCard>>();
+
+/** Status und Provider einer Serie in EINER TMDB-Anfrage, für alle Poster-Angaben geteilt. */
+export function fetchTmdbSeriesCard(id: number): Promise<TmdbSeriesCard> {
+  const running = seriesCards.get(id);
+  if (running) return running;
+  const task = withSlot(() =>
+    tmdbFetch<{
+      status?: string;
+      in_production?: boolean;
+      'watch/providers'?: TmdbWatchProvidersResponse;
+    }>(`tv/${id}`, { append_to_response: 'watch/providers' })
+  ).then((data) => ({
+    status: data?.status,
+    inProduction: data?.in_production,
+    providers: tmdbProviders(data?.['watch/providers']),
+  }));
+  seriesCards.set(id, task);
+  task.catch(() => seriesCards.delete(id));
+  return task;
+}
+
 async function fromTmdb(type: ProviderItemType, id: number): Promise<ItemProvider[]> {
-  const mediaType = type === 'series' ? 'tv' : 'movie';
   try {
+    if (type === 'series') return (await fetchTmdbSeriesCard(id)).providers;
     const data = await withSlot(() =>
-      tmdbFetch<TmdbWatchProvidersResponse>(`${mediaType}/${id}/watch/providers`, {
+      tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, {
         language: undefined,
       })
     );
-    return toProviders(
-      pickProviderTiers(data?.results).map((p) => ({
-        name: p?.provider_name,
-        logo: p?.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '',
-      }))
-    );
+    return tmdbProviders(data);
   } catch {
     return [];
   }

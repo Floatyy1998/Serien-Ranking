@@ -32,6 +32,7 @@ import { quickMediaKey, useQuickMediaActions } from '../../../hooks/rating/useQu
 import type { PersonHit } from '../../../lib/person/personSearch';
 import { formatRatingShort } from '../../../lib/rating/rating';
 import { MiniProviderBadges } from './MiniProviderBadges';
+import { PosterAiringChip } from '../../../components/ui/media/PosterAiringChip';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
 import { t } from '../../../services/i18n';
 import {
@@ -474,20 +475,23 @@ export const HomeSearchOverlay = memo(
                 <Search style={{ fontSize: '28px', opacity: 0.4 }} />
               </div>
             )}
-            {displayRating ? (
-              <span
-                className="hso__rating"
-                style={{ background: `${currentTheme.background.default}d9` }}
-              >
-                <Star
-                  style={{
-                    fontSize: '12px',
-                    color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
-                  }}
-                />
-                {displayRating.value.toFixed(1)}
-              </span>
-            ) : null}
+            <span className="hso__meta">
+              {displayRating ? (
+                <span
+                  className="hso__rating"
+                  style={{ background: `${currentTheme.background.default}d9` }}
+                >
+                  <Star
+                    style={{
+                      fontSize: '12px',
+                      color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                    }}
+                  />
+                  {displayRating.value.toFixed(1)}
+                </span>
+              ) : null}
+              <PosterAiringChip type={item.type} id={item.id} />
+            </span>
             <span
               className="hso__type"
               style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}

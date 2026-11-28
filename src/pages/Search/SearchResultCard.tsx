@@ -1,6 +1,7 @@
 import { Add, Star, Visibility } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
+import { PosterAiringChip } from '../../components/ui/media/PosterAiringChip';
 import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { useItemProviders } from '../../hooks/provider/useItemProviders';
@@ -118,19 +119,24 @@ export const SearchResultCard = memo(
               <div className="search-result-gradient-overlay" />
 
               {/* Rating Badge — Community-Wert führt, Primärfarbe markiert ihn */}
-              {displayRating && (
-                <div
-                  className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
-                >
-                  <Star
-                    style={{
-                      fontSize: isDesktop ? '12px' : '10px',
-                      color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
-                    }}
-                  />
-                  {displayRating.value.toFixed(1)}
-                </div>
-              )}
+              <div className={withDesktop('search-poster-meta')}>
+                {displayRating && (
+                  <div
+                    className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
+                  >
+                    <Star
+                      style={{
+                        fontSize: isDesktop ? '12px' : '10px',
+                        color: displayRating.isCommunity
+                          ? currentTheme.primary
+                          : currentTheme.accent,
+                      }}
+                    />
+                    {displayRating.value.toFixed(1)}
+                  </div>
+                )}
+                <PosterAiringChip type={item.type} id={item.id} />
+              </div>
 
               {/* Type Badge */}
               <div

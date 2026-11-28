@@ -12,6 +12,7 @@ import { useItemProviders } from '../../hooks/provider/useItemProviders';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/rating/useCommunityRatings';
 import type { ItemCardProps } from './discoverItemHelpers';
+import { PosterAiringChip } from '../../components/ui/media/PosterAiringChip';
 import { PosterFrame } from '../../components/ui/media/PosterFrame';
 import { tapScale } from '../../lib/motion';
 import { formatRatingShort } from '../../lib/rating/rating';
@@ -140,22 +141,25 @@ export const ItemCard = memo(
                 {t('{n} %', { n: item.match ?? 0 })}
               </div>
             )}
-            {displayRating && (
-              <div
-                className="discover-rating"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.background.default}d9, ${currentTheme.background.default}e6)`,
-                }}
-              >
-                <Star
+            <div className="discover-badges__side">
+              {displayRating && (
+                <div
+                  className="discover-rating"
                   style={{
-                    fontSize: '14px',
-                    color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                    background: `linear-gradient(135deg, ${currentTheme.background.default}d9, ${currentTheme.background.default}e6)`,
                   }}
-                />
-                {displayRating.value.toFixed(1)}
-              </div>
-            )}
+                >
+                  <Star
+                    style={{
+                      fontSize: '14px',
+                      color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                    }}
+                  />
+                  {displayRating.value.toFixed(1)}
+                </div>
+              )}
+              <PosterAiringChip type={item.type} id={item.id} />
+            </div>
           </div>
 
           {/* Glassmorphic Info Overlay */}

@@ -1,0 +1,38 @@
+.poster-airing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 6px;
+  border-radius: 8px;
+  background: rgba(8, 10, 18, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.poster-airing__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.poster-airing--ongoing .poster-airing__dot {
+  background: var(--color-success, #4ade80);
+  box-shadow: 0 0 6px var(--color-success, #4ade80);
+}
+
+.poster-airing--ended {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.poster-airing--ended .poster-airing__dot {
+  background: rgba(255, 255, 255, 0.45);
+}

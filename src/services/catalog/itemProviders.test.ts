@@ -25,6 +25,7 @@ vi.mock('../settings/region', () => ({
 import {
   clearItemProviderCache,
   fetchItemProviderDetails,
+  fetchTmdbSeriesCard,
   getCachedItemProviders,
 } from './itemProviders';
 
@@ -42,6 +43,11 @@ const flatrate = (...providers: { provider_name: string; logo_path?: string }[])
 });
 
 const NETFLIX = { provider_name: 'Netflix', logo_path: '/nf.jpg' };
+
+const seriesCard = (providers: unknown, extra: Record<string, unknown> = {}) => ({
+  ...extra,
+  'watch/providers': providers,
+});
 
 beforeEach(() => {
   clearItemProviderCache();
@@ -91,14 +97,14 @@ describe('itemProviders', () => {
 
     clearItemProviderCache();
     catalog.region = 'US';
-    stubFetch(() => jsonOk({ results: { US: { flatrate: [NETFLIX] } } }));
+    stubFetch(() => jsonOk(seriesCard({ results: { US: { flatrate: [NETFLIX] } } })));
     await expect(fetchItemProviderDetails('series', 7)).resolves.toEqual([
       { name: 'Netflix', logo: 'https://image.tmdb.org/t/p/w92/nf.jpg' },
     ]);
   });
 
   it('cached das Ergebnis und liefert es synchron nach', async () => {
-    const fetchMock = stubFetch(() => jsonOk(flatrate(NETFLIX)));
+    const fetchMock = stubFetch(() => jsonOk(seriesCard(flatrate(NETFLIX))));
     expect(getCachedItemProviders('series', 3)).toBeNull();
     await fetchItemProviderDetails('series', 3);
     await fetchItemProviderDetails('series', 3);
@@ -128,7 +134,7 @@ describe('itemProviders', () => {
   });
 
   it('drosselt parallele TMDB-Abfragen, ohne eine zu verlieren', async () => {
-    const fetchMock = stubFetch(() => jsonOk(flatrate(NETFLIX)));
+    const fetchMock = stubFetch(() => jsonOk(seriesCard(flatrate(NETFLIX))));
     const results = await Promise.all(
       [1, 2, 3, 4, 5, 6, 7, 8].map((id) => fetchItemProviderDetails('series', id + 100))
     );
@@ -137,7 +143,35 @@ describe('itemProviders', () => {
   });
 
   it('ignoriert Antworten ohne Flatrate-Liste', async () => {
-    stubFetch(() => jsonOk({ results: {} }));
+    stubFetch(() => jsonOk(seriesCard({ results: {} })));
     await expect(fetchItemProviderDetails('series', 500)).resolves.toEqual([]);
+  });
+
+  it('holt Status und Provider einer Serie in einer einzigen TMDB-Anfrage', async () => {
+    const fetchMock = stubFetch(() =>
+      jsonOk(seriesCard(flatrate(NETFLIX), { status: 'Ended', in_production: false }))
+    );
+    const [card, providers] = await Promise.all([
+      fetchTmdbSeriesCard(42),
+      fetchItemProviderDetails('series', 42),
+    ]);
+    expect(card).toMatchObject({ status: 'Ended', inProduction: false });
+    expect(providers).toEqual(card.providers);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe('/3/tv/42');
+    expect(url.searchParams.get('append_to_response')).toBe('watch/providers');
+  });
+
+  it('versucht eine fehlgeschlagene Serien-Anfrage beim nächsten Mal neu', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('offline');
+      })
+    );
+    await expect(fetchTmdbSeriesCard(43)).rejects.toThrow();
+    stubFetch(() => jsonOk(seriesCard(flatrate(NETFLIX), { status: 'Returning Series' })));
+    await expect(fetchTmdbSeriesCard(43)).resolves.toMatchObject({ status: 'Returning Series' });
   });
 });

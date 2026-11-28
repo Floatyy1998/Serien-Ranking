@@ -254,10 +254,23 @@
 
 /* Rating Badge */
 
-.search-rating-badge {
+.search-poster-meta {
   position: absolute;
   top: 6px;
   right: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.search-poster-meta--desktop {
+  top: 8px;
+  right: 8px;
+}
+
+.search-rating-badge {
   padding: 3px 6px;
   background: rgba(10, 14, 26, 0.85);
   -webkit-backdrop-filter: var(--blur-md);
@@ -272,8 +285,6 @@
 }
 
 .search-rating-badge--desktop {
-  top: 8px;
-  right: 8px;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
