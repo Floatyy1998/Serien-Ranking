@@ -5,7 +5,7 @@ import type { ChangeEvent, ClipboardEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
-import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
+import { normalizeTicketType, PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
 import { storageUrlOrNull } from '../../../lib/url/safeUrl';
 import { t } from '../../../services/i18n';
@@ -60,7 +60,7 @@ export function TicketCard({
   const [closing, setClosing] = useState(false);
   const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.done;
   const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
-  const typeCfg = TYPE_CONFIG[ticket.ticketType || 'bug'];
+  const typeCfg = TYPE_CONFIG[normalizeTicketType(ticket.ticketType)];
   const comments = ticket.comments ? Object.values(ticket.comments) : [];
   comments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
@@ -150,6 +150,9 @@ export function TicketCard({
           >
             <span
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
                 fontSize: '10px',
                 fontWeight: 700,
                 padding: '2px 8px',
@@ -158,7 +161,8 @@ export function TicketCard({
                 color: typeCfg.color,
               }}
             >
-              {typeCfg.icon} {typeCfg.label}
+              <typeCfg.Icon style={{ fontSize: 12 }} />
+              {typeCfg.label}
             </span>
             <span
               style={{
@@ -174,18 +178,20 @@ export function TicketCard({
             >
               {statusCfg.label}
             </span>
-            <span
-              style={{
-                fontSize: '10px',
-                fontWeight: 600,
-                padding: '2px 6px',
-                borderRadius: '4px',
-                background: `${priorityCfg.color}15`,
-                color: priorityCfg.color,
-              }}
-            >
-              {priorityCfg.label}
-            </span>
+            {ticket.ticketType !== 'question' && (
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  background: `${priorityCfg.color}15`,
+                  color: priorityCfg.color,
+                }}
+              >
+                {priorityCfg.label}
+              </span>
+            )}
           </div>
           <div style={{ fontSize: '14px', fontWeight: 600, color: theme.text.primary }}>
             {ticket.title}

@@ -42,7 +42,13 @@ const dict: Record<string, string> = {
   Niedrig: 'Faible',
   Mittel: 'Moyenne',
   Hoch: 'Élevée',
-  'Bugs melden oder Features vorschlagen': 'Signaler un bug ou proposer une fonctionnalité',
+  'Bugs melden, Features vorschlagen oder Fragen stellen':
+    'Signaler un bug, proposer une fonctionnalité ou poser une question',
+  Frage: 'Question',
+  'Neue Frage': 'Nouvelle question',
+  'Was möchtest du wissen?': 'Que veux-tu savoir ?',
+  'Du suchst etwas oder weißt nicht, ob es das schon gibt? Frag einfach, die Antwort kommt als Kommentar unter dein Ticket.':
+    'Tu cherches quelque chose ou tu ne sais pas si ça existe déjà ? Demande simplement, la réponse arrivera en commentaire sous ton ticket.',
   'Neues Ticket erstellen': 'Créer un ticket',
   'Meine Tickets': 'Mes tickets',
   'Laden...': 'Chargement...',

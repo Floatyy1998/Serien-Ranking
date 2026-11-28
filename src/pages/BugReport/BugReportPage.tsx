@@ -64,7 +64,8 @@ export const BugReportPage = memo(() => {
   const initialErrors = searchParams.get('errors') || '';
   const initialTitle = searchParams.get('title') || '';
   const initialDescription = searchParams.get('description') || '';
-  const initialType = searchParams.get('type') === 'feature' ? 'feature' : undefined;
+  const paramType = searchParams.get('type');
+  const initialType = paramType === 'feature' || paramType === 'question' ? paramType : undefined;
 
   const openTickets = tickets.filter((tk) => !isArchivedStatus(tk.status));
   const archivedTickets = tickets.filter((tk) => isArchivedStatus(tk.status));
@@ -75,7 +76,7 @@ export const BugReportPage = memo(() => {
       <PageHeader
         title={t('Feedback & Bugs')}
         gradientFrom={currentTheme.primary}
-        subtitle={t('Bugs melden oder Features vorschlagen')}
+        subtitle={t('Bugs melden, Features vorschlagen oder Fragen stellen')}
         icon={<Feedback />}
         sticky
       />

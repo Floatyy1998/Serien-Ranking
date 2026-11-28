@@ -5,7 +5,7 @@
  * bewusst neu aufbaut.
  */
 import type { BugTicket, TicketComment, TicketType } from '../../../BugReport/types';
-import { isArchivedStatus, normalizeStatus } from '../../../BugReport/types';
+import { isArchivedStatus, normalizeStatus, normalizeTicketType } from '../../../BugReport/types';
 
 export type TicketQueue = 'inbox' | 'waiting' | 'done' | 'rejected' | 'obsolete' | 'all';
 export type TicketSort = 'newest' | 'oldest' | 'activity';
@@ -67,7 +67,7 @@ export interface TicketFilter {
 
 export function matchesFilter(ticket: BugTicket, filter: TicketFilter): boolean {
   if (!matchesQueue(ticket, filter.queue)) return false;
-  if (filter.type !== 'all' && (ticket.ticketType || 'bug') !== filter.type) return false;
+  if (filter.type !== 'all' && normalizeTicketType(ticket.ticketType) !== filter.type) return false;
   const q = filter.search.trim().toLowerCase();
   if (!q) return true;
   return [ticket.title, ticket.description, ticket.createdByName, ticket.id].some((field) =>

@@ -1,7 +1,14 @@
 import { ChatBubbleOutlined, Refresh, Search } from '@mui/icons-material';
 import type { CSSProperties } from 'react';
 import { useEffect, useRef } from 'react';
-import { normalizeStatus, PRIORITY_CONFIG, STATUS_CONFIG } from '../../../BugReport/types';
+import type { TicketType } from '../../../BugReport/types';
+import {
+  normalizeStatus,
+  normalizeTicketType,
+  PRIORITY_CONFIG,
+  STATUS_CONFIG,
+  TYPE_CONFIG,
+} from '../../../BugReport/types';
 import { formatAgoLabel } from '../../../../utils/timeLabels';
 import { needsReply, type TicketQueue, type TicketSort } from './ticketQueue';
 import type { TicketsData } from './useTicketsData';
@@ -13,6 +20,13 @@ const QUEUES: { id: TicketQueue; label: string; tone?: string }[] = [
   { id: 'rejected', label: 'Abgelehnt', tone: STATUS_CONFIG.rejected.color },
   { id: 'obsolete', label: 'Hinfällig', tone: STATUS_CONFIG.obsolete.color },
   { id: 'all', label: 'Alle' },
+];
+
+const TYPE_FILTERS: { id: TicketType | 'all'; label: string }[] = [
+  { id: 'all', label: 'Alle' },
+  { id: 'bug', label: 'Bugs' },
+  { id: 'feature', label: 'Features' },
+  { id: 'question', label: 'Fragen' },
 ];
 
 const SORTS: { id: TicketSort; label: string }[] = [
@@ -62,14 +76,14 @@ export function TicketList({ data, now }: { data: TicketsData; now: number }) {
 
         <div className="tk-list__tools">
           <div className="tk-seg tk-seg--sm">
-            {(['all', 'bug', 'feature'] as const).map((type) => (
+            {TYPE_FILTERS.map((type) => (
               <button
-                key={type}
+                key={type.id}
                 type="button"
-                className={data.typeFilter === type ? 'is-on' : ''}
-                onClick={() => data.setTypeFilter(type)}
+                className={data.typeFilter === type.id ? 'is-on' : ''}
+                onClick={() => data.setTypeFilter(type.id)}
               >
-                {type === 'all' ? 'Alle' : type === 'bug' ? 'Bugs' : 'Features'}
+                {type.label}
               </button>
             ))}
           </div>
@@ -111,7 +125,7 @@ export function TicketList({ data, now }: { data: TicketsData; now: number }) {
           const priority = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
           const commentCount = Object.keys(ticket.comments || {}).length;
           const waiting = needsReply(ticket);
-          const isFeature = ticket.ticketType === 'feature';
+          const type = normalizeTicketType(ticket.ticketType);
           return (
             <button
               key={ticket.id}
@@ -130,8 +144,8 @@ export function TicketList({ data, now }: { data: TicketsData; now: number }) {
               <span className="tk-item__main">
                 <span className="tk-item__title">
                   <span
-                    className={`tk-kind ${isFeature ? 'tk-kind--feature' : 'tk-kind--bug'}`}
-                    aria-label={isFeature ? 'Feature' : 'Bug'}
+                    className={`tk-kind tk-kind--${type}`}
+                    aria-label={TYPE_CONFIG[type].rawLabel}
                   />
                   {ticket.title}
                 </span>

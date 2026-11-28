@@ -1,3 +1,7 @@
+import type { SvgIconComponent } from '@mui/icons-material';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { t } from '../../services/i18n';
 import type { BugContext } from '../../types/ErrorReport';
 
@@ -12,7 +16,12 @@ export const normalizeStatus = (status: TicketStatus): TicketStatus =>
 export const isArchivedStatus = (status: TicketStatus): boolean =>
   status === 'done' || status === 'rejected' || status === 'obsolete' || status === 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high';
-export type TicketType = 'bug' | 'feature';
+export type TicketType = 'bug' | 'feature' | 'question';
+
+export const TICKET_TYPES = ['bug', 'feature', 'question'] as const;
+
+export const normalizeTicketType = (type: unknown): TicketType =>
+  type === 'feature' || type === 'question' ? type : 'bug';
 
 export interface TicketComment {
   id: string;
@@ -64,7 +73,17 @@ export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: str
   high: { label: t('Hoch'), color: '#ef4444' },
 };
 
-export const TYPE_CONFIG: Record<TicketType, { label: string; color: string; icon: string }> = {
-  bug: { label: t('Bug'), color: '#ef4444', icon: '🐛' },
-  feature: { label: t('Feature'), color: '#8b5cf6', icon: '💡' },
+export const TYPE_CONFIG: Record<
+  TicketType,
+  { label: string; rawLabel: string; color: string; Icon: SvgIconComponent }
+> = {
+  bug: { label: t('Bug'), rawLabel: 'Bug', color: '#ef4444', Icon: BugReportIcon },
+  feature: { label: t('Feature'), rawLabel: 'Feature', color: '#8b5cf6', Icon: LightbulbIcon },
+  question: { label: t('Frage'), rawLabel: 'Frage', color: '#0ea5e9', Icon: HelpOutlineIcon },
+};
+
+export const NEW_TICKET_TITLE: Record<TicketType, string> = {
+  bug: 'Neues Bug-Ticket',
+  feature: 'Neuer Feature-Wunsch',
+  question: 'Neue Frage',
 };

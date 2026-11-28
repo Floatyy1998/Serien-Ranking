@@ -118,6 +118,36 @@ describe('NewTicketForm', () => {
     expect(screen.getByPlaceholderText('Kurze Beschreibung des Features')).toBeInTheDocument();
   });
 
+  it('asks a question without priority and steps', () => {
+    const onSubmit = vi.fn<
+      (d: { ticketType: string; priority: string; stepsToReproduce: string }) => Promise<boolean>
+    >(async () => true);
+    render(
+      <NewTicketForm
+        theme={theme}
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        onUpload={vi.fn(async () => null)}
+      />
+    );
+    fireEvent.click(screen.getByText('Hoch'));
+    fireEvent.click(screen.getByText('Frage'));
+    expect(screen.queryByText('Priorität')).toBeNull();
+    expect(screen.queryByText('Schritte zum Reproduzieren')).toBeNull();
+    fireEvent.change(screen.getByPlaceholderText('Worum geht es?'), {
+      target: { value: 'Serien als beendet filtern' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Was möchtest du wissen?'), {
+      target: { value: 'Gibt es das schon?' },
+    });
+    fireEvent.click(screen.getByText('Absenden'));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({
+      ticketType: 'question',
+      priority: 'low',
+      stepsToReproduce: '',
+    });
+  });
+
   it('sends the page context unless the checkbox is cleared', async () => {
     const context = {
       page: '/series/1396',

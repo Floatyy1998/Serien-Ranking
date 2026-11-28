@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { TicketPriority, TicketType } from '../types';
-import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
+import { PRIORITY_CONFIG, TICKET_TYPES, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
 import { t } from '../../../services/i18n';
 import type { BugContext } from '../../../types/ErrorReport';
@@ -85,6 +85,7 @@ export function NewTicketForm({
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [keepShot, setKeepShot] = useState(true);
+  const isQuestion = ticketType === 'question';
   const [shotPreview, setShotPreview] = useState<string | null>(null);
   const shotUrlRef = useRef<string | null>(null);
 
@@ -149,11 +150,11 @@ export function NewTicketForm({
       ticketType,
       title: title.trim(),
       description: description.trim(),
-      stepsToReproduce: steps.trim(),
+      stepsToReproduce: isQuestion ? '' : steps.trim(),
       screenshots: shots,
-      consoleErrors: consoleErrors.trim() || undefined,
+      consoleErrors: (ticketType === 'bug' && consoleErrors.trim()) || undefined,
       ...(context && includeContext ? { context } : {}),
-      priority,
+      priority: isQuestion ? 'low' : priority,
     });
     if (!success) setSubmitting(false);
   };
@@ -195,13 +196,15 @@ export function NewTicketForm({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {(['bug', 'feature'] as const).map((t) => {
-            const cfg = TYPE_CONFIG[t];
-            const active = ticketType === t;
+          {TICKET_TYPES.map((type) => {
+            const cfg = TYPE_CONFIG[type];
+            const active = ticketType === type;
             return (
               <button
-                key={t}
-                onClick={() => setTicketType(t)}
+                key={type}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setTicketType(type)}
                 style={{
                   flex: 1,
                   padding: '10px',
@@ -223,54 +226,64 @@ export function NewTicketForm({
                   gap: '6px',
                 }}
               >
-                {cfg.icon} {cfg.label}
+                <cfg.Icon style={{ fontSize: 16 }} /> {cfg.label}
               </button>
             );
           })}
         </div>
 
-        <div>
-          <label
-            style={{
-              fontSize: '12px',
-              color: theme.text.muted,
-              marginBottom: '4px',
-              display: 'block',
-            }}
-          >
-            {t('Priorität')}
-          </label>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {(['low', 'medium', 'high'] as const).map((p) => {
-              const cfg = PRIORITY_CONFIG[p];
-              const active = priority === p;
-              return (
-                <button
-                  key={p}
-                  onClick={() => setPriority(p)}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: 'var(--radius-md)',
-                    border: active
-                      ? `1px solid ${cfg.color}80`
-                      : '1px solid var(--glass-border-subtle)',
-                    background: active ? `${cfg.color}1f` : 'var(--glass-subtle)',
-                    boxShadow: active
-                      ? `inset 0 0 0 1px ${cfg.color}40, 0 0 16px ${cfg.color}1a`
-                      : undefined,
-                    color: active ? cfg.color : theme.text.muted,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {cfg.label}
-                </button>
-              );
-            })}
+        {isQuestion && (
+          <div style={{ fontSize: '12px', color: theme.text.muted, lineHeight: 1.45 }}>
+            {t(
+              'Du suchst etwas oder weißt nicht, ob es das schon gibt? Frag einfach, die Antwort kommt als Kommentar unter dein Ticket.'
+            )}
           </div>
-        </div>
+        )}
+
+        {!isQuestion && (
+          <div>
+            <label
+              style={{
+                fontSize: '12px',
+                color: theme.text.muted,
+                marginBottom: '4px',
+                display: 'block',
+              }}
+            >
+              {t('Priorität')}
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {(['low', 'medium', 'high'] as const).map((p) => {
+                const cfg = PRIORITY_CONFIG[p];
+                const active = priority === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPriority(p)}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: 'var(--radius-md)',
+                      border: active
+                        ? `1px solid ${cfg.color}80`
+                        : '1px solid var(--glass-border-subtle)',
+                      background: active ? `${cfg.color}1f` : 'var(--glass-subtle)',
+                      boxShadow: active
+                        ? `inset 0 0 0 1px ${cfg.color}40, 0 0 16px ${cfg.color}1a`
+                        : undefined,
+                      color: active ? cfg.color : theme.text.muted,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div>
           <label
@@ -290,7 +303,9 @@ export function NewTicketForm({
             placeholder={
               ticketType === 'bug'
                 ? t('Kurze Beschreibung des Problems')
-                : t('Kurze Beschreibung des Features')
+                : isQuestion
+                  ? t('Worum geht es?')
+                  : t('Kurze Beschreibung des Features')
             }
             className="glass-input"
           />
@@ -313,7 +328,9 @@ export function NewTicketForm({
             placeholder={
               ticketType === 'bug'
                 ? t('Was genau ist passiert? Was hast du erwartet?')
-                : t('Was soll das Feature können? Warum wäre es nützlich?')
+                : isQuestion
+                  ? t('Was möchtest du wissen?')
+                  : t('Was soll das Feature können? Warum wäre es nützlich?')
             }
             rows={4}
             className="glass-input"
@@ -321,30 +338,34 @@ export function NewTicketForm({
           />
         </div>
 
-        <div>
-          <label
-            style={{
-              fontSize: '12px',
-              color: theme.text.muted,
-              marginBottom: '4px',
-              display: 'block',
-            }}
-          >
-            {ticketType === 'bug' ? t('Schritte zum Reproduzieren') : t('Beschreibung des Ablaufs')}
-          </label>
-          <textarea
-            value={steps}
-            onChange={(e) => setSteps(e.target.value)}
-            placeholder={
-              ticketType === 'bug'
-                ? t('1. Gehe zu ...\n2. Klicke auf ...\n3. Der Fehler tritt auf ...')
-                : t('1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...')
-            }
-            rows={3}
-            className="glass-input"
-            style={{ resize: 'vertical' }}
-          />
-        </div>
+        {!isQuestion && (
+          <div>
+            <label
+              style={{
+                fontSize: '12px',
+                color: theme.text.muted,
+                marginBottom: '4px',
+                display: 'block',
+              }}
+            >
+              {ticketType === 'bug'
+                ? t('Schritte zum Reproduzieren')
+                : t('Beschreibung des Ablaufs')}
+            </label>
+            <textarea
+              value={steps}
+              onChange={(e) => setSteps(e.target.value)}
+              placeholder={
+                ticketType === 'bug'
+                  ? t('1. Gehe zu ...\n2. Klicke auf ...\n3. Der Fehler tritt auf ...')
+                  : t('1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...')
+              }
+              rows={3}
+              className="glass-input"
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+        )}
 
         <div>
           <label

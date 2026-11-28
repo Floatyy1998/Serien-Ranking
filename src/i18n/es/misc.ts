@@ -42,7 +42,13 @@ const dict: Record<string, string> = {
   Niedrig: 'Baja',
   Mittel: 'Media',
   Hoch: 'Alta',
-  'Bugs melden oder Features vorschlagen': 'Informa de errores o sugiere funciones',
+  'Bugs melden, Features vorschlagen oder Fragen stellen':
+    'Informa de errores, sugiere funciones o haz una pregunta',
+  Frage: 'Pregunta',
+  'Neue Frage': 'Nueva pregunta',
+  'Was möchtest du wissen?': '¿Qué quieres saber?',
+  'Du suchst etwas oder weißt nicht, ob es das schon gibt? Frag einfach, die Antwort kommt als Kommentar unter dein Ticket.':
+    '¿Buscas algo o no sabes si ya existe? Pregunta sin más, la respuesta llegará como comentario en tu ticket.',
   'Meine Tickets': 'Mis tickets',
   'Laden...': 'Cargando...',
   'Du hast noch keine Tickets erstellt.': 'Aún no has creado ningún ticket.',

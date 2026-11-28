@@ -12,9 +12,11 @@ import {
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
 import {
   normalizeStatus,
+  normalizeTicketType,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
   TICKET_STATUSES,
+  TYPE_CONFIG,
 } from '../../../BugReport/types';
 import { buildThread } from './ticketQueue';
 import { TicketContextSection } from './TicketContextSection';
@@ -25,7 +27,7 @@ function exportJson(ticket: BugTicket): string {
   const thread = buildThread(ticket);
   const data = {
     id: ticket.id,
-    type: ticket.ticketType || 'bug',
+    type: normalizeTicketType(ticket.ticketType),
     title: ticket.title,
     status: normalizeStatus(ticket.status),
     priority: ticket.priority,
@@ -85,7 +87,7 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
   const nextId =
     index >= 0 && index < data.items.length - 1 ? data.items[index + 1].ticket.id : null;
   const status = normalizeStatus(ticket.status);
-  const isFeature = ticket.ticketType === 'feature';
+  const type = normalizeTicketType(ticket.ticketType);
   const screenshots = (ticket.screenshots || []).filter(storageUrlOrNull);
   const setStatus = (next: TicketStatus) => {
     if (next !== status) void data.updateTicket(ticket.id, { status: next });
@@ -108,9 +110,7 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
           >
             <ArrowBack style={{ fontSize: 16 }} /> Liste
           </button>
-          <span className={`adm-tag tk-type ${isFeature ? 'tk-type--feature' : ''}`}>
-            {isFeature ? 'Feature' : 'Bug'}
-          </span>
+          <span className={`adm-tag tk-type tk-type--${type}`}>{TYPE_CONFIG[type].rawLabel}</span>
           <button
             type="button"
             className="adm-pill tk-id"
@@ -245,7 +245,7 @@ export function TicketDetail({ data, now }: TicketDetailProps) {
           </Block>
 
           {ticket.stepsToReproduce && (
-            <Block title={isFeature ? 'Ablauf' : 'Schritte zum Reproduzieren'}>
+            <Block title={type === 'bug' ? 'Schritte zum Reproduzieren' : 'Ablauf'}>
               <div className="tk-text">{ticket.stepsToReproduce}</div>
             </Block>
           )}

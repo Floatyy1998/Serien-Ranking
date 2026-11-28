@@ -60,6 +60,7 @@ export interface UnifiedNotification {
     | 'announcement'
     | 'bug'
     | 'feature'
+    | 'question'
     | 'pet'
     | 'recommendation'
     | 'plan';
@@ -499,8 +500,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
                 n.type === 'security_alert'
               ? 'flag'
               : isBugTicket
-                ? n.data?.ticketType === 'feature'
-                  ? 'feature'
+                ? n.data?.ticketType === 'feature' || n.data?.ticketType === 'question'
+                  ? n.data.ticketType
                   : 'bug'
                 : String(n.type ?? '').startsWith('watch_plan')
                   ? 'plan'

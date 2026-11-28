@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { sendNotificationToUser } from '../../hooks/social/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
-import { isArchivedStatus } from './types';
+import { isArchivedStatus, NEW_TICKET_TITLE } from './types';
 import type { BugContext } from '../../types/ErrorReport';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
@@ -73,7 +73,7 @@ export function useBugReportData() {
         const ticketId = dbRef('bugTickets').push().key ?? crypto.randomUUID();
         const displayName =
           user.displayName || (await getUserDisplayName(user.uid)) || t('Unbekannt');
-        const isBug = data.ticketType === 'bug';
+        const newTitle = NEW_TICKET_TITLE[data.ticketType];
 
         const ticket: BugTicket = {
           id: ticketId,
@@ -109,8 +109,8 @@ export function useBugReportData() {
         // Notification an Admin
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
-          title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
-          titleL: await localizedVariants(isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
+          title: newTitle,
+          titleL: await localizedVariants(newTitle),
           message: `${displayName}: "${data.title}"`,
           data: { ticketId, ticketType: data.ticketType },
         });

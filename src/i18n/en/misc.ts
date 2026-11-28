@@ -56,7 +56,13 @@ const dict: Record<string, string> = {
   Hoch: 'High',
 
   // Bug-Report-Seite
-  'Bugs melden oder Features vorschlagen': 'Report bugs or suggest features',
+  'Bugs melden, Features vorschlagen oder Fragen stellen':
+    'Report bugs, suggest features or ask a question',
+  Frage: 'Question',
+  'Neue Frage': 'New question',
+  'Was möchtest du wissen?': 'What would you like to know?',
+  'Du suchst etwas oder weißt nicht, ob es das schon gibt? Frag einfach, die Antwort kommt als Kommentar unter dein Ticket.':
+    'Looking for something or not sure whether it already exists? Just ask, the answer will arrive as a comment on your ticket.',
   'Neues Ticket erstellen': 'Create new ticket',
   'Meine Tickets': 'My tickets',
   'Laden...': 'Loading...',

@@ -249,6 +249,10 @@
   background: #a78bfa;
 }
 
+.tk-kind--question {
+  background: #38bdf8;
+}
+
 .tk-item__meta {
   display: flex;
   flex-wrap: wrap;
@@ -337,6 +341,10 @@
 
 .tk-type--feature {
   --adm-tone: #a78bfa;
+}
+
+.tk-type--question {
+  --adm-tone: #38bdf8;
 }
 
 .admin-content .tk-id {

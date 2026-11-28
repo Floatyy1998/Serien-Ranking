@@ -15,6 +15,7 @@ import {
   Star,
   Tv,
 } from '@mui/icons-material';
+import HelpOutline from '@mui/icons-material/HelpOutlined';
 import type React from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 
@@ -32,6 +33,7 @@ const ICON_MAP: Record<string, (theme: Theme) => React.ReactNode> = {
   announcement: (t) => <NewReleases style={{ fontSize: '18px', color: t.accent }} />,
   bug: (t) => <BugReport style={{ fontSize: '18px', color: t.status.warning }} />,
   feature: (t) => <Lightbulb style={{ fontSize: '18px', color: t.secondary }} />,
+  question: (t) => <HelpOutline style={{ fontSize: '18px', color: t.primary }} />,
   pet: () => <Pets style={{ fontSize: '18px', color: '#FF9800' }} />,
   recommendation: (t) => <Recommend style={{ fontSize: '18px', color: t.primary }} />,
   plan: (t) => <EditCalendar style={{ fontSize: '18px', color: t.primary }} />,
